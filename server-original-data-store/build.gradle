@@ -25,6 +25,7 @@ dependencies {
             // some classes than cisd-cifex.jar. They need to be in classpath before cisd-cifex.jar
             project(':lib-authentication'),
             project(':lib-dbmigration'),
+            project(':lib-pathinfo-db'),
             'apache:ftpserver-core:1.0.6',
             'apache:sshd-sftp:2.7.0',
             'slf4j:slf4j-api:1.7.24',

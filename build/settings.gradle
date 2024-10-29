@@ -4,4 +4,4 @@ includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-com
         'test-api-openbis-javascript', 'server-external-data-store', 'ui-admin', 'lib-microservice-server',
         'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
         'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
-        'test-integration', 'lib-rdf'
+        'test-integration', 'lib-rdf', 'lib-pathinfo-db'
