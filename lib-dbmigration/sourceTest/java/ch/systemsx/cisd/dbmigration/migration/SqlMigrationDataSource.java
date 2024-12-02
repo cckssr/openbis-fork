@@ -24,9 +24,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.DisposableBean;
-
-public class SqlMigrationDataSource implements DataSource, DisposableBean
+public class SqlMigrationDataSource implements DataSource, AutoCloseable
 {
     private final String driver;
 
@@ -100,7 +98,7 @@ public class SqlMigrationDataSource implements DataSource, DisposableBean
     }
 
     @Override
-    public void destroy() throws SQLException
+    public void close() throws SQLException
     {
         if (connection != null)
         {

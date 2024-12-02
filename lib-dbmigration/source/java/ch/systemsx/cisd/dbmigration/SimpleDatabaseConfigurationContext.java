@@ -15,19 +15,21 @@
  */
 package ch.systemsx.cisd.dbmigration;
 
+import static ch.systemsx.cisd.common.properties.PropertyUtils.getInt;
+import static ch.systemsx.cisd.common.properties.PropertyUtils.getMandatoryProperty;
+import static ch.systemsx.cisd.common.properties.PropertyUtils.getProperty;
+import static ch.systemsx.cisd.common.properties.PropertyUtils.hasProperty;
+
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-
-import static ch.systemsx.cisd.common.properties.PropertyUtils.*;
 
 /**
  * Configuration context for database operations.
@@ -40,7 +42,7 @@ import static ch.systemsx.cisd.common.properties.PropertyUtils.*;
  * 
  * @author Piotr Buczek
  */
-public class SimpleDatabaseConfigurationContext implements DisposableBean
+public class SimpleDatabaseConfigurationContext implements AutoCloseable
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, SimpleDatabaseConfigurationContext.class);
@@ -151,17 +153,11 @@ public class SimpleDatabaseConfigurationContext implements DisposableBean
         dataSource = null;
     }
 
-    //
-    // DisposableBean
-    //
-
     @Override
-    public final void destroy() throws Exception
+    public final void close() throws Exception
     {
         closeConnections();
     }
-
-    //
 
     private final static void closeConnection(final DataSource dataSource)
     {
@@ -172,10 +168,6 @@ public class SimpleDatabaseConfigurationContext implements DisposableBean
                 if (dataSource instanceof BasicDataSource)
                 {
                     ((BasicDataSource) dataSource).close();
-                }
-                if (dataSource instanceof DisposableBean)
-                {
-                    ((DisposableBean) dataSource).destroy();
                 }
             } catch (final Exception ex)
             {

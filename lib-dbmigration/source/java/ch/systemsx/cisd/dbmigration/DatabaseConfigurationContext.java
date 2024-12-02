@@ -27,7 +27,6 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -41,7 +40,7 @@ import ch.systemsx.cisd.common.logging.LogFactory;
  * 
  * @author Franz-Josef Elmer
  */
-public class DatabaseConfigurationContext implements DisposableBean
+public class DatabaseConfigurationContext implements AutoCloseable
 {
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             DatabaseConfigurationContext.class);
@@ -118,10 +117,6 @@ public class DatabaseConfigurationContext implements DisposableBean
                 if (dataSource instanceof BasicDataSource)
                 {
                     ((BasicDataSource) dataSource).close();
-                }
-                if (dataSource instanceof DisposableBean)
-                {
-                    ((DisposableBean) dataSource).destroy();
                 }
             } catch (final Exception ex)
             {
@@ -764,12 +759,8 @@ public class DatabaseConfigurationContext implements DisposableBean
         adminDataSource = null;
     }
 
-    //
-    // DisposableBean
-    //
-
     @Override
-    public final void destroy() throws Exception
+    public final void close() throws Exception
     {
         closeConnections();
     }
