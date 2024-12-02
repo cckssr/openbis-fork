@@ -17,12 +17,9 @@ package ch.systemsx.cisd.dbmigration.java;
 
 import javax.sql.DataSource;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 /**
  * A <code>IMigrationStep</code> implementation for test.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public final class MigrationStepFrom001To002 implements IMigrationStep
@@ -33,14 +30,12 @@ public final class MigrationStepFrom001To002 implements IMigrationStep
     //
 
     @Override
-    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
-            throws DataAccessException
+    public final void performPostMigration(DataSource dataSource)
     {
     }
 
     @Override
-    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
-            throws DataAccessException
+    public final void performPreMigration(DataSource dataSource)
     {
     }
 

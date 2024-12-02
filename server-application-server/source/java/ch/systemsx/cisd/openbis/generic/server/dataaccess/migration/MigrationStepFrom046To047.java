@@ -79,9 +79,10 @@ public final class MigrationStepFrom046To047 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate,
-            DataSource dataSource) throws DataAccessException
+    public final void performPreMigration(DataSource dataSource) throws DataAccessException
     {
+        JdbcTemplate simpleJdbcTemplate = new JdbcTemplate(dataSource);
+
         final List<PersonWithDisplaySettings> persons =
                 simpleJdbcTemplate.query(String.format(SELECT_PERSON_WITH_DISPLAY_SETTINGS_QUERY,
                         TableNames.PERSONS_TABLE), PERSON_WITH_DISPLAY_SETTINGS_ROW_MAPPER);

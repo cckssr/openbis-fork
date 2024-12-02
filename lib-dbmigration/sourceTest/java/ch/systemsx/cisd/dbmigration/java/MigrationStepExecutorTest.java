@@ -23,8 +23,6 @@ import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
 import org.apache.log4j.Level;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,7 +36,7 @@ import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 
 /**
  * Test cases for the {@link MigrationStepExecutor}.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public final class MigrationStepExecutorTest
@@ -234,7 +232,7 @@ public final class MigrationStepExecutorTest
         {
             migrationStepExecutor.performPreMigration();
             fail();
-        } catch (final DataIntegrityViolationException ex)
+        } catch (final Exception ex)
         {
             // Nothing to do here.
         }
@@ -242,7 +240,7 @@ public final class MigrationStepExecutorTest
         {
             migrationStepExecutor.performPostMigration();
             fail();
-        } catch (final EmptyResultDataAccessException ex)
+        } catch (final Exception ex)
         {
             // Nothing to do here.
         }

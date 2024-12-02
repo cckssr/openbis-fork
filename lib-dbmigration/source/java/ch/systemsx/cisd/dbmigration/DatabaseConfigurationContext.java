@@ -28,7 +28,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -503,17 +502,6 @@ public class DatabaseConfigurationContext implements DisposableBean
     {
         checkDatabaseEngine();
         return databaseEngine.getAdminURL(this.urlHostPart, getDatabaseName());
-    }
-
-    /**
-     * Returns <code>lobHandler</code>.
-     * 
-     * @throws ConfigurationFailureException If the database engine is not defined.
-     */
-    public final LobHandler getLobHandler() throws ConfigurationFailureException
-    {
-        checkDatabaseEngine();
-        return databaseEngine.getLobHandler();
     }
 
     /**

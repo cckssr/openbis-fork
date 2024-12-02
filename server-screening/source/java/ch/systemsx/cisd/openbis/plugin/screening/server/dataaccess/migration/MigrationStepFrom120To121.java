@@ -119,9 +119,11 @@ public class MigrationStepFrom120To121 extends MigrationStepAdapter
      * type. The sql migration will take care of the renaming itself.
      */
     @Override
-    public void performPreMigration(JdbcTemplate simpleJdbcTemplate, DataSource dataSource)
+    public void performPreMigration(DataSource dataSource)
             throws DataAccessException
     {
+        JdbcTemplate simpleJdbcTemplate = new JdbcTemplate(dataSource);
+
         Long newTypeId = getDataSetTypeId(simpleJdbcTemplate, NEW_CONTAINER_TYPE);
 
         Long oldTypeId = getDataSetTypeId(simpleJdbcTemplate, OLD_CONTAINER_TYPE);

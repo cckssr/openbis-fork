@@ -15,9 +15,10 @@
  */
 package ch.systemsx.cisd.dbmigration.java;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.Script;
@@ -39,7 +40,7 @@ import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
  * 
  * @author Izabela Adamczyk
  */
-public class MigrationStepExecutor extends JdbcDaoSupport implements IMigrationStepExecutor
+public class MigrationStepExecutor implements IMigrationStepExecutor
 {
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             MigrationStepExecutor.class);
@@ -56,13 +57,19 @@ public class MigrationStepExecutor extends JdbcDaoSupport implements IMigrationS
 
     private boolean inited;
 
+    private DataSource dataSource;
+
     public MigrationStepExecutor(final DatabaseConfigurationContext dbConfigurationContext,
             boolean isAdmin)
     {
         this.dbConfigurationContext = dbConfigurationContext;
         this.isAdmin = isAdmin;
-        setDataSource(isAdmin ? dbConfigurationContext.getAdminDataSource()
-                : dbConfigurationContext.getDataSource());
+        this.dataSource = isAdmin ? dbConfigurationContext.getAdminDataSource() : dbConfigurationContext.getDataSource();
+    }
+
+    public DataSource getDataSource()
+    {
+        return dataSource;
     }
 
     private final IMigrationStep tryExtractMigrationStep(final Script sqlScript)
@@ -161,7 +168,7 @@ public class MigrationStepExecutor extends JdbcDaoSupport implements IMigrationS
         assert inited : "Executor not initialized.";
         if (migrationStep != null)
         {
-            migrationStep.performPreMigration(getJdbcTemplate(), getDataSource());
+            migrationStep.performPreMigration(dataSource);
         }
     }
 
@@ -171,7 +178,7 @@ public class MigrationStepExecutor extends JdbcDaoSupport implements IMigrationS
         assert inited : "Executor not initialized.";
         if (migrationStep != null)
         {
-            migrationStep.performPostMigration(getJdbcTemplate(), getDataSource());
+            migrationStep.performPostMigration(dataSource);
         }
     }
 
