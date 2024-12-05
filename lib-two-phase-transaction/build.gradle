@@ -1,0 +1,11 @@
+apply from: '../build/javaproject.gradle'
+
+dependencies {
+    api project(':lib-logging'),
+            project(':lib-commonbase'),
+            'fasterxml:jackson-databind:2.9.10.8'
+    testImplementation 'testng:testng:6.8-CISD',
+            'jmock:jmock:2.5.1',
+            'hamcrest:hamcrest-integration:1.3',
+            'hamcrest:hamcrest-library:1.3'
+}

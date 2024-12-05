@@ -1,1 +1,1 @@
-includeFlat 'lib-commonbase', 'lib-common', 'lib-json', 'api-data-store-server-java'
+includeFlat 'lib-commonbase', 'lib-common', 'lib-json', 'lib-two-phase-transaction', 'api-data-store-server-java'

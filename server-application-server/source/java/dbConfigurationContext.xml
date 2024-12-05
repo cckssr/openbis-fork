@@ -20,7 +20,7 @@
     </bean>
 
     <bean id="db-configuration-context"
-        class="ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext">
+        class="ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext" init-method="init">
         <property name="basicDatabaseName" value="openbis" />
         <property name="createFromScratchProp" value="${database.create-from-scratch}" />
         <property name="forceCreateWithInitialDataProp" value="${database.force-create-with-initial-data}" />

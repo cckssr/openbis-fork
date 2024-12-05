@@ -15,5 +15,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'lemnik:eodsql:2.2-CISD'
+    implementation project(':lib-db'),
+            'lemnik:eodsql:2.2-CISD'
 }
