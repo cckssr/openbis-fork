@@ -353,6 +353,12 @@ The `dataType` attribute can contain any of these values:
 - `XML`
 - `CONTROLLEDVOCABULARY`
 - `MATERIAL`
+- `SAMPLE`
+- `ARRAY_INTEGER`
+- `ARRAY_REAL`
+- `ARRAY_STRING`
+- `ARRAY_TIMESTAMP`
+- `JSON`
 
 When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
 
@@ -361,6 +367,35 @@ To create a **richtext property**, use `MULTILINE_VARCHAR` as `dataType` and set
 To create a **tabular, spreadsheet-like property**, use `XML` as `dataType` and set `metaData` to `{'custom_widget' : 'Spreadhseet'}`as shown in the example above.
 
 **Note**: PropertyTypes that start with a \$ are by definition `managedInternally` and therefore this attribute must be set to True.
+
+#### Multi-value properties
+
+By default, all property types accept only a single value. However, enabling `multiValue` flag during property type creation will allow to provide multiple values to the given property.
+
+Example:
+
+```python
+pt_int = o.new_property_type(
+    code        = 'MY_MULTI_VALUE_NUMBER_PROPERTY',
+    label       = 'Multi-value property contain a set of numbers',
+    dataType    = 'INTEGER',
+    multiValue  =  True
+)
+pt_int.save()
+```
+
+Setting value to such property happens by providing the list of values.
+
+```python
+sample.prop['MY_MULTI_VALUE_NUMBER_PROPERTY'] = [1, 2, 3]
+```
+
+**Multivalue vs Array types - when to use?**
+Array data types (`ARRAY_INTEGER`, `ARRAY_STRING`, `ARRAY_REAL`, `ARRAY_TIMESTAMP`) are designed to store great number of values with the drawback of not being able to search through them. 
+Multi-value properties are supported by Openbis search engine, therefore it is recommended to use it in cases where search is required.
+
+
+
 
 ### create sample types / object types
 
@@ -405,7 +440,10 @@ sample_type.assign_property(
 	mandatory            = True,
 	initialValueForExistingEntities = 'initial value'
 	showInEditView       = True,
-	showRawValueInForms  = True
+	showRawValueInForms  = True,
+    unique               = False,
+    patternType          = None,
+    pattern              = None
 )
 sample_type.revoke_property('diff_time')
 sample_type.get_property_assignments()
@@ -415,6 +453,49 @@ sample_type.get_property_assignments()
 
 If a new property is assigned in a place of an existing property, the old property assignment ordinal value will be increased by 1
 
+#### pattern and pattern type
+Properties with `pattern` and `patternType` set at property assignment step, will be validated during the save process. Properties not matching provided pattern will not be saved.
+
+We distinguish 3 values for pattern type:
+- `PATTERN` - Java regexp pattern, e.g `[a-z]{3}\d`
+- `RANGE` - comma-separated ranges of integer values. Range is defined by 2 integers separated by "-" sign: `1-5, 10-100, (-5)-(-3)`
+- `VALUES` - comma-separated, quoted strings like: `"a", "b", "c"`
+
+Examples:
+```python
+sample_type.assign_property(ptc1, patternType="PATTERN", pattern=".*")
+sample_type.assign_property(ptc2, patternType="RANGES", pattern="1-10, 15-20")
+sample_type.assign_property(ptc3, patternType="VALUES", pattern='"a", "b", "c"')
+```
+
+#### unique values
+Values of properties with assignment flag `unique` are validated during save process. This process will fail, if there is an entity of the same type that contains the same value. This constraint allows to enforce uniqueness of property value within the type.
+
+```python
+sample_type.assign_property('some_property', unique=True)
+
+sample1 = o.new_sample(
+              type=sample_type.code,
+              code=sample_code_1,
+              space=space_code,
+              props={
+                'some_property': 'some_value'
+              }
+            )
+
+sample2 = o.new_sample(
+              type=sample_type.code,
+              code=sample_code_2,
+              space=space_code,
+              props={
+                'some_property': 'some_value'
+              }
+            )
+
+sample1.save()
+sample2.save() # this call will fail, because there exists a sample with property 'some_property' set to 'some_value'
+
+```
 
 
 ### create a dataset type
@@ -436,6 +517,8 @@ dataset_type.revoke_property('property_name')
 dataset_type.get_property_assignments()
 ```
 
+***⚠️ Note:*** pattern, pattern type and unique functionalities apply for dataset type property assignment as well.
+
 ### create an experiment type / collection type
 
 The second step (after creating a **property type**, see above) is to create the **experiment type**.
@@ -456,6 +539,8 @@ experiment_type.revoke_property('property_name')
 experiment_type.get_property_assignments()
 ```
 
+***⚠️ Note:*** pattern, pattern type and unique functionalities apply for dataset type property assignment as well.
+
 ### create material types
 
 Materials and material types are deprecated in newer versions of openBIS.
@@ -472,6 +557,8 @@ material_type.revoke_property('property_name')
 material_type.get_property_assignments()
 
 ```
+
+***⚠️ Note:*** pattern, pattern type and unique functionalities apply for dataset type property assignment as well.
 
 ### create plugins
 
