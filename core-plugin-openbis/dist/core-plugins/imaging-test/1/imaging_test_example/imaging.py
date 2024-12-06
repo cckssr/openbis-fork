@@ -79,7 +79,7 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
     format: str
-    # bytes: str | None
+    bytes: str
     width: int
     height: int
     index: int
@@ -126,8 +126,8 @@ class ImagingDataSetPreview(AbstractImagingRequest):
         return preview
 
 class ImagingDataSetExportConfig(AbstractImagingClass):
-    archive_format: str
-    image_format: str
+    archiveFormat: str
+    imageFormat: str
     resolution: str
     include: list
 
@@ -135,14 +135,17 @@ class ImagingDataSetExportConfig(AbstractImagingClass):
         if include is None:
             include = ["IMAGE", "RAW_DATA"]
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetExportConfig"
-        self.image_format = image_format
-        self.archive_format = archive_format
+        self.imageFormat = image_format
+        self.archiveFormat = archive_format
+        if resolution is None:
+            resolution = "original"
         self.resolution = resolution
         self.include = include
         self._validate_data()
 
     def _validate_data(self):
-        assert self.image_format is not None, "image format can not be null"
+        assert self.imageFormat is not None, "image format can not be null"
+        assert self.archiveFormat is not None, "image format can not be null"
 
     @classmethod
     def from_dict(cls, data):

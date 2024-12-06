@@ -53,8 +53,8 @@ def get_instance(url=None):
 
 
 def get_color_scale_range(img, channel):
-    minimum = np.min(img.get_channel(channel)[0])
-    maximum = np.max(img.get_channel(channel)[0])
+    minimum = np.nanmin(img.get_channel(channel)[0])
+    maximum = np.nanmax(img.get_channel(channel)[0])
 
     step = abs(round((maximum - minimum) / 100, 2))
     if step >= 1:
@@ -129,6 +129,19 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         imaging.ImagingDataSetControl('Color-scale', "Range", visibility=color_scale_visibility),
         imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
         imaging.ImagingDataSetControl('Scaling', "Dropdown", values=['linear', 'logarithmic']),
+        imaging.ImagingDataSetControl('Filter', "Dropdown", values=['None', 'Gaussian', 'Laplace']),
+        imaging.ImagingDataSetControl('Gaussian Sigma', "Slider", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Laplace'], ['1', '1', '1']),
+            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian'], ['1', '100', '1'])
+        ]),
+        imaging.ImagingDataSetControl('Gaussian Truncate', "Slider", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Laplace'], ['1', '1', '0.1']),
+            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian'], ['0', '1', '0.1'])
+        ]),
+        imaging.ImagingDataSetControl('Laplace Size', "Slider", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Gaussian'], ['1', '1', '1']),
+            imaging.ImagingDataSetControlVisibility('Filter', ['Laplace'], ['3', '30', '1']),
+        ]),
         imaging.ImagingDataSetControl('Include parameter information', "Dropdown", values=['True', 'False']),
     ]
 
@@ -466,7 +479,11 @@ def demo_sxm_flow(openbis, file_sxm, permId=None):
         "Color-scale": color_scale,  # file dependent
         "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
         "Scaling": "linear",  # ['linear', 'logarithmic']
-        "Include parameter information" : "True"
+        "Include parameter information" : "True",
+        "Filter": "None",
+        "Gaussian Sigma": "0",
+        "Gaussian Truncate": "0",
+        "Laplace Size": "0"
     }
     config_preview = config_sxm_preview.copy()
 

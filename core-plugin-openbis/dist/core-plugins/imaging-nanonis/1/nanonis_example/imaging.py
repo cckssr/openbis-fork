@@ -79,7 +79,7 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
     format: str
-    # bytes: str | None
+    bytes: str
     width: int
     height: int
     index: int
@@ -347,7 +347,8 @@ class ImagingDataSetImage(AbstractImagingClass):
             attribute = data.get(prop)
             if prop == 'previews' and attribute is not None:
                 attribute = [ImagingDataSetPreview.from_dict(preview) for preview in attribute]
-            image.__dict__[prop] = attribute
+            if prop not in ['config']:
+                image.__dict__[prop] = attribute
         return image
 
 

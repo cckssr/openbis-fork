@@ -173,6 +173,8 @@ public class ImagingService implements ICustomDSSServiceExecutor
                 encodeImageToPreview(imageFile, preview);
                 preview.setMetadata(Map.of());
                 preview.setConfig(Map.of());
+                preview.setComment("");
+                preview.setTags(new String[0]);
                 previews.add(preview);
             }
 
@@ -180,6 +182,7 @@ public class ImagingService implements ICustomDSSServiceExecutor
                     Util.readConfig(dataSet.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME),
                             ImagingDataSetPropertyConfig.class);
             config.getImages().get(0).setPreviews(previews);
+            config.getImages().get(0).getMetadata().put("GENERATE", "false");
 
             DataSetUpdate update = new DataSetUpdate();
             update.setDataSetId(dataSet.getPermId());

@@ -167,6 +167,8 @@
           },
           "format": "png",
           "height": 480,
+          "comment": "",
+          "tags": [],
           "metadata": {}
         },
         {
@@ -193,6 +195,8 @@
           },
           "format": "png",
           "height": 480,
+          "comment": "",
+          "tags": [],
           "metadata": {}
         },
         {
@@ -219,6 +223,8 @@
           },
           "format": "png",
           "height": 480,
+          "comment": "",
+          "tags": [],
           "metadata": {}
         },
         {
@@ -245,6 +251,8 @@
           },
           "format": "png",
           "height": 480,
+          "comment": "",
+          "tags": [],
           "metadata": {}
         },
         {
@@ -271,6 +279,8 @@
           },
           "format": "png",
           "height": 480,
+          "comment": "",
+          "tags": [],
           "metadata": {}
         }
       ]

@@ -14,15 +14,17 @@
 #
 
 import numpy
-from PIL import Image
+from PIL import Image, ImageFilter
 import io
 import base64
 import sys
 import json
 import os
 import sys
+import skimage
 from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
 import spmpy_terry as spmpy   # <--- spmpy has other methods
+from scipy.ndimage import gaussian_filter
 
 import matplotlib.pyplot as plt
 # %matplotlib inline
@@ -45,7 +47,6 @@ def get_lock_in(img):
 
 
 def get_channel(img, channel_name = 'z'):
-    # channel_name = 'z'
     channel = img.get_channel(channel_name)
     return channel
 
@@ -77,16 +78,47 @@ def generate_random_image(height, width):
     return preview
 
 
-def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, include_param_info):
+def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, include_param_info, filter, other_params):
     img = load_image(file_path)
     img_byte_arr = io.BytesIO()
 
     log = False
     if scaling == 'logarithmic':
         log = True
-    fig = img.plot(show=False, show_params=False, channel=channel_name, log=log, cmap=colormap,
-                   color_scale=color_scale, x_axis=x_axis, y_axis=y_axis, colormap_scaling=colormap_scaling)
+    clim = None
+
+    if filter is not "NONE":
+        (chData,chUnit) = img.get_channel('z', direction = 'forward', flatten=False, offset=False)
+
+        min_before = numpy.nanmin(chData)
+        max_before = numpy.nanmax(chData)
+
+        if filter == "GAUSSIAN":
+            chData = skimage.filters.gaussian(chData, sigma=int(other_params["Gaussian Sigma"][0]), truncate=float(other_params["Gaussian Truncate"][0]))
+        elif filter == "LAPLACE":
+            # chData = skimage.filters.gaussian(chData, sigma=int(other_params["Gaussian Sigma"][0]), truncate=float(other_params["Gaussian Truncate"][0]))
+            chData = skimage.filters.laplace(chData, ksize=int(other_params["Laplace Size"][0]))
+
+        range_before = numpy.abs(min_before-max_before)
+
+        x = (color_scale[0]-min_before)/range_before
+        y = (color_scale[1]-min_before)/range_before
+
+        min_after = numpy.nanmin(chData)
+        max_after = numpy.nanmax(chData)
+        range_after = numpy.abs(min_after-max_after)
+
+        color_scale = (x*range_after+min_after, y*range_after+min_after)
+
+    else:
+        (chData,chUnit) = img.get_channel(channel_name, direction ='forward', flatten=False, offset=False)
+
+    my_image = img.plot(show=False, show_params=False, channel=channel_name, log=log, cmap=colormap,
+                   color_scale=color_scale, x_axis=x_axis, y_axis=y_axis, colormap_scaling=colormap_scaling, data=(chData,chUnit),
+                   clim=clim, axis=False)
     plt.savefig(img_byte_arr, format=format, dpi=resolution)
+
+
 
     fig = plt.figure()
     size = fig.get_size_inches()*fig.dpi
@@ -116,6 +148,8 @@ def sxm_mode(parameters):
     include_param_info = False
     # 'figure' is default parameter for matplotlib dpi param
     resolution = 'figure'
+    filter = "NONE"
+    other_params = {}
 
     for param_key in parameters.keys():
 
@@ -144,8 +178,13 @@ def sxm_mode(parameters):
                 resolution = float(resolution)
         elif key == 'include parameter information':
             include_param_info = parameters[param_key].upper() == "TRUE"
+        elif key == 'filter':
+            filter = parameters[param_key].upper() if parameters[param_key] is not None else "NONE"
+        else:
+            other_params[param_key] = parameters[param_key]
 
-    preview = get_sxm_image(channel, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, include_param_info)
+    preview = get_sxm_image(channel, x_axis, y_axis, scaling, color_scale, colormap,
+                            colormap_scaling, resolution, include_param_info, filter, other_params)
     print(f'{json.dumps(preview)}')
 
 print(params)

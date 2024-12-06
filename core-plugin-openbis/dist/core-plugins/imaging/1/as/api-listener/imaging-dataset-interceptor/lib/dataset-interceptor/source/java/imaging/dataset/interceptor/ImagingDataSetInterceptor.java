@@ -125,7 +125,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
         archiveFormat.setValues(Arrays.asList("zip", "tar"));
 
         config.setExports(Arrays.asList(include, archiveFormat));
-        config.setMetadata(Map.of());
+        config.setMetadata(Map.of("GENERATE", "true"));
 
         image.setConfig(config);
         ImagingDataSetPreview preview = new ImagingDataSetPreview();
@@ -133,8 +133,11 @@ public class ImagingDataSetInterceptor implements IOperationListener
         preview.setFormat("png");
         preview.setConfig(Map.of("PLACEHOLDER", "dummy"));
         preview.setMetadata(Map.of());
+        preview.setTags(new String[0]);
+        preview.setComment("");
         image.setPreviews(Arrays.asList(preview));
         image.setIndex(0);
+        image.setMetadata(Map.of());
         return image;
     }
 
