@@ -22,6 +22,7 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Worker;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -47,21 +48,24 @@ import ch.ethz.sis.shared.startup.Configuration;
 public class OpenBISAPIServerObserver implements APIServerObserver<TransactionConnection>
 {
 
-    private Configuration configuration;
-
     private String storageRoot;
 
     private String storageUuid;
 
     private Integer storageIncomingShareId;
 
+    private String interactiveSessionKey;
+
+    private OpenBISConfiguration openBISConfiguration;
+
     @Override
     public void init(Configuration configuration) throws Exception
     {
-        this.configuration = configuration;
         storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
         storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(configuration);
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
+        interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
+        openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
     }
 
     @Override
@@ -80,7 +84,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
                     if (!owners.isEmpty())
                     {
-                        OpenBIS openBIS = AtomicFileSystemServerParameterUtil.getOpenBIS(configuration);
+                        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
                         openBIS.setSessionToken(worker.getSessionToken());
 
                         createDataSets(openBIS, owners);
@@ -92,10 +96,10 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
                 if (owner != null && !ownerExistsInTransaction(worker, owner) && !ownerExistsInStore(worker, owner))
                 {
-                    OpenBIS openBIS = AtomicFileSystemServerParameterUtil.getOpenBIS(configuration);
+                    OpenBIS openBIS = openBISConfiguration.getOpenBIS();
                     openBIS.setSessionToken(worker.getSessionToken());
                     openBIS.setTransactionId(worker.getConnection().getTransaction().getUuid());
-                    openBIS.setInteractiveSessionKey(AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration));
+                    openBIS.setInteractiveSessionKey(interactiveSessionKey);
 
                     createDataSets(openBIS, List.of(owner));
                 }
@@ -112,7 +116,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
             if (owner != null && !ownerExistsInStore(worker, owner))
             {
-                OpenBIS openBIS = AtomicFileSystemServerParameterUtil.getOpenBIS(configuration);
+                OpenBIS openBIS = openBISConfiguration.getOpenBIS();
                 openBIS.setSessionToken(worker.getSessionToken());
 
                 createDataSets(openBIS, List.of(owner));

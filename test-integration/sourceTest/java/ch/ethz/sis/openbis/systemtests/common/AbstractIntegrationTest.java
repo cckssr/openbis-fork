@@ -23,8 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +46,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.proxy.ProxyServlet;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -70,6 +67,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
@@ -387,7 +385,7 @@ public abstract class AbstractIntegrationTest
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        String afsServerUser = configuration.getStringProperty(AtomicFileSystemServerParameter.openBISUser);
+        String afsServerUser = OpenBISConfiguration.getInstance(configuration).getOpenBISUser();
         createUser(openBIS, afsServerUser, null, Role.ETL_SERVER);
 
         createSpace(openBIS, TEST_SPACE);
@@ -553,7 +551,7 @@ public abstract class AbstractIntegrationTest
                 "etc/afs/service.properties");
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerPort, String.valueOf(TestInstanceHostUtils.getAFSPort()));
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerUri, TestInstanceHostUtils.getAFSPath());
-        configuration.setProperty(AtomicFileSystemServerParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
         return configuration;
     }
 

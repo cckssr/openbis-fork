@@ -22,6 +22,7 @@ import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
 import ch.ethz.sis.afsserver.server.maintenance.MaintenancePlugin;
@@ -40,6 +41,8 @@ import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.pool.Factory;
 import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 
 public final class Server<CONNECTION, API>
 {
@@ -83,6 +86,16 @@ public final class Server<CONNECTION, API>
 
         logger.info("=== Server Bootstrap ===");
         logger.info("Running with java.version: " + System.getProperty("java.version"));
+
+        // 2 Create pathinfo DB
+        DatabaseConfiguration pathInfoDatabaseConfiguration = DatabaseConfiguration.getPathInfoDBInstance(configuration);
+        DatabaseConfigurationContext pathInfoDatabaseContext = new DatabaseConfigurationContext();
+        pathInfoDatabaseContext.setDatabaseEngineCode(pathInfoDatabaseConfiguration.getDatabaseEngineCode());
+        pathInfoDatabaseContext.setBasicDatabaseName(pathInfoDatabaseConfiguration.getBasicDatabaseName());
+        pathInfoDatabaseContext.setDatabaseKind(pathInfoDatabaseConfiguration.getDatabaseKind());
+        pathInfoDatabaseContext.setScriptFolder(pathInfoDatabaseConfiguration.getScriptFolder());
+        DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseContext, pathInfoDatabaseConfiguration.getVersion(), null,
+                null);
 
         // 2.1 Load DB plugin
         logger.info("Creating Connection Factory");

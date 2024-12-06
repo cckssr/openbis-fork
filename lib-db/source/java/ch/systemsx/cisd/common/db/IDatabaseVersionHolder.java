@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.systemsx.cisd.openbis.dss.generic.shared;
+package ch.systemsx.cisd.common.db;
 
 /**
  * Stores the current version of a database.

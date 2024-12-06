@@ -24,6 +24,7 @@ dependencies {
             // lib-authentication and lib-dbmigration are required as they contain later versions of
             // some classes than cisd-cifex.jar. They need to be in classpath before cisd-cifex.jar
             project(':lib-authentication'),
+            project(':lib-db'),
             project(':lib-dbmigration'),
             project(':lib-pathinfo-db'),
             'apache:ftpserver-core:1.0.6',

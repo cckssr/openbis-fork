@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.dss.etl;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDatabaseVersionHolder;
+import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 
 /**
  * Version holder for imaging database.

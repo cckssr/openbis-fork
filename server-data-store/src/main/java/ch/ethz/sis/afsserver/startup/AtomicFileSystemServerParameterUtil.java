@@ -4,59 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
-import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class AtomicFileSystemServerParameterUtil
 {
-
-    public static OpenBIS getOpenBIS(Configuration configuration)
-    {
-        return new OpenBIS(getOpenBISUrl(configuration), getOpenBISTimeout(configuration));
-    }
-
-    public static OpenBISFacade getOpenBISFacade(Configuration configuration)
-    {
-        return new OpenBISFacade(getOpenBISUrl(configuration), getOpenBISUser(configuration), getOpenBISPassword(configuration),
-                getOpenBISTimeout(configuration));
-    }
-
-    public static String getOpenBISUrl(Configuration configuration)
-    {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.openBISUrl, true);
-    }
-
-    public static Integer getOpenBISTimeout(Configuration configuration)
-    {
-        return getIntegerParameter(configuration, AtomicFileSystemServerParameter.openBISTimeout, true);
-    }
-
-    public static String getOpenBISUser(Configuration configuration)
-    {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.openBISUser, true);
-    }
-
-    public static String getOpenBISPassword(Configuration configuration)
-    {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.openBISPassword, true);
-    }
-
-    public static String getOpenBISLastSeenDeletionFile(Configuration configuration)
-    {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.openBISLastSeenDeletionFile, true);
-    }
-
-    public static Integer getOpenBISLastSeenDeletionBatchSize(Configuration configuration)
-    {
-        return getIntegerParameter(configuration, AtomicFileSystemServerParameter.openBISLastSeenDeletionBatchSize, true);
-    }
-
-    public static Integer getOpenBISLastSeenDeletionIntervalInSeconds(Configuration configuration)
-    {
-        return getIntegerParameter(configuration, AtomicFileSystemServerParameter.openBISLastSeenDeletionIntervalInSeconds, true);
-    }
 
     public static String getStorageRoot(Configuration configuration)
     {
@@ -105,7 +57,32 @@ public class AtomicFileSystemServerParameterUtil
         return getStringParameter(configuration, AtomicFileSystemServerParameter.apiServerInteractiveSessionKey, true);
     }
 
-    private static String getStringParameter(Configuration configuration, AtomicFileSystemServerParameter parameter, boolean mandatory)
+    public static <E extends Enum<E>, I> I getInstanceParameter(Configuration configuration, E parameter, boolean mandatory)
+    {
+        String parameterValue = configuration.getStringProperty(parameter);
+
+        if (parameterValue == null || parameterValue.isBlank())
+        {
+            if (mandatory)
+            {
+                throw new RuntimeException("Configuration parameter '" + parameter + "' cannot be null or empty.");
+            } else
+            {
+                return null;
+            }
+        } else
+        {
+            try
+            {
+                return configuration.getInstance(parameter);
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Could not create an instance of class specified in configuration parameter '" + parameter + "'.", e);
+            }
+        }
+    }
+
+    public static <E extends Enum<E>> String getStringParameter(Configuration configuration, E parameter, boolean mandatory)
     {
         String parameterValue = configuration.getStringProperty(parameter);
 
@@ -124,7 +101,7 @@ public class AtomicFileSystemServerParameterUtil
         }
     }
 
-    private static Integer getIntegerParameter(Configuration configuration, AtomicFileSystemServerParameter parameter, boolean mandatory)
+    public static <E extends Enum<E>> Integer getIntegerParameter(Configuration configuration, E parameter, boolean mandatory)
     {
         String parameterStringValue = getStringParameter(configuration, parameter, mandatory);
 
