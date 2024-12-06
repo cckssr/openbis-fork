@@ -1,4 +1,4 @@
-import constants from "@src/js/components/common/imaging/constants";
+import constants from "@src/js/components/common/imaging/constants.js";
 
 export default class ImagingMapper{
 
@@ -53,9 +53,19 @@ export default class ImagingMapper{
         };
     }
 
+    mapToImagingDataSetExportConfig(exportConfig) {
+        let imagingDataSetExportConfig = new this.openbis.ImagingDataSetExportConfig();
+        imagingDataSetExportConfig.imageFormat = exportConfig['image-format'];
+        imagingDataSetExportConfig.archiveFormat = exportConfig['archive-format'];
+        imagingDataSetExportConfig.resolution = exportConfig['resolution'];
+        imagingDataSetExportConfig.include = exportConfig['include'].map(c => c.toUpperCase().replace(' ', '_'));
+        return imagingDataSetExportConfig;
+    }
+
     mapToImagingExportParams(objId, activeImageIdx, exportConfig, metadata) {
+        let imagingDataSetExportConfig = this.mapToImagingDataSetExportConfig(exportConfig);
         let imagingDataSetExport = new this.openbis.ImagingDataSetExport();
-        imagingDataSetExport.config = exportConfig;
+        imagingDataSetExport.config = imagingDataSetExportConfig;
         imagingDataSetExport.metadata = metadata;
         return {
             "type" : constants.EXPORT_TYPE,
@@ -68,9 +78,10 @@ export default class ImagingMapper{
     }
 
     mapToImagingMultiExportParams(exportConfig, exportList) {
+        let imagingDataSetExportConfig = this.mapToImagingDataSetExportConfig(exportConfig);
         const imagingDataSetMultiExportList = exportList.map(previewObj => {
             let imagingDataSetMultiExport = new this.openbis.ImagingDataSetMultiExport();
-            imagingDataSetMultiExport.config = exportConfig;
+            imagingDataSetMultiExport.config = imagingDataSetExportConfig;
             imagingDataSetMultiExport.metadata = previewObj.metadata;
             imagingDataSetMultiExport.permId = previewObj.datasetId;
             imagingDataSetMultiExport.imageIndex = previewObj.imageIdx;

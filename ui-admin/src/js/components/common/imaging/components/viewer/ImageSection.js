@@ -1,6 +1,6 @@
 import React from 'react'
 import { Grid2, Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
-import Export from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
+import Exporter from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
 import constants from "@src/js/components/common/imaging/constants.js";
 import ImageListItemSection
 	from "@src/js/components/common/imaging/components/common/ImageListItemSection.js";
@@ -53,7 +53,7 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 					{messages.get(messages.IMAGES)}
 				</Typography>
 				{configExports.length > 0 && !expanded &&
-					<Export styles={{ root: classes.summaryButton }} handleExport={handleExport} config={configExports} />}
+					<Exporter styles={{ root: classes.summaryButton }} handleExport={handleExport} config={configExports} />}
 			</AccordionSummary>
 			<AccordionDetails>
 				<Grid2 container direction='row' spacing={1} sx={{ justifyContent: "space-between", alignItems: "center" }}>
@@ -67,7 +67,7 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 					</Grid2>
 					<Grid2 size={{ xs: 3, sm: 2 }} container direction='column' sx={{ justifyContent: "space-around" }}>
 						{configExports.length > 0 &&
-							<Export handleExport={handleExport} config={configExports} />}
+							<Exporter handleExport={handleExport} config={configExports} />}
 					</Grid2>
 				</Grid2>
 			</AccordionDetails>

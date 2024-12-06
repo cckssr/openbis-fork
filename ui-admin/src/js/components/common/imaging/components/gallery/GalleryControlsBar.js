@@ -8,7 +8,7 @@ import PaperBox from "@src/js/components/common/imaging/components/common/PaperB
 import CustomSwitch from "@src/js/components/common/imaging/components/common/CustomSwitch.jsx";
 import GalleryPaging from "@src/js/components/common/imaging/components/gallery/GalleryPaging.jsx";
 import GridPagingOptions from "@src/js/components/common/grid/GridPagingOptions.js";
-import Export from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
+import Exporter from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
 import GalleryFilter from "@src/js/components/common/imaging/components/gallery/GalleryFilter.jsx";
 
 const GalleryControlsBar = ({
@@ -97,7 +97,7 @@ const GalleryControlsBar = ({
                 </Grid2>
                 <Grid2 size={{xs:2, sm:2}}>
                     {configExports.length > 0 &&
-                        <Export config={configExports} handleExport={handleExport}
+                        <Exporter config={configExports} handleExport={handleExport}
                             disabled={isExportDisable} />}
                 </Grid2>
             </Grid2>

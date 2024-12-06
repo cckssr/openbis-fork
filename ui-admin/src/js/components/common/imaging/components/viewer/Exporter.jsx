@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const Export = ({ config, handleExport, disabled = false, styles}) => {
+const Exporter = ({ config, handleExport, disabled = false, styles}) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [exportState, setExportState] = React.useState(Object.fromEntries(config.map(c => {
@@ -57,7 +57,9 @@ const Export = ({ config, handleExport, disabled = false, styles}) => {
     }
 
     const handleExportChange = (event) => {
-        //console.log('handleExportChange: ', event);
+        console.log('handleExportChange: ', event);
+        console.log('Current state: ', exportState);
+        event.stopPropagation();
         setExportState(prevState => {
             let newState = {...prevState};
             newState[event.target.name] = event.target.value;
@@ -65,9 +67,9 @@ const Export = ({ config, handleExport, disabled = false, styles}) => {
         });
     };
 
-    const sendExportRequest = () => {
+    const sendExportRequest = (event) => {
         handleExport(exportState);
-        handleClose();
+        handleClose(event);
     };
 
     if (isObjectEmpty(exportState)) return null;
@@ -107,7 +109,7 @@ const Export = ({ config, handleExport, disabled = false, styles}) => {
                     }
                 })}
                 <div className={classes.mt} >
-                    <Button label={messages.get(messages.EXPORT)} type='secondary' onClick={sendExportRequest} />
+                    <Button label={messages.get(messages.EXPORT)} type='secondary' onClick={event => sendExportRequest(event)} />
                     <Button label={messages.get(messages.CANCEL)} type='risky' onClick={handleClose} styles={{ root: classes.risky }} />
                 </div>
             </Box>
@@ -116,4 +118,4 @@ const Export = ({ config, handleExport, disabled = false, styles}) => {
     </>);
 };
 
-export default Export;
+export default Exporter;
