@@ -170,7 +170,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	activePreview.config = inputValues;
 
 	const currentMetadata = activePreview.metadata;
-	const isUploadedPreview = isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
+	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
 	return (
 		<Grid2 size={{ xs: 12, sm: 4 }}>
 			<PaperBox className={classes.noBorderNoShadow}>
@@ -183,8 +183,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 								variant='outlined'
 								color='primary'
 								startIcon={<CameraRollIcon />}
-								onClick={onClickUpdate}
-								disabled={isUploadedPreview} />
+								onClick={onClickUpdate} />
 					}
 					
 					{((datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) && !configMetadata[constants.GENERATE]) && renderStaticUpdateControls(isUploadedPreview)}

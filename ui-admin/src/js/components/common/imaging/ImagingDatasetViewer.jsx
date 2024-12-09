@@ -30,10 +30,6 @@ const styles = theme => ({
         [theme.breakpoints.down('md')]: {
             flexDirection: "column",
         },
-    },
-    noBorderNoShadow: {
-        border: 'unset',
-        boxShadow: 'none',
     }
 });
 
@@ -55,9 +51,8 @@ class ImagingDataSetViewer extends React.PureComponent {
         }
     }
 
-    async componentDidMount() {
-        if (!this.state.loaded) {
-            const { objId, extOpenbis } = this.props;
+    async loadImagingDataset() {
+        const { objId, extOpenbis } = this.props;
             try {
                 const imagingFacade = new ImagingFacade(extOpenbis);
                 const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
@@ -84,8 +79,19 @@ class ImagingDataSetViewer extends React.PureComponent {
             } catch (error) {
                 this.handleError(error);
             }
+    }
+
+    async componentDidMount() {
+        if (!this.state.loaded) {
+            this.loadImagingDataset();
         }
     }
+
+    async componentDidUpdate(prevProps, prevState) {
+        if (this.state.loaded !== prevState.loaded) {
+            this.loadImagingDataset();
+        }
+   }
 
     saveDataset = async () => {
         const { objId, extOpenbis, onUnsavedChanges } = this.props;
@@ -108,9 +114,14 @@ class ImagingDataSetViewer extends React.PureComponent {
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
         const { objId, extOpenbis, onUnsavedChanges } = this.props;
-        //try {
+        try {
             const updatedImagingDataset = await new ImagingFacade(extOpenbis)
                 .updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
+            console.log('handleUpdate - updatedImagingDataset: ', updatedImagingDataset);
+            if(imagingDataset.images[activeImageIdx].config.metadata[constants.GENERATE])
+                this.setState({
+                    loaded: false
+                });
             if (updatedImagingDataset.error) {
                 this.setState({ open: false, isChanged: true, isSaved: false });
                 this.handleError(updatedImagingDataset.error);
@@ -126,10 +137,10 @@ class ImagingDataSetViewer extends React.PureComponent {
             });
             if (onUnsavedChanges !== null)
                 onUnsavedChanges(this.props.objId, true);
-        /* } catch (error) {
+        } catch (error) {
             this.setState({ open: false, isChanged: true, isSaved: false });
             this.handleError(error);
-        } */
+        }
     };
 
     onExport = async (state) => {
@@ -327,11 +338,9 @@ class ImagingDataSetViewer extends React.PureComponent {
     };
 
     handleTagImage = (tagAll, tags) => {
-        console.log('handleTagImage - params: ', tagAll, tags);
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
         let toUpdateImgDs = { ...imagingDataset };
-        console.log('handleTagImage - before: ', toUpdateImgDs);
         if (tagAll){
             toUpdateImgDs.images[activeImageIdx].previews.map(preview => preview.tags = tags)
             this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
@@ -339,7 +348,6 @@ class ImagingDataSetViewer extends React.PureComponent {
             toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx].tags = tags;
             this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
         }
-        console.log('handleTagImage - after: ', toUpdateImgDs);
     }
 
     deletePreview = () => {
@@ -372,7 +380,7 @@ class ImagingDataSetViewer extends React.PureComponent {
         const { classes } = this.props;
         const activeImage = imagingDataset.images[activeImageIdx];
         const activePreview = activeImage.previews[activePreviewIdx];
-        //console.log('ImagingDataSetViewer.render: ', datasetType, this.state);
+        console.log('ImagingDataSetViewer.render: ', datasetType, this.state);
         return (
             <Container className={classes.container}>
                 <LoadingDialog loading={open} />
