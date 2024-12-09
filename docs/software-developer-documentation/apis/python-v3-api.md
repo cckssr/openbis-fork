@@ -348,6 +348,7 @@ The `dataType` attribute can contain any of these values:
 - `MULTILINE_VARCHAR`
 - `REAL`
 - `TIMESTAMP`
+- `DATE`
 - `BOOLEAN`
 - `HYPERLINK`
 - `XML`
