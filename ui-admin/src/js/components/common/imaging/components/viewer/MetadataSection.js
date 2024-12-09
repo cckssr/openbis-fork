@@ -7,7 +7,7 @@ import DefaultMetadaField
 
 const MetadataSection = ({ activePreview, activeImage }) => {
 
-	//console.log('MetadataSection - activeImage: ', activeImage);
+	//console.log('MetadataSection - activeImage: ', activeImage.metadata, activeImage);
 	const currImageMetadata = activeImage.metadata;
 	const configMetadata = activeImage.config.metadata;
 	const currPreviewMetadata = activePreview.metadata;
@@ -51,9 +51,9 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 				component={'span'} sx={{
 					color: "textSecondary"
 				}}>
-				{isObjectEmpty(activeImage.metadata) ?
+				{(currImageMetadata === null || isObjectEmpty(currImageMetadata)) ?
 					<p>No image metadata to display</p>
-					: Object.entries(activeImage.metadata).map(([key, value], pos) =>
+					: Object.entries(currImageMetadata).map(([key, value], pos) =>
 						<DefaultMetadaField key={'image-property-' + pos} keyProp={key}
 							valueProp={value} idx={activePreview.index}
 							pos={pos} />)

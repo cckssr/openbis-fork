@@ -17,8 +17,10 @@ const DEFAULT_COLORMAP = {
 }
 const DROPDOWN = 'Dropdown';
 const EXPORT_TYPE = 'export';
+const GENERATE = 'GENERATE';
 const IMAGE_TYPE = 'image';
 const IMAGING_CODE = 'imaging';
+const IMAGING_DATA = 'IMAGING_DATA';
 const IMAGING_DATA_CONFIG = 'IMAGING_DATA_CONFIG';
 const IMAGING_NOTES = 'IMAGING_NOTES';
 const IMAGING_TAGS = 'IMAGING_TAGS';
@@ -28,6 +30,7 @@ const MULTI_EXPORT_TYPE = 'multi-export';
 const PREVIEW_TYPE = 'preview';
 const RANGE = 'Range';
 const SLIDER = 'Slider';
+const USER_DEFINED_IMAGING_DATA = 'USER_DEFINED_IMAGING_DATA';
 
 export default {
     BLANK_IMG_SRC,
@@ -37,8 +40,10 @@ export default {
     DEFAULT_COLORMAP,
     DROPDOWN,
     EXPORT_TYPE,
+    GENERATE,
     IMAGE_TYPE,
     IMAGING_CODE,
+    IMAGING_DATA,
     IMAGING_DATA_CONFIG,
     IMAGING_NOTES,
     IMAGING_TAGS,
@@ -48,4 +53,5 @@ export default {
     PREVIEW_TYPE,
     RANGE,
     SLIDER,
+    USER_DEFINED_IMAGING_DATA
 }
