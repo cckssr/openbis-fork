@@ -50,7 +50,8 @@ class ImagingDataSetViewer extends React.PureComponent {
             activeImageIdx: 0,
             activePreviewIdx: 0,
             resolution: ['original'],
-            imagingTags:[]
+            imagingTags:[],
+            datasetType: ''
         }
     }
 
@@ -59,7 +60,7 @@ class ImagingDataSetViewer extends React.PureComponent {
             const { objId, extOpenbis } = this.props;
             try {
                 const imagingFacade = new ImagingFacade(extOpenbis);
-                const imagingDataSetPropertyConfig = await imagingFacade.loadImagingDataset(objId);
+                const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
                 const imagingTagsArr = await imagingFacade.loadImagingTagsVocabularyTerms(imagingFacade);
                 if (isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config)) {
                     imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
@@ -68,14 +69,16 @@ class ImagingDataSetViewer extends React.PureComponent {
                         loaded: true,
                         isChanged: true,
                         imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr
+                        imagingTags: imagingTagsArr,
+                        datasetType: datasetType
                     });
                 } else {
                     this.setState({
                         open: false,
                         loaded: true,
                         imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr
+                        imagingTags: imagingTagsArr,
+                        datasetType: datasetType
                     });
                 }
             } catch (error) {
@@ -105,7 +108,7 @@ class ImagingDataSetViewer extends React.PureComponent {
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
         const { objId, extOpenbis, onUnsavedChanges } = this.props;
-        try {
+        //try {
             const updatedImagingDataset = await new ImagingFacade(extOpenbis)
                 .updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
             if (updatedImagingDataset.error) {
@@ -123,10 +126,10 @@ class ImagingDataSetViewer extends React.PureComponent {
             });
             if (onUnsavedChanges !== null)
                 onUnsavedChanges(this.props.objId, true);
-        } catch (error) {
+        /* } catch (error) {
             this.setState({ open: false, isChanged: true, isSaved: false });
             this.handleError(error);
-        }
+        } */
     };
 
     onExport = async (state) => {
@@ -363,12 +366,13 @@ class ImagingDataSetViewer extends React.PureComponent {
             resolution,
             isSaved,
             isChanged,
-            imagingTags
+            imagingTags,
+            datasetType
         } = this.state;
         const { classes } = this.props;
         const activeImage = imagingDataset.images[activeImageIdx];
         const activePreview = activeImage.previews[activePreviewIdx];
-        console.log('ImagingDataSetViewer.render: ', this.state);
+        //console.log('ImagingDataSetViewer.render: ', datasetType, this.state);
         return (
             <Container className={classes.container}>
                 <LoadingDialog loading={open} />
@@ -396,6 +400,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                         <MainPreview activePreview={activePreview} resolution={resolution}/>
                         <MainPreviewInputControls activePreview={activePreview} 
                             configInputs={activeImage.config.inputs}
+                            configMetadata={activeImage.config.metadata}
                             configResolutions={activeImage.config.resolutions}
                             resolution={resolution}
                             isChanged={isChanged}
@@ -405,6 +410,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                             onChangeActConf={this.handleActiveConfigChange}
                             imagingTags={imagingTags}
                             handleTagImage={this.handleTagImage}
+                            datasetType={datasetType}
                         />
                     </Grid2>
                 </PaperBox>
