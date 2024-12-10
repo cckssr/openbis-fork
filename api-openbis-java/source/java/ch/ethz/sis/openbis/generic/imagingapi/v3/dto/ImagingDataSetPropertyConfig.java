@@ -17,12 +17,15 @@
 
 package ch.ethz.sis.openbis.generic.imagingapi.v3.dto;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 @JsonObject("imaging.dto.ImagingDataSetPropertyConfig")
 public class ImagingDataSetPropertyConfig implements Serializable
@@ -31,6 +34,10 @@ public class ImagingDataSetPropertyConfig implements Serializable
 
     @JsonProperty
     List<ImagingDataSetImage> images;
+
+    @JsonProperty
+    @JsonDeserialize(contentUsing = PropertiesDeserializer.class)
+    private Map<String, Serializable> metadata;
 
     @JsonIgnore
     public List<ImagingDataSetImage> getImages()
@@ -44,5 +51,14 @@ public class ImagingDataSetPropertyConfig implements Serializable
         this.images = images;
     }
 
+    @JsonIgnore
+    public Map<String, Serializable> getMetadata()
+    {
+        return metadata;
+    }
 
+    public void setMetadata(Map<String, Serializable> metadata)
+    {
+        this.metadata = metadata;
+    }
 }
