@@ -165,7 +165,7 @@ export default class DataBrowserController extends ComponentController {
       let totalUploaded = 0
       const totalSize = Array.from(fileList)
         .reduce((acc, file) => acc + file.size, 0)
-      console.time("Total upload time for " + totalSize/(1024*1024) + " mb :")
+
       for (const file of fileList) {
         const filePath = file.webkitRelativePath ? file.webkitRelativePath
           : file.name
@@ -189,24 +189,26 @@ export default class DataBrowserController extends ComponentController {
             const arrayBuffer = await blob.arrayBuffer();
             const data = new Uint8Array(arrayBuffer);
 
-            console.time("Upload time");
+            const uploadStartTime = Date.now();
             await this._uploadChunk(targetFilePath, offset, data)
-            console.timeEnd("Upload time");
+            const uploadEndTime = Date.now();            
 
             offset += blob.size
             totalUploaded += blob.size
 
-            // Calculate and update progress
-            const progress = Math.round((totalUploaded / totalSize) * 100)
-            onProgressUpdate(Math.min(progress, 100))
+            // Calculate download speed      
+            const elapsedTime = (uploadEndTime - uploadStartTime) / 1000; // Seconds
+            const speed = blob.size / elapsedTime; 
+            
+            onProgressUpdate(blob.size,file.name, speed)
           }
         } else {
-          // We stop uploading after cancel
-          onProgressUpdate(100)
+          // We stop uploading after cancel          
+          onProgressUpdate(file.size,file.name, "Finalizing...")
           break
         }
       }
-      console.timeEnd("Total upload time for " + totalSize/(1024*1024) + " mb :")
+      onProgressUpdate(0, "Finalizing...", "Finalizing...")
     })
 
     if (this.gridController) {
@@ -236,18 +238,80 @@ export default class DataBrowserController extends ComponentController {
     return await openbis.write(this.owner, source, offset, data)
   }
 
-  async download(file) {
+  async download(file, onProgressUpdate) {
     let offset = 0
     const dataArray = []
 
     while (offset < file.size) {
+      const downloadStartTime = Date.now();
       const blob = await this._download(file, offset)
+      const downloadEndTime = Date.now();
       dataArray.push(await blob.arrayBuffer())
       offset += CHUNK_SIZE
+      
+      const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
+      const speed = blob.size / elapsedTime; 
+      onProgressUpdate(blob.size,file.name, speed)
     }
 
     return dataArray
   }
+
+  async _createWritableStream(dirHandle, fileName) {
+    // Create or access the file in the selected directory
+    const fileHandle = await dirHandle.getFileHandle(fileName, { create: true });
+    return await fileHandle.createWritable();
+  }
+
+  async downloadAndAssemble(file, dirHandle, onProgressUpdate) {
+    let offset = 0;
+
+    // Create a writable stream for the file in the selected directory
+    const fileStream = await this._createWritableStream(dirHandle, file.name);
+
+    let writeToDiskOffset = 0;
+    var dataArrayForDisk = []
+    while (offset < file.size) {
+      const downloadStartTime = Date.now();
+      const blob = await this._download(file, offset);
+      const downloadEndTime = Date.now();
+
+      dataArrayForDisk.push(await blob.arrayBuffer());
+      offset += CHUNK_SIZE;
+
+      writeToDiskOffset += CHUNK_SIZE;
+
+      // Calculate download speed      
+      const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
+      const speed = blob.size / elapsedTime; 
+
+      onProgressUpdate(blob.size ,file.name, speed)
+
+      // write to file only when almost 100MB
+      if(writeToDiskOffset > 100_000_000 || offset >= file.size){
+        onProgressUpdate(0,file.name, "write to disk")
+
+        // Write the chunk directly to the file
+        var combinedBuffer = new Uint8Array(dataArrayForDisk.reduce((acc, buf) => acc + buf.byteLength, 0));
+        let offset = 0;
+        for (const buf of dataArrayForDisk) {
+            combinedBuffer.set(new Uint8Array(buf), offset);
+            offset += buf.byteLength;
+        }
+        await fileStream.write(combinedBuffer);        
+
+        combinedBuffer = null;
+        writeToDiskOffset = 0;
+        dataArrayForDisk = []
+      }
+
+    }
+
+    onProgressUpdate(0,file.name, "Finalizing...")
+    await fileStream.close();    
+    console.log(`Download of ${file.name} complete!`);
+  }
+
 
   async _download(file, offset) {
     const limit = Math.min(CHUNK_SIZE, file.size - offset)
