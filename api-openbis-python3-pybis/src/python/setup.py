@@ -26,13 +26,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="PyBIS",
-    version="6.6.0-rc0",
+    version="6.6.0.0-rc0",
     author="ID SIS • ETH Zürich",
     author_email="openbis-support@id.ethz.ch",
     description="openBIS connection and interaction, optimized for using with Jupyter",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://sissource.ethz.ch/sispub/openbis/tree/master/pybis",
+    url="https://sissource.ethz.ch/sispub/openbis/-/tree/master/api-openbis-python3-pybis",
     packages=find_packages(),
     license="Apache Software License Version 2.0",
     install_requires=[
@@ -45,7 +45,8 @@ setup(
         "python-dateutil",
     ],
     project_urls={
-        "Documentation": "https://openbis.readthedocs.io/en/20.10.x/software-developer-documentation/apis/python-v3-api.html",
+        "Documentation": "https://openbis.readthedocs.io/en/latest/software-developer-documentation/apis/python-v3-api.html",
+        "Changelog": "https://sissource.ethz.ch/sispub/openbis/-/blob/master/api-openbis-python3-pybis/src/python/CHANGELOG.md"
     },
     python_requires=">=3.6",
     classifiers=[

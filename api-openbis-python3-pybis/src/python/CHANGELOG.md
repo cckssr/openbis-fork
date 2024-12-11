@@ -2,9 +2,6 @@
 
 - Changed versioning scheme
 - Added Imaging technology preview functionalities
-
-## Changes with pybis-1.37.1
-
 - Implemented Fast download V2 
 - Fixed dataset with parents creation
 - Fixed type checking for python <3.10
