@@ -40,7 +40,7 @@ public interface SampleQuery extends ObjectQuery
             + "sc.code as containerCode, s.registration_timestamp as registrationDate, "
             + "s.modification_timestamp as modificationDate, s.frozen as frozen, s.frozen_for_comp as frozenForComponents, "
             + "s.frozen_for_children as frozenForChildren, s.frozen_for_parents as frozenForParents, "
-            + "s.frozen_for_data as frozenForDataSets, s.meta_data as metaData, s.immutable_data as immutableData "
+            + "s.frozen_for_data as frozenForDataSets, s.meta_data as metaData, s.immutable_data_timestamp as immutableDataDate "
             + "from samples s left join spaces sp on s.space_id = sp.id "
             + "left join projects p on s.proj_id = p.id "
             + "left join samples sc on s.samp_id_part_of = sc.id "

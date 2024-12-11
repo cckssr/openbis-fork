@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.metadata.IUpdateMetaDataForEntityExecutor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -137,15 +138,18 @@ public class UpdateSampleExecutor
             {
                 experimentOrProjectSamples.add(entity);
             }
-            if(update.isImmutableData())
+            if (update.isImmutableData() && entity.getImmutableDataDate() == null)
             {
-                entity.setImmutableData(update.isImmutableData());
+                entity.setImmutableDataDate(new Date());
             }
             if (update.shouldBeFrozen())
             {
                 authorizationExecutor.canFreeze(context, entity);
                 entity.setFrozen(true);
-                entity.setImmutableData(true);
+                if (entity.getImmutableDataDate() == null)
+                {
+                    entity.setImmutableDataDate(new Date());
+                }
                 freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForComponents())

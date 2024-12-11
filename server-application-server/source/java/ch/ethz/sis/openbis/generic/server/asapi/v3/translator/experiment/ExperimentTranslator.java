@@ -236,7 +236,7 @@ public class ExperimentTranslator extends AbstractCachingTranslator<Long, Experi
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setModificationDate(baseRecord.modificationDate);
         result.setMetaData(CommonUtils.asMap(baseRecord.metaData));
-        result.setImmutableData(baseRecord.immutableData);
+        result.setImmutableDataDate(baseRecord.immutableDataDate);
 
         if (fetchOptions.hasType())
         {

@@ -190,7 +190,7 @@ public class Sample extends AbstractEntity<Sample>
     private Map<String, String> metaData;
 
     @JsonProperty
-    private boolean immutableData;
+    private Date immutableDataDate;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -930,12 +930,18 @@ public class Sample extends AbstractEntity<Sample>
     @JsonIgnore
     public boolean isImmutableData()
     {
-        return immutableData;
+        return immutableDataDate != null;
     }
 
-    public void setImmutableData(boolean immutableData)
+    @JsonIgnore
+    public Date getImmutableDataDate()
     {
-        this.immutableData = immutableData;
+        return immutableDataDate;
+    }
+
+    public void setImmutableDataDate(Date immutableDataDate)
+    {
+        this.immutableDataDate = immutableDataDate;
     }
 
     // Method automatically generated with DtoGenerator

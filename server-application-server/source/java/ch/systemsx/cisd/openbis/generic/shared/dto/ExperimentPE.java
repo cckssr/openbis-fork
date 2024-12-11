@@ -147,7 +147,7 @@ public class ExperimentPE extends AttachmentHolderPE implements
 
     private Map<String, String> metaData;
 
-    private boolean immutableData;
+    private Date immutableDataDate;
 
     @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
     @Generated(GenerationTime.INSERT)
@@ -725,15 +725,14 @@ public class ExperimentPE extends AttachmentHolderPE implements
         this.metaData = metaData;
     }
 
-    @NotNull
-    @Column(name = ColumnNames.IMMUTABLE_DATA_COLUMN, nullable = false)
-    public boolean isImmutableData()
+    @Column(name = ColumnNames.IMMUTABLE_DATA_TIMESTAMP_COLUMN)
+    public Date getImmutableDataDate()
     {
-        return immutableData;
+        return immutableDataDate;
     }
 
-    public void setImmutableData(boolean immutableData)
+    public void setImmutableDataDate(Date immutableDataDate)
     {
-        this.immutableData = immutableData;
+        this.immutableDataDate = immutableDataDate;
     }
 }

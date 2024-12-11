@@ -34,7 +34,7 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
 		prototype.modifier = null;
 		prototype.attachments = null;
 		prototype.metaData = null;
-		prototype.immutableData = null;
+		prototype.immutableDataDate = null;
 		prototype.getFetchOptions = function() {
 		    return AbstractEntity.prototype.getFetchOptions.call(this);
 		};
@@ -272,10 +272,13 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
             this.metaData = metaData;
         };
         prototype.isImmutableData = function() {
-            return this.immutableData;
+            return this.immutableDataDate !== null;
         };
-        prototype.setImmutableData = function(immutableData) {
-            this.immutableData = immutableData;
+        prototype.getImmutableDataDate = function() {
+            return this.immutableDataDate;
+        };
+        prototype.setImmutableDataDate = function(immutableDataDate) {
+            this.immutableDataDate = immutableDataDate;
         };
 		prototype.toString = function() {
 			return "Experiment " + this.permId;
@@ -341,7 +344,8 @@ define([ "stjs", "util/Exceptions", "as/dto/common/entity/AbstractEntity" ], fun
         metaData: {
              name: "Map",
              arguments: ["String", "String"]
-         }
+        },
+        immutableDataDate : "Date"
 	});
 	return Experiment;
 })
