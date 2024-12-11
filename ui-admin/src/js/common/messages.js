@@ -413,6 +413,7 @@ const messages_en = {
   [keys.CONFIRMATION_DELETE_SELECTED]: 'Are you sure you want to delete the selected items?',
   [keys.CONFIRMATION_FILE_NAME_CONFLICT]: 'The item named "${0}" already exists in this location. Do you want to replace it with the one you are uploading or do you want to resume the interrupted upload?',
   [keys.CONFIRMATION_FILE_OVERWRITE]: 'The item named "${0}" already exists in this location. Do you want to replace it with the one you are downloading?',
+  [keys.CONFIRMATION_MERGE_DOWNLOAD]: 'The selected folder already contains files. Downloading will merge the new files with the existing ones. Do you want to proceed?',
   [keys.CONFIRMATION_REMOVE]: 'Are you sure you want to remove "${0}"?',
   [keys.CONFIRMATION_REMOVE_IT]: 'Are you sure you want to remove it?',
   [keys.CONFIRMATION_UNSAVED_CHANGES]: 'Are you sure you want to lose the unsaved changes?',
