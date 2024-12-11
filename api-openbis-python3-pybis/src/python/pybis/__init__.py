@@ -15,7 +15,7 @@
 name = "pybis"
 __author__ = "ID SIS • ETH Zürich"
 __email__ = "openbis-support@id.ethz.ch"
-__version__ = "1.37.1-rc3"
+__version__ = "6.6.0-rc0"
 
 from . import pybis
 from .pybis import DataSet
