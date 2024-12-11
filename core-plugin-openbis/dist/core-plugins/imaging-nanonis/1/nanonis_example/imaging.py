@@ -354,10 +354,12 @@ class ImagingDataSetImage(AbstractImagingClass):
 
 class ImagingDataSetPropertyConfig(AbstractImagingClass):
     images: list[ImagingDataSetImage]
+    metadata: dict
 
-    def __init__(self, images: list[ImagingDataSetImage]):
+    def __init__(self, images: list[ImagingDataSetImage], metadata=None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetPropertyConfig"
         self.images = images if images is not None else []
+        self.metadata = metadata if metadata is not None else dict()
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -366,7 +368,8 @@ class ImagingDataSetPropertyConfig(AbstractImagingClass):
             del data["@id"]
         attr = data.get('images')
         images = [ImagingDataSetImage.from_dict(image) for image in attr] if attr is not None else None
-        return cls(images)
+        metadata = data.get('metadata')
+        return cls(images, metadata)
 
     def add_image(self, image: ImagingDataSetImage):
         if self.images is None:

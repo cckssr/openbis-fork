@@ -1,6 +1,7 @@
 {
   "@id": 1,
   "@type": "imaging.dto.ImagingDataSetPropertyConfig",
+  "metadata": { "cofig_metadata":  "comment on config level" },
   "images": [
     {
       "@id": 22,
@@ -17,7 +18,7 @@
             "@type": "imaging.dto.ImagingDataSetControl",
             "label": "X-axis",
             "range": [
-              "32",
+              "64",
               "640",
               "32"
             ],
@@ -25,7 +26,7 @@
             "values": null,
             "section": null,
             "metadata": null,
-            "playable": null,
+            "playable": false,
             "visibility": null,
             "multiselect": null
           },
@@ -36,7 +37,7 @@
             "@type": "imaging.dto.ImagingDataSetControl",
             "label": "Y-axis",
             "range": [
-              "32",
+              "64",
               "640",
               "32"
             ],
@@ -44,7 +45,7 @@
             "values": null,
             "section": null,
             "metadata": null,
-            "playable": null,
+            "playable": false,
             "visibility": null,
             "multiselect": null
           }
@@ -132,7 +133,7 @@
           }
         ],
         "version": 1.0,
-        "metadata": {},
+        "metadata": { "meta_comment":  "this is an image config metadata comment"},
         "playable": true,
         "resolutions": [
           "original",
@@ -141,7 +142,7 @@
         ]
       },
       "image_config": {},
-      "metadata": {},
+      "metadata": { "meta_comment":  "this is an image metadata comment"},
       "previews": [
         {
           "@id": 23,
@@ -152,33 +153,17 @@
           "width": 640,
           "config": {
             "X-axis": [
-              "-2.1",
-              "1"
+              "320"
             ],
             "Y-axis": [
-              "0.03",
-              "13"
-            ],
-            "Scaling": "lin-lin",
-            "Colormap": "rainbow",
-            "Grouping": [
-              "didv_00063.dat",
-              "didv_00064.dat",
-              "didv_00065.dat",
-              "didv_00066.dat",
-              "didv_00067.dat",
-              "didv_00068.dat",
-              "didv_00069.dat",
-              "didv_00070.dat"
-            ],
-            "Channel X": "V",
-            "Channel Y": "dIdV"
+              "320"
+            ]
           },
           "format": "png",
           "height": 480,
-          "comment": "",
+          "comment": "This preview will be randomized upon update",
           "tags": [],
-          "metadata": {}
+          "metadata": { "comment":  "This is an initial preview before randomization"}
         },
         {
           "@id": 24,
@@ -189,29 +174,17 @@
           "width": 640,
           "config": {
             "X-axis": [
-              "-2.1",
-              "1"
+              "320"
             ],
             "Y-axis": [
-              "0.03",
-              "13"
-            ],
-            "Scaling": "lin-lin",
-            "Colormap": "rainbow",
-            "Grouping": [
-              "didv_00063.dat",
-              "didv_00064.dat",
-              "didv_00068.dat",
-              "didv_00070.dat"
-            ],
-            "Channel X": "V",
-            "Channel Y": "dIdV"
+              "320"
+            ]
           },
           "format": "png",
           "height": 480,
-          "comment": "",
+          "comment": "This preview will be randomized upon update",
           "tags": [],
-          "metadata": {}
+          "metadata": { "comment":  "This is an initial preview before randomization"}
         },
         {
           "@id": 25,
@@ -222,28 +195,17 @@
           "width": 640,
           "config": {
             "X-axis": [
-              "-2.1",
-              "1"
+              "320"
             ],
             "Y-axis": [
-              "0",
-              "10"
-            ],
-            "Scaling": "lin-lin",
-            "Colormap": "rainbow",
-            "Grouping": [
-              "didv_00063.dat",
-              "didv_00064.dat",
-              "didv_00068.dat"
-            ],
-            "Channel X": "V",
-            "Channel Y": "dIdV"
+              "320"
+            ]
           },
           "format": "png",
           "height": 480,
-          "comment": "",
+          "comment": "This preview will be randomized upon update",
           "tags": [],
-          "metadata": {}
+          "metadata": { "comment":  "This is an initial preview before randomization"}
         },
         {
           "@id": 26,
@@ -254,33 +216,17 @@
           "width": 640,
           "config": {
             "X-axis": [
-              "-2.1",
-              "1"
+              "320"
             ],
             "Y-axis": [
-              "0.03",
-              "13"
-            ],
-            "Scaling": "log-log",
-            "Colormap": "rainbow",
-            "Grouping": [
-              "didv_00063.dat",
-              "didv_00064.dat",
-              "didv_00065.dat",
-              "didv_00066.dat",
-              "didv_00067.dat",
-              "didv_00068.dat",
-              "didv_00069.dat",
-              "didv_00070.dat"
-            ],
-            "Channel X": "V",
-            "Channel Y": "dIdV"
+              "320"
+            ]
           },
           "format": "png",
           "height": 480,
-          "comment": "",
+          "comment": "This preview will be randomized upon update",
           "tags": [],
-          "metadata": {}
+          "metadata": { "comment":  "This is an initial preview before randomization"}
         }
       ]
     }

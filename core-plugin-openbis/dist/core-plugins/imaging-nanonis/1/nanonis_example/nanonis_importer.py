@@ -18,7 +18,6 @@ import copy
 
 import imaging as imaging
 
-import math
 from pybis import Openbis
 import numpy as np
 
@@ -123,26 +122,25 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
                imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])]
 
     inputs = [
-        imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels),
-        imaging.ImagingDataSetControl('X-axis', "Range", values_range=["0", str(img.get_param('width')[0]), "0.01"]),
-        imaging.ImagingDataSetControl('Y-axis', "Range", values_range=["0", str(img.get_param('height')[0]), "0.01"]),
-        imaging.ImagingDataSetControl('Color-scale', "Range", visibility=color_scale_visibility),
+        imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels, section="Data"),
+        imaging.ImagingDataSetControl('X-axis', "Range", section="Data", values_range=["0", str(img.get_param('width')[0]), "0.01"]),
+        imaging.ImagingDataSetControl('Y-axis', "Range", section="Data", values_range=["0", str(img.get_param('height')[0]), "0.01"]),
+        imaging.ImagingDataSetControl('Color-scale', "Range", section="Data", visibility=color_scale_visibility),
+        imaging.ImagingDataSetControl('Scaling', "Dropdown", section="Data", values=['linear', 'logarithmic']),
         imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
-        imaging.ImagingDataSetControl('Scaling', "Dropdown", values=['linear', 'logarithmic']),
-        imaging.ImagingDataSetControl('Filter', "Dropdown", values=['None', 'Gaussian', 'Laplace']),
-        imaging.ImagingDataSetControl('Gaussian Sigma', "Slider", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Laplace'], ['1', '1', '1']),
-            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian'], ['1', '100', '1'])
+        imaging.ImagingDataSetControl('Filter', "Dropdown", section="Filter", values=['None', 'Gaussian', 'Laplace', 'Zero background', 'Plane Subtraction', 'Line Subtraction']),
+        imaging.ImagingDataSetControl('Gaussian Sigma', "Slider", section="Filter", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
+            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian', 'Laplace'], ['1', '100', '1'])
         ]),
-        imaging.ImagingDataSetControl('Gaussian Truncate', "Slider", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Laplace'], ['1', '1', '0.1']),
-            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian'], ['0', '1', '0.1'])
+        imaging.ImagingDataSetControl('Gaussian Truncate', "Slider",  section="Filter", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '0.1']),
+            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian', 'Laplace'], ['0', '1', '0.1'])
         ]),
-        imaging.ImagingDataSetControl('Laplace Size', "Slider", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Gaussian'], ['1', '1', '1']),
+        imaging.ImagingDataSetControl('Laplace Size', "Slider",  section="Filter", visibility=[
+            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Gaussian', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
             imaging.ImagingDataSetControlVisibility('Filter', ['Laplace'], ['3', '30', '1']),
         ]),
-        imaging.ImagingDataSetControl('Include parameter information', "Dropdown", values=['True', 'False']),
     ]
 
     imaging_config = imaging.ImagingDataSetConfig(
@@ -156,8 +154,8 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         {})
 
     images = [imaging.ImagingDataSetImage(imaging_config,
-                                          previews=[imaging.ImagingDataSetPreview(preview_format="png")]
-                                          # ,metadata=img.print_params_dict(False)
+                                          previews=[imaging.ImagingDataSetPreview(preview_format="png")],
+                                          metadata=img.print_params_dict(False)
                                           )]
     imaging_property_config = imaging.ImagingDataSetPropertyConfig(images)
     if VERBOSE:
@@ -169,9 +167,6 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         experiment=experiment,
         sample=sample,
         files=[file_path],
-        other_properties={
-            "imaging_notes": img.print_params(False)
-        }
     )
 
 def reorder_dat_channels(channels, header):
@@ -479,7 +474,6 @@ def demo_sxm_flow(openbis, file_sxm, permId=None):
         "Color-scale": color_scale,  # file dependent
         "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
         "Scaling": "linear",  # ['linear', 'logarithmic']
-        "Include parameter information" : "True",
         "Filter": "None",
         "Gaussian Sigma": "0",
         "Gaussian Truncate": "0",
