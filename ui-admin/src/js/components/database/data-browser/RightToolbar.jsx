@@ -86,23 +86,71 @@ class RightToolbar extends React.Component {
       loading: false,
       progress: 0,
       allowResume: true,
-      fileExistsDialogFile: null
+      fileExistsDialogFile: null,
+      uploadedBytes:0,
+      totalBytesToUpload:0,
+
     }
   }
 
   async handleUpload(event) {
     try {
-      this.handlePopoverClose()
+      this.handlePopoverClose()      
       this.setState({ loading: true, progress: 0 })
-      await this.controller.upload(event.target.files, this.resolveNameConflict,
+      
+      const fileList = event.target.files
+      const totalSize = Array.from(fileList)
+      .reduce((acc, file) => acc + file.size, 0)
+      this.setState({ totalBytesToUpload: totalSize})
+
+      await this.controller.upload(fileList, this.resolveNameConflict,
         this.updateProgress)
     } finally {
-      this.setState({ loading: false })
+      this.setState({ 
+        loading: false,
+        uploadedBytes:0,
+        totalBytesToUpload:0
+       })
     }
   }
 
   updateProgress(progress) {
     this.setState({ progress })
+  }
+
+  updateProgress(uploadedChunkSize, fileName, speed) {
+    this.setState((prevState) => {
+      const uploadedBytes = prevState.uploadedBytes + uploadedChunkSize;
+      const progress = Math.round((uploadedBytes / prevState.totalBytesToUpload) * 100);
+      const newProgress = Math.min(progress, 100);
+      const speedFormatted =   this.formatUploadSpeed(speed);
+
+      return {
+        uploadedBytes,
+        progress: newProgress,
+        loading: true,
+        progressDetailPrimary : fileName,
+        progressDetailSecondary : speedFormatted
+      };
+    });
+  }
+
+  formatUploadSpeed(bytesPerSecond) {
+    if (isNaN(bytesPerSecond)) {
+      return bytesPerSecond;
+    }
+    if (bytesPerSecond >= 1024 * 1024) {
+        // Convert to MB/s
+        const mbps = bytesPerSecond / (1024 * 1024);
+        return `${mbps.toFixed(2)} MB/s`;
+    } else if (bytesPerSecond >= 1024) {
+        // Convert to KB/s
+        const kbps = bytesPerSecond / 1024;
+        return `${kbps.toFixed(2)} KB/s`;
+    } else {
+        // Bytes per second
+        return `${bytesPerSecond} B/s`;
+    }
   }
 
   async resolveNameConflict(newFile, allowResume) {
@@ -152,7 +200,7 @@ class RightToolbar extends React.Component {
   }
 
   renderUploadButtons() {
-    const { classes, buttonSize } = this.props
+    const { classes, buttonSize} = this.props
     return (
       <div className={classes.uploadButtonsContainer}>
         <UploadButton
@@ -186,7 +234,8 @@ class RightToolbar extends React.Component {
 
     const { classes, onViewTypeChange, buttonSize, editable } = this.props
     const { uploadButtonsPopup, progress, loading, allowResume,
-      fileExistsDialogFile } = this.state
+      fileExistsDialogFile , progressDetailPrimary,
+      progressDetailSecondary,} = this.state
     return ([
       <div key='right-toolbar-main' className={classes.buttons}>
         <ToggleButton
@@ -251,8 +300,13 @@ class RightToolbar extends React.Component {
         </Popover>
       </div>,
       <LoadingDialog key='right-toolbar-loaging-dialog' variant='determinate'
-                     value={progress} loading={loading}
-                     message={messages.get(messages.UPLOADING)} />,
+        value={progress}
+        loading={loading}
+        message={messages.get(messages.UPLOADING)}
+        showBackground='true'
+        detailPrimary={progressDetailPrimary}
+        detailSecondary={progressDetailSecondary}
+        />,
       <FileExistsDialog
         key='file-exists-dialog'
         open={!!fileExistsDialogFile}
