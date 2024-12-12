@@ -125,6 +125,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
         archiveFormat.setValues(Arrays.asList("zip", "tar"));
 
         config.setExports(Arrays.asList(include, archiveFormat));
+        config.setMetadata(Map.of("GENERATE", "true"));
 
         image.setConfig(config);
         ImagingDataSetPreview preview = new ImagingDataSetPreview();
