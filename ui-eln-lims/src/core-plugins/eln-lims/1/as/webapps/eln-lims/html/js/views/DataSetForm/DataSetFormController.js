@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014 - 2024 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3) {
+function DataSetFormController(parentController, mode, entity, dataSet, isMini, dataSetV3, paginationInfo) {
 	this._parentController = parentController;
-	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3);
+	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014 - 2024 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -835,16 +835,24 @@ function MainController(profile) {
 						} else {
 							document.title = "Create Data Set for " + data[0].code;
 							_this._showCreateDataSetPage(data[0]);
-							//window.scrollTo(0,0);
 						}
 					});
 					break;
 				case "showViewDataSetPageFromPermId":
 					var _this = this;
+					var permId = null;
+					var paginationInfo = null;
+                    if((typeof arg) !== "string") {
+                        permId = arg.permIdOrIdentifier;
+                        paginationInfo = arg.paginationInfo;
+                        arg = permId;
+                    } else {
+                        permId = arg;
+                    }
 					var dsCriteria = { 	
 							entityKind : "DATASET", 
 							logicalOperator : "AND", 
-							rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : arg } }
+							rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } }
 					};
 					this.serverFacade.searchForDataSetsAdvanced(dsCriteria, {withPhysicalData: true}, function(results) {
 						var datasetParentCodes = [];
@@ -862,8 +870,7 @@ function MainController(profile) {
 								if(dataSetData.result[0].sampleIdentifierOrNull) {
 									_this.serverFacade.searchWithIdentifiers([dataSetData.result[0].sampleIdentifierOrNull], function(sampleData) {
 										document.title = "Data Set " + dataSetData.result[0].code;
-										_this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset);
-										//window.scrollTo(0,0);
+										_this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
 									_this.serverFacade.listExperimentsForIdentifiers([dataSetData.result[0].experimentIdentifier], function(experimentResults) {
@@ -871,8 +878,7 @@ function MainController(profile) {
 										var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
 										_this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(experimentData) {
 											document.title = "Data Set " + dataSetData.result[0].code;
-											_this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset);
-											//window.scrollTo(0,0);
+											_this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
 										});
 									});
 								}
@@ -1508,9 +1514,9 @@ function MainController(profile) {
 		this.currentView = newView;
 	}
 	
-	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3) {
+	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3);
+		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
