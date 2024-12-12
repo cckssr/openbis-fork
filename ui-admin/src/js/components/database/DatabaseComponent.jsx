@@ -132,8 +132,6 @@ class DatabaseComponent extends React.PureComponent {
   renderDataBrowsers() {
     const { object, classes } = this.props
     const { value } = this.state
-    console.log('renderDataBrowsers - object: ', object)
-    console.log('renderDataBrowsers - state: ', this.state)
     return (
       <Container>
         <TabContext value={value}>

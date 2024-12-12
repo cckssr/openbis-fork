@@ -28,11 +28,15 @@ const useStyles = makeStyles((theme) => ({
 const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) => {
     const classes = useStyles();
     const [selectedTags, setSelectedTags] = React.useState([]);
+    const [selectedValue, setSelectedValue] = React.useState([]);
+
+    const handleSelectValue = (event) => {
+        setSelectedValue(event.target.value);
+        handleGalleryFilterChange(event);
+    };
 
     const handleGalleryFilterChange = (event) => {
         const { name, value } = event.target;
-        console.log('handleGalleryFilterChange: ', name, value)
-        console.log('galleryFilter: ', galleryFilter)
         if (onGalleryFilterChange) {
             const newGlobalFilter = { ...galleryFilter }
             newGlobalFilter[name] = value
@@ -41,14 +45,8 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
     };
 
     const handleTagsOnChange = (event) => {
-        // Handle multi-select changes here
-        console.log('handleTagsOnChange:', event);
         const { target: { value, name } } = event;
-        setSelectedTags(
-            // On autofill we get a stringified value.
-            typeof value === 'string' ? value.split(',') : value,
-        );
-
+        setSelectedTags(typeof value === 'string' ? value.split(',') : value,);
         if (onGalleryFilterChange) {
             const newGlobalFilter = { ...galleryFilter }
             newGlobalFilter['text'] = value.join(' ')
@@ -56,8 +54,47 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
         }
     };
 
+    const renderInputFilter = () => {
+        switch (galleryFilter.property) {
+            case constants.IMAGING_TAGS:
+                return <FormControl variant="standard" className={classes.tagsSelect} >
+                    <Select multiple
+                        value={selectedTags}
+                        onChange={handleTagsOnChange}
+                    >
+                        {options.find(option => option.value === constants.IMAGING_TAGS).options.map((tag) => (
+                            <MenuItem key={tag.value} value={tag.value}>
+                                {tag.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            case constants.DEFAULT_DATASET_VIEW:
+                return <FormControl variant="standard" className={classes.tagsSelect} >
+                    <Select value={selectedValue}
+                        onChange={handleSelectValue}
+                    >
+                        {options.find(option => option.value === constants.DEFAULT_DATASET_VIEW).options.map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+            default:
+                return <TextField name="text"
+                    id={`${id}.gallery-filter`}
+                    value={galleryFilter.text}
+                    onChange={handleGalleryFilterChange}
+                    placeholder="property value"
+                    variant="standard"
+                />
+        }
+        
+    }
+
     return (
-        <Grid2 container spacing={1} sx={{ alignItems: 'center', width:'100%' }}>
+        <Grid2 container spacing={1} sx={{ alignItems: 'center', width: '100%' }}>
             <Grid2 size='auto' xs={{ alignSelf: 'center' }}>
                 <SelectField
                     name="operator"
@@ -76,7 +113,7 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                     variant="standard"
                 />
             </Grid2>
-            <Grid2 size={{xs:12, sm:4}}>
+            <Grid2 size={{ xs: 12, sm: 4 }}>
                 <SelectField
                     name="property"
                     options={options}
@@ -86,28 +123,7 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                 />
             </Grid2>
             <Grid2 size='grow'>
-                {galleryFilter.property === constants.IMAGING_TAGS ?
-                    <FormControl variant="standard" className={classes.tagsSelect} >
-                        <Select multiple
-                            value={selectedTags}
-                            onChange={handleTagsOnChange}
-                        >
-                            {options.find(option => option.value === constants.IMAGING_TAGS).options.map((tag) => (
-                                <MenuItem key={tag.value} value={tag.value}>
-                                    {tag.label}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                    :
-                    <TextField name="text"
-                        id={`${id}.gallery-filter`}
-                        value={galleryFilter.text}
-                        onChange={handleGalleryFilterChange}
-                        placeholder="property value"
-                        variant="standard"
-                    />
-                }
+                {renderInputFilter()}
             </Grid2>
         </Grid2>
     );

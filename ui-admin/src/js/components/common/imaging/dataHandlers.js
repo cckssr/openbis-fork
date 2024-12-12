@@ -3,9 +3,14 @@ import constants from '@src/js/components/common/imaging/constants.js';
 
 export async function loadGalleryViewFilters(imagingFacade, setDataSetTypes) {
 	const imagingDatasetTypes = await imagingFacade.loadDataSetTypes();
-	const tagsVocabularyTerms = await imagingFacade.loadImagingTagsVocabularyTerms();
-	imagingDatasetTypes.push({label: constants.IMAGING_TAGS_LABEL, value: constants.IMAGING_TAGS, options: tagsVocabularyTerms})
+	for (const dataType of imagingDatasetTypes) {
+		if(dataType.options){
+			dataType.options = await imagingFacade.loadImagingVocabularyTerms(dataType.value);
+		}
+	}
+	//console.log('loadGalleryViewFilters - imagingDatasetTypes', imagingDatasetTypes);
 	imagingDatasetTypes.push({label: messages.get(messages.ALL_PROPERTIES), value: messages.ALL});
+	imagingDatasetTypes.push({label: '(Preview) Comment', value: 'PREVIEW_COMMENT'});
 	setDataSetTypes(imagingDatasetTypes);
 }
 
