@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014 - 2024 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -128,8 +128,25 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
             sortable : true,
             filterable: true,
             showByDefault: true,
-            render : function(data) {
-                return FormUtil.getFormLink(data.id, "DataSet", data.id);
+            render : function(data, grid) {
+                var paginationInfo = null;
+                var indexFound = null;
+                for(var idx = 0; idx < grid.lastReceivedData.length; idx++) {
+                    if(grid.lastReceivedData[idx].id === data.id) {
+                        indexFound = idx + (grid.lastUsedOptions.pageIndex * grid.lastUsedOptions.pageSize);
+                        break;
+                    }
+                }
+                if(indexFound !== null) {
+                    paginationInfo = {
+                            pagFunction : _this._getDataListDynamic(_this._dataSetViewerModel.v3Datasets),
+                            pagOptions : grid.lastUsedOptions,
+                            currentIndex : indexFound,
+                            totalCount : grid.lastReceivedData.length
+                    }
+                }
+
+                return FormUtil.getFormLink(data.id, "DataSet", data.id, paginationInfo);
             },
         });
         columns.push({
@@ -298,6 +315,20 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
         dataGrid.init($dataSetContainer);
     }
 
+    this._getDataListDynamic = function(entityDataSets) {
+        return function(callback, pagOptions) {
+            require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                function(DataSetPermId, DataSetFetchOptions) {
+                    var ids = [new DataSetPermId(entityDataSets[pagOptions.pageIndex].permId.permId)];
+                    var fetchOptions = new DataSetFetchOptions();
+                    mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                        var datasets = Util.mapValuesToList(map);
+                        callback(datasets);
+                    });
+            });
+        }
+    }
+
     this._render = function(value) {
         return value == null ? "" : (value == false ? "false" : value);
     }
@@ -357,7 +388,62 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 			}
 			
 			var dataset = this._dataSetViewerModel.entityDataSets[datasetCode];
-			var onClick = "mainController.changeView('showViewDataSetPageFromPermId', '" + datasetCode + "');";
+			var entityDataSets = this._dataSetViewerModel.v3Datasets;
+			var paginationInfo = null;
+            var indexFound = null;
+            for(var idx = 0; idx < entityDataSets.length; idx++) {
+                if(entityDataSets[idx].permId.permId === datasetCode) {
+                    indexFound = idx;
+                    break;
+                }
+            }
+
+            if(indexFound !== null) {
+                paginationInfo = {
+                    pagFunction : _this._getDataListDynamic(entityDataSets),
+                    pagOptions : {},
+                    currentIndex : indexFound,
+                    totalCount : entityDataSets.length
+                }
+            }
+            var arg = {
+                    permIdOrIdentifier : datasetCode,
+                    paginationInfo : paginationInfo
+            }
+
+            // convert function to change js object into string version of it
+            var convert = function(obj) {
+                              let ret = "{";
+                              for (let k in obj) {
+                                let v = obj[k];
+                                if (typeof v === "function") {
+                                  v = v.toString().replaceAll("\"", "'");
+                                } else if (v instanceof Array) {
+                                    var result = "[";
+                                    for (var idx = 0; idx < v.length; idx++) {
+                                        result += convert(v[idx]);
+                                        if(idx !== v.length-1) {
+                                            result += ",";
+                                        }
+                                    }
+                                    result += "]";
+                                } else if (typeof v === "object") {
+                                  v = convert(v);
+                                } else if (typeof v === "number") {
+                                  v = v;
+                                } else {
+                                  v = `'${v}'`;
+                                }
+                                ret += `  ${k}: ${v},`;
+                              }
+                              ret += "}";
+                              return ret;
+                            }
+            // workaround for embedding js code in html 'onclick' attribute
+            arg = "(() => { return " + convert(arg) + " })()";
+            // extracting permIds to simplify things that are used
+            arg = arg.replaceAll("entityDataSets", convert(entityDataSets.map(x => { return { permId: { permId: x.permId.permId } } } )));
+			var onClick = "mainController.changeView('showViewDataSetPageFromPermId', " + arg + ");";
 			var dataSetTitle = "<span id=\"dataSetPosInTree-" + dataSetPosInTree + "\" onclick=\"" + onClick + "\">"
 					+ this._getDataSetType(dataset) + " : " + displayName + "</span>";
 			treeModel.push({ title : dataSetTitle, key : "/", folder : true, lazy : true, datasetCode : datasetCode });

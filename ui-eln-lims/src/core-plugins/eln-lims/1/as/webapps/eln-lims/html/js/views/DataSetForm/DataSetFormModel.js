@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014 - 2024 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-function DataSetFormModel(mode, entity, isMini, dataSetV3) {
+function DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo) {
 	this.mode = mode;
 	this.isMini = isMini;
 	this.isAutoUpload = true;
@@ -34,4 +34,5 @@ function DataSetFormModel(mode, entity, isMini, dataSetV3) {
     this.isExperiment = function() {
         return this.entity && this.entity["@type"] === "as.dto.experiment.Experiment";
     }
+    this.paginationInfo = paginationInfo;
 }

@@ -268,6 +268,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode());
@@ -463,6 +464,44 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
+
+		if(this._dataSetFormModel.mode !== FormMode.CREATE && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
+            var moveToIndex = function(index) {
+                var pagOptionsToSend = $.extend(true, {}, _this._dataSetFormModel.paginationInfo.pagOptions);
+                pagOptionsToSend.pageIndex = index;
+                pagOptionsToSend.pageSize = 1;
+                _this._dataSetFormModel.paginationInfo.pagFunction(function(result) {
+                    if(result && result[0] && result[0].permId) {
+                        _this._dataSetFormModel.paginationInfo.currentIndex = index;
+                        var arg = {
+                                permIdOrIdentifier : result[0].permId.permId,
+                                paginationInfo : _this._dataSetFormModel.paginationInfo
+                        }
+                        mainController.changeView('showViewDataSetPageFromPermId', arg);
+                    } else {
+                        window.alert("The item to go to is no longer available.");
+                    }
+                }, pagOptionsToSend);
+            }
+
+            if(this._dataSetFormModel.paginationInfo.currentIndex > 0) {
+                var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
+                    moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
+                }, "Previous");
+                rightToolbarModel.push({ component : $backBtn, tooltip: null });
+            }
+
+            if(this._dataSetFormModel.paginationInfo.currentIndex+1 < this._dataSetFormModel.paginationInfo.totalCount) {
+                var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
+                    moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);
+                }, "Next");
+                rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+            }
+            $header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+        }
+
+
+
 	}
 
 	this._createIdentificationInfoSection = function(hideShowOptionsModel, views) {

@@ -8,6 +8,19 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
     forcedDisableRTF: [],
     forceMonospaceFont: [],
+    _getDataListDynamic: function(dataSets) {
+        return function(callback, pagOptions) {
+            require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                function(DataSetPermId, DataSetFetchOptions) {
+                    var ids = [new DataSetPermId(dataSets[pagOptions.pageIndex].permId.permId)];
+                    var fetchOptions = new DataSetFetchOptions();
+                    mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                        var datasets = Util.mapValuesToList(map);
+                        callback(datasets);
+                    });
+            });
+        }
+    },
     displayImagingTechViewer: function ($container, isDataset, objId, objType, onActionCallback, objTypeCode) {
         let $element = $("<div>")
         require(["dss/dto/service/id/CustomDssServiceCode",
@@ -119,9 +132,31 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 model.experiment.properties["DEFAULT_COLLECTION_VIEW"] &&
                 model.experiment.properties["DEFAULT_COLLECTION_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
+                var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
                     function (objId) {
-                        mainController.changeView('showViewDataSetPageFromPermId', objId)
+                        var dataSets = model.v3_experiment.dataSets;
+                        var paginationInfo = null;
+                        var indexFound = null;
+                        for(var idx = 0; idx < dataSets.length; idx++) {
+                            if(dataSets[idx].permId.permId === objId) {
+                                indexFound = idx;
+                                break;
+                            }
+                        }
+                        if(indexFound !== null) {
+                            paginationInfo = {
+                                pagFunction : _this._getDataListDynamic(dataSets),
+                                pagOptions : {},
+                                currentIndex : indexFound,
+                                totalCount : dataSets.length
+                            }
+                        }
+                        var arg = {
+                                permIdOrIdentifier : objId,
+                                paginationInfo : paginationInfo
+                        }
+                        mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.experiment.experimentTypeCode);
             }
         }
@@ -132,9 +167,31 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 model.sample.properties["DEFAULT_OBJECT_VIEW"] &&
                 model.sample.properties["DEFAULT_OBJECT_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
+                var _this = this;
                 this.displayImagingTechViewer($container, false, model.sample.permId, 'object',
                     function (objId) {
-                        mainController.changeView('showViewDataSetPageFromPermId', objId)
+                        var dataSets = model.v3_sample.dataSets;
+                        var paginationInfo = null;
+                        var indexFound = null;
+                        for(var idx = 0; idx < dataSets.length; idx++) {
+                            if(dataSets[idx].permId.permId === objId) {
+                                indexFound = idx;
+                                break;
+                            }
+                        }
+                        if(indexFound !== null) {
+                            paginationInfo = {
+                                pagFunction : _this._getDataListDynamic(dataSets),
+                                pagOptions : {},
+                                currentIndex : indexFound,
+                                totalCount : dataSets.length
+                            }
+                        }
+                        var arg = {
+                                permIdOrIdentifier : objId,
+                                paginationInfo : paginationInfo
+                        }
+                        mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.sampleType.code);
             }
         }
