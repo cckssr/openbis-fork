@@ -390,7 +390,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
             }
 		}
 
-		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo) {
+		if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
 			var moveToIndex = function(index) {
 				var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
 				pagOptionsToSend.pageIndex = index;

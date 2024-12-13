@@ -8,6 +8,19 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
     forcedDisableRTF: [],
     forceMonospaceFont: [],
+    _getDataListDynamic: function(dataSets) {
+        return function(callback, pagOptions) {
+            require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                function(DataSetPermId, DataSetFetchOptions) {
+                    var ids = [new DataSetPermId(dataSets[pagOptions.pageIndex].permId.permId)];
+                    var fetchOptions = new DataSetFetchOptions();
+                    mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                        var datasets = Util.mapValuesToList(map);
+                        callback(datasets);
+                    });
+            });
+        }
+    },
     displayImagingTechViewer: function ($container, isDataset, objId, objType, onActionCallback, objTypeCode) {
         let $element = $("<div>")
         require(["dss/dto/service/id/CustomDssServiceCode",
@@ -16,12 +29,17 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 "imaging/dto/ImagingDataSetExport",
                 "imaging/dto/ImagingDataSetMultiExport",
                 "imaging/dto/ImagingDataSetPreview",
+                "imaging/dto/ImagingDataSetExportConfig",
+                "imaging/dto/ImagingExportIncludeOptions",
                 "as/dto/experiment/fetchoptions/ExperimentFetchOptions",
                 "as/dto/experiment/id/ExperimentPermId",
                 "as/dto/sample/fetchoptions/SampleFetchOptions",
                 "as/dto/sample/id/SamplePermId",
                 "as/dto/dataset/search/DataSetSearchCriteria",
                 "as/dto/dataset/search/DataSetTypeSearchCriteria",
+                "as/dto/vocabulary/search/VocabularySearchCriteria",
+                "as/dto/vocabulary/search/VocabularyTermSearchCriteria",
+                "as/dto/vocabulary/fetchoptions/VocabularyTermFetchOptions",
                 "as/dto/dataset/search/SearchDataSetsOperation",
                 "as/dto/dataset/update/DataSetUpdate",
                 "as/dto/dataset/id/DataSetPermId",
@@ -31,9 +49,12 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             function (CustomDssServiceCode, CustomDSSServiceExecutionOptions,
                       ImagingPreviewContainer, ImagingDataSetExport,
                       ImagingDataSetMultiExport, ImagingDataSetPreview,
+                      ImagingDataSetExportConfig, ImagingExportIncludeOptions,
                       ExperimentFetchOptions, ExperimentPermId,
                       SampleFetchOptions, SamplePermId,
                       DataSetSearchCriteria, DataSetTypeSearchCriteria,
+                      VocabularySearchCriteria, VocabularyTermSearchCriteria,
+                      VocabularyTermFetchOptions,
                       SearchDataSetsOperation, DataSetUpdate, DataSetPermId,
                       DataSetFetchOptions, DataSetTypeFetchOptions,
                       utilJson) {
@@ -47,12 +68,17 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         ImagingDataSetExport: ImagingDataSetExport,
                         ImagingDataSetMultiExport: ImagingDataSetMultiExport,
                         ImagingDataSetPreview: ImagingDataSetPreview,
+                        ImagingDataSetExportConfig: ImagingDataSetExportConfig, 
+                        ImagingExportIncludeOptions: ImagingExportIncludeOptions,
                         SampleFetchOptions: SampleFetchOptions,
                         SamplePermId: SamplePermId,
                         ExperimentFetchOptions: ExperimentFetchOptions,
                         ExperimentPermId: ExperimentPermId,
                         DataSetSearchCriteria: DataSetSearchCriteria,
                         DataSetTypeSearchCriteria: DataSetTypeSearchCriteria,
+                        VocabularySearchCriteria: VocabularySearchCriteria,
+                        VocabularyTermSearchCriteria: VocabularyTermSearchCriteria,
+                        VocabularyTermFetchOptions: VocabularyTermFetchOptions,
                         SearchDataSetsOperation: SearchDataSetsOperation,
                         DataSetUpdate: DataSetUpdate,
                         DataSetPermId: DataSetPermId,
@@ -61,6 +87,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         getDataSets: mainController.openbisV3.getDataSets.bind(mainController.openbisV3),
                         searchDataSets: mainController.openbisV3.searchDataSets.bind(mainController.openbisV3),
                         searchDataSetTypes: mainController.openbisV3.searchDataSetTypes.bind(mainController.openbisV3),
+                        searchVocabularyTerms: mainController.openbisV3.searchVocabularyTerms.bind(mainController.openbisV3),
                         updateDataSets: mainController.openbisV3.updateDataSets.bind(mainController.openbisV3),
                         executeCustomDSSService: mainController.openbisV3.getDataStoreFacade().executeCustomDSSService.bind(mainController.openbisV3.getDataStoreFacade()),
                         getExperiments: mainController.openbisV3.getExperiments.bind(mainController.openbisV3),
@@ -105,9 +132,31 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 model.experiment.properties["DEFAULT_COLLECTION_VIEW"] &&
                 model.experiment.properties["DEFAULT_COLLECTION_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
+                var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
                     function (objId) {
-                        mainController.changeView('showViewDataSetPageFromPermId', objId)
+                        var dataSets = model.v3_experiment.dataSets;
+                        var paginationInfo = null;
+                        var indexFound = null;
+                        for(var idx = 0; idx < dataSets.length; idx++) {
+                            if(dataSets[idx].permId.permId === objId) {
+                                indexFound = idx;
+                                break;
+                            }
+                        }
+                        if(indexFound !== null) {
+                            paginationInfo = {
+                                pagFunction : _this._getDataListDynamic(dataSets),
+                                pagOptions : {},
+                                currentIndex : indexFound,
+                                totalCount : dataSets.length
+                            }
+                        }
+                        var arg = {
+                                permIdOrIdentifier : objId,
+                                paginationInfo : paginationInfo
+                        }
+                        mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.experiment.experimentTypeCode);
             }
         }
@@ -118,9 +167,31 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 model.sample.properties["DEFAULT_OBJECT_VIEW"] &&
                 model.sample.properties["DEFAULT_OBJECT_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
+                var _this = this;
                 this.displayImagingTechViewer($container, false, model.sample.permId, 'object',
                     function (objId) {
-                        mainController.changeView('showViewDataSetPageFromPermId', objId)
+                        var dataSets = model.v3_sample.dataSets;
+                        var paginationInfo = null;
+                        var indexFound = null;
+                        for(var idx = 0; idx < dataSets.length; idx++) {
+                            if(dataSets[idx].permId.permId === objId) {
+                                indexFound = idx;
+                                break;
+                            }
+                        }
+                        if(indexFound !== null) {
+                            paginationInfo = {
+                                pagFunction : _this._getDataListDynamic(dataSets),
+                                pagOptions : {},
+                                currentIndex : indexFound,
+                                totalCount : dataSets.length
+                            }
+                        }
+                        var arg = {
+                                permIdOrIdentifier : objId,
+                                paginationInfo : paginationInfo
+                        }
+                        mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.sampleType.code);
             }
         }

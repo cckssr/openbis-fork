@@ -155,17 +155,25 @@ public class ImagingDataSetInterceptor implements IOperationListener
                 EntityTypePermId typeId = (EntityTypePermId) creation.getTypeId();
                 String objectTypeCode = typeId.getPermId();
                 if(isImagingDataSet(objectTypeCode)) {
-
                     String propertyConfig = getPropertyConfig(creation);
                     if(propertyConfig == null || propertyConfig.trim().isEmpty() || "{}".equals(propertyConfig.trim())) {
-                        ImagingDataSetPropertyConfig config = new ImagingDataSetPropertyConfig();
-                        config.setImages(Arrays.asList(getDefaultImage()));
-                        Map<String, String> metaData = new HashMap<>();
-                        metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
-                        creation.setMetaData(metaData);
+                        if(USER_DEFINED_IMAGING_DATA.equals(objectTypeCode))
+                        {
+                            ImagingDataSetPropertyConfig config =
+                                    new ImagingDataSetPropertyConfig();
+                            config.setMetadata(Map.of("GENERATE", "true"));
+                            config.setImages(Arrays.asList(getDefaultImage()));
+                            Map<String, String> metaData = new HashMap<>();
+                            metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
+                            creation.setMetaData(metaData);
 
-                        String property = convertConfigToJson(config);
-                        creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
+                            String property = convertConfigToJson(config);
+                            creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
+                        }
+                        else
+                        {
+                            throw new UserFailureException(String.format("Property %s must not be empty!", IMAGING_CONFIG_PROPERTY_NAME));
+                        }
                     } else {
                         ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
 

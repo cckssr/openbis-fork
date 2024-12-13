@@ -181,8 +181,9 @@ public class ImagingService implements ICustomDSSServiceExecutor
             ImagingDataSetPropertyConfig config =
                     Util.readConfig(dataSet.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME),
                             ImagingDataSetPropertyConfig.class);
+
             config.getImages().get(0).setPreviews(previews);
-            config.getImages().get(0).getMetadata().put("GENERATE", "false");
+            config.getMetadata().put("GENERATE", "false");
 
             DataSetUpdate update = new DataSetUpdate();
             update.setDataSetId(dataSet.getPermId());

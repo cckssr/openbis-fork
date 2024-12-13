@@ -1,4 +1,4 @@
-import {Box, Modal, Typography} from "@mui/material";
+import { Box, Modal, Typography } from "@mui/material";
 import React from "react";
 import Dropdown from "@src/js/components/common/imaging/components/common/Dropdown.jsx";
 import makeStyles from '@mui/styles/makeStyles';
@@ -6,7 +6,7 @@ import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import messages from "@src/js/common/messages.js";
 import constants from "@src/js/components/common/imaging/constants.js";
 import Button from "@src/js/components/common/form/Button.jsx";
-import {isObjectEmpty} from "@src/js/components/common/imaging/utils.js";
+import { isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
 
 const style = {
     position: 'absolute',
@@ -37,15 +37,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const Exporter = ({ config, handleExport, disabled = false, styles}) => {
+const Exporter = ({ config, handleExport, disabled = false, styles }) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [exportState, setExportState] = React.useState(Object.fromEntries(config.map(c => {
-            switch (c.type) {
-                case constants.DROPDOWN:
-                    return [c.label, c.multiselect ? [c.values[0]]: c.values[0]];
-            }
-        })));
+        switch (c.type) {
+            case constants.DROPDOWN:
+                return [c.label, c.multiselect ? [c.values[0]] : c.values[0]];
+        }
+    })));
 
     const handleOpen = (event) => {
         event.stopPropagation();
@@ -57,11 +57,9 @@ const Exporter = ({ config, handleExport, disabled = false, styles}) => {
     }
 
     const handleExportChange = (event) => {
-        console.log('handleExportChange: ', event);
-        console.log('Current state: ', exportState);
         event.stopPropagation();
         setExportState(prevState => {
-            let newState = {...prevState};
+            let newState = { ...prevState };
             newState[event.target.name] = event.target.value;
             return newState;
         });
@@ -82,12 +80,12 @@ const Exporter = ({ config, handleExport, disabled = false, styles}) => {
             variant='outlined'
             disabled={disabled}
             onClick={handleOpen}
-            startIcon={<CloudDownloadIcon/>}
+            startIcon={<CloudDownloadIcon />}
             styles={styles} />
         <Modal open={open}
-               onClose={handleClose}
-               aria-labelledby="modal-modal-title"
-               aria-describedby="modal-modal-description"
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
         >
             <Box sx={style}>
                 <Typography id="modal-modal-title" variant="h6" component="h2">
@@ -97,11 +95,11 @@ const Exporter = ({ config, handleExport, disabled = false, styles}) => {
                     switch (c.type) {
                         case constants.DROPDOWN:
                             return <Dropdown key={"export-" + c.type + "-" + idx}
-                                             label={c.label}
-                                             initValue={exportState[c.label]}
-                                             values={c.values}
-                                             isMulti={c.multiselect}
-                                             onSelectChange={handleExportChange}/>
+                                label={c.label}
+                                initValue={exportState[c.label]}
+                                values={c.values}
+                                isMulti={c.multiselect}
+                                onSelectChange={handleExportChange} />
                         default:
                             return (<Typography variant='body2'>
                                 {messages.get(messages.NO_PREVIEW)}: {c.type}

@@ -13,6 +13,7 @@ import CustomSwitch from "@src/js/components/common/imaging/components/common/Cu
 import RefreshIcon from "@mui/icons-material/Refresh";
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CameraRollIcon from '@mui/icons-material/CameraRoll';
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
@@ -25,29 +26,30 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, resolution, isChanged, onClickUpdate, onChangeShow, onSelectChangeRes, onChangeActConf, imagingTags, handleTagImage}) => {
+const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, configMetadata, resolution, isChanged,
+	onClickUpdate, onChangeShow, onSelectChangeRes, onChangeActConf, imagingTags, handleTagImage, datasetType }) => {
 	const classes = useStyles();
 	const [tags, setTags] = React.useState([])
-    const [inputValue, setInputValue] = React.useState('');
+	const [inputValue, setInputValue] = React.useState('');
 
 
-    React.useEffect(() => {
-        if (activePreview) {
-            var trasformedTags = []
-            for (const activePreviewTag of activePreview.tags) {
-                const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-                trasformedTags.push(matchTag);
-            }
-            setTags(trasformedTags);
-            setInputValue(trasformedTags.join(', '));
-        }
-    }, [activePreview])
+	React.useEffect(() => {
+		if (activePreview && activePreview.tags != null) {
+			var trasformedTags = []
+			for (const activePreviewTag of activePreview.tags) {
+				const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
+				trasformedTags.push(matchTag);
+			}
+			setTags(trasformedTags);
+			setInputValue(trasformedTags.join(', '));
+		}
+	}, [activePreview])
 
-    const handleTagsChange = (event, newTags) => {
+	const handleTagsChange = (event, newTags) => {
 		setTags(newTags);
-        const tagsArray = newTags.map(tag => tag.value);
-        handleTagImage(false, tagsArray);
-    }
+		const tagsArray = newTags.map(tag => tag.value);
+		handleTagImage(false, tagsArray);
+	}
 
 	const createInitValues = (inputsConfig, activeConfig) => {
 		const isActiveConfig = isObjectEmpty(activeConfig);
@@ -103,73 +105,92 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 		}));
 	};
 
+	const renderStaticUpdateControls = (isUploadedPreview, ) => {
+		return <>
+				<Button label={messages.get(messages.UPDATE)}
+					variant='outlined'
+					color='primary'
+					startIcon={<RefreshIcon />}
+					onClick={onClickUpdate}
+					disabled={!isChanged || isUploadedPreview} />
+
+				{isChanged && !isUploadedPreview && (
+					<Message type='info'>
+						{messages.get(messages.UPDATE_CHANGES)}
+					</Message>
+				)}
+
+				<OutlinedBox style={{ width: 'fit-content' }}
+					label={messages.get(messages.SHOW)}>
+					<CustomSwitch isChecked={activePreview.show}
+						onChange={onChangeShow} />
+				</OutlinedBox>
+
+				<Dropdown onSelectChange={onSelectChangeRes}
+					label={messages.get(messages.RESOLUTIONS)}
+					values={configResolutions}
+					initValue={resolution.join('x')} />
+
+				<OutlinedBox label="Imaging Tags">
+					<Autocomplete
+						multiple
+						id="tags-outlined"
+						options={imagingTags}
+						disableCloseOnSelect
+						getOptionLabel={(option) => option.label}
+						inputValue={inputValue}
+						value={tags}
+						onInputChange={(event, newInputValue) => {
+							setInputValue(newInputValue);
+						}}
+						renderInput={(params) => (
+							<TextField variant='standard' {...params} placeholder="Search Tag" />
+						)}
+						renderOption={(props, option, { selected }) => {
+							const { key, ...optionProps } = props;
+							return (
+								<li key={key} {...optionProps}>
+									<Checkbox
+										icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+										checkedIcon={<CheckBoxIcon fontSize="small" />}
+										style={{ marginRight: 8 }}
+										checked={selected}
+									/>
+									{option.label}
+								</li>
+							);
+						}}
+						onChange={handleTagsChange}
+					/>
+				</OutlinedBox>
+		</>
+	}
+
 	const inputValues = createInitValues(configInputs, activePreview.config);
 	activePreview.config = inputValues;
+
 	const currentMetadata = activePreview.metadata;
-	const isUploadedPreview = isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
+	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
 	return (
 		<Grid2 size={{ xs: 12, sm: 4 }}>
 			<PaperBox className={classes.noBorderNoShadow}>
+
+			
 				<Grid2 container sx={{ justifyContent: "space-between", alignItems: "center" }}>
-					<Button label={messages.get(messages.UPDATE)}
-						variant='outlined'
-						color='primary'
-						startIcon={<RefreshIcon />}
-						onClick={onClickUpdate}
-						disabled={!isChanged || isUploadedPreview} />
-
-					{isChanged && !isUploadedPreview && (
-						<Message type='info'>
-							{messages.get(messages.UPDATE_CHANGES)}
-						</Message>
-					)}
-
-					<OutlinedBox style={{ width: 'fit-content' }}
-						label={messages.get(messages.SHOW)}>
-						<CustomSwitch isChecked={activePreview.show}
-							onChange={onChangeShow} />
-					</OutlinedBox>
-
-					<Dropdown onSelectChange={onSelectChangeRes}
-						label={messages.get(messages.RESOLUTIONS)}
-						values={configResolutions}
-						initValue={resolution.join('x')} />
-
-					<OutlinedBox label="Imaging Tags">
-						<Autocomplete
-							multiple
-							id="tags-outlined"
-							options={imagingTags}
-							disableCloseOnSelect
-							getOptionLabel={(option) => option.label}
-							inputValue={inputValue}
-							value={tags}
-							onInputChange={(event, newInputValue) => {
-								setInputValue(newInputValue);
-							}}
-							renderInput={(params) => (
-								<TextField variant='standard' {...params} placeholder="Search Tag"/>
-							)}
-							renderOption={(props, option, { selected }) => {
-								const { key, ...optionProps } = props;
-								return (
-									<li key={key} {...optionProps}>
-										<Checkbox
-											icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-											checkedIcon={<CheckBoxIcon fontSize="small" />}
-											style={{ marginRight: 8 }}
-											checked={selected}
-										/>
-										{option.label}
-									</li>
-								);
-							}}
-							onChange={handleTagsChange}
-						/>
-					</OutlinedBox>
+				
+					{(datasetType === constants.USER_DEFINED_IMAGING_DATA && configMetadata[constants.GENERATE]) &&
+							<Button label={constants.GENERATE}
+								variant='outlined'
+								color='primary'
+								startIcon={<CameraRollIcon />}
+								onClick={onClickUpdate} />
+					}
+					
+					{((datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) && !configMetadata[constants.GENERATE]) && renderStaticUpdateControls(isUploadedPreview)}
+				
 				</Grid2>
 
-				<Divider sx={{ margin: '16px 8px 16px 8px', borderWidth: '1px'}}/> 
+				<Divider sx={{ margin: '16px 8px 16px 8px', borderWidth: '1px' }} />
 
 				{configInputs.map((c, idx) => {
 					switch (c.type) {

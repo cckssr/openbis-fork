@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {FormControl, MenuItem, Select} from "@mui/material";
+import { FormControl, MenuItem, Select } from "@mui/material";
 import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox";
 
 const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelectChange = null }) => {
@@ -19,7 +19,7 @@ const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelec
 
     return (
         <OutlinedBox label={label}>
-            <FormControl fullWidth variant="standard">
+            <FormControl fullWidth variant="standard" onClick={event => event.stopPropagation()}>
                 <Select
                     labelId={"select-" + label + "-label"}
                     id={"select-" + label}
@@ -30,7 +30,7 @@ const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelec
                     onChange={handleChange}
                     disabled={disabled}
                 >
-                    {values.map((v, i) => <MenuItem key={"select-" + label + "-menuitem-" + i} value={v}>{v}</MenuItem>)}
+                    {values.map((v, i) => <MenuItem key={"select-" + label + "-menuitem-" + i} value={v} onClick={event => event.stopPropagation()}>{v}</MenuItem>)}
                 </Select>
             </FormControl>
         </OutlinedBox>

@@ -75,7 +75,8 @@ for file in files:
     f = open(file_path, 'r')
     props = {
         'imaging_data_config': f.read(),
-        'default_dataset_view': 'IMAGING_DATASET_VIEWER'
+        'default_dataset_view': 'IMAGING_DATASET_VIEWER',
+        'imaging_notes': 'Notes added to on dataset level'
     }
     data_set = o.new_dataset('IMAGING_DATA',
                              experiment='/IMAGING/TEST/TEST_COLLECTION',

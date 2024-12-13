@@ -9,16 +9,16 @@ export default class ImagingFacade {
         this.openbis = extOpenbis;
     }
 
-    async loadImagingTagsVocabulary() {
+    /*async loadImagingTagsVocabulary() {
         const criteria = new this.openbis.VocabularySearchCriteria()
         criteria.withCode().thatContains(constants.IMAGING_TAGS)
 
         const fetchOptions = new this.openbis.VocabularyFetchOptions()
         const result = await this.openbis.searchVocabularies(criteria, fetchOptions)
         //console.log('loadImagingTagsVocabulary: ', result);
-    }
+    }*/
 
-    async loadImagingTagsVocabularyTerms() {
+     async loadImagingTagsVocabularyTerms() {
         const criteria = new this.openbis.VocabularyTermSearchCriteria()
         criteria.withVocabulary().withCode().thatEquals(constants.IMAGING_TAGS)
         
@@ -28,7 +28,7 @@ export default class ImagingFacade {
         const result = await this.openbis.searchVocabularyTerms(criteria, fo)
 
         return result.getObjects().map(vocabularyTerm => ({ label: vocabularyTerm.label, value: vocabularyTerm.code }));
-    }
+    } 
 
     async loadDataSetTypes() {
         const fetchOptions = new this.openbis.DataSetTypeFetchOptions();
@@ -49,21 +49,24 @@ export default class ImagingFacade {
         return Array.from(dataSetTypesSetMap, ([label, code]) => ({ label: label, value: code }))
     }
 
-    loadImagingDataset = async (objId, withProperties = false) => {
+    loadImagingDataset = async (objId, withProperties = false, withType = false) => {
         const fetchOptions = new this.openbis.DataSetFetchOptions();
         fetchOptions.withExperiment();
         fetchOptions.withSample();
         fetchOptions.withParents();
         fetchOptions.withProperties();
+        fetchOptions.withType();
         const dataset = await this.openbis.getDataSets(
             [new this.openbis.DataSetPermId(objId)],
             fetchOptions
         )
-        if (withProperties){
+        //console.log("dataset: ", dataset);
+        if (withProperties)
             return dataset[objId].properties;
-        } else {
-            return await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]));
-        }
+        if (withType)
+            return [dataset[objId].type.code, await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]))]
+        
+        return await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]));
     };
 
     editImagingDatasetNote = async (permId, note) => {

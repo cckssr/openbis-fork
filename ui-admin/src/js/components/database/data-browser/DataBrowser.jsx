@@ -14,9 +14,13 @@ import messages from '@src/js/common/messages.js'
 import InfoBar from '@src/js/components/database/data-browser/InfoBar.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
+import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
+import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
+
+
 
 // 2GB limit for total download size
-const sizeLimit = 2147483648
+const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648
 
 const styles = theme => ({
   columnFlexContainer: {
@@ -95,12 +99,12 @@ const configuration =
     },
     {
       icon: 'file-archive',
-      extensions:  ['zip', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'iso',
+      extensions: ['zip', 'rar', '7z', 'tar', 'gz', 'bz', 'bz2', 'xz', 'iso',
         'zipx', 'cab', 'arj', 'lz', 'lzma', 'z', 'tgz', 'ace', 'dmg']
     },
     {
       icon: 'file-code',
-      extensions:  ['xml', 'js', 'html', 'css', 'c', 'cpp', 'h', 'cs', 'php',
+      extensions: ['xml', 'js', 'html', 'css', 'c', 'cpp', 'h', 'cs', 'php',
         'rb', 'swift', 'go', 'rs', 'ts', 'json', 'sh', 'bat', 'sql', 'yaml',
         'yml', 'jsx', 'tsx', 'pl', 'scala', 'kt']
     },
@@ -124,133 +128,133 @@ const configuration =
   ]
 
 const mimeTypeMap = {
-    '.7z': 'application/x-7z-compressed',
-    '.aac': 'audio/aac',
-    '.ace': 'application/x-ace-compressed',
-    '.aiff': 'audio/aiff',
-    '.arj': 'application/x-arj',
-    '.avi': 'video/x-msvideo',
-    '.bmp': 'image/bmp',
-    '.bz': 'application/x-bzip',
-    '.bz2': 'application/x-bzip2',
-    '.bat': 'application/x-msdownload',
-    '.c': 'text/x-c',
-    '.cab': 'application/vnd.ms-cab-compressed',
-    '.cpp': 'text/x-c',
-    '.cs': 'text/x-csharp',
-    '.css': 'text/css',
-    '.csv': 'text/csv',
-    '.dmg': 'application/x-apple-diskimage',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.dot': 'application/msword',
-    '.epub': 'application/epub+zip',
-    '.flac': 'audio/flac',
-    '.flv': 'video/x-flv',
-    '.gif': 'image/gif',
-    '.go': 'text/plain',
-    '.gz': 'application/gzip',
-    '.h': 'text/x-c',
-    '.heic': 'image/heic',
-    '.heif': 'image/heif',
-    '.htm': 'text/html',
-    '.html': 'text/html',
-    '.indd': 'application/octet-stream',
-    '.iso': 'application/x-iso9660-image',
-    '.jpeg': 'image/jpeg',
-    '.jpg': 'image/jpeg',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
-    '.jsx': 'text/jsx',
-    '.key': 'application/vnd.apple.keynote',
-    '.kt': 'text/plain',
-    '.lz': 'application/octet-stream',
-    '.lzma': 'application/x-lzma',
-    '.m4a': 'audio/mp4',
-    '.m4v': 'video/x-m4v',
-    '.md': 'text/markdown',
-    '.mkv': 'video/x-matroska',
-    '.mobi': 'application/x-mobipocket-ebook',
-    '.mov': 'video/quicktime',
-    '.mp3': 'audio/mpeg',
-    '.mp4': 'video/mp4',
-    '.mpe': 'video/mpeg',
-    '.mpeg': 'video/mpeg',
-    '.mpg': 'video/mpeg',
-    '.oga': 'audio/ogg',
-    '.ogg': 'audio/ogg',
-    '.ogv': 'video/ogg',
-    '.pdf': 'application/pdf',
-    '.odc': 'application/vnd.oasis.opendocument.chart',
-    '.odg': 'application/vnd.oasis.opendocument.graphics',
-    '.odf': 'application/vnd.oasis.opendocument.formula',
-    '.odft': 'application/vnd.oasis.opendocument.formula-template',
-    '.odi': 'application/vnd.oasis.opendocument.image',
-    '.odm': 'application/vnd.oasis.opendocument.text-master',
-    '.odt': 'application/vnd.oasis.opendocument.text',
-    '.odp': 'application/vnd.oasis.opendocument.presentation',
-    '.ods': 'application/vnd.oasis.opendocument.spreadsheet',
-    '.otc': 'application/vnd.oasis.opendocument.chart-template',
-    '.otg': 'application/vnd.oasis.opendocument.graphics-template',
-    '.oth': 'application/vnd.oasis.opendocument.text-web',
-    '.oti': 'application/vnd.oasis.opendocument.image-template',
-    '.otp': 'application/vnd.oasis.opendocument.presentation-template',
-    '.ots': 'application/vnd.oasis.opendocument.spreadsheet-template',
-    '.ott': 'application/vnd.oasis.opendocument.text-template',
-    '.opus': 'audio/opus',
-    '.pages': 'application/vnd.apple.pages',
-    '.php': 'application/x-httpd-php',
-    '.pl': 'application/x-perl',
-    '.png': 'image/png',
-    '.pot': 'application/vnd.ms-powerpoint',
-    '.pps': 'application/vnd.ms-powerpoint',
-    '.ppt': 'application/vnd.ms-powerpoint',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.psd': 'image/vnd.adobe.photoshop',
-    '.rar': 'application/x-rar-compressed',
-    '.raw': 'image/x-panasonic-raw',
-    '.rb': 'text/x-ruby',
-    '.rs': 'application/rls-services+xml',
-    '.rtf': 'application/rtf',
-    '.scala': 'text/x-scala',
-    '.sh': 'application/x-sh',
-    '.svg': 'image/svg+xml',
-    '.sql': 'application/x-sql',
-    '.swift': 'text/x-swift',
-    '.tar': 'application/x-tar',
-    '.tex': 'application/x-tex',
-    '.tgz': 'application/gzip',
-    '.tif': 'image/tiff',
-    '.tiff': 'image/tiff',
-    '.ts': 'text/typescript',
-    '.tsv': 'text/tab-separated-values',
-    '.tsx': 'text/tsx',
-    '.txt': 'text/plain',
-    '.vob': 'video/x-ms-vob',
-    '.wav': 'audio/wav',
-    '.weba': 'audio/webm',
-    '.webm': 'video/webm',
-    '.webp': 'image/webp',
-    '.wma': 'audio/x-ms-wma',
-    '.wmv': 'video/x-ms-wmv',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlt': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    '.xml': 'application/xml',
-    '.xz': 'application/x-xz',
-    '.yaml': 'application/yaml',
-    '.yml': 'application/yaml',
-    '.z': 'application/x-compress',
-    '.zip': 'application/zip',
-    '.zipx': 'application/zip'
-  }
+  '.7z': 'application/x-7z-compressed',
+  '.aac': 'audio/aac',
+  '.ace': 'application/x-ace-compressed',
+  '.aiff': 'audio/aiff',
+  '.arj': 'application/x-arj',
+  '.avi': 'video/x-msvideo',
+  '.bmp': 'image/bmp',
+  '.bz': 'application/x-bzip',
+  '.bz2': 'application/x-bzip2',
+  '.bat': 'application/x-msdownload',
+  '.c': 'text/x-c',
+  '.cab': 'application/vnd.ms-cab-compressed',
+  '.cpp': 'text/x-c',
+  '.cs': 'text/x-csharp',
+  '.css': 'text/css',
+  '.csv': 'text/csv',
+  '.dmg': 'application/x-apple-diskimage',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.dot': 'application/msword',
+  '.epub': 'application/epub+zip',
+  '.flac': 'audio/flac',
+  '.flv': 'video/x-flv',
+  '.gif': 'image/gif',
+  '.go': 'text/plain',
+  '.gz': 'application/gzip',
+  '.h': 'text/x-c',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.htm': 'text/html',
+  '.html': 'text/html',
+  '.indd': 'application/octet-stream',
+  '.iso': 'application/x-iso9660-image',
+  '.jpeg': 'image/jpeg',
+  '.jpg': 'image/jpeg',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.jsx': 'text/jsx',
+  '.key': 'application/vnd.apple.keynote',
+  '.kt': 'text/plain',
+  '.lz': 'application/octet-stream',
+  '.lzma': 'application/x-lzma',
+  '.m4a': 'audio/mp4',
+  '.m4v': 'video/x-m4v',
+  '.md': 'text/markdown',
+  '.mkv': 'video/x-matroska',
+  '.mobi': 'application/x-mobipocket-ebook',
+  '.mov': 'video/quicktime',
+  '.mp3': 'audio/mpeg',
+  '.mp4': 'video/mp4',
+  '.mpe': 'video/mpeg',
+  '.mpeg': 'video/mpeg',
+  '.mpg': 'video/mpeg',
+  '.oga': 'audio/ogg',
+  '.ogg': 'audio/ogg',
+  '.ogv': 'video/ogg',
+  '.pdf': 'application/pdf',
+  '.odc': 'application/vnd.oasis.opendocument.chart',
+  '.odg': 'application/vnd.oasis.opendocument.graphics',
+  '.odf': 'application/vnd.oasis.opendocument.formula',
+  '.odft': 'application/vnd.oasis.opendocument.formula-template',
+  '.odi': 'application/vnd.oasis.opendocument.image',
+  '.odm': 'application/vnd.oasis.opendocument.text-master',
+  '.odt': 'application/vnd.oasis.opendocument.text',
+  '.odp': 'application/vnd.oasis.opendocument.presentation',
+  '.ods': 'application/vnd.oasis.opendocument.spreadsheet',
+  '.otc': 'application/vnd.oasis.opendocument.chart-template',
+  '.otg': 'application/vnd.oasis.opendocument.graphics-template',
+  '.oth': 'application/vnd.oasis.opendocument.text-web',
+  '.oti': 'application/vnd.oasis.opendocument.image-template',
+  '.otp': 'application/vnd.oasis.opendocument.presentation-template',
+  '.ots': 'application/vnd.oasis.opendocument.spreadsheet-template',
+  '.ott': 'application/vnd.oasis.opendocument.text-template',
+  '.opus': 'audio/opus',
+  '.pages': 'application/vnd.apple.pages',
+  '.php': 'application/x-httpd-php',
+  '.pl': 'application/x-perl',
+  '.png': 'image/png',
+  '.pot': 'application/vnd.ms-powerpoint',
+  '.pps': 'application/vnd.ms-powerpoint',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.psd': 'image/vnd.adobe.photoshop',
+  '.rar': 'application/x-rar-compressed',
+  '.raw': 'image/x-panasonic-raw',
+  '.rb': 'text/x-ruby',
+  '.rs': 'application/rls-services+xml',
+  '.rtf': 'application/rtf',
+  '.scala': 'text/x-scala',
+  '.sh': 'application/x-sh',
+  '.svg': 'image/svg+xml',
+  '.sql': 'application/x-sql',
+  '.swift': 'text/x-swift',
+  '.tar': 'application/x-tar',
+  '.tex': 'application/x-tex',
+  '.tgz': 'application/gzip',
+  '.tif': 'image/tiff',
+  '.tiff': 'image/tiff',
+  '.ts': 'text/typescript',
+  '.tsv': 'text/tab-separated-values',
+  '.tsx': 'text/tsx',
+  '.txt': 'text/plain',
+  '.vob': 'video/x-ms-vob',
+  '.wav': 'audio/wav',
+  '.weba': 'audio/webm',
+  '.webm': 'video/webm',
+  '.webp': 'image/webp',
+  '.wma': 'audio/x-ms-wma',
+  '.wmv': 'video/x-ms-wmv',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlt': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.xml': 'application/xml',
+  '.xz': 'application/x-xz',
+  '.yaml': 'application/yaml',
+  '.yml': 'application/yaml',
+  '.z': 'application/x-compress',
+  '.zip': 'application/zip',
+  '.zipx': 'application/zip'
+}
 
 class DataBrowser extends React.Component {
   constructor(props, context) {
     super(props, context)
     autoBind(this)
 
-    const { sessionToken, controller, id } = this.props
+    const { sessionToken, controller, id, showFileExistsDialog, currentFile } = this.props
 
     this.controller = controller || new DataBrowserController(id)
     this.controller.attach(this)
@@ -265,11 +269,86 @@ class DataBrowser extends React.Component {
       freeSpace: -1,
       totalSpace: -1,
       loading: false,
+      totalDownloaded: 0,
+      totalDownloadSize: 0,
+      progress: 0,
       errorMessage: null,
-      editable: false
+      editable: false,
+      showFileExistsDialog: false,
+      currentFile: null,
+      resolveDecision: null,
+      replaceFile: false,
+      skipFile: false,
+      cancelDownload: false,
+      applyToAllFiles: false,
+      showMergeDialog: false,
+      resolveMergeDecision: null,
     }
     this.zip = new JSZip()
   }
+
+
+  handleConfirmMerge() {
+    this.setState({ showMergeDialog: false }, () => {
+      if (this.resolveMergeDecision) {
+        this.resolveMergeDecision(true);
+        this.resolveMergeDecision = null;
+      }
+    })
+  }
+
+  handleCancelMerge() {
+    this.setState({ showMergeDialog: false }, () => {
+      if (this.resolveMergeDecision) {
+        this.resolveMergeDecision(false);
+        this.resolveMergeDecision = null;
+      }
+    })
+  }
+
+
+  // Triggered when the user confirms to overwrite
+  handleReplace() {
+    this.setState({ showFileExistsDialog: false, replaceFile: true, skipFile: false }, () => {
+      if (this.resolveDecision) {
+        this.resolveDecision(true);
+        this.resolveDecision = null;
+      }
+    });
+  }
+
+  handleSkip() {
+    this.setState({ showFileExistsDialog: false, replaceFile: false, skipFile: true }, () => {
+      if (this.resolveDecision) {
+        this.resolveDecision(true);
+        this.resolveDecision = null;
+      }
+    });
+  }
+
+  // Triggered when the user cancels to overwrite
+  handleCancel() {
+    this.setState({ showFileExistsDialog: false, cancelDownload: true }, () => {
+      if (this.resolveDecision) {
+        this.resolveDecision(false);
+        this.resolveDecision = null;
+      }
+    });
+  }
+
+  resetDownloadDialogStates() {
+    this.setState({
+      showFileExistsDialog: false,
+      replaceFile: false,
+      skipFile: false,
+      resolveDecision: false,
+      applyToAllFiles: false,
+      cancelDownload: false,
+      showMergeDialog: false,
+      mergeTopLevelFolder: false
+    })
+  }
+
 
   handleViewTypeChange(viewType) {
     this.setState({ viewType })
@@ -301,40 +380,137 @@ class DataBrowser extends React.Component {
     })
   }
 
+  updateProgressDetails(progressDetailPrimary, progressDetailSecondary) {
+    this.setState({ progressDetailPrimary, progressDetailSecondary })
+  }
+
+  updateProgressMainMessage(downloading) {
+    if(downloading){
+      this.setState({ progressMessage : messages.get(messages.DOWNLOADING)})
+    } else {
+      this.setState({ progressMessage : messages.get(messages.PREPARING)})
+    }
+  }
+
+  
+
+  handleApplyToAllSelection(checked) {    
+    this.setState({ applyToAllFiles: checked })    
+  }
+
+  updateProgress(downloadedChunk, fileName, speed) {
+    this.setState((prevState) => {
+      const totalDownloaded = prevState.totalDownloaded + downloadedChunk;
+      const progress = Math.round((totalDownloaded / prevState.totalDownloadSize) * 100);
+      const newProgress = Math.min(progress, 100);
+      const speedFormatted = this.formatDownloadSpeed(speed);
+      
+      return {
+        totalDownloaded,
+        progress: newProgress,
+        loading: true,
+        progressDetailPrimary: fileName,
+        progressDetailSecondary: speedFormatted
+      };
+    });
+  }
+
+  formatDownloadSpeed(bytesPerSecond) {
+    if (isNaN(bytesPerSecond)) {
+      return bytesPerSecond;
+    }
+    if (bytesPerSecond >= 1024 * 1024) {
+      // Convert to MB/s
+      const mbps = bytesPerSecond / (1024 * 1024);
+      return `${mbps.toFixed(2)} MB/s`;
+    } else if (bytesPerSecond >= 1024) {
+      // Convert to KB/s
+      const kbps = bytesPerSecond / 1024;
+      return `${kbps.toFixed(2)} KB/s`;
+    } else {
+      // Bytes per second
+      return `${bytesPerSecond} B/s`;
+    }
+  }
+
+
   async handleDownload() {
     const { multiselectedFiles } = this.state
-    const files = multiselectedFiles.values()
-    const file = files.next().value
+    this.updateProgressMainMessage(false);
+    try {
+      // for chrome and edge
+      if (this.isDirectoryPickerAvailable()) {
+        await this.handleDownloadWithDirectoryPicker(multiselectedFiles)
+      } else {
+        // for rest of browsers
+        await this.handleDownloadAsBlob(multiselectedFiles);
+      }
+    } finally {
+      this.setState({ loading: false, progress:0 })
+      this.updateProgressMainMessage(false);
+    }
 
-    if (multiselectedFiles.size > 1 || file.directory) {
-      // ZIP download
-      await this.downloadFiles()
+  }
+
+  async handleDownloadWithDirectoryPicker(files) {
+    const { selectionPossible, rootDirHandle } = await this.handleDirectorySelection()
+    if (!selectionPossible) {
+      return;
+    }
+    this.setState({ loading: true, totalDownloaded: 0, progress: 0 })
+    this.updateProgressDetails("Calculating size", "")
+    var totalSize = await this.calculateTotalSize(files)
+    this.updateProgressDetails("Calculating size", this.formatSize(totalSize))
+    this.setState({ totalDownloadSize: totalSize })
+    const { hasQuota, availableQuota } = await this.checkDownloadQuota(totalSize);
+    if (hasQuota) {
+      this.updateProgressMainMessage(true);
+      await this.downloadFilesAndFolders(files, rootDirHandle);
     } else {
+      this.showDownloadErrorDialog(availableQuota)
+    }
+  }
+
+  async handleDownloadAsBlob(selectedFiles) {
+    this.setState({ loading: true, totalDownloaded: 0, progress: 0 })
+    this.updateProgressDetails("Initializing...", "")
+    var totalSize = await this.calculateTotalSize(selectedFiles)
+    this.updateProgressDetails("Total size", this.formatSize(totalSize))
+    this.setState({ totalDownloadSize: totalSize })
+    if (totalSize >= ZIP_DOWNLOAD_SIZE_LIMIT) {
+      this.showDownloadErrorDialog(ZIP_DOWNLOAD_SIZE_LIMIT)
+      return;
+    }
+
+    this.updateProgressMainMessage(true);
+
+    const { id } = this.props
+    const file = selectedFiles.values().next().value;
+
+    if (selectedFiles.size > 1 || file.directory) {
+      // ZIP download
+
+      const zipBlob = await this.prepareZipBlob(selectedFiles)
+      this.downloadBlob(zipBlob, id)
+      this.zip = new JSZip()
+    } else {
+
       // Single file download
       await this.downloadFile(file)
     }
   }
 
-  async downloadFiles() {
-    const { multiselectedFiles } = this.state
-    const { id } = this.props
-
-    if ((await this.calculateTotalSize(multiselectedFiles)) <= sizeLimit) {
-      this.setState({ loading: true })
-      const zipBlob = await this.prepareZipBlob(multiselectedFiles)
-      this.downloadBlob(zipBlob, id)
-      this.zip = new JSZip()
-      this.setState({ loading: false })
-    } else {
-      this.showDownloadErrorDialog()
-    }
+  isDirectoryPickerAvailable() {
+    return ('showSaveFilePicker' in window && 'showDirectoryPicker' in window)
   }
+
 
   async calculateTotalSize(files) {
     let size = 0
     for (let file of files) {
       if (!file.directory) {
         size += file.size
+        this.updateProgressDetails(file.name, "calculating...")
       } else {
         const nestedFiles = await this.controller.listFiles(file.path)
         size += await this.calculateTotalSize(nestedFiles)
@@ -343,10 +519,27 @@ class DataBrowser extends React.Component {
     return size
   }
 
+  formatSize(sizeInBytes) {
+    if (sizeInBytes >= 1024 * 1024 * 1024) {
+      // Convert to GB
+      return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    } else if (sizeInBytes >= 1024 * 1024) {
+      // Convert to MB
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
+    } else if (sizeInBytes >= 1024) {
+      // Convert to KB
+      return `${(sizeInBytes / 1024).toFixed(2)} KB`;
+    } else {
+      // Bytes
+      return `${sizeInBytes} B`;
+    }
+  }
+
+
   async prepareZipBlob(files) {
     for (let file of files) {
-      if (!file.directory) {
-        const dataArray = await this.controller.download(file)
+      if (!file.directory) {        
+        const dataArray = await this.controller.download(file, this.updateProgress)
         this.zip.file(
           file.path,
           new Blob(dataArray, { type: this.inferMimeType(file.path) })
@@ -360,21 +553,150 @@ class DataBrowser extends React.Component {
     return await this.zip.generateAsync({ type: 'blob' })
   }
 
-  async downloadFile(file) {
-    if (file.size <= sizeLimit) {
-      try {
-        this.setState({ loading: true })
-        const blob = await this.fileToBlob(file)
-        this.downloadBlob(blob, file.name)
-      } finally {
-        this.setState({ loading: false })
+  // Start :File System API : Limited availability
+  async checkDownloadQuota(fileSize) {
+    if (!navigator.storage || !navigator.storage.estimate) {
+      // Storage estimation not supported in this browser
+      return { hasQuota: true, availableQuota: Infinity }; // Assume enough space as fallback
+    }
+
+    try {
+      const { quota, usage } = await navigator.storage.estimate();
+      const availableQuota = quota - usage;
+
+      if (fileSize > availableQuota) {
+        return { hasQuota: false, availableQuota };
       }
-    } else {
-      this.showDownloadErrorDialog()
+
+      return { hasQuota: true, availableQuota };
+    } catch (error) {
+      return { hasQuota: false, availableQuota: 0 }; // Default to 0 available on error
     }
   }
 
-  showDownloadErrorDialog() {
+  async handleDirectorySelection() {
+    try {
+      // Prompt user to select a directory - this should be done 
+      // immediately after click, otherwise browser may throws security error 
+      // if too much time is taken by other processes before selection    
+      const rootDirHandle = await window.showDirectoryPicker()
+
+      const permission = await rootDirHandle.requestPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        throw new Error("Permission denied by the user.");
+      }
+
+      if (!(await this.isDirectoryEmpty(rootDirHandle))) {
+        this.setState({ showMergeDialog: true })
+        const decision = await new Promise((resolve) => {
+          this.resolveMergeDecision = resolve;
+        });
+        if (!decision) {
+          return { selectionPossible: false, rootDirHandle };
+        }
+      }
+      return { selectionPossible: true, rootDirHandle };
+    } catch (err) {
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      } else {
+        console.error(err)
+        this.openErrorDialog("An error occurred while accessing the directory. Please try again."+ err)
+      }
+      return { selectionPossible: false, rootDirHandle: null };
+    } finally {
+      this.resetDownloadDialogStates()
+    }
+  }
+
+  async isDirectoryEmpty(dirHandle) {
+    const entries = dirHandle.entries();
+
+    for await (const _ of entries) {
+      return false;
+    }
+    return true;
+  }
+
+  async downloadFilesAndFolders(files, parentDirHandle) {
+    try {
+      
+      for (const file of files) {
+        if (this.state.cancelDownload) {
+          return;
+        }
+
+        if (!file.directory) {
+
+          // Handle file download
+          const fileExists = await parentDirHandle.getFileHandle(file.name, { create: false }).catch(() => null);
+
+          if (fileExists) {
+            // Skip file logic if apply-to-all and skip were selected earlier
+            if (this.state.applyToAllFiles && this.state.skipFile) {
+              this.updateProgress(file.size, file.name, "Skipping...")
+              continue;
+            }
+
+            // Prompt user decision if not applying to all files
+            if (!this.state.applyToAllFiles) {
+              this.setState({ currentFile: file, showFileExistsDialog: true });
+
+              const decision = await new Promise((resolve) => {
+                this.resolveDecision = resolve;
+              });
+
+              if (this.state.skipFile) {
+                this.updateProgress(file.size, file.name, "Skipping...")
+                continue;
+              }
+
+              if (this.state.cancelDownload) {
+                return;
+              }
+            }
+          }
+
+          await this.controller.downloadAndAssemble(file, parentDirHandle, this.updateProgress)
+
+        } else {
+          // Handle subfolder recursively
+          const dirHandle = await parentDirHandle.getDirectoryHandle(file.name, { create: true })
+          const filesInDir = await this.controller.listFiles(file.path)
+          await this.downloadFilesAndFolders(filesInDir, dirHandle)
+          if (this.state.cancelDownload) {
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      this.openErrorDialog(
+        `Error downloading ${[...files].map(file => file.name).join(", ")}: ` + (err.message || err)
+      );
+    }
+  }
+
+  async fileExistsInDirectory(dirHandle, fileName) {
+    try {
+      await dirHandle.getFileHandle(fileName); // Attempt to get file handle
+      return true; // File exists
+    } catch (err) {
+      if (err.name === "NotFoundError") {
+        return false; // File does not exist
+      }
+      throw err; // Re-throw unexpected errors
+    }
+  }
+
+  // End :File System API : Limited availability
+
+  async downloadFile(file) {
+    const blob = await this.fileToBlob(file)
+    this.downloadBlob(blob, file.name)
+  }
+
+  showDownloadErrorDialog(sizeLimit) {
     this.openErrorDialog(messages.get(messages.CANNOT_DOWNLOAD, sizeLimit))
   }
 
@@ -388,7 +710,7 @@ class DataBrowser extends React.Component {
   }
 
   async fileToBlob(file) {
-    const dataArray = await this.controller.download(file)
+    const dataArray = await this.controller.download(file, this.updateProgress)
     return new Blob(dataArray, { type: this.inferMimeType(file.path) })
   }
 
@@ -463,7 +785,7 @@ class DataBrowser extends React.Component {
 
   fetchRights() {
     const { id, kind } = this.props
-    this.controller.getRights([{permId: id, entityKind: kind}]).then(right => {
+    this.controller.getRights([{ permId: id, entityKind: kind }]).then(right => {
       if (right[id] && right[id].rights) {
         const editable = right[id].rights.includes("UPDATE")
         this.setState({ editable: editable })
@@ -486,6 +808,8 @@ class DataBrowser extends React.Component {
     this.setState({ errorMessage: null })
   }
 
+
+
   render() {
     const { classes, sessionToken, id } = this.props
     const {
@@ -499,8 +823,16 @@ class DataBrowser extends React.Component {
       totalSpace,
       loading,
       errorMessage,
-      editable
+      editable,
+      progress,
+      progressMessage,
+      progressDetailPrimary,
+      progressDetailSecondary,
+      showFileExistsDialog,
+      applyToAllFiles,
+      showMergeDialog
     } = this.state
+
 
     return [
       <div
@@ -637,16 +969,40 @@ class DataBrowser extends React.Component {
         </div>
       </div>,
       <LoadingDialog
-        key='data-browser-loaging-dialog'
-        variant='indeterminate'
+        key='data-browser-loading-dialog'
+        variant='determinate'
+        value={progress}
         loading={loading}
-        message={messages.get(messages.PREPARING_FILE)}
+        message={progressMessage}
+        showBackground='true'
+        detailPrimary={progressDetailPrimary}
+        detailSecondary={progressDetailSecondary}
       />,
       <ErrorDialog
         key='data-browser-error-dialog'
         open={!!errorMessage}
         error={errorMessage}
         onClose={this.closeErrorDialog}
+      />,
+      <FileExistsDialog
+        key='overwrite-modal-title"'
+        open={showFileExistsDialog}
+        onReplace={this.handleReplace}
+        onSkip={this.handleSkip}
+        onCancel={this.handleCancel}
+        title={messages.get(messages.FILE_EXISTS)}
+        onApplyToAllChange={this.handleApplyToAllSelection}
+        applyToAll={applyToAllFiles}
+        content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE,
+          this.state.currentFile?.name)}
+      />,
+      <ConfirmationDialog
+        key='merge-modal-title"'
+        open={showMergeDialog}
+        onConfirm={this.handleConfirmMerge}
+        onCancel={this.handleCancelMerge}
+        title={messages.get(messages.CONFIRM_MERGE)}
+        content={messages.get(messages.CONFIRMATION_MERGE_DOWNLOAD)}
       />
     ]
   }

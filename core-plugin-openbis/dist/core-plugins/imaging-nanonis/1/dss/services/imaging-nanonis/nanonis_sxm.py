@@ -24,7 +24,7 @@ import sys
 import skimage
 from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
 import spmpy_terry as spmpy   # <--- spmpy has other methods
-from scipy.ndimage import gaussian_filter
+import spiepy
 
 import matplotlib.pyplot as plt
 # %matplotlib inline
@@ -77,8 +77,19 @@ def generate_random_image(height, width):
     print(f'{json.dumps(preview)}')
     return preview
 
+def remove_line_average(chData):
+    for i, row in enumerate(chData):
+        if not numpy.isnan(row).any():
+            try:
+                x = numpy.arange(len(row))
+                chData[i] -= numpy.polyval(numpy.polyfit(x, row, 1), x)
+            except Exception as e:
+                print(f"Error at row {i}: {e}\nRow data: {row}")
 
-def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, include_param_info, filter, other_params):
+    return chData
+
+
+def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, filter, other_params):
     img = load_image(file_path)
     img_byte_arr = io.BytesIO()
 
@@ -96,8 +107,22 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
         if filter == "GAUSSIAN":
             chData = skimage.filters.gaussian(chData, sigma=int(other_params["Gaussian Sigma"][0]), truncate=float(other_params["Gaussian Truncate"][0]))
         elif filter == "LAPLACE":
-            # chData = skimage.filters.gaussian(chData, sigma=int(other_params["Gaussian Sigma"][0]), truncate=float(other_params["Gaussian Truncate"][0]))
+            chData = skimage.filters.gaussian(chData, sigma=int(other_params["Gaussian Sigma"][0]), truncate=float(other_params["Gaussian Truncate"][0]))
             chData = skimage.filters.laplace(chData, ksize=int(other_params["Laplace Size"][0]))
+        elif filter == 'ZERO BACKGROUND':
+            chData = chData - min_before
+        elif filter == 'PLANE SUBTRACTION':
+            if ~numpy.isnan(numpy.sum(chData)):
+                chData, _ = spiepy.flatten_xy(chData)
+            else:
+                m,n = numpy.shape(chData)
+                i = numpy.argwhere(numpy.isnan(chData))[0,0]
+                im_cut = chData[:i-1,:]
+                chData, _ = spiepy.flatten_xy(im_cut)
+                empty = numpy.full((m-i,n),numpy.nan)
+                chData = numpy.vstack((chData,empty))
+        elif filter == 'LINE SUBTRACTION':
+            chData = remove_line_average(chData)
 
         range_before = numpy.abs(min_before-max_before)
 
@@ -127,19 +152,19 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
     encoded = base64.b64encode(img_byte_arr)
     preview = {'bytes': encoded.decode('utf-8'), 'width': int(size[0]), 'height': int(size[1])}
 
-    if include_param_info:
-        print_params = img.print_params_dict(show=False)
-    #     header = json.dumps(img.header, cls=NumpyEncoder)
-    #     preview['header'] = header
-
-        # for x in img.header.keys():
-        #     preview[x] = json.dumps(img.header[x], cls=NumpyEncoder)
-
-        for x in print_params.keys():
-            key = x
-            if key in ['bytes', 'width', 'height']:
-                key = 'meta_' + key
-            preview[key] = print_params[x]
+    # if include_param_info:
+    #     print_params = img.print_params_dict(show=False)
+    # #     header = json.dumps(img.header, cls=NumpyEncoder)
+    # #     preview['header'] = header
+    #
+    #     # for x in img.header.keys():
+    #     #     preview[x] = json.dumps(img.header[x], cls=NumpyEncoder)
+    #
+    #     for x in print_params.keys():
+    #         key = x
+    #         if key in ['bytes', 'width', 'height']:
+    #             key = 'meta_' + key
+    #         preview[key] = print_params[x]
     return preview
 
 def sxm_mode(parameters):
@@ -176,15 +201,13 @@ def sxm_mode(parameters):
                 resolution = float(resolution[:-3])
             else:
                 resolution = float(resolution)
-        elif key == 'include parameter information':
-            include_param_info = parameters[param_key].upper() == "TRUE"
         elif key == 'filter':
             filter = parameters[param_key].upper() if parameters[param_key] is not None else "NONE"
         else:
             other_params[param_key] = parameters[param_key]
 
     preview = get_sxm_image(channel, x_axis, y_axis, scaling, color_scale, colormap,
-                            colormap_scaling, resolution, include_param_info, filter, other_params)
+                            colormap_scaling, resolution, filter, other_params)
     print(f'{json.dumps(preview)}')
 
 print(params)

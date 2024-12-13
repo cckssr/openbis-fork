@@ -30,10 +30,6 @@ const styles = theme => ({
         [theme.breakpoints.down('md')]: {
             flexDirection: "column",
         },
-    },
-    noBorderNoShadow: {
-        border: 'unset',
-        boxShadow: 'none',
     }
 });
 
@@ -50,16 +46,16 @@ class ImagingDataSetViewer extends React.PureComponent {
             activeImageIdx: 0,
             activePreviewIdx: 0,
             resolution: ['original'],
-            imagingTags:[]
+            imagingTags:[],
+            datasetType: ''
         }
     }
 
-    async componentDidMount() {
-        if (!this.state.loaded) {
-            const { objId, extOpenbis } = this.props;
+    async loadImagingDataset() {
+        const { objId, extOpenbis } = this.props;
             try {
                 const imagingFacade = new ImagingFacade(extOpenbis);
-                const imagingDataSetPropertyConfig = await imagingFacade.loadImagingDataset(objId);
+                const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
                 const imagingTagsArr = await imagingFacade.loadImagingTagsVocabularyTerms(imagingFacade);
                 if (isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config)) {
                     imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
@@ -68,21 +64,34 @@ class ImagingDataSetViewer extends React.PureComponent {
                         loaded: true,
                         isChanged: true,
                         imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr
+                        imagingTags: imagingTagsArr,
+                        datasetType: datasetType
                     });
                 } else {
                     this.setState({
                         open: false,
                         loaded: true,
                         imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr
+                        imagingTags: imagingTagsArr,
+                        datasetType: datasetType
                     });
                 }
             } catch (error) {
                 this.handleError(error);
             }
+    }
+
+    async componentDidMount() {
+        if (!this.state.loaded) {
+            this.loadImagingDataset();
         }
     }
+
+    async componentDidUpdate(prevProps, prevState) {
+        if (this.state.loaded !== prevState.loaded) {
+            this.loadImagingDataset();
+        }
+   }
 
     saveDataset = async () => {
         const { objId, extOpenbis, onUnsavedChanges } = this.props;
@@ -108,6 +117,11 @@ class ImagingDataSetViewer extends React.PureComponent {
         try {
             const updatedImagingDataset = await new ImagingFacade(extOpenbis)
                 .updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
+            console.log('handleUpdate - updatedImagingDataset: ', updatedImagingDataset);
+            if(imagingDataset.images[activeImageIdx].config.metadata[constants.GENERATE])
+                this.setState({
+                    loaded: false
+                });
             if (updatedImagingDataset.error) {
                 this.setState({ open: false, isChanged: true, isSaved: false });
                 this.handleError(updatedImagingDataset.error);
@@ -324,11 +338,9 @@ class ImagingDataSetViewer extends React.PureComponent {
     };
 
     handleTagImage = (tagAll, tags) => {
-        console.log('handleTagImage - params: ', tagAll, tags);
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
         let toUpdateImgDs = { ...imagingDataset };
-        console.log('handleTagImage - before: ', toUpdateImgDs);
         if (tagAll){
             toUpdateImgDs.images[activeImageIdx].previews.map(preview => preview.tags = tags)
             this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
@@ -336,7 +348,6 @@ class ImagingDataSetViewer extends React.PureComponent {
             toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx].tags = tags;
             this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
         }
-        console.log('handleTagImage - after: ', toUpdateImgDs);
     }
 
     deletePreview = () => {
@@ -363,12 +374,13 @@ class ImagingDataSetViewer extends React.PureComponent {
             resolution,
             isSaved,
             isChanged,
-            imagingTags
+            imagingTags,
+            datasetType
         } = this.state;
         const { classes } = this.props;
         const activeImage = imagingDataset.images[activeImageIdx];
         const activePreview = activeImage.previews[activePreviewIdx];
-        console.log('ImagingDataSetViewer.render: ', this.state);
+        console.log('ImagingDataSetViewer.render: ', datasetType, this.state);
         return (
             <Container className={classes.container}>
                 <LoadingDialog loading={open} />
@@ -396,6 +408,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                         <MainPreview activePreview={activePreview} resolution={resolution}/>
                         <MainPreviewInputControls activePreview={activePreview} 
                             configInputs={activeImage.config.inputs}
+                            configMetadata={activeImage.config.metadata}
                             configResolutions={activeImage.config.resolutions}
                             resolution={resolution}
                             isChanged={isChanged}
@@ -405,6 +418,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                             onChangeActConf={this.handleActiveConfigChange}
                             imagingTags={imagingTags}
                             handleTagImage={this.handleTagImage}
+                            datasetType={datasetType}
                         />
                     </Grid2>
                 </PaperBox>

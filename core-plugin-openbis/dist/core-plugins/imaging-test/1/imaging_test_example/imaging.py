@@ -347,16 +347,19 @@ class ImagingDataSetImage(AbstractImagingClass):
             attribute = data.get(prop)
             if prop == 'previews' and attribute is not None:
                 attribute = [ImagingDataSetPreview.from_dict(preview) for preview in attribute]
-            image.__dict__[prop] = attribute
+            if prop not in ['config']:
+                image.__dict__[prop] = attribute
         return image
 
 
 class ImagingDataSetPropertyConfig(AbstractImagingClass):
     images: list[ImagingDataSetImage]
+    metadata: dict
 
-    def __init__(self, images: list[ImagingDataSetImage]):
+    def __init__(self, images: list[ImagingDataSetImage], metadata=None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetPropertyConfig"
         self.images = images if images is not None else []
+        self.metadata = metadata if metadata is not None else dict()
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -365,7 +368,8 @@ class ImagingDataSetPropertyConfig(AbstractImagingClass):
             del data["@id"]
         attr = data.get('images')
         images = [ImagingDataSetImage.from_dict(image) for image in attr] if attr is not None else None
-        return cls(images)
+        metadata = data.get('metadata')
+        return cls(images, metadata)
 
     def add_image(self, image: ImagingDataSetImage):
         if self.images is None:
