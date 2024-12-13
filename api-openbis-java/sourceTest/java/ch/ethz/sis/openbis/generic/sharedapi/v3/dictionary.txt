@@ -2921,3 +2921,7 @@ APPLICATION_SERVER_PARTICIPANT_ID
 AFS_SERVER_PARTICIPANT_ID
 is Afs Data
 set Afs Data
+get Immutable Data Date
+Immutable Data Date Search Criteria
+set Immutable Data Date
+with Immutable Data Date

@@ -68,6 +68,11 @@ public class ExperimentSearchCriteria extends AbstractEntitySearchCriteria<IExpe
         return with(new TextAttributeSearchCriteria());
     }
 
+    public ImmutableDataDateSearchCriteria withImmutableDataDate()
+    {
+        return with(new ImmutableDataDateSearchCriteria());
+    }
+
     @Override
     public ExperimentSearchCriteria negate()
     {

@@ -66,6 +66,8 @@ public class AttributesMapper
                 ColumnNames.MODIFICATION_TIMESTAMP_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.REGISTRATION_DATE,
                 ColumnNames.REGISTRATION_TIMESTAMP_COLUMN);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put(SearchFieldConstants.IMMUTABLE_DATA_DATE,
+                ColumnNames.IMMUTABLE_DATA_TIMESTAMP_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("userIds", ColumnNames.USER_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("externalCode", ColumnNames.EXTERNAL_CODE_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("archivingRequested", ColumnNames.ARCHIVING_REQUESTED);
