@@ -37,7 +37,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
             <p>No Properties to display</p>
         } else {
             return Object.entries(datasetProperties).map(([key, value], pos) => {
-                if (key === 'IMAGING_NOTES') {
+                if (key === constants.IMAGING_NOTES) {
                     return <EditableMetadataField keyProp={key}
                         valueProp={value}
                         idx={idx}
@@ -48,6 +48,10 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
             })
         }
 
+    }
+
+    const renderTags = (tags, idx) => {        
+        return tags.length > 0 && <DefaultMetadataField key={'property-tags-' + idx} keyProp={'TAGS'} valueProp={tags} />
     }
 
     const renderCommentField = (previewContainer, idx) => {
@@ -80,17 +84,10 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                         />
                     </CardActionArea>
                     <CardContent className={classes.content}>
-                        <Typography key={`metadata-datasetid-${idx}`} gutterBottom variant="h5">
-                            Data Set ID - {previewContainer.datasetId}
-                        </Typography>
-                        <Divider />
                         <Typography key={`dataset-types-header-${idx}`} gutterBottom variant="h6">
                             Data Set Types
                         </Typography>
-                        <Typography key={`dataset-types-${idx}`} variant="body2"
-                            component={'span'} sx={{
-                                color: "textSecondary"
-                            }}>
+                        <Typography key={`dataset-types-${idx}`} variant="body2" component={'span'} sx={{ color: "textSecondary" }}>
                             {renderDatasetProps(previewContainer.datasetProperties, previewContainer.datasetId, idx)}
                         </Typography>
                         <Divider />
@@ -103,6 +100,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                             }}>
                             {renderMetadataFields(previewContainer.preview.metadata, idx)}
                             {renderCommentField(previewContainer, idx)}
+                            {previewContainer.preview.tags !== null && renderTags(previewContainer.preview.tags, idx)}
                         </Typography>
                     </CardContent>
                 </Card>
