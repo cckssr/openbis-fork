@@ -111,7 +111,15 @@ public class ImagingService implements ICustomDSSServiceExecutor
         }
         try
         {
-            return ClassUtils.create(IImagingDataSetAdaptor.class, adaptorName, properties);
+            AdapterRepository repository = AdapterRepository.getInstance();
+            Properties adaptorProperties = repository.get(adaptorName);
+            Properties mergedProperties = new Properties();
+            mergedProperties.putAll(properties);
+            if(adaptorProperties != null)
+            {
+                mergedProperties.putAll(adaptorProperties);
+            }
+            return ClassUtils.create(IImagingDataSetAdaptor.class, adaptorName, mergedProperties);
         } catch (Exception e)
         {
             operationLog.error("Failed to load adapter:" + adaptorName, e);
