@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.WorkerContext;
@@ -60,8 +61,6 @@ import ch.ethz.sis.shared.startup.Configuration;
 public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider
 {
 
-    private Configuration configuration;
-
     private String storageRoot;
 
     private String storageUuid;
@@ -70,12 +69,13 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
 
     private Integer storageIncomingShareId;
 
-    private String openBISUser;
+    private String interactiveSessionKey;
+
+    private OpenBISConfiguration openBISConfiguration;
 
     @Override
     public void init(Configuration configuration) throws Exception
     {
-        this.configuration = configuration;
         storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
         storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(configuration);
         storageShares = IOUtils.getShares(storageRoot);
@@ -84,19 +84,20 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
             throw AFSExceptions.NoSharesFound.getInstance();
         }
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
-        openBISUser = AtomicFileSystemServerParameterUtil.getOpenBISUser(configuration);
+        interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
+        openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
     }
 
     @Override
     public boolean doesSessionHaveRights(WorkerContext workerContext, String owner, Set<FilePermission> permissions)
     {
-        OpenBIS openBIS = AtomicFileSystemServerParameterUtil.getOpenBIS(configuration);
+        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
         openBIS.setSessionToken(workerContext.getSessionToken());
 
         if (workerContext.isTransactionManagerMode())
         {
             openBIS.setTransactionId(workerContext.getTransactionId());
-            openBIS.setInteractiveSessionKey(AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration));
+            openBIS.setInteractiveSessionKey(interactiveSessionKey);
         }
 
         String ownerShare = null;
@@ -156,7 +157,7 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         {
             SessionInformation sessionInformation = openBIS.getSessionInformation();
 
-            if (sessionInformation != null && sessionInformation.getPerson().getUserId().equals(openBISUser))
+            if (sessionInformation != null && sessionInformation.getPerson().getUserId().equals(openBISConfiguration.getOpenBISUser()))
             {
                 Event deletion = findAfsDataSetDeletion(openBIS, owner);
 

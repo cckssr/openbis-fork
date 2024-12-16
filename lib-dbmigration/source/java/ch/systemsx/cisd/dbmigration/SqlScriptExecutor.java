@@ -20,10 +20,6 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -35,20 +31,24 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 
 /**
  * Implementation of {@link ISqlScriptExecutor}.
- * 
+ *
  * @author Franz-Josef Elmer
  */
-public class SqlScriptExecutor extends JdbcDaoSupport implements ISqlScriptExecutor
+public class SqlScriptExecutor implements ISqlScriptExecutor
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, SqlScriptExecutor.class);
 
-    /** Gives better error messages, but is a lot slower. */
+    /**
+     * Gives better error messages, but is a lot slower.
+     */
     private final boolean singleStepMode;
+
+    private final DataSource dataSource;
 
     public SqlScriptExecutor(final DataSource dataSource, final boolean singleStepMode)
     {
-        setDataSource(dataSource);
+        this.dataSource = dataSource;
         this.singleStepMode = singleStepMode;
     }
 
@@ -71,14 +71,10 @@ public class SqlScriptExecutor extends JdbcDaoSupport implements ISqlScriptExecu
                     try
                     {
                         execute(sqlStatement);
-                    } catch (final BadSqlGrammarException ex2)
+                    } catch (final SQLException e)
                     {
-                        throw new BadSqlGrammarException(getTask(ex2), lastSqlStatement + ">-->"
-                                + sqlStatement + "<--<", getCause(ex2));
-                    } catch (final UncategorizedSQLException ex2)
-                    {
-                        throw new UncategorizedSQLException(getTask(ex2), lastSqlStatement + ">-->"
-                                + sqlStatement + "<--<", getCause(ex2));
+                        throw new RuntimeException(lastSqlStatement + ">-->"
+                                + sqlStatement + "<--<", e);
                     }
                     lastSqlStatement = sqlStatement;
                 }
@@ -108,46 +104,9 @@ public class SqlScriptExecutor extends JdbcDaoSupport implements ISqlScriptExecu
     }
 
     @Private
-    void execute(final String script)
+    void execute(final String script) throws SQLException
     {
-        getJdbcTemplate().execute(script);
-    }
-
-    private String getTask(final BadSqlGrammarException ex)
-    {
-        final String marker = "; bad SQL grammar [";
-        return getTask(ex, marker);
-    }
-
-    private String getTask(final UncategorizedSQLException ex)
-    {
-        final String marker = "; uncategorized SQLException for SQL [";
-        return getTask(ex, marker);
-    }
-
-    private String getTask(final RuntimeException ex, final String marker)
-    {
-        final String msg = ex.getMessage();
-        final int endIdx = msg.indexOf(marker);
-        if (endIdx > 0)
-        {
-            return msg.substring(0, endIdx);
-        } else
-        {
-            return msg;
-        }
-    }
-
-    private SQLException getCause(final DataAccessException ex)
-    {
-        final Throwable cause = ex.getCause();
-        if (cause instanceof SQLException)
-        {
-            return (SQLException) cause;
-        } else
-        {
-            throw new Error("Cause of DataAccessException needs to be a SQLException.", cause);
-        }
+        SQLUtils.execute(dataSource, script, new SQLUtils.NoParametersSetter());
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.UUID;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.manager.TransactionManager;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.ConnectionFactory;
@@ -64,7 +65,7 @@ public class ServiceProvider
                     }
 
                     ServiceProvider.openBISService =
-                            new EncapsulatedOpenBISService(AtomicFileSystemServerParameterUtil.getOpenBISFacade(configuration));
+                            new EncapsulatedOpenBISService(OpenBISConfiguration.getInstance(configuration).getOpenBISFacade());
                     ServiceProvider.lockManager = createLockManager();
                     ServiceProvider.configProvider = new ConfigProvider(configuration);
                     initialized = true;

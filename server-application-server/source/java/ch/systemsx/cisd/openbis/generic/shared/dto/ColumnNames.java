@@ -487,7 +487,7 @@ public final class ColumnNames
 
     public static final String JSON_VALUE_COLUMN = "json_value";
 
-    public static final String IMMUTABLE_DATA_COLUMN = "immutable_data";
+    public static final String IMMUTABLE_DATA_TIMESTAMP_COLUMN = "immutable_data_timestamp";
 
     public static final String META_DATA = "meta_data";
 

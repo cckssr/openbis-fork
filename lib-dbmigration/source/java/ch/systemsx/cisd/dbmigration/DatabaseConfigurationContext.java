@@ -21,14 +21,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -39,10 +36,10 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 
 /**
  * Configuration context for database operations.
- * 
+ *
  * @author Franz-Josef Elmer
  */
-public class DatabaseConfigurationContext implements DisposableBean
+public class DatabaseConfigurationContext implements AutoCloseable
 {
     private final static Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             DatabaseConfigurationContext.class);
@@ -62,7 +59,7 @@ public class DatabaseConfigurationContext implements DisposableBean
     private String databaseKind;
 
     private DatabaseEngine databaseEngine;
-    
+
     private String validVersions;
 
     private boolean createFromScratch;
@@ -100,8 +97,13 @@ public class DatabaseConfigurationContext implements DisposableBean
         setSequenceUpdateNeeded(true);
     }
 
-    @PostConstruct
-    private void setTestEnvironmentHostOrConfigured() {
+    public void init()
+    {
+        setTestEnvironmentHostOrConfigured();
+    }
+
+    private void setTestEnvironmentHostOrConfigured()
+    {
         this.urlHostPart = DatabaseEngine.getTestEnvironmentHostOrConfigured(this.urlHostPart);
     }
 
@@ -119,10 +121,6 @@ public class DatabaseConfigurationContext implements DisposableBean
                 if (dataSource instanceof BasicDataSource)
                 {
                     ((BasicDataSource) dataSource).close();
-                }
-                if (dataSource instanceof DisposableBean)
-                {
-                    ((DisposableBean) dataSource).destroy();
                 }
             } catch (final Exception ex)
             {
@@ -179,7 +177,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns the template to created the URL of the database to be created/migrated.
-     * 
+     *
      * @param dsDatabaseName The name of the database to get the URL for.
      * @throws ConfigurationFailureException If undefined.
      */
@@ -191,7 +189,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns the fully-qualified class name of the JDBC driver.
-     * 
+     *
      * @throws ConfigurationFailureException If undefined.
      */
     private final String getDriver() throws ConfigurationFailureException
@@ -208,7 +206,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns user name of the administrator.
-     * 
+     *
      * @return The default admin user of the database engine when undefined.
      * @throws ConfigurationFailureException If neither the admin user nor the database engine are defined.
      */
@@ -226,7 +224,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns password of the administrator.
-     * 
+     *
      * @return <code>null</code> when undefined.
      */
     private final String getAdminPassword()
@@ -236,7 +234,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns database kind.
-     * 
+     *
      * @return <code>null</code> when undefined.
      */
     private final String getDatabaseKind()
@@ -244,7 +242,9 @@ public class DatabaseConfigurationContext implements DisposableBean
         return databaseKind;
     }
 
-    /** Returns the complete database URL. */
+    /**
+     * Returns the complete database URL.
+     */
     public final String getDatabaseURL()
     {
         final String dsDatabaseName = getDatabaseName();
@@ -278,7 +278,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns data source for admin purposes.
-     * 
+     *
      * @throws ConfigurationFailureException If not all relevant information has been defined that is needed for the admin data source.
      */
     public final DataSource getAdminDataSource() throws ConfigurationFailureException
@@ -373,9 +373,9 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Sets user name of the administrator.
-     * 
+     *
      * @param adminUser New value. Can be <code>null</code>. For convenience when using with Spring property place holders, an empty string will be
-     *            replaced by <code>null</code>.
+     *                  replaced by <code>null</code>.
      */
     public final void setAdminUser(final String adminUser)
     {
@@ -390,7 +390,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Sets the basic name of the database. The kind of database will be added to this to create the full database name.
-     * 
+     *
      * @param basicDatabaseName The basic name of the database. Must not be <code>null</code>.
      */
     public void setBasicDatabaseName(final String basicDatabaseName)
@@ -409,7 +409,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Sets password of the administrator.
-     * 
+     *
      * @param adminPassword New value. Can be <code>null</code>.
      */
     public final void setAdminPassword(final String adminPassword)
@@ -496,7 +496,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns the URL of the database server which allows to create a new database.
-     * 
+     *
      * @return <code>null</code> when undefined.
      */
     private final String getAdminURL() throws ConfigurationFailureException
@@ -506,19 +506,8 @@ public class DatabaseConfigurationContext implements DisposableBean
     }
 
     /**
-     * Returns <code>lobHandler</code>.
-     * 
-     * @throws ConfigurationFailureException If the database engine is not defined.
-     */
-    public final LobHandler getLobHandler() throws ConfigurationFailureException
-    {
-        checkDatabaseEngine();
-        return databaseEngine.getLobHandler();
-    }
-
-    /**
      * Returns <code>sequencerHandler</code>.
-     * 
+     *
      * @throws ConfigurationFailureException If the database engine is not defined.
      */
     public final ISequencerHandler getSequencerHandler() throws ConfigurationFailureException
@@ -555,7 +544,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns <code>true</code> if the current database should be dropped and (re)created from scratch.
-     * 
+     *
      * @return <code>false</code> when the database should only be migrated if necessary.
      */
     public final boolean isCreateFromScratch()
@@ -634,7 +623,7 @@ public class DatabaseConfigurationContext implements DisposableBean
     /**
      * Sets database kind. This will be append to the name of the database. It allows to have different database instances in parallel (for
      * developing, testing, etc.).
-     * 
+     *
      * @param databaseKind New value. Can be <code>null</code>.
      */
     public final void setDatabaseKind(final String databaseKind)
@@ -656,7 +645,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns the code of the database engine.
-     * 
+     *
      * @throws ConfigurationFailureException If undefined.
      */
     public final String getDatabaseEngineCode() throws ConfigurationFailureException
@@ -670,7 +659,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Sets the code of the database engine.
-     * 
+     *
      * @param databaseEngineCode New value.
      * @throws ConfigurationFailureException If there is no such database engine.
      */
@@ -686,7 +675,7 @@ public class DatabaseConfigurationContext implements DisposableBean
             this.databaseEngine = DatabaseEngine.POSTGRESQL;
         }
     }
-    
+
     public final String getValidVersions()
     {
         return validVersions;
@@ -710,7 +699,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Returns the folder which contains all SQL scripts.
-     * 
+     *
      * @return <code>null</code> when undefined.
      */
     public final String getScriptFolder()
@@ -720,7 +709,7 @@ public class DatabaseConfigurationContext implements DisposableBean
 
     /**
      * Sets the folder which contains all SQL scripts.
-     * 
+     *
      * @param scriptFolder New value. Can be <code>null</code>.
      */
     public final void setScriptFolder(final String scriptFolder)
@@ -767,7 +756,9 @@ public class DatabaseConfigurationContext implements DisposableBean
         this.databaseInstance = databaseInstance;
     }
 
-    /** Closes opened database connections. */
+    /**
+     * Closes opened database connections.
+     */
     public final void closeConnections()
     {
         closeConnection(dataSource);
@@ -776,12 +767,8 @@ public class DatabaseConfigurationContext implements DisposableBean
         adminDataSource = null;
     }
 
-    //
-    // DisposableBean
-    //
-
     @Override
-    public final void destroy() throws Exception
+    public final void close() throws Exception
     {
         closeConnections();
     }

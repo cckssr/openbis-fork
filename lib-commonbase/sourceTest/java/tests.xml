@@ -8,7 +8,6 @@
         </groups>
         <packages>
             <package name="ch.systemsx.cisd.common.*" />
-            <package name="ch.ethz.sis.transaction.*" />
         </packages>
     </test>
 </suite>

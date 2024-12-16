@@ -19,56 +19,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.dao.DataAccessException;
+import org.postgresql.util.PSQLException;
 
 import ch.systemsx.cisd.common.db.SQLStateUtils;
 
 /**
  * Utility database methods.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public final class DBUtilities
 {
+
+    private static final String DUPLICATE_DATABASE_PSQL_ERROR = "42P04";
+
+    private static final String INVALID_CATALOG_NAME_PSQL_ERROR = "3D000";
+
+    private static final String DUPLICATE_OBJECT_PSQL_ERROR = "42710";
 
     private DBUtilities()
     {
         // Can not be instantiated.
     }
 
-    /**
-     * Checks whether given <code>DataAccessException</code> is caused by a "database does not exist" exception.
-     * <p>
-     * This is database specific.
-     * </p>
-     */
-    public static boolean isDBNotExistException(final DataAccessException ex)
+    public static boolean isDBNotExistException(final Exception ex)
     {
-        // 3D000: INVALID CATALOG NAME
-        return SQLStateUtils.isInvalidCatalogName(SQLStateUtils.tryGetSqlState(ex));
+        return ex instanceof PSQLException && INVALID_CATALOG_NAME_PSQL_ERROR.equals(((PSQLException) ex).getSQLState());
     }
 
-    /**
-     * Checks whether given <code>DataAccessException</code> is caused by a "duplicate object" exception.
-     * <p>
-     * This is database specific.
-     * </p>
-     */
-    public static boolean isDuplicateObjectException(final DataAccessException ex)
+    public static boolean isDuplicateObjectException(final Exception ex)
     {
-        // 42710 DUPLICATE OBJECT
-        return SQLStateUtils.isDuplicateObject(SQLStateUtils.tryGetSqlState(ex));
+        return ex instanceof PSQLException && DUPLICATE_OBJECT_PSQL_ERROR.equals(((PSQLException) ex).getSQLState());
     }
 
-    public static boolean isDuplicateDatabaseException(final DataAccessException ex)
+    public static boolean isDuplicateDatabaseException(final Exception ex)
     {
-        // 42P04 DUPLICATE DATABASE
-        return SQLStateUtils.isDuplicateDatabase(SQLStateUtils.tryGetSqlState(ex));
+        return ex instanceof PSQLException && DUPLICATE_DATABASE_PSQL_ERROR.equals(((PSQLException) ex).getSQLState());
     }
 
     /**
      * Splits SQL statements in <var>sqlScript</var> by ';'.
-     * 
+     *
      * @return A list of SQL statements, one per list entry.
      */
     public final static List<String> splitSqlStatements(final String sqlScript)

@@ -39,8 +39,10 @@ import org.testng.annotations.Test;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.UUID;
 
 import static org.junit.Assert.fail;
 import static org.testng.Assert.assertEquals;
@@ -831,6 +833,42 @@ public class SearchExperimentTest extends AbstractExperimentTest
                 // Then
                 "Search criteria with time zone doesn't make sense for property " + propertyType.getPermId()
                         + " of data type " + DataType.DATE);
+    }
+
+    @Test
+    public void testSearchWithImmutableDataDate()
+    {
+        Date startDate = new Date();
+
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, false);
+
+        ExperimentCreation mutableCreation = new ExperimentCreation();
+        mutableCreation.setCode("EXPERIMENT_MUTABLE_" + UUID.randomUUID().toString().toUpperCase());
+        mutableCreation.setTypeId(experimentType);
+        mutableCreation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+
+        ExperimentCreation immutableCreation = new ExperimentCreation();
+        immutableCreation.setCode("EXPERIMENT_IMMUTABLE_" + UUID.randomUUID().toString().toUpperCase());
+        immutableCreation.setTypeId(experimentType);
+        immutableCreation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        immutableCreation.setImmutableData(true);
+
+        v3api.createExperiments(sessionToken, Arrays.asList(mutableCreation, immutableCreation));
+
+        ExperimentSearchCriteria allCriteria = new ExperimentSearchCriteria();
+        allCriteria.withCodes().thatIn(List.of(mutableCreation.getCode(), immutableCreation.getCode()));
+
+        SearchResult<Experiment> allResults = v3api.searchExperiments(sessionToken, allCriteria, new ExperimentFetchOptions());
+        assertEquals(allResults.getObjects().size(), 2);
+
+        ExperimentSearchCriteria immutableCriteria = new ExperimentSearchCriteria();
+        immutableCriteria.withCodes().thatIn(List.of(mutableCreation.getCode(), immutableCreation.getCode()));
+        immutableCriteria.withImmutableDataDate().thatIsLaterThanOrEqualTo(startDate);
+
+        SearchResult<Experiment> immutableResults = v3api.searchExperiments(sessionToken, immutableCriteria, new ExperimentFetchOptions());
+        assertEquals(immutableResults.getObjects().size(), 1);
     }
 
     @Test

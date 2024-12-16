@@ -18,7 +18,7 @@ import org.apache.commons.io.IOUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -698,7 +698,7 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        String lastSeenDeletionFile = getAfsServerConfiguration().getStringProperty(AtomicFileSystemServerParameter.openBISLastSeenDeletionFile);
+        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(getAfsServerConfiguration()).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }
 

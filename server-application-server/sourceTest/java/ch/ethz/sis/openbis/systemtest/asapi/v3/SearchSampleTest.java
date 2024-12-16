@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1287,16 +1288,20 @@ public class SearchSampleTest extends AbstractSampleTest
         final SampleSearchCriteria shortFormatCriteria = new SampleSearchCriteria();
         shortFormatCriteria.withAnyField().thatEquals("2009-02-09");
         testSearch(TEST_USER, shortFormatCriteria, "/CISD/NEMO/CP-TEST-1", "/CISD/NEMO/DYNA-TEST-1", "/TEST-SPACE/TEST-PROJECT/FV-TEST",
-                "/TEST-SPACE/TEST-PROJECT/EV-TEST", "/TEST-SPACE/TEST-PROJECT/EV-INVALID", "/TEST-SPACE/TEST-PROJECT/EV-NOT_INVALID", "/TEST-SPACE/TEST-PROJECT/EV-PARENT",
-                "/TEST-SPACE/TEST-PROJECT/EV-PARENT-NORMAL", "/TEST-SPACE/TEST-PROJECT/SAMPLE-TO-DELETE", "/CISD/NOE/CP-TEST-2", "/TEST-SPACE/TEST-PROJECT/SAMPLE-WITH-INTERNAL-PROP",
+                "/TEST-SPACE/TEST-PROJECT/EV-TEST", "/TEST-SPACE/TEST-PROJECT/EV-INVALID", "/TEST-SPACE/TEST-PROJECT/EV-NOT_INVALID",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT-NORMAL", "/TEST-SPACE/TEST-PROJECT/SAMPLE-TO-DELETE", "/CISD/NOE/CP-TEST-2",
+                "/TEST-SPACE/TEST-PROJECT/SAMPLE-WITH-INTERNAL-PROP",
                 "/CISD/DEFAULT/PLATE_WELLSEARCH", "/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A01", "/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A02",
                 "/TEST-SPACE/NOE/CP-TEST-4", "/CISD/NEMO/CP-TEST-3");
 
         final SampleSearchCriteria mediumFormatCriteria = new SampleSearchCriteria();
         mediumFormatCriteria.withAnyField().thatEquals("2009-02-09 12:09");
         testSearch(TEST_USER, mediumFormatCriteria, "/CISD/NEMO/CP-TEST-1", "/CISD/NEMO/DYNA-TEST-1", "/TEST-SPACE/TEST-PROJECT/FV-TEST",
-                "/TEST-SPACE/TEST-PROJECT/EV-TEST", "/TEST-SPACE/TEST-PROJECT/EV-INVALID", "/TEST-SPACE/TEST-PROJECT/EV-NOT_INVALID", "/TEST-SPACE/TEST-PROJECT/EV-PARENT",
-                "/TEST-SPACE/TEST-PROJECT/EV-PARENT-NORMAL", "/TEST-SPACE/TEST-PROJECT/SAMPLE-TO-DELETE", "/CISD/NOE/CP-TEST-2", "/TEST-SPACE/TEST-PROJECT/SAMPLE-WITH-INTERNAL-PROP",
+                "/TEST-SPACE/TEST-PROJECT/EV-TEST", "/TEST-SPACE/TEST-PROJECT/EV-INVALID", "/TEST-SPACE/TEST-PROJECT/EV-NOT_INVALID",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT",
+                "/TEST-SPACE/TEST-PROJECT/EV-PARENT-NORMAL", "/TEST-SPACE/TEST-PROJECT/SAMPLE-TO-DELETE", "/CISD/NOE/CP-TEST-2",
+                "/TEST-SPACE/TEST-PROJECT/SAMPLE-WITH-INTERNAL-PROP",
                 "/CISD/DEFAULT/PLATE_WELLSEARCH", "/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A01", "/CISD/DEFAULT/PLATE_WELLSEARCH:WELL-A02",
                 "/TEST-SPACE/NOE/CP-TEST-4");
 
@@ -2559,6 +2564,42 @@ public class SearchSampleTest extends AbstractSampleTest
     }
 
     @Test
+    public void testSearchWithImmutableDataDate()
+    {
+        Date startDate = new Date();
+
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        EntityTypePermId sampleType = createASampleType(sessionToken, false);
+
+        SampleCreation mutableCreation = new SampleCreation();
+        mutableCreation.setCode("SAMPLE_MUTABLE_" + UUID.randomUUID().toString().toUpperCase());
+        mutableCreation.setTypeId(sampleType);
+        mutableCreation.setSpaceId(new SpacePermId("CISD"));
+
+        SampleCreation immutableCreation = new SampleCreation();
+        immutableCreation.setCode("SAMPLE_IMMUTABLE_" + UUID.randomUUID().toString().toUpperCase());
+        immutableCreation.setTypeId(sampleType);
+        immutableCreation.setSpaceId(new SpacePermId("CISD"));
+        immutableCreation.setImmutableData(true);
+
+        v3api.createSamples(sessionToken, Arrays.asList(mutableCreation, immutableCreation));
+
+        SampleSearchCriteria allCriteria = new SampleSearchCriteria();
+        allCriteria.withCodes().thatIn(List.of(mutableCreation.getCode(), immutableCreation.getCode()));
+
+        SearchResult<Sample> allResults = v3api.searchSamples(sessionToken, allCriteria, new SampleFetchOptions());
+        assertEquals(allResults.getObjects().size(), 2);
+
+        SampleSearchCriteria immutableCriteria = new SampleSearchCriteria();
+        immutableCriteria.withCodes().thatIn(List.of(mutableCreation.getCode(), immutableCreation.getCode()));
+        immutableCriteria.withImmutableDataDate().thatIsLaterThanOrEqualTo(startDate);
+
+        SearchResult<Sample> immutableResults = v3api.searchSamples(sessionToken, immutableCriteria, new SampleFetchOptions());
+        assertEquals(immutableResults.getObjects().size(), 1);
+    }
+
+    @Test
     public void testSearchForSampleWithIntegerPropertyMatchingSubstring()
     {
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -3619,7 +3660,8 @@ public class SearchSampleTest extends AbstractSampleTest
         final String sessionToken = v3api.login(TEST_USER, PASSWORD);
         final List<Sample> samples = searchSamples(sessionToken, criteria, fetchOptions);
 
-        try {
+        try
+        {
             samples.forEach(sample -> assertFalse(sample.getProperties().isEmpty()));
         } finally
         {
@@ -3640,7 +3682,8 @@ public class SearchSampleTest extends AbstractSampleTest
         final List<Sample> samples = searchSamples(sessionToken, criteria, fetchOptions);
 
         assertEquals(samples.size(), 7);
-        try {
+        try
+        {
             samples.forEach(sample -> assertFalse(sample.getProperties().isEmpty()));
         } finally
         {
@@ -3664,7 +3707,8 @@ public class SearchSampleTest extends AbstractSampleTest
         // Then
         assertEquals(samples.size(), 7);
         System.err.println(samples);
-        try {
+        try
+        {
             samples.forEach(sample -> assertFalse(sample.getProperties().isEmpty(), sample + " has unexpected properties"));
         } finally
         {
@@ -3677,9 +3721,9 @@ public class SearchSampleTest extends AbstractSampleTest
     {
         final List<Sample> allSamples = getAllSamplesWithProperties();
         final Set<String> expectedSampleIds = allSamples.stream().filter(sample ->
-                !sample.getProperties().isEmpty() &&
-                        sample.getProperties().values().stream().anyMatch(SearchSampleTest::isNumber)).
-                        map(sample -> sample.getPermId().toString()).
+                        !sample.getProperties().isEmpty() &&
+                                sample.getProperties().values().stream().anyMatch(SearchSampleTest::isNumber)).
+                map(sample -> sample.getPermId().toString()).
                 collect(Collectors.toSet());
 
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
@@ -3721,9 +3765,9 @@ public class SearchSampleTest extends AbstractSampleTest
 
         final List<Sample> allSamples = getAllSamplesWithProperties();
         final Set<String> expectedSampleIds = allSamples.stream().filter(sample ->
-                !sample.getProperties().isEmpty() &&
-                        sample.getProperties().values().stream().anyMatch(SearchSampleTest::isDate)).
-                        map(sample -> sample.getPermId().toString()).
+                        !sample.getProperties().isEmpty() &&
+                                sample.getProperties().values().stream().anyMatch(SearchSampleTest::isDate)).
+                map(sample -> sample.getPermId().toString()).
                 collect(Collectors.toSet());
 
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
@@ -3764,9 +3808,9 @@ public class SearchSampleTest extends AbstractSampleTest
 
         final List<Sample> allSamples = getAllSamplesWithProperties();
         final Set<String> expectedSampleIds = allSamples.stream().filter(sample ->
-                !sample.getProperties().isEmpty() &&
-                        sample.getProperties().values().stream().anyMatch(SearchSampleTest::isBoolean)).
-                        map(sample -> sample.getPermId().toString()).
+                        !sample.getProperties().isEmpty() &&
+                                sample.getProperties().values().stream().anyMatch(SearchSampleTest::isBoolean)).
+                map(sample -> sample.getPermId().toString()).
                 collect(Collectors.toSet());
 
         final SampleSearchCriteria criteria = new SampleSearchCriteria().withAndOperator();
@@ -3815,7 +3859,7 @@ public class SearchSampleTest extends AbstractSampleTest
             final Date formattedValue = DateFieldSearchCriteria.formatValue((String) property, dateFormat);
             return (formattedValue == null) ? null
                     : new Object[] { AnyFieldSearchConditionTranslator.TRUNCATION_INTERVAL_BY_DATE_FORMAT
-                    .get(dateFormat.getClass()), formattedValue};
+                    .get(dateFormat.getClass()), formattedValue };
         }).anyMatch(Objects::nonNull);
     }
 

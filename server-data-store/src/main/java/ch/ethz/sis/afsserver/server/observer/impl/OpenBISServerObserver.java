@@ -13,6 +13,7 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponse;
@@ -40,13 +41,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
     private static final String THREAD_NAME = "openbis-server-observer-task";
 
-    private Configuration configuration;
-
-    private String openBISLastSeenDeletionFile;
-
-    private Integer openBISLastSeenDeletionBatchSize;
-
-    private Integer openBISLastSeenDeletionIntervalInSeconds;
+    private OpenBISConfiguration openBISConfiguration;
 
     private APIServer<TransactionConnection, ApiRequest, ApiResponse, ?> apiServer;
 
@@ -55,12 +50,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     @Override
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
-        this.configuration = configuration;
-        this.openBISLastSeenDeletionFile = AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionFile(configuration);
-        this.openBISLastSeenDeletionBatchSize =
-                AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionBatchSize(configuration);
-        this.openBISLastSeenDeletionIntervalInSeconds =
-                AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionIntervalInSeconds(configuration);
+        this.openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
     }
@@ -76,7 +66,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                                                   }
                                               },
                 0,
-                openBISLastSeenDeletionIntervalInSeconds * 1000L);
+                openBISConfiguration.getOpenBISLastSeenDeletionIntervalInSeconds() * 1000L);
     }
 
     @Override
@@ -88,7 +78,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         while (true)
         {
-            OpenBISFacade openBISFacade = AtomicFileSystemServerParameterUtil.getOpenBISFacade(configuration);
+            OpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
 
             try
             {
@@ -101,7 +91,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
                 EventFetchOptions fo = new EventFetchOptions();
                 fo.sortBy().id().asc();
-                fo.count(openBISLastSeenDeletionBatchSize);
+                fo.count(openBISConfiguration.getOpenBISLastSeenDeletionBatchSize());
 
                 if (lastSeenEvent != null)
                 {
@@ -167,7 +157,8 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                         throw new RuntimeException(
                                 "The processing of deletion events could not progress from last seen id: " + lastSeenEvent.getId()
                                         + " and registration date: " + lastSeenEvent.getRegistrationDate()
-                                        + ". Try increasing the batch size to a higher value than " + openBISLastSeenDeletionBatchSize + ".");
+                                        + ". Try increasing the batch size to a higher value than "
+                                        + openBISConfiguration.getOpenBISLastSeenDeletionBatchSize() + ".");
                     }
                 }
             } catch (Exception e)
@@ -205,9 +196,9 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         try
         {
-            if (IOUtils.exists(openBISLastSeenDeletionFile))
+            if (IOUtils.exists(openBISConfiguration.getOpenBISLastSeenDeletionFile()))
             {
-                byte[] bytes = IOUtils.readFully(openBISLastSeenDeletionFile);
+                byte[] bytes = IOUtils.readFully(openBISConfiguration.getOpenBISLastSeenDeletionFile());
                 return jsonObjectMapper.readValue(new ByteArrayInputStream(bytes), LastSeenEvent.class);
             } else
             {
@@ -215,7 +206,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
             }
         } catch (Exception e)
         {
-            throw new RuntimeException("Could not load the last seen event from file " + openBISLastSeenDeletionFile, e);
+            throw new RuntimeException("Could not load the last seen event from file " + openBISConfiguration.getOpenBISLastSeenDeletionFile(), e);
         }
     }
 
@@ -223,7 +214,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         try
         {
-            String tempFile = openBISLastSeenDeletionFile + ".tmp";
+            String tempFile = openBISConfiguration.getOpenBISLastSeenDeletionFile() + ".tmp";
             if (IOUtils.exists(tempFile))
             {
                 IOUtils.delete(tempFile);
@@ -231,10 +222,10 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
             IOUtils.createFile(tempFile);
             byte[] bytes = jsonObjectMapper.writeValue(lastSeenEvent);
             IOUtils.write(tempFile, 0, bytes);
-            IOUtils.move(tempFile, openBISLastSeenDeletionFile);
+            IOUtils.move(tempFile, openBISConfiguration.getOpenBISLastSeenDeletionFile());
         } catch (Exception e)
         {
-            throw new RuntimeException("Could not store the last seen event in file " + openBISLastSeenDeletionFile, e);
+            throw new RuntimeException("Could not store the last seen event in file " + openBISConfiguration.getOpenBISLastSeenDeletionFile(), e);
         }
     }
 
