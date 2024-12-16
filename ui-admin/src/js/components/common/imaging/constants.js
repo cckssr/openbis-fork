@@ -24,10 +24,11 @@ const IMAGING_CODE = 'imaging';
 const IMAGING_DATA = 'IMAGING_DATA';
 const IMAGING_DATA_CONFIG = 'IMAGING_DATA_CONFIG';
 const IMAGING_NOTES = 'IMAGING_NOTES';
-const IMAGING_TAGS = 'TAGS';
+const IMAGING_TAGS = 'IMAGING_TAGS';
 const IMAGING_TAGS_LABEL = 'Imaging Tags';
 const METADATA_PREVIEW_COUNT = 'preview-total-count';
 const MULTI_EXPORT_TYPE = 'multi-export';
+const PREVIEW_COMMENT = 'PREVIEW_COMMENT';
 const PREVIEW_TYPE = 'preview';
 const RANGE = 'Range';
 const SLIDER = 'Slider';
@@ -52,6 +53,7 @@ export default {
     IMAGING_TAGS_LABEL,
     METADATA_PREVIEW_COUNT,
     MULTI_EXPORT_TYPE,
+    PREVIEW_COMMENT,
     PREVIEW_TYPE,
     RANGE,
     SLIDER,
