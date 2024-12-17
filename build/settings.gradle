@@ -5,3 +5,14 @@ includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-com
         'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
         'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
         'test-integration', 'lib-rdf'
+
+pluginManagement {
+    repositories {
+        ivy {
+            ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+            artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
