@@ -22,6 +22,8 @@ from pybis import Openbis
 TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.ImagingTestAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
+# DEFAULT_URL = "https://alaskowski:8443/openbis"
+# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
 def get_instance(url=None):
@@ -76,7 +78,7 @@ for file in files:
     props = {
         'imaging_data_config': f.read(),
         'default_dataset_view': 'IMAGING_DATASET_VIEWER',
-        'imaging_notes': 'Notes added to on dataset level'
+        # 'imaging_notes': 'Notes added on dataset level'
     }
     data_set = o.new_dataset('IMAGING_DATA',
                              experiment='/IMAGING/TEST/TEST_COLLECTION',

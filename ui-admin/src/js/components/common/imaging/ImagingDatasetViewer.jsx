@@ -56,7 +56,7 @@ class ImagingDataSetViewer extends React.PureComponent {
             try {
                 const imagingFacade = new ImagingFacade(extOpenbis);
                 const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
-                const imagingTagsArr = await imagingFacade.loadImagingTagsVocabularyTerms(imagingFacade);
+                const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
                 if (isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config)) {
                     imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
                     this.setState({

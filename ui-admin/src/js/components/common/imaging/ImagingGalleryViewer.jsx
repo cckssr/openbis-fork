@@ -34,7 +34,6 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
     const [dataSetTypes, setDataSetTypes] = React.useState([]);
 
     React.useEffect(() => {
-
         // Set the config for the gallery view from previous store config in ELN-LIMS
         if(onLoadDisplaySettings !== null){
             const setDisplaySettings = (config) => {
@@ -47,7 +46,6 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
             }
             onLoadDisplaySettings(setDisplaySettings)
         }
-
         loadGalleryViewFilters(imagingFacade, setDataSetTypes);
     }, [])
 
