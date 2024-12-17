@@ -11,6 +11,7 @@ import GalleryListView from "@src/js/components/common/imaging/components/galler
 import GalleryControlsBar from '@src/js/components/common/imaging/components/gallery/GalleryControlsBar.js';
 
 import {loadGalleryViewFilters, loadPreviewsInfo} from '@src/js/components/common/imaging/dataHandlers.js'
+import constants from './constants';
 
 const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStoreDisplaySettings = null, onLoadDisplaySettings = null}) => {
     const imagingFacade = React.useMemo(() => new ImagingFacade(extOpenbis), [extOpenbis]);
@@ -29,7 +30,7 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
     const [galleryFilter, setGalleryFilter] = React.useState({
         operator: 'AND',
         text: '',
-        property: messages.ALL
+        property: constants.IMAGING_TAGS
     });
     const [dataSetTypes, setDataSetTypes] = React.useState([]);
 
