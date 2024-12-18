@@ -283,6 +283,7 @@ class DataBrowser extends React.Component {
       applyToAllFiles: false,
       showMergeDialog: false,
       resolveMergeDecision: null,
+      showApplyToAll: true
     }
     this.zip = new JSZip()
   }
@@ -363,8 +364,8 @@ class DataBrowser extends React.Component {
     const { directory, path } = file
     if (directory) {
       await this.setPath(path)
-    } else {
-      await this.downloadFile(file)
+    } else {        
+      await this.handleDownloadFiles(new Set([file]))      
     }
   }
 
@@ -403,7 +404,7 @@ class DataBrowser extends React.Component {
       const totalDownloaded = prevState.totalDownloaded + downloadedChunk;
       const progress = Math.round((totalDownloaded / prevState.totalDownloadSize) * 100);
       const newProgress = Math.min(progress, 100);
-      const speedFormatted = this.formatDownloadSpeed(speed);
+      const speedFormatted = this.controller.formatSpeed(speed);
       
       return {
         totalDownloaded,
@@ -415,29 +416,15 @@ class DataBrowser extends React.Component {
     });
   }
 
-  formatDownloadSpeed(bytesPerSecond) {
-    if (isNaN(bytesPerSecond)) {
-      return bytesPerSecond;
-    }
-    if (bytesPerSecond >= 1024 * 1024) {
-      // Convert to MB/s
-      const mbps = bytesPerSecond / (1024 * 1024);
-      return `${mbps.toFixed(2)} MB/s`;
-    } else if (bytesPerSecond >= 1024) {
-      // Convert to KB/s
-      const kbps = bytesPerSecond / 1024;
-      return `${kbps.toFixed(2)} KB/s`;
-    } else {
-      // Bytes per second
-      return `${bytesPerSecond} B/s`;
-    }
-  }
-
 
   async handleDownload() {
     const { multiselectedFiles } = this.state
+    await this.handleDownloadFiles(multiselectedFiles)
+  }
+
+  async handleDownloadFiles(multiselectedFiles){
     this.updateProgressMainMessage(false);
-    try {
+    try {      
       // for chrome and edge
       if (this.isDirectoryPickerAvailable()) {
         await this.handleDownloadWithDirectoryPicker(multiselectedFiles)
@@ -446,7 +433,7 @@ class DataBrowser extends React.Component {
         await this.handleDownloadAsBlob(multiselectedFiles);
       }
     } finally {
-      this.setState({ loading: false, progress:0 })
+      this.setState({ loading: false, progress:0, showApplyToAll: true })
       this.updateProgressMainMessage(false);
     }
 
@@ -465,6 +452,16 @@ class DataBrowser extends React.Component {
     const { hasQuota, availableQuota } = await this.checkDownloadQuota(totalSize);
     if (hasQuota) {
       this.updateProgressMainMessage(true);
+      // don't show the apply to all checkbox if only one file s selected 
+      if (files.size === 1) {
+        const [file] = files; 
+        if (!file?.directory) { 
+          this.setState({
+            showApplyToAll: false
+          });
+        }
+      }
+
       await this.downloadFilesAndFolders(files, rootDirHandle);
     } else {
       this.showDownloadErrorDialog(availableQuota)
@@ -620,7 +617,6 @@ class DataBrowser extends React.Component {
 
   async downloadFilesAndFolders(files, parentDirHandle) {
     try {
-      
       for (const file of files) {
         if (this.state.cancelDownload) {
           return;
@@ -639,7 +635,7 @@ class DataBrowser extends React.Component {
             }
 
             // Prompt user decision if not applying to all files
-            if (!this.state.applyToAllFiles) {
+            if (!this.state.applyToAllFiles) {              
               this.setState({ currentFile: file, showFileExistsDialog: true });
 
               const decision = await new Promise((resolve) => {
@@ -830,7 +826,8 @@ class DataBrowser extends React.Component {
       progressDetailSecondary,
       showFileExistsDialog,
       applyToAllFiles,
-      showMergeDialog
+      showMergeDialog,
+      showApplyToAll
     } = this.state
 
 
@@ -991,7 +988,7 @@ class DataBrowser extends React.Component {
         onSkip={this.handleSkip}
         onCancel={this.handleCancel}
         title={messages.get(messages.FILE_EXISTS)}
-        onApplyToAllChange={this.handleApplyToAllSelection}
+        onApplyToAllChange={ showApplyToAll ? this.handleApplyToAllSelection: null}
         applyToAll={applyToAllFiles}
         content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE,
           this.state.currentFile?.name)}
