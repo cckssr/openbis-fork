@@ -1,12 +1,3 @@
-pluginManagement {
-    repositories {
-        ivy {
-            ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-            artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-        }
-    }
-}
-
 includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-common', 'lib-authentication',
         'lib-dbmigration', 'server-application-server', 'server-original-data-store', 'server-screening',
         'core-plugin-openbis', 'app-openbis-installer', 'lib-image-readers', 'test-ui-core',
