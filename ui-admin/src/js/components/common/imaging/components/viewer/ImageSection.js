@@ -29,6 +29,11 @@ const useStyles = makeStyles(() => ({
 const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChange, handleExport }) => {
 	const [expanded, setExpanded] = React.useState(false);
 
+	React.useEffect(() => {
+       if (images.length > 1)
+			setExpanded(true);
+    }, [])
+
 	const handleExpansion = () => {
 		setExpanded((prevExpanded) => !prevExpanded);
 	};
