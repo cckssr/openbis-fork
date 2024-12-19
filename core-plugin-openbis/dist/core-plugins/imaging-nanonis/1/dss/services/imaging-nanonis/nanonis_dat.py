@@ -21,6 +21,9 @@ import sys
 import json
 import os
 import sys
+
+# from spmpy import Spm as spm # <---new library does not work well with dat
+
 from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
 import spmpy_terry as spmpy   # <--- spmpy has other methods
 from datetime import datetime
@@ -57,18 +60,6 @@ preview_metadata = json.loads(sys.argv[6])
 folder_dir = os.path.join(file, 'original')
 file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 # print(file_path)
-
-
-def generate_random_image(height, width):
-    imarray = numpy.random.rand(height,width,3) * 255
-    im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
-    img_byte_arr = io.BytesIO()
-    im.save(img_byte_arr, format=format)
-    img_byte_arr = img_byte_arr.getvalue()
-    encoded = base64.b64encode(img_byte_arr)
-    preview = {'bytes': encoded.decode('utf-8'), 'width': int(width), 'height': int(height)}
-    print(f'{json.dumps(preview)}')
-    return encoded
 
 
 def get_dat_image(channel_x, channel_y, x_axis, y_axis, colormap, scaling, grouping, print_legend, resolution, include_param_info):
@@ -182,11 +173,5 @@ def dat_mode(parameters):
 
 params = preview_config
 print(params)
-if 'mode' in params:
-    if params['mode'] == '1':
-        generate_random_image(640, 640)
-    elif params['mode'] == '2':
-        dat_mode(preview_config)
 
-else:
-    dat_mode(preview_config)
+dat_mode(preview_config)

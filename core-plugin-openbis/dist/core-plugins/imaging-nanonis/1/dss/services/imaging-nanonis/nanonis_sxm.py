@@ -14,16 +14,18 @@
 #
 
 import numpy
-from PIL import Image, ImageFilter
+from PIL import Image
 import io
 import base64
-import sys
 import json
 import os
 import sys
 import skimage
-from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
-import spmpy_terry as spmpy   # <--- spmpy has other methods
+
+from spmpy import Spm as spm
+# from spmpy_terry import spm   # <--- Old library for nanonis data handling.
+
+
 import spiepy
 
 import matplotlib.pyplot as plt
@@ -61,21 +63,9 @@ preview_metadata = json.loads(sys.argv[6])
 
 params = preview_config
 
-
 folder_dir = os.path.join(file, 'original')
 file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 
-
-def generate_random_image(height, width):
-    imarray = numpy.random.rand(height,width,3) * 255
-    im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
-    img_byte_arr = io.BytesIO()
-    im.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
-    encoded = base64.b64encode(img_byte_arr)
-    preview = {'bytes': encoded.decode('utf-8'), 'width': int(width), 'height': int(height)}
-    print(f'{json.dumps(preview)}')
-    return preview
 
 def remove_line_average(chData):
     for i, row in enumerate(chData):
@@ -211,10 +201,4 @@ def sxm_mode(parameters):
     print(f'{json.dumps(preview)}')
 
 print(params)
-if 'mode' in params:
-    if params['mode'] == '3':
-        generate_random_image(640, 640)
-    elif params['mode'] == '5':
-        sxm_mode(preview_config)
-else:
-    sxm_mode(preview_config)
+sxm_mode(preview_config)
