@@ -17,8 +17,7 @@
 import ComponentController from '@src/js/components/common/ComponentController.js'
 import autoBind from 'auto-bind'
 import openbis from '@src/js/services/openbis.js'
-
-const CHUNK_SIZE = 1024 * 1024 * 10// 10MiB
+import error from '../../common/error/ErrorObject'
 
 export default class DataBrowserController extends ComponentController {
 
@@ -30,6 +29,7 @@ export default class DataBrowserController extends ComponentController {
     this.gridController = null
     this.path = ''
     this.fileNames = []
+    this.CHUNK_SIZE = 1024 * 1024 * 10;// 10MiB
   }
 
   async free() {
@@ -160,60 +160,21 @@ export default class DataBrowserController extends ComponentController {
     )
   }
 
-  async upload(fileList, onNameConflictFound, onProgressUpdate) {
-    await this.handleError(async() => {
-      let totalUploaded = 0
-      const totalSize = Array.from(fileList)
-        .reduce((acc, file) => acc + file.size, 0)
 
-      for (const file of fileList) {
-        const filePath = file.webkitRelativePath ? file.webkitRelativePath
-          : file.name
-        const targetFilePath = this.path + '/' + filePath
-        const existingFiles = await this.listFiles(targetFilePath)
+  async uploadFile(file, targetFilePath, offset,onProgressUpdate) {
+    const blob = file.slice(offset, offset + this.CHUNK_SIZE)
+    const arrayBuffer = await blob.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
 
-        const existingFileSize = existingFiles.length === 0 ? 0
-          : existingFiles[0].size
-        // If the file is smaller than 2 chunks we better replace it
-        const allowResume = file.size >= 2 * CHUNK_SIZE
-          && file.size >= existingFileSize
-        const resolutionResult = existingFiles.length === 0 ? 'replace'
-          : await onNameConflictFound(file, allowResume)
-
-        if (resolutionResult !== 'cancel') {
-          // Replace or resume upload from the last point in the file
-          let offset = resolutionResult === 'replace' ? 0 : existingFileSize
-          totalUploaded += Math.min(offset, file.size)
-          while (offset < file.size) {
-            const blob = file.slice(offset, offset + CHUNK_SIZE)
-            const arrayBuffer = await blob.arrayBuffer();
-            const data = new Uint8Array(arrayBuffer);
-
-            const uploadStartTime = Date.now();
-            await this._uploadChunk(targetFilePath, offset, data)
-            const uploadEndTime = Date.now();            
-
-            offset += blob.size
-            totalUploaded += blob.size
-
-            // Calculate download speed      
-            const elapsedTime = (uploadEndTime - uploadStartTime) / 1000; // Seconds
-            const speed = blob.size / elapsedTime; 
-            
-            onProgressUpdate(blob.size,file.name, speed)
-          }
-        } else {
-          // We stop uploading after cancel          
-          onProgressUpdate(file.size,file.name, "Finalizing...")
-          break
-        }
-      }
-      onProgressUpdate(0, "Finalizing...", "Finalizing...")
-    })
-
-    if (this.gridController) {
-      await this.gridController.load()
-    }
+    const uploadStartTime = Date.now();
+    await this._uploadChunk(targetFilePath, offset, data)
+    const uploadEndTime = Date.now();            
+    // Calculate download speed      
+    const elapsedTime = (uploadEndTime - uploadStartTime) / 1000; // Seconds
+    const speed = blob.size / elapsedTime; 
+    
+    onProgressUpdate(blob.size,file.name, speed)
+    return blob.size;
   }
 
   async handleError(fn) {
@@ -247,7 +208,7 @@ export default class DataBrowserController extends ComponentController {
       const blob = await this._download(file, offset)
       const downloadEndTime = Date.now();
       dataArray.push(await blob.arrayBuffer())
-      offset += CHUNK_SIZE
+      offset += this.CHUNK_SIZE
       
       const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
       const speed = blob.size / elapsedTime; 
@@ -277,9 +238,9 @@ export default class DataBrowserController extends ComponentController {
       const downloadEndTime = Date.now();
 
       dataArrayForDisk.push(await blob.arrayBuffer());
-      offset += CHUNK_SIZE;
+      offset += this.CHUNK_SIZE;
 
-      writeToDiskOffset += CHUNK_SIZE;
+      writeToDiskOffset += this.CHUNK_SIZE;
 
       // Calculate download speed      
       const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
@@ -312,9 +273,26 @@ export default class DataBrowserController extends ComponentController {
     console.log(`Download of ${file.name} complete!`);
   }
 
+  formatSpeed(bytesPerSecond) {
+    if (isNaN(bytesPerSecond)) {
+      return bytesPerSecond;
+    }
+    if (bytesPerSecond >= 1024 * 1024) {
+      // Convert to MB/s
+      const mbps = bytesPerSecond / (1024 * 1024);
+      return `${mbps.toFixed(2)} MB/s`;
+    } else if (bytesPerSecond >= 1024) {
+      // Convert to KB/s
+      const kbps = bytesPerSecond / 1024;
+      return `${kbps.toFixed(2)} KB/s`;
+    } else {
+      // Bytes per second
+      return `${bytesPerSecond} B/s`;
+    }
+  }
 
   async _download(file, offset) {
-    const limit = Math.min(CHUNK_SIZE, file.size - offset)
+    const limit = Math.min(this.CHUNK_SIZE, file.size - offset)
     return await openbis.read(this.owner, file.path, offset, limit)
   }
 

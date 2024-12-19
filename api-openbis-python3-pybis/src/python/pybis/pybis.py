@@ -5634,6 +5634,8 @@ class ImagingControl:
                      include=None, image_format='original', archive_format="zip", resolution='original'):
         if include is None:
             include = ['IMAGE', 'RAW_DATA']
+        else:
+            include = [x.upper() for x  in include]
 
         export_config = ImagingDataSetExportConfig(archive_format, image_format, resolution, include)
         self._export_image(perm_id, image_id, path_to_download, export_config)
@@ -5672,6 +5674,7 @@ class ImagingControl:
         get_response = requests.get(url, stream=True, verify=self._openbis.verify_certificates)
         file_name = url.split("/")[-1]
         path = os.path.join(directory_path, file_name)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'wb') as f:
             for chunk in get_response.iter_content(chunk_size=1024):
                 if chunk:

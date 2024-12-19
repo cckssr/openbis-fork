@@ -16,18 +16,14 @@ import sys
 import os
 import copy
 
-import imaging as imaging
+from pybis import Openbis, ImagingControl
+import pybis.imaging as imaging
 
-from pybis import Openbis
 import numpy as np
-
-# from spmpy_terry import spm
-# import spmpy_terry as spmpy
 
 from spmpy import Spm as spm
 
 from datetime import datetime
-import json
 import shutil
 from collections import defaultdict
 
@@ -36,6 +32,7 @@ DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.Na
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
+# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
 def get_instance(url=None):
@@ -106,7 +103,7 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
     # Select default channel according to the measurement type
     channels = reorder_sxm_channels(channels, header)
 
-    imaging_control = imaging.ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis)
 
     color_scale_visibility = [
         imaging.ImagingDataSetControlVisibility(
@@ -304,12 +301,11 @@ def _min_max_step(channel, data):
 
 def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experiment=None):
     assert experiment is not None or sample is not None, "Either sample or experiment needs to be provided!"
-    # data = spmpy.importall(folder_path, file_prefix, 'spec')
     data = spm.importall(folder_path, file_prefix, 'spec')
     if [] == data:
         raise ValueError(f"No nanonis .DAT files found in {folder_path}")
 
-    imaging_control = imaging.ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis)
 
     for d in data:
         if d.type == 'scan':
@@ -392,14 +388,14 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
 
 
 def create_preview(openbis, perm_id, config, preview_format="png", image_index=0):
-    imaging_control = imaging.ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis)
     preview = imaging.ImagingDataSetPreview(preview_format, config)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
 
 def update_image_with_preview(openbis, perm_id, image_id, preview: imaging.ImagingDataSetPreview):
-    imaging_control = imaging.ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis)
     config = imaging_control.get_property_config(perm_id)
     image = config.images[image_id]
     if len(image.previews) > preview.index:
@@ -414,35 +410,31 @@ def update_image_with_preview(openbis, perm_id, image_id, preview: imaging.Imagi
 def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download: str,
                  include=None, image_format='original', archive_format="zip", resolution='original'):
     if include is None:
-        include = ['image', 'raw data']
-    imaging_control = imaging.ImagingControl(openbis)
+        include = ['IMAGE', 'RAW_DATA']
+    imaging_control = ImagingControl(openbis)
     export_config = {
         "include": include,
-        "image-format": image_format,
-        "archive-format": archive_format,
+        "image_format": image_format,
+        "archive_format": archive_format,
         "resolution": resolution
     }
-    imaging_export = imaging.ImagingDataSetExport(export_config)
-    imaging_control.single_export_download(perm_id, imaging_export, image_id, path_to_download)
+    imaging_control.export_image(perm_id, image_id, path_to_download, **export_config)
 
 
 def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[int], preview_ids: list[int],
                         path_to_download: str, include=None, image_format='original',
                         archive_format="zip", resolution='original'):
     if include is None:
-        include = ['image', 'raw data']
-    imaging_control = imaging.ImagingControl(openbis)
+        include = ['IMAGE', 'RAW_DATA']
+    imaging_control = ImagingControl(openbis)
     export_config = {
         "include": include,
-        "image-format": image_format,
-        "archive-format": archive_format,
+        "image_format": image_format,
+        "archive_format": archive_format,
         "resolution": resolution
     }
-    imaging_multi_exports = []
-    for i in range(len(perm_ids)):
-        imaging_multi_exports += [imaging.ImagingDataSetMultiExport(perm_ids[i], image_ids[i],
-                                                                    preview_ids[i], export_config)]
-    imaging_control.multi_export_download(imaging_multi_exports, path_to_download)
+
+    imaging_control.export_previews(perm_ids, image_ids, preview_ids, path_to_download, **export_config)
 
 
 def demo_sxm_flow(openbis, file_sxm, permId=None):
@@ -477,7 +469,7 @@ def demo_sxm_flow(openbis, file_sxm, permId=None):
         "Filter": "None",
         "Gaussian Sigma": "0",
         "Gaussian Truncate": "0",
-        "Laplace Size": "0"
+        "Laplace Size": "3"
     }
     config_preview = config_sxm_preview.copy()
 
@@ -515,7 +507,6 @@ def demo_dat_flow(openbis, folder_path, permId=None):
 
     print(f'Computing previews for dataset: {perm_id}')
 
-    # data = spmpy.importall(folder_path, '', 'spec')
     data = spm.importall(folder_path, '', 'spec')
 
     for d in data:
@@ -656,12 +647,12 @@ for group in grouped_measurement_files:
                 print(f"Cannot upload {dat_files_directory}. Reason: {e}")
             shutil.rmtree(dat_files_directory)
 
-# export_image(o, '20240125135841740-40', 0, '/home/alaskowski/PREMISE')
+# export_image(o, '20241218074117986-44', 0, '/home/alaskowski/PREMISE/test')
 # export_image(o, '20240111135043750-39', 0, '/home/alaskowski/PREMISE')
 
-# multi_export_images(o, ['20240125135841740-40', '20240125135841740-40'],
+# multi_export_images(o, ['20241218074117986-44', '20241218074117986-44'],
 #                     [0, 0],
-#                     [0, 2],
-#                     '/home/alaskowski/PREMISE')
+#                     [0, 1],
+#                     '/home/alaskowski/PREMISE/test2')
 
 o.logout()

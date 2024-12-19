@@ -34,6 +34,7 @@ import FolderIcon from '@mui/icons-material/FolderOpen'
 import logger from '@src/js/common/logger.js'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
+import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 
 const color = 'default'
 const uploadButtonsColor = 'secondary'
@@ -88,7 +89,9 @@ class RightToolbar extends React.Component {
       allowResume: true,
       fileExistsDialogFile: null,
       uploadedBytes:0,
+      applyToAllFiles: false,
       totalBytesToUpload:0,
+      lastConflictResolution:null
 
     }
   }
@@ -101,57 +104,52 @@ class RightToolbar extends React.Component {
       const fileList = event.target.files
       const totalSize = Array.from(fileList)
       .reduce((acc, file) => acc + file.size, 0)
+
       this.setState({ totalBytesToUpload: totalSize})
 
-      await this.controller.upload(fileList, this.resolveNameConflict,
-        this.updateProgress)
+      await this.upload(fileList,totalSize)
+    } catch(err){
+      console.error(err)
+      this.openErrorDialog(
+        `Error uploading ${[...event.target.files].map(file => file.name).join(", ")}: ` + (err.message || err)
+      );
     } finally {
-      this.setState({ 
-        loading: false,
-        uploadedBytes:0,
-        totalBytesToUpload:0
-       })
+      this.resetUploadDialogStates()
     }
   }
 
-  updateProgress(progress) {
-    this.setState({ progress })
+  resetUploadDialogStates() {
+    this.setState({
+      loading: false,
+      uploadedBytes:0,
+      totalBytesToUpload:0,
+      applyToAllFiles: false,
+      cancelDownload: false,
+      allowResume: false,
+      progress:0,
+      lastConflictResolution: null
+    })
   }
+
 
   updateProgress(uploadedChunkSize, fileName, speed) {
     this.setState((prevState) => {
       const uploadedBytes = prevState.uploadedBytes + uploadedChunkSize;
       const progress = Math.round((uploadedBytes / prevState.totalBytesToUpload) * 100);
       const newProgress = Math.min(progress, 100);
-      const speedFormatted =   this.formatUploadSpeed(speed);
-
+      const speedFormatted = this.controller.formatSpeed(speed);
+  
       return {
         uploadedBytes,
         progress: newProgress,
         loading: true,
-        progressDetailPrimary : fileName,
-        progressDetailSecondary : speedFormatted
+        progressDetailPrimary: fileName,
+        progressDetailSecondary: speedFormatted
       };
     });
   }
+  
 
-  formatUploadSpeed(bytesPerSecond) {
-    if (isNaN(bytesPerSecond)) {
-      return bytesPerSecond;
-    }
-    if (bytesPerSecond >= 1024 * 1024) {
-        // Convert to MB/s
-        const mbps = bytesPerSecond / (1024 * 1024);
-        return `${mbps.toFixed(2)} MB/s`;
-    } else if (bytesPerSecond >= 1024) {
-        // Convert to KB/s
-        const kbps = bytesPerSecond / 1024;
-        return `${kbps.toFixed(2)} KB/s`;
-    } else {
-        // Bytes per second
-        return `${bytesPerSecond} B/s`;
-    }
-  }
 
   async resolveNameConflict(newFile, allowResume) {
     return new Promise((resolve) => {
@@ -184,20 +182,101 @@ class RightToolbar extends React.Component {
   handleFileExistsReplace() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict('replace')
-    this.setState({ loading: true, progress: 0 })
+    this.setState({ loading: true, progress: 0,lastConflictResolution: 'replace'})
   }
 
   handleFileExistsResume() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict('resume')
-    this.setState({ loading: true, progress: 0 })
+    this.setState({ loading: true, progress: 0 ,lastConflictResolution: 'resume'})
+  }
+
+  handleFileExistsSkip() {
+    this.closeFileExistsDialog()
+    this.resolveConflict && this.resolveConflict('skip')
+    this.setState({ loading: true, progress: 0 ,lastConflictResolution: 'skip'})
   }
 
   handleFileExistsCancel() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict('cancel')
-    this.setState({ loading: false })
+    this.setState({ loading: false,lastConflictResolution: 'cancel' })
   }
+
+  handleApplyToAllSelection(checked) {    
+    this.setState({ applyToAllFiles: checked })    
+  }
+
+  async upload(fileList) {      
+
+    for (const file of fileList) {
+      const filePath = file.webkitRelativePath ? file.webkitRelativePath
+        : file.name
+      const targetFilePath = this.controller.path + '/' + filePath
+      const existingFiles = await this.controller.listFiles(targetFilePath)
+
+      const fileExists = existingFiles.length > 0
+      const existingFileSize = existingFiles.length === 0 ? 0
+        : existingFiles[0].size
+
+      let offset = 0;
+
+      if (fileExists) {
+        const resolution = await this.handleExistingFile(file, existingFiles, existingFileSize);
+        if (resolution === 'cancel') return; // Cancel uploading entirely
+        if (resolution === 'skip') continue; // Skip this file and continue with others
+        offset = resolution === 'replace' ? 0 : existingFileSize;// handles resume also                
+      }
+
+      // Replace or resume upload from the last point in the file
+      while (offset < file.size) {      
+        const sizeUploaded = await this.controller.uploadFile(file, targetFilePath,
+          offset, this.updateProgress)
+        offset += sizeUploaded
+      }
+    }
+
+    this.updateProgress(0, "Finalizing...", "Finalizing...")
+    if (this.controller.gridController) {
+      await this.controller.gridController.load()
+    }
+  }   
+
+
+  async handleExistingFile(file, existingFiles, existingFileSize) {
+    var resolutionResult = this.state.lastConflictResolution;
+    
+    if (!this.state.applyToAllFiles) {      
+      resolutionResult = await this.resolveNameConflict(file, true);
+    }
+
+    if (resolutionResult === 'skip') {
+      this.state.skipFile = true;
+      this.updateProgress(file.size, file.name, "Skipping...");
+      return 'skip';
+    }
+
+    if (resolutionResult === 'resume') {        
+      this.updateProgress(existingFileSize, file.name, "Resuming...");
+      return 'resume';
+    }
+
+    if (resolutionResult === 'cancel') {
+      this.updateProgress(file.size, file.name, "Cancelling...");
+      return 'cancel';
+    }
+
+    return "replace";
+  }
+
+  openErrorDialog(errorMessage) {
+    this.setState({ errorMessage })
+  }
+
+  closeErrorDialog() {
+    this.setState({ errorMessage: null })
+  }
+
 
   renderUploadButtons() {
     const { classes, buttonSize} = this.props
@@ -233,9 +312,16 @@ class RightToolbar extends React.Component {
     logger.log(logger.DEBUG, 'RightToolbar.render')
 
     const { classes, onViewTypeChange, buttonSize, editable } = this.props
-    const { uploadButtonsPopup, progress, loading, allowResume,
-      fileExistsDialogFile , progressDetailPrimary,
-      progressDetailSecondary,} = this.state
+    const { uploadButtonsPopup,
+      progress,
+      loading,
+      allowResume,
+      fileExistsDialogFile,
+      progressDetailPrimary,
+      progressDetailSecondary,
+      applyToAllFiles,
+      errorMessage,
+    } = this.state
     return ([
       <div key='right-toolbar-main' className={classes.buttons}>
         <ToggleButton
@@ -307,16 +393,25 @@ class RightToolbar extends React.Component {
         detailPrimary={progressDetailPrimary}
         detailSecondary={progressDetailSecondary}
         />,
-      <FileExistsDialog
-        key='file-exists-dialog'
-        open={!!fileExistsDialogFile}
-        onReplace={this.handleFileExistsReplace}
-        onResume={allowResume ? this.handleFileExistsResume : null}
-        onCancel={this.handleFileExistsCancel}
-        title={messages.get(messages.FILE_EXISTS)}
-        content={messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT,
-          fileExistsDialogFile ? fileExistsDialogFile.name : '')}
-      />
+        <ErrorDialog
+          key='right-toolbar-error-dialog'
+          open={!!errorMessage}
+          error={errorMessage}
+          onClose={this.closeErrorDialog}
+        />,
+        <FileExistsDialog
+          key='file-exists-dialog'
+          open={!!fileExistsDialogFile}
+          onReplace={this.handleFileExistsReplace}
+          onResume={allowResume ? this.handleFileExistsResume : null}
+          onSkip={this.handleFileExistsSkip}
+          onCancel={this.handleFileExistsCancel}
+          onApplyToAllChange={this.handleApplyToAllSelection}
+          applyToAll={applyToAllFiles}
+          title={messages.get(messages.FILE_EXISTS)}        
+          content={messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT,
+            fileExistsDialogFile ? fileExistsDialogFile.name : '')}
+        />
     ])
   }
 }
