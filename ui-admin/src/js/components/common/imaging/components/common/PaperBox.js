@@ -16,11 +16,11 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-export default function PaperBox({className, children, elevation= 1}) {
+export default function PaperBox({style, className, children, elevation= 1}) {
     const classes = useStyles();
 
     return (
-        <Paper elevation={elevation} className={classes.root + " " + className}>
+        <Paper style={style} elevation={elevation} className={classes.root + " " + className}>
             {children}
         </Paper>
     );
