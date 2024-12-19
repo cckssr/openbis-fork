@@ -23,6 +23,8 @@ import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 
 import ch.ethz.sis.afs.dto.LockType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
@@ -69,7 +71,7 @@ final class SharesHolder
 
         final ILockManager lockManager = ServiceProvider.getLockManager();
 
-        for (SimpleDataSetInformationDTO dataSet : service.listDataSets())
+        for (SimpleDataSetInformationDTO dataSet : service.listDataSets(new DataSetSearchCriteria(), new DataSetFetchOptions()))
         {
             String shareId = dataSet.getDataSetShareId();
             if (dataStoreCode.equals(dataSet.getDataStoreCode()))

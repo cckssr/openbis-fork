@@ -34,6 +34,9 @@ public class SampleSortOptions extends EntityWithPropertiesSortOptions<Sample>
     @JsonIgnore
     public static final String IDENTIFIER = "IDENTIFIER";
 
+    @JsonIgnore
+    public static final String IMMUTABLE_DATA_DATE = "IMMUTABLE_DATA_DATE";
+
     public SortOrder identifier()
     {
         return getOrCreateSorting(IDENTIFIER);
@@ -42,6 +45,16 @@ public class SampleSortOptions extends EntityWithPropertiesSortOptions<Sample>
     public SortOrder getIdentifier()
     {
         return getSorting(IDENTIFIER);
+    }
+
+    public SortOrder immutableDataDate()
+    {
+        return getOrCreateSorting(IMMUTABLE_DATA_DATE);
+    }
+
+    public SortOrder getImmutableDataDate()
+    {
+        return getSorting(IMMUTABLE_DATA_DATE);
     }
 
 }

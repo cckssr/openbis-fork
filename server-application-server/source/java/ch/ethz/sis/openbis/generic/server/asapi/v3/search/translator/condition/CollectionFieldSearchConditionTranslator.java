@@ -15,6 +15,17 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT_UNNEST;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +36,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
@@ -42,6 +51,7 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     static
     {
         ARRAY_CASTING.put(CodesSearchCriteria.class, new String[0]);
+        ARRAY_CASTING.put(PermIdsSearchCriteria.class, new String[0]);
         ARRAY_CASTING.put(UserIdsSearchCriteria.class, new String[0]);
         ARRAY_CASTING.put(IdsSearchCriteria.class, new String[0]);
     }

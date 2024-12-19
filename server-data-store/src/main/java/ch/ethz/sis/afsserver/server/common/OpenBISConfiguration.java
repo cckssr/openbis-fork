@@ -3,7 +3,9 @@ package ch.ethz.sis.afsserver.server.common;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.shared.startup.Configuration;
+import lombok.Getter;
 
+@Getter
 public class OpenBISConfiguration
 {
 
@@ -18,64 +20,58 @@ public class OpenBISConfiguration
         openBISLastSeenDeletionIntervalInSeconds
     }
 
-    private final Configuration configuration;
+    private static volatile OpenBISConfiguration instance;
+
+    private final String openBISUrl;
+
+    private final Integer openBISTimeout;
+
+    private final String openBISUser;
+
+    private final String openBISPassword;
+
+    private final String openBISLastSeenDeletionFile;
+
+    private final Integer openBISLastSeenDeletionBatchSize;
+
+    private final Integer openBISLastSeenDeletionIntervalInSeconds;
+
+    private final OpenBISFacade openBISFacade;
 
     public static OpenBISConfiguration getInstance(Configuration configuration)
     {
-        return new OpenBISConfiguration(configuration);
+        if (instance == null)
+        {
+            synchronized (OpenBISConfiguration.class)
+            {
+                if (instance == null)
+                {
+                    instance = new OpenBISConfiguration(configuration);
+                }
+            }
+        }
+
+        return instance;
     }
 
     private OpenBISConfiguration(Configuration configuration)
     {
-        this.configuration = configuration;
+        openBISUrl = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISUrl, true);
+        openBISTimeout = AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration, OpenBISParameter.openBISTimeout, true);
+        openBISUser = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISUser, true);
+        openBISPassword = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISPassword, true);
+        openBISLastSeenDeletionFile =
+                AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISLastSeenDeletionFile, true);
+        openBISLastSeenDeletionBatchSize =
+                AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration, OpenBISParameter.openBISLastSeenDeletionBatchSize, true);
+        openBISLastSeenDeletionIntervalInSeconds = AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration,
+                OpenBISParameter.openBISLastSeenDeletionIntervalInSeconds, true);
+        openBISFacade = new OpenBISFacade(openBISUrl, openBISUser, openBISPassword, openBISTimeout);
     }
 
     public OpenBIS getOpenBIS()
     {
-        return new OpenBIS(getOpenBISUrl(), getOpenBISTimeout());
-    }
-
-    public OpenBISFacade getOpenBISFacade()
-    {
-        return new OpenBISFacade(getOpenBISUrl(), getOpenBISUser(), getOpenBISPassword(),
-                getOpenBISTimeout());
-    }
-
-    public String getOpenBISUrl()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISUrl, true);
-    }
-
-    public Integer getOpenBISTimeout()
-    {
-        return AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration, OpenBISParameter.openBISTimeout, true);
-    }
-
-    public String getOpenBISUser()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISUser, true);
-    }
-
-    public String getOpenBISPassword()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISPassword, true);
-    }
-
-    public String getOpenBISLastSeenDeletionFile()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, OpenBISParameter.openBISLastSeenDeletionFile,
-                true);
-    }
-
-    public Integer getOpenBISLastSeenDeletionBatchSize()
-    {
-        return AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration, OpenBISParameter.openBISLastSeenDeletionBatchSize, true);
-    }
-
-    public Integer getOpenBISLastSeenDeletionIntervalInSeconds()
-    {
-        return AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration,
-                OpenBISParameter.openBISLastSeenDeletionIntervalInSeconds, true);
+        return new OpenBIS(openBISUrl, openBISTimeout);
     }
 
 }

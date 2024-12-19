@@ -9,6 +9,7 @@ import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.manager.TransactionManager;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.ConnectionFactory;
@@ -31,6 +32,11 @@ public class ServiceProvider
         ServiceProvider.configuration = configuration;
     }
 
+    public static OpenBISFacade getOpenBISFacade()
+    {
+        return OpenBISConfiguration.getInstance(configuration).getOpenBISFacade();
+    }
+
     public static IEncapsulatedOpenBISService getOpenBISService()
     {
         initialize();
@@ -47,6 +53,11 @@ public class ServiceProvider
     {
         initialize();
         return configProvider;
+    }
+
+    public static Configuration getConfiguration()
+    {
+        return configuration;
     }
 
     private static void initialize()

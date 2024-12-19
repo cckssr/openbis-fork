@@ -1,16 +1,14 @@
 package ch.ethz.sis.afsserver.server.common;
 
-import java.util.Properties;
+import javax.sql.DataSource;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 
 public class DatabaseConfiguration
 {
-
-    private final Configuration configuration;
 
     public enum DatabaseParameter
     {
@@ -21,42 +19,42 @@ public class DatabaseConfiguration
         scriptFolder
     }
 
-    public static DatabaseConfiguration getPathInfoDBInstance(Configuration configuration)
-    {
-        Properties databaseProperties = ExtendedProperties.getSubset(configuration.getProperties(), "pathInfoDB.", true);
-        return new DatabaseConfiguration(new Configuration(databaseProperties));
-    }
+    private final String version;
 
-    private DatabaseConfiguration(Configuration configuration)
+    private final DatabaseConfigurationContext context;
+
+    public DatabaseConfiguration(Configuration configuration)
     {
-        this.configuration = configuration;
+        IDatabaseVersionHolder versionHolder =
+                AtomicFileSystemServerParameterUtil.getInstanceParameter(configuration, DatabaseParameter.versionHolderClass, true);
+        String databaseEngineCode = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.databaseEngineCode, true);
+        String basicDatabaseName = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.basicDatabaseName, true);
+        String databaseKind = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.databaseKind, true);
+        String scriptFolder = AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.scriptFolder, true);
+
+        DatabaseConfigurationContext context = new DatabaseConfigurationContext();
+        context.setDatabaseEngineCode(databaseEngineCode);
+        context.setBasicDatabaseName(basicDatabaseName);
+        context.setDatabaseKind(databaseKind);
+        context.setScriptFolder(scriptFolder);
+
+        this.version = versionHolder.getDatabaseVersion();
+        this.context = context;
     }
 
     public String getVersion()
     {
-        IDatabaseVersionHolder versionHolder =
-                AtomicFileSystemServerParameterUtil.getInstanceParameter(configuration, DatabaseParameter.versionHolderClass, true);
-        return versionHolder.getDatabaseVersion();
+        return version;
     }
 
-    public String getDatabaseEngineCode()
+    public DatabaseConfigurationContext getContext()
     {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.databaseEngineCode, true);
+        return context;
     }
 
-    public String getBasicDatabaseName()
+    public DataSource getDataSource()
     {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.basicDatabaseName, true);
-    }
-
-    public String getDatabaseKind()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.databaseKind, true);
-    }
-
-    public String getScriptFolder()
-    {
-        return AtomicFileSystemServerParameterUtil.getStringParameter(configuration, DatabaseParameter.scriptFolder, true);
+        return getContext().getDataSource();
     }
 
 }
