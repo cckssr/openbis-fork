@@ -651,7 +651,11 @@ class Spm:
             height = self.get_param("height")
             pix_y, pix_x = np.shape(chData)
 
-            fig = plt.figure(figsize=(7, 8))
+            ### >>>> PREMISE - specific modifications
+            fig = plt.figure()
+            ### ---- PREMISE - specific modifications
+            # fig = plt.figure(figsize=(7, 8))
+
 
             ImgOrigin = "lower"
             if self.get_param("scan_dir") == "down":

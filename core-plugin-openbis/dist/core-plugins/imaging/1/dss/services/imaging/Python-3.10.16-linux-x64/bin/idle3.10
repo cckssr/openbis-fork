@@ -1,0 +1,5 @@
+#!/home/alaskowski/python_test/Python-3.10.16-linux-x64/bin/python3.10
+
+from idlelib.pyshell import main
+if __name__ == '__main__':
+    main()
