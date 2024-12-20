@@ -36,7 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -51,7 +50,6 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     static
     {
         ARRAY_CASTING.put(CodesSearchCriteria.class, new String[0]);
-        ARRAY_CASTING.put(PermIdsSearchCriteria.class, new String[0]);
         ARRAY_CASTING.put(UserIdsSearchCriteria.class, new String[0]);
         ARRAY_CASTING.put(IdsSearchCriteria.class, new String[0]);
     }
@@ -69,18 +67,21 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     {
         if (!ARRAY_CASTING.containsKey(criterion.getClass()))
         {
-            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
+            throw new RuntimeException(
+                    "Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
         }
         if (criterion.getClass() == IdsSearchCriteria.class)
         {
             if (criterion.getFieldValue() != null && criterion.getFieldValue().size() > 1)
             {
                 final Class<?> identifierClass = criterion.getFieldValue().iterator().next().getClass();
-                for (Object identifier:criterion.getFieldValue())
+                for (Object identifier : criterion.getFieldValue())
                 {
                     if (identifier.getClass() != identifierClass)
                     {
-                        throw new IllegalArgumentException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class + ", identifiers provided should be of the same type.");
+                        throw new IllegalArgumentException(
+                                "Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class
+                                        + ", identifiers provided should be of the same type.");
                     }
                 }
             }
@@ -109,7 +110,8 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
 
                     if (tableMapper == TableMapper.SAMPLE)
                     {
-                        CodeSearchConditionTranslator.buildCodeQueryForSamples(sqlBuilder, () -> {
+                        CodeSearchConditionTranslator.buildCodeQueryForSamples(sqlBuilder, () ->
+                        {
                             sqlBuilder.append(SP).append(IN).append(SP).append(SELECT_UNNEST);
                             args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
                         });

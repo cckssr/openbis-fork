@@ -49,8 +49,6 @@ public class AttributesMapper
 {
     public static final String PERM_ID_ATTRIBUTE = "perm id";
 
-    public static final String PERM_IDS_ATTRIBUTE = "perm ids";
-
     private static final Map<String, String> ATTRIBUTE_ID_TO_COLUMN_NAME = new HashMap<>();
 
     /**
@@ -130,7 +128,7 @@ public class AttributesMapper
             return ColumnNames.NAME_COLUMN;
         } else
         {
-            return PERM_ID_ATTRIBUTE.equals(attributeId) || PERM_IDS_ATTRIBUTE.equals(attributeId) || "ids".equals(attributeId) ?
+            return PERM_ID_ATTRIBUTE.equals(attributeId) || "ids".equals(attributeId) ?
                     ENTITIES_TABLE_TO_PERM_ID_COLUMN_NAME.getOrDefault(tableName, defaultValue) :
                     ATTRIBUTE_ID_TO_COLUMN_NAME.getOrDefault(attributeId, defaultValue);
         }

@@ -50,11 +50,6 @@ public abstract class AbstractEntitySearchCriteria<ID extends IObjectId> extends
         return with(new PermIdSearchCriteria());
     }
 
-    public PermIdsSearchCriteria withPermIds()
-    {
-        return with(new PermIdsSearchCriteria());
-    }
-
     public RegistratorSearchCriteria withRegistrator()
     {
         return with(new RegistratorSearchCriteria());
