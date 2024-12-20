@@ -15,15 +15,15 @@
 # Hacky way to import imaging script
 import sys
 import os
-import imaging as imaging
 
-from pybis import Openbis
+from pybis import Openbis, ImagingControl
+from pybis import *
 
 TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.ImagingTestAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
-# DEFAULT_URL = "https://alaskowski:8443/openbis"
-# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
+# DEFAULT_URL = "https://localhost:8443/openbis"
+DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
 def get_instance(url=None):
@@ -43,16 +43,15 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
                  include=None, image_format='original', archive_format="zip",
                  resolution='original'):
     if include is None:
-        include = ['image', 'raw data']
-    imaging_control = imaging.ImagingControl(openbis)
+        include = ['IMAGE', 'RAW_DATA']
+    imaging_control = ImagingControl(openbis)
     export_config = {
         "include": include,
-        "image-format": image_format,
-        "archive-format": archive_format,
+        "image_format": image_format,
+        "archive_format": archive_format,
         "resolution": resolution
     }
-    imaging_export = imaging.ImagingDataSetExport(export_config)
-    imaging_control.single_export_download(perm_id, imaging_export, image_id, path_to_download)
+    imaging_control.export_image(perm_id, image_id, path_to_download, **export_config)
 
 
 openbis_url = None
@@ -78,7 +77,6 @@ for file in files:
     props = {
         'imaging_data_config': f.read(),
         'default_dataset_view': 'IMAGING_DATASET_VIEWER',
-        # 'imaging_notes': 'Notes added on dataset level'
     }
     data_set = o.new_dataset('IMAGING_DATA',
                              experiment='/IMAGING/TEST/TEST_COLLECTION',

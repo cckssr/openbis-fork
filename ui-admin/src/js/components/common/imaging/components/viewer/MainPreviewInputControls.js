@@ -26,12 +26,19 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, configMetadata, resolution, isChanged,
+const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, isUserGenerated, resolution, isChanged,
 	onClickUpdate, onChangeShow, onSelectChangeRes, onChangeActConf, imagingTags, handleTagImage, datasetType }) => {
 	const classes = useStyles();
 	const [tags, setTags] = React.useState([])
 	const [inputValue, setInputValue] = React.useState('');
 
+	//console.log('MainPreviewInputControls - isUserGenerated: ', isUserGenerated);
+	//console.log('MainPreviewInputControls - is IMAGING_DATA: ', (datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA));
+
+	React.useEffect(() => {
+		if (isUserGenerated) 
+			onClickUpdate(); 
+	}, [])
 
 	React.useEffect(() => {
 		if (activePreview && activePreview.tags != null) {
@@ -105,64 +112,64 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 		}));
 	};
 
-	const renderStaticUpdateControls = (isUploadedPreview, ) => {
+	const renderStaticUpdateControls = (isUploadedPreview,) => {
 		return <>
-				<Button label={messages.get(messages.UPDATE)}
-					variant='outlined'
-					color='primary'
-					startIcon={<RefreshIcon />}
-					onClick={onClickUpdate}
-					disabled={!isChanged || isUploadedPreview} />
+			<Button label={messages.get(messages.UPDATE)}
+				variant='outlined'
+				color='primary'
+				startIcon={<RefreshIcon />}
+				onClick={onClickUpdate}
+				disabled={!isChanged || isUploadedPreview} />
 
-				{isChanged && !isUploadedPreview && (
-					<Message type='info'>
-						{messages.get(messages.UPDATE_CHANGES)}
-					</Message>
-				)}
+			{isChanged && !isUploadedPreview && (
+				<Message type='info'>
+					{messages.get(messages.UPDATE_CHANGES)}
+				</Message>
+			)}
 
-				<OutlinedBox style={{ width: 'fit-content' }}
-					label={messages.get(messages.SHOW)}>
-					<CustomSwitch isChecked={activePreview.show}
-						onChange={onChangeShow} />
-				</OutlinedBox>
+			<OutlinedBox style={{ width: 'fit-content' }}
+				label={messages.get(messages.SHOW)}>
+				<CustomSwitch isChecked={activePreview.show}
+					onChange={onChangeShow} />
+			</OutlinedBox>
 
-				<Dropdown onSelectChange={onSelectChangeRes}
-					label={messages.get(messages.RESOLUTIONS)}
-					values={configResolutions}
-					initValue={resolution.join('x')} />
+			<Dropdown onSelectChange={onSelectChangeRes}
+				label={messages.get(messages.RESOLUTIONS)}
+				values={configResolutions}
+				initValue={resolution.join('x')} />
 
-				<OutlinedBox label="Imaging Tags">
-					<Autocomplete
-						multiple
-						id="tags-outlined"
-						options={imagingTags}
-						disableCloseOnSelect
-						getOptionLabel={(option) => option.label}
-						inputValue={inputValue}
-						value={tags}
-						onInputChange={(event, newInputValue) => {
-							setInputValue(newInputValue);
-						}}
-						renderInput={(params) => (
-							<TextField variant='standard' {...params} placeholder="Search Tag" />
-						)}
-						renderOption={(props, option, { selected }) => {
-							const { key, ...optionProps } = props;
-							return (
-								<li key={key} {...optionProps}>
-									<Checkbox
-										icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-										checkedIcon={<CheckBoxIcon fontSize="small" />}
-										style={{ marginRight: 8 }}
-										checked={selected}
-									/>
-									{option.label}
-								</li>
-							);
-						}}
-						onChange={handleTagsChange}
-					/>
-				</OutlinedBox>
+			<OutlinedBox label="Imaging Tags">
+				<Autocomplete
+					multiple
+					id="tags-outlined"
+					options={imagingTags}
+					disableCloseOnSelect
+					getOptionLabel={(option) => option.label}
+					inputValue={inputValue}
+					value={tags}
+					onInputChange={(event, newInputValue) => {
+						setInputValue(newInputValue);
+					}}
+					renderInput={(params) => (
+						<TextField variant='standard' {...params} placeholder="Search Tag" />
+					)}
+					renderOption={(props, option, { selected }) => {
+						const { key, ...optionProps } = props;
+						return (
+							<li key={key} {...optionProps}>
+								<Checkbox
+									icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+									checkedIcon={<CheckBoxIcon fontSize="small" />}
+									style={{ marginRight: 8 }}
+									checked={selected}
+								/>
+								{option.label}
+							</li>
+						);
+					}}
+					onChange={handleTagsChange}
+				/>
+			</OutlinedBox>
 		</>
 	}
 
@@ -173,23 +180,13 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
 	return (
 		<Grid2 size={{ xs: 12, sm: 4 }}>
-			<PaperBox className={classes.noBorderNoShadow}>
+			<PaperBox style={{border: 'unset', boxShadow: 'none',}}>
 
-			
 				<Grid2 container sx={{ justifyContent: "space-between", alignItems: "center" }}>
-				
-					{(datasetType === constants.USER_DEFINED_IMAGING_DATA && configMetadata[constants.GENERATE]) &&
-							<Button label={constants.GENERATE}
-								variant='outlined'
-								color='primary'
-								startIcon={<CameraRollIcon />}
-								onClick={onClickUpdate} />
-					}
-					
-					{((datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) && !configMetadata[constants.GENERATE]) && renderStaticUpdateControls(isUploadedPreview)}
-				
+					{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) 
+						&& renderStaticUpdateControls(isUploadedPreview)}
 				</Grid2>
-
+				
 				<Divider sx={{ margin: '16px 8px 16px 8px', borderWidth: '1px' }} />
 
 				{configInputs.map((c, idx) => {

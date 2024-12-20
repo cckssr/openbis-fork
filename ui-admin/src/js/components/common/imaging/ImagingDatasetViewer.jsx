@@ -17,8 +17,8 @@ import MetadataSection from '@src/js/components/common/imaging/components/viewer
 
 const styles = theme => ({
     container: {
-        height: '100%', 
-        overflow: 'auto' 
+        height: '100%',
+        overflow: 'auto'
     },
     imgContainer: {
         maxHeight: '800px',
@@ -46,52 +46,42 @@ class ImagingDataSetViewer extends React.PureComponent {
             activeImageIdx: 0,
             activePreviewIdx: 0,
             resolution: ['original'],
-            imagingTags:[],
+            imagingTags: [],
             datasetType: ''
         }
     }
 
     async loadImagingDataset() {
         const { objId, extOpenbis } = this.props;
-            try {
-                const imagingFacade = new ImagingFacade(extOpenbis);
-                const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
-                const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
-                if (isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config)) {
-                    imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
-                    this.setState({
-                        open: false,
-                        loaded: true,
-                        isChanged: true,
-                        imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr,
-                        datasetType: datasetType
-                    });
-                } else {
-                    this.setState({
-                        open: false,
-                        loaded: true,
-                        imagingDataset: imagingDataSetPropertyConfig,
-                        imagingTags: imagingTagsArr,
-                        datasetType: datasetType
-                    });
-                }
-            } catch (error) {
-                this.handleError(error);
-            }
+        try {
+            const imagingFacade = new ImagingFacade(extOpenbis);
+            const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
+            const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
+
+            const isInitConfigEmpty = isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config);
+            if (isInitConfigEmpty) {
+                imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
+            } 
+            this.setState({
+                open: false,
+                loaded: true,
+                isChanged: isInitConfigEmpty,
+                imagingDataset: imagingDataSetPropertyConfig,
+                imagingTags: imagingTagsArr,
+                datasetType: datasetType
+            });
+            console.log('imagingDataSetPropertyConfig : ', imagingDataSetPropertyConfig);
+        } catch (error) {
+            this.handleError(error);
+        }
     }
 
     async componentDidMount() {
+        console.log('componentDidMount : ', this.state);
         if (!this.state.loaded) {
             this.loadImagingDataset();
         }
     }
-
-    async componentDidUpdate(prevProps, prevState) {
-        if (this.state.loaded !== prevState.loaded) {
-            this.loadImagingDataset();
-        }
-   }
 
     saveDataset = async () => {
         const { objId, extOpenbis, onUnsavedChanges } = this.props;
@@ -118,10 +108,6 @@ class ImagingDataSetViewer extends React.PureComponent {
             const updatedImagingDataset = await new ImagingFacade(extOpenbis)
                 .updateImagingDataset(objId, activeImageIdx, imagingDataset.images[activeImageIdx].previews[activePreviewIdx]);
             console.log('handleUpdate - updatedImagingDataset: ', updatedImagingDataset);
-            if(imagingDataset.images[activeImageIdx].config.metadata[constants.GENERATE])
-                this.setState({
-                    loaded: false
-                });
             if (updatedImagingDataset.error) {
                 this.setState({ open: false, isChanged: true, isSaved: false });
                 this.handleError(updatedImagingDataset.error);
@@ -296,7 +282,7 @@ class ImagingDataSetViewer extends React.PureComponent {
         let newLastIdx = activeImage.previews.length;
         let inputValues = this.createInitValues(imagingDataset.images[0].config.inputs, activeImage.previews[activePreviewIdx].config);
         let imagingDataSetPreview = new ImagingMapper(extOpenbis).getImagingDataSetPreview(inputValues, 'png', null, null, null, newLastIdx, false, {}, [], '');
-            activeImage.previews = [...activeImage.previews, imagingDataSetPreview];
+        activeImage.previews = [...activeImage.previews, imagingDataSetPreview];
         this.setState({
             activePreviewIdx: newLastIdx,
             imagingDataset: toUpdateImgDs,
@@ -341,7 +327,7 @@ class ImagingDataSetViewer extends React.PureComponent {
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
         let toUpdateImgDs = { ...imagingDataset };
-        if (tagAll){
+        if (tagAll) {
             toUpdateImgDs.images[activeImageIdx].previews.map(preview => preview.tags = tags)
             this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
         } else {
@@ -405,10 +391,10 @@ class ImagingDataSetViewer extends React.PureComponent {
                 />
                 <PaperBox>
                     <Grid2 container className={classes.gridDirection}>
-                        <MainPreview activePreview={activePreview} resolution={resolution}/>
-                        <MainPreviewInputControls activePreview={activePreview} 
+                        <MainPreview activePreview={activePreview} resolution={resolution} />
+                        <MainPreviewInputControls activePreview={activePreview}
                             configInputs={activeImage.config.inputs}
-                            configMetadata={activeImage.config.metadata}
+                            isUserGenerated={imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === "true"}
                             configResolutions={activeImage.config.resolutions}
                             resolution={resolution}
                             isChanged={isChanged}

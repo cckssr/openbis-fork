@@ -69,7 +69,7 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
     format: str
-    # bytes: str | None
+    bytes: str
     width: int
     height: int
     index: int

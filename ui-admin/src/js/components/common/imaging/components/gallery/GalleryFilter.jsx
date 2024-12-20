@@ -62,7 +62,7 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                         value={selectedTags}
                         onChange={handleTagsOnChange}
                     >
-                        {options.find(option => option.value === constants.IMAGING_TAGS).options.map((tag) => (
+                        {options.length > 0 && options.find(option => option.value === constants.IMAGING_TAGS).options.map((tag) => (
                             <MenuItem key={tag.value} value={tag.value}>
                                 {tag.label}
                             </MenuItem>
@@ -74,7 +74,7 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                     <Select value={selectedValue}
                         onChange={handleSelectValue}
                     >
-                        {options.find(option => option.value === constants.DEFAULT_DATASET_VIEW).options.map((opt) => (
+                        {options.length > 0 && options.find(option => option.value === constants.DEFAULT_DATASET_VIEW).options.map((opt) => (
                             <MenuItem key={opt.value} value={opt.value}>
                                 {opt.label}
                             </MenuItem>
