@@ -1,0 +1,174 @@
+Metadata-Version: 2.1
+Name: SPIEPy
+Version: 0.2.1
+Summary: SPIEPy (Scanning Probe Image Enchanter using Python) is a Python library to improve automatic processing of SPM images.
+Author: Stephan Zevenhuizen
+Author-email: S.J.M.Zevenhuizen@uu.nl
+License: BSD-2-Clause
+Project-URL: documentation, https://webspace.science.uu.nl/~zeven101/SPIEPy/
+Keywords: SPM,scanning,probe,microscopy,image,analysis,flattening,nano,nanotechnology
+Classifier: Topic :: Scientific/Engineering :: Chemistry
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Topic :: Scientific/Engineering :: Physics
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Natural Language :: English
+Requires-Python: >=3.8
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: matplotlib
+
+Python is a great language to use for automatic processing of scientific data.
+Scanning probe microscopes (SPM) produce scientific data in the form of images,
+images of surfaces that can have atomic or molecular resolutions. The microscope
+produces surfaces that are not level. Before you can analyse the surface, the
+surface must first be levelled (flattened). This Python library provides
+routines to flatten the surface and to generate statistical data on surface
+structures. Surfaces with contaminations, step edges and atomic or molecular
+resolution can be handled.
+
+SPIEPy and SPIW - MATLAB Toolbox [`source`_] are related projects. SPIEPy uses
+many algorithms originally designed by the SPIW project. The performance of
+these algorithms is discussed in REVIEW OF SCIENTIFIC INSTRUMENTS **84**, 113701
+(2013) [`DOI`_].
+
+.. _source: http://sourceforge.net/projects/spiw/
+.. _DOI: http://dx.doi.org/10.1063/1.4827076
+
+The library SPIEPy has the packages spiepy with the modules for the tasks
+described above and spiepy.demo to generate sample data. With this sample data,
+you can familiarize yourself with SPIEPy.
+
+Dependencies
+------------
+SPIEPy requires the NumPy library (http://www.numpy.org), SciPy library
+(http://scipy.org) and the Matplotlib library (http://matplotlib.org).
+
+Installation
+------------
+Using pip::
+
+	> pip install SPIEPy
+
+CLASSES
+-------
+Im
+	SPIEPy_image_structure, set attribute ``data`` with a 2D ndarray of image
+	data, set all other attributes with the metadata of the image.
+		
+FUNCTIONS
+---------
+Flattening functions:
+
+- flatten_by_iterate_mask
+- flatten_by_peaks
+- flatten_poly_xy
+- flatten_xy
+
+Locating functions:
+
+- locate_masked_points_and_remove
+- locate_regions
+- locate_steps
+- locate_troughs_and_peaks
+
+Masking functions:
+
+- mask_by_mean
+- mask_by_troughs_and_peaks
+- mask_tidy
+
+Measuring functions:
+
+- measure_feature_properties
+
+Demo functions:
+
+- list_demo_files
+- load_demo_file
+
+DATA
+----
+NANOMAP
+	Colormap which is the standard orange colormap used my most SPM software.
+
+Help
+----
+On the interpreter console use the built-in help function to get the help page
+of the module, function, ...
+
+.. code-block:: pycon
+
+	>>> import spiepy, spiepy.demo
+	>>> help(spiepy)
+	...
+	>>> help(spiepy.demo)
+	...
+	>>> help(spiepy.flatten_by_iterate_mask)
+	...
+
+**Documentation:** https://webspace.science.uu.nl/~zeven101/SPIEPy/
+
+Example usage
+-------------
+.. code-block:: python
+
+	# -*- coding: utf-8 -*-
+	#
+	#   Copyright © 2014 - 2017 Stephan Zevenhuizen
+	#   Flattening terrace image, (09-10-2017).
+	#
+
+	import spiepy, spiepy.demo
+	import matplotlib.pyplot as plt
+	import numpy as np
+
+	im = spiepy.Im()
+	demos = spiepy.demo.list_demo_files()
+	print(demos)
+	im.data = spiepy.demo.load_demo_file(demos[1])
+
+	plt.imshow(im.data, cmap = spiepy.NANOMAP, origin = 'lower')
+	print('Original image.')
+	plt.show()
+
+	im_out, _ = spiepy.flatten_xy(im)
+	plt.imshow(im_out.data, cmap = spiepy.NANOMAP, origin = 'lower')
+	print('Preflattened image.')
+	plt.show()
+
+	mask = spiepy.locate_steps(im_out, 4)
+	plot_image = np.ma.array(im_out.data, mask = mask)
+	palette = spiepy.NANOMAP
+	palette.set_bad('#00ff00', 1.0)
+	plt.imshow(plot_image, cmap = palette, origin = 'lower')
+	print('Preflattened image, mask.')
+	plt.show()
+
+	im_final, _ = spiepy.flatten_xy(im, mask)
+	plt.imshow(im_final.data, cmap = spiepy.NANOMAP, origin = 'lower')
+	print('Flattened image.')
+	plt.show()
+
+	y, x = np.histogram(im_out.data, bins = 200)
+	ys, xs = np.histogram(im_final.data, bins = 200)
+	fig, ax = plt.subplots()
+	ax.plot(x[:-1], y, '-b', label = 'Standard plane flattening')
+	ax.plot(xs[:-1], ys, '-r', label = 'SPIEPy stepped plane flattening')
+	ax.legend(loc = 2, fancybox = True, framealpha = 0.2)
+	ax.set_xlabel('z (nm)')
+	ax.set_ylabel('count')
+	plt.show()
+
+Authors & affiliations
+----------------------
+Stephan J. M. Zevenhuizen [#]_
+
+..	[#] Condensed Matter and Interfaces, Debye Institute for Nanomaterials
+	Science, Utrecht University, Utrecht, The Netherlands.
