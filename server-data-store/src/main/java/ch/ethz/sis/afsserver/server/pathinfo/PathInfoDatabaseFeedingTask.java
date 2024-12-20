@@ -49,7 +49,7 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
 import net.lemnik.eodsql.QueryTool;
 
 /**

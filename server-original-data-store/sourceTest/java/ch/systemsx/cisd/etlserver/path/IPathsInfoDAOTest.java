@@ -18,6 +18,8 @@ package ch.systemsx.cisd.etlserver.path;
 import java.util.Date;
 import java.util.List;
 
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import net.lemnik.eodsql.QueryTool;
 
 import org.testng.Assert;

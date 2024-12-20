@@ -32,7 +32,7 @@ import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
 
 /**
  * @author Franz-Josef Elmer

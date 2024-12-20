@@ -1,4 +1,4 @@
-package ch.systemsx.cisd.etlserver.path;
+package ch.ethz.sis.pathinfo;
 
 import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 

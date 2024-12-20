@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;

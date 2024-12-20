@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;

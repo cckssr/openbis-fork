@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
 
 /**
  * Stores entries to pathinfo db based on given DataSetFileCreation instances.

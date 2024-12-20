@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
+
 final class MockPathsInfoDAO implements IPathsInfoDAO
 {
     private final StringWriter writer = new StringWriter();

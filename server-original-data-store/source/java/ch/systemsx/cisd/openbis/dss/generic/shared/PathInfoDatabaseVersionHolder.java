@@ -20,6 +20,6 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
  *
  * @author Franz-Josef Elmer
  */
-public class PathInfoDatabaseVersionHolder extends ch.systemsx.cisd.etlserver.path.PathInfoDatabaseVersionHolder
+public class PathInfoDatabaseVersionHolder extends ch.ethz.sis.pathinfo.PathInfoDatabaseVersionHolder
 {
 }

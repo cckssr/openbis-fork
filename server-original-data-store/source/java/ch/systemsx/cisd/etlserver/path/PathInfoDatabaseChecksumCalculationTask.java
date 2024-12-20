@@ -16,7 +16,6 @@
 package ch.systemsx.cisd.etlserver.path;
 
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +23,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.zip.CRC32;
 
 import org.apache.log4j.Logger;
 
-import ch.systemsx.cisd.common.io.IOUtilities;
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;

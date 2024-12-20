@@ -23,8 +23,8 @@ import java.util.List;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
-import ch.systemsx.cisd.etlserver.path.PathEntryDTO;
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 
 /**
  * Data set paths info feeder feeding a data base.

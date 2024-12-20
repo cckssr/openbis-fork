@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
+import ch.ethz.sis.pathinfo.IPathsInfoDAO;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTaskExecutor;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
