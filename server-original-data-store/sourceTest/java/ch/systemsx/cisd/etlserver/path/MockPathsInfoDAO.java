@@ -164,19 +164,19 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     }
 
     @Override
-    public Date getRegistrationTimestampOfLastFeedingEvent()
+    public Date getLastSeenTimestamp(String dataStoreKind)
     {
         return registrationTimestampOfLastFeedingEvent;
     }
 
     @Override
-    public void deleteLastFeedingEvent()
+    public void deleteLastSeenTimestamp(String dataStoreKind)
     {
         out.println("deleteLastFeedingEvent()");
     }
 
     @Override
-    public void createLastFeedingEvent(Date registrationTimestamp)
+    public void createLastSeenTimestamp(Date registrationTimestamp, String dataStoreKind)
     {
         out.println("createLastFeedingEvent(" + registrationTimestamp + ")");
         System.out.println("RTS:"+registrationTimestamp);

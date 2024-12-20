@@ -35,6 +35,7 @@ import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
 import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
@@ -49,7 +50,6 @@ import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
-import lombok.Getter;
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -159,9 +159,9 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         Set<String> processedDataSets = new HashSet<>();
         do
         {
-            // TODO keep lastImmutableDataTimestamp in a file (not in the database) not to conflict with DSS feeding
-            Date lastImmutableDataTimestamp = dao.getRegistrationTimestampOfLastFeedingEvent();
-            dataSets = filteredDataSets(listDataSets(lastImmutableDataTimestamp, chunkSize), processedDataSets);
+            Date lastImmutableDataTimestamp = dao.getLastSeenTimestamp(DataStoreKind.AFS.name());
+            dataSets = listDataSets(lastImmutableDataTimestamp, chunkSize);
+            dataSets = filteredDataSets(dataSets, processedDataSets);
             Date maxImmutableDataTimestamp = null;
 
             for (SimpleDataSetInformationDTO dataSet : dataSets)
@@ -185,8 +185,8 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
             if (maxImmutableDataTimestamp != null)
             {
-                dao.deleteLastFeedingEvent();
-                dao.createLastFeedingEvent(maxImmutableDataTimestamp);
+                dao.deleteLastSeenTimestamp(DataStoreKind.AFS.name());
+                dao.createLastSeenTimestamp(maxImmutableDataTimestamp, DataStoreKind.AFS.name());
                 dao.commit();
             }
         } while (dataSets.size() >= chunkSize && stopCondition.fulfilled() == false);
@@ -222,22 +222,22 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         List<Experiment> experiments = listExperiments(timestamp, actualChunkSize);
         List<Sample> samples = listSamples(timestamp, actualChunkSize);
 
-        List<ObjectWithImmutableDataDate> experimentsAndSamples = new ArrayList<>();
-        experimentsAndSamples.addAll(experiments.stream().map(ObjectWithImmutableDataDate::new).collect(Collectors.toList()));
-        experimentsAndSamples.addAll(samples.stream().map(ObjectWithImmutableDataDate::new).collect(Collectors.toList()));
-        experimentsAndSamples.sort(Comparator.comparing(ObjectWithImmutableDataDate::getImmutableDataDate));
+        List<ExperimentOrSample> experimentsAndSamples = new ArrayList<>();
+        experimentsAndSamples.addAll(experiments.stream().map(ExperimentOrSample::new).collect(Collectors.toList()));
+        experimentsAndSamples.addAll(samples.stream().map(ExperimentOrSample::new).collect(Collectors.toList()));
+        experimentsAndSamples.sort(Comparator.comparing(ExperimentOrSample::getImmutableDataDate));
 
         if (experimentsAndSamples.isEmpty())
         {
             return Collections.emptyList();
         }
 
-        List<ObjectWithImmutableDataDate> experimentsAndSamplesBatch = new ArrayList<>();
+        List<ExperimentOrSample> experimentsAndSamplesBatch = new ArrayList<>();
         Date lastImmutableDataDate = null;
 
         for (int i = 0; i < experimentsAndSamples.size(); i++)
         {
-            ObjectWithImmutableDataDate experimentOrSample = experimentsAndSamples.get(i);
+            ExperimentOrSample experimentOrSample = experimentsAndSamples.get(i);
 
             if (i <= actualChunkSize)
             {
@@ -256,18 +256,9 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
             }
         }
 
-        List<String> experimentsBatchPermIds =
-                experimentsAndSamplesBatch.stream().filter(o -> o.getExperiment() != null).map(s -> s.getExperiment().getPermId().getPermId())
-                        .collect(
-                                Collectors.toList());
-        List<String> samplesBatchPermIds =
-                experimentsAndSamplesBatch.stream().filter(o -> o.getSample() != null).map(s -> s.getSample().getPermId().getPermId()).collect(
-                        Collectors.toList());
-
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withOrOperator();
-        criteria.withExperiment().withPermIds().thatIn(experimentsBatchPermIds);
-        criteria.withSample().withPermIds().thatIn(samplesBatchPermIds);
+        // data sets codes are equal to sample/experiment perm ids they are connected to
+        criteria.withCodes().thatIn(experimentsAndSamplesBatch.stream().map(ExperimentOrSample::getPermId).collect(Collectors.toList()));
 
         return service.listDataSets(criteria, new DataSetFetchOptions());
     }
@@ -406,22 +397,32 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         };
     }
 
-    @Getter
-    private static class ObjectWithImmutableDataDate
+    private static class ExperimentOrSample
     {
 
         private Experiment experiment;
 
         private Sample sample;
 
-        public ObjectWithImmutableDataDate(Experiment experiment)
+        public ExperimentOrSample(Experiment experiment)
         {
             this.experiment = experiment;
         }
 
-        public ObjectWithImmutableDataDate(Sample sample)
+        public ExperimentOrSample(Sample sample)
         {
             this.sample = sample;
+        }
+
+        public String getPermId()
+        {
+            if (experiment != null)
+            {
+                return experiment.getPermId().getPermId();
+            } else
+            {
+                return sample.getPermId().getPermId();
+            }
         }
 
         public Date getImmutableDataDate()

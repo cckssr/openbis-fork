@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -186,8 +187,8 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
             }
             if (maxRegistrationTimestamp != null)
             {
-                dao.deleteLastFeedingEvent();
-                dao.createLastFeedingEvent(maxRegistrationTimestamp);
+                dao.deleteLastSeenTimestamp(DataStoreKind.DSS.name());
+                dao.createLastSeenTimestamp(maxRegistrationTimestamp, DataStoreKind.DSS.name());
                 dao.commit();
             }
         } while (dataSets.size() >= chunkSize && stopCondition.fulfilled() == false);
@@ -273,7 +274,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     private List<SimpleDataSetInformationDTO> listDataSets()
     {
-        Date timestamp = dao.getRegistrationTimestampOfLastFeedingEvent();
+        Date timestamp = dao.getLastSeenTimestamp(DataStoreKind.DSS.name());
         return listDataSets(timestamp, chunkSize);
     }
 
