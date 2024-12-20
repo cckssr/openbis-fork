@@ -7,7 +7,6 @@ import DefaultMetadaField
 
 const MetadataSection = ({ activePreview, activeImage }) => {
 
-	//console.log('MetadataSection - activeImage: ', activeImage.metadata, activeImage);
 	const currImageMetadata = activeImage.metadata;
 	const configMetadata = activeImage.config.metadata;
 	const currPreviewMetadata = activePreview.metadata;
@@ -17,16 +16,22 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 	const renderPreviewMetadata = () => {
 		return (<>
 			<Typography gutterBottom variant='h6'>
-				Preview Metadata Section
+				Preview Metadata
 			</Typography>
 			<Typography key={`preview-comment-${activePreview.index}`} variant="body2"
 				component={'span'} sx={{
 					color: "textSecondary"
 				}}>
-				<DefaultMetadaField key={'preview-comment-metadata'} keyProp='COMMENT'
-							valueProp={currPreviewComment} idx={activeImage.index} />
-				<DefaultMetadaField key={'preview-tags-metadata'} keyProp='TAGS'
-							valueProp={currPreviewTags} idx={activeImage.index} />
+				{(currPreviewComment === null || currPreviewComment === "" ) 
+					&& (currPreviewTags === null || currPreviewTags.length === 0) 
+					&& isObjectEmpty(currPreviewMetadata) &&
+					<p>No preview metadata to display</p>}
+
+				{(currPreviewComment !== null && currPreviewComment !== "")  && 
+					<DefaultMetadaField key={'preview-comment-metadata'} keyProp='Preview Comment'
+							valueProp={currPreviewComment} idx={activeImage.index} />}
+				{(currPreviewTags !== null && currPreviewTags.length > 0) && <DefaultMetadaField key={'preview-tags-metadata'} keyProp='Preview Tags'
+							valueProp={currPreviewTags} idx={activeImage.index} />}
 			</Typography>
 			<Typography key={`preview-metadata-${activePreview.index}`} variant="body2"
 				component={'span'} sx={{
@@ -34,7 +39,7 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 				}}>
 				{!isObjectEmpty(currPreviewMetadata) &&
 					Object.entries(currPreviewMetadata).map(([key, value], pos) =>
-						<DefaultMetadaField key={'preview-property-' + pos} keyProp={key}
+						<DefaultMetadaField key={'preview-property-' + pos} keyProp={'(raw) ' + key}
 							valueProp={value} idx={activeImage.index}
 							pos={pos} />)
 				}
@@ -45,7 +50,7 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 	const renderImageMetadata = () => {
 		return (<>
 			<Typography gutterBottom variant='h6'>
-				Image Metadata Section
+				Image Metadata
 			</Typography>
 			<Typography key={`image-metadata-${activeImage.index}`} variant="body2"
 				component={'span'} sx={{
@@ -81,15 +86,6 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 			</Typography>
 		</>);
 	}
-
-	/* if (isObjectEmpty(configMetadata) && isObjectEmpty(currPreviewMetadata))
-		return (
-			<PaperBox>
-				<Typography gutterBottom variant='h6'>
-					No Metadata to display
-				</Typography>
-			</PaperBox>
-		); */
 
 	return (<PaperBox>
 		{renderPreviewMetadata()}
