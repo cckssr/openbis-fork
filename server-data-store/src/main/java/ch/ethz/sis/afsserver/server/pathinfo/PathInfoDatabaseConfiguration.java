@@ -11,16 +11,22 @@ public class PathInfoDatabaseConfiguration
 
     private static volatile DatabaseConfiguration instance;
 
+    private static volatile boolean configured;
+
     public static DatabaseConfiguration getInstance(Configuration configuration)
     {
-        if (instance == null)
+        if (!configured)
         {
             synchronized (PathInfoDatabaseConfiguration.class)
             {
-                if (instance == null)
+                if (!configured)
                 {
                     Properties databaseProperties = ExtendedProperties.getSubset(configuration.getProperties(), "pathInfoDB.", true);
-                    instance = new DatabaseConfiguration(new Configuration(databaseProperties));
+                    if (!databaseProperties.isEmpty())
+                    {
+                        instance = new DatabaseConfiguration(new Configuration(databaseProperties));
+                    }
+                    configured = true;
                 }
             }
         }

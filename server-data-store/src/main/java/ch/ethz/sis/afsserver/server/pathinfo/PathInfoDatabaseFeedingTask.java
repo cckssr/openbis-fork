@@ -82,7 +82,13 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
     private static IPathsInfoDAO createDAO()
     {
         DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(ServiceProvider.getConfiguration());
-        return QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathsInfoDAO.class);
+        if (pathInfoConfiguration != null)
+        {
+            return QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathsInfoDAO.class);
+        } else
+        {
+            throw new RuntimeException("Path info database is not configured.");
+        }
     }
 
     private IEncapsulatedOpenBISService service;

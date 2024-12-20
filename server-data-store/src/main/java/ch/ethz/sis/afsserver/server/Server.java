@@ -89,9 +89,12 @@ public final class Server<CONNECTION, API>
 
         // 2 Create pathinfo DB
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-        DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseConfiguration.getContext(),
-                pathInfoDatabaseConfiguration.getVersion(), null,
-                null);
+        if (pathInfoDatabaseConfiguration != null)
+        {
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseConfiguration.getContext(),
+                    pathInfoDatabaseConfiguration.getVersion(), null,
+                    null);
+        }
 
         // 2.1 Load DB plugin
         logger.info("Creating Connection Factory");
