@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {InputAdornment, Input, Grid, Slider} from "@mui/material";
+import {InputAdornment, Input, Grid2, Slider, Typography} from "@mui/material";
 import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
 import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox.js";
 
@@ -42,9 +42,7 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
     };
 
     return (
-        (<OutlinedBox label={label}>
-            <Grid
-                container
+        (<Grid2 container
                 spacing={2}
                 direction="row"
                 sx={{
@@ -52,7 +50,12 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                     mb: 1,
                     px: 1
                 }}>
-                <Grid item xs>
+                    <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
+                <Typography id="track-false-slider" gutterBottom>
+                    {label}
+                </Typography>
+                </Grid2>
+                <Grid2 item='true' size={{ xs: 12, sm: 6 }}>
                     <Slider
                         value={initValue == null ? min : Number(initValue)}
                         name={label}
@@ -62,8 +65,8 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                         step={step}
                         disabled={disabled}
                     />
-                </Grid>
-                <Grid item xs>
+                </Grid2>
+                <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
                     <Input
                         value={initValue == null ? min : Number(initValue)}
                         size="small"
@@ -79,14 +82,14 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                             type: 'number'
                         }}
                     />
-                </Grid>
+                </Grid2>
                 {playable &&
-                    (<Grid item xs>
+                    (<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
                         <Player label={label} onStep={handleSliderChange} steps={arrayRange} speeds={speeds} speedable={playable} />
-                    </Grid>)
+                    </Grid2>)
                 }
-            </Grid>
-        </OutlinedBox>)
+            </Grid2>
+        )
     );
 }
 

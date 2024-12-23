@@ -1,19 +1,18 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox } from "@mui/material";
-import { inRange, isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
-import PaperBox from "@src/js/components/common/imaging/components/common/PaperBox.js";
-import Dropdown from "@src/js/components/common/imaging/components/common/Dropdown.jsx";
-import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox.js";
-import InputSlider from "@src/js/components/common/imaging/components/common/InputSlider.jsx";
+import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography } from '@mui/material';
+import { inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
+import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
+import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
+import OutlinedBox from '@src/js/components/common/imaging/components/common/OutlinedBox.js';
+import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import InputRangeSlider
-	from "@src/js/components/common/imaging/components/common/InputRangeSlider.jsx";
-import ColorMap from "@src/js/components/common/imaging/components/viewer/ColorMap.jsx";
-import constants from "@src/js/components/common/imaging/constants.js";
-import CustomSwitch from "@src/js/components/common/imaging/components/common/CustomSwitch.jsx";
-import RefreshIcon from "@mui/icons-material/Refresh";
+	from '@src/js/components/common/imaging/components/common/InputRangeSlider.jsx';
+import ColorMap from '@src/js/components/common/imaging/components/viewer/ColorMap.jsx';
+import constants from '@src/js/components/common/imaging/constants.js';
+import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import CameraRollIcon from '@mui/icons-material/CameraRoll';
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
@@ -36,8 +35,8 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	//console.log('MainPreviewInputControls - is IMAGING_DATA: ', (datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA));
 
 	React.useEffect(() => {
-		if (isUserGenerated) 
-			onClickUpdate(); 
+		if (isUserGenerated)
+			onClickUpdate();
 	}, [])
 
 	React.useEffect(() => {
@@ -113,7 +112,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	};
 
 	const renderStaticUpdateControls = (isUploadedPreview,) => {
-		return <>
+		return <Grid2 container size={{ xs: 12, sm: 12 }} sx={{ justifyContent: 'space-between' }}>
 			<Button label={messages.get(messages.UPDATE)}
 				variant='outlined'
 				color='primary'
@@ -127,66 +126,80 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 				</Message>
 			)}
 
-			<OutlinedBox style={{ width: 'fit-content' }}
-				label={messages.get(messages.SHOW)}>
-				<CustomSwitch isChecked={activePreview.show}
-					onChange={onChangeShow} />
-			</OutlinedBox>
+			<Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, mt:1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+				<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
+					<Typography id='show-label-id' gutterBottom>
+						{messages.get(messages.SHOW)}
+					</Typography>
+				</Grid2>
+				<Grid2 item='true' size={{ xs: 12, sm: 8 }}>
+					<CustomSwitch isChecked={activePreview.show}
+						onChange={onChangeShow} />
+				</Grid2>
+			</Grid2>
 
 			<Dropdown onSelectChange={onSelectChangeRes}
 				label={messages.get(messages.RESOLUTIONS)}
 				values={configResolutions}
-				initValue={resolution.join('x')} />
+				initValue={resolution.join('x')}
+				isMulti={false}
+				disabled={false}
+				key={'InputsPanel-resolutions'} />
 
-			<OutlinedBox label="Imaging Tags">
-				<Autocomplete
-					multiple
-					id="tags-outlined"
-					options={imagingTags}
-					disableCloseOnSelect
-					getOptionLabel={(option) => option.label}
-					inputValue={inputValue}
-					value={tags}
-					onInputChange={(event, newInputValue) => {
-						setInputValue(newInputValue);
-					}}
-					renderInput={(params) => (
-						<TextField variant='standard' {...params} placeholder="Search Tag" />
-					)}
-					renderOption={(props, option, { selected }) => {
-						const { key, ...optionProps } = props;
-						return (
-							<li key={key} {...optionProps}>
-								<Checkbox
-									icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
-									checkedIcon={<CheckBoxIcon fontSize="small" />}
-									style={{ marginRight: 8 }}
-									checked={selected}
-								/>
-								{option.label}
-							</li>
-						);
-					}}
-					onChange={handleTagsChange}
-				/>
-			</OutlinedBox>
-		</>
+			<Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+				<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
+					<Typography id='track-false-slider' gutterBottom>
+						Preview Tags
+					</Typography>
+				</Grid2>
+				<Grid2 item='true' size={{ xs: 12, sm: 8 }}>
+					<Autocomplete
+						multiple
+						id='tags-outlined'
+						options={imagingTags}
+						disableCloseOnSelect
+						getOptionLabel={(option) => option.label}
+						inputValue={inputValue}
+						value={tags}
+						onInputChange={(event, newInputValue) => {
+							setInputValue(newInputValue);
+						}}
+						renderInput={(params) => (
+							<TextField variant='standard' {...params} placeholder='Search Tag' />
+						)}
+						renderOption={(props, option, { selected }) => {
+							const { key, ...optionProps } = props;
+							return (
+								<li key={key} {...optionProps}>
+									<Checkbox
+										icon={<CheckBoxOutlineBlankIcon fontSize='small' />}
+										checkedIcon={<CheckBoxIcon fontSize='small' />}
+										style={{ marginRight: 8 }}
+										checked={selected}
+									/>
+									{option.label}
+								</li>
+							);
+						}}
+						onChange={handleTagsChange}
+					/>
+				</Grid2>
+			</Grid2>
+
+		</Grid2>
 	}
 
 	const inputValues = createInitValues(configInputs, activePreview.config);
 	activePreview.config = inputValues;
 
 	const currentMetadata = activePreview.metadata;
-	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ("file" in currentMetadata);
+	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 	return (
-		<Grid2 size={{ xs: 12, sm: 4 }}>
-			<PaperBox style={{border: 'unset', boxShadow: 'none',}}>
+		<Grid2 direction='column' size={{ xs: 12, sm: 4 }} sx={{ padding: '8px', margin: '6px 0 12px 0', maxHeight: '800px'}}>
 
-				<Grid2 container sx={{ justifyContent: "space-between", alignItems: "center" }}>
-					{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) 
-						&& renderStaticUpdateControls(isUploadedPreview)}
-				</Grid2>
-				
+				{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
+					&& renderStaticUpdateControls(isUploadedPreview)}
+
 				<Divider sx={{ margin: '16px 8px 16px 8px', borderWidth: '1px' }} />
 
 				{configInputs.map((c, idx) => {
@@ -229,7 +242,6 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 					}
 				})
 				}
-			</PaperBox>
 		</Grid2>
 	);
 };

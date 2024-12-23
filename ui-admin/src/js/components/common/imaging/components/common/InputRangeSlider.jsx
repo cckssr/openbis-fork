@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Input, Slider, Grid, InputAdornment} from "@mui/material";
+import { Input, Slider, Grid2, InputAdornment, Typography} from "@mui/material";
 import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox.js";
 import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
 
@@ -50,11 +50,18 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
 
 
     return (
-        (<OutlinedBox label={label}>
-            <Grid container spacing={2} direction="row" sx={{
-                alignItems: "center"
+        (
+            <Grid2 container spacing={2} direction="row" sx={{
+                alignItems: "center",
+                mb: 1,
+                px: 1
             }}>
-                <Grid item xs>
+                <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
+                <Typography id="track-false-slider" gutterBottom>
+                    {label}
+                </Typography>
+                </Grid2>
+                <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
                     <Input
                         name={label}
                         value={initValue == null ? min : Number(initValue[0])}
@@ -70,8 +77,8 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                             type: 'number'
                         }}
                     />
-                </Grid>
-                <Grid item xs>
+                </Grid2>
+                <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
                     <Slider
                         value={initValue == null ? [min,max] : initValue.map(n=>Number(n))}
                         name={label}
@@ -81,8 +88,8 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                         max={max}
                         step={step}
                     />
-                </Grid>
-                <Grid item xs>
+                </Grid2>
+                <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
                     <Input
                         name={label}
                         disabled={disabled}
@@ -98,15 +105,14 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                             type: 'number',
                         }}
                     />
-                </Grid>
+                </Grid2>
                 {playable &&
-                    (<Grid item xs>
+                    (<Grid2 item='true' size={{ xs: 12, sm: 3 }}>
                         <Player steps={arrayRange} speeds={speeds} speedable={playable}
                                 onStep={() => console.log('DEFAULT onStep InputRangeSlider!')}/>
-                    </Grid>)
+                    </Grid2>)
                 }
-            </Grid>
-        </OutlinedBox>)
+            </Grid2>)
     );
 }
 
