@@ -17,11 +17,11 @@
 
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property;
 
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,6 +60,38 @@ public class PropertiesDeserializer extends JsonDeserializer<Serializable>
             } else {
                 return (String) propertyValue;
             }
+        }
+    }
+
+    public static <T> T readValue(String val, Class<T> clazz)
+    {
+        try
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(new ByteArrayInputStream(val.getBytes()),
+                    clazz);
+        } catch (JsonMappingException mappingException)
+        {
+            throw new UserFailureException(mappingException.toString(), mappingException);
+        } catch (Exception e)
+        {
+            throw new UserFailureException("Could not read the parameters!", e);
+        }
+    }
+
+
+    public static String writeValue(Object value)
+    {
+        try
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonMappingException mappingException)
+        {
+            throw new UserFailureException(mappingException.toString(), mappingException);
+        } catch (Exception e)
+        {
+            throw new UserFailureException("Could not read the parameters!", e);
         }
     }
 

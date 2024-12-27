@@ -20,6 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -151,5 +152,13 @@ public interface IPropertiesHolder
     List<String> getMultiValueJsonProperty(String propertyName);
 
     void setMultiValueJsonProperty(String propertyName, List<String> propertyValue);
+
+    Spreadsheet getSpreadsheetProperty(String propertyName);
+
+    void setSpreadsheetProperty(String propertyName, Spreadsheet spreadsheet);
+
+    String getRichTextProperty(String propertyName);
+
+    void setRichTextProperty(String propertyName, String richText);
 
 }
