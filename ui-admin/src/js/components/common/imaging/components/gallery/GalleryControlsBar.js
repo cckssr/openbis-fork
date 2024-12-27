@@ -33,8 +33,8 @@ const GalleryControlsBar = ({
             <Typography variant='h6'>
                 Gallery View
             </Typography>
-            <Grid2 container direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                <Grid2 size={{xs:12, sm:7}}>
+            <Grid2 container direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Grid2 size={{xs:12, sm:8}}>
                     <OutlinedBox label='Paging'>
                         <GalleryPaging id='gallery-paging'
                             count={count}

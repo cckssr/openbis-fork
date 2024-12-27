@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormControl, MenuItem, Select, Grid2, Typography } from "@mui/material";
 import constants from '@src/js/components/common/imaging/constants.js';
+import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
 const ColorItem = ({ colorMapValue }) => {
     return (
@@ -11,11 +12,11 @@ const ColorItem = ({ colorMapValue }) => {
 const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange = null }) => {
     const [value, setValue] = React.useState(initValue);
 
-    React.useEffect(() => {
+/*     React.useEffect(() => {
         //console.log("useEffect DROPDOWN: ", label, values, initValue, isMulti);
         if (initValue !== value)
             setValue(initValue);
-    }, [initValue]);
+    }, [initValue]); */
 
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -33,11 +34,7 @@ const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange =
                 mb: 1,
                 px: 1
             }}>
-            <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
-                <Typography gutterBottom>
-                    {label}
-                </Typography>
-            </Grid2>
+            <Label label={label}/>
             <Grid2 item='true' size={{ xs: 12, sm: 8 }}>
                 <FormControl fullWidth variant="standard" onClick={event => event.stopPropagation()}>
                     <Select
@@ -45,6 +42,7 @@ const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange =
                         disabled={disabled}
                         id={"select-" + label}
                         value={value}
+                        defaultValue={initValue}
                         multiple={false}
                         label={label}
                         name={label}

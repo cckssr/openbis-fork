@@ -17,6 +17,7 @@ import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import makeStyles from '@mui/styles/makeStyles';
+import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
 const useStyles = makeStyles((theme) => ({
 	noBorderNoShadow: {
@@ -127,11 +128,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 			)}
 
 			<Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, mt:1, px: 1 }} size={{ xs: 12, sm: 12 }}>
-				<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
-					<Typography id='show-label-id' gutterBottom>
-						{messages.get(messages.SHOW)}
-					</Typography>
-				</Grid2>
+				<Label label={messages.get(messages.SHOW)}/>
 				<Grid2 item='true' size={{ xs: 12, sm: 8 }}>
 					<CustomSwitch isChecked={activePreview.show}
 						onChange={onChangeShow} />
@@ -147,11 +144,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 				key={'InputsPanel-resolutions'} />
 
 			<Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
-				<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
-					<Typography id='track-false-slider' gutterBottom>
-						Preview Tags
-					</Typography>
-				</Grid2>
+				<Label label='Preview Tags'/>
 				<Grid2 item='true' size={{ xs: 12, sm: 8 }}>
 					<Autocomplete
 						multiple
@@ -195,7 +188,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	const currentMetadata = activePreview.metadata;
 	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 	return (
-		<Grid2 direction='column' size={{ xs: 12, sm: 4 }} sx={{ padding: '8px', margin: '6px 0 12px 0', maxHeight: '800px'}}>
+		<Grid2 container direction='column' size={{ xs: 12, sm: 4 }} sx={{ padding: '8px', margin: '6px 0 12px 0', maxHeight: '800px'}}>
 
 				{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
 					&& renderStaticUpdateControls(isUploadedPreview)}

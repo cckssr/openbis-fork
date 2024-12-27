@@ -1,6 +1,6 @@
 import React from 'react';
 import withStyles from '@mui/styles/withStyles';
-import {Typography, FormControlLabel, IconButton, Grid} from '@mui/material';
+import {Typography, FormControlLabel, IconButton, Grid2} from '@mui/material';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -17,7 +17,7 @@ const styles = theme => ({
         flexShrink: 0
     },
     pageSize: {
-        marginLeft: -theme.spacing(2)
+        marginLeft: theme.spacing(2)
     },
     pageSizeLabelPlacement: {
         marginRight: 0,
@@ -30,10 +30,11 @@ const styles = theme => ({
         lineHeight: '46px'
     },
     pageRange: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(2)
+        justifyItems: 'center'
     },
-    pagePrevButtons: {},
+    pagePrevButtons: {
+        textAlign: 'right'
+    },
     pageNextButtons: {},
     separator: {
         borderLeftWidth: '1px',
@@ -83,8 +84,8 @@ class GalleryPaging extends React.PureComponent {
         const { id, classes, count, page, pageSize, pageColumns, onColumnChange, options, isGridView } = this.props
 
         return (
-            (<Grid container spacing={2} className={classes.container}>
-                <Grid item xs={3} sm className={classes.pagePrevButtons}>
+            <Grid2 container columns={13} className={classes.container}>
+                <Grid2 size={{ xs: 12, sm: 2 }} className={classes.pagePrevButtons}>
                     <IconButton
                         id={id + '.first-page-id'}
                         onClick={this.handleFirstPageButtonClick}
@@ -103,13 +104,13 @@ class GalleryPaging extends React.PureComponent {
                         size="large">
                         <KeyboardArrowLeft fontSize='small'/>
                     </IconButton>
-                </Grid>
-                <Grid item xs={4} sm id={id + '.page-range-id'} className={classes.pageRange}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 2 }} id={id + '.page-range-id'} className={classes.pageRange}>
                     <Typography variant='body2' data-part='range'>
                         {this.renderRange()}
                     </Typography>
-                </Grid>
-                <Grid item xs={3} sm className={classes.pageNextButtons}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 2 }} className={classes.pageNextButtons}>
                     <IconButton
                         id={id + '.next-page-id'}
                         onClick={this.handleNextButtonClick}
@@ -128,8 +129,8 @@ class GalleryPaging extends React.PureComponent {
                         size="large">
                         <LastPageIcon fontSize='small'/>
                     </IconButton>
-                </Grid>
-                <Grid item xs={6} sm id={id + '.page-size-id'} className={classes.pageSize}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 3 }} id={id + '.page-size-id'} className={classes.pageSize}>
                     <FormControlLabel
                         control={
                             <SelectField
@@ -146,8 +147,8 @@ class GalleryPaging extends React.PureComponent {
                         label={messages.get(messages.ITEMS_PER_PAGE)}
                         labelPlacement='start'
                     />
-                </Grid>
-                <Grid item xs={6} sm id={id + '.grid-cols-id'} className={classes.pageSize}>
+                </Grid2>
+                <Grid2 size={{ xs: 12, sm: 3 }} id={id + '.grid-cols-id'} className={classes.pageSize}>
                     <FormControlLabel
                         control={
                             <SelectField
@@ -164,12 +165,12 @@ class GalleryPaging extends React.PureComponent {
                             label: classes.pageSizeLabel,
                             labelPlacementStart: classes.pageSizeLabelPlacement
                         }}
-                        label={messages.get(messages.COLUMNS)}
+                        label={messages.get(messages.COLUMNS)+':'}
                         labelPlacement='start'
                         disabled={!isGridView}
                     />
-                </Grid>
-            </Grid>)
+                </Grid2>
+            </Grid2>
         );
     }
 

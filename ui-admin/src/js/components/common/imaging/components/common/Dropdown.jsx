@@ -5,10 +5,10 @@ import Label from '@src/js/components/common/imaging/components/common/Label.js'
 const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelectChange = null }) => {
     const [value, setValue] = React.useState(initValue);
 
-    React.useEffect(() => {
+    /* React.useEffect(() => {
         //console.log('useEffect DROPDOWN: ', label, values, initValue, typeof initValue === 'string', isMulti);
         if (initValue !== value) setValue(initValue);
-    }, [initValue]);
+    }, [initValue]); */
 
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -22,9 +22,9 @@ const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelec
             <Label label={label} />
             <Grid2 item='true' size={{ xs: 12, sm: 8 }}>
                 <FormControl fullWidth variant='standard' onClick={event => event.stopPropagation()}>
-                    <Select
-                        labelId={'select-' + label + '-label'}
+                    <Select labelId={'select-' + label + '-label'}
                         id={'select-' + label}
+                        defaultValue={initValue}
                         value={value}
                         multiple={isMulti}
                         label={label}

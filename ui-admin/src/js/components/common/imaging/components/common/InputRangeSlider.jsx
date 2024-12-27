@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Input, Slider, Grid2, InputAdornment, Typography} from "@mui/material";
-import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox.js";
-import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
+import { Input, Slider, Grid2, InputAdornment } from '@mui/material';
+import Label from '@src/js/components/common/imaging/components/common/Label.js';
+import Player from '@src/js/components/common/imaging/components/common/Player.jsx';
 
 const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, disabled = false, onChange, unit = null}) => {
     const min = Number(range[0]);
@@ -51,25 +51,21 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
 
     return (
         (
-            <Grid2 container spacing={2} direction="row" sx={{
-                alignItems: "center",
+            <Grid2 container spacing={2} direction='row' sx={{
+                alignItems: 'center',
                 mb: 1,
                 px: 1
             }}>
-                <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
-                <Typography id="track-false-slider" gutterBottom>
-                    {label}
-                </Typography>
-                </Grid2>
+                <Label label={label}/>
                 <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
                     <Input
                         name={label}
                         value={initValue == null ? min : Number(initValue[0])}
-                        size="small"
+                        size='small'
                         onChange={handleInputMinChange}
                         onBlur={handleBlur}
                         disabled={disabled}
-                        endAdornment={unit && <InputAdornment position="end">{unit}</InputAdornment>}
+                        endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
                         inputProps={{
                             step: step,
                             min: min,
@@ -94,10 +90,10 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                         name={label}
                         disabled={disabled}
                         value={initValue == null ? max : Number(initValue[1])}
-                        size="small"
+                        size='small'
                         onChange={handleInputMaxChange}
                         onBlur={handleBlur}
-                        endAdornment={unit && <InputAdornment position="end">{unit}</InputAdornment>}
+                        endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
                         inputProps={{
                             step: step,
                             min: min,
