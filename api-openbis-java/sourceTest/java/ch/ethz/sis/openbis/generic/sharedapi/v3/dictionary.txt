@@ -824,6 +824,7 @@ getCreationId
 getCreations
 getCreatorPerson
 getCriteria
+getData
 getDataProducer
 getDataProductionDate
 getDataSet
@@ -905,6 +906,7 @@ getGeneratedCodePrefix
 getGitCommitHash
 getGitRepositoryId
 getHash
+getHeaders
 getHistory
 getHomeGroupCode
 getHourOffset
@@ -946,6 +948,7 @@ getMaterials
 GetMaterialsOperation
 GetMaterialsOperationResult
 getMessage
+getMeta
 getMetaData
 getMetadataCreation
 getMode
@@ -1039,6 +1042,7 @@ getRenderResult
 getResourceReader
 getResult
 getResults
+getRichTextProperty
 getSample
 getSampleId
 getSampleProperty
@@ -1073,12 +1077,14 @@ GetSpacesOperation
 GetSpacesOperationResult
 getSpeedHint
 getSpeeds
+getSpreadsheetProperty
 getStartDate
 getState
 getStatus
 getStorageFormat
 getStorageFormatId
 getStringArrayProperty
+getStyle
 getSummary
 getSummaryAvailability
 getSummaryAvailabilityTime
@@ -1113,6 +1119,7 @@ getVocabulary
 GetVocabularyTermsOperation
 GetVocabularyTermsOperationResult
 getWarnings
+getWidth
 getXlsTextFormat
 getXmlProperty
 GIT
@@ -1706,6 +1713,7 @@ QUEUE_METHOD
 quoteKeys
 RANGES_PARAMETER
 read
+readValue
 REAL
 REGISTRATION_DATE
 registrationDate
@@ -2119,6 +2127,7 @@ setCreationDate
 setCreationId
 setCreatorPerson
 setCriteria
+setData
 setDataProducer
 setDataProductionDate
 setDataSet
@@ -2183,6 +2192,7 @@ setGitRepositoryId
 setH5arFolders
 setH5Folders
 setHash
+setHeaders
 setHistory
 setHomeGroupCode
 setHyperlinkProperty
@@ -2219,6 +2229,7 @@ setMaterial
 setMaterialId
 setMaterialProperties
 setMeasured
+setMeta
 setMetaData
 setMetadataCreation
 setMode
@@ -2305,6 +2316,7 @@ setRemoteUrl
 setRenderResult
 setResolutions
 setResults
+setRichTextProperty
 setSample
 setSampleId
 setSamples
@@ -2326,6 +2338,7 @@ setSpaceId
 setSpacesByType
 setSpeedHint
 setSpeeds
+setSpreadsheetProperty
 setStartDate
 setState
 setStatus
@@ -2333,6 +2346,7 @@ setStorageConfirmation
 setStorageFormat
 setStorageFormatId
 setStringArrayProperty
+setStyle
 setSubcodeUnique
 setSummary
 setSummaryAvailability
@@ -2366,6 +2380,7 @@ setVersion
 SetView
 setVocabulary
 setWarnings
+setWidth
 setWithImportCompatibility
 setWithReferredTypes
 setXlsTextFormat
@@ -2406,6 +2421,7 @@ SpaceSearchCriteria
 SpaceSortOptions
 SpaceUpdate
 Speed Hint Search Criteria
+Spreadsheet
 Sql Execution Options
 Sql Search Criteria
 START_DOWNLOAD_SESSION_METHOD
@@ -2911,6 +2927,7 @@ withVocabularyUsing
 withWebAppSettings
 withWebAppSettingsUsing
 withWildcards
+writeValue
 XLS
 XLSTextFormat
 XlsTextFormat

@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -107,5 +108,11 @@ public final class Spreadsheet implements Serializable
     public void setMeta(Map<String, String> meta)
     {
         this.meta = meta;
+    }
+
+    @Override
+    public String toString()
+    {
+        return new ObjectToString(this).append("version", version).toString();
     }
 }
