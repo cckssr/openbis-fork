@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { InputAdornment, Input, Grid2, Slider, Typography } from "@mui/material";
+import { InputAdornment, Input, Grid2, Slider, FormHelperText } from "@mui/material";
 import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
 import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
@@ -42,16 +42,9 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
     };
 
     return (
-        (<Grid2 container
-            spacing={2}
-            direction="row"
-            sx={{
-                alignItems: "center",
-                mb: 1,
-                px: 1
-            }}>
+        <Grid2 container spacing={2} direction="row" sx={{ alignItems: "center", mb: 1, px: 1, width: '100%' }}>
             <Label label={label} />
-            <Grid2 item='true' size={{ xs: 12, sm: 6 }}>
+            <Grid2 item='true' size={{ xs: 12, sm: 5 }}>
                 <Slider
                     value={initValue == null ? min : Number(initValue)}
                     name={label}
@@ -62,7 +55,7 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                     disabled={disabled}
                 />
             </Grid2>
-            <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
+            <Grid2 item='true' size={{ xs: 12, sm: 3 }}>
                 <Input
                     value={initValue == null ? min : Number(initValue)}
                     size="small"
@@ -70,6 +63,7 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                     onChange={handleInputChange}
                     onBlur={handleBlur}
                     disabled={disabled}
+                    aria-describedby='single-input-helper-text'
                     endAdornment={unit && <InputAdornment position="end">{unit}</InputAdornment>}
                     inputProps={{
                         step: step,
@@ -78,6 +72,7 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                         type: 'number'
                     }}
                 />
+                <FormHelperText id='single-input-helper-text'>{unit}</FormHelperText>
             </Grid2>
             {playable &&
                 (<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
@@ -85,7 +80,6 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                 </Grid2>)
             }
         </Grid2>
-        )
     );
 }
 

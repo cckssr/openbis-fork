@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Input, Slider, Grid2, InputAdornment } from '@mui/material';
+import { Input, Slider, Grid2, InputAdornment, FormHelperText } from '@mui/material';
 import Label from '@src/js/components/common/imaging/components/common/Label.js';
 import Player from '@src/js/components/common/imaging/components/common/Player.jsx';
 
@@ -12,6 +12,7 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
         (value, index) => min + index * step
     );
     const [value, setValue] = React.useState(initValue == null ? [Number(range[0]), Number(range[1])] : initValue.map(n=>Number(n)));
+    
     function roundToClosest(counts, goal){
         return counts.reduce((prev, curr) => Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
     }
@@ -50,65 +51,64 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
 
 
     return (
-        (
-            <Grid2 container spacing={2} direction='row' sx={{
-                alignItems: 'center',
-                mb: 1,
-                px: 1
-            }}>
-                <Label label={label}/>
-                <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
-                    <Input
-                        name={label}
-                        value={initValue == null ? min : Number(initValue[0])}
-                        size='small'
-                        onChange={handleInputMinChange}
-                        onBlur={handleBlur}
-                        disabled={disabled}
-                        endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
-                        inputProps={{
-                            step: step,
-                            min: min,
-                            max: max,
-                            type: 'number'
-                        }}
-                    />
-                </Grid2>
-                <Grid2 item='true' size={{ xs: 12, sm: 4 }}>
-                    <Slider
-                        value={initValue == null ? [min,max] : initValue.map(n=>Number(n))}
-                        name={label}
-                        disabled={disabled}
-                        onChange={(event, newValue) => handleSliderChange(newValue, label)}
-                        min={min}
-                        max={max}
-                        step={step}
-                    />
-                </Grid2>
-                <Grid2 item='true' size={{ xs: 12, sm: 2 }}>
-                    <Input
-                        name={label}
-                        disabled={disabled}
-                        value={initValue == null ? max : Number(initValue[1])}
-                        size='small'
-                        onChange={handleInputMaxChange}
-                        onBlur={handleBlur}
-                        endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
-                        inputProps={{
-                            step: step,
-                            min: min,
-                            max: max,
-                            type: 'number',
-                        }}
-                    />
-                </Grid2>
-                {playable &&
-                    (<Grid2 item='true' size={{ xs: 12, sm: 3 }}>
-                        <Player steps={arrayRange} speeds={speeds} speedable={playable}
-                                onStep={() => console.log('DEFAULT onStep InputRangeSlider!')}/>
-                    </Grid2>)
-                }
-            </Grid2>)
+        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1, width: '100%' }}>
+            <Label label={label}/>
+            <Grid2 item='true' size={{ xs: 12, sm: 'grow' }}>
+                <Input
+                    name={label}
+                    value={initValue == null ? min : Number(initValue[0])}
+                    size='small'
+                    onChange={handleInputMinChange}
+                    onBlur={handleBlur}
+                    disabled={disabled}
+                    aria-describedby='input-min-helper-text'
+                    //endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
+                    inputProps={{
+                        step: step,
+                        min: min,
+                        max: max,
+                        type: 'number'
+                    }}
+                />
+                <FormHelperText id='input-min-helper-text'>{unit}</FormHelperText>
+            </Grid2>
+            <Grid2 item='true' size={{ xs: 12, sm: 3 }}>
+                <Slider
+                    value={initValue == null ? [min,max] : initValue.map(n=>Number(n))}
+                    name={label}
+                    disabled={disabled}
+                    onChange={(event, newValue) => handleSliderChange(newValue, label)}
+                    min={min}
+                    max={max}
+                    step={step}
+                />
+            </Grid2>
+            <Grid2 item='true' size={{ xs: 12, sm: 'grow' }}>
+                <Input
+                    name={label}
+                    disabled={disabled}
+                    value={initValue == null ? max : Number(initValue[1])}
+                    size='small'
+                    onChange={handleInputMaxChange}
+                    onBlur={handleBlur}
+                    aria-describedby='input-max-helper-text'
+                    //endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
+                    inputProps={{
+                        step: step,
+                        min: min,
+                        max: max,
+                        type: 'number',
+                    }}
+                />
+                <FormHelperText id='input-max-helper-text'>{unit}</FormHelperText>
+            </Grid2>
+            {playable &&
+                (<Grid2 item='true' size={{ xs: 12, sm: 3 }}>
+                    <Player steps={arrayRange} speeds={speeds} speedable={playable}
+                            onStep={() => console.log('DEFAULT onStep InputRangeSlider!')}/>
+                </Grid2>)
+            }
+        </Grid2>
     );
 }
 

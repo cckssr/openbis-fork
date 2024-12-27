@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, MenuItem, Select, Grid2, Typography } from "@mui/material";
+import { FormControl, MenuItem, Select, Grid2, Typography } from '@mui/material';
 import constants from '@src/js/components/common/imaging/constants.js';
 import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
@@ -12,11 +12,11 @@ const ColorItem = ({ colorMapValue }) => {
 const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange = null }) => {
     const [value, setValue] = React.useState(initValue);
 
-/*     React.useEffect(() => {
-        //console.log("useEffect DROPDOWN: ", label, values, initValue, isMulti);
+    React.useEffect(() => {
+        //console.log('useEffect DROPDOWN: ', label, values, initValue, isMulti);
         if (initValue !== value)
             setValue(initValue);
-    }, [initValue]); */
+    }, [initValue]);
 
     const handleChange = (event) => {
         setValue(event.target.value);
@@ -26,21 +26,14 @@ const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange =
     };
 
     return (
-        <Grid2 container
-            spacing={2}
-            direction="row"
-            sx={{
-                alignItems: "center",
-                mb: 1,
-                px: 1
-            }}>
+        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1, width: '100%' }}>
             <Label label={label}/>
             <Grid2 item='true' size={{ xs: 12, sm: 8 }}>
-                <FormControl fullWidth variant="standard" onClick={event => event.stopPropagation()}>
+                <FormControl fullWidth variant='standard' onClick={event => event.stopPropagation()}>
                     <Select
-                        labelId={"select-" + label + "-label"}
+                        labelId={'select-' + label + '-label'}
                         disabled={disabled}
-                        id={"select-" + label}
+                        id={'select-' + label}
                         value={value}
                         defaultValue={initValue}
                         multiple={false}
@@ -48,7 +41,7 @@ const ColorMap = ({ values, initValue, label, disabled = false, onSelectChange =
                         name={label}
                         onChange={handleChange}
                     >
-                        {values.map((v, i) => <MenuItem key={"select-" + label + "-menuitem-" + i} value={v}>
+                        {values.map((v, i) => <MenuItem key={'select-' + label + '-menuitem-' + i} value={v}>
                             <span style={{ width: '30%' }}>{v}</span> <ColorItem colorMapValue={v} />
                         </MenuItem>)}
                     </Select>

@@ -12,12 +12,12 @@ export default function CustomSwitch({ label = 'default', labelPlacement = null,
         return <FormGroup>
             <FormControlLabel
                 name='default-control-switch'
-                control={<Switch size={size} checked={isChecked} onChange={event => toggleChecked(event)} color="primary"/>}
+                control={<Switch size={size} checked={isChecked} onChange={event => toggleChecked(event)} color='primary'/>}
                 disabled={disabled}
                 label={label}
                 labelPlacement={labelPlacement}
             />
         </FormGroup>
     else
-        return <Switch disabled={disabled} name='default-switch' size={size} checked={isChecked} onChange={event => toggleChecked(event)} color="primary"/>;
+        return <Switch disabled={disabled} name='default-switch' size={size} checked={isChecked} onChange={event => toggleChecked(event)} color='primary'/>;
 }

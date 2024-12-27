@@ -5,10 +5,10 @@ import Label from '@src/js/components/common/imaging/components/common/Label.js'
 const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelectChange = null }) => {
     const [value, setValue] = React.useState(initValue);
 
-    /* React.useEffect(() => {
+    React.useEffect(() => {
         //console.log('useEffect DROPDOWN: ', label, values, initValue, typeof initValue === 'string', isMulti);
         if (initValue !== value) setValue(initValue);
-    }, [initValue]); */
+    }, [initValue]);
 
     const handleChange = (event) => {
         setValue(event.target.value);
