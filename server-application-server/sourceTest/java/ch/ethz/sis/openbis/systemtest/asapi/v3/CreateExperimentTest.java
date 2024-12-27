@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -1714,6 +1715,50 @@ public class CreateExperimentTest extends AbstractExperimentTest
         sampleProps = (Serializable[]) experiment2.getProperties().get(propertyType.getPermId());
         Arrays.sort(sampleProps);
         assertEquals(sampleProps, new Serializable[]{"200811050919915-8", sample2.getPermId().getPermId()});
+        assertEquals(experiment2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithSpreadsheetProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        Map<String, String> metaData = Map.of("custom_widget", "Spreadsheet");
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE-" + System.currentTimeMillis(),
+                false, metaData);
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_SAMPLE_PROPERTY");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+
+        Spreadsheet mySpreadsheet = new Spreadsheet();
+        mySpreadsheet.setHeaders(new String[]{"A", "B", "C"});
+        mySpreadsheet.setData(new String[][]{ {"a", "b", "c"} });
+        mySpreadsheet.setWidth(new Integer[]{ 20, 20, 30});
+
+        creation.setSpreadsheetProperty(propertyType.getPermId(), mySpreadsheet);
+
+        // When
+        List<ExperimentPermId> experimentIds = v3api.createExperiments(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(experimentIds.size(), 1);
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Experiment experiment2 = v3api.getExperiments(sessionToken, experimentIds, fetchOptions).get(experimentIds.get(0));
+        assertEquals(experiment2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+
+        Spreadsheet savedSpreadsheet = experiment2.getSpreadsheetProperty(propertyType.getPermId());
+        assertEquals(savedSpreadsheet.getVersion(), mySpreadsheet.getVersion());
+        assertEquals(savedSpreadsheet.getWidth(), mySpreadsheet.getWidth());
+        assertEquals(savedSpreadsheet.getData(), mySpreadsheet.getData());
+        assertEquals(savedSpreadsheet.getHeaders(), mySpreadsheet.getHeaders());
+
         assertEquals(experiment2.getProperties().size(), 2);
     }
 

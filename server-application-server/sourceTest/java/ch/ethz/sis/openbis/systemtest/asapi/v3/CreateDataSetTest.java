@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -2918,6 +2921,48 @@ public class CreateDataSetTest extends AbstractDataSetTest
         sampleProps = (Serializable[]) dataSet.getProperties().get(propertyType.getPermId());
         Arrays.sort(sampleProps);
         assertEquals(sampleProps, new Serializable[] { "200811050919915-8", sample2.getPermId().getPermId() });
+        assertEquals(dataSet.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithSpreadsheetProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        Map<String, String> metaData = Map.of("custom_widget", "Spreadsheet");
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE-" + System.currentTimeMillis(),
+                false, metaData);
+        EntityTypePermId dataSetType = createADataSetType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        DataSetCreation creation = physicalDataSetCreation();
+        creation.setTypeId(dataSetType);
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+
+        Spreadsheet mySpreadsheet = new Spreadsheet();
+        mySpreadsheet.setHeaders(new String[]{"A", "B", "C"});
+        mySpreadsheet.setData(new String[][]{ {"a", "b", "c"} });
+        mySpreadsheet.setWidth(new Integer[]{ 20, 20, 30});
+
+        creation.setSpreadsheetProperty(propertyType.getPermId(), mySpreadsheet);
+
+        // When
+        List<DataSetPermId> dataSetIds = v3api.createDataSets(sessionToken, Arrays.asList(creation));
+
+        // Then
+        assertEquals(dataSetIds.size(), 1);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        DataSet dataSet = v3api.getDataSets(sessionToken, dataSetIds, fetchOptions).get(dataSetIds.get(0));
+        assertEquals(dataSet.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+
+        Spreadsheet savedSpreadsheet = dataSet.getSpreadsheetProperty(propertyType.getPermId());
+        assertEquals(savedSpreadsheet.getVersion(), mySpreadsheet.getVersion());
+        assertEquals(savedSpreadsheet.getWidth(), mySpreadsheet.getWidth());
+        assertEquals(savedSpreadsheet.getData(), mySpreadsheet.getData());
+        assertEquals(savedSpreadsheet.getHeaders(), mySpreadsheet.getHeaders());
+
         assertEquals(dataSet.getProperties().size(), 2);
     }
 
