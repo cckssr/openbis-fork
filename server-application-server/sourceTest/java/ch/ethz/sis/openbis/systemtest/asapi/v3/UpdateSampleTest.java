@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -797,6 +799,82 @@ public class UpdateSampleTest extends AbstractSampleTest
         expectedProperties.put("BACTERIUM", "BACTERIUM1 (BACTERIUM)");
         assertEquals(sample.getProperties(), expectedProperties);
     }
+
+
+    @Test
+    public void testUpdateWithSpreadsheetProperty()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        Map<String, String> metaData = Map.of("custom_widget", "Spreadsheet");
+        PropertyTypePermId propertyType1 = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE1-" + System.currentTimeMillis(),
+                false, metaData);
+        PropertyTypePermId propertyType2 = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE2-" + System.currentTimeMillis(),
+                false, metaData);
+        PropertyTypePermId propertyType3 = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE2-" + System.currentTimeMillis(),
+                false, metaData);
+        EntityTypePermId sampleType = createASampleType(sessionToken, false, propertyType1, propertyType2, propertyType3);
+
+
+        SampleCreation creation = new SampleCreation();
+        creation.setCode("SAMPLE");
+        creation.setTypeId(sampleType);
+        creation.setSpaceId(new SpacePermId("CISD"));
+
+        Spreadsheet mySpreadsheetBefore = new Spreadsheet();
+        mySpreadsheetBefore.setHeaders(new String[]{"A", "B", "C"});
+        mySpreadsheetBefore.setData(new String[][]{ {"a", "b", "c"} });
+        mySpreadsheetBefore.setWidth(new Integer[]{ 20, 20, 30});
+        creation.setSpreadsheetProperty(propertyType1.getPermId(), mySpreadsheetBefore);
+        creation.setSpreadsheetProperty(propertyType2.getPermId(), mySpreadsheetBefore);
+
+        List<SamplePermId> ids = v3api.createSamples(sessionToken, Arrays.asList(creation));
+
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(ids.get(0));
+
+        Spreadsheet mySpreadsheetAfter = new Spreadsheet();
+        mySpreadsheetAfter.setHeaders(new String[]{"A1", "B1", "C1"});
+        mySpreadsheetAfter.setData(new String[][]{ {"ccc", "bbbb", "aa"} });
+        mySpreadsheetAfter.setWidth(new Integer[]{ 40, 50, 100});
+
+        // change existing property
+        update.setSpreadsheetProperty(propertyType1.getPermId(), mySpreadsheetAfter);
+        // remove existing property
+        update.setSpreadsheetProperty(propertyType2.getPermId(), null);
+        // set new property
+        update.setSpreadsheetProperty(propertyType3.getPermId(), mySpreadsheetBefore);
+
+        v3api.updateSamples(sessionToken, Arrays.asList(update));
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+
+        Map<ISampleId, Sample> map = v3api.getSamples(sessionToken, ids, fetchOptions);
+        List<Sample> samples = new ArrayList<Sample>(map.values());
+
+        AssertionUtil.assertCollectionSize(samples, 1);
+
+        Sample sample = samples.get(0);
+
+        Spreadsheet spreadsheet = sample.getSpreadsheetProperty(propertyType1.getPermId());
+        assertEquals(spreadsheet.getVersion(), mySpreadsheetAfter.getVersion());
+        assertEquals(spreadsheet.getWidth(), mySpreadsheetAfter.getWidth());
+        assertEquals(spreadsheet.getData(), mySpreadsheetAfter.getData());
+        assertEquals(spreadsheet.getHeaders(), mySpreadsheetAfter.getHeaders());
+
+        assertNull(sample.getSpreadsheetProperty(propertyType2.getPermId()));
+
+        spreadsheet = sample.getSpreadsheetProperty(propertyType3.getPermId());
+        assertEquals(spreadsheet.getVersion(), mySpreadsheetBefore.getVersion());
+        assertEquals(spreadsheet.getWidth(), mySpreadsheetBefore.getWidth());
+        assertEquals(spreadsheet.getData(), mySpreadsheetBefore.getData());
+        assertEquals(spreadsheet.getHeaders(), mySpreadsheetBefore.getHeaders());
+
+    }
+
 
     @Test
     public void testUpdateWithUnknownPropertyOfTypeSample()

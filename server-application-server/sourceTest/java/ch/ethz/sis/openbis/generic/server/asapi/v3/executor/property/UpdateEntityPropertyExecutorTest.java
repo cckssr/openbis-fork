@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import org.jmock.Expectations;
 import org.testng.annotations.Test;
@@ -506,6 +507,30 @@ public class UpdateEntityPropertyExecutorTest extends AbstractEntityPropertyExec
                 @Override
                 public void setMultiValueJsonProperty(String propertyName,
                         List<String> propertyValue)
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public Spreadsheet getSpreadsheetProperty(String propertyName)
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public void setSpreadsheetProperty(String propertyName, Spreadsheet spreadsheet)
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public String getRichTextProperty(String propertyName)
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
+                public void setRichTextProperty(String propertyName, String richText)
                 {
                     throw new UnsupportedOperationException();
                 }

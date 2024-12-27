@@ -20,13 +20,16 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -617,4 +620,50 @@ public abstract class AbstractEntityPropertyHolder implements Serializable, IPro
             setProperty(propertyName, null);
         }
     }
+
+    @Override
+    public Spreadsheet getSpreadsheetProperty(String propertyName)
+    {
+        String rawData = getStringProperty(propertyName);
+        if(rawData != null)
+        {
+            if(rawData.startsWith("<DATA>"))
+            {
+                rawData = rawData.substring("<DATA>".length(), rawData.length() - "</DATA>".length());
+            }
+            String jsonString = new String(Base64.getDecoder().decode(rawData), StandardCharsets.UTF_8);
+            Spreadsheet result = PropertiesDeserializer.readValue(jsonString, Spreadsheet.class);
+            return result;
+        }
+        return null;
+    }
+
+    @Override
+    public void setSpreadsheetProperty(String propertyName, Spreadsheet spreadsheet)
+    {
+        if(spreadsheet != null)
+        {
+            String json = PropertiesDeserializer.writeValue(spreadsheet);
+            String base64 = Base64.getEncoder().encodeToString(json.getBytes());
+            setProperty(propertyName, String.format("<DATA>%s</DATA>", base64));
+        }
+        else
+        {
+            setProperty(propertyName, null);
+        }
+
+    }
+
+    @Override
+    public String getRichTextProperty(String propertyName)
+    {
+        return getStringProperty(propertyName);
+    }
+
+    @Override
+    public void setRichTextProperty(String propertyName, String richText)
+    {
+        setStringProperty(propertyName, richText);
+    }
+
 }

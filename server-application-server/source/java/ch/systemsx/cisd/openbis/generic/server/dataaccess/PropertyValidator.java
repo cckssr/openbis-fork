@@ -16,10 +16,14 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Document;
@@ -94,6 +98,7 @@ public final class PropertyValidator implements IPropertyValueValidator
             case XML:
                 ((XmlValidator) dataTypeValidator).setXmlSchema(propertyType.getSchema());
                 ((XmlValidator) dataTypeValidator).setPropertyTypeLabel(propertyType.getLabel());
+                ((XmlValidator) dataTypeValidator).setMetaData(propertyType.getMetaData());
                 break;
             case ARRAY_STRING:
             case ARRAY_INTEGER:
@@ -352,9 +357,13 @@ public final class PropertyValidator implements IPropertyValueValidator
     private final static class XmlValidator implements IDataTypeValidator
     {
 
+        private static final String SPREADSHEET_WIDGET = "SPREADSHEET";
+
         private String xmlSchema;
 
         private String propertyTypeLabel;
+
+        private Map<String, String> metaData;
 
         public void setXmlSchema(String xmlSchema)
         {
@@ -364,6 +373,11 @@ public final class PropertyValidator implements IPropertyValueValidator
         public void setPropertyTypeLabel(String label)
         {
             this.propertyTypeLabel = label;
+        }
+
+        public void setMetaData(Map<String, String> metaData)
+        {
+            this.metaData = metaData;
         }
 
         //
@@ -405,8 +419,40 @@ public final class PropertyValidator implements IPropertyValueValidator
                             e.getMessage());
                 }
             }
+            if(metaData != null)
+            {
+                String customWidgetValue = metaData.get("custom_widget");
+                if(customWidgetValue != null)
+                {
+                    if(customWidgetValue.toUpperCase().equals(SPREADSHEET_WIDGET))
+                    {
+
+                        validateSpreadsheet(value);
+                    }
+                }
+
+            }
             // validated value is valid
             return value;
+        }
+
+        private void validateSpreadsheet(String value) {
+            String rawData = value;
+            if(rawData.startsWith("<DATA>"))
+            {
+                rawData = rawData.substring("<DATA>".length(), rawData.length() - "</DATA>".length());
+            }
+            try
+            {
+                String jsonString = new String(Base64.getDecoder().decode(rawData), StandardCharsets.UTF_8);
+                Spreadsheet result =
+                        PropertiesDeserializer.readValue(jsonString, Spreadsheet.class);
+            } catch (Exception e)
+            {
+                throw UserFailureException.fromTemplate(
+                        "Provided spreadsheet could not be validated: %s ",
+                        e.getMessage());
+            }
         }
     }
 }

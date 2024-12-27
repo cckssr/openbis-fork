@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.Spreadsheet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import org.testng.annotations.DataProvider;
@@ -2322,6 +2323,50 @@ public class CreateSampleTest extends AbstractSampleTest
         sampleProps = (Serializable[]) sample2.getProperties().get(propertyType.getPermId());
         Arrays.sort(sampleProps);
         assertEquals(sampleProps, new Serializable[]{"200811050919915-8", testSampleIds.get(0).getPermId()});
+        assertEquals(sample2.getProperties().size(), 2);
+    }
+
+    @Test
+    public void testCreateWithSpreadsheetProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        Map<String, String> metaData = Map.of("custom_widget", "Spreadsheet");
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.XML,
+                new VocabularyPermId("ORGANISM"), "TYPE-" + System.currentTimeMillis(),
+                false, metaData);
+        EntityTypePermId sampleType = createASampleType(sessionToken, true, propertyType, PLATE_GEOMETRY);
+
+        SampleCreation sample = new SampleCreation();
+        sample.setCode("SAMPLE_WITH_SAMPLE_PROPERTY");
+        sample.setTypeId(sampleType);
+        sample.setSpaceId(new SpacePermId("CISD"));
+        sample.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+
+        Spreadsheet mySpreadsheet = new Spreadsheet();
+        mySpreadsheet.setHeaders(new String[]{"A", "B", "C"});
+        mySpreadsheet.setData(new String[][]{ {"a", "b", "c"} });
+        mySpreadsheet.setWidth(new Integer[]{ 20, 20, 30});
+
+        sample.setSpreadsheetProperty(propertyType.getPermId(), mySpreadsheet);
+
+        // When
+        List<SamplePermId> sampleIds = v3api.createSamples(sessionToken, Arrays.asList(sample));
+
+        // Then
+        assertEquals(sampleIds.size(), 1);
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withProperties();
+        fetchOptions.withSampleProperties();
+        Sample sample2 = v3api.getSamples(sessionToken, sampleIds, fetchOptions).get(sampleIds.get(0));
+        assertEquals(sample2.getProperties().get(PLATE_GEOMETRY.getPermId()), "384_WELLS_16X24");
+
+        Spreadsheet savedSpreadsheet = sample2.getSpreadsheetProperty(propertyType.getPermId());
+        assertEquals(savedSpreadsheet.getVersion(), mySpreadsheet.getVersion());
+        assertEquals(savedSpreadsheet.getWidth(), mySpreadsheet.getWidth());
+        assertEquals(savedSpreadsheet.getData(), mySpreadsheet.getData());
+        assertEquals(savedSpreadsheet.getHeaders(), mySpreadsheet.getHeaders());
+
         assertEquals(sample2.getProperties().size(), 2);
     }
 
