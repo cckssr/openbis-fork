@@ -15,6 +15,10 @@
 from datetime import datetime
 
 import pandas as pd
+import base64
+import json
+
+from .spreadsheet import Spreadsheet
 
 
 def is_of_openbis_supported_date_format(value):
@@ -58,7 +62,12 @@ class PropertyReformatter:
             elif property_type.dataType.startswith('ARRAY'):
                 if property_type.multiValue:
                     properties[key] = ["[" + ",".join(map(str, x)) + "]" for x in value]
-
+            elif (property_type.dataType == 'XML' and 'custom_widget' in property_type.metaData
+                    and property_type.metaData['custom_widget'].upper() == 'SPREADSHEET'):
+                    json_str = value.to_json().encode('utf-8')
+                    b64 = base64.b64encode(json_str).decode('utf-8')
+                    result = f'<DATA>{b64}</DATA>'
+                    properties[key] = result
         return properties
 
     def _format_timestamp(self, value):
@@ -87,3 +96,9 @@ class PropertyReformatter:
         else:
             result = prop_value
         return result
+
+    def to_spreadsheet(self, rawValue):
+        b64 = rawValue[len("<DATA>"):-len("</DATA>")]
+        json_str = base64.b64decode(b64).decode('utf-8')
+        result = json.loads(json_str)
+        return Spreadsheet.from_dict(result)

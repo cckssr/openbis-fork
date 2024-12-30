@@ -814,3 +814,50 @@ def test_create_sample_type_assign_property_pattern(space):
     st.assign_property(ptc3, patternType="VALUES", pattern='"a", "b", "c"')
     st.save()
 
+def test_create_sample_with_spreadsheet(space):
+    name_suffix = str(time.time())
+    sc = "TEST_1_" + name_suffix
+    pc = "ESFA_1_" + name_suffix
+    ptc1 = "XML_SPREADSHEET_" + name_suffix
+    stc = "EXPERIMENTAL_STEP_MILAR_" + name_suffix
+
+    # Create the new space and project
+    sp = space.openbis.new_space(code=sc, description="Test space")
+    sp.save()
+    pr = space.openbis.new_project(code=pc, space=sc, description="ESFA experiments")
+    pr.save()
+
+    # Create the experiment
+    exp = space.openbis.new_collection(code=pc, project="/" + sc + "/" + pc, type="COLLECTION")
+    exp.save()
+
+    # Create the sample type
+    date_prop = space.openbis.new_property_type(code=ptc1, dataType="XML",
+                                                label="test spreadsheet",
+                                                description="test xml property",
+                                                metaData={"custom_widget": "Spreadsheet"})
+    date_prop.save()
+
+    st = space.openbis.new_sample_type(code=stc, generatedCodePrefix="TEST_PATTERN_")
+    st.save()
+
+    if st is None:
+        print(space.openbis.get_sample_types())
+        st = space.openbis.get_sample_type(stc)
+        st.save()
+
+    st.assign_property(ptc1)
+    st.save()
+
+    spreadsheet = space.openbis.new_spreadsheet(10, 10)
+    spreadsheet.data[0][0] = 10
+
+    sample = space.openbis.new_sample(code=f"CODE_{name_suffix}",
+                                      type=st.code,
+                                      experiment=exp,
+                                      props={ptc1.lower(): spreadsheet})
+    sample.save()
+
+    assert sample.props[ptc1.lower()] is not None
+    assert sample.props[ptc1.lower()].data[0][0] == 10
+

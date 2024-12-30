@@ -109,6 +109,9 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
             else:
                 if data_type in ("ARRAY_INTEGER", "ARRAY_REAL", "ARRAY_STRING", "ARRAY_TIMESTAMP"):
                     value = self.formatter.to_array(data_type, value)
+            if (data_type == 'XML' and 'metaData' in property_type and 'custom_widget' in property_type['metaData']
+                    and property_type['metaData']['custom_widget'].upper() == 'SPREADSHEET'):
+                    value = self.formatter.to_spreadsheet(value)
             self.p.__dict__[key.lower()] = value
 
     def __dir__(self):

@@ -90,6 +90,7 @@ from .utils import (
     split_identifier,
 )
 from .vocabulary import Vocabulary, VocabularyTerm
+from .spreadsheet import Spreadsheet
 from .imaging import *
 
 # import the various openBIS entities
@@ -3962,6 +3963,9 @@ class Openbis:
         available   --
         """
         return Plugin(self, name=name, pluginType=pluginType, **kwargs)
+
+    def new_spreadsheet(self, columns=10, rows=10):
+        return Spreadsheet(columns, rows)
 
     def new_property_type(
             self,

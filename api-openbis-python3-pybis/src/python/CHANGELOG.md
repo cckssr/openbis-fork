@@ -5,6 +5,7 @@
 - Implemented Fast download V2 
 - Fixed dataset with parents creation
 - Fixed type checking for python <3.10
+- Added Spreadsheet support
 
 ## Changes with pybis-1.37.0
 
