@@ -189,6 +189,29 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
             this.setProperty(propertyName, propertyValue);
         };
 
+        prototype.getSpreadsheetProperty = function(propertyName) {
+            var rawValue = this.getProperty(propertyName)
+            if(rawValue) {
+                var b64 = rawValue.substring('<DATA>'.length, rawValue.length - '</DATA>'.length);
+                var decoded = atob(b64);
+                var json = JSON.parse(decoded);
+                return json;
+            } else {
+                return rawValue;
+            }
+        };
+        prototype.setSpreadsheetProperty = function(propertyName, propertyValue) {
+            if(propertyValue) {
+                propertyValue = `<DATA>${btoa(JSON.stringify(propertyValue))}</DATA>`
+            }
+            this.setProperty(propertyName, propertyValue);
+        };
+        prototype.getRichTextProperty = function(propertyName) {
+            return this.getProperty(propertyName);
+        };
+        prototype.setRichTextProperty = function(propertyName, propertyValue) {
+            this.setProperty(propertyName, propertyValue);
+        };
 
 
     }, {
