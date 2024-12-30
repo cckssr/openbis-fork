@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { FormControl, MenuItem, Select } from "@mui/material";
-import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox";
+import { FormControl, MenuItem, Select, Grid2 } from '@mui/material';
+import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
 const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelectChange = null }) => {
     const [value, setValue] = React.useState(initValue);
 
     React.useEffect(() => {
-        //console.log("useEffect DROPDOWN: ", label, values, initValue, typeof initValue === "string", isMulti);
+        //console.log('useEffect DROPDOWN: ', label, values, initValue, typeof initValue === 'string', isMulti);
         if (initValue !== value) setValue(initValue);
     }, [initValue]);
 
@@ -18,22 +18,25 @@ const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelec
     };
 
     return (
-        <OutlinedBox label={label}>
-            <FormControl fullWidth variant="standard" onClick={event => event.stopPropagation()}>
-                <Select
-                    labelId={"select-" + label + "-label"}
-                    id={"select-" + label}
-                    value={value}
-                    multiple={isMulti}
-                    label={label}
-                    name={label}
-                    onChange={handleChange}
-                    disabled={disabled}
-                >
-                    {values.map((v, i) => <MenuItem key={"select-" + label + "-menuitem-" + i} value={v} onClick={event => event.stopPropagation()}>{v}</MenuItem>)}
-                </Select>
-            </FormControl>
-        </OutlinedBox>
+        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+            <Label label={label} />
+            <Grid2 item='true' size={{ xs: 12, sm: 8 }}>
+                <FormControl fullWidth variant='standard' onClick={event => event.stopPropagation()}>
+                    <Select labelId={'select-' + label + '-label'}
+                        id={'select-' + label}
+                        defaultValue={initValue}
+                        value={value}
+                        multiple={isMulti}
+                        label={label}
+                        name={label}
+                        onChange={handleChange}
+                        disabled={disabled}
+                    >
+                        {values.map((v, i) => <MenuItem key={'select-' + label + '-menuitem-' + i} value={v} onClick={event => event.stopPropagation()}>{v}</MenuItem>)}
+                    </Select>
+                </FormControl>
+            </Grid2>
+        </Grid2>
     );
 }
 

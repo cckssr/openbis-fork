@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { createTheme, styled } from '@mui/material/styles';
+import { createTheme, styled, ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
@@ -9,7 +9,6 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import FastForwardRounded from '@mui/icons-material/FastForwardRounded';
 import FastRewindRounded from '@mui/icons-material/FastRewindRounded';
 import MobileStepper from "@mui/material/MobileStepper";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 
 const themeDisabled = createTheme({
     overrides: {

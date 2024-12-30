@@ -1,9 +1,9 @@
 import React from 'react'
-import { Grid2, Accordion, AccordionSummary, AccordionDetails, Typography } from "@mui/material";
-import Exporter from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
-import constants from "@src/js/components/common/imaging/constants.js";
+import { Grid2, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
+import Exporter from '@src/js/components/common/imaging/components/viewer/Exporter.jsx';
+import constants from '@src/js/components/common/imaging/constants.js';
 import ImageListItemSection
-	from "@src/js/components/common/imaging/components/common/ImageListItemSection.js";
+	from '@src/js/components/common/imaging/components/common/ImageListItemSection.js';
 import messages from '@src/js/common/messages.js'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import makeStyles from '@mui/styles/makeStyles';
@@ -51,8 +51,7 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 				}}>
 			<AccordionSummary
 				expandIcon={<ExpandMoreIcon />}
-				aria-controls="images-panel-control"
-				id="images-panel-header"
+				id='images-panel-header'
 			>
 				<Typography variant='h6'>
 					{messages.get(messages.IMAGES)}
@@ -61,7 +60,7 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 					<Exporter styles={{ root: classes.summaryButton }} handleExport={handleExport} config={configExports} />}
 			</AccordionSummary>
 			<AccordionDetails>
-				<Grid2 container direction='row' spacing={1} sx={{ justifyContent: "space-between", alignItems: "center" }}>
+				<Grid2 container direction='row' spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
 					<Grid2 size={{ xs: 9, sm: 10 }}>
 						<ImageListItemSection
 							cols={3} rowHeight={150}
@@ -70,7 +69,7 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 							activeImageIdx={activeImageIdx}
 							onActiveItemChange={onActiveItemChange} />
 					</Grid2>
-					<Grid2 size={{ xs: 3, sm: 2 }} container direction='column' sx={{ justifyContent: "space-around" }}>
+					<Grid2 size={{ xs: 3, sm: 2 }} container direction='column' sx={{ justifyContent: 'space-around' }}>
 						{configExports.length > 0 &&
 							<Exporter handleExport={handleExport} config={configExports} />}
 					</Grid2>
