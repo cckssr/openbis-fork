@@ -65,6 +65,10 @@ define([ "stjs" ], function(stjs) {
             name : "Map",
             arguments : [ "String", "String" ]
         },
+        headers: "String[]",
+        data: "String[][]",
+        values: "String[][]",
+        width: "Integer[]"
 	});
 	return Spreadsheet;
 })
