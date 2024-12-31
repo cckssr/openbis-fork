@@ -532,6 +532,7 @@ var fullTypes = [
 "as/dto/common/interfaces/IDataSetsHolder",
 "as/dto/common/interfaces/ISemanticAnnotationsHolder",
 "as/dto/common/interfaces/SortIgnore",
+"as/dto/common/property/Spreadsheet",
 "as/dto/rights/Right",
 "as/dto/rights/fetchoptions/RightsFetchOptions",
 "as/dto/rights/get/GetRightsOperation",
