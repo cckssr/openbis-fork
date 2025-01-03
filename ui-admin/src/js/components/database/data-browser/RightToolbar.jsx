@@ -33,6 +33,7 @@ import FileIcon from '@mui/icons-material/InsertDriveFileOutlined'
 import FolderIcon from '@mui/icons-material/FolderOpen'
 import logger from '@src/js/common/logger.js'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
+import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 
@@ -88,24 +89,59 @@ class RightToolbar extends React.Component {
       progress: 0,
       allowResume: true,
       fileExistsDialogFile: null,
-      uploadedBytes:0,
+      uploadedBytes:0,      
       applyToAllFiles: false,
-      totalBytesToUpload:0,
-      lastConflictResolution:null
-
+      totalBytesToUpload:0,      
+      lastConflictResolution:null,
+      expectedTime: null,
+      lastTimestamp:null,
+      averageSpeed:0,
+      uploadBarFrom:null,
+      uploadBarTo:null,
+      totalUploadSize:0,
+      customProgressDetails:null,
+      fileName:null,
+      loadingDialogVariant:'determinate',
     }
   }
 
-  async handleUpload(event) {
-    try {
-      this.handlePopoverClose()      
-      this.setState({ loading: true, progress: 0 })
-      
-      const fileList = event.target.files
-      const totalSize = Array.from(fileList)
-      .reduce((acc, file) => acc + file.size, 0)
+  updateSizeCalculationProgress(fileName, fileSize) {    
+    this.setState((prevState) => {
+        var totalUploadSize = prevState.totalUploadSize + fileSize;
+        var formattedTotalUploadSize = this.controller.formatSize(totalUploadSize);        
+        var customProgressDetails = "Estimating upload size: " + formattedTotalUploadSize;        
+        return {
+          totalUploadSize,
+          customProgressDetails,
+          fileName         
+        };
+    })
+  }
 
-      this.setState({ totalBytesToUpload: totalSize})
+  updateProgressMainMessage(uploading) {
+    if(uploading){
+      this.setState({ progressMessage : messages.get(messages.UPLOADING)})
+    } else {
+      this.setState({ progressMessage : messages.get(messages.PREPARING)})
+    }
+  }
+
+  async wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async handleUpload(event) {
+    try {      
+      this.handlePopoverClose() 
+      const fileList = event.target.files  
+      const file = fileList[0]; 
+      const filePath = file.webkitRelativePath ? file.webkitRelativePath
+      : file.name
+      const topLevelFolder = filePath.includes('/')
+          ? filePath.split('/')[0]
+          : file.name;
+    
+      const totalSize = this.prepareUpload(topLevelFolder, fileList);
 
       await this.upload(fileList,totalSize)
     } catch(err){
@@ -118,38 +154,91 @@ class RightToolbar extends React.Component {
     }
   }
 
+  prepareUpload(topLevelFolder, fileList) {
+    this.updateProgressMainMessage(false);
+    this.setState({
+      loading: true,
+      progress: 0,
+      uploadBarFrom: topLevelFolder,
+      uploadBarTo: this.normalizePath(this.controller.path, '/'),
+      totalBytesToUpload: 0,
+      loadingDialogVariant: 'indeterminate'
+    });
+
+    const totalSize = Array.from(fileList)
+      .reduce((acc, file) => {
+        this.updateSizeCalculationProgress(file.name, file.size);
+        return acc + file.size;
+      }, 0);
+
+    this.setState({
+      totalBytesToUpload: totalSize,      
+      loadingDialogVariant: 'determinate',
+      customProgressDetails:null
+    });
+    this.updateProgressMainMessage(true);
+    return totalSize;
+  }
+
+  normalizePath(basePath, suffix) {        
+    if (basePath.endsWith('/')) {
+        basePath = basePath.slice(0, -1);
+    }    
+    if (suffix.startsWith('/')) {
+        suffix = suffix.slice(1);
+    }
+    return `${basePath}/${suffix}`;
+  };
+
   resetUploadDialogStates() {
     this.setState({
       loading: false,
-      uploadedBytes:0,
-      totalBytesToUpload:0,
+      uploadedBytes:0,      
+      totalBytesToUpload:0,      
       applyToAllFiles: false,
       cancelDownload: false,
       allowResume: false,
       progress:0,
-      lastConflictResolution: null
+      lastConflictResolution: null,
+      averageSpeed:0,
+      expectedTime: null,
+      lastTimestamp:null,
+      uploadBarFrom:null,
+      uploadBarTo:null,
+      uploadBarFrom:null,
+      uploadBarTo:null,
+      progressStatus: null
     })
   }
 
 
-  updateProgress(uploadedChunkSize, fileName, speed) {
+  updateProgress(uploadedChunkSize, fileName, status, timeElapsed) {
+    
     this.setState((prevState) => {
       const uploadedBytes = prevState.uploadedBytes + uploadedChunkSize;
-      const progress = Math.round((uploadedBytes / prevState.totalBytesToUpload) * 100);
+      const totalBytesToUpload = prevState.totalBytesToUpload;
+      const progress = Math.round((uploadedBytes / totalBytesToUpload) * 100);
+      var progressStatus = status === "" ? null : status;
       const newProgress = Math.min(progress, 100);
-      const speedFormatted = this.controller.formatSpeed(speed);
+
+      const totalElapsedTime = (prevState.totalElapsedTime || 0) + timeElapsed;
+      const averageSpeed = totalElapsedTime > 0 ? uploadedBytes / (totalElapsedTime / 1000) : 0;
+      const bytesRemaining = totalBytesToUpload - uploadedBytes;
+
+      const expectedTime = averageSpeed > 0 ? bytesRemaining / averageSpeed : 0;
   
       return {
         uploadedBytes,
         progress: newProgress,
-        loading: true,
-        progressDetailPrimary: fileName,
-        progressDetailSecondary: speedFormatted
+        loading: true,        
+        fileName,
+        averageSpeed,
+        totalElapsedTime, 
+        expectedTime,       
+        progressStatus
       };
     });
   }
-  
-
 
   async resolveNameConflict(newFile, allowResume) {
     return new Promise((resolve) => {
@@ -317,10 +406,19 @@ class RightToolbar extends React.Component {
       loading,
       allowResume,
       fileExistsDialogFile,
-      progressDetailPrimary,
-      progressDetailSecondary,
+      fileName,      
       applyToAllFiles,
-      errorMessage,
+      errorMessage,      
+      expectedTime,
+      averageSpeed,
+      uploadBarFrom,
+      uploadBarTo,
+      uploadedBytes,
+      totalBytesToUpload,
+      progressStatus,
+      progressMessage,
+      customProgressDetails,
+      loadingDialogVariant
     } = this.state
     return ([
       <div key='right-toolbar-main' className={classes.buttons}>
@@ -385,33 +483,42 @@ class RightToolbar extends React.Component {
           <Container square={true}>{this.renderUploadButtons()}</Container>
         </Popover>
       </div>,
-      <LoadingDialog key='right-toolbar-loaging-dialog' variant='determinate'
-        value={progress}
-        loading={loading}
-        message={messages.get(messages.UPLOADING)}
-        showBackground='true'
-        detailPrimary={progressDetailPrimary}
-        detailSecondary={progressDetailSecondary}
-        />,
-        <ErrorDialog
-          key='right-toolbar-error-dialog'
-          open={!!errorMessage}
-          error={errorMessage}
-          onClose={this.closeErrorDialog}
-        />,
-        <FileExistsDialog
-          key='file-exists-dialog'
-          open={!!fileExistsDialogFile}
-          onReplace={this.handleFileExistsReplace}
-          onResume={allowResume ? this.handleFileExistsResume : null}
-          onSkip={this.handleFileExistsSkip}
-          onCancel={this.handleFileExistsCancel}
-          onApplyToAllChange={this.handleApplyToAllSelection}
-          applyToAll={applyToAllFiles}
-          title={messages.get(messages.FILE_EXISTS)}        
-          content={messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT,
-            fileExistsDialogFile ? fileExistsDialogFile.name : '')}
-        />
+      <LinearLoadingDialog 
+        key='right-toolbar-loaging-dialog' 
+        controller={this.controller}
+        open={loading}
+        title={progressMessage}        
+        from={uploadBarFrom}
+        to={uploadBarTo}
+        fileName={fileName}
+        progress={progress}
+        currentSize={uploadedBytes}
+        totalSize={totalBytesToUpload}
+        timeLeft={expectedTime}
+        speed={averageSpeed}
+        variant={loadingDialogVariant}        
+        customProgressDetails={customProgressDetails}        
+        progressStatus={progressStatus}
+      />,
+      <ErrorDialog
+        key='right-toolbar-error-dialog'
+        open={!!errorMessage}
+        error={errorMessage}
+        onClose={this.closeErrorDialog}
+      />,
+      <FileExistsDialog
+        key='file-exists-dialog'
+        open={!!fileExistsDialogFile}
+        onReplace={this.handleFileExistsReplace}
+        onResume={allowResume ? this.handleFileExistsResume : null}
+        onSkip={this.handleFileExistsSkip}
+        onCancel={this.handleFileExistsCancel}
+        onApplyToAllChange={this.handleApplyToAllSelection}
+        applyToAll={applyToAllFiles}
+        title={messages.get(messages.FILE_EXISTS)}        
+        content={messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT,
+          fileExistsDialogFile ? fileExistsDialogFile.name : '')}
+      />
     ])
   }
 }

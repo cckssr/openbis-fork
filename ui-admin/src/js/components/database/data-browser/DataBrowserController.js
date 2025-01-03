@@ -170,10 +170,9 @@ export default class DataBrowserController extends ComponentController {
     await this._uploadChunk(targetFilePath, offset, data)
     const uploadEndTime = Date.now();            
     // Calculate download speed      
-    const elapsedTime = (uploadEndTime - uploadStartTime) / 1000; // Seconds
-    const speed = blob.size / elapsedTime; 
+    const elapsedTime = (uploadEndTime - uploadStartTime);
     
-    onProgressUpdate(blob.size,file.name, speed)
+    onProgressUpdate(blob.size,file.name, "", elapsedTime)
     return blob.size;
   }
 
@@ -211,8 +210,8 @@ export default class DataBrowserController extends ComponentController {
       offset += this.CHUNK_SIZE
       
       const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
-      const speed = blob.size / elapsedTime; 
-      onProgressUpdate(blob.size,file.name, speed)
+      
+      onProgressUpdate(blob.size,file.name, "", elapsedTime)
     }
 
     return dataArray
@@ -225,8 +224,7 @@ export default class DataBrowserController extends ComponentController {
   }
 
   async downloadAndAssemble(file, dirHandle, onProgressUpdate) {
-    let offset = 0;
-
+    let offset = 0;    
     // Create a writable stream for the file in the selected directory
     const fileStream = await this._createWritableStream(dirHandle, file.name);
 
@@ -243,14 +241,12 @@ export default class DataBrowserController extends ComponentController {
       writeToDiskOffset += this.CHUNK_SIZE;
 
       // Calculate download speed      
-      const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
-      const speed = blob.size / elapsedTime; 
+      const elapsedTime = (downloadEndTime - downloadStartTime)      
 
-      onProgressUpdate(blob.size ,file.name, speed)
+      onProgressUpdate(blob.size ,file.name, "", elapsedTime)
 
       // write to file only when almost 100MB
       if(writeToDiskOffset > 100_000_000 || offset >= file.size){
-        onProgressUpdate(0,file.name, "write to disk")
 
         // Write the chunk directly to the file
         var combinedBuffer = new Uint8Array(dataArrayForDisk.reduce((acc, buf) => acc + buf.byteLength, 0));
@@ -259,7 +255,8 @@ export default class DataBrowserController extends ComponentController {
             combinedBuffer.set(new Uint8Array(buf), offset);
             offset += buf.byteLength;
         }
-        await fileStream.write(combinedBuffer);        
+        
+        this.writeToDisk(file, fileStream, combinedBuffer, onProgressUpdate)
 
         combinedBuffer = null;
         writeToDiskOffset = 0;
@@ -267,28 +264,83 @@ export default class DataBrowserController extends ComponentController {
       }
 
     }
-
-    onProgressUpdate(0,file.name, "Finalizing...")
-    await fileStream.close();    
-    console.log(`Download of ${file.name} complete!`);
+  
+    await this.saveFile(file, fileStream, onProgressUpdate)    
   }
 
-  formatSpeed(bytesPerSecond) {
-    if (isNaN(bytesPerSecond)) {
-      return bytesPerSecond;
+  // show message only if write to disk takes 1 sec or more 
+  async writeToDisk(file, fileStream, combinedBuffer, onProgressUpdate) {    
+    const DELAY_BEFORE_SHOWING_MESSAGE = 1000;
+    let didShowSaving = false;
+      
+    const savingTimeout = setTimeout(() => {
+      didShowSaving = true;
+      onProgressUpdate(0,file.name, "write to disk", 0)
+    }, DELAY_BEFORE_SHOWING_MESSAGE);
+  
+    try {  
+      await fileStream.write(combinedBuffer);
+    } finally {      
+      clearTimeout(savingTimeout);
+  
+      if (didShowSaving) {
+        onProgressUpdate(0, file.name, "", 0);
+      }
     }
-    if (bytesPerSecond >= 1024 * 1024) {
-      // Convert to MB/s
-      const mbps = bytesPerSecond / (1024 * 1024);
-      return `${mbps.toFixed(2)} MB/s`;
-    } else if (bytesPerSecond >= 1024) {
-      // Convert to KB/s
-      const kbps = bytesPerSecond / 1024;
-      return `${kbps.toFixed(2)} KB/s`;
-    } else {
-      // Bytes per second
-      return `${bytesPerSecond} B/s`;
+  }
+
+  // show message only if it takes 1 sec or more to save file
+  async saveFile(file, fileStream, onProgressUpdate) {    
+    const DELAY_BEFORE_SHOWING_MESSAGE = 1000;
+    let didShowSaving = false;
+      
+    const savingTimeout = setTimeout(() => {
+      didShowSaving = true;
+      onProgressUpdate(0, file.name, "Saving file", 0);
+    }, DELAY_BEFORE_SHOWING_MESSAGE);
+  
+    try {  
+      const startTime = Date.now()
+      await fileStream.close();  
+      const endTime = Date.now();
+      const savingTime = endTime - startTime; 
+      onProgressUpdate(0, file.name, "", 0, savingTime);
+    } finally {      
+      clearTimeout(savingTimeout);
+  
+      if (didShowSaving) {
+        onProgressUpdate(0, file.name, "", 0);
+      }
     }
+  }
+
+
+
+  formatSize(bytes) {
+    // Convert bytes to KB, MB, GB, etc.
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let unitIndex = 0;
+    while (bytes >= 1024 && unitIndex < units.length - 1) {
+      bytes /= 1024;
+      unitIndex++;
+    }
+    return `${bytes.toFixed(2)} ${units[unitIndex]}`;
+  }
+
+  formatSpeed(speed) {
+    if (isNaN(speed)) {
+      return speed;
+    }
+
+    return this.formatSize(speed) + '/s'; 
+  }
+
+  formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return minutes > 0
+      ? `${minutes} min ${remainingSeconds} sec`
+      : `${remainingSeconds} sec`;
   }
 
   async _download(file, offset) {

@@ -19,7 +19,6 @@ import React from 'react'
 import ResizeObserver from 'rc-resize-observer'
 import Button from '@mui/material/Button'
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolderOutlined'
-import DownloadIcon from '@mui/icons-material/GetApp'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RenameIcon from '@mui/icons-material/Create'
 import CopyIcon from '@mui/icons-material/FileCopy'
@@ -37,6 +36,7 @@ import InputDialog from '@src/js/components/common/dialog/InputDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LocationDialog from '@src/js/components/database/data-browser/LocationDialog.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
+import Download from '@src/js/components/database/data-browser/Download.jsx'
 
 const color = 'inherit'
 const iconButtonSize = 'medium'
@@ -239,18 +239,15 @@ class LeftToolbar extends React.Component {
     const visibleButtonsCount = Math.max(hideButtons ? Math.floor((width - 3 * ellipsisButtonSize) / roughButtonSize) : buttonsCount, 0)
 
     const buttons = [
-      <Button
-        key='download'
+      <Download
+        key='download' 
+        controller= {this.controller}              
+        buttonSize={buttonSize}
+        multiselectedFiles={multiselectedFiles.size === 0}
+        onDownload={onDownload}
         classes={{ root: classes.button }}
-        color={color}
-        size={buttonSize}
-        variant='outlined'
-        disabled={multiselectedFiles.size === 0}
-        startIcon={<DownloadIcon />}
-        onClick={onDownload}
-      >
-        {messages.get(messages.DOWNLOAD)}
-      </Button>,
+      />
+      ,
       <Button
         key='delete'
         classes={{ root: classes.button }}
