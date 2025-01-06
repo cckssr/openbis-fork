@@ -1,5 +1,7 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
+import ch.eth.sis.rocrate.parser.stuff.ImportTypes;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -16,11 +18,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAs
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.PropertyAssignmentImportHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +27,64 @@ import java.util.Set;
 public class PropertyAssignmentHelper extends BasicImportHelper
 {
 
+    public enum Attribute implements IAttribute
+    {
+        Version("Version", false, false),
+        Code("Code", true, true),
+        Mandatory("Mandatory", true, false),
+        DefaultValue("Default Value", false, false),
+        ShowInEditViews("Show in edit views", true, false),
+        Section("Section", true, false),
+        PropertyLabel("Property label", true, false),
+        DataType("Data type", true, true),
+        VocabularyCode("Vocabulary code", true, true),
+        Description("Description", true, false),
+        Metadata("Metadata", false, false),
+        DynamicScript("Dynamic script", false, false),
+        OntologyId("Ontology Id", false, false),
+        OntologyVersion("Ontology Version", false, false),
+        OntologyAnnotationId("Ontology Annotation Id", false, false),
+        MultiValued("Multivalued", false, false),
+        Unique("Unique", false, false),
+        Pattern("Pattern", false, false),
+        PatternType("Pattern Type", false, false),
+        InternalAssignment("Internal Assignment", false, false),
+        Internal("Internal", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
+
     EntityTypePermId permId;
 
-    ImportTypes importTypes;
 
     DataSetTypeHelper dataSetTypeHelper;
 
@@ -42,26 +94,20 @@ public class PropertyAssignmentHelper extends BasicImportHelper
 
     PropertyHelper propertyHelper;
 
+    ImportTypes importTypes;
+
     public PropertyAssignmentHelper(
-            ImportModes mode,
-            ImportOptions options,
             DataSetTypeHelper dataSetTypeHelper,
             CollectionTypeHelper collectionTypeHelper,
             ObjectTypeHelper objectTypeHelper,
             PropertyHelper propertyHelper)
     {
-        super(mode, options);
         this.dataSetTypeHelper = dataSetTypeHelper;
         this.collectionTypeHelper = collectionTypeHelper;
         this.objectTypeHelper = objectTypeHelper;
         this.propertyHelper = propertyHelper;
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -75,25 +121,25 @@ public class PropertyAssignmentHelper extends BasicImportHelper
     {
 
         String code = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.Code);
+                Attribute.Code);
         String mandatory = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.Mandatory);
+                Attribute.Mandatory);
         String defaultValue = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.DefaultValue);
+                Attribute.DefaultValue);
         String showInEditViews = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.ShowInEditViews);
+                Attribute.ShowInEditViews);
         String section = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.Section);
+                Attribute.Section);
         String script = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.DynamicScript);
+                Attribute.DynamicScript);
         String unique = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.Unique);
+                Attribute.Unique);
         String pattern = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.Pattern);
+                Attribute.Pattern);
         String patternType = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.PatternType);
+                Attribute.PatternType);
         String internalAssignment = getValueByColumnName(headers, values,
-                PropertyAssignmentImportHelper.Attribute.InternalAssignment);
+                Attribute.InternalAssignment);
 
         PropertyAssignment creation = new PropertyAssignment();
         PropertyType propertyType = propertyHelper.accumulator.get(code);
@@ -206,6 +252,7 @@ public class PropertyAssignmentHelper extends BasicImportHelper
         return newPropertyAssignmentCreations;
     }
 
+
     public void importBlock(List<List<String>> page, int pageIndex, int start, int end,
             ImportTypes importTypes)
     {
@@ -213,7 +260,7 @@ public class PropertyAssignmentHelper extends BasicImportHelper
 
         Map<String, Integer> header = parseHeader(page.get(start), false);
         String code = getValueByColumnName(header, page.get(start + 1),
-                PropertyAssignmentImportHelper.Attribute.Code);
+                Attribute.Code);
 
         switch (importTypes)
         {

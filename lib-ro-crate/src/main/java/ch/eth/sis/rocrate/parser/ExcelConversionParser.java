@@ -2,6 +2,7 @@ package ch.eth.sis.rocrate.parser;
 
 import ch.eth.sis.rocrate.parser.helper.*;
 import ch.eth.sis.rocrate.parser.results.ParseResult;
+import ch.eth.sis.rocrate.parser.stuff.ImportTypes;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -9,11 +10,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.handler.ExcelParser;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.io.File;
@@ -22,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,26 +80,24 @@ public class ExcelConversionParser
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public ExcelConversionParser(
-            ImportModes mode,
-            ImportOptions options,
             String[] sessionWorkspaceFiles) throws IOException
     {
-        this.vocabularyHelper = new VocabularyHelper(mode, options);
-        this.vocabularyTermHelper = new VocabularyTermHelper(mode, options, vocabularyHelper);
-        this.dataSetTypeHelper = new DataSetTypeHelper(mode, options);
-        this.propertyHelper = new PropertyHelper(mode, options, vocabularyHelper);
-        this.collectionTypeHelper = new CollectionTypeHelper(mode, options);
-        this.objectTypeHelper = new ObjectTypeHelper(mode, options);
-        this.spaceHelper = new SpaceHelper(mode, options);
-        this.projectHelper = new ProjectHelper(mode, options, spaceHelper);
+        this.vocabularyHelper = new VocabularyHelper();
+        this.vocabularyTermHelper = new VocabularyTermHelper(vocabularyHelper);
+        this.dataSetTypeHelper = new DataSetTypeHelper();
+        this.propertyHelper = new PropertyHelper(vocabularyHelper);
+        this.collectionTypeHelper = new CollectionTypeHelper();
+        this.objectTypeHelper = new ObjectTypeHelper();
+        this.spaceHelper = new SpaceHelper();
+        this.projectHelper = new ProjectHelper(spaceHelper);
         this.collectionHelper =
-                new CollectionHelper(mode, options, collectionTypeHelper, projectHelper);
+                new CollectionHelper(collectionTypeHelper, projectHelper);
         this.objectHelper =
-                new ObjectHelper(mode, options, spaceHelper, projectHelper, collectionTypeHelper,
+                new ObjectHelper(spaceHelper, projectHelper, collectionTypeHelper,
                         objectTypeHelper, collectionHelper);
 
         this.propertyAssignmentHelper =
-                new PropertyAssignmentHelper(mode, options, dataSetTypeHelper, collectionTypeHelper,
+                new PropertyAssignmentHelper(dataSetTypeHelper, collectionTypeHelper,
                         objectTypeHelper, this.propertyHelper);
 
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;
@@ -423,7 +418,7 @@ public class ExcelConversionParser
                         {
                             String fileServicePath = PATH_SEPARATOR + filePath.substring(
                                     FILE_SERVICES_FOLDER_NAME.length());
-                            try (final OutputStream outputStream = FileServerUtils.newOutputStream(
+                            try (final OutputStream outputStream = newOutputStream(
                                     fileServicePath))
                             {
                                 zip.transferTo(outputStream);
@@ -434,5 +429,14 @@ public class ExcelConversionParser
             }
         }
     }
+
+    public static OutputStream newOutputStream(String dst) throws IOException
+    {
+        final Path filePathAsPath = Path.of(dst);
+        Files.createDirectories(filePathAsPath.getParent());
+        return Files.newOutputStream(filePathAsPath);
+    }
+
+
 
 }

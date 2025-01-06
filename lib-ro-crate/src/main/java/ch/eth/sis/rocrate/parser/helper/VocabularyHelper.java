@@ -1,12 +1,8 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,17 +51,10 @@ public class VocabularyHelper extends BasicImportHelper
         }
     }
 
-    public VocabularyHelper(ImportModes mode,
-            ImportOptions options)
+    public VocabularyHelper()
     {
-        super(mode, options);
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)

@@ -1,5 +1,8 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
+import ch.eth.sis.rocrate.parser.searcher.AttributeValidator;
+import ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -11,13 +14,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.SampleImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.ArrayList;
@@ -26,13 +22,58 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.ethz.sis.openbis.generic.server.xls.importer.helper.SampleImportHelper.SAMPLE_TYPE_FIELD;
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.VARIABLE_PREFIX;
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.getPropertyValue;
+import static ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher.VARIABLE_PREFIX;
+import static ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher.getPropertyValue;
 
 public class ObjectHelper extends BasicImportHelper
 {
 
+    public static final String SAMPLE_TYPE_FIELD = "Sample type";
+
+    public enum Attribute implements IAttribute
+    {
+        $("$", false, true),
+        Identifier("Identifier", false, true),
+        Code("Code", false, true),
+        Space("Space", false, true),
+        Project("Project", false, true),
+        Experiment("Experiment", false, true),
+        AutoGenerateCode("Auto generate code", false, false),
+        Parents("Parents", false, true),
+        Children("Children", false, true);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
+    
     ObjectTypeHelper objectTypeHelper;
 
     private EntityTypePermId sampleType;
@@ -53,20 +94,18 @@ public class ObjectHelper extends BasicImportHelper
 
     CollectionTypeHelper collectionTypeHelper;
 
-    private final AttributeValidator<SampleImportHelper.Attribute> attributeValidator;
+    private final AttributeValidator<Attribute> attributeValidator;
 
     PropertyTypeSearcher propertyTypeSearcher;
 
     CollectionHelper collectionHelper;
 
-    public ObjectHelper(ImportModes mode,
-            ImportOptions options, SpaceHelper spaceHelper,
+    public ObjectHelper(SpaceHelper spaceHelper,
             ProjectHelper projectHelper,
             CollectionTypeHelper collectionTypeHelper, ObjectTypeHelper objectTypeHelper,
             CollectionHelper collectionHelper)
     {
-        super(mode, options);
-        this.attributeValidator = new AttributeValidator<>(SampleImportHelper.Attribute.class);
+        this.attributeValidator = new AttributeValidator<>(Attribute.class);
         this.spaceHelper = spaceHelper;
         this.projectHelper = projectHelper;
         this.collectionTypeHelper = collectionTypeHelper;
@@ -123,11 +162,6 @@ public class ObjectHelper extends BasicImportHelper
         super.importBlock(page, pageIndex, start + 2, end);
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -152,19 +186,19 @@ public class ObjectHelper extends BasicImportHelper
         fetchOptions.withParents();
         sample.setFetchOptions(fetchOptions);
 
-        String variable = getValueByColumnName(header, values, SampleImportHelper.Attribute.$);
-        String code = getValueByColumnName(header, values, SampleImportHelper.Attribute.Code);
+        String variable = getValueByColumnName(header, values, Attribute.$);
+        String code = getValueByColumnName(header, values, Attribute.Code);
         String autoGenerateCode =
-                getValueByColumnName(header, values, SampleImportHelper.Attribute.AutoGenerateCode);
-        String space = getValueByColumnName(header, values, SampleImportHelper.Attribute.Space);
-        String project = getValueByColumnName(header, values, SampleImportHelper.Attribute.Project);
+                getValueByColumnName(header, values, Attribute.AutoGenerateCode);
+        String space = getValueByColumnName(header, values, Attribute.Space);
+        String project = getValueByColumnName(header, values, Attribute.Project);
         String identifier =
-                getValueByColumnName(header, values, SampleImportHelper.Attribute.Identifier);
+                getValueByColumnName(header, values, Attribute.Identifier);
         String experiment =
-                getValueByColumnName(header, values, SampleImportHelper.Attribute.Experiment);
-        String parents = getValueByColumnName(header, values, SampleImportHelper.Attribute.Parents);
+                getValueByColumnName(header, values, Attribute.Experiment);
+        String parents = getValueByColumnName(header, values, Attribute.Parents);
         String children =
-                getValueByColumnName(header, values, SampleImportHelper.Attribute.Children);
+                getValueByColumnName(header, values, Attribute.Children);
         childrenToResolve.put(code, new ArrayList<>());
         parentsToResolve.put(code, new ArrayList<>());
         collectionsToResolve.put(code, experiment);
@@ -185,7 +219,7 @@ public class ObjectHelper extends BasicImportHelper
         {
             sample.setSpace(spaceHelper.getSpace(space));
         }
-        if (project != null && !project.isEmpty() && options.getAllowProjectSamples()) // Projects can only be set in project samples are enabled
+        if (project != null && !project.isEmpty()) // Projects can only be set in project samples are enabled
         {
             sample.setProject(projectHelper.getProject(project));
         }

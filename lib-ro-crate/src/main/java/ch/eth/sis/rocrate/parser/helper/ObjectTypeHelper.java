@@ -1,15 +1,11 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.SampleTypeImportHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,19 +15,58 @@ import java.util.stream.Collectors;
 
 public class ObjectTypeHelper extends BasicImportHelper
 {
+
+    public enum Attribute implements IAttribute
+    {
+        Version("Version", false, false),
+        Code("Code", true, true),
+        Description("Description", true, false),
+        AutoGenerateCodes("Auto generate codes", true, false),
+        ValidationScript("Validation script", true, false),
+        GeneratedCodePrefix("Generated code prefix", true, false),
+        OntologyId("Ontology Id", false, false),
+        OntologyVersion("Ontology Version", false, false),
+        OntologyAnnotationId("Ontology Annotation Id", false, false),
+        Internal("Internal", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
+
     Map<String, SampleType> accumulator = new HashMap<>();
 
-    public ObjectTypeHelper(ImportModes mode,
-            ImportOptions options)
+    public ObjectTypeHelper()
     {
-        super(mode, options);
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -43,13 +78,13 @@ public class ObjectTypeHelper extends BasicImportHelper
     protected void createObject(Map<String, Integer> header, List<String> values, int page,
             int line)
     {
-        String code = getValueByColumnName(header, values, SampleTypeImportHelper.Attribute.Code);
+        String code = getValueByColumnName(header, values, Attribute.Code);
         String description =
-                getValueByColumnName(header, values, SampleTypeImportHelper.Attribute.Description);
+                getValueByColumnName(header, values, Attribute.Description);
         String autoGenerateCodes = getValueByColumnName(header, values,
-                SampleTypeImportHelper.Attribute.AutoGenerateCodes);
+                Attribute.AutoGenerateCodes);
         String generatedCodePrefix = getValueByColumnName(header, values,
-                SampleTypeImportHelper.Attribute.GeneratedCodePrefix);
+                Attribute.GeneratedCodePrefix);
 
         SampleType sampleType = new SampleType();
 

@@ -1,11 +1,7 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.SpaceImportHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,17 +11,46 @@ public class SpaceHelper extends BasicImportHelper
 {
     Map<String, Space> accumulator = new HashMap<>();
 
-    public SpaceHelper(ImportModes mode,
-            ImportOptions options)
+    public enum Attribute implements IAttribute
     {
-        super(mode, options);
+        Code("Code", true, true),
+        Description("Description", true, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
     }
 
-    @Override
-    protected ImportTypes getTypeName()
+    public SpaceHelper()
     {
-        return null;
     }
+
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -37,9 +62,9 @@ public class SpaceHelper extends BasicImportHelper
     protected void createObject(Map<String, Integer> header, List<String> values, int page,
             int line)
     {
-        String code = getValueByColumnName(header, values, SpaceImportHelper.Attribute.Code);
+        String code = getValueByColumnName(header, values, Attribute.Code);
         String description =
-                getValueByColumnName(header, values, SpaceImportHelper.Attribute.Description);
+                getValueByColumnName(header, values, Attribute.Description);
 
         Space space = new Space();
         space.setCode(code);

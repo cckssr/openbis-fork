@@ -1,15 +1,11 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.ExperimentTypeImportHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,18 +16,57 @@ import java.util.stream.Collectors;
 public class CollectionTypeHelper extends BasicImportHelper
 {
 
-    Map<String, ExperimentType> accumulator = new HashMap();
+    public static final String EXPERIMENT_TYPE_FIELD = "Experiment type";
 
-    public CollectionTypeHelper(ImportModes mode,
-            ImportOptions options)
+    public enum Attribute implements IAttribute
     {
-        super(mode, options);
+        Version("Version", false, false),
+        Code("Code", true, true),
+        Description("Description", true, false),
+        ValidationScript("Validation script", true, false),
+        OntologyId("Ontology Id", false, false),
+        OntologyVersion("Ontology Version", false, false),
+        OntologyAnnotationId("Ontology Annotation Id", false, false),
+        Internal("Internal", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        @Override
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
     }
 
-    @Override
-    protected ImportTypes getTypeName()
+
+    Map<String, ExperimentType> accumulator = new HashMap();
+
+    public CollectionTypeHelper()
     {
-        return null;
+        super();
     }
 
     @Override
@@ -45,13 +80,13 @@ public class CollectionTypeHelper extends BasicImportHelper
             int line)
     {
         String code =
-                getValueByColumnName(header, values, ExperimentTypeImportHelper.Attribute.Code);
+                getValueByColumnName(header, values, Attribute.Code);
         String description = getValueByColumnName(header, values,
-                ExperimentTypeImportHelper.Attribute.Description);
+                Attribute.Description);
         String validationScript = getValueByColumnName(header, values,
-                ExperimentTypeImportHelper.Attribute.ValidationScript);
+                Attribute.ValidationScript);
         String internal =
-                getValueByColumnName(header, values, ExperimentTypeImportHelper.Attribute.Internal);
+                getValueByColumnName(header, values, Attribute.Internal);
 
         ExperimentType creation = new ExperimentType();
         ExperimentTypeFetchOptions fetchOptions = new ExperimentTypeFetchOptions();

@@ -1,41 +1,86 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.handler.JSONHandler;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.PropertyTypeImportHelper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.SAMPLE_DATA_TYPE_MANDATORY_TYPE;
+import static ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher.SAMPLE_DATA_TYPE_MANDATORY_TYPE;
 
 public class PropertyHelper extends BasicImportHelper
 {
+
+    public enum Attribute implements IAttribute
+    {
+        Version("Version", false, false),
+        Code("Code", true, true),
+        Mandatory("Mandatory", false, false),
+        DefaultValue("Default Value",
+                false, false),  // Ignored, only used by PropertyAssignmentImportHelper
+        ShowInEditViews("Show in edit views", false, false),
+        Section("Section", false, false),
+        PropertyLabel("Property label", true, false),
+        DataType("Data type", true, true),
+        VocabularyCode("Vocabulary code", true, true),
+        Description("Description", true, false),
+        Metadata("Metadata", false, false),
+        DynamicScript("Dynamic script", false, false),
+        OntologyId("Ontology Id", false, false),
+        OntologyVersion("Ontology Version", false, false),
+        OntologyAnnotationId("Ontology Annotation Id", false, false),
+        MultiValued("Multivalued", false, false),
+        Unique("Unique", false, false),
+        Pattern("Pattern", false, false),
+        PatternType("Pattern Type", false, false),
+        Internal("Internal", false, false),
+        InternalAssignment("Internal Assignment", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
     Map<String, PropertyType> accumulator = new HashMap<>();
 
     VocabularyHelper vocabularyHelper;
 
-    public PropertyHelper(ImportModes mode,
-            ImportOptions options, VocabularyHelper vocabularyHelper)
+    public PropertyHelper(VocabularyHelper vocabularyHelper)
     {
-        super(mode, options);
         this.vocabularyHelper = vocabularyHelper;
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -47,13 +92,13 @@ public class PropertyHelper extends BasicImportHelper
     protected void createObject(Map<String, Integer> header, List<String> values, int page,
             int line)
     {
-        String code = getValueByColumnName(header, values, PropertyTypeImportHelper.Attribute.Code);
+        String code = getValueByColumnName(header, values, Attribute.Code);
         String propertyLabel = getValueByColumnName(header, values,
-                PropertyTypeImportHelper.Attribute.PropertyLabel);
+                Attribute.PropertyLabel);
         String description = getValueByColumnName(header, values,
-                PropertyTypeImportHelper.Attribute.Description);
+                Attribute.Description);
         String dataTypeXLS =
-                getValueByColumnName(header, values, PropertyTypeImportHelper.Attribute.DataType);
+                getValueByColumnName(header, values, Attribute.DataType);
 
         DataType dataType = null;
         String dataTypeObjectType = null;
@@ -67,13 +112,13 @@ public class PropertyHelper extends BasicImportHelper
         }
 
         String vocabularyCode = getValueByColumnName(header, values,
-                PropertyTypeImportHelper.Attribute.VocabularyCode);
+                Attribute.VocabularyCode);
         String metadata =
-                getValueByColumnName(header, values, PropertyTypeImportHelper.Attribute.Metadata);
+                getValueByColumnName(header, values, Attribute.Metadata);
         String multiValued = getValueByColumnName(header, values,
-                PropertyTypeImportHelper.Attribute.MultiValued);
+                Attribute.MultiValued);
         String internal =
-                getValueByColumnName(header, values, PropertyTypeImportHelper.Attribute.Internal);
+                getValueByColumnName(header, values, Attribute.Internal);
 
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withVocabulary();
@@ -107,7 +152,7 @@ public class PropertyHelper extends BasicImportHelper
         }
         if (metadata != null && !metadata.trim().isEmpty())
         {
-            creation.setMetaData(JSONHandler.parseMetaData(metadata));
+            creation.setMetaData(Map.of("val", metadata));
         }
         accumulator.put(code, creation);
 

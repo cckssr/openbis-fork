@@ -3,8 +3,6 @@ package ch.eth.sis.rocrate;
 import ch.eth.sis.rocrate.parser.ExcelConversionParser;
 import ch.eth.sis.rocrate.parser.results.ParseResult;
 import ch.eth.sis.rocrate.writer.Writer;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
@@ -31,7 +29,7 @@ public class Main
             String[] files = new String[] { TEST_FILE };
             ExcelConversionParser
                     excelConversionParser =
-                    new ExcelConversionParser(ImportModes.UPDATE_IF_EXISTS, new ImportOptions(),
+                    new ExcelConversionParser(
                             files);
             ParseResult parseResult = excelConversionParser.start();
 

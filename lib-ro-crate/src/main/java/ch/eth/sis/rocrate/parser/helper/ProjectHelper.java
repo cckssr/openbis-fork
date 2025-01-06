@@ -1,14 +1,10 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.ProjectImportHelper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,22 +13,54 @@ import java.util.stream.Collectors;
 
 public class ProjectHelper extends BasicImportHelper
 {
+
+    public enum Attribute implements IAttribute
+    {
+        Identifier("Identifier", false, true),
+        Code("Code", true, true),
+        Space("Space", true, true),
+        Description("Description", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
     Map<String, Project> acumulator = new HashMap<>();
 
     SpaceHelper spaceHelper;
 
-    public ProjectHelper(ImportModes mode,
-            ImportOptions options, SpaceHelper spaceHelper)
+    public ProjectHelper(SpaceHelper spaceHelper)
     {
-        super(mode, options);
         this.spaceHelper = spaceHelper;
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -44,10 +72,10 @@ public class ProjectHelper extends BasicImportHelper
     protected void createObject(Map<String, Integer> header, List<String> values, int page,
             int line)
     {
-        String code = getValueByColumnName(header, values, ProjectImportHelper.Attribute.Code);
-        String space = getValueByColumnName(header, values, ProjectImportHelper.Attribute.Space);
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        String space = getValueByColumnName(header, values, Attribute.Space);
         String description =
-                getValueByColumnName(header, values, ProjectImportHelper.Attribute.Description);
+                getValueByColumnName(header, values, Attribute.Description);
         Space space1 = spaceHelper.getSpace(space);
 
         Project project = new Project();

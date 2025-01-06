@@ -1,5 +1,8 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
+import ch.eth.sis.rocrate.parser.searcher.AttributeValidator;
+import ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -11,13 +14,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.Experime
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.ExperimentImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
-import ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.HashMap;
@@ -25,11 +21,51 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.ethz.sis.openbis.generic.server.xls.importer.helper.ExperimentImportHelper.EXPERIMENT_TYPE_FIELD;
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.getPropertyValue;
+import static ch.eth.sis.rocrate.parser.helper.CollectionTypeHelper.EXPERIMENT_TYPE_FIELD;
+import static ch.eth.sis.rocrate.parser.searcher.PropertyTypeSearcher.getPropertyValue;
 
 public class CollectionHelper extends BasicImportHelper
 {
+
+    public enum Attribute implements IAttribute
+    {
+        Identifier("Identifier", false, true),
+        Code("Code", true, true),
+        Project("Project", true, true);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        @Override
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
+    }
+
+
     Map<String, Experiment> accumulator = new HashMap<>();
 
     Map<String, Experiment> usageCode = new HashMap<>();
@@ -40,7 +76,7 @@ public class CollectionHelper extends BasicImportHelper
 
     CollectionTypeHelper collectionTypeHelper;
 
-    private final AttributeValidator<ExperimentImportHelper.Attribute> attributeValidator;
+    private final AttributeValidator<Attribute> attributeValidator;
 
     ProjectHelper projectHelper;
 
@@ -48,22 +84,15 @@ public class CollectionHelper extends BasicImportHelper
 
     private EntityTypePermId experimentType;
 
-    public CollectionHelper(ImportModes mode,
-            ImportOptions options, CollectionTypeHelper collectionTypeHelper,
+    public CollectionHelper(CollectionTypeHelper collectionTypeHelper,
             ProjectHelper projectHelper)
     {
-        super(mode, options);
         this.collectionTypeHelper = collectionTypeHelper;
-        this.attributeValidator = new AttributeValidator<>(ExperimentImportHelper.Attribute.class);
+        this.attributeValidator = new AttributeValidator<>(Attribute.class);
         this.projectHelper = projectHelper;
 
     }
 
-    @Override
-    protected ImportTypes getTypeName()
-    {
-        return null;
-    }
 
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
@@ -125,14 +154,14 @@ public class CollectionHelper extends BasicImportHelper
         experimentFetchOptions.withProperties();
         exerpiment.setFetchOptions(experimentFetchOptions);
 
-        String code = getValueByColumnName(header, values, ExperimentImportHelper.Attribute.Code);
+        String code = getValueByColumnName(header, values, Attribute.Code);
         String project =
-                getValueByColumnName(header, values, ExperimentImportHelper.Attribute.Project);
+                getValueByColumnName(header, values, Attribute.Project);
 
         ExperimentType collectionType =
                 (ExperimentType) collectionTypeHelper.getResult().get(experimentType);
         String identifier =
-                getValueByColumnName(header, values, ExperimentImportHelper.Attribute.Identifier);
+                getValueByColumnName(header, values, Attribute.Identifier);
 
         Project projectForReal = projectHelper.getProject(project);
 

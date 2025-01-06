@@ -11,8 +11,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import junit.framework.TestCase;
 import org.junit.Test;
 
@@ -25,10 +23,9 @@ public class ExcelConversionParserTest extends TestCase
     @Test
     public void testExampleFile() throws IOException
     {
-        ImportOptions importOptions = new ImportOptions();
         String[] paths = { PATH };
         ExcelConversionParser excelConversionParser =
-                new ExcelConversionParser(ImportModes.UPDATE_IF_EXISTS, importOptions, paths);
+                new ExcelConversionParser(paths);
         ParseResult result = excelConversionParser.start();
 
         assertEquals(1, result.getProjects().size());

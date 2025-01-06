@@ -1,13 +1,10 @@
 package ch.eth.sis.rocrate.parser.helper;
 
+import ch.eth.sis.rocrate.parser.IAttribute;
+import ch.eth.sis.rocrate.parser.stuff.ImportTypes;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
-import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.BasicImportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.importer.helper.VocabularyTermImportHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +15,9 @@ public class VocabularyTermHelper extends BasicImportHelper
 {
     Map<String, Map<String, VocabularyTerm>> accumulator = new HashMap<>();
 
+    public static final String VOCABULARY_CODE_FIELD = "Code";
+
+
     String vocabularyCode = null;
 
     EntityTypePermId permId;
@@ -26,17 +26,48 @@ public class VocabularyTermHelper extends BasicImportHelper
 
     VocabularyHelper vocabularyHelper;
 
-    public VocabularyTermHelper(ImportModes mode,
-            ImportOptions options, VocabularyHelper vocabularyHelper)
+    public VocabularyTermHelper(VocabularyHelper vocabularyHelper)
     {
-        super(mode, options);
         this.vocabularyHelper = vocabularyHelper;
     }
 
-    @Override
-    protected ImportTypes getTypeName()
+    public enum Attribute implements IAttribute
     {
-        return null;
+        Version("Version", false, false),
+        Code("Code", true, true),
+        Label("Label", true, false),
+        Description("Description", true, false),
+        Internal("Internal", false, false);
+
+        private final String headerName;
+
+        private final boolean mandatory;
+
+        private final boolean upperCase;
+
+        Attribute(String headerName, boolean mandatory, boolean upperCase)
+        {
+            this.headerName = headerName;
+            this.mandatory = mandatory;
+            this.upperCase = upperCase;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        @Override
+        public boolean isMandatory()
+        {
+            return mandatory;
+        }
+
+        @Override
+        public boolean isUpperCase()
+        {
+            return upperCase;
+        }
     }
 
     @Override
@@ -51,7 +82,7 @@ public class VocabularyTermHelper extends BasicImportHelper
     {
         Map<String, Integer> header = parseHeader(page.get(start), false);
         vocabularyCode = getValueByColumnName(header, page.get(start + 1),
-                VocabularyTermImportHelper.VOCABULARY_CODE_FIELD);
+                VOCABULARY_CODE_FIELD);
         this.accumulator.put(vocabularyCode, new HashMap<>());
         super.importBlock(page, pageIndex, start + 2, end);
     }
@@ -62,18 +93,18 @@ public class VocabularyTermHelper extends BasicImportHelper
     {
 
         String code =
-                getValueByColumnName(header, values, VocabularyTermImportHelper.Attribute.Code);
+                getValueByColumnName(header, values, Attribute.Code);
         if (this.vocabularyCode.equals(code))
         {
             return;
         }
 
         String label =
-                getValueByColumnName(header, values, VocabularyTermImportHelper.Attribute.Label);
+                getValueByColumnName(header, values, Attribute.Label);
         String description = getValueByColumnName(header, values,
-                VocabularyTermImportHelper.Attribute.Description);
+                Attribute.Description);
         String internal =
-                getValueByColumnName(header, values, VocabularyTermImportHelper.Attribute.Internal);
+                getValueByColumnName(header, values, Attribute.Internal);
         boolean isInternalNamespace = false;
         VocabularyTerm value = new VocabularyTerm();
         value.setCode(code);
