@@ -32,7 +32,7 @@ import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 
 /**
  * @author Franz-Josef Elmer
@@ -60,7 +60,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask implements IMaintenanceTask
         return checksumType;
     }
 
-    protected IPathsInfoDAO dao;
+    protected IPathInfoDAO dao;
 
     protected boolean computeChecksum;
 

@@ -16,34 +16,30 @@
 package ch.ethz.sis.afsserver.server.pathinfo;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 
 /**
  * Data set paths info feeder feeding a data base.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFeeder
 {
     private final static int BATCH_SIZE = 500;
 
-    private final IPathsInfoDAO dao;
+    private final IPathInfoDAO dao;
 
     private final List<PathEntryDTO> filePaths = new ArrayList<PathEntryDTO>(BATCH_SIZE);
 
     private final boolean computeChecksum;
 
     private final String checksumType;
-    
-    public DatabaseBasedDataSetPathsInfoFeeder(IPathsInfoDAO dao, boolean computeChecksum, String checksumType)
+
+    public DatabaseBasedDataSetPathsInfoFeeder(IPathInfoDAO dao, boolean computeChecksum, String checksumType)
     {
         this.dao = dao;
         this.computeChecksum = computeChecksum;
@@ -66,26 +62,18 @@ public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFee
         String relativePath = (parentId == null) ? "" : pathPrefix + fileName;
         if (directory)
         {
-            File file = pathInfo.getFile();
-            if (file != null && FileUtilities.isHDF5ContainerFile(file))
-            {
-                try
-                {
-                    PathInfo.setChecksum(pathInfo, new FileInputStream(file), computeChecksum, checksumType);
-                } catch (FileNotFoundException ex)
-                {
-                    throw CheckedExceptionTunnel.wrapIfNecessary(ex);
-                }
-            }
             final long directoryId =
                     dao.createDataSetFile(dataSetId, parentId, relativePath, fileName,
-                            pathInfo.getSizeInBytes(), directory, pathInfo.getChecksumCRC32(), 
+                            pathInfo.getSizeInBytes(), directory, pathInfo.getChecksumCRC32(),
                             pathInfo.getChecksum(), pathInfo.getLastModifiedDate());
-            if (relativePath.length() > 0)
+
+            if (!relativePath.isEmpty())
             {
                 relativePath += '/';
             }
+
             final List<PathInfo> children = pathInfo.getChildren();
+
             for (PathInfo child : children)
             {
                 addPaths(dataSetId, directoryId, relativePath, child);

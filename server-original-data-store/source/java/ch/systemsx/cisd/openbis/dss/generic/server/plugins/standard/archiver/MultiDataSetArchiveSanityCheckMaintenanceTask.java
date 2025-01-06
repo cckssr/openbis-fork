@@ -47,7 +47,7 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.RsyncArchiveCopierFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.SshCommandExecutorFactory;
@@ -115,7 +115,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
 
     private IMultiDataSetArchiverReadonlyQueryDAO multiDataSetDAO;
 
-    private IPathsInfoDAO pathInfoDAO;
+    private IPathInfoDAO pathInfoDAO;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -145,7 +145,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         statusFile = PropertyUtils.getMandatoryProperty(properties, STATUS_FILE_KEY);
 
         multiDataSetDAO = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
-        pathInfoDAO = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathsInfoDAO.class);
+        pathInfoDAO = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
     }
 
     @Override public void execute()

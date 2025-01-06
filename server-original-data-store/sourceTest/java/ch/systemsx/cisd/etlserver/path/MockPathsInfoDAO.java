@@ -24,19 +24,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.DataSetFileRecord;
+import ch.ethz.sis.pathinfo.ExtendedDataSetFileRecord;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 
-final class MockPathsInfoDAO implements IPathsInfoDAO
+final class MockPathsInfoDAO implements IPathInfoDAO
 {
     private final StringWriter writer = new StringWriter();
+
     private final PrintWriter out = new PrintWriter(writer, true);
-    
+
     private Long dataSetId;
+
     private Date registrationTimestampOfLastFeedingEvent;
+
     private List<PathEntryDTO> dataSetFilesWithUnkownChecksum;
+
     private Map<Long, RuntimeException> exceptions = new HashMap<>();
-    
+
     private long nextId;
 
     public void setDataSetId(long dataSetId)
@@ -53,12 +59,12 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     {
         this.dataSetFilesWithUnkownChecksum = dataSetFilesWithUnkownChecksum;
     }
-    
+
     public void addException(Long parentFolderId, RuntimeException exception)
     {
         exceptions.put(parentFolderId, exception);
     }
-    
+
     public String getLog()
     {
         return writer.toString();
@@ -75,7 +81,7 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     {
         out.println("close()");
     }
-    
+
     @Override
     public boolean isClosed()
     {
@@ -132,10 +138,10 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     }
 
     @Override
-    public long createDataSetFile(long id, Long parentId, String relativePath, String fileName, 
+    public long createDataSetFile(long id, Long parentId, String relativePath, String fileName,
             long sizeInBytes, boolean directory, Integer checksumCRC32, String checksum, Date lastModifiedDate)
     {
-        out.println("createDataSetFile(" + render(id, parentId, relativePath, fileName, sizeInBytes, 
+        out.println("createDataSetFile(" + render(id, parentId, relativePath, fileName, sizeInBytes,
                 directory, checksumCRC32, checksum) + ")");
         return nextId++;
     }
@@ -146,13 +152,13 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
         out.println("createDataSetFiles:");
         for (PathEntryDTO filePath : filePaths)
         {
-            out.println("  " + render(filePath.getDataSetId(), filePath.getParentId(), 
+            out.println("  " + render(filePath.getDataSetId(), filePath.getParentId(),
                     filePath.getRelativePath(), filePath.getFileName(), filePath.getSizeInBytes(),
                     filePath.isDirectory(), filePath.getChecksumCRC32(), filePath.getChecksum()));
         }
     }
-    
-    private String render(long id, Long parentId, String relativePath, String fileName, long sizeInBytes, 
+
+    private String render(long id, Long parentId, String relativePath, String fileName, long sizeInBytes,
             boolean directory, Integer checksumCRC32, String checksum)
     {
         RuntimeException exception = exceptions.get(parentId);
@@ -182,7 +188,7 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     public void createLastSeenTimestamp(Date registrationTimestamp, String dataStoreKind)
     {
         out.println("createLastFeedingEvent(" + registrationTimestamp + ")");
-        System.out.println("RTS:"+registrationTimestamp);
+        System.out.println("RTS:" + registrationTimestamp);
         registrationTimestampOfLastFeedingEvent = registrationTimestamp;
     }
 
@@ -203,5 +209,58 @@ final class MockPathsInfoDAO implements IPathsInfoDAO
     {
         return null;
     }
-    
+
+    @Override public Long tryToGetDataSetId(final String dataSetCode)
+    {
+        return 0L;
+    }
+
+    @Override public List<DataSetFileRecord> listDataSetFiles(final long dataSetId)
+    {
+        return List.of();
+    }
+
+    @Override public DataSetFileRecord getDataSetRootFile(final long dataSetId)
+    {
+        return null;
+    }
+
+    @Override public DataSetFileRecord tryToGetRelativeDataSetFile(final long dataSetId, final String relativePath)
+    {
+        return null;
+    }
+
+    @Override public List<DataSetFileRecord> listChildrenByParentId(final long dataSetId, final long parentId)
+    {
+        return List.of();
+    }
+
+    @Override public List<DataSetFileRecord> listDataSetFilesByRelativePathRegex(final long dataSetId, final String relativePathRegex)
+    {
+        return List.of();
+    }
+
+    @Override public List<DataSetFileRecord> listDataSetFilesByRelativePathLikeExpression(final long dataSetId,
+            final String relativePathLikeExpression)
+    {
+        return List.of();
+    }
+
+    @Override public List<ExtendedDataSetFileRecord> listFilesByRelativePathLikeExpression(final String relativePathLikeExpression)
+    {
+        return List.of();
+    }
+
+    @Override public List<DataSetFileRecord> listDataSetFilesByFilenameRegex(final long dataSetId, final String startingPath,
+            final String filenameRegex)
+    {
+        return List.of();
+    }
+
+    @Override public List<DataSetFileRecord> listDataSetFilesByFilenameLikeExpression(final long dataSetId, final String startingPath,
+            final String filenameLikeExpression)
+    {
+        return List.of();
+    }
+
 }

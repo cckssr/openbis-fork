@@ -21,7 +21,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -40,7 +40,7 @@ public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFee
 {
     private final static int BATCH_SIZE = 500;
 
-    private final IPathsInfoDAO dao;
+    private final IPathInfoDAO dao;
 
     private final IHierarchicalContentFactory hierarchicalContentFactory;
 
@@ -50,7 +50,7 @@ public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFee
 
     private final String checksumType;
     
-    public DatabaseBasedDataSetPathsInfoFeeder(IPathsInfoDAO dao,
+    public DatabaseBasedDataSetPathsInfoFeeder(IPathInfoDAO dao,
             IHierarchicalContentFactory hierarchicalContentFactory, boolean computeChecksum, String checksumType)
     {
         this.dao = dao;

@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 
 /**
  * Stores entries to pathinfo db based on given DataSetFileCreation instances.
@@ -62,12 +62,12 @@ public class PathInfoFeeder
         this.dataSetId = dataSetId;
     }
 
-    public void storeFilesWith(IPathsInfoDAO dao)
+    public void storeFilesWith(IPathInfoDAO dao)
     {
         storeFilesWith(dao, root, null, dataSetCode, new Date());
     }
 
-    private void storeFilesWith(IPathsInfoDAO dao, DataSetContentNode node, Long parentId, String name, Date timestamp)
+    private void storeFilesWith(IPathInfoDAO dao, DataSetContentNode node, Long parentId, String name, Date timestamp)
     {
         long id;
         String fullPath = node.getFullPath() == null ? "" : node.getFullPath();

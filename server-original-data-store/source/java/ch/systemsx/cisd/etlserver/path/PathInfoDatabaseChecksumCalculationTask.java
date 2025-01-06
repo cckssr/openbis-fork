@@ -26,7 +26,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import ch.ethz.sis.pathinfo.IPathsInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -52,7 +52,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             PathInfoDatabaseChecksumCalculationTask.class);
 
-    private IPathsInfoDAO dao;
+    private IPathInfoDAO dao;
 
     private IHierarchicalContentProvider hierarchicalContentProvider;
 
@@ -64,7 +64,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     {
     }
 
-    PathInfoDatabaseChecksumCalculationTask(IPathsInfoDAO dao,
+    PathInfoDatabaseChecksumCalculationTask(IPathInfoDAO dao,
             IHierarchicalContentProvider hierarchicalContentProvider, ITimeProvider timeProvider, String checksumType)
     {
         this.dao = dao;
@@ -76,7 +76,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     @Override
     public void setUp(String pluginName, Properties properties)
     {
-        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathsInfoDAO.class);
+        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
         hierarchicalContentProvider = ServiceProvider.getHierarchicalContentProvider();
         timeProvider = SystemTimeProvider.SYSTEM_TIME_PROVIDER;
         checksumType = AbstractPathInfoDatabaseFeedingTask.getAndCheckChecksumType(properties);

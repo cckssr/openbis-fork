@@ -13,12 +13,14 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiResponseBuilder;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -28,11 +30,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.Value;
+import net.lemnik.eodsql.QueryTool;
 
 public class OpenBISServerObserver implements ServerObserver<TransactionConnection>
 {
@@ -43,6 +47,8 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
     private OpenBISConfiguration openBISConfiguration;
 
+    private IPathInfoDAO pathInfoDAO;
+
     private APIServer<TransactionConnection, ApiRequest, ApiResponse, ?> apiServer;
 
     private JsonObjectMapper jsonObjectMapper;
@@ -51,6 +57,11 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
         this.openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
+        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+        if (pathInfoDatabaseConfiguration != null)
+        {
+            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoDAO.class);
+        }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
     }
@@ -62,7 +73,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                                               {
                                                   @Override public void run()
                                                   {
-                                                      processApplicationServerDeletionEvents();
+                                                      processDataSetDeletionEvents();
                                                   }
                                               },
                 0,
@@ -74,7 +85,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
     }
 
-    private void processApplicationServerDeletionEvents()
+    private void processDataSetDeletionEvents()
     {
         while (true)
         {
@@ -131,7 +142,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                     {
                         for (Event event : newEvents)
                         {
-                            processEvent(openBISFacade.getSessionToken(), event);
+                            processDataSetDeletionEvent(openBISFacade.getSessionToken(), event);
                             lastEvent = event;
                         }
                     } finally
@@ -169,7 +180,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
         }
     }
 
-    private void processEvent(String sessionToken, Event event) throws APIServerException
+    private void processDataSetDeletionEvent(String sessionToken, Event event) throws APIServerException
     {
         try
         {
@@ -178,6 +189,12 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                             null, null);
 
             apiServer.processOperation(apiRequest, new ApiResponseBuilder(), new PerformanceAuditor());
+
+            if (pathInfoDAO != null)
+            {
+                pathInfoDAO.deleteDataSet(event.getIdentifier());
+                pathInfoDAO.commit();
+            }
 
             logger.info("Data set " + event.getIdentifier() + " has been successfully deleted from the store.");
         } catch (APIServerException e)
