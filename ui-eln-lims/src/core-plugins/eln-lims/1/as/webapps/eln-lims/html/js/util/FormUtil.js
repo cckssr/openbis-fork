@@ -2472,7 +2472,7 @@ var FormUtil = new function() {
 				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Enter your password to freeze the entities, after they are frozen no more changes will be possible:"));
+						.append(" Write the word FREEZE, after they are frozen no more changes will be possible:"));
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
 						.append($("<span>", { style : "color:red; font-size: large;" }).append(" This operation is irreversible!")));
@@ -2480,8 +2480,8 @@ var FormUtil = new function() {
 				//
 				// Password
 				//
-				var $passField = FormUtil._getInputField('password', null, 'Password', null, true);
-				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Password", null);
+				var $passField = FormUtil._getInputField('freeze', null, 'Freeze', null, true);
+				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Freeze", null);
 				$window.append($passwordGroup);
 				
 				//
@@ -2501,26 +2501,18 @@ var FormUtil = new function() {
 				$window.submit(function() {
 					if (_this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing(entityMap)) {
 						var username = mainController.serverFacade.getUserId();
-						var password = $passField.val();					
-						new openbis().login(
-								username, 
-								password, 
-								function(data) { 
-									if(data.result == null) {
-										Util.showUserError('The given password is not correct.');
+						var password = $passField.val();
+									if(password !== 'FREEZE') {
+										Util.showUserError('The given word is not correct.');
 									} else {
-										var sessionToken = data.result;
-										
-										
 										for (key in entityMap) {
 											if(!$('#' + _this._createFormFieldId(key))[0].checked) {
 												delete entityMap[key];
 											}
 										}
-										
 										var parameters = {
 												"method" : "freeze",
-												"sessionToken" : sessionToken,
+												"sessionToken" : mainController.serverFacade.getSession(),
 												"freezeList" : entityMap
 										}
 										mainController.serverFacade.customASService(parameters, function(result) {
@@ -2552,7 +2544,6 @@ var FormUtil = new function() {
 											}
 										}, "freeze-api",  _this.showFreezingError);
 									}
-								});
 						Util.blockUI();
 					} else {
 						Util.showUserError('Nothing selected for freezing.', function() {
