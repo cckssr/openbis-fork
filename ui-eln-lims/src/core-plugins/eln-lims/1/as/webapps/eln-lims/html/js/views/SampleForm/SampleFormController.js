@@ -200,6 +200,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		
 		//On Submit
 		sample.parents = _this._sampleFormModel.sampleLinksParents.getSamples();
+		sample.children = _this._sampleFormModel.sampleLinksChildren.getSamples();
 		var continueSampleCreation = function(sample, newSampleParents, samplesToDelete, newChangesToDo) {
 		    if (!sample.code) {
 		        Util.showUserError("Code is undefined.");
@@ -309,6 +310,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 			
 			//Children to create
 			var samplesToCreate = [];
+			var samplesToDelete = [];
 			_this._sampleFormModel.sampleLinksChildren.getSamples().forEach(function(child) {
 				if(child.newSample) {
 				  child.experimentIdentifier = experimentIdentifier;
@@ -348,9 +350,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					if(child.newSample) {
 						samplesToCreate.push(child);
 					} else if(child.deleteSample) {
-						if(!samplesToDelete) {
-							samplesToDelete = [];
-						}
 						sampleChildrenRemovedFinal.push(child.identifier);
 						samplesToDelete.push(child.permId);
 					}
@@ -449,7 +448,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
     this._createUpdateSample = function(parameters) {
         var _this = this;
         var samplesToGet = parameters["sampleChildrenNew"].map(child => child.identifier);
-        if (parameters["copyChildrenOnCopy"] && parameters["copyChildrenOnCopy"] != false) {
+        if (parameters["copyChildrenOnCopy"] && parameters["copyChildrenOnCopy"] !== 'None') {
             samplesToGet = samplesToGet.concat(parameters["sampleChildren"]);
         }
         if (samplesToGet.length > 0) {
@@ -597,6 +596,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                         }
                     });
                 }
+                var sampleChildren = parameters["sampleChildren"];
+                sampleChildren.forEach(function (item, index) {
+                  if(sampleChildrenNew.includes(item) === false &&
+                    sampleChildrenAdded.includes(item) === false) {
+                    children.push(new SampleIdentifier(item));
+                    }
+                });
                 return children;
             };
             // end of helper functions
@@ -675,7 +681,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                 creation.setCreationId(creationId);
                 var sampleChildren = parameters["sampleChildren"];
                 var copyChildrenOnCopy = parameters["copyChildrenOnCopy"];
-                if (sampleChildren && copyChildrenOnCopy != false) {
+                if (sampleChildren && copyChildrenOnCopy === 'ToParentCollection') {
                     sampleChildren.forEach(function(sampleId) {
                         var child = existingSamples[sampleId];
                         var copyChildCode = parameters["sampleCode"];
@@ -696,7 +702,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                         sampleCreations.push(copyChildCreation);
                         copyChildCreation.setParentIds([creationId]);
                     });
+                } else if (sampleChildren && copyChildrenOnCopy === 'Link') {
+                    var children = getChildren();
+                    if(children) {
+                        creation.setChildIds(children);
+                    }
                 }
+
                 // End of 'copySample' section
             }
             parameters["sampleChildrenNew"].forEach(function(newSampleChild) {
@@ -815,7 +827,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                             var childAnnotation = childrenAnnotationsState[childPermId];
                             if(!Util.isMapEmpty(childAnnotation)) { // Storage positions don't have annotations
                                 var childIdentifier = childAnnotation["identifier"]; // When creating new children (copy function), annotations should be added by identifier, permIds are not easily obtainable
-                                if(isCopyWithNewCode) {
+                                if(copyChildrenOnCopy === 'ToParentCollection') {
                                     // The copied children identifier follow the pattern /<PARENT_SPACE>/<PARENT_PROJECT>/<COPYED_SAMPLE_CODE>_<ORIGINAL_CHILDREN_CODE>
                                     var originalSampleIdentifier = _this._sampleFormModel.sample.identifier;
                                     var parentSampleSpaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(originalSampleIdentifier);

@@ -1240,9 +1240,10 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					component += "<div class='controls'>";
 					component += "<span class='checkbox'><label><input type='checkbox' id='copyCommentsLogOnCopy'>Copy Comments Log</label></span>";
 				    component += "<span class='checkbox'><label><input type='checkbox' id='linkParentsOnCopy'>Link Parents</label></span>";
-					component += "<span>Copy Children</span>";
-					component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked>Don't Copy</label></span>";
-					component += "<span class='checkbox'><label><input type='radio' id='copyChildrenToParent' name='copyChildrenOnCopy' value='ToParentCollection'>Into parents collection</label></span>";
+					component += "<span>Children</span>";
+					component += " <span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='None' checked> Do NOT Copy or Link</label></span>";
+					component += " <span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='Link'> Link</label></span>";
+					component += " <span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToParentCollection'> Copy Into parents collection</label></span>";
 					//component += "<span class='checkbox'><label><input type='radio' name='copyChildrenOnCopy' value='ToOriginalCollection'>Into original collection</label></span>";
 					component += "</div>";
 					component += "</div>";
@@ -1270,7 +1271,9 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 					var linkParentsOnCopy = $("#linkParentsOnCopy")[0].checked;
 					var copyChildrenOnCopy = $("input[name=copyChildrenOnCopy]:checked").val();
 					if(copyChildrenOnCopy === 'None') {
-					    copyChildrenOnCopy = false;
+					    copyChildrenOnCopy = 'None';
+					} else if(copyChildrenOnCopy === 'Link') {
+					    copyChildrenOnCopy = 'Link';
 					}
 					var copyCommentsLogOnCopy = $("#copyCommentsLogOnCopy")[0].checked;
 					var isValid = newSampleCodeForCopy[0].checkValidity();
