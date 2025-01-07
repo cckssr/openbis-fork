@@ -1,11 +1,7 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, Tab, Tabs, Box } from '@mui/material';
+import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography } from '@mui/material';
 import { inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
-import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
-import InputRangeSlider
-	from '@src/js/components/common/imaging/components/common/InputRangeSlider.jsx';
-import ColorMap from '@src/js/components/common/imaging/components/viewer/ColorMap.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
 import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -15,7 +11,7 @@ import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import Label from '@src/js/components/common/imaging/components/common/Label.js';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
+import InputControlsSection from '@src/js/components/common/imaging/components/viewer/InputControlsSection.js';
 
 const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, isUserGenerated, resolution, isChanged,
 	onClickUpdate, onChangeShow, onSelectChangeRes, onChangeActConf, imagingTags, handleTagImage, datasetType }) => {
@@ -168,64 +164,31 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 		</>)
 	}
 
+	const renderDynamicControls = (configInputs) => {
+		const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
+		var sectionsArray = []
+		for (let [key, imageDatasetControlList] of sectionGroups) {
+			sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} />)
+		}
+		return sectionsArray;
+	}
+
 	const inputValues = createInitValues(configInputs, activePreview.config);
 	activePreview.config = inputValues;
-
 	const currentMetadata = activePreview.metadata;
 	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 	return (
-		<Grid2 container direction='row' size={{ xs: 12, sm: 4 }} sx={{ padding: '8px', margin: '6px 0 12px 0', maxHeight: '800px' }}>
+		<Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ padding: '8px', margin: '6px 0 12px 0' }}>
 
-			<Grid2 container direction='row' size={{ xs: 12, sm: 12 }} sx={{ justifyContent: 'space-between', height: '30%' }}>
+			<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '30%' }}>
 				{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
 					&& renderStaticUpdateControls(isUploadedPreview)}
 			</Grid2>
 
-			<Divider variant='middle' sx={{ margin: '16px 8px 16px 8px', borderWidth: '1px', width: '95%' }} />
+			<Divider variant='middle' sx={{ margin: '16px 8px 16px 8px', width: '98%', maxHeight: '1%'}} />
 
-			<Grid2 container direction='row' size={{ xs: 12, sm: 12 }} sx={{ justifyContent: 'space-between', overflow: 'auto', height: '65%' }}>
-				{configInputs !== null &&
-					configInputs.length > 0 &&
-					configInputs.map((c, idx) => {
-						switch (c.type) {
-							case constants.DROPDOWN:
-								return <Dropdown key={`InputsPanel-${c.type}-${idx}`}
-									label={c.label}
-									initValue={inputValues[c.label]}
-									values={c.values}
-									isMulti={c.multiselect}
-									disabled={isUploadedPreview}
-									onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)} />;
-							case constants.SLIDER:
-								return <InputSlider key={`InputsPanel-${c.type}-${idx}`}
-									label={c.label}
-									initValue={inputValues[c.label]}
-									range={c.range}
-									unit={c.unit}
-									playable={c.playable && !isUploadedPreview}
-									speeds={c.speeds}
-									disabled={isUploadedPreview}
-									onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
-							case constants.RANGE:
-								return <InputRangeSlider key={`InputsPanel-${c.type}-${idx}`}
-									label={c.label}
-									initValue={inputValues[c.label]}
-									range={c.range}
-									disabled={isUploadedPreview || c.range.findIndex(n => n === 'nan') !== -1}
-									unit={c.unit}
-									playable={c.playable && !isUploadedPreview}
-									speeds={c.speeds}
-									onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
-							case constants.COLORMAP:
-								return <ColorMap key={`InputsPanel-${c.type}-${idx}`}
-									values={c.values}
-									disabled={isUploadedPreview}
-									initValue={inputValues[c.label]}
-									label={c.label}
-									onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)} />;
-						}
-					})
-				}
+			<Grid2 container sx={{ justifyContent: 'space-between', overflow: 'auto', maxHeight: '68%' }}>
+				{configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
 			</Grid2>
 		</Grid2>
 	);

@@ -1,35 +1,33 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import { Grid2 } from "@mui/material";
-import { convertToBase64, inRange, isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
+import { Grid2, useMediaQuery } from '@mui/material';
+import { convertToBase64, inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import Container from '@src/js/components/common/form/Container.jsx'
-import PaperBox from "@src/js/components/common/imaging/components/common/PaperBox.js";
-import ImagingFacade from "@src/js/components/common/imaging/ImagingFacade.js";
-import constants from "@src/js/components/common/imaging/constants.js";
-import ImagingMapper from "@src/js/components/common/imaging/ImagingMapper.js";
-import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
-import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
-import ImageSection from "@src/js/components/common/imaging/components/viewer/ImageSection.js";
+import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
+import ImagingFacade from '@src/js/components/common/imaging/ImagingFacade.js';
+import constants from '@src/js/components/common/imaging/constants.js';
+import ImagingMapper from '@src/js/components/common/imaging/ImagingMapper.js';
+import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx';
+import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx';
+import ImageSection from '@src/js/components/common/imaging/components/viewer/ImageSection.js';
 import PreviewsSection from '@src/js/components/common/imaging/components/viewer/PreviewSection.js';
 import MainPreview from '@src/js/components/common/imaging/components/viewer/MainPreview.js';
 import MainPreviewInputControls from '@src/js/components/common/imaging/components/viewer/MainPreviewInputControls.js';
 import MetadataSection from '@src/js/components/common/imaging/components/viewer/MetadataSection.js';
+import makeStyles from '@mui/styles/makeStyles';
 
 const styles = theme => ({
     container: {
         height: '100%',
         overflow: 'auto'
     },
-    imgContainer: {
-        maxHeight: '800px',
-        textAlign: 'center',
-        overflow: 'auto',
-    },
     gridDirection: {
-        flexDirection: "row",
-        [theme.breakpoints.down('md')]: {
-            flexDirection: "column",
+        [theme.breakpoints.up('md')]: {
+            flexDirection: 'row',
         },
+        [theme.breakpoints.down('md')]: {
+            flexDirection: 'column',
+        }
     }
 });
 
@@ -309,7 +307,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                 null,
                 newLastIdx,
                 false,
-                { "file": file },
+                { 'file': file },
                 [],
                 ''
             )
@@ -394,7 +392,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                         <MainPreview activePreview={activePreview} resolution={resolution} />
                         <MainPreviewInputControls activePreview={activePreview}
                             configInputs={activeImage.config.inputs}
-                            isUserGenerated={imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === "true"}
+                            isUserGenerated={imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true'}
                             configResolutions={activeImage.config.resolutions}
                             resolution={resolution}
                             isChanged={isChanged}

@@ -7,8 +7,9 @@ import ImageListItemSection
 import messages from '@src/js/common/messages.js'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import makeStyles from '@mui/styles/makeStyles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
 	root: {
 		padding: '8px',
 		margin: '6px 0 12px 0',
@@ -21,14 +22,14 @@ const useStyles = makeStyles(() => ({
 		}
 	},
 	summaryButton: {
-		width: '15%',
 		marginRight: '16px'
 	}
 }));
 
 const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChange, handleExport }) => {
 	const [expanded, setExpanded] = React.useState(false);
-
+	const isTablet = useMediaQuery('(max-width:820px)');
+	
 	React.useEffect(() => {
        if (images.length > 1)
 			setExpanded(true);
@@ -47,8 +48,8 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 			onChange={handleExpansion}
 			sx={{ '& .MuiAccordionSummary-root': { padding: '0px' },
 					'& .MuiAccordionSummary-content': { margin: '0px', justifyContent: 'space-between' },
-					'& .MuiAccordionDetails-root': { padding: '0px' }
-				}}>
+					'& .MuiAccordionDetails-root': { padding: '0px' },
+					overflow: 'auto'}}>
 			<AccordionSummary
 				expandIcon={<ExpandMoreIcon />}
 				id='images-panel-header'
@@ -60,8 +61,8 @@ const ImageSection = ({ images, activeImageIdx, configExports, onActiveItemChang
 					<Exporter styles={{ root: classes.summaryButton }} handleExport={handleExport} config={configExports} />}
 			</AccordionSummary>
 			<AccordionDetails>
-				<Grid2 container direction='row' spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-					<Grid2 size={{ xs: 9, sm: 10 }}>
+				<Grid2 container spacing={1} direction={isTablet ? 'column':'row'} sx={{justifyContent: 'space-between', alignItems: 'center'}}>
+					<Grid2 size={{ xs: 12, sm: 10 }}>
 						<ImageListItemSection
 							cols={3} rowHeight={150}
 							type={constants.IMAGE_TYPE}

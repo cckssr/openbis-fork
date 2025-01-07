@@ -6,6 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 const useStyles = makeStyles((theme) => ({
 	imgContainer: {
 		maxHeight: '800px',
+		minHeight: '400px',
 		overflow: 'auto',
 		justifyContent: 'space-around',
 		alignItems: 'center'
@@ -16,7 +17,7 @@ const MainPreview = ({ activePreview, resolution }) => {
 	const classes = useStyles();
 
 	return (
-		<Grid2 container size={{ xs: 12, sm: 8 }} className={classes.imgContainer}>
+		<Grid2 container size={{ sm: 12, md: 8 }} className={classes.imgContainer}>
 			{activePreview.bytes === null ?
 				<Typography variant='body2'>
 					{messages.get(messages.NO_PREVIEW)}
