@@ -53,6 +53,8 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
     private JsonObjectMapper jsonObjectMapper;
 
+    private Timer timer;
+
     @Override
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
@@ -64,18 +66,19 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
         }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+        this.timer = new Timer(THREAD_NAME, true);
     }
 
     @Override
     public void beforeStartup() throws Exception
     {
-        new Timer(THREAD_NAME, true).schedule(new TimerTask()
-                                              {
-                                                  @Override public void run()
-                                                  {
-                                                      processDataSetDeletionEvents();
-                                                  }
-                                              },
+        timer.schedule(new TimerTask()
+                       {
+                           @Override public void run()
+                           {
+                               processDataSetDeletionEvents();
+                           }
+                       },
                 0,
                 openBISConfiguration.getOpenBISLastSeenDeletionIntervalInSeconds() * 1000L);
     }
@@ -83,6 +86,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     @Override
     public void beforeShutdown() throws Exception
     {
+        timer.cancel();
     }
 
     private void processDataSetDeletionEvents()

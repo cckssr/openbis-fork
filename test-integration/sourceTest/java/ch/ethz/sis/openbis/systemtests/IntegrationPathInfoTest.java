@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -36,17 +35,14 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
     private IPathInfoDAO pathInfoDAO;
 
     @BeforeMethod
-    private void beforeMethod()
+    public void beforeMethod(Method method) throws Exception
     {
+        super.beforeMethod(method);
+
+        deleteLastSeenDeletionFile();
+
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
         pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoDAO.class);
-    }
-
-    @AfterMethod
-    public void afterMethod(Method method) throws Exception
-    {
-        deleteLastSeenDeletionFile();
-        super.afterMethod(method);
     }
 
     @Test

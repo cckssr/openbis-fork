@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
-import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
@@ -48,11 +48,11 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private static final long WAITING_TIME_FOR_ASYNC_TASKS = 5000L;
 
-    @AfterMethod
-    public void afterMethod(Method method) throws Exception
+    @BeforeMethod
+    public void beforeMethod(Method method) throws Exception
     {
+        super.beforeMethod(method);
         deleteLastSeenDeletionFile();
-        super.afterMethod(method);
     }
 
     @Test

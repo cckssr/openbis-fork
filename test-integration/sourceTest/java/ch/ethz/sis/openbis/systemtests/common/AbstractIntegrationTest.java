@@ -197,7 +197,7 @@ public abstract class AbstractIntegrationTest
     }
 
     @BeforeMethod
-    public void beforeMethod(Method method)
+    public void beforeMethod(Method method) throws Exception
     {
         log("BEFORE " + method.getDeclaringClass().getName() + "." + method.getName());
         setApplicationServerProxyInterceptor(null);
