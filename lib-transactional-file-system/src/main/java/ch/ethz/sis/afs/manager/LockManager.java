@@ -18,12 +18,16 @@ package ch.ethz.sis.afs.manager;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.Logger;
 
 import java.util.*;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.DeadlockDetected;
 
 class LockManager<O, E> {
+
+    private static final Logger logger = LogManager.getLogger(LockManager.class);
 
     private HierarchicalLockFinder<O, E> hierarchicalLockFinder;
     private Map<E, Lock<O, E>> exclusiveLocks;
@@ -87,6 +91,8 @@ class LockManager<O, E> {
     }
 
     synchronized boolean add(List<Lock<O, E>> locks) {
+        logger.info("Adding locks: " + locks);
+
         // Check for exclusive locks
         // if you need one and a single one exists for sure you can't execute this transaction now.
         List<Lock<O, E>> locksToAdd = new ArrayList<>();
@@ -152,6 +158,8 @@ class LockManager<O, E> {
     }
 
     synchronized boolean remove(List<Lock<O, E>> locks) {
+        logger.info("Removing locks: " + locks);
+
         for (Lock<O, E> lock : locks) {
             switch (lock.getType()) {
                 case HierarchicallyExclusive:

@@ -123,6 +123,7 @@ final class SharesHolder
                             log.log(LogLevel.INFO,
                                     "Data set " + dataSetCode
                                             + " size could not be calculated because the data set could not be locked (i.e. it is being used by another operation).");
+                            dataSet.setDataSetSize(0L);
                             share.addDataSet(dataSet);
                         }
                     } else
