@@ -260,15 +260,19 @@ class LockManager<O, E> {
         List<O> waitingForOs = new ArrayList<>();
         Map<O, Set<E>> waitingForReleaseOwner = waitedBy.get(releasedLock.getOwner());
         if (waitingForReleaseOwner != null) {
+            List<O> keysToRemove = new ArrayList<>();
             for (O ownerWaitingForReleaseOwner : waitingForReleaseOwner.keySet()) {
                 Set<E> resources = waitingForReleaseOwner.get(ownerWaitingForReleaseOwner);
                 if (resources != null && resources.contains(releasedLock.getResource())) {
                     waitingForOs.add(ownerWaitingForReleaseOwner);
                     resources.remove(releasedLock.getResource());
                     if (resources.isEmpty()) {
-                        waitingForReleaseOwner.remove(ownerWaitingForReleaseOwner);
+                        keysToRemove.add(ownerWaitingForReleaseOwner);
                     }
                 }
+            }
+            for(O keyToRemove : keysToRemove){
+                waitingForReleaseOwner.remove(keyToRemove);
             }
             if (waitingForReleaseOwner.isEmpty()) {
                 waitedBy.remove(releasedLock.getOwner());
