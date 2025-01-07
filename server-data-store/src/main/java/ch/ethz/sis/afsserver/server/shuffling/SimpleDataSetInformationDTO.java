@@ -21,12 +21,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * DTO containing information about data set in a simple form.
  *
  * @author Izabela Adamczyk
  */
+@Getter @Setter
 public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocation
 {
     private static final long serialVersionUID = ServiceVersionHolder.VERSION;
@@ -75,234 +78,10 @@ public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocati
 
     private boolean isH5ArFolders;
 
-    public void setDataStoreCode(String dataStoreCode)
-    {
-        this.dataStoreCode = dataStoreCode;
-    }
-
-    @Override
-    public String getDataStoreCode()
-    {
-        return dataStoreCode;
-    }
-
-    public String getDataSetType()
-    {
-        return dataSetType;
-    }
-
-    public void setDataSetType(String dataSetType)
-    {
-        this.dataSetType = dataSetType;
-    }
-
-    @Override
-    public String getDataSetCode()
-    {
-        return dataSetCode;
-    }
-
-    public void setDataSetCode(String dataSetCode)
-    {
-        this.dataSetCode = dataSetCode;
-    }
-
-    public String getDataSetShareId()
-    {
-        return dataSetShareId;
-    }
-
-    public void setDataSetShareId(String dataSetShareId)
-    {
-        this.dataSetShareId = dataSetShareId;
-    }
-
-    public Long getDataSetSize()
-    {
-        return dataSetSize;
-    }
-
-    public void setDataSetSize(Long dataSetSize)
-    {
-        this.dataSetSize = dataSetSize;
-    }
-
-    @Override
-    public String getDataSetLocation()
-    {
-        return dataSetLocation;
-    }
-
-    public void setDataSetLocation(String dataSetLocation)
-    {
-        this.dataSetLocation = dataSetLocation;
-    }
-
-    public DataSetArchivingStatus getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(DataSetArchivingStatus status)
-    {
-        this.status = status;
-    }
-
-    public boolean isPresentInArchive()
-    {
-        return isPresentInArchive;
-    }
-
-    public void setPresentInArchive(boolean isPresentInArchive)
-    {
-        this.isPresentInArchive = isPresentInArchive;
-    }
-
-    public Date getRegistrationTimestamp()
-    {
-        return registrationTimestamp;
-    }
-
-    public void setRegistrationTimestamp(Date registrationTimestamp)
-    {
-        this.registrationTimestamp = registrationTimestamp;
-    }
-
-    public Date getModificationTimestamp()
-    {
-        return modificationTimestamp;
-    }
-
-    public void setModificationTimestamp(Date modificationTimestamp)
-    {
-        this.modificationTimestamp = modificationTimestamp;
-    }
-
-    public Date getAccessTimestamp()
-    {
-        return accessTimestamp;
-    }
-
-    public void setAccessTimestamp(Date accessTimestamp)
-    {
-        this.accessTimestamp = accessTimestamp;
-    }
-
-    public Date getImmutableDataTimestamp()
-    {
-        return immutableDataTimestamp;
-    }
-
-    public void setImmutableDataTimestamp(final Date immutableDataTimestamp)
-    {
-        this.immutableDataTimestamp = immutableDataTimestamp;
-    }
-
-    public int getSpeedHint()
-    {
-        return speedHint;
-    }
-
-    public void setSpeedHint(int speedHint)
-    {
-        this.speedHint = speedHint;
-    }
-
-    /** NOTE: may be NULL! */
-    public String getSampleCode()
-    {
-        return sampleCode;
-    }
-
-    public void setSampleCode(String sampleCode)
-    {
-        this.sampleCode = sampleCode;
-    }
-
-    public String getSpaceCode()
-    {
-        return spaceCode;
-    }
-
-    public void setSpaceCode(String groupCode)
-    {
-        this.spaceCode = groupCode;
-    }
-
-    public String getExperimentCode()
-    {
-        return experimentCode;
-    }
-
-    public void setExperimentCode(String experimentCode)
-    {
-        this.experimentCode = experimentCode;
-    }
-
-    public String getProjectCode()
-    {
-        return projectCode;
-    }
-
-    public void setProjectCode(String projectCode)
-    {
-        this.projectCode = projectCode;
-    }
-
-    @Override
-    public String getDataStoreUrl()
-    {
-        return dataStoreUrl;
-    }
-
-    public void setDataStoreUrl(String dataStoreUrl)
-    {
-        this.dataStoreUrl = dataStoreUrl;
-    }
-
     @Override
     public Integer getOrderInContainer(String containerDataSetCode)
     {
         return orderInContainers.get(containerDataSetCode);
     }
 
-    public void addOrderInContainer(String containerDataSetCode, Integer orderInContainer)
-    {
-        orderInContainers.put(containerDataSetCode, orderInContainer);
-    }
-
-    public void setOrderInContainers(Map<String, Integer> orderInContainers)
-    {
-        this.orderInContainers = orderInContainers;
-    }
-
-    public boolean isStorageConfirmed()
-    {
-        return isStorageConfirmed;
-    }
-
-    public void setStorageConfirmed(boolean isStorageConfirmed)
-    {
-        this.isStorageConfirmed = isStorageConfirmed;
-    }
-
-    public boolean isH5Folders()
-    {
-        return isH5Folders;
-    }
-
-    public void setH5Folders(boolean isH5Folders)
-    {
-        this.isH5Folders = isH5Folders;
-    }
-
-    public boolean isH5ArFolders()
-    {
-        return isH5ArFolders;
-    }
-
-    public void setH5arFolders(boolean isH5ArFolders)
-    {
-        this.isH5ArFolders = isH5ArFolders;
-    }
 }
