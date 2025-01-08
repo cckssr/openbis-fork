@@ -1,5 +1,7 @@
 package ch.eth.sis.rocrate.writer.mapping.types;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class MetaDataEntry
@@ -9,6 +11,10 @@ public class MetaDataEntry
     String type;
 
     Map<String, Object> props;
+
+    List<String> childrenIdentifiers = new ArrayList<>();
+
+    List<String> parentIdentifiers = new ArrayList<>();
 
     public MetaDataEntry()
     {
@@ -49,5 +55,25 @@ public class MetaDataEntry
     public void setProps(Map<String, Object> props)
     {
         this.props = props;
+    }
+
+    public void addChildIdentifier(String a)
+    {
+        childrenIdentifiers.add(a);
+    }
+
+    public void addParentIdentifier(String a)
+    {
+        parentIdentifiers.add(a);
+    }
+
+    public List<String> getChildrenIdentifiers()
+    {
+        return childrenIdentifiers;
+    }
+
+    public List<String> getParentIdentifiers()
+    {
+        return parentIdentifiers;
     }
 }

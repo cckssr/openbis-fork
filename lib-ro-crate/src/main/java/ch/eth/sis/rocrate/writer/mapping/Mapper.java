@@ -137,8 +137,18 @@ public class Mapper
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
                     props.put(propName, a.getValue());
                 }
-                metaDataEntries.add(
-                        new MetaDataEntry(sample.getIdentifier().toString(), type, props));
+
+                MetaDataEntry
+                        entry = new MetaDataEntry(sample.getIdentifier().toString(), type, props);
+                ((Sample) val).getChildren()
+                        .forEach(x -> entry.addChildIdentifier(x.getIdentifier().getIdentifier()));
+                ((Sample) val).getParents()
+                        .forEach(x -> entry.addParentIdentifier(x.getIdentifier().getIdentifier()));
+
+                metaDataEntries.add(entry
+                );
+
+
 
             }
             if (val instanceof DataSet dataSet)

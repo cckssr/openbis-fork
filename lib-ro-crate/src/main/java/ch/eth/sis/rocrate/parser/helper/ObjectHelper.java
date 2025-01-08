@@ -202,6 +202,7 @@ public class ObjectHelper extends BasicImportHelper
         childrenToResolve.put(code, new ArrayList<>());
         parentsToResolve.put(code, new ArrayList<>());
         collectionsToResolve.put(code, experiment);
+        sample.setProject(projectHelper.getProject(project));
 
         sample.setIdentifier(new SampleIdentifier(identifier));
 
@@ -290,7 +291,8 @@ public class ObjectHelper extends BasicImportHelper
 
         });
         identifierToSample = accumulator.values().stream().collect(Collectors.toMap(
-                x -> x.getSpace().getCode() + "/" + x.getProject() + "/" + x.getCode(), x -> x));
+                x -> "/" + x.getSpace().getCode() + "/" + x.getProject()
+                        .getCode() + "/" + x.getCode(), x -> x));
 
         childrenToResolve.forEach((key, value) -> {
             Sample sample = accumulator.get(key);

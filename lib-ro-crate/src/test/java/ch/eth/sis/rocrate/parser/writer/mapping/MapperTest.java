@@ -188,7 +188,11 @@ public class MapperTest extends TestCase
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
         sampleFetchOptions.withType();
         sampleFetchOptions.withProperties();
+        sampleFetchOptions.withChildren();
+        sampleFetchOptions.withParents();
         object.setFetchOptions(sampleFetchOptions);
+        object.setChildren(new ArrayList<>());
+        object.setParents(new ArrayList<>());
         SampleType sampleType = new SampleType();
         sampleType.setCode("ENTRY1");
         object.setType(sampleType);
