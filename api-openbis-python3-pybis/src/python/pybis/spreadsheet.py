@@ -22,6 +22,8 @@ def _nonzero(num):
 
 def _get_headers(count):
     """Algorithm for generating headers, maximum number of columns supported: 26*26=676"""
+    if count < 1:
+        raise ValueError("Can not create spreadsheet without columns!")
     min_char = ord('A')
     alphabet_max = 26
     headers = [chr(x) for x in range(min_char, min_char+min(alphabet_max, count))]
@@ -48,6 +50,56 @@ class Spreadsheet:
         self.meta = {}
         self.width = [50 for _ in range(columns)]
         self.values = [["" for _ in range(columns)] for _ in range(rows)]
+
+    def _get_index(self, index):
+        if index is None or not isinstance(index, str):
+            raise ValueError("Not valid index!")
+        index = index.strip()
+        column = ""
+        row = ""
+        headers = True
+        for i in index:
+            if i.isalpha():
+                if not headers:
+                    raise ValueError("Wrong index schema!")
+                column += i
+            elif ord(i) >= 48 and ord(i) <= 57:
+                headers = False
+                row += i
+            else:
+                raise ValueError("Wrong index schema!")
+        if not column in self.headers:
+            raise ValueError(f"Column '{column}' does not exists!")
+        if row == "":
+            raise ValueError("Missing row index!")
+        row = int(row)
+        if len(self.data) < row or row < 1:
+            raise ValueError(f"Row '{row}' does not exists!")
+
+        return row - 1, self.headers.index(column)
+
+    def __getitem__(self, index):
+        (row, column) = self._get_index(index)
+        return self.data[row][column]
+
+    def __setitem__(self, key, value):
+        (row, column) = self._get_index(key)
+        self.data[row][column] = value
+
+    def add_column(self, column_name=None):
+        if column_name is None:
+            column_name = _get_headers(len(self.headers)+1)[-1]
+        self.headers += [column_name]
+        for row in self.data:
+            row += ['']
+        for row in self.values:
+            row += ['']
+        self.width += [50]
+        for x in range(1, len(self.data[0])):
+            self.style[column_name + str(x)] =  "text-align: center;"
+
+    def add_row(self):
+        self.data += [['' for _ in range(len(self.headers))]]
 
     def __str__(self):
         return json.dumps(self.__dict__, default=lambda x: x.__dict__)

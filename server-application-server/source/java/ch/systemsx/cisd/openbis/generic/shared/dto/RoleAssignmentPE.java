@@ -1,21 +1,23 @@
 /*
- * Copyright ETH 2008 - 2023 Zürich, Scientific IT Services
+ *  Copyright ETH 2008 - 2025 Zürich, Scientific IT Services
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleLevel;
 import ch.systemsx.cisd.openbis.generic.shared.util.EqualsHashUtils;
+import org.hibernate.annotations.Type;
 
 /**
  * Persistent Entity containing informations about role assignment.
@@ -76,6 +79,8 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
     private AuthorizationGroupPE authorizationGroup;
 
     private RoleCode role;
+
+    private Date expiryDate;
 
     @NotNull(message = ValidationMessages.ROLE_NOT_NULL_MESSAGE)
     @Column(name = ColumnNames.ROLE_COLUMN)
@@ -160,6 +165,17 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         this.project = project;
     }
 
+    @Column(name = ColumnNames.EXPIRY_DATE_COLUMN)
+    public Date getExpiryDate()
+    {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate)
+    {
+        this.expiryDate = expiryDate;
+    }
+
     //
     // IIdHolder
     //
@@ -223,6 +239,7 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         builder.append(getAuthorizationGroup(), that.getAuthorizationGroup());
         builder.append(getSpace(), that.getSpace());
         builder.append(getProject(), that.getProject());
+        builder.append(getExpiryDate(), that.getExpiryDate());
         return builder.isEquals();
     }
 
@@ -234,6 +251,7 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         builder.append(getPerson());
         builder.append(getSpace());
         builder.append(getProject());
+        builder.append(getExpiryDate());
         return builder.toHashCode();
     }
 

@@ -95,7 +95,8 @@ export default class UserGroupFormControllerSave extends PageControllerSave {
       'level',
       'space',
       'project',
-      'role'
+      'role',
+      'expiryDate'
     ])
   }
 
@@ -149,6 +150,10 @@ export default class UserGroupFormControllerSave extends PageControllerSave {
           '/' + role.space.value + '/' + role.project.value
         )
       )
+    }
+    if(role.expiryDate.value && role.expiryDate.value.dateObject)
+    {
+      creation.setExpiryDate(role.expiryDate.value.dateObject.getTime());
     }
 
     return new openbis.CreateRoleAssignmentsOperation([creation])

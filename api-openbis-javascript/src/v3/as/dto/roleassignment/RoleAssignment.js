@@ -14,6 +14,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.project = null;
 		prototype.registrationDate = null;
 		prototype.registrator = null;
+		prototype.expiryDate = null;
 		
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -93,6 +94,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setRegistrator = function(registrator) {
 			this.registrator = registrator;
 		};
+		prototype.getExpiryDate = function() {
+            return this.expiryDate;
+        };
+        prototype.setExpiryDate = function(expiryDate) {
+            this.expiryDate = expiryDate;
+        };
 	}, {
 		fetchOptions : "RoleAssignmentFetchOptions",
 		id : "IRoleAssignmentId",
@@ -103,7 +110,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		space : "Space",
 		project : "Project",
 		registrationDate : "Date",
-		registrator : "Person"
+		registrator : "Person",
+		expiryDate : "Date",
 	});
 	return RoleAssignment;
 })

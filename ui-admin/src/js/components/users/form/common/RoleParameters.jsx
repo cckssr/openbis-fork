@@ -2,6 +2,7 @@ import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
+import DateField from '@src/js/components/common/form/DateField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'
@@ -23,7 +24,8 @@ class RoleParameters extends React.PureComponent {
       level: React.createRef(),
       space: React.createRef(),
       project: React.createRef(),
-      role: React.createRef()
+      role: React.createRef(),
+      expiryDate: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -97,6 +99,7 @@ class RoleParameters extends React.PureComponent {
         {this.renderSpace(role)}
         {this.renderProject(role)}
         {this.renderRole(role)}
+        {this.renderExpiryDate(role)}
       </Container>
     )
   }
@@ -310,6 +313,31 @@ class RoleParameters extends React.PureComponent {
           value={value}
           options={options}
           sort={false}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderExpiryDate(role) {
+    const { visible, enabled, error, value } = { ...role.expiryDate }
+    if (!visible) {
+      return null
+    }
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <DateField
+          reference={this.references.expiryDate}
+          label={messages.get(messages.EXPIRY_DATE)}
+          name='expiryDate'
+          mandatory={false}
+          error={error}
+          disabled={!enabled}
+          value={value}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

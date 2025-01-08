@@ -2,6 +2,7 @@ import _ from 'lodash'
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
+import date from '@src/js/common/date.js'
 
 export default class RoleControllerLoad {
   constructor(controller) {
@@ -26,6 +27,8 @@ export default class RoleControllerLoad {
       space = _.get(loadedRole, 'project.space.code')
       project = _.get(loadedRole, 'project.code')
     }
+
+    const expiryDate =  _.get(loadedRole, 'expiryDate', null);
 
     const role = {
       id: _.uniqueId('role-'),
@@ -58,6 +61,10 @@ export default class RoleControllerLoad {
       }),
       registrationDate: FormUtil.createField({
         value: _.get(loadedRole, 'registrationDate', null)
+      }),
+      expiryDate: FormUtil.createField({
+        value: expiryDate ? { dateObject: new Date(expiryDate) } : null
+
       })
     }
     role.original = _.cloneDeep(role)
@@ -92,7 +99,8 @@ export default class RoleControllerLoad {
       'inheritedFrom.value',
       'space.value',
       'project.value',
-      'role.value'
+      'role.value',
+      'expiryDate.value'
     ]
     return fields.every(field => _.get(role1, field) === _.get(role2, field))
   }

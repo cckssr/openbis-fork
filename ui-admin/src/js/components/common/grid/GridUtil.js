@@ -57,6 +57,38 @@ function dateColumn(params) {
   }
 }
 
+function dateObjectColumn(params) {
+  return {
+    ...params,
+    getValue: ({ row, operation }) => {
+      const value = _.get(row, params.path)
+      const valueChecked = value ? value.dateObject : value
+      if (operation === 'export') {
+        return date.format(valueChecked)
+      } else {
+        return valueChecked
+      }
+    },
+    renderValue: ({ value }) => date.format(value),
+    renderFilter: ({ value, onChange }) => {
+      return (
+        <DateRangeField value={value} variant='standard' onChange={onChange} />
+      )
+    },
+    matchesValue: ({ value, filter, defaultMatches }) => {
+      if (_.isString(filter)) {
+        return defaultMatches(value, filter)
+      } else {
+        return date.inRange(
+          value,
+          filter.from ? filter.from.dateObject : null,
+          filter.to ? filter.to.dateObject : null
+        )
+      }
+    }
+  }
+}
+
 function registrationDateColumn(params) {
   return dateColumn({
     ...params,
@@ -80,5 +112,6 @@ export default {
   registratorColumn,
   dateColumn,
   registrationDateColumn,
-  modificationDateColumn
+  modificationDateColumn,
+  dateObjectColumn
 }

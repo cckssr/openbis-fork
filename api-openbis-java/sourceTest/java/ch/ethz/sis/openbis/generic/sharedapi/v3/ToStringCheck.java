@@ -19,13 +19,7 @@ import static org.testng.Assert.assertEquals;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
 import org.testng.annotations.Test;
@@ -384,7 +378,8 @@ public class ToStringCheck
     {
         RoleAssignment o = new RoleAssignment();
         o.setId(new RoleAssignmentTechId(1L));
-        assertEquals(o.toString(), "RoleAssignment[id=1]");
+        o.setExpiryDate(new Date(0L));
+        assertEquals(o.toString(), "RoleAssignment[id=1,expiryDate=Thu Jan 01 01:00:00 CET 1970]");
     }
 
     @Test

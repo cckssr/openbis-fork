@@ -56,6 +56,11 @@ export default class RoleControllerChange {
           ...newRole.role,
           visible: newLevel !== null,
           value: null
+        },
+        expiryDate: {
+          ...newRole.expiryDate,
+          visible: newLevel !== null,
+          value: null
         }
       })
     }
@@ -73,6 +78,10 @@ export default class RoleControllerChange {
         },
         role: {
           ...newRole.role,
+          value: null
+        },
+        expiryDate: {
+          ...newRole.expiryDate,
           value: null
         }
       })
