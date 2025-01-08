@@ -30,6 +30,7 @@ public class ServiceProvider
     public static void configure(Configuration configuration)
     {
         ServiceProvider.configuration = configuration;
+        ServiceProvider.initialized = false;
     }
 
     public static OpenBISFacade getOpenBISFacade()

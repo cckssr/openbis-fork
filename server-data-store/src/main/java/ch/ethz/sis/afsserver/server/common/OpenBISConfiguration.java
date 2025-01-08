@@ -22,6 +22,8 @@ public class OpenBISConfiguration
 
     private static volatile OpenBISConfiguration instance;
 
+    private static volatile Configuration configuration;
+
     private final String openBISUrl;
 
     private final Integer openBISTimeout;
@@ -40,13 +42,14 @@ public class OpenBISConfiguration
 
     public static OpenBISConfiguration getInstance(Configuration configuration)
     {
-        if (instance == null)
+        if (OpenBISConfiguration.configuration != configuration)
         {
             synchronized (OpenBISConfiguration.class)
             {
-                if (instance == null)
+                if (OpenBISConfiguration.configuration != configuration)
                 {
                     instance = new OpenBISConfiguration(configuration);
+                    OpenBISConfiguration.configuration = configuration;
                 }
             }
         }
