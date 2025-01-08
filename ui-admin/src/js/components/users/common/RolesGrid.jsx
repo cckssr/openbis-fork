@@ -46,7 +46,7 @@ class RolesGrid extends React.PureComponent {
       throw 'Unsupported id: ' + id
     }
 
-    columnNames.push('registrator', 'registrationDate')
+    columnNames.push('registrator', 'registrationDate', 'expiryDate')
 
     const columns = this.getColumns().filter(
       column => columnNames.indexOf(column.name) !== -1
@@ -241,7 +241,10 @@ class RolesGrid extends React.PureComponent {
         }
       },
       GridUtil.registratorColumn({ path: 'registrator.value' }),
-      GridUtil.registrationDateColumn({ path: 'registrationDate.value' })
+      GridUtil.registrationDateColumn({ path: 'registrationDate.value' }),
+      GridUtil.dateObjectColumn({ name: 'expiryDate',
+          label: messages.get(messages.EXPIRY_DATE),
+          path: 'expiryDate.value' })
     ]
   }
 
