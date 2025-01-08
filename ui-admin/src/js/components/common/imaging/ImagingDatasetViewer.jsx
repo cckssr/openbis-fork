@@ -406,7 +406,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                         />
                     </Grid2>
                 </PaperBox>
-                <MetadataSection activePreview={activePreview} activeImage={activeImage} />
+                <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} />
             </Container>
         )
     };

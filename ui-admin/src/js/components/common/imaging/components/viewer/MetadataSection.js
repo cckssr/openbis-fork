@@ -5,13 +5,22 @@ import PaperBox from "@src/js/components/common/imaging/components/common/PaperB
 import DefaultMetadaField
 	from "@src/js/components/common/imaging/components/gallery/DefaultMetadaField.js";
 
-const MetadataSection = ({ activePreview, activeImage }) => {
+const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 
 	const currImageMetadata = activeImage.metadata;
 	const configMetadata = activeImage.config.metadata;
 	const currPreviewMetadata = activePreview.metadata;
 	const currPreviewTags = activePreview.tags;
 	const currPreviewComment = activePreview.comment;
+
+	const matchTagsToLabel = () => {
+		var trasformedTags = []
+		for (const activePreviewTag of currPreviewTags) {
+			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
+			trasformedTags.push(matchTag);
+		}
+		return trasformedTags.map(tag => tag.label);
+	}
 
 	const renderPreviewMetadata = () => {
 		return (<>
@@ -30,8 +39,9 @@ const MetadataSection = ({ activePreview, activeImage }) => {
 				{(currPreviewComment !== null && currPreviewComment !== "")  && 
 					<DefaultMetadaField key={'preview-comment-metadata'} keyProp='Preview Comment'
 							valueProp={currPreviewComment} idx={activeImage.index} />}
+				
 				{(currPreviewTags !== null && currPreviewTags.length > 0) && <DefaultMetadaField key={'preview-tags-metadata'} keyProp='Preview Tags'
-							valueProp={currPreviewTags} idx={activeImage.index} />}
+							valueProp={matchTagsToLabel()} idx={activeImage.index} />}
 			</Typography>
 			<Typography key={`preview-metadata-${activePreview.index}`} variant="body2"
 				component={'span'} sx={{
