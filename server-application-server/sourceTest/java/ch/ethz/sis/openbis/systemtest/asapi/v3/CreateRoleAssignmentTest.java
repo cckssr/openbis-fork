@@ -259,7 +259,7 @@ public class CreateRoleAssignmentTest extends AbstractTest
         v3api.createRoleAssignments(sessionToken, Arrays.asList(creation, creation2, creation3));
 
         assertAccessLog(
-                "create-role-assignments  NEW_ROLE_ASSIGNMENTS('[RoleAssignmentCreation[groupId=<null>,userId=me,spaceId=TEST-SPACE,projectId=<null>,role=POWER_USER], RoleAssignmentCreation[groupId=<null>,userId=test,spaceId=<null>,projectId=/TEST-SPACE/TEST-PROJECT,role=ADMIN], RoleAssignmentCreation[groupId=AGROUP,userId=<null>,spaceId=<null>,projectId=/CISD/NEMO,role=OBSERVER]]')");
+                "create-role-assignments  NEW_ROLE_ASSIGNMENTS('[RoleAssignmentCreation[groupId=<null>,userId=me,spaceId=TEST-SPACE,projectId=<null>,role=POWER_USER,expiryDate=<null>], RoleAssignmentCreation[groupId=<null>,userId=test,spaceId=<null>,projectId=/TEST-SPACE/TEST-PROJECT,role=ADMIN,expiryDate=<null>], RoleAssignmentCreation[groupId=AGROUP,userId=<null>,spaceId=<null>,projectId=/CISD/NEMO,role=OBSERVER,expiryDate=<null>]]')");
     }
 
     @DataProvider
