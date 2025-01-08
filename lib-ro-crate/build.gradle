@@ -23,19 +23,34 @@ repositories {
 //'openbis:openbis-v3-api-batteries-included:6.5.0',
 //files('libs/openBIS-API-V3-batteries-included-SNAPSHOT-r1718006152.jar'),
 dependencies {
-    implementation 'org.apache.jena:apache-jena-libs:5.0.0',
-            'openbis:openbis-v3-api-batteries-included:6.6.0-EA',
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    implementation 'openbis:openbis-v3-api-batteries-included:6.6.0-EA',
             'apache:poi:3.17',
             'apache:poi-ooxml:3.17',
             'apache:poi-ooxml-schemas:3.17',
             'apache:commons-collections4:4.1',
             'commons-cli:commons-cli:1.4'
-    ''
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
     testImplementation 'junit:junit:4.13.1'
     testImplementation('jmock:jmock:2.5.1')
 
 }
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+
+        // https://docs.gradle.org/current/userguide/resolution_rules.html
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-databind') {
+            details.useVersion '2.18.0'
+        }
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
+            details.useVersion '2.18.0'
+        }
+    }
+}
+
 
 tasks.register('buildRdfTool', Jar) {
     dependsOn tasks.build
