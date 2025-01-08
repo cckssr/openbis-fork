@@ -1402,6 +1402,7 @@ class Openbis:
             self.mountpoint = None
 
     def is_mounted(self, mountpoint=None):
+        """Check whether openBIS dataStore is mounted or not"""
         if mountpoint is None:
             mountpoint = getattr(self, "mountpoint", None)
 
@@ -1638,6 +1639,12 @@ class Openbis:
             return datastores[attrs]
 
     def gen_codes(self, entity: str, prefix: str = "", count: int = 1) -> List[str]:
+        """Get multiple next sequence numbers for a Sample, Experiment, DataSet and Material. Other entities are currently not supported.
+        Usage::
+            gen_code('sample', 'SAM-')
+            gen_code('collection', 'COL-')
+            gen_code('dataset', '')
+        """
         entity = entity.upper()
 
         entity2enum = {
@@ -3034,7 +3041,10 @@ class Openbis:
     new_collection = new_experiment  # Alias
 
     def execute_custom_dss_service(self, code, parameters):
-
+        """Executes a custom Datastore service with the provided service id. Additional execution options can be set via parameters.
+            code: serviceId of the custom Datastore service
+            parameters: parameters to be sent to the custom service
+        """
         serviceId = {
             "@type": "dss.dto.service.id.CustomDssServiceCode",
             "permId": code
@@ -3054,6 +3064,10 @@ class Openbis:
         return self._post_request_full_url(urljoin(self._get_dss_url(), self.dss_v3), request)
 
     def execute_custom_as_service(self, code):
+        """Executes a custom Application Server service with the provided service id. Additional execution options can be set via parameters.
+            code: serviceId of the custom Application Server service
+            parameters: parameters to be sent to the custom service
+        """
         serviceId = {
             "@type": "as.dto.service.id.CustomASServiceCode",
             "permId": code
@@ -3127,6 +3141,7 @@ class Openbis:
         return self._post_request(self.as_v3, request)
 
     def confirm_deletions(self, deletion_ids):
+        """Confirms performed deletions"""
         request = {
             "method": "confirmDeletions",
             "params": [
@@ -3137,6 +3152,7 @@ class Openbis:
         self._post_request(self.as_v3, request)
 
     def get_deletions(self, start_with=None, count=None):
+        """Search for performed deletions"""
         search_criteria = {"@type": "as.dto.deletion.search.DeletionSearchCriteria"}
         fetchopts = get_fetchoption_for_entity("deletion")
         fetchoptsDeleted = get_fetchoption_for_entity("deletedObjects")
@@ -3165,6 +3181,7 @@ class Openbis:
         return DataFrame(new_objs)
 
     def new_project(self, space, code, description=None, **kwargs):
+        """Create new project instance"""
         return Project(
             self, None, space=space, code=code, description=description, **kwargs
         )
@@ -3443,6 +3460,7 @@ class Openbis:
         return things
 
     def new_term(self, code, vocabularyCode, label=None, description=None):
+        """Creates a new controlled vocabulary term"""
         return VocabularyTerm(
             self,
             data=None,
@@ -3454,6 +3472,7 @@ class Openbis:
         )
 
     def get_term(self, code, vocabularyCode, only_data=False):
+        """Returns an existing controlled vocabulary term"""
         search_request = {
             "code": code,
             "vocabularyCode": vocabularyCode,
@@ -3850,6 +3869,7 @@ class Openbis:
         )
 
     def get_semantic_annotation(self, permId, only_data=False):
+        """Returns detailed information regarding particular semantic annotation"""
         objects = self.search_semantic_annotations(permId=permId, only_data=True)
         if len(objects) == 0:
             raise ValueError(
@@ -3862,7 +3882,7 @@ class Openbis:
             return SemanticAnnotation(self, isNew=False, **obj)
 
     def get_plugins(self, start_with=None, count=None):
-
+        """Lists all plugins in the Openbis instance"""
         criteria = []
         search_criteria = get_search_type_for_entity("plugin", "AND")
         search_criteria["criteria"] = criteria
@@ -3927,6 +3947,7 @@ class Openbis:
         )
 
     def get_plugin(self, permId, only_data=False, with_script=True, **kwargs):
+        """Returns detailed information regarding particular plugin"""
         search_request = _type_for_id(permId, "plugin")
         fetchopts = get_fetchoption_for_entity("plugin")
         options = ["registrator"]
@@ -3965,6 +3986,7 @@ class Openbis:
         return Plugin(self, name=name, pluginType=pluginType, **kwargs)
 
     def new_spreadsheet(self, columns=10, rows=10):
+        """Creates a new instance of Spreadsheet that can be used in the property with the spreadsheet widget"""
         return Spreadsheet(columns, rows)
 
     def new_property_type(
@@ -4027,7 +4049,7 @@ class Openbis:
     def get_property_type(
             self, code, only_data=False, start_with=None, count=None, use_cache=True
     ):
-
+        """Returns detailed information regarding particular property type given its code"""
         if not isinstance(code, list) and start_with is None and count is None:
             code = str(code).upper()
             pt = (
@@ -4089,6 +4111,7 @@ class Openbis:
             )
 
     def get_property_types(self, code=None, start_with=None, count=None):
+        """Returns a list of all available property types"""
         fetchopts = get_fetchoption_for_entity("propertyType")
         fetchopts["from"] = start_with
         fetchopts["count"] = count
@@ -4154,6 +4177,7 @@ class Openbis:
         )
 
     def get_material_type(self, type, only_data=False):
+        """Returns detailed information regarding particular material type, given its code"""
         return self.get_entity_type(
             entity="materialType",
             cls=MaterialType,
@@ -4175,6 +4199,7 @@ class Openbis:
     get_collection_types = get_experiment_types  # Alias
 
     def get_experiment_type(self, type, only_data=False, **kwargs):
+        """Returns detailed information regarding particular experiment type, given its code"""
         return self.get_entity_type(
             entity="experimentType",
             cls=ExperimentType,
@@ -4196,6 +4221,7 @@ class Openbis:
         )
 
     def get_dataset_type(self, type, only_data=False, **kwargs):
+        """Returns detailed information regarding particular dataset type, given its code"""
         return self.get_entity_type(
             entity="dataSetType",
             identifier=type,
@@ -4217,6 +4243,7 @@ class Openbis:
     get_object_types = get_sample_types  # Alias
 
     def get_sample_type(self, type, only_data=False, with_vocabulary=False, use_cache=True):
+        """Returns detailed information regarding particular sample type, given its code"""
         return self.get_entity_type(
             entity="sampleType",
             identifier=type,
@@ -4461,6 +4488,7 @@ class Openbis:
         return resp
 
     def get_session_info(self, token=None):
+        """Returns detailed infromation regarding current session with Openbis instance"""
         if token is None:
             token = self.token
 
@@ -5583,6 +5611,7 @@ class ImagingControl:
         self._service_name = service_name
 
     def make_preview(self, perm_id: str, index: int, preview: ImagingDataSetPreview) -> ImagingDataSetPreview:
+        """Execute preview generation of preview of imaging dataset with the config parameters"""
         parameters = {
             "type": "preview",
             "permId": perm_id,
@@ -5636,6 +5665,7 @@ class ImagingControl:
 
     def export_image(self, perm_id:str, image_id:int, path_to_download:str,
                      include=None, image_format='original', archive_format="zip", resolution='original'):
+        """Export particular image  with all its previews of imaging dataset"""
         if include is None:
             include = ['IMAGE', 'RAW_DATA']
         else:
@@ -5654,6 +5684,7 @@ class ImagingControl:
     def export_previews(self, perm_ids, image_ids, preview_ids,
                             path_to_download, include=None, image_format='original',
                             archive_format="zip", resolution='original'):
+        """Export multiple previews of imaging datasets"""
         if include is None:
             include = ['IMAGE', 'RAW_DATA']
 
@@ -5685,11 +5716,13 @@ class ImagingControl:
                     f.write(chunk)
 
     def get_property_config(self, perm_id: str) -> ImagingDataSetPropertyConfig:
+        """Returns imaging property config of given imaging dataset."""
         dataset = self._openbis.get_dataset(perm_id)
         imaging_property = json.loads(dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME])
         return ImagingDataSetPropertyConfig.from_dict(imaging_property)
 
     def update_property_config(self, perm_id: str, config: ImagingDataSetPropertyConfig):
+        """Update imaging dataset with given imaging property config."""
         dataset = self._openbis.get_dataset(perm_id)
         dataset.props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
         dataset.save()
@@ -5697,6 +5730,7 @@ class ImagingControl:
     def create_imaging_dataset(self, dataset_type: str, config: ImagingDataSetPropertyConfig,
                                experiment: str, sample: str,
                                files: list[str], other_properties=None):
+        """Create new imaging dataset with given files and property config."""
         if other_properties is None:
             other_properties = {}
         assert dataset_type is not None
