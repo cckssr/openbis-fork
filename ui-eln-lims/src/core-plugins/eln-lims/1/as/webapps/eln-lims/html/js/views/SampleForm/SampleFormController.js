@@ -597,12 +597,14 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                     });
                 }
                 var sampleChildren = parameters["sampleChildren"];
-                sampleChildren.forEach(function (item, index) {
-                  if(sampleChildrenNew.includes(item) === false &&
-                    sampleChildrenAdded.includes(item) === false) {
-                    children.push(new SampleIdentifier(item));
-                    }
-                });
+                if(sampleChildren) {
+                    sampleChildren.forEach(function (item, index) {
+                      if(sampleChildrenNew.includes(item) === false &&
+                        sampleChildrenAdded.includes(item) === false) {
+                        children.push(new SampleIdentifier(item));
+                        }
+                    });
+                }
                 return children;
             };
             // end of helper functions
