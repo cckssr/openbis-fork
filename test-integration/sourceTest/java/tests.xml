@@ -7,9 +7,8 @@
                 <exclude name="broken" />
             </run>
         </groups>
-        <classes>
-            <class name="ch.ethz.sis.openbis.systemtests.Integration2PCTest" />
-            <class name="ch.ethz.sis.openbis.systemtests.IntegrationShufflingTest" />
-        </classes>
+        <packages>
+            <package name="ch.ethz.sis.openbis.systemtests.*" />
+        </packages>
     </test>
 </suite>
