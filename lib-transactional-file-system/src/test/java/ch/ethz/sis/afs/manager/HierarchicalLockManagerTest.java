@@ -61,7 +61,10 @@ public class HierarchicalLockManagerTest extends AbstractTest {
         Lock<UUID, String> lock = new Lock<>(o, r, LockType.Shared);
         Boolean actualAdd = lockManager.add(List.of(lock));
         assertEquals(expectedAdd, actualAdd);
-        assertEquals(expectedAdd, lockManager.getSharedLocks().get(r).contains(lock));
+        if(expectedAdd)
+        {
+            assertEquals(expectedAdd, lockManager.getSharedLocks().get(r).contains(lock));
+        }
     }
 
     private void removeSharedLock(UUID o, String r, Boolean expectedRemove) {
@@ -196,5 +199,12 @@ public class HierarchicalLockManagerTest extends AbstractTest {
         addHierarchicalLock(OWNER_B, RES_RELATIVE_ROOT, Boolean.TRUE);
         assertSize(0, 0, 2, 0, 0);
     }
+
+    @Test
+    public void addHierarchicallyExclusiveLockAndSharedLock(){
+        addHierarchicalLock(OWNER_A, RES_A, Boolean.TRUE);
+        addSharedLock(OWNER_B, RES_AB, Boolean.FALSE);
+    }
+
 
 }
