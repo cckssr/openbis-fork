@@ -20,6 +20,11 @@ export async function loadPreviewsInfo(imagingFacade, objId, objType, galleryFil
 		|| (galleryFilter.text.length >= 1 && [constants.DEFAULT_DATASET_VIEW, constants.IMAGING_TAGS].includes(galleryFilter.property))) ?
                 await imagingFacade.filterGallery(objId, objType, galleryFilter.operator, galleryFilter.text, galleryFilter.property, paging.page, paging.pageSize)
                 : await imagingFacade.loadPaginatedGalleryDatasets(objId, objType, paging.page, paging.pageSize)
-            setPreviewsInfo({previewContainerList, totalCount});
-            setIsLoaded(true);
+    setPreviewsInfo({previewContainerList, totalCount});
+    setIsLoaded(true);
+}
+
+export async function loadImagingVocabularyTerms(imagingFacade, setImagingTags) {
+	let imagingTags = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
+	setImagingTags(imagingTags);
 }

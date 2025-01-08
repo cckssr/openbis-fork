@@ -4,14 +4,13 @@ import { Typography, Grid2 } from "@mui/material";
 import ImagingFacade from "@src/js/components/common/imaging/ImagingFacade.js";
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
-import messages from "@src/js/common/messages.js";
 
 import GalleryGridView from "@src/js/components/common/imaging/components/gallery/GalleryGridView.js";
 import GalleryListView from "@src/js/components/common/imaging/components/gallery/GalleryListView.js";
 import GalleryControlsBar from '@src/js/components/common/imaging/components/gallery/GalleryControlsBar.js';
 
-import {loadGalleryViewFilters, loadPreviewsInfo} from '@src/js/components/common/imaging/dataHandlers.js'
-import constants from './constants';
+import {loadGalleryViewFilters, loadPreviewsInfo, loadImagingVocabularyTerms} from '@src/js/components/common/imaging/dataHandlers.js'
+import constants from '@src/js/components/common/imaging/constants.js';
 
 const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStoreDisplaySettings = null, onLoadDisplaySettings = null}) => {
     const imagingFacade = React.useMemo(() => new ImagingFacade(extOpenbis), [extOpenbis]);
@@ -33,6 +32,7 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
         property: constants.IMAGING_TAGS
     });
     const [dataSetTypes, setDataSetTypes] = React.useState([]);
+    const [imagingTags, setImagingTags] = React.useState([]);
 
     React.useEffect(() => {
         // Set the config for the gallery view from previous store config in ELN-LIMS
@@ -48,6 +48,7 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
             onLoadDisplaySettings(setDisplaySettings)
         }
         loadGalleryViewFilters(imagingFacade, setDataSetTypes);
+        loadImagingVocabularyTerms(imagingFacade, setImagingTags);
     }, [])
 
     React.useEffect(() => {
@@ -217,7 +218,7 @@ const ImagingGalleryViewer = ({objId, objType, extOpenbis, onOpenPreview, onStor
                                          onOpenPreview={onOpenPreview}
                                          handleShowPreview={handleShowPreview}
                                          handleSelectPreview={handleSelectPreview} />
-                : <GalleryListView previewContainerList={previewContainerList} onOpenPreview={onOpenPreview} onEditComment={handleEditComment} onEditNote={handleEditNote}/> }
+                : <GalleryListView previewContainerList={previewContainerList} onOpenPreview={onOpenPreview} onEditComment={handleEditComment} onEditNote={handleEditNote} imagingTags={imagingTags}/> }
 
         </>
     );
