@@ -1,20 +1,22 @@
 /*
- * Copyright ETH 2008 - 2023 Zürich, Scientific IT Services
+ *  Copyright ETH 2008 - 2025 Zürich, Scientific IT Services
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -77,7 +79,7 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         // returns roles connected directly or indirectly (through space) to current db instance
         final List<RoleAssignmentPE> list =
                 cast(getHibernateTemplate().find(
-                        String.format("select r from %s r", TABLE_NAME)));
+                        String.format("select r from %s r where expiry_timestamp >= now() or expiry_timestamp is NULL", TABLE_NAME)));
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d role assignment(s) have been found.",
@@ -93,6 +95,10 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
 
         final DetachedCriteria criteria = DetachedCriteria.forClass(ENTITY_CLASS);
         criteria.add(Restrictions.eq("personInternal", person));
+        criteria.add(Restrictions.disjunction(
+                Restrictions.isNull("expiryDate"),
+                Restrictions.ge("expiryDate", new Date(System.currentTimeMillis()))
+        ));
         final List<RoleAssignmentPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         if (operationLog.isDebugEnabled())
         {
@@ -164,7 +170,8 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
                 cast(getHibernateTemplate().find(
                         String.format("from %s r where r."
                                 + getGranteeHqlParameter(grantee.getType())
-                                + " = ? and project.code = ? and project.space.code = ? and r.role = ?", TABLE_NAME),
+                                + " = ? and project.code = ? and project.space.code = ? and r.role = ?"
+                                + " and (r.expiryDate >= now() or r.expiryDate is NULL)", TABLE_NAME),
                         toArray(grantee.getCode(), projectIdentifier.getProjectCode(), projectIdentifier.getSpaceCode(), role)));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, projectIdentifier, grantee);
@@ -188,7 +195,8 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
                 cast(getHibernateTemplate().find(
                         String.format("from %s r where r."
                                 + getGranteeHqlParameter(grantee.getType())
-                                + " = ? and space.code = ? " + "and r.role = ?", TABLE_NAME),
+                                + " = ? and space.code = ? " + "and r.role = ?"
+                                + " and (r.expiryDate >= now() or r.expiryDate is NULL)", TABLE_NAME),
                         toArray(grantee.getCode(), space, role)));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, space, grantee);
@@ -211,7 +219,8 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
                 cast(getHibernateTemplate().find(
                         String.format("from %s r where r."
                                 + getGranteeHqlParameter(grantee.getType()) + " = ? "
-                                + "and r.role = ? and space is null and project is null", TABLE_NAME),
+                                + "and r.role = ? and space is null and project is null"
+                                + " and (r.expiryDate >= now() or r.expiryDate is NULL)", TABLE_NAME),
                         toArray(grantee.getCode(), role)));
         final RoleAssignmentPE roleAssignment =
                 tryFindEntity(roles, "role_assignments", role, grantee);
@@ -230,6 +239,10 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
     {
         final Criteria criteria = currentSession().createCriteria(RoleAssignmentPE.class);
         criteria.add(Restrictions.eq("authorizationGroupInternal", authGroup));
+        criteria.add(Restrictions.disjunction(
+                    Restrictions.isNull("expiryDate"),
+                    Restrictions.ge("expiryDate", new Date(System.currentTimeMillis()))
+                ));
         List<RoleAssignmentPE> result = cast(criteria.list());
         if (operationLog.isInfoEnabled())
         {
