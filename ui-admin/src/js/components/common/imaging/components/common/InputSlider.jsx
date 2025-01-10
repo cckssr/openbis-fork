@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { InputAdornment, Input, Grid2, Slider, FormHelperText } from "@mui/material";
+import { InputAdornment, Input, Grid2, Slider, FormHelperText, InputLabel } from "@mui/material";
 import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
-import Label from '@src/js/components/common/imaging/components/common/Label.js';
 
 const InputSlider = ({ label, range, initValue, playable, speeds, disabled = false, onChange, unit = null }) => {
     const min = Number(range[0])
@@ -42,12 +41,10 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
     };
 
     return (
-        <Grid2 container spacing={2} direction="row" sx={{ alignItems: "center", mb: 1, px: 1, width: '100%' }}>
-            <Label label={label} />
-            <Grid2 item='true' size={{ xs: 12, sm: 5 }}>
-                <Slider
+         <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+            <Grid2 size={{ xs: 12, sm: 8 }}>
+                <Slider name={label}
                     value={initValue == null ? min : Number(initValue)}
-                    name={label}
                     onChange={(event, newValue) => handleSliderChange(newValue, label, false)}
                     min={min}
                     max={max}
@@ -55,8 +52,9 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                     disabled={disabled}
                 />
             </Grid2>
-            <Grid2 item='true' size={{ xs: 12, sm: 3 }}>
-                <Input
+            <Grid2 size={{ xs: 12, sm: 4 }}>
+                <InputLabel htmlFor='single-input-helper-text'>{label}</InputLabel>
+                <Input id='single-input-helper-text'
                     value={initValue == null ? min : Number(initValue)}
                     size="small"
                     name={label}
@@ -72,10 +70,10 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                         type: 'number'
                     }}
                 />
-                <FormHelperText id='single-input-helper-text'>{unit}</FormHelperText>
+                <FormHelperText id='single-input-helper-text'>{unit ? unit : '-' }</FormHelperText>
             </Grid2>
             {playable &&
-                (<Grid2 item='true' size={{ xs: 12, sm: 4 }}>
+                (<Grid2 size={{ xs: 12, sm: 12 }}>
                     <Player label={label} onStep={handleSliderChange} steps={arrayRange} speeds={speeds} speedable={playable} />
                 </Grid2>)
             }

@@ -1,6 +1,6 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import { Grid2, useMediaQuery } from '@mui/material';
+import { Divider, Grid2, Typography, useMediaQuery } from '@mui/material';
 import { convertToBase64, inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import Container from '@src/js/components/common/form/Container.jsx'
 import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
@@ -15,6 +15,12 @@ import MainPreview from '@src/js/components/common/imaging/components/viewer/Mai
 import MainPreviewInputControls from '@src/js/components/common/imaging/components/viewer/MainPreviewInputControls.js';
 import MetadataSection from '@src/js/components/common/imaging/components/viewer/MetadataSection.js';
 import makeStyles from '@mui/styles/makeStyles';
+
+import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import messages from '@src/js/common/messages.js'
+import Message from '@src/js/components/common/form/Message.jsx'
+import Button from '@src/js/components/common/form/Button.jsx'
 
 const styles = theme => ({
     container: {
@@ -59,7 +65,7 @@ class ImagingDataSetViewer extends React.PureComponent {
             const isInitConfigEmpty = isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config);
             if (isInitConfigEmpty) {
                 imagingDataSetPropertyConfig.images[0].previews[0].config = this.createInitValues(imagingDataSetPropertyConfig.images[0].config.inputs, {});
-            } 
+            }
             this.setState({
                 open: false,
                 loaded: true,
@@ -365,6 +371,8 @@ class ImagingDataSetViewer extends React.PureComponent {
         const activeImage = imagingDataset.images[activeImageIdx];
         const activePreview = activeImage.previews[activePreviewIdx];
         console.log('ImagingDataSetViewer.render: ', datasetType, this.state);
+        const currentMetadata = activePreview.metadata;
+        const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
         return (
             <Container className={classes.container}>
                 <LoadingDialog loading={open} />
@@ -388,8 +396,42 @@ class ImagingDataSetViewer extends React.PureComponent {
                     onInputFile={this.handleUpload}
                 />
                 <PaperBox>
-                    <Grid2 container className={classes.gridDirection}>
-                        <MainPreview activePreview={activePreview} resolution={resolution} />
+                    <Grid2 container size={{ xs: 12 }} className={classes.gridDirection}>
+
+                        {/* <Grid2 container direction={'row'} size={{ md: 8 }} sx={{ justifyContent: 'space-between' }}>
+                            <Grid2 size={{ md: 'auto' }}>
+                                <Typography variant='h6'>Selected Preview</Typography>
+                            </Grid2>
+                            <Grid2 size={{ md: 'auto' }}>
+                                {isChanged && !isUploadedPreview && (
+                                    <Message type='info'>
+                                        {messages.get(messages.UPDATE_CHANGES)}
+                                    </Message>
+                                )}
+                            </Grid2>
+                        </Grid2> */}
+
+                        {/* <Grid2 container spacing={1} sx={{ justifyContent: 'space-between' }}>
+                            {(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) && <>
+                                <Grid2 size={{ md: 'auto' }}>
+                                    <Button name='btn-update-preview'
+                                        label={messages.get(messages.UPDATE)}
+                                        variant='outlined'
+                                        type='final'
+                                        color='primary'
+                                        startIcon={<RefreshIcon />}
+                                        onClick={this.handleUpdate}
+                                        disabled={!isChanged || isUploadedPreview} />
+                                </Grid2>
+
+
+                                <Grid2 size={{ md: 'auto' }}>
+                                    <CustomSwitch labelPlacement='start' label={messages.get(messages.SHOW)} isChecked={activePreview.show}
+                                        onChange={this.handleShowPreview} />
+                                </Grid2>
+                            </>}
+                        </Grid2> */}
+                        <MainPreview activePreview={activePreview} resolution={resolution} isChanged={isChanged} isUploadedPreview={isUploadedPreview}/>
                         <MainPreviewInputControls activePreview={activePreview}
                             configInputs={activeImage.config.inputs}
                             isUserGenerated={imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true'}

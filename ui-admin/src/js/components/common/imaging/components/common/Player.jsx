@@ -55,10 +55,6 @@ const Widget = styled('div')(() => ({
 
 const defaultSpeeds = [
     {
-        value: 1000,
-        label: '1s',
-    },
-    {
         value: 2000,
         label: '2s',
     },

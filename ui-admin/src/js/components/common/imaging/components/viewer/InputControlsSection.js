@@ -1,14 +1,24 @@
 import React from 'react'
-import { Typography } from '@mui/material';
+import { MenuItem, Typography } from '@mui/material';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import InputRangeSlider
 	from '@src/js/components/common/imaging/components/common/InputRangeSlider.jsx';
-import ColorMap from '@src/js/components/common/imaging/components/viewer/ColorMap.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
 
+const ColorItem = ({ colorMapValue }) => {
+	return (
+		<span style={{ background: `linear-gradient(90deg, ${constants.DEFAULT_COLORMAP[colorMapValue]})`, width: '70%', height: '15px', marginLeft: '10px' }} />
+	)
+}
 
-const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues, isUploadedPreview }) => {
+const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues, isUploadedPreview, onChangeActConf }) => {
+
+	const renderColorMapItems = (values, label) => {
+		return values.map((v, i) => <MenuItem key={'select-' + label + '-menuitem-' + i} value={v}>
+			<span style={{ width: '30%' }}>{v}</span> <ColorItem colorMapValue={v} />
+		</MenuItem>)
+	}
 
 	const renderType = (imageDatasetControl, idx) => {
 		switch (imageDatasetControl.type) {
@@ -19,7 +29,8 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					values={imageDatasetControl.values}
 					isMulti={imageDatasetControl.multiselect}
 					disabled={isUploadedPreview}
-					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)} />;
+					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
+					mappingItemsCallback={null} />;
 			case constants.SLIDER:
 				return <InputSlider key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
@@ -41,17 +52,19 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					speeds={imageDatasetControl.speeds}
 					onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
 			case constants.COLORMAP:
-				return <ColorMap key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
-					values={imageDatasetControl.values}
-					disabled={isUploadedPreview}
-					initValue={inputValues[imageDatasetControl.label]}
+				return <Dropdown key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
-					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)} />;
+					initValue={inputValues[imageDatasetControl.label]}
+					values={imageDatasetControl.values}
+					isMulti={imageDatasetControl.multiselect}
+					disabled={isUploadedPreview}
+					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
+					mappingItemsCallback={renderColorMapItems} />;
 		}
 	}
 
 	return (<>
-		<Typography sx={{m: '8px 0 8px 0'}}><strong>Section:</strong> {sectionKey ? sectionKey : '-'} </Typography>
+		<Typography component='legend' sx={{ m: '8px 0 8px 0', /* borderBottom: '1px solid rgb(0, 0, 0, 0.12)' */ width: '100%' }}>{sectionKey ? sectionKey : '-'}</Typography>
 		{imageDatasetControlList.map((imageDatasetControl, idx) => renderType(imageDatasetControl, idx))}
 	</>);
 }

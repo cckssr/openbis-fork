@@ -1,5 +1,5 @@
 import React from "react";
-import { ImageList, ImageListItem, Typography } from "@mui/material";
+import { ImageList, ImageListItem, Typography, Divider } from "@mui/material";
 import BlankImage from "@src/js/components/common/imaging/components/common/BlankImage.js";
 import makeStyles from '@mui/styles/makeStyles';
 import ImageListItemBarAction

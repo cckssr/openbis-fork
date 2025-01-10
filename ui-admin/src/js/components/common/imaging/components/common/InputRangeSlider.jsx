@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { Input, Slider, Grid2, InputAdornment, FormHelperText } from '@mui/material';
-import Label from '@src/js/components/common/imaging/components/common/Label.js';
+import { Input, Slider, Grid2, FormHelperText, FilledInput, InputLabel } from '@mui/material';
 import Player from '@src/js/components/common/imaging/components/common/Player.jsx';
 
-const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, disabled = false, onChange, unit = null}) => {
+const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, disabled = false, onChange, unit = null }) => {
     const min = Number(range[0]);
     const max = Number(range[1]);
     const step = Number(range[2]);
@@ -11,9 +10,9 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
         { length: (max - min) / step + 1 },
         (value, index) => min + index * step
     );
-    const [value, setValue] = React.useState(initValue == null ? [Number(range[0]), Number(range[1])] : initValue.map(n=>Number(n)));
-    
-    function roundToClosest(counts, goal){
+    const [value, setValue] = React.useState(initValue == null ? [Number(range[0]), Number(range[1])] : initValue.map(n => Number(n)));
+
+    function roundToClosest(counts, goal) {
         return counts.reduce((prev, curr) => Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
     }
 
@@ -40,9 +39,9 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
             newValue = [min, value[1]];
         } else if (value[1] > max) {
             newValue = [value[0], max];
-        } else if (!arrayRange.includes(value[0])){
+        } else if (!arrayRange.includes(value[0])) {
             newValue = [roundToClosest(arrayRange, value[0]), value[1]]
-        } else if (!arrayRange.includes(value[1])){
+        } else if (!arrayRange.includes(value[1])) {
             newValue = [value[0], roundToClosest(arrayRange, value[1])]
         }
         setValue(newValue);
@@ -51,10 +50,10 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
 
 
     return (
-        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1, width: '100%' }}>
-            <Label label={label}/>
-            <Grid2 item='true' size={{ xs: 12, sm: 'grow' }}>
-                <Input
+        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+            <Grid2 size={{ xs: 12, sm: 'grow' }}>
+                <InputLabel htmlFor='input-min-helper-text'>{label} (min)</InputLabel>
+                <Input id='input-min-helper-text'
                     name={label}
                     value={initValue == null ? min : Number(initValue[0])}
                     size='small'
@@ -62,7 +61,6 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                     onBlur={handleBlur}
                     disabled={disabled}
                     aria-describedby='input-min-helper-text'
-                    //endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
                     inputProps={{
                         step: step,
                         min: min,
@@ -72,9 +70,9 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                 />
                 <FormHelperText id='input-min-helper-text'>{unit}</FormHelperText>
             </Grid2>
-            <Grid2 item='true' size={{ xs: 12, sm: 3 }}>
+            <Grid2 size={{ xs: 12, sm: 3 }}>
                 <Slider
-                    value={initValue == null ? [min,max] : initValue.map(n=>Number(n))}
+                    value={initValue == null ? [min, max] : initValue.map(n => Number(n))}
                     name={label}
                     disabled={disabled}
                     onChange={(event, newValue) => handleSliderChange(newValue, label)}
@@ -83,8 +81,10 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                     step={step}
                 />
             </Grid2>
-            <Grid2 item='true' size={{ xs: 12, sm: 'grow' }}>
+            <Grid2 size={{ xs: 12, sm: 'grow' }}>
+                <InputLabel htmlFor='input-max-helper-text'>{label} (max)</InputLabel>
                 <Input
+                    variant="filled"
                     name={label}
                     disabled={disabled}
                     value={initValue == null ? max : Number(initValue[1])}
@@ -92,7 +92,6 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                     onChange={handleInputMaxChange}
                     onBlur={handleBlur}
                     aria-describedby='input-max-helper-text'
-                    //endAdornment={unit && <InputAdornment position='end'>{unit}</InputAdornment>}
                     inputProps={{
                         step: step,
                         min: min,
@@ -105,7 +104,7 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
             {playable &&
                 (<Grid2 item='true' size={{ xs: 12, sm: 3 }}>
                     <Player steps={arrayRange} speeds={speeds} speedable={playable}
-                            onStep={() => console.log('DEFAULT onStep InputRangeSlider!')}/>
+                        onStep={() => console.log('DEFAULT onStep InputRangeSlider!')} />
                 </Grid2>)
             }
         </Grid2>

@@ -62,7 +62,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
 			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
 			trasformedTags.push(matchTag.label);
 		}
-        return <DefaultMetadataField key={'property-tags-' + idx} keyProp={'TAGS'} valueProp={trasformedTags} />
+        return <DefaultMetadataField key={'property-tags-' + idx} keyProp={'Preview Tags'} valueProp={trasformedTags} />
     }
 
     const renderCommentField = (previewContainer, idx) => {
