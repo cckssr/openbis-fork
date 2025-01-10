@@ -2,10 +2,7 @@ package ch.eth.sis.rocrate.writer;
 
 import ch.eth.sis.rocrate.parser.results.ParseResult;
 import ch.eth.sis.rocrate.writer.mapping.Mapper;
-import ch.eth.sis.rocrate.writer.mapping.types.MapResult;
-import ch.eth.sis.rocrate.writer.mapping.types.MetaDataEntry;
-import ch.eth.sis.rocrate.writer.mapping.types.RdfsClass;
-import ch.eth.sis.rocrate.writer.mapping.types.RdfsProperty;
+import ch.eth.sis.rocrate.writer.mapping.types.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -58,7 +55,7 @@ public class Writer
         addSchema(builder, rdfsRepresentation);
         addMetaData(builder, rdfsRepresentation);
         FolderWriter folderRoCrateWriter = new FolderWriter();
-        folderRoCrateWriter.save(roCrate, "ro_out");
+        folderRoCrateWriter.save(roCrate, outPath.toString());
 
 
 
@@ -129,11 +126,20 @@ public class Writer
             builder.setId(rdfsProperty.getId());
             builder.addProperty("@type", RDFS_PROPERTY);
 
+
             rdfsProperty.getRangeIncludes().stream().distinct()
-                    .forEach(x -> builder.addIdProperty("schema:rangeIncludes", x.getId()));
+                    .forEach(x -> builder.addIdProperty("", x.getId()));
             rdfsProperty.getDomainIncludes().stream().distinct()
                     .forEach(x -> builder.addIdProperty("schema:domainIncludes", x.getId()));
-            crateBuilder.addDataEntity(builder.build());
+            var stuff = builder.build();
+            stuff.addIdListProperties("schema:rangeIncludes",
+                    rdfsProperty.getRangeIncludes().stream().map(
+                            JsonLdId::getId).toList());
+            stuff.addIdListProperties("schema:domainIncludes",
+                    rdfsProperty.getDomainIncludes().stream().map(
+                            JsonLdId::getId).toList());
+            crateBuilder.addDataEntity(stuff);
+
         }
 
     }
