@@ -25,6 +25,7 @@ repositories {
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.slf4j:slf4j-api:2.0.16'
 
     implementation 'openbis:openbis-v3-api-batteries-included:6.6.0-EA',
             'apache:poi:3.17',
@@ -47,6 +48,9 @@ configurations.configureEach {
         }
         if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
             details.useVersion '2.18.0'
+        }
+        if (details.requested.group == 'org.slf4j') {
+            details.useVersion '2.0.16'
         }
     }
 }
