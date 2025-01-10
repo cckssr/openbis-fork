@@ -38,12 +38,10 @@ public class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService
         this.openBISFacade = openBISFacade;
     }
 
-    @Override public List<SimpleDataSetInformationDTO> listDataSets()
+    @Override public List<SimpleDataSetInformationDTO> listDataSets(final DataSetSearchCriteria criteria, final DataSetFetchOptions fetchOptions)
     {
-        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
 
-        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withType();
         fetchOptions.withPhysicalData();
         fetchOptions.withDataStore();
@@ -115,11 +113,19 @@ public class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService
             simpleDTO.setExperimentCode(dataSet.getExperiment().getCode());
             simpleDTO.setProjectCode(dataSet.getExperiment().getProject().getCode());
             simpleDTO.setSpaceCode(dataSet.getExperiment().getProject().getSpace().getCode());
+            if (dataSet.getExperiment().getImmutableDataDate() != null)
+            {
+                simpleDTO.setImmutableDataTimestamp(dataSet.getExperiment().getImmutableDataDate());
+            }
         }
 
         if (dataSet.getSample() != null)
         {
             simpleDTO.setSampleCode(dataSet.getSample().getCode());
+            if (dataSet.getSample().getImmutableDataDate() != null)
+            {
+                simpleDTO.setImmutableDataTimestamp(dataSet.getSample().getImmutableDataDate());
+            }
         }
 
         return simpleDTO;

@@ -22,6 +22,9 @@ import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
 import ch.ethz.sis.afsserver.server.maintenance.MaintenancePlugin;
@@ -31,7 +34,6 @@ import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
 import ch.ethz.sis.afsserver.server.shuffling.IncomingShareIdProvider;
-import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.shared.log.LogFactory;
 import ch.ethz.sis.shared.log.LogFactoryFactory;
@@ -40,6 +42,7 @@ import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.pool.Factory;
 import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 
 public final class Server<CONNECTION, API>
 {
@@ -83,6 +86,15 @@ public final class Server<CONNECTION, API>
 
         logger.info("=== Server Bootstrap ===");
         logger.info("Running with java.version: " + System.getProperty("java.version"));
+
+        // 2 Create pathinfo DB
+        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+        if (pathInfoDatabaseConfiguration != null)
+        {
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseConfiguration.getContext(),
+                    pathInfoDatabaseConfiguration.getVersion(), null,
+                    null);
+        }
 
         // 2.1 Load DB plugin
         logger.info("Creating Connection Factory");

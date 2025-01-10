@@ -16,8 +16,6 @@
 package ch.systemsx.cisd.common.logging;
 
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
 
 /**
  * A logger which records logging events. Log messages also sent to a {@link MessageChannel}.

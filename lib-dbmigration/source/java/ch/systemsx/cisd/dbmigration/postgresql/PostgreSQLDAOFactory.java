@@ -66,7 +66,7 @@ public class PostgreSQLDAOFactory implements IDAOFactory
         sqlScriptExecutor = new SqlScriptExecutor(dataSource, context.isScriptSingleStepMode());
         migrationStepExecutor = new MigrationStepExecutor(context, false);
         migrationStepExecutorAdmin = new MigrationStepExecutor(context, true);
-        databaseVersionLogDAO = new DatabaseVersionLogDAO(dataSource, context.getLobHandler());
+        databaseVersionLogDAO = new DatabaseVersionLogDAO(dataSource);
         try
         {
             ISequenceNameMapper mapper = context.getSequenceNameMapper();

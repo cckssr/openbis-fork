@@ -28,9 +28,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.pathinfo.DataSetFileRecord;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.rinn.restrictions.Friend;
-import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider.DataSetFileRecord;
-import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider.IPathInfoDAO;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
@@ -38,9 +38,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 /**
  * @author Franz-Josef Elmer
  */
-@Friend(toClasses = { DatabaseBasedDataSetPathInfoProvider.class,
-        DatabaseBasedDataSetPathInfoProvider.IPathInfoDAO.class,
-        DatabaseBasedDataSetPathInfoProvider.DataSetFileRecord.class })
+@Friend(toClasses = { DatabaseBasedDataSetPathInfoProvider.class })
 public class DatabaseBasedDataSetPathInfoProviderTest extends AssertJUnit
 {
     private static final Long DATA_SET_ID = 41L;
@@ -419,11 +417,10 @@ public class DatabaseBasedDataSetPathInfoProviderTest extends AssertJUnit
         }
     }
 
-    private DatabaseBasedDataSetPathInfoProvider.DataSetFileRecord record(long id, Long parentId,
+    private DataSetFileRecord record(long id, Long parentId,
             String relativePath, String fileName, long size, boolean directory)
     {
-        DatabaseBasedDataSetPathInfoProvider.DataSetFileRecord record =
-                new DatabaseBasedDataSetPathInfoProvider.DataSetFileRecord();
+        DataSetFileRecord record = new DataSetFileRecord();
         record.id = id;
         record.parent_id = parentId;
         record.file_name = fileName;

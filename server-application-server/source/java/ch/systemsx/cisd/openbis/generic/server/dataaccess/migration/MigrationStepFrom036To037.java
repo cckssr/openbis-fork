@@ -81,9 +81,10 @@ public final class MigrationStepFrom036To037 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
-            DataSource dataSource) throws DataAccessException
+    public final void performPostMigration(DataSource dataSource) throws DataAccessException
     {
+        JdbcTemplate simpleJdbcTemplate = new JdbcTemplate(dataSource);
+
         for (EntityKind entityKind : EntityKind.values())
         {
             migrateEntityProperties(simpleJdbcTemplate, entityKind);

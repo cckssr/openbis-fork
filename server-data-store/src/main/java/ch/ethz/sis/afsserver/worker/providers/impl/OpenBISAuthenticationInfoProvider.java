@@ -15,42 +15,43 @@
  */
 package ch.ethz.sis.afsserver.worker.providers.impl;
 
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.worker.providers.AuthenticationInfoProvider;
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 public class OpenBISAuthenticationInfoProvider implements AuthenticationInfoProvider
 {
 
-    private IApplicationServerApi v3 = null;
+    private OpenBISConfiguration openBISConfiguration;
 
     @Override
-    public void init(Configuration initParameter) throws Exception
+    public void init(Configuration configuration) throws Exception
     {
-        String openBISUrl = initParameter.getStringProperty(AtomicFileSystemServerParameter.openBISUrl);
-        int openBISTimeout = initParameter.getIntegerProperty(AtomicFileSystemServerParameter.openBISTimeout);
-        v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, openBISUrl + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL,
-                openBISTimeout);
+        openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
     }
 
     @Override
     public String login(String userId, String password)
     {
-        return v3.login(userId, password);
+        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
+        return openBIS.login(userId, password);
     }
 
     @Override
     public Boolean isSessionValid(String sessionToken)
     {
-        return v3.isSessionActive(sessionToken);
+        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
+        openBIS.setSessionToken(sessionToken);
+        return openBIS.isSessionActive();
     }
 
     @Override
     public Boolean logout(String sessionToken)
     {
-        v3.logout(sessionToken);
+        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
+        openBIS.setSessionToken(sessionToken);
+        openBIS.logout();
         return Boolean.TRUE;
     }
 }

@@ -1,1 +1,1 @@
-includeFlat 'lib-commonbase'
+includeFlat 'lib-commonbase', 'lib-logging'

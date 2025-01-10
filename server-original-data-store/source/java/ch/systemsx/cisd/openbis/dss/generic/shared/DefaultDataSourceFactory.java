@@ -24,6 +24,7 @@ import ch.systemsx.cisd.common.reflection.BeanUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
+import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSourceDefinition;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSourceWithDefinition;
 import ch.systemsx.cisd.openbis.generic.shared.util.IDataSourceFactory;

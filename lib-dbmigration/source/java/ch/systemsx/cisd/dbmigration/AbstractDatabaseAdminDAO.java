@@ -23,8 +23,6 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
-
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
 
@@ -33,7 +31,7 @@ import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
  * 
  * @author Franz-Josef Elmer
  */
-public abstract class AbstractDatabaseAdminDAO extends JdbcDaoSupport implements
+public abstract class AbstractDatabaseAdminDAO implements
         IDatabaseAdminDAO
 {
     protected final ISqlScriptExecutor scriptExecutor;
@@ -49,6 +47,8 @@ public abstract class AbstractDatabaseAdminDAO extends JdbcDaoSupport implements
     protected final String databaseName;
 
     protected final String databaseURL;
+
+    private final DataSource dataSource;
 
     /**
      * Creates an instance.
@@ -73,7 +73,12 @@ public abstract class AbstractDatabaseAdminDAO extends JdbcDaoSupport implements
         this.readWriteGroupOrNull = readWriteGroupOrNull;
         this.databaseName = databaseName;
         this.databaseURL = databaseURL;
-        setDataSource(dataSource);
+        this.dataSource = dataSource;
+    }
+
+    public DataSource getDataSource()
+    {
+        return dataSource;
     }
 
     @Override

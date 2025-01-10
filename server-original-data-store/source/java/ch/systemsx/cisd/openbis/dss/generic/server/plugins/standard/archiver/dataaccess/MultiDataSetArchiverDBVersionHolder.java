@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDatabaseVersionHolder;
+import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 
 /**
  * @author Jakub Straszewski

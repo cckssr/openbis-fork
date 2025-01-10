@@ -70,6 +70,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
@@ -84,12 +85,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create.PersonCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.fetchoptions.PersonFetchOptions;
@@ -103,6 +107,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
@@ -192,7 +197,7 @@ public abstract class AbstractIntegrationTest
     }
 
     @BeforeMethod
-    public void beforeMethod(Method method)
+    public void beforeMethod(Method method) throws Exception
     {
         log("BEFORE " + method.getDeclaringClass().getName() + "." + method.getName());
         setApplicationServerProxyInterceptor(null);
@@ -387,7 +392,7 @@ public abstract class AbstractIntegrationTest
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        String afsServerUser = configuration.getStringProperty(AtomicFileSystemServerParameter.openBISUser);
+        String afsServerUser = OpenBISConfiguration.getInstance(configuration).getOpenBISUser();
         createUser(openBIS, afsServerUser, null, Role.ETL_SERVER);
 
         createSpace(openBIS, TEST_SPACE);
@@ -559,7 +564,7 @@ public abstract class AbstractIntegrationTest
                 "etc/afs/service.properties");
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerPort, String.valueOf(TestInstanceHostUtils.getAFSPort()));
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerUri, TestInstanceHostUtils.getAFSPath());
-        configuration.setProperty(AtomicFileSystemServerParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
         return configuration;
     }
 
@@ -653,7 +658,7 @@ public abstract class AbstractIntegrationTest
         projectCreation.setCode(projectCode);
         List<ProjectPermId> projectIds = openBIS.createProjects(List.of(projectCreation));
         Project project = openBIS.getProjects(projectIds, new ProjectFetchOptions()).get(projectIds.get(0));
-        log("Created " + project.getIdentifier() + " project.");
+        log("Created " + project.getIdentifier() + " (" + project.getPermId().getPermId() + ") project.");
         return project;
     }
 
@@ -665,8 +670,25 @@ public abstract class AbstractIntegrationTest
         experimentCreation.setCode(experimentCode);
         List<ExperimentPermId> experimentIds = openBIS.createExperiments(List.of(experimentCreation));
         Experiment experiment = openBIS.getExperiments(experimentIds, new ExperimentFetchOptions()).get(experimentIds.get(0));
-        log("Created " + experiment.getIdentifier() + " experiment.");
+        log("Created " + experiment.getIdentifier() + " (" + experiment.getPermId().getPermId() + ") experiment.");
         return experiment;
+    }
+
+    public static void makeExperimentImmutable(OpenBIS openBIS, IExperimentId experimentId)
+    {
+        ExperimentUpdate update = new ExperimentUpdate();
+        update.setExperimentId(experimentId);
+        update.makeDataImmutable();
+        openBIS.updateExperiments(List.of(update));
+    }
+
+    public static void deleteExperiment(OpenBIS openBIS, IExperimentId experimentId)
+    {
+        ExperimentDeletionOptions options = new ExperimentDeletionOptions();
+        options.setReason("test");
+        IDeletionId deletionId = openBIS.deleteExperiments(List.of(experimentId), options);
+        openBIS.confirmDeletions(List.of(deletionId));
+        log("Deleted " + experimentId + " experiment.");
     }
 
     public static Sample createSample(OpenBIS openBIS, ISpaceId spaceId, String sampleCode)
@@ -677,7 +699,7 @@ public abstract class AbstractIntegrationTest
         sampleCreation.setCode(sampleCode);
         List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
         Sample sample = getSample(openBIS, sampleIds.get(0));
-        log("Created " + sample.getIdentifier() + " sample.");
+        log("Created " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ") sample.");
         return sample;
     }
 
@@ -701,6 +723,23 @@ public abstract class AbstractIntegrationTest
         Sample sample = getSample(openBIS, sampleIds.get(0));
         log("Created " + sample.getIdentifier() + " sample.");
         return sample;
+    }
+
+    public static void makeSampleImmutable(OpenBIS openBIS, ISampleId sampleId)
+    {
+        SampleUpdate update = new SampleUpdate();
+        update.setSampleId(sampleId);
+        update.makeDataImmutable();
+        openBIS.updateSamples(List.of(update));
+    }
+
+    public static void deleteSample(OpenBIS openBIS, ISampleId sampleId)
+    {
+        SampleDeletionOptions options = new SampleDeletionOptions();
+        options.setReason("test");
+        IDeletionId deletionId = openBIS.deleteSamples(List.of(sampleId), options);
+        openBIS.confirmDeletions(List.of(deletionId));
+        log("Deleted " + sampleId + " sample.");
     }
 
     public static Sample getSample(OpenBIS openBIS, ISampleId sampleId)

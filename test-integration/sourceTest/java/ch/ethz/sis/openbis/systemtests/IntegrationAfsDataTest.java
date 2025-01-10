@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.io.IOUtils;
-import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -48,11 +48,11 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private static final long WAITING_TIME_FOR_ASYNC_TASKS = 5000L;
 
-    @AfterMethod
-    public void afterMethod(Method method) throws Exception
+    @BeforeMethod
+    public void beforeMethod(Method method) throws Exception
     {
+        super.beforeMethod(method);
         deleteLastSeenDeletionFile();
-        super.afterMethod(method);
     }
 
     @Test
@@ -698,7 +698,7 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        String lastSeenDeletionFile = getAfsServerConfiguration().getStringProperty(AtomicFileSystemServerParameter.openBISLastSeenDeletionFile);
+        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(getAfsServerConfiguration()).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }
 

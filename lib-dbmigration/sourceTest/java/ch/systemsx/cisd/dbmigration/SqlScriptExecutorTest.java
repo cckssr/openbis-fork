@@ -17,13 +17,19 @@ package ch.systemsx.cisd.dbmigration;
 
 import static org.testng.AssertJUnit.assertEquals;
 
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
+
+import javax.sql.DataSource;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -54,7 +60,53 @@ public class SqlScriptExecutorTest
 
         public TestSqlScriptExecutor(final Error th, final boolean singleStepMode)
         {
-            super(new DelegatingDataSource(), singleStepMode);
+            super(new DataSource(){
+
+                @Override public <T> T unwrap(final Class<T> aClass) throws SQLException
+                {
+                    return null;
+                }
+
+                @Override public boolean isWrapperFor(final Class<?> aClass) throws SQLException
+                {
+                    return false;
+                }
+
+                @Override public Connection getConnection() throws SQLException
+                {
+                    return null;
+                }
+
+                @Override public Connection getConnection(final String s, final String s1) throws SQLException
+                {
+                    return null;
+                }
+
+                @Override public PrintWriter getLogWriter() throws SQLException
+                {
+                    return null;
+                }
+
+                @Override public void setLogWriter(final PrintWriter printWriter) throws SQLException
+                {
+
+                }
+
+                @Override public void setLoginTimeout(final int i) throws SQLException
+                {
+
+                }
+
+                @Override public int getLoginTimeout() throws SQLException
+                {
+                    return 0;
+                }
+
+                @Override public Logger getParentLogger() throws SQLFeatureNotSupportedException
+                {
+                    return null;
+                }
+            }, singleStepMode);
             this.th = th;
             this.executions = new ArrayList<String>();
         }

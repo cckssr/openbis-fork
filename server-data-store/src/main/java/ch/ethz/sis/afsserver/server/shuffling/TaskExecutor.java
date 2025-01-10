@@ -146,7 +146,7 @@ public class TaskExecutor
                     file.delete();
                 } catch (Exception ex)
                 {
-                    operationLog.catching(new RuntimeException("Couldn't performed clean up task " + file, ex));
+                    operationLog.catching(new RuntimeException("Couldn't perform clean up task " + file, ex));
                 }
             }
         }

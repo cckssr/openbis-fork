@@ -40,8 +40,8 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.create.DataSetFileCreation;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.pathinfo.PathInfoFeeder;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
-import ch.systemsx.cisd.etlserver.path.PathEntryDTO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 
 public class PathInfoFeederTest
 {
@@ -275,7 +275,7 @@ public class PathInfoFeederTest
         PathInfoFeeder creator = new PathInfoFeeder(1, "my-data-set", input);
 
         Mockery context = new Mockery();
-        final IPathsInfoDAO mockDao = context.mock(IPathsInfoDAO.class);
+        final IPathInfoDAO mockDao = context.mock(IPathInfoDAO.class);
         final Collection<PathEntryDTO> result = new ArrayList<PathEntryDTO>();
         context.checking(new Expectations()
             {

@@ -1,1 +1,2 @@
-includeFlat 'lib-transactional-file-system', 'lib-commonbase', 'lib-common', 'lib-json', 'api-data-store-server-java', 'api-openbis-java'
+includeFlat 'lib-transactional-file-system', 'lib-commonbase', 'lib-common', 'lib-json', 'lib-db-migration',
+        'lib-pathinfo-db', 'lib-dbmigration', 'lib-db', 'lib-logging', 'lib-two-phase-transaction', 'api-data-store-server-java', 'api-openbis-java'

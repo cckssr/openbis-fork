@@ -11,6 +11,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 
 public class OpenBISFacade
@@ -39,6 +45,16 @@ public class OpenBISFacade
         return executeOperation(openBIS -> openBIS.searchEvents(criteria, fetchOptions));
     }
 
+    public SearchResult<Experiment> searchExperiments(ExperimentSearchCriteria criteria, ExperimentFetchOptions fetchOptions)
+    {
+        return executeOperation(openBIS -> openBIS.searchExperiments(criteria, fetchOptions));
+    }
+
+    public SearchResult<Sample> searchSamples(SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
+    {
+        return executeOperation(openBIS -> openBIS.searchSamples(criteria, fetchOptions));
+    }
+
     public SearchResult<DataSet> searchDataSets(DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchDataSets(criteria, fetchOptions));
@@ -63,7 +79,7 @@ public class OpenBISFacade
             return operation.execute(openBIS);
         } catch (InvalidSessionException e)
         {
-            setSessionToken(openBIS);
+            resetSessionToken(openBIS);
             return operation.execute(openBIS);
         }
     }
@@ -75,30 +91,33 @@ public class OpenBISFacade
 
     private void setSessionToken(OpenBIS openBIS)
     {
-        if (sessionToken != null)
+        synchronized (this)
         {
-            openBIS.setSessionToken(sessionToken);
-        } else
-        {
-            synchronized (this)
+            if (sessionToken != null)
             {
+                openBIS.setSessionToken(sessionToken);
+            } else
+            {
+                sessionToken = openBIS.login(openBISUser, openBISPassword);
+
                 if (sessionToken != null)
                 {
                     openBIS.setSessionToken(sessionToken);
                 } else
                 {
-                    sessionToken = openBIS.login(openBISUser, openBISPassword);
-
-                    if (sessionToken != null)
-                    {
-                        openBIS.setSessionToken(sessionToken);
-                    } else
-                    {
-                        throw new RuntimeException(
-                                "Could not login to the AS server. Please check openBIS user and openBIS password in the AFS server configuration.");
-                    }
+                    throw new RuntimeException(
+                            "Could not login to the AS server. Please check openBIS user and openBIS password in the AFS server configuration.");
                 }
             }
+        }
+    }
+
+    private void resetSessionToken(OpenBIS openBIS)
+    {
+        synchronized (this)
+        {
+            sessionToken = null;
+            setSessionToken(openBIS);
         }
     }
 

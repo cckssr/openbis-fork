@@ -121,6 +121,8 @@ public final class SearchFieldConstants
 
     public static final String ACCESS_DATE = "access_date";
 
+    public static final String IMMUTABLE_DATA_DATE = "immutable_data_date";
+
     public static final String IS_LISTABLE = "is_listable";
 
     public static final String ADDRESS = "address";

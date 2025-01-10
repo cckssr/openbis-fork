@@ -20,9 +20,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.jdbc.support.lob.DefaultLobHandler;
-import org.springframework.jdbc.support.lob.LobHandler;
-
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequencerHandler;
 import ch.systemsx.cisd.common.db.PostgreSQLSequencerHandler;
@@ -40,10 +37,10 @@ public enum DatabaseEngine
 
     // FORCE_OPENBIS_POSTGRES_HOST is used for servers that don't have the Postgres installation locally and require no change on config files (test servers)
     POSTGRESQL("postgresql", "org.postgresql.Driver", PostgreSQLDAOFactory.class,
-            new DefaultLobHandler(), new PostgreSQLSequencerHandler(), "jdbc:postgresql://{0}/",
+            new PostgreSQLSequencerHandler(), "jdbc:postgresql://{0}/",
             "jdbc:postgresql://{0}/{1}", getTestEnvironmentHostOrConfigured("localhost"), "postgres", "SELECT 1"),
 
-    H2("h2", "org.h2.Driver", H2DAOFactory.class, new DefaultLobHandler(),
+    H2("h2", "org.h2.Driver", H2DAOFactory.class,
             new PostgreSQLSequencerHandler(), "jdbc:h2:{0}{1};DB_CLOSE_DELAY=-1",
             "jdbc:h2:{0}{1};DB_CLOSE_DELAY=-1", "file:db/", "sa", null);
 
@@ -72,8 +69,6 @@ public enum DatabaseEngine
 
     private final Constructor<ch.systemsx.cisd.dbmigration.IDAOFactory> daoFactoryConstructor;
 
-    private final LobHandler lobHandler;
-
     private final ISequencerHandler sequenceHandler;
 
     private final String adminUrlTemplate;
@@ -87,14 +82,13 @@ public enum DatabaseEngine
     private final String validationQuery;
 
     @SuppressWarnings("unchecked")
-    DatabaseEngine(String code, String driver, Class<?> daoFactoryClass, LobHandler lobHandler,
+    DatabaseEngine(String code, String driver, Class<?> daoFactoryClass,
             ISequencerHandler sequenceHandler, String adminUrlTemplate, String urlTemplate,
             String defaultURLHostPart, String defaultAdminUser, String validationQuery)
     {
         assert code != null;
         assert driver != null;
         assert daoFactoryClass != null;
-        assert lobHandler != null;
         assert sequenceHandler != null;
         assert adminUrlTemplate != null;
         assert urlTemplate != null;
@@ -107,7 +101,6 @@ public enum DatabaseEngine
         this.defaultURLHostPart = defaultURLHostPart;
         this.defaultAdminUser = defaultAdminUser;
         this.driverClass = driver;
-        this.lobHandler = lobHandler;
         this.sequenceHandler = sequenceHandler;
         this.validationQuery = validationQuery;
         this.daoFactoryClass = (Class<ch.systemsx.cisd.dbmigration.IDAOFactory>) daoFactoryClass;
@@ -149,11 +142,6 @@ public enum DatabaseEngine
     public final String getDriverClass()
     {
         return driverClass;
-    }
-
-    public final LobHandler getLobHandler()
-    {
-        return lobHandler;
     }
 
     public final ISequencerHandler getSequenceHandler()

@@ -39,8 +39,8 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
-import ch.systemsx.cisd.etlserver.path.PathEntryDTO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -83,7 +83,7 @@ public class FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask impl
 
     private IEncapsulatedOpenBISService service;
 
-    private IPathsInfoDAO dao;
+    private IPathInfoDAO dao;
 
     private ITimeProvider timeProvider;
 
@@ -100,12 +100,12 @@ public class FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask impl
     public FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask()
     {
         service = ServiceProvider.getOpenBISService();
-        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathsInfoDAO.class);
+        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
         timeProvider = SystemTimeProvider.SYSTEM_TIME_PROVIDER;
         configProvider = ServiceProvider.getConfigProvider();
     }
 
-    public FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask(IEncapsulatedOpenBISService service, IPathsInfoDAO dao,
+    public FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask(IEncapsulatedOpenBISService service, IPathInfoDAO dao,
             ITimeProvider timeProvider, IConfigProvider configProvider)
     {
         this.service = service;

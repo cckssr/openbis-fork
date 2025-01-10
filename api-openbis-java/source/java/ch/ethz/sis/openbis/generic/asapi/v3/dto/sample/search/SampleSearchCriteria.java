@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ImmutableDataDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.TextAttributeSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -55,6 +56,11 @@ public class SampleSearchCriteria extends AbstractSampleSearchCriteria<SampleSea
     public TextAttributeSearchCriteria withTextAttribute()
     {
         return with(new TextAttributeSearchCriteria());
+    }
+
+    public ImmutableDataDateSearchCriteria withImmutableDataDate()
+    {
+        return with(new ImmutableDataDateSearchCriteria());
     }
 
     @Override

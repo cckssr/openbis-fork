@@ -90,9 +90,9 @@ public final class MigrationStepFrom025To026 extends MigrationStepAdapter
     //
 
     @Override
-    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
-            DataSource dataSource) throws DataAccessException
+    public final void performPostMigration(DataSource dataSource) throws DataAccessException
     {
+        JdbcTemplate simpleJdbcTemplate = new JdbcTemplate(dataSource);
 
         final List<ExternalData> externalDatas =
                 simpleJdbcTemplate.query(String.format("select data_id, location from %s",

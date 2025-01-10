@@ -16,7 +16,6 @@
 package ch.systemsx.cisd.etlserver.path;
 
 import java.io.InputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +23,11 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.zip.CRC32;
 
 import org.apache.log4j.Logger;
 
-import ch.systemsx.cisd.common.io.IOUtilities;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
@@ -53,7 +52,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             PathInfoDatabaseChecksumCalculationTask.class);
 
-    private IPathsInfoDAO dao;
+    private IPathInfoDAO dao;
 
     private IHierarchicalContentProvider hierarchicalContentProvider;
 
@@ -65,7 +64,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     {
     }
 
-    PathInfoDatabaseChecksumCalculationTask(IPathsInfoDAO dao,
+    PathInfoDatabaseChecksumCalculationTask(IPathInfoDAO dao,
             IHierarchicalContentProvider hierarchicalContentProvider, ITimeProvider timeProvider, String checksumType)
     {
         this.dao = dao;
@@ -77,7 +76,7 @@ public class PathInfoDatabaseChecksumCalculationTask implements IMaintenanceTask
     @Override
     public void setUp(String pluginName, Properties properties)
     {
-        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathsInfoDAO.class);
+        dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
         hierarchicalContentProvider = ServiceProvider.getHierarchicalContentProvider();
         timeProvider = SystemTimeProvider.SYSTEM_TIME_PROVIDER;
         checksumType = AbstractPathInfoDatabaseFeedingTask.getAndCheckChecksumType(properties);

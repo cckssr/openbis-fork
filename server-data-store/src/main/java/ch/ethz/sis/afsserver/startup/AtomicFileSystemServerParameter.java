@@ -54,14 +54,4 @@ public enum AtomicFileSystemServerParameter
     apiServerTransactionManagerKey,
     apiServerWorkerTimeout,
     apiServerObserver,
-    //
-    // openBIS connection
-    //
-    openBISUrl,
-    openBISTimeout,
-    openBISUser,
-    openBISPassword,
-    openBISLastSeenDeletionFile,
-    openBISLastSeenDeletionBatchSize,
-    openBISLastSeenDeletionIntervalInSeconds
 }

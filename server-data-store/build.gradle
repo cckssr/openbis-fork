@@ -30,6 +30,8 @@ dependencies {
             project(':api-data-store-server-java'),
             project(':api-openbis-java'),
             project(':lib-json'),
+            project(':lib-dbmigration'),
+            project(':lib-pathinfo-db'),
             'lombok:lombok:1.18.22',
             'io.netty:netty-all:4.1.68.Final',
             'shriop:javacsv:2.0',

@@ -18,34 +18,21 @@ package ch.systemsx.cisd.dbmigration;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 import javax.sql.DataSource;
-
-import org.springframework.jdbc.BadSqlGrammarException;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
-import org.springframework.jdbc.support.lob.LobCreator;
-import org.springframework.jdbc.support.lob.LobHandler;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.Script;
 
 /**
  * Class which logs database migration steps in the database.
- * 
+ *
  * @author Franz-Josef Elmer
  */
-public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVersionLogDAO
+public class DatabaseVersionLogDAO implements IDatabaseVersionLogDAO
 {
     public static final String DB_VERSION_LOG = "database_version_logs";
 
@@ -67,38 +54,6 @@ public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVe
             "select * from " + DB_VERSION_LOG + " where " + RUN_STATUS_TIMESTAMP
                     + " in (select max(" + RUN_STATUS_TIMESTAMP + ") from " + DB_VERSION_LOG + ")";
 
-    private static final class LogEntryRowMapper implements RowMapper<LogEntry>
-    {
-        private final LobHandler lobHandler;
-
-        LogEntryRowMapper(LobHandler lobHandler)
-        {
-            this.lobHandler = lobHandler;
-        }
-
-        @Override
-        public LogEntry mapRow(ResultSet rs, int rowNum) throws SQLException
-        {
-            final LogEntry logEntry = new LogEntry();
-            logEntry.setVersion(rs.getString(DB_VERSION));
-            logEntry.setModuleName(rs.getString(MODULE_NAME));
-            logEntry.setRunStatus(rs.getString(RUN_STATUS));
-            logEntry.setRunStatusTimestamp(rs.getDate(RUN_STATUS_TIMESTAMP));
-            try
-            {
-                final byte[] moduleCodeOrNull = lobHandler.getBlobAsBytes(rs, MODULE_CODE);
-                final String moduleCodeString =
-                        (moduleCodeOrNull != null) ? new String(moduleCodeOrNull, ENCODING) : "";
-                logEntry.setModuleCode(moduleCodeString);
-            } catch (UnsupportedEncodingException ex)
-            {
-                throw new CheckedExceptionTunnel(ex);
-            }
-            logEntry.setRunException(lobHandler.getClobAsString(rs, RUN_EXCEPTION));
-            return logEntry;
-        }
-    }
-
     private static byte[] getAsByteArray(String string)
     {
         try
@@ -110,12 +65,11 @@ public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVe
         }
     }
 
-    final LobHandler lobHandler;
+    private final DataSource dataSource;
 
-    public DatabaseVersionLogDAO(DataSource dataSource, LobHandler lobHandler)
+    public DatabaseVersionLogDAO(DataSource dataSource)
     {
-        setDataSource(dataSource);
-        this.lobHandler = lobHandler;
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -125,10 +79,7 @@ public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVe
         {
             getLastEntry();
             return true;
-        } catch (BadSqlGrammarException ex)
-        {
-            return false;
-        } catch (CannotGetJdbcConnectionException ex)
+        } catch (Exception ex)
         {
             return false;
         }
@@ -137,68 +88,106 @@ public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVe
     @Override
     public void createTable(Script script)
     {
-        JdbcTemplate template = getJdbcTemplate();
-        template.execute(script.getContent());
+        try
+        {
+            SQLUtils.execute(dataSource, script.getContent(), new SQLUtils.NoParametersSetter());
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public LogEntry getLastEntry()
     {
-        JdbcTemplate template = getJdbcTemplate();
-        List<LogEntry> entries =
-                template.query(SELECT_LAST_ENTRY, new LogEntryRowMapper(lobHandler));
+        try
+        {
+            List<LogEntry> entries = SQLUtils.queryList(dataSource, SELECT_LAST_ENTRY, new SQLUtils.NoParametersSetter(), rs ->
+            {
+                final LogEntry logEntry = new LogEntry();
+                logEntry.setVersion(rs.getString(DB_VERSION));
+                logEntry.setModuleName(rs.getString(MODULE_NAME));
+                logEntry.setRunStatus(rs.getString(RUN_STATUS));
+                logEntry.setRunStatusTimestamp(rs.getDate(RUN_STATUS_TIMESTAMP));
+                try
+                {
+                    final byte[] moduleCodeOrNull = rs.getBytes(MODULE_CODE);
+                    final String moduleCodeString =
+                            (moduleCodeOrNull != null) ? new String(moduleCodeOrNull, ENCODING) : "";
+                    logEntry.setModuleCode(moduleCodeString);
 
-        return entries.size() == 0 ? null : entries.get(entries.size() - 1);
+                    final byte[] runExceptionOrNull = rs.getBytes(RUN_EXCEPTION);
+                    final String runExceptionString =
+                            (runExceptionOrNull != null) ? new String(runExceptionOrNull, ENCODING) : "";
+                    logEntry.setRunException(runExceptionString);
+                } catch (UnsupportedEncodingException ex)
+                {
+                    throw new CheckedExceptionTunnel(ex);
+                }
+                return logEntry;
+            });
+
+            return entries.size() == 0 ? null : entries.get(entries.size() - 1);
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Inserts a new entry into the version log with {@link LogEntry.RunStatus#START}.
-     * 
+     *
      * @param moduleScript The script of the module to be logged.
      */
     @Override
     public void logStart(final Script moduleScript)
     {
-        JdbcTemplate template = getJdbcTemplate();
-        PreparedStatementCallback callback =
-                new AbstractLobCreatingPreparedStatementCallback(this.lobHandler)
-                    {
-                        @Override
-                        protected void setValues(PreparedStatement ps, LobCreator lobCreator)
-                                throws SQLException
-                        {
-                            ps.setString(1, moduleScript.getVersion());
-                            ps.setString(2, moduleScript.getName());
-                            ps.setString(3, LogEntry.RunStatus.START.toString());
-                            ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
-                            lobCreator.setBlobAsBytes(ps, 5, getAsByteArray(moduleScript
-                                    .getContent()));
-                        }
-                    };
-        template.execute("insert into " + DB_VERSION_LOG + " (" + DB_VERSION + "," + MODULE_NAME
-                + "," + RUN_STATUS + "," + RUN_STATUS_TIMESTAMP + "," + MODULE_CODE
-                + ") values (?,?,?,?,?)", callback);
+        try
+        {
+            SQLUtils.execute(dataSource, "insert into " + DB_VERSION_LOG + " (" + DB_VERSION + "," + MODULE_NAME
+                    + "," + RUN_STATUS + "," + RUN_STATUS_TIMESTAMP + "," + MODULE_CODE
+                    + ") values (?,?,?,?,?)", ps ->
+            {
+                ps.setString(1, moduleScript.getVersion());
+                ps.setString(2, moduleScript.getName());
+                ps.setString(3, LogEntry.RunStatus.START.toString());
+                ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+                ps.setBytes(5, getAsByteArray(moduleScript.getContent()));
+            });
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Update log entry specified by version and module name to {@link LogEntry.RunStatus#SUCCESS}.
-     * 
+     *
      * @param moduleScript The script of the successfully applied module.
      */
     @Override
     public void logSuccess(final Script moduleScript)
     {
-        JdbcTemplate template = getJdbcTemplate();
-        template.update("update " + DB_VERSION_LOG + " SET " + RUN_STATUS + " = ? , "
-                + RUN_STATUS_TIMESTAMP + " = ? " + "where " + DB_VERSION + " = ? and "
-                + MODULE_NAME + " = ?", LogEntry.RunStatus.SUCCESS.toString(), new Date(System
-                        .currentTimeMillis()),
-                moduleScript.getVersion(), moduleScript.getName());
+        try
+        {
+            SQLUtils.execute(dataSource, "update " + DB_VERSION_LOG + " SET " + RUN_STATUS + " = ? , "
+                    + RUN_STATUS_TIMESTAMP + " = ? " + "where " + DB_VERSION + " = ? and "
+                    + MODULE_NAME + " = ?", ps ->
+            {
+                ps.setString(1, LogEntry.RunStatus.SUCCESS.toString());
+                ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                ps.setString(3, moduleScript.getVersion());
+                ps.setString(4, moduleScript.getName());
+            });
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * Update log entry specified by version and module name to {@link LogEntry.RunStatus#FAILED}.
-     * 
+     *
      * @param moduleScript Script of the failed module.
      * @param runException Exception causing the failure.
      */
@@ -207,25 +196,23 @@ public class DatabaseVersionLogDAO extends JdbcDaoSupport implements IDatabaseVe
     {
         final StringWriter stringWriter = new StringWriter();
         runException.printStackTrace(new PrintWriter(stringWriter));
-        JdbcTemplate template = getJdbcTemplate();
-        PreparedStatementCallback callback =
-                new AbstractLobCreatingPreparedStatementCallback(this.lobHandler)
-                    {
-                        @Override
-                        protected void setValues(PreparedStatement ps, LobCreator lobCreator)
-                                throws SQLException
-                        {
-                            ps.setString(1, LogEntry.RunStatus.FAILED.toString());
-                            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
-                            lobCreator.setBlobAsBytes(ps, 3,
-                                    getAsByteArray(stringWriter.toString()));
-                            ps.setString(4, moduleScript.getVersion());
-                            ps.setString(5, moduleScript.getName());
-                        }
-                    };
-        template.execute("update " + DB_VERSION_LOG + " SET " + RUN_STATUS + " = ?, "
-                + RUN_STATUS_TIMESTAMP + " = ?, " + RUN_EXCEPTION + " = ? where " + DB_VERSION
-                + " = ? and " + MODULE_NAME + " = ?", callback);
+
+        try
+        {
+            SQLUtils.execute(dataSource, "update " + DB_VERSION_LOG + " SET " + RUN_STATUS + " = ?, "
+                    + RUN_STATUS_TIMESTAMP + " = ?, " + RUN_EXCEPTION + " = ? where " + DB_VERSION
+                    + " = ? and " + MODULE_NAME + " = ?", ps ->
+            {
+                ps.setString(1, LogEntry.RunStatus.FAILED.toString());
+                ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+                ps.setBytes(3, getAsByteArray(stringWriter.toString()));
+                ps.setString(4, moduleScript.getVersion());
+                ps.setString(5, moduleScript.getName());
+            });
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
 }

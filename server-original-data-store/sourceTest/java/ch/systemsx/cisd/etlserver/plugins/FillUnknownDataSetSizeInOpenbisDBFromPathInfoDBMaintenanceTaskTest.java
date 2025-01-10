@@ -44,8 +44,8 @@ import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.TestResources;
-import ch.systemsx.cisd.etlserver.path.IPathsInfoDAO;
-import ch.systemsx.cisd.etlserver.path.PathEntryDTO;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.etlserver.plugins.FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTask.LastSeenDataSetFileContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
@@ -62,7 +62,7 @@ public class FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTaskTest
 
     private IEncapsulatedOpenBISService service;
 
-    private IPathsInfoDAO dao;
+    private IPathInfoDAO dao;
 
     private ITimeProvider timeProvider;
 
@@ -92,7 +92,7 @@ public class FillUnknownDataSetSizeInOpenbisDBFromPathInfoDBMaintenanceTaskTest
 
         context = new Mockery();
         service = context.mock(IEncapsulatedOpenBISService.class);
-        dao = context.mock(IPathsInfoDAO.class);
+        dao = context.mock(IPathInfoDAO.class);
         timeProvider = context.mock(ITimeProvider.class);
         configProvider = context.mock(IConfigProvider.class);
 

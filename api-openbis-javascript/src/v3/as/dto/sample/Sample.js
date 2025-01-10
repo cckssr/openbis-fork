@@ -48,7 +48,7 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
 		prototype.modifier = null;
 		prototype.attachments = null;
 		prototype.metaData = null;
-		prototype.immutableData = null;
+		prototype.immutableDataDate = null;
 		prototype.getFetchOptions = function() {
 			return AbstractEntity.prototype.getFetchOptions.call(this);
 		};
@@ -438,10 +438,13 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
             this.metaData = metaData;
         };
         prototype.isImmutableData = function() {
-            return this.immutableData;
+            return this.immutableDataDate !== null;
         }
-        prototype.setImmutableData = function(immutableData) {
-            this.immutableData = immutableData;
+        prototype.getImmutableDataDate = function() {
+            return this.immutableDataDate;
+        }
+        prototype.setImmutableDataDate = function(immutableDataDate) {
+            this.immutableDataDate = immutableDataDate;
         }
 		prototype.toString = function() {
 			return "Sample " + this.permId;
@@ -546,7 +549,8 @@ define([ "stjs", "util/Exceptions", "as/dto/common/Relationship", "as/dto/common
 		metaData: {
             name: "Map",
             arguments: ["String", "String"]
-        }
+        },
+        immutableDataDate : "Date"
 	});
 	return Sample;
 })

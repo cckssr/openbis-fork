@@ -13,11 +13,14 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiResponseBuilder;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -27,11 +30,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.Value;
+import net.lemnik.eodsql.QueryTool;
 
 public class OpenBISServerObserver implements ServerObserver<TransactionConnection>
 {
@@ -40,55 +45,55 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
     private static final String THREAD_NAME = "openbis-server-observer-task";
 
-    private Configuration configuration;
+    private OpenBISConfiguration openBISConfiguration;
 
-    private String openBISLastSeenDeletionFile;
-
-    private Integer openBISLastSeenDeletionBatchSize;
-
-    private Integer openBISLastSeenDeletionIntervalInSeconds;
+    private IPathInfoDAO pathInfoDAO;
 
     private APIServer<TransactionConnection, ApiRequest, ApiResponse, ?> apiServer;
 
     private JsonObjectMapper jsonObjectMapper;
 
+    private Timer timer;
+
     @Override
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
-        this.configuration = configuration;
-        this.openBISLastSeenDeletionFile = AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionFile(configuration);
-        this.openBISLastSeenDeletionBatchSize =
-                AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionBatchSize(configuration);
-        this.openBISLastSeenDeletionIntervalInSeconds =
-                AtomicFileSystemServerParameterUtil.getOpenBISLastSeenDeletionIntervalInSeconds(configuration);
+        this.openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
+        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+        if (pathInfoDatabaseConfiguration != null)
+        {
+            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoDAO.class);
+        }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+        this.timer = new Timer(THREAD_NAME, true);
     }
 
     @Override
     public void beforeStartup() throws Exception
     {
-        new Timer(THREAD_NAME, true).schedule(new TimerTask()
-                                              {
-                                                  @Override public void run()
-                                                  {
-                                                      processApplicationServerDeletionEvents();
-                                                  }
-                                              },
+        timer.schedule(new TimerTask()
+                       {
+                           @Override public void run()
+                           {
+                               processDataSetDeletionEvents();
+                           }
+                       },
                 0,
-                openBISLastSeenDeletionIntervalInSeconds * 1000L);
+                openBISConfiguration.getOpenBISLastSeenDeletionIntervalInSeconds() * 1000L);
     }
 
     @Override
     public void beforeShutdown() throws Exception
     {
+        timer.cancel();
     }
 
-    private void processApplicationServerDeletionEvents()
+    private void processDataSetDeletionEvents()
     {
         while (true)
         {
-            OpenBISFacade openBISFacade = AtomicFileSystemServerParameterUtil.getOpenBISFacade(configuration);
+            OpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
 
             try
             {
@@ -101,7 +106,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
                 EventFetchOptions fo = new EventFetchOptions();
                 fo.sortBy().id().asc();
-                fo.count(openBISLastSeenDeletionBatchSize);
+                fo.count(openBISConfiguration.getOpenBISLastSeenDeletionBatchSize());
 
                 if (lastSeenEvent != null)
                 {
@@ -141,7 +146,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                     {
                         for (Event event : newEvents)
                         {
-                            processEvent(openBISFacade.getSessionToken(), event);
+                            processDataSetDeletionEvent(openBISFacade.getSessionToken(), event);
                             lastEvent = event;
                         }
                     } finally
@@ -167,7 +172,8 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                         throw new RuntimeException(
                                 "The processing of deletion events could not progress from last seen id: " + lastSeenEvent.getId()
                                         + " and registration date: " + lastSeenEvent.getRegistrationDate()
-                                        + ". Try increasing the batch size to a higher value than " + openBISLastSeenDeletionBatchSize + ".");
+                                        + ". Try increasing the batch size to a higher value than "
+                                        + openBISConfiguration.getOpenBISLastSeenDeletionBatchSize() + ".");
                     }
                 }
             } catch (Exception e)
@@ -178,7 +184,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
         }
     }
 
-    private void processEvent(String sessionToken, Event event) throws APIServerException
+    private void processDataSetDeletionEvent(String sessionToken, Event event) throws APIServerException
     {
         try
         {
@@ -187,6 +193,12 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                             null, null);
 
             apiServer.processOperation(apiRequest, new ApiResponseBuilder(), new PerformanceAuditor());
+
+            if (pathInfoDAO != null)
+            {
+                pathInfoDAO.deleteDataSet(event.getIdentifier());
+                pathInfoDAO.commit();
+            }
 
             logger.info("Data set " + event.getIdentifier() + " has been successfully deleted from the store.");
         } catch (APIServerException e)
@@ -205,9 +217,9 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         try
         {
-            if (IOUtils.exists(openBISLastSeenDeletionFile))
+            if (IOUtils.exists(openBISConfiguration.getOpenBISLastSeenDeletionFile()))
             {
-                byte[] bytes = IOUtils.readFully(openBISLastSeenDeletionFile);
+                byte[] bytes = IOUtils.readFully(openBISConfiguration.getOpenBISLastSeenDeletionFile());
                 return jsonObjectMapper.readValue(new ByteArrayInputStream(bytes), LastSeenEvent.class);
             } else
             {
@@ -215,7 +227,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
             }
         } catch (Exception e)
         {
-            throw new RuntimeException("Could not load the last seen event from file " + openBISLastSeenDeletionFile, e);
+            throw new RuntimeException("Could not load the last seen event from file " + openBISConfiguration.getOpenBISLastSeenDeletionFile(), e);
         }
     }
 
@@ -223,7 +235,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         try
         {
-            String tempFile = openBISLastSeenDeletionFile + ".tmp";
+            String tempFile = openBISConfiguration.getOpenBISLastSeenDeletionFile() + ".tmp";
             if (IOUtils.exists(tempFile))
             {
                 IOUtils.delete(tempFile);
@@ -231,10 +243,10 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
             IOUtils.createFile(tempFile);
             byte[] bytes = jsonObjectMapper.writeValue(lastSeenEvent);
             IOUtils.write(tempFile, 0, bytes);
-            IOUtils.move(tempFile, openBISLastSeenDeletionFile);
+            IOUtils.move(tempFile, openBISConfiguration.getOpenBISLastSeenDeletionFile());
         } catch (Exception e)
         {
-            throw new RuntimeException("Could not store the last seen event in file " + openBISLastSeenDeletionFile, e);
+            throw new RuntimeException("Could not store the last seen event in file " + openBISConfiguration.getOpenBISLastSeenDeletionFile(), e);
         }
     }
 

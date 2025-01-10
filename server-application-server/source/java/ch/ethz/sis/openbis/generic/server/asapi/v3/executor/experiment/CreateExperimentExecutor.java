@@ -102,7 +102,10 @@ public class CreateExperimentExecutor extends AbstractCreateEntityExecutor<Exper
                     experiment.setRegistrator(person);
                     RelationshipUtils.updateModificationDateAndModifier(experiment, person, timeStamp);
                     experiment.setMetaData(object.getMetaData());
-                    experiment.setImmutableData(object.isImmutableData());
+                    if(object.isImmutableData())
+                    {
+                        experiment.setImmutableDataDate(new Date());
+                    }
                     experiments.add(experiment);
                 }
 

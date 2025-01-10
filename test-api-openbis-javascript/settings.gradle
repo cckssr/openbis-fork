@@ -1,3 +1,5 @@
 includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-common', 'lib-authentication',
-        'lib-dbmigration', 'lib-transactional-file-system', 'server-application-server', 'server-original-data-store', 'server-data-store', 'server-screening',
-        'core-plugin-openbis', 'test-ui-core', 'api-openbis-javascript'
+        'lib-db', 'lib-dbmigration', 'lib-pathinfo-db', 'lib-transactional-file-system', 'lib-logging', 'lib-json', 'lib-two-phase-transaction', 'lib-microservice-server',
+        'api-openbis-javascript', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
+        'server-application-server', 'server-original-data-store', 'server-data-store', 'server-screening', 'server-external-data-store',
+        'core-plugin-openbis', 'test-ui-core', 'ui-admin', 'ui-eln-lims'
