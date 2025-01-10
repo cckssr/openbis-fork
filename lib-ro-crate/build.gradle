@@ -31,6 +31,7 @@ dependencies {
             'apache:poi-ooxml-schemas:3.17',
             'apache:commons-collections4:4.1',
             'commons-cli:commons-cli:1.4'
+    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
     testImplementation 'junit:junit:4.13.1'
 }
 

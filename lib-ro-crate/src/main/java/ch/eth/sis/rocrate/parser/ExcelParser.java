@@ -9,11 +9,12 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.util.StringUtils.trimWhitespace;
+
 public class ExcelParser
 {
 
-
-    public static List<List<List<String>>> parseExcel(byte[] xls, final Map<String, String> importValues)
+    public static List<List<List<String>>> parseExcel(byte[] xls,
+            final Map<String, String> importValues)
     {
         List<List<List<String>>> lines = new ArrayList<>();
 
@@ -39,8 +40,10 @@ public class ExcelParser
                             Cell cell = row.getCell(cellIndex);
                             if (cell != null)
                             {
-                                String value = getFinalValue(importValues, extractCellValue(cell, sheetIndex, rowIndex, cellIndex));
-                                if (value != null && value.isBlank()) {
+                                String value = getFinalValue(importValues,
+                                        extractCellValue(cell, sheetIndex, rowIndex, cellIndex));
+                                if (value != null && value.isBlank())
+                                {
                                     value = null;
                                 }
                                 columns.add(value);
@@ -100,9 +103,11 @@ public class ExcelParser
                         "Excel formulas are not supported but one was found in cell " + position
                 );
             case ERROR:
-                throw new ch.systemsx.cisd.common.exceptions.UserFailureException("There is an error in cell " + position);
+                throw new ch.systemsx.cisd.common.exceptions.UserFailureException(
+                        "There is an error in cell " + position);
             default:
-                throw new ch.systemsx.cisd.common.exceptions.UserFailureException("Unknown data type of cell " + position);
+                throw new ch.systemsx.cisd.common.exceptions.UserFailureException(
+                        "Unknown data type of cell " + position);
         }
     }
 }
