@@ -15,6 +15,17 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition;
 
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IN;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.IS_NOT_NULL;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.LP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.PERIOD;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.QU;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.RP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SELECT_UNNEST;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.SP;
+import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.UNNEST;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +36,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CodesSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.CollectionFieldSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdsSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.search.UserIdsSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SearchCriteriaTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.AttributesMapper;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.utils.JoinInformation;
-
-import static ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.SQLLexemes.*;
 
 public class CollectionFieldSearchConditionTranslator implements IConditionTranslator<CollectionFieldSearchCriteria<?>>
 {
@@ -59,18 +67,21 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
     {
         if (!ARRAY_CASTING.containsKey(criterion.getClass()))
         {
-            throw new RuntimeException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
+            throw new RuntimeException(
+                    "Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ", this is a core error, contact the development team.");
         }
         if (criterion.getClass() == IdsSearchCriteria.class)
         {
             if (criterion.getFieldValue() != null && criterion.getFieldValue().size() > 1)
             {
                 final Class<?> identifierClass = criterion.getFieldValue().iterator().next().getClass();
-                for (Object identifier:criterion.getFieldValue())
+                for (Object identifier : criterion.getFieldValue())
                 {
                     if (identifier.getClass() != identifierClass)
                     {
-                        throw new IllegalArgumentException("Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class + ", identifiers provided should be of the same type.");
+                        throw new IllegalArgumentException(
+                                "Unsupported " + CollectionFieldSearchCriteria.class.getSimpleName() + ": " + IdsSearchCriteria.class
+                                        + ", identifiers provided should be of the same type.");
                     }
                 }
             }
@@ -99,7 +110,8 @@ public class CollectionFieldSearchConditionTranslator implements IConditionTrans
 
                     if (tableMapper == TableMapper.SAMPLE)
                     {
-                        CodeSearchConditionTranslator.buildCodeQueryForSamples(sqlBuilder, () -> {
+                        CodeSearchConditionTranslator.buildCodeQueryForSamples(sqlBuilder, () ->
+                        {
                             sqlBuilder.append(SP).append(IN).append(SP).append(SELECT_UNNEST);
                             args.add(fieldValue.toArray(ARRAY_CASTING.get(criterion.getClass())));
                         });

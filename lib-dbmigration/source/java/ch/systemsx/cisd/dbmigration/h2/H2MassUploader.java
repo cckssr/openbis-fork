@@ -39,28 +39,27 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.UncategorizedSQLException;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.IMassUploader;
+import ch.systemsx.cisd.dbmigration.SQLUtils;
 
 /**
  * A {@link IMassUploader} for the H2 database.
- * 
+ *
  * @author Bernd Rinn
  */
-public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
+public class H2MassUploader implements IMassUploader
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, H2MassUploader.class);
 
     private final ISequenceNameMapper sequenceNameMapper;
+
+    private final DataSource dataSource;
 
     /**
      * Creates an instance for the specified data source and sequence mapper.
@@ -69,7 +68,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
             throws SQLException
     {
         this.sequenceNameMapper = sequenceNameMapper;
-        setDataSource(dataSource);
+        this.dataSource = dataSource;
     }
 
     private final static class MassUploadRecord
@@ -115,7 +114,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
     {
         try
         {
-            final DatabaseMetaData dbMetaData = getConnection().getMetaData();
+            final DatabaseMetaData dbMetaData = dataSource.getConnection().getMetaData();
             try
             {
                 final BitSet isBinaryColumn = findBinaryColumns(dbMetaData, tableName);
@@ -137,7 +136,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
     {
         try
         {
-            final DatabaseMetaData dbMetaData = getConnection().getMetaData();
+            final DatabaseMetaData dbMetaData = dataSource.getConnection().getMetaData();
             try
             {
                 final BitSet isBinaryColumn = findBinaryColumns(dbMetaData, tableName, columnNames);
@@ -162,7 +161,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
         {
             final List<MassUploadRecord> massUploadRecords =
                     new ArrayList<MassUploadRecord>(massUploadFiles.length);
-            final DatabaseMetaData dbMetaData = getConnection().getMetaData();
+            final DatabaseMetaData dbMetaData = dataSource.getConnection().getMetaData();
             try
             {
                 for (final File massUploadFile : massUploadFiles)
@@ -196,7 +195,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
             }
         } catch (final SQLException ex)
         {
-            throw new UncategorizedSQLException(task, "UNKNOWN", ex);
+            throw new RuntimeException("Task '" + task + "' failed.", ex);
         }
     }
 
@@ -244,27 +243,24 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
             }
             insertSql.setLength(insertSql.length() - 1);
             insertSql.append(')');
-            getJdbcTemplate().batchUpdate(insertSql.toString(), new BatchPreparedStatementSetter()
-                {
-                    @Override
-                    public int getBatchSize()
-                    {
-                        return numberOfRows;
-                    }
 
-                    @Override
-                    public void setValues(final PreparedStatement ps, final int rowNo)
-                            throws SQLException
+            for (String[] row : rows)
+            {
+                SQLUtils.execute(dataSource, insertSql.toString(), new SQLUtils.ParametersSetter()
+                {
+                    @Override public void setParameters(final PreparedStatement ps) throws SQLException
                     {
-                        for (int colNo = 0; colNo < numberOfColumns; ++colNo)
                         {
-                            ps.setObject(colNo + 1, tryGetValue(rowNo, colNo));
+                            for (int colNo = 0; colNo < numberOfColumns; ++colNo)
+                            {
+                                ps.setObject(colNo + 1, tryGetValue(row, colNo));
+                            }
                         }
                     }
 
-                    private Object tryGetValue(final int rowNo, final int colNo)
+                    private Object tryGetValue(final String[] row, final int colNo)
                     {
-                        final String stringValueOrNull = rows.get(rowNo)[colNo];
+                        final String stringValueOrNull = row[colNo];
                         if (stringValueOrNull == null)
                         {
                             return null;
@@ -278,6 +274,7 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
                         }
                     }
                 });
+            }
         } catch (final Exception ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
@@ -388,18 +385,19 @@ public class H2MassUploader extends JdbcDaoSupport implements IMassUploader
         try
         {
             final long maxId =
-                    getJdbcTemplate().queryForObject(
-                            String.format("select max(id) from %s", tableName), Long.class);
+                    SQLUtils.queryObject(dataSource,
+                            String.format("select max(id) from %s", tableName), new SQLUtils.NoParametersSetter(),
+                            new SQLUtils.ToValueResultsMapper<>());
             final long newSequenceValue = maxId + 1;
             if (operationLog.isInfoEnabled())
             {
                 operationLog.info("Updating sequence " + sequenceName + " for table " + tableName
                         + " to value " + newSequenceValue);
             }
-            getJdbcTemplate().execute(
+            SQLUtils.execute(dataSource,
                     String.format("alter sequence %s restart with %d", sequenceName,
-                            newSequenceValue));
-        } catch (final DataAccessException ex)
+                            newSequenceValue), new SQLUtils.NoParametersSetter());
+        } catch (final SQLException ex)
         {
             operationLog.error("Failed to set new value for sequence '" + sequenceName
                     + "' of table '" + tableName + "'.", ex);

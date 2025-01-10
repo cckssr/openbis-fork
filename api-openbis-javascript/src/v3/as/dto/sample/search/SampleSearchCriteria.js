@@ -4,7 +4,7 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/sample/search/SampleSearchRelation",
 		"as/dto/space/search/NoSpaceSearchCriteria", "as/dto/space/search/SpaceSearchCriteria", "as/dto/project/search/ProjectSearchCriteria", "as/dto/project/search/NoProjectSearchCriteria", "as/dto/experiment/search/ExperimentSearchCriteria",
 		"as/dto/experiment/search/NoExperimentSearchCriteria", "as/dto/sample/search/NoSampleContainerSearchCriteria", "as/dto/sample/search/SampleTypeSearchCriteria",
-		"as/dto/common/search/IdentifierSearchCriteria", "as/dto/common/search/TextAttributeSearchCriteria" ],
+		"as/dto/common/search/IdentifierSearchCriteria", "as/dto/common/search/TextAttributeSearchCriteria", "as/dto/common/search/ImmutableDataDateSearchCriteria" ],
 	function(require, stjs, AbstractEntitySearchCriteria, SearchOperator, SampleSearchRelation) {
 
 	var AbstractSampleSearchCriteria = function(relation) {
@@ -98,6 +98,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 		prototype.withTextAttribute = function() {
 			var TextAttributeSearchCriteria = require("as/dto/common/search/TextAttributeSearchCriteria");
 			return this.addCriteria(new TextAttributeSearchCriteria());
+		};
+		prototype.withImmutableDataDate = function() {
+			var ImmutableDataDateSearchCriteria = require("as/dto/common/search/ImmutableDataDateSearchCriteria");
+			return this.addCriteria(new ImmutableDataDateSearchCriteria());
 		};
 		prototype.negate = function() {
 			return AbstractSampleSearchCriteria.prototype.negate.call(this);

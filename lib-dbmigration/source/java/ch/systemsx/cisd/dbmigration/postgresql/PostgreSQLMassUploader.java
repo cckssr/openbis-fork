@@ -35,8 +35,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.ISequenceNameMapper;
@@ -44,13 +42,14 @@ import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.IMassUploader;
+import ch.systemsx.cisd.dbmigration.SQLUtils;
 
 /**
  * A {@link IMassUploader} for the PostgreSQL database.
- * 
+ *
  * @author Bernd Rinn
  */
-public class PostgreSQLMassUploader extends JdbcDaoSupport implements IMassUploader
+public class PostgreSQLMassUploader implements IMassUploader
 {
     private static final Logger operationLog =
             LogFactory.getLogger(LogCategory.OPERATION, PostgreSQLMassUploader.class);
@@ -76,7 +75,6 @@ public class PostgreSQLMassUploader extends JdbcDaoSupport implements IMassUploa
         this.connectionOrNull = null;
         this.sequenceNameMapper = sequenceNameMapper;
         this.sequenceUpdateNeeded = sequenceUpdateNeeded;
-        setDataSource(dataSource);
     }
 
     /**
@@ -90,7 +88,6 @@ public class PostgreSQLMassUploader extends JdbcDaoSupport implements IMassUploa
         this.connectionOrNull = conn;
         this.sequenceNameMapper = sequenceNameMapper;
         this.sequenceUpdateNeeded = sequenceUpdateNeeded;
-        setDataSource(dataSourceOrNull);
     }
 
     private final CopyManager getCopyManager() throws SQLException, NoSuchFieldException,
@@ -213,17 +210,16 @@ public class PostgreSQLMassUploader extends JdbcDaoSupport implements IMassUploa
         {
             // The result returned by setval is just the value of its second argument.
             final long newSequenceValue =
-                    getJdbcTemplate().queryForObject(
+                    SQLUtils.queryObject(dataSourceOrNull,
                             String.format("select setval('%s', max(id)) from %s", sequenceName,
-                                    tableName),
-                            Long.class);
+                                    tableName), new SQLUtils.NoParametersSetter(), new SQLUtils.ToValueResultsMapper<>());
             if (operationLog.isInfoEnabled())
             {
                 operationLog.info("Updating sequence " + sequenceName + " for table " + tableName
                         + " to value " + newSequenceValue);
             }
             return true;
-        } catch (final DataAccessException ex)
+        } catch (final SQLException ex)
         {
             operationLog.error("Failed to set new value for sequence '" + sequenceName
                     + "' of table '" + tableName + "'.", ex);

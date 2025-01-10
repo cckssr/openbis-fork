@@ -1,0 +1,10 @@
+apply from: '../build/javaproject.gradle'
+
+dependencies {
+    api project(':lib-commonbase'),
+            'sis:sis-base:23.06.0',
+            'lemnik:eodsql:2.2-CISD',
+            'unimi:fastutil:5.1.5'
+    testImplementation 'testng:testng:6.8-CISD',
+            'jmock:jmock:2.5.1'
+}

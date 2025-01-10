@@ -68,7 +68,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 
 /**
  * <i>Persistent Entity</i> object of an entity 'sample'.
- * 
+ *
  * @author Christian Ribeaud
  */
 
@@ -133,7 +133,7 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
 
     private Map<String, String> metaData;
 
-    private boolean immutableData;
+    private Date immutableDataDate;
 
     @OptimisticLock(excluded = true)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "parentSample")
@@ -1119,16 +1119,15 @@ public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Co
         this.metaData = metaData;
     }
 
-    @NotNull
-    @Column(name = ColumnNames.IMMUTABLE_DATA_COLUMN, nullable = false)
-    public boolean isImmutableData()
+    @Column(name = ColumnNames.IMMUTABLE_DATA_TIMESTAMP_COLUMN)
+    public Date getImmutableDataDate()
     {
-        return immutableData;
+        return immutableDataDate;
     }
 
-    public void setImmutableData(boolean immutableData)
+    public void setImmutableDataDate(Date immutableDataDate)
     {
-        this.immutableData = immutableData;
+        this.immutableDataDate = immutableDataDate;
     }
 
 }

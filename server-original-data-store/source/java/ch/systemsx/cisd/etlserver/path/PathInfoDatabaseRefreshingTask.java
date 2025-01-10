@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -91,7 +92,7 @@ public class PathInfoDatabaseRefreshingTask extends AbstractPathInfoDatabaseFeed
     {
     }
 
-    PathInfoDatabaseRefreshingTask(IEncapsulatedOpenBISService service, IPathsInfoDAO dao,
+    PathInfoDatabaseRefreshingTask(IEncapsulatedOpenBISService service, IPathInfoDAO dao,
             IHierarchicalContentFactory hierarchicalContentFactory, IDataSetDirectoryProvider directoryProvider)
     {
         this.service = service;
@@ -105,7 +106,7 @@ public class PathInfoDatabaseRefreshingTask extends AbstractPathInfoDatabaseFeed
         if (service == null)
         {
             service = ServiceProvider.getOpenBISService();
-            dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathsInfoDAO.class);
+            dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
             directoryProvider = ServiceProvider.getDataStoreService().getDataSetDirectoryProvider();
         }
         defineStateFile(properties, directoryProvider.getStoreRoot());

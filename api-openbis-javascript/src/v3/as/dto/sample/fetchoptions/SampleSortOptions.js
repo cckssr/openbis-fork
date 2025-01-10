@@ -4,7 +4,8 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/EntityWithPropertiesSort
 	};
 
 	var fields = {
-		IDENTIFIER : "IDENTIFIER"
+		IDENTIFIER : "IDENTIFIER",
+		IMMUTABLE_DATA_DATE : "IMMUTABLE_DATA_DATE"
 	};
 
 	stjs.extend(SampleSortOptions, EntityWithPropertiesSortOptions, [ EntityWithPropertiesSortOptions ], function(constructor, prototype) {
@@ -16,6 +17,12 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/EntityWithPropertiesSort
 		};
 		prototype.getIdentifier = function() {
 			return this.getSorting(fields.IDENTIFIER);
+		};
+		prototype.immutableDataDate = function() {
+			return this.getOrCreateSorting(fields.IMMUTABLE_DATA_DATE);
+		};
+		prototype.getImmutableDataDate = function() {
+			return this.getSorting(fields.IMMUTABLE_DATA_DATE);
 		};
 	}, {});
 	return SampleSortOptions;

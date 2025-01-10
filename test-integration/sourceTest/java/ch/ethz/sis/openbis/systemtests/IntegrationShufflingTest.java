@@ -58,7 +58,7 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
     }
 
     @BeforeMethod
-    public void beforeMethod(Method method)
+    public void beforeMethod(Method method) throws Exception
     {
         super.beforeMethod(method);
         TestLogger.startLogRecording(Level.TRACE, TestLogger.DEFAULT_LOG_LAYOUT_PATTERN, ".*Shuffling.*");

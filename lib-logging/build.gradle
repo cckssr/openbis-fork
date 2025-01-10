@@ -1,0 +1,7 @@
+apply from: '../build/javaproject.gradle'
+
+dependencies {
+    api 'sis:sis-base:23.06.0',
+            'apache:log4j:1.2.15'
+    testImplementation 'testng:testng:6.8-CISD'
+}

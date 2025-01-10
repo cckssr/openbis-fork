@@ -17,16 +17,14 @@ package ch.systemsx.cisd.dbmigration.postgresql;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Objects;
 
 import javax.sql.DataSource;
 
-import ch.systemsx.cisd.dbmigration.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.support.SQLErrorCodesFactory;
 
 import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
 import ch.systemsx.cisd.common.db.Script;
@@ -34,6 +32,14 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.dbmigration.AbstractDatabaseAdminDAO;
+import ch.systemsx.cisd.dbmigration.DBUtilities;
+import ch.systemsx.cisd.dbmigration.DatabaseVersionLogDAO;
+import ch.systemsx.cisd.dbmigration.IDatabaseAdminDAO;
+import ch.systemsx.cisd.dbmigration.IMassUploader;
+import ch.systemsx.cisd.dbmigration.ISqlScriptProvider;
+import ch.systemsx.cisd.dbmigration.MassUploadFileType;
+import ch.systemsx.cisd.dbmigration.SQLUtils;
 
 /**
  * Implementation of {@link IDatabaseAdminDAO} for PostgreSQL.
@@ -65,14 +71,14 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     /**
      * Creates an instance.
      *
-     * @param dataSource Data source able to create/drop the specified database.
+     * @param dataSource     Data source able to create/drop the specified database.
      * @param scriptExecutor An executor for SQL scripts.
-     * @param massUploader A class that can perform mass (batch) uploads into database tables.
-     * @param owner Owner to be created if it doesn't exist.
-     * @param readOnlyGroup Group that should be granted read-only access.
+     * @param massUploader   A class that can perform mass (batch) uploads into database tables.
+     * @param owner          Owner to be created if it doesn't exist.
+     * @param readOnlyGroup  Group that should be granted read-only access.
      * @param readWriteGroup Group that should be granted read-write access.
-     * @param databaseName Name of the database.
-     * @param databaseURL URL of the database.
+     * @param databaseName   Name of the database.
+     * @param databaseURL    URL of the database.
      */
     public PostgreSQLAdminDAO(DataSource dataSource, ISqlScriptExecutor scriptExecutor,
             IMassUploader massUploader, String owner, String readOnlyGroup, String readWriteGroup,
@@ -87,12 +93,12 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     {
         try
         {
-            getJdbcTemplate().execute("create user \"" + owner + "\"");
+            SQLUtils.execute(getDataSource(), "create user \"" + owner + "\"", new SQLUtils.NoParametersSetter());
             if (operationLog.isInfoEnabled())
             {
                 operationLog.info("Created role '" + owner + "'.");
             }
-        } catch (DataAccessException ex)
+        } catch (SQLException ex)
         {
             if (DBUtilities.isDuplicateObjectException(ex))
             {
@@ -103,7 +109,7 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
             } else
             {
                 operationLog.error("Database role '" + owner + "' couldn't be created:", ex);
-                throw ex;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -125,12 +131,12 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     {
         try
         {
-            getJdbcTemplate().execute("create role \"" + role + "\" with LOGIN");
+            SQLUtils.execute(getDataSource(), "create role \"" + role + "\" with LOGIN", new SQLUtils.NoParametersSetter());
             if (operationLog.isInfoEnabled())
             {
                 operationLog.info("Created role '" + role + "'.");
             }
-        } catch (DataAccessException ex)
+        } catch (SQLException ex)
         {
             if (DBUtilities.isDuplicateObjectException(ex))
             {
@@ -141,7 +147,7 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
             } else
             {
                 operationLog.error("Database role '" + role + "' couldn't be created:", ex);
-                throw ex;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -151,17 +157,20 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     {
         try
         {
-            String version = getJdbcTemplate().queryForMap("select version()").get("version").toString().split(" ")[1];
+            String version =
+                    SQLUtils.queryObject(getDataSource(), "select version()", new SQLUtils.NoParametersSetter(), new SQLUtils.ToMapResultsMapper())
+                            .get("version").toString().split(" ")[1];
             // Compatibility Fix for versions ended in comma, for example: "PostgreSQL 15.0, compiled by Visual C++ build 1929, 64-bit"
-            if (version.endsWith(",")) {
+            if (version.endsWith(","))
+            {
                 version = version.substring(0, version.length() - 1);
             }
             operationLog.info("Databaser server version: " + version);
             return version;
-        } catch (RuntimeException ex)
+        } catch (SQLException ex)
         {
             operationLog.error("Failed to get the version of the database server.", ex);
-            throw ex;
+            throw new RuntimeException(ex);
         }
     }
 
@@ -192,19 +201,18 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
                 + owner + "'.");
         try
         {
-            getJdbcTemplate().execute(
-                    String.format(CREATE_DATABASE_SQL_TEMPLATE, databaseName, owner));
-        } catch (RuntimeException ex)
+            SQLUtils.execute(getDataSource(),
+                    String.format(CREATE_DATABASE_SQL_TEMPLATE, databaseName, owner), new SQLUtils.NoParametersSetter());
+        } catch (SQLException ex)
         {
-            if (ex instanceof DataAccessException
-                    && DBUtilities.isDuplicateDatabaseException((DataAccessException) ex))
+            if (DBUtilities.isDuplicateDatabaseException(ex))
             {
                 operationLog.warn("Cannot create database '" + databaseName
                         + "' since it already exists.");
             } else
             {
                 operationLog.error("Failed to create database '" + databaseName + "'.", ex);
-                throw ex;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -214,17 +222,16 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
         operationLog.info("Try to create PL/PgSQL language.");
         try
         {
-            getJdbcTemplate().execute(CREATE_PLPGSQL);
-        } catch (RuntimeException ex)
+            SQLUtils.execute(getDataSource(), CREATE_PLPGSQL, new SQLUtils.NoParametersSetter());
+        } catch (SQLException ex)
         {
-            if (ex instanceof DataAccessException
-                    && DBUtilities.isDuplicateObjectException((DataAccessException) ex))
+            if (DBUtilities.isDuplicateObjectException(ex))
             {
                 operationLog.info("No need to create language PL/PgSQL since it already exists.");
             } else
             {
                 operationLog.error("Failed to create language PL/PgSQL.", ex);
-                throw ex;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -234,12 +241,12 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     {
         try
         {
-            getJdbcTemplate().execute("drop database " + databaseName);
-        } catch (DataAccessException ex)
+            SQLUtils.execute(getDataSource(), "drop database " + databaseName, new SQLUtils.NoParametersSetter());
+        } catch (SQLException ex)
         {
             if (DBUtilities.isDBNotExistException(ex) == false)
             {
-                throw ex;
+                throw new RuntimeException(ex);
             }
         }
     }
@@ -247,7 +254,6 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
     @Override
     public void initializeErrorCodes()
     {
-        SQLErrorCodesFactory.getInstance().getErrorCodes(getJdbcTemplate().getDataSource());
     }
 
     @Override
@@ -328,14 +334,14 @@ public class PostgreSQLAdminDAO extends AbstractDatabaseAdminDAO
                     + dumpFolder.getAbsolutePath() + "'.");
         }
         String[] csvFiles = dumpFolder.list(new FilenameFilter()
+        {
+            @Override
+            public boolean accept(File dir, String name)
             {
-                @Override
-                public boolean accept(File dir, String name)
-                {
-                    return MassUploadFileType.CSV.isOfType(name)
-                            || MassUploadFileType.TSV.isOfType(name);
-                }
-            });
+                return MassUploadFileType.CSV.isOfType(name)
+                        || MassUploadFileType.TSV.isOfType(name);
+            }
+        });
         if (csvFiles == null)
         {
             operationLog.warn("Path '" + dumpFolder.getAbsolutePath() + "' is not a directory.");

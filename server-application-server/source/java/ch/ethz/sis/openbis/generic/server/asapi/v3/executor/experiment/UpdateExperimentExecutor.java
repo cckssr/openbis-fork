@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.metadata.IUpdateMetaDataForEntityExecutor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -131,15 +132,18 @@ public class UpdateExperimentExecutor extends
             ExperimentPE experiment = entry.getValue();
             FreezingFlags freezingFlags = new FreezingFlags();
             RelationshipUtils.updateModificationDateAndModifier(experiment, person, timeStamp);
-            if(update.isImmutableData())
+            if (update.isImmutableData() && experiment.getImmutableDataDate() == null)
             {
-                experiment.setImmutableData(update.isImmutableData());
+                experiment.setImmutableDataDate(new Date());
             }
             if (update.shouldBeFrozen())
             {
                 authorizationExecutor.canFreeze(context, experiment);
                 experiment.setFrozen(true);
-                experiment.setImmutableData(true);
+                if (experiment.getImmutableDataDate() == null)
+                {
+                    experiment.setImmutableDataDate(new Date());
+                }
                 freezingFlags.freeze();
             }
             if (update.shouldBeFrozenForDataSets())

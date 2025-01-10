@@ -152,7 +152,10 @@ public class CreateSampleExecutor extends AbstractCreateEntityExecutor<SampleCre
                     sample.setRegistrator(person);
                     RelationshipUtils.updateModificationDateAndModifier(sample, person, timeStamp);
                     sample.setMetaData(creation.getMetaData());
-                    sample.setImmutableData(creation.isImmutableData());
+                    if(creation.isImmutableData())
+                    {
+                        sample.setImmutableDataDate(new Date());
+                    }
                     samples.add(sample);
                 }
 

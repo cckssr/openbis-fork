@@ -322,7 +322,7 @@ public class SampleTranslator extends AbstractCachingTranslator<Long, Sample, Sa
         result.setModificationDate(baseRecord.modificationDate);
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setMetaData(CommonUtils.asMap(baseRecord.metaData));
-        result.setImmutableData(baseRecord.immutableData);
+        result.setImmutableDataDate(baseRecord.immutableDataDate);
 
         if (fetchOptions.hasType())
         {

@@ -30,7 +30,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.UuidUtil;
  * <p>
  * Note that, at that time, the <i>UUID</i> column label was <code>GLOBAL_CODE</code> and not <code>UUID</code>.
  * </p>
- * 
+ *
  * @author Tomasz Pylak
  */
 public final class MigrationStepFrom022To023 implements IMigrationStep
@@ -40,9 +40,10 @@ public final class MigrationStepFrom022To023 implements IMigrationStep
     //
 
     @Override
-    public final void performPostMigration(final JdbcTemplate simpleJdbcTemplate,
-            DataSource dataSource) throws DataAccessException
+    public final void performPostMigration(DataSource dataSource) throws DataAccessException
     {
+        JdbcTemplate simpleJdbcTemplate = new JdbcTemplate(dataSource);
+
         final String uuid = UuidUtil.generateUUID();
         final int count =
                 simpleJdbcTemplate.queryForObject(String.format("select count(*) from %s",
@@ -58,8 +59,7 @@ public final class MigrationStepFrom022To023 implements IMigrationStep
     }
 
     @Override
-    public final void performPreMigration(final JdbcTemplate simpleJdbcTemplate,
-            DataSource dataSource) throws DataAccessException
+    public final void performPreMigration(DataSource dataSource) throws DataAccessException
     {
     }
 

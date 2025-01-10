@@ -36,6 +36,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.pathinfo.IPathInfoDAO;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
@@ -80,7 +81,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
 
     private IEncapsulatedOpenBISService service;
 
-    private IPathsInfoDAO dao;
+    private IPathInfoDAO dao;
 
     private IHierarchicalContentFactory contentFactory;
 
@@ -99,7 +100,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
         logRecorder = new BufferedAppender("%-5p %c - %m%n", Level.INFO);
         context = new Mockery();
         service = context.mock(IEncapsulatedOpenBISService.class);
-        dao = context.mock(IPathsInfoDAO.class);
+        dao = context.mock(IPathInfoDAO.class);
         contentFactory = new DefaultFileBasedHierarchicalContentFactory();
         directoryProvider = context.mock(IDataSetDirectoryProvider.class);
         shareIdManager = context.mock(IShareIdManager.class);

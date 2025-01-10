@@ -463,6 +463,7 @@ var fullTypes = [
 "as/dto/common/search/AbstractSearchCriteria",
 "as/dto/common/search/NormalDateFormat",
 "as/dto/common/search/RegistrationDateSearchCriteria",
+"as/dto/common/search/ImmutableDataDateSearchCriteria",
 "as/dto/common/search/BooleanPropertySearchCriteria",
 "as/dto/common/search/NumberLessThanValue",
 "as/dto/common/search/ShortDateFormat",

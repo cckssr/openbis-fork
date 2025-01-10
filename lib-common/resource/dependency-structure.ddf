@@ -3,9 +3,6 @@
 [converter] = ${package}.converter.*
 check sets [converter]
 
-[db] = ${package}.db.*
-check sets [db]
-
 [parser] = ${package}.parser.*
 check sets [parser]
 
@@ -17,7 +14,7 @@ check sets [mail]
 
 layer layer0 = [converter]
 layer layer3 = [mail] [monitoring]
-layer layer5 = [db] [parser]
+layer layer5 = [parser]
 
 check layeringOf layer0 layer3 layer5
 

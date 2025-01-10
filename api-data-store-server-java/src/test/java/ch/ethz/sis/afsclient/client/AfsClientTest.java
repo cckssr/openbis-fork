@@ -203,7 +203,7 @@ public class AfsClientTest
         login();
 
         httpServer.setNextResponse("{\"result\": true}");
-        Boolean result = afsClient.write("", "", 0L, new byte[0], new byte[0]);
+        Boolean result = afsClient.write("", "", 0L, new byte[0]);
 
         assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
         assertTrue(result);
