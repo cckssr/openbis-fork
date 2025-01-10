@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, IconButton, Grid2 } from "@mui/material";
+import { Typography, IconButton, Grid2, Stack, Divider } from "@mui/material";
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import messages from "@src/js/common/messages.js";
@@ -34,46 +34,45 @@ const GalleryControlsBar = ({
                 Gallery View
             </Typography>
             <Grid2 container direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                <Grid2 size={{xs:12, sm:8}}>
-                    <OutlinedBox label='Paging'>
-                        <GalleryPaging id='gallery-paging'
-                            count={count}
-                            page={paging.page}
-                            pageSize={paging.pageSize}
-                            pageColumns={paging.pageColumns}
-                            options={options}
-                            isGridView={gridView}
-                            onColumnChange={(value) => setPaging({
-                                page: 0,
-                                pageSize: value,
-                                pageColumns: value
-                            })}
-                            onPageChange={(value) => setPaging({
-                                ...paging,
-                                page: value
-                            })}
-                            onPageSizeChange={(value) => setPaging({
-                                ...paging,
-                                page: 0,
-                                pageSize: value
-                            })}
-                        />
-                    </OutlinedBox>
+                <Grid2 size={{ xs: 12, sm: 12, md: 8 }}>
+                    <GalleryPaging id='gallery-paging'
+                        count={count}
+                        page={paging.page}
+                        pageSize={paging.pageSize}
+                        pageColumns={paging.pageColumns}
+                        options={options}
+                        isGridView={gridView}
+                        onColumnChange={(value) => setPaging({
+                            page: 0,
+                            pageSize: value,
+                            pageColumns: value
+                        })}
+                        onPageChange={(value) => setPaging({
+                            ...paging,
+                            page: value
+                        })}
+                        onPageSizeChange={(value) => setPaging({
+                            ...paging,
+                            page: 0,
+                            pageSize: value
+                        })}
+                    />
                 </Grid2>
-                <Grid2 size="auto">
-                    <OutlinedBox style={{ width: 'fit-content' }}
-                        label={messages.get(messages.SHOW)}>
-                        <CustomSwitch isChecked={showAll} onChange={setShowAll} />
-                    </OutlinedBox>
+                <Grid2 size={{md: 1}}>
+                    <CustomSwitch label={messages.get(messages.SHOW)}
+                        labelPlacement='top'
+                        isChecked={showAll}
+                        onChange={setShowAll} />
                 </Grid2>
-                <Grid2 size="auto">
-                    <OutlinedBox style={{ width: 'fit-content' }} label='Select'>
-                        <CustomSwitch disabled={!gridView} isChecked={selectAll}
-                            onChange={handleSelectAll} />
-                    </OutlinedBox>
+                <Grid2 size={{md: 1}}>
+                    <CustomSwitch label='Select'
+                        labelPlacement='top'
+                        disabled={!gridView}
+                        isChecked={selectAll}
+                        onChange={handleSelectAll} />
                 </Grid2>
-                <Grid2 size="auto">
-                    <OutlinedBox style={{ width: 'fit-content' }} label='View Mode'>
+                <Grid2 size={{md: 2}}>
+                    <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={0} sx={{ alignItems: 'center' }}>
                         <IconButton
                             color={gridView ? 'primary' : 'default'}
                             onClick={() => handleViewChange(true)}
@@ -86,16 +85,16 @@ const GalleryControlsBar = ({
                             size="large">
                             <ViewListIcon fontSize="large" />
                         </IconButton>
-                    </OutlinedBox>
+                    </Stack>
                 </Grid2>
-                <Grid2 size={{xs:10, sm:8}}>
+                <Grid2 size={{ xs: 10, sm: 12, md: 10 }}>
                     <OutlinedBox label='Filter'>
                         <GalleryFilter options={dataSetTypes}
                             galleryFilter={galleryFilter}
                             onGalleryFilterChange={onGalleryFilterChange} />
                     </OutlinedBox>
                 </Grid2>
-                <Grid2 size={{xs:2, sm:2}}>
+                <Grid2 size={{ xs: 2, sm: 12, md: 2}}>
                     {configExports.length > 0 &&
                         <Exporter config={configExports} handleExport={handleExport}
                             disabled={isExportDisable} />}

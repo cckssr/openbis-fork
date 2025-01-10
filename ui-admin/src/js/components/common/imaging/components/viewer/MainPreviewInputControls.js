@@ -172,7 +172,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 	const currentMetadata = activePreview.metadata;
 	const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 	return (
-		<Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ padding: '8px', display: 'block' }}>
+		<Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
 
 			<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '30%', width: '100%' }}>
 				{(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)

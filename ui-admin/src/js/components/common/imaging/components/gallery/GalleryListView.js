@@ -6,7 +6,9 @@ import {
     ImageList,
     ImageListItem,
     Typography,
-    Card, Divider
+    Card, Divider,
+    TextField,
+    Chip
 } from "@mui/material";
 import makeStyles from '@mui/styles/makeStyles';
 import constants from "@src/js/components/common/imaging/constants.js";
@@ -49,20 +51,56 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                         idx={idx}
                         onEdit={newVal => onEditNote(newVal, datasetId)} />
                 } else {
-                    return <DefaultMetadataField key={'property-' + idx + '-' + pos} keyProp={key} valueProp={value} idx={idx} pos={pos} />
+                    return <TextField key={'property-' + idx + '-' + pos}
+                        label={key}
+                        value={value}
+                        variant='standard'
+                        fullWidth
+                        sx={{ my: 1 }}
+                        slotProps={{
+                            input: {
+                                readOnly: true,
+                                disableUnderline: true
+                            },
+                            inputLabel: {
+                                disableAnimation: true,
+                                sx: { fontWeight: 'bold', color: 'black' }
+                            }
+                        }} />
+                    //return <DefaultMetadataField key={'property-' + idx + '-' + pos} keyProp={key} valueProp={value} idx={idx} pos={pos} />
                 }
             })
         }
 
     }
 
-    const renderTags = (tags, idx) => {     
+    const renderTags = (tags, idx) => {
         var trasformedTags = []
-		for (const activePreviewTag of tags) {
-			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
-			trasformedTags.push(matchTag.label);
-		}
-        return <DefaultMetadataField key={'property-tags-' + idx} keyProp={'Preview Tags'} valueProp={trasformedTags} />
+        for (const activePreviewTag of tags) {
+            const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
+            trasformedTags.push(matchTag.label);
+        }
+        return <TextField key={'property-tags-' + idx}
+            label='Preview Tags'
+            variant='standard'
+            fullWidth
+            sx={{ my: 1 }}
+            slotProps={{
+                input: {
+                    readOnly: true,
+                    disableUnderline: true,
+                    startAdornment: trasformedTags.map(item => (
+                        <Chip key={item}
+                            size='small'
+                            tabIndex={-1}
+                            label={item}/>
+                      )),
+                },
+                inputLabel: {
+                    disableAnimation: true,
+                    sx: { fontWeight: 'bold', color: 'black' }
+                }
+            }} />
     }
 
     const renderCommentField = (previewContainer, idx) => {
@@ -76,10 +114,27 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
     const renderMetadataFields = (metadata, idx) => {
         return !isObjectEmpty(metadata) &&
             Object.entries(metadata).map(([key, value], pos) =>
-                <DefaultMetadataField key={'preview-property-' + pos} keyProp={'(raw metadata) ' + key}
+                <TextField key={'preview-property-' + pos}
+                        label={'(Raw metadata) ' + key}
+                        value={value}
+                        size='small'
+                        variant='standard'
+                        fullWidth
+                        sx={{ my: 1 }}
+                        slotProps={{
+                            input: {
+                                readOnly: true,
+                                disableUnderline: true
+                            },
+                            inputLabel: {
+                                disableAnimation: true,
+                                sx: { fontWeight: 'bold', color: 'black' }
+                            }
+                        }} />)
+        /* <DefaultMetadataField key={'preview-property-' + pos} keyProp={'(raw metadata) ' + key}
                     valueProp={value} idx={idx}
-                    pos={pos} />)
-        
+                    pos={pos} /> */
+
         //return <DefaultMetadataField key={'property-metadata'} keyProp={'METADATA'} valueProp={metadata} />
         /* if (isObjectEmpty(metadata)) {
             return <DefaultMetadataField key={'property-metadata'} keyProp={'METADATA'} valueProp={metadata} />
@@ -93,7 +148,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
         {previewContainerList.map((previewContainer, idx) => (
             <ImageListItem style={{ height: 'unset' }} key={'image-list-item-' + idx}>
                 <Card className={classes.card} key={'card-list-item-' + idx}>
-                    <CardActionArea sx={{ overflow: 'auto', width: {md: '40%', xs: '100%'} }}>
+                    <CardActionArea sx={{ overflow: 'auto', width: { md: '40%', xs: '100%' } }}>
                         <CardMedia component="img"
                             alt={""}
                             src={previewContainer.preview.bytes ? `data:image/${previewContainer.preview.format};base64,${previewContainer.preview.bytes}` : constants.BLANK_IMG_SRC}
@@ -116,8 +171,8 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                                 color: "textSecondary"
                             }}>
                             {renderMetadataFields(previewContainer.preview.metadata, idx)}
-                            {renderCommentField(previewContainer, idx)}
                             {previewContainer.preview.tags !== null && previewContainer.preview.tags.length > 0 && renderTags(previewContainer.preview.tags, idx)}
+                            {renderCommentField(previewContainer, idx)}
                         </Typography>
                     </CardContent>
                 </Card>

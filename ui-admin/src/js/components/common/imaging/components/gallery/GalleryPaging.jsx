@@ -1,6 +1,6 @@
 import React from 'react';
 import withStyles from '@mui/styles/withStyles';
-import {Typography, FormControlLabel, IconButton, Grid2} from '@mui/material';
+import { Typography, FormControlLabel, IconButton, Grid2, Stack } from '@mui/material';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -85,7 +85,7 @@ class GalleryPaging extends React.PureComponent {
 
         return (
             <Grid2 container columns={13} className={classes.container}>
-                <Grid2 size={{ xs: 12, sm: 2 }} className={classes.pagePrevButtons}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                     <IconButton
                         id={id + '.first-page-id'}
                         onClick={this.handleFirstPageButtonClick}
@@ -93,7 +93,7 @@ class GalleryPaging extends React.PureComponent {
                         aria-label={messages.get(messages.FIRST_PAGE)}
                         data-part='firstPage'
                         size="large">
-                        <FirstPageIcon fontSize='small'/>
+                        <FirstPageIcon fontSize='small' />
                     </IconButton>
                     <IconButton
                         id={id + '.prev-page-id'}
@@ -102,15 +102,13 @@ class GalleryPaging extends React.PureComponent {
                         aria-label={messages.get(messages.PREVIOUS_PAGE)}
                         data-part='prevPage'
                         size="large">
-                        <KeyboardArrowLeft fontSize='small'/>
+                        <KeyboardArrowLeft fontSize='small' />
                     </IconButton>
-                </Grid2>
-                <Grid2 size={{ xs: 12, sm: 2 }} id={id + '.page-range-id'} className={classes.pageRange}>
+
                     <Typography variant='body2' data-part='range'>
                         {this.renderRange()}
                     </Typography>
-                </Grid2>
-                <Grid2 size={{ xs: 12, sm: 2 }} className={classes.pageNextButtons}>
+
                     <IconButton
                         id={id + '.next-page-id'}
                         onClick={this.handleNextButtonClick}
@@ -118,7 +116,7 @@ class GalleryPaging extends React.PureComponent {
                         aria-label={messages.get(messages.NEXT_PAGE)}
                         data-part='nextPage'
                         size="large">
-                        <KeyboardArrowRight fontSize='small'/>
+                        <KeyboardArrowRight fontSize='small' />
                     </IconButton>
                     <IconButton
                         id={id + '.last-page-id'}
@@ -127,10 +125,10 @@ class GalleryPaging extends React.PureComponent {
                         aria-label={messages.get(messages.LAST_PAGE)}
                         data-part='lastPage'
                         size="large">
-                        <LastPageIcon fontSize='small'/>
+                        <LastPageIcon fontSize='small' />
                     </IconButton>
-                </Grid2>
-                <Grid2 size={{ xs: 12, sm: 3 }} id={id + '.page-size-id'} className={classes.pageSize}>
+                </Stack>
+                <Grid2 size={{ xs: 12, sm: 6, md: 3 }} id={id + '.page-size-id'} className={classes.pageSize}>
                     <FormControlLabel
                         control={
                             <SelectField
@@ -148,7 +146,7 @@ class GalleryPaging extends React.PureComponent {
                         labelPlacement='start'
                     />
                 </Grid2>
-                <Grid2 size={{ xs: 12, sm: 3 }} id={id + '.grid-cols-id'} className={classes.pageSize}>
+                <Grid2 size={{ xs: 12, sm: 6, md: 3 }} id={id + '.grid-cols-id'} className={classes.pageSize}>
                     <FormControlLabel
                         control={
                             <SelectField
@@ -165,7 +163,7 @@ class GalleryPaging extends React.PureComponent {
                             label: classes.pageSizeLabel,
                             labelPlacementStart: classes.pageSizeLabelPlacement
                         }}
-                        label={messages.get(messages.COLUMNS)+':'}
+                        label={messages.get(messages.COLUMNS) + ':'}
                         labelPlacement='start'
                         disabled={!isGridView}
                     />
@@ -175,7 +173,7 @@ class GalleryPaging extends React.PureComponent {
     }
 
     renderRange() {
-        const {count, page, pageSize} = this.props
+        const { count, page, pageSize } = this.props
 
         if (count === 0) {
             return <span>{messages.get(messages.NO_RESULTS_FOUND)}</span>
@@ -187,8 +185,8 @@ class GalleryPaging extends React.PureComponent {
 
             return (
                 <span>
-          {messages.get(messages.RESULTS_RANGE, from + '-' + to, count)}
-        </span>
+                    {messages.get(messages.RESULTS_RANGE, from + '-' + to, count)}
+                </span>
             )
         }
     }
