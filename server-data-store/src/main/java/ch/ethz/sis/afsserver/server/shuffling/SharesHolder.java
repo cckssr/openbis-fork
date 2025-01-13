@@ -16,13 +16,10 @@
 package ch.ethz.sis.afsserver.server.shuffling;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 
-import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
@@ -68,9 +65,6 @@ final class SharesHolder
         {
             return;
         }
-
-        final ILockManager lockManager = ServiceProvider.getLockManager();
-
         for (SimpleDataSetInformationDTO dataSet : service.listDataSets(new DataSetSearchCriteria(), new DataSetFetchOptions()))
         {
             String shareId = dataSet.getDataSetShareId();
@@ -82,51 +76,27 @@ final class SharesHolder
                 {
                     if (dataSet.getDataSetSize() == null)
                     {
-                        final UUID transactionId = UUID.randomUUID();
-
-                        final boolean locked = lockManager.lock(transactionId, List.of(dataSet), LockType.HierarchicallyExclusive);
-
-                        if (locked)
+                        final File dataSetInStore =
+                                new File(share.getShare(), dataSet.getDataSetLocation());
+                        if (FileOperations.getMonitoredInstanceForCurrentThread()
+                                .exists(dataSetInStore))
                         {
-                            try
-                            {
-                                final File dataSetInStore =
-                                        new File(share.getShare(), dataSet.getDataSetLocation());
-
-                                if (FileOperations.getMonitoredInstanceForCurrentThread()
-                                        .exists(dataSetInStore))
-                                {
-                                    log.log(LogLevel.INFO, "Calculating size of " + dataSetInStore);
-                                    long t0 = timeProvider.getTimeInMilliseconds();
-                                    long size = FileUtils.sizeOfDirectory(dataSetInStore);
-                                    log.log(LogLevel.INFO,
-                                            dataSetInStore + " contains " + size + " bytes (calculated in "
-                                                    + (timeProvider.getTimeInMilliseconds() - t0)
-                                                    + " msec)");
-                                    service.updateShareIdAndSize(dataSetCode, shareId, size);
-                                    dataSet.setDataSetSize(size);
-                                    share.addDataSet(dataSet);
-                                } else
-                                {
-                                    log.log(LogLevel.WARN, "Data set " + dataSetCode
-                                            + " no longer exists in share " + shareId + ".");
-                                }
-                            } catch (Exception e)
-                            {
-                                log.log(LogLevel.ERROR, "Data set " + dataSetCode + " size could not be calculated.", e);
-                            } finally
-                            {
-                                lockManager.unlock(transactionId, List.of(dataSet), LockType.HierarchicallyExclusive);
-                            }
+                            log.log(LogLevel.INFO, "Calculating size of " + dataSetInStore);
+                            long t0 = timeProvider.getTimeInMilliseconds();
+                            long size = FileUtils.sizeOfDirectory(dataSetInStore);
+                            log.log(LogLevel.INFO,
+                                    dataSetInStore + " contains " + size + " bytes (calculated in "
+                                            + (timeProvider.getTimeInMilliseconds() - t0)
+                                            + " msec)");
+                            service.updateShareIdAndSize(dataSetCode, shareId, size);
+                            dataSet.setDataSetSize(size);
                         } else
                         {
-                            log.log(LogLevel.INFO,
-                                    "Data set " + dataSetCode
-                                            + " size could not be calculated because the data set could not be locked (i.e. it is being used by another operation).");
-                            dataSet.setDataSetSize(0L);
-                            share.addDataSet(dataSet);
+                            log.log(LogLevel.WARN, "Data set " + dataSetCode
+                                    + " no longer exists in share " + shareId + ".");
                         }
-                    } else
+                    }
+                    if (dataSet.getDataSetSize() != null)
                     {
                         share.addDataSet(dataSet);
                     }
