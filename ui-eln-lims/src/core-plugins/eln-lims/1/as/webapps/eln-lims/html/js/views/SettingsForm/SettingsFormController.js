@@ -77,13 +77,12 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	    }
 
 	    var _this = this;
-	    var valuess = _this._settingsFormView._instanceSettingsWidget.getValues();
 	    var reloadApplication = null;
 	        reloadApplication = function() {
 	        if(_this._mainController.currentView &&
 	            _this._mainController.currentView._settingsFormModel &&
 	            _this._mainController.currentView._settingsFormModel.finishedLoading ) {
-                Util.reloadApplication("Application will be reloaded to apply the new settings.");
+                Util.reloadApexplication("Application will be reloaded to apply the new settings.");
 	        } else {
                 setTimeout(reloadApplication, 100);
 	        }
