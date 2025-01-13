@@ -29,7 +29,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
@@ -45,7 +46,7 @@ public class DatabaseBasedDataSetPathInfoProviderTest extends AssertJUnit
 
     private Mockery context;
 
-    private IPathInfoDAO dao;
+    private IPathInfoAutoClosingDAO dao;
 
     private IDataSetPathInfoProvider pathInfoProvider;
 
@@ -53,7 +54,7 @@ public class DatabaseBasedDataSetPathInfoProviderTest extends AssertJUnit
     public void setUp()
     {
         context = new Mockery();
-        dao = context.mock(IPathInfoDAO.class);
+        dao = context.mock(IPathInfoAutoClosingDAO.class);
         pathInfoProvider = new DatabaseBasedDataSetPathInfoProvider(dao);
     }
 

@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 
 /**
@@ -31,7 +31,7 @@ public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFee
 {
     private final static int BATCH_SIZE = 500;
 
-    private final IPathInfoDAO dao;
+    private final IPathInfoNonAutoClosingDAO dao;
 
     private final List<PathEntryDTO> filePaths = new ArrayList<PathEntryDTO>(BATCH_SIZE);
 
@@ -39,7 +39,7 @@ public class DatabaseBasedDataSetPathsInfoFeeder implements IDataSetPathsInfoFee
 
     private final String checksumType;
 
-    public DatabaseBasedDataSetPathsInfoFeeder(IPathInfoDAO dao, boolean computeChecksum, String checksumType)
+    public DatabaseBasedDataSetPathsInfoFeeder(IPathInfoNonAutoClosingDAO dao, boolean computeChecksum, String checksumType)
     {
         this.dao = dao;
         this.computeChecksum = computeChecksum;

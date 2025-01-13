@@ -26,7 +26,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -76,9 +76,9 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     static final String TIME_LIMIT_KEY = "time-limit";
 
-    private static IPathInfoDAO createDAO()
+    private static IPathInfoNonAutoClosingDAO createDAO()
     {
-        return QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
+        return QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoNonAutoClosingDAO.class);
     }
 
     private static IDataSetDirectoryProvider getDirectoryProvider()
@@ -108,7 +108,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     @Private
     PathInfoDatabaseFeedingTask(IEncapsulatedOpenBISService service,
-            IDataSetDirectoryProvider directoryProvider, IPathInfoDAO dao,
+            IDataSetDirectoryProvider directoryProvider, IPathInfoNonAutoClosingDAO dao,
             ITimeProvider timeProvider, boolean computeChecksum, String checksumType,
             int chunkSize, int maxNumberOfChunks, long timeLimit)
     {

@@ -26,7 +26,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
@@ -50,7 +50,7 @@ public class PathInfoDatabaseChecksumCalculationTaskTest extends AbstractFileSys
 
     private Mockery context;
 
-    private IPathInfoDAO dao;
+    private IPathInfoNonAutoClosingDAO dao;
 
     private IHierarchicalContentProvider contentProvider;
 
@@ -69,7 +69,7 @@ public class PathInfoDatabaseChecksumCalculationTaskTest extends AbstractFileSys
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO, LOGGER_NAME);
         context = new Mockery();
-        dao = context.mock(IPathInfoDAO.class);
+        dao = context.mock(IPathInfoNonAutoClosingDAO.class);
         contentProvider = context.mock(IHierarchicalContentProvider.class);
         content1 = context.mock(IHierarchicalContent.class, "content 1");
         content2 = context.mock(IHierarchicalContent.class, "content 2");

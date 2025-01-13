@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.Hdf5AwareHierarchicalContentFactory;
@@ -58,7 +58,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
 
     protected IDataSetDirectoryProvider directoryProvider;
 
-    protected IPathInfoDAO dao;
+    protected IPathInfoNonAutoClosingDAO dao;
 
     protected boolean computeChecksum;
 

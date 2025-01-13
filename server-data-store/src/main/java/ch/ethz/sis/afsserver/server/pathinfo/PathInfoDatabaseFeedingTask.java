@@ -49,7 +49,7 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -79,12 +79,12 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     static final String TIME_LIMIT_KEY = "time-limit";
 
-    private static IPathInfoDAO createDAO()
+    private static IPathInfoNonAutoClosingDAO createDAO()
     {
         DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(ServiceProvider.getConfiguration());
         if (pathInfoConfiguration != null)
         {
-            return QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoDAO.class);
+            return QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
         } else
         {
             throw new RuntimeException("Path info database is not configured.");
@@ -112,7 +112,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
     }
 
     @Private PathInfoDatabaseFeedingTask(IEncapsulatedOpenBISService service,
-            IPathInfoDAO dao, ITimeProvider timeProvider, boolean computeChecksum, String checksumType,
+            IPathInfoNonAutoClosingDAO dao, ITimeProvider timeProvider, boolean computeChecksum, String checksumType,
             int chunkSize, int maxNumberOfChunks, long timeLimit)
     {
         this.service = service;

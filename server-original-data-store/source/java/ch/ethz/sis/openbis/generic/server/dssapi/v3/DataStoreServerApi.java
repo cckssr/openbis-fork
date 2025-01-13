@@ -71,7 +71,7 @@ import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenAware;
@@ -414,8 +414,8 @@ public class DataStoreServerApi extends AbstractDssServiceRpc<IDataStoreServerAp
                     "Pathinfo DB not configured - cannot store dataset file information");
         }
         injectDataStoreIdAndCodesIfNeeded(newDataSets);
-        IPathInfoDAO dao =
-                QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
+        IPathInfoNonAutoClosingDAO dao =
+                QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoNonAutoClosingDAO.class);
 
         for (int i = 0; i < newDataSets.size(); i++)
         {

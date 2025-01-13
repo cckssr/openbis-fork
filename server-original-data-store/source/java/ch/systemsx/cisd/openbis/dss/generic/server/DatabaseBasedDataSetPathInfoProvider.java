@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.ExtendedDataSetFileRecord;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.db.DBUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
@@ -42,14 +42,14 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         List<DataSetFileRecord> listDataSetFiles(long dataSetId);
     }
 
-    private IPathInfoDAO dao;
+    private IPathInfoAutoClosingDAO dao;
 
     public DatabaseBasedDataSetPathInfoProvider()
     {
     }
 
     @Private
-    DatabaseBasedDataSetPathInfoProvider(IPathInfoDAO dao)
+    DatabaseBasedDataSetPathInfoProvider(IPathInfoAutoClosingDAO dao)
     {
         this.dao = dao;
     }
@@ -134,7 +134,7 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
     public Map<String, Integer> getDataSetChecksums(String dataSetCode)
     {
         Map<String, Integer> files = new HashMap<String, Integer>();
-        IPathInfoDAO queries = getDao();
+        IPathInfoAutoClosingDAO queries = getDao();
         Long id = queries.tryToGetDataSetId(dataSetCode);
         if (id == null)
         {
@@ -163,9 +163,9 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
     {
         private final Long dataSetId;
 
-        private final IPathInfoDAO dao;
+        private final IPathInfoAutoClosingDAO dao;
 
-        public SingleDataSetPathInfoProvider(Long dataSetId, IPathInfoDAO dao)
+        public SingleDataSetPathInfoProvider(Long dataSetId, IPathInfoAutoClosingDAO dao)
         {
             this.dataSetId = dataSetId;
             this.dao = dao;
@@ -360,13 +360,13 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         }
     }
 
-    private IPathInfoDAO getDao()
+    private IPathInfoAutoClosingDAO getDao()
     {
         if (dao == null)
         {
             dao =
                     QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(),
-                            IPathInfoDAO.class);
+                            IPathInfoAutoClosingDAO.class);
         }
         return dao;
     }

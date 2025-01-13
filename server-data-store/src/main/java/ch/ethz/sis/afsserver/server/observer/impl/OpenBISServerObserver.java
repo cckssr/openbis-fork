@@ -30,7 +30,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
@@ -47,7 +47,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
 
     private OpenBISConfiguration openBISConfiguration;
 
-    private IPathInfoDAO pathInfoDAO;
+    private IPathInfoNonAutoClosingDAO pathInfoDAO;
 
     private APIServer<TransactionConnection, ApiRequest, ApiResponse, ?> apiServer;
 
@@ -62,7 +62,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
         if (pathInfoDatabaseConfiguration != null)
         {
-            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoDAO.class);
+            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
         }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);

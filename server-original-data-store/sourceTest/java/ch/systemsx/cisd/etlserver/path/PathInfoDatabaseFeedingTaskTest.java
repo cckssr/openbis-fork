@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTaskExecutor;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -62,7 +62,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
 
     private IShareIdManager shareIdManager;
 
-    private IPathInfoDAO dao;
+    private IPathInfoNonAutoClosingDAO dao;
 
     private PathInfoDatabaseFeedingTask task;
 
@@ -87,7 +87,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
             }
         });
         directoryProvider = new DataSetDirectoryProvider(STORE_ROOT, shareIdManager);
-        dao = context.mock(IPathInfoDAO.class);
+        dao = context.mock(IPathInfoNonAutoClosingDAO.class);
         context.checking(new Expectations()
         {
             {
@@ -745,13 +745,13 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         return dataSet;
     }
 
-    private PathInfoDatabaseFeedingTask createTask(IPathInfoDAO pathsInfoDAO,
+    private PathInfoDatabaseFeedingTask createTask(IPathInfoNonAutoClosingDAO pathsInfoDAO,
             int chunkSize, int maxNumberOfChunks, long timeLimite)
     {
         return createTask(pathsInfoDAO, null, chunkSize, maxNumberOfChunks, timeLimite);
     }
 
-    private PathInfoDatabaseFeedingTask createTask(IPathInfoDAO pathsInfoDAO, String checksumType,
+    private PathInfoDatabaseFeedingTask createTask(IPathInfoNonAutoClosingDAO pathsInfoDAO, String checksumType,
             int chunkSize, int maxNumberOfChunks, long timeLimite)
     {
         return new PathInfoDatabaseFeedingTask(service, directoryProvider, pathsInfoDAO,

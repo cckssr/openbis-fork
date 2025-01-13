@@ -24,12 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.pathinfo.DataSetFileRecord;
-import ch.ethz.sis.pathinfo.ExtendedDataSetFileRecord;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 
-final class MockPathsInfoDAO implements IPathInfoDAO
+final class MockPathsInfoDAO implements IPathInfoNonAutoClosingDAO
 {
     private final StringWriter writer = new StringWriter();
 
@@ -208,59 +206,6 @@ final class MockPathsInfoDAO implements IPathInfoDAO
     public List<PathEntryDTO> listDataSetsSize(String[] dataSetCodes)
     {
         return null;
-    }
-
-    @Override public Long tryToGetDataSetId(final String dataSetCode)
-    {
-        return 0L;
-    }
-
-    @Override public List<DataSetFileRecord> listDataSetFiles(final long dataSetId)
-    {
-        return List.of();
-    }
-
-    @Override public DataSetFileRecord getDataSetRootFile(final long dataSetId)
-    {
-        return null;
-    }
-
-    @Override public DataSetFileRecord tryToGetRelativeDataSetFile(final long dataSetId, final String relativePath)
-    {
-        return null;
-    }
-
-    @Override public List<DataSetFileRecord> listChildrenByParentId(final long dataSetId, final long parentId)
-    {
-        return List.of();
-    }
-
-    @Override public List<DataSetFileRecord> listDataSetFilesByRelativePathRegex(final long dataSetId, final String relativePathRegex)
-    {
-        return List.of();
-    }
-
-    @Override public List<DataSetFileRecord> listDataSetFilesByRelativePathLikeExpression(final long dataSetId,
-            final String relativePathLikeExpression)
-    {
-        return List.of();
-    }
-
-    @Override public List<ExtendedDataSetFileRecord> listFilesByRelativePathLikeExpression(final String relativePathLikeExpression)
-    {
-        return List.of();
-    }
-
-    @Override public List<DataSetFileRecord> listDataSetFilesByFilenameRegex(final long dataSetId, final String startingPath,
-            final String filenameRegex)
-    {
-        return List.of();
-    }
-
-    @Override public List<DataSetFileRecord> listDataSetFilesByFilenameLikeExpression(final long dataSetId, final String startingPath,
-            final String filenameLikeExpression)
-    {
-        return List.of();
     }
 
 }

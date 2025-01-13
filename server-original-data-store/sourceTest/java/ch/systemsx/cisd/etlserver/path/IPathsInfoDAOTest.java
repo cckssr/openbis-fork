@@ -18,7 +18,7 @@ package ch.systemsx.cisd.etlserver.path;
 import java.util.Date;
 import java.util.List;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.pathinfo.PathEntryDTO;
 import net.lemnik.eodsql.QueryTool;
 
@@ -37,7 +37,7 @@ public class IPathsInfoDAOTest extends SystemTestCase
     @Test
     public void testListDataSetsSize()
     {
-        IPathInfoDAO dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoDAO.class);
+        IPathInfoNonAutoClosingDAO dao = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoNonAutoClosingDAO.class);
 
         long dataSetId = dao.createDataSet("DATA_SET_WITH_SIZE", "abc");
         long rootDirectoryId = dao.createDataSetFile(dataSetId, null, "", "root", 123L, true, null, null, new Date());

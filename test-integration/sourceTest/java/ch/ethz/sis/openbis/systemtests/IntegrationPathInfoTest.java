@@ -20,7 +20,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import net.lemnik.eodsql.QueryTool;
 
 public class IntegrationPathInfoTest extends AbstractIntegrationTest
@@ -32,7 +32,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
     private static final long WAITING_TIME_FOR_PATH_INFO_DELETION = 3000L;
 
-    private IPathInfoDAO pathInfoDAO;
+    private IPathInfoAutoClosingDAO pathInfoDAO;
 
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
@@ -42,7 +42,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         deleteLastSeenDeletionFile();
 
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
-        pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoDAO.class);
+        pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
     }
 
     @Test

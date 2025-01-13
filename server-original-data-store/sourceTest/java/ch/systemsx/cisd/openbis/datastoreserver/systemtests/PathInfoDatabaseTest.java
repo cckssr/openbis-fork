@@ -35,7 +35,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.pathinfo.IPathInfoDAO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
@@ -336,7 +336,7 @@ public class PathInfoDatabaseTest extends SystemTestCase
     private int feedDataBase(DataSource dataSource)
     {
         int numberOfEntries = 0;
-        IPathInfoDAO dao = QueryTool.getQuery(dataSource, IPathInfoDAO.class);
+        IPathInfoNonAutoClosingDAO dao = QueryTool.getQuery(dataSource, IPathInfoNonAutoClosingDAO.class);
         try
         {
             long id;
@@ -360,7 +360,7 @@ public class PathInfoDatabaseTest extends SystemTestCase
         return numberOfEntries;
     }
 
-    private int feedDataBase(IPathInfoDAO dao, long dataSetId, Long parentId, int level,
+    private int feedDataBase(IPathInfoNonAutoClosingDAO dao, long dataSetId, Long parentId, int level,
             String prefix, String fileNamePrefix)
     {
         int numberOfEntries = 0;
