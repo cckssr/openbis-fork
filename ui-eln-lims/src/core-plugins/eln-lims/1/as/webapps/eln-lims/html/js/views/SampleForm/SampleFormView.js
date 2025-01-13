@@ -293,7 +293,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                         dropdownOptionsModel.push({
                             label : "Freeze Entity (Disable further modifications)",
                             action : function () {
-                                FormUtil.showFreezeForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId);
+                                FormUtil.showFreezeForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
                             }
                         });
                     }

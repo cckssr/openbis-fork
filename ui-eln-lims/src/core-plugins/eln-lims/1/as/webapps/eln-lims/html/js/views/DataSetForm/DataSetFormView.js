@@ -414,7 +414,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                         dropdownOptionsModel.push({
                             label : "Freeze Entity (Disable further modifications)",
                             action : function () {
-                                FormUtil.showFreezeForm("DATASET", _this._dataSetFormModel.v3_dataset.permId.permId);
+                                FormUtil.showFreezeForm("DATASET", _this._dataSetFormModel.v3_dataset.permId.permId, _this._dataSetFormModel.v3_dataset.code);
                             }
                         });
                     }

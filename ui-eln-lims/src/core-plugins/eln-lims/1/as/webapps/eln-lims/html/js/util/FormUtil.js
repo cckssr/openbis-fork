@@ -2400,7 +2400,7 @@ var FormUtil = new function() {
     		});
     }
 
-	this.showFreezeForm = function(entityType, permId) {
+	this.showFreezeForm = function(entityType, permId, code) {
 		var _this = this;
 		
 		Util.blockUI();
@@ -2420,23 +2420,24 @@ var FormUtil = new function() {
 					'action' : 'javascript:void(0);'
 				});
 				
-				$window.append($('<legend>').append("Freeze Entity"));
-				
+				$window.append($('<legend>')
+				    .append("Freeze Entity")
+				    .append("&nbsp;")
+				    .append(code)
+				    .append("&nbsp;")
+				    .append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
+                    .append($("<span>", { style : "color:red; font-size: large;" })
+                    .append(" This operation is irreversible!"))
+				);
+
 				//
 				// List
 				//
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
 						.append(" Choose the entities to freeze (all by default):"));
-				
-				var $table = $("<table>", { class : "popup-table" } )
-								.append($("<tr>")
-										.append($("<th>").append("Selected"))
-										.append($("<th>").append("Type"))
-										.append($("<th>").append("PermId"))
-										.append($("<th>").append("Name"))
-								);
-					
+
+				var $tableBody = $("<table>", { class : "popup-table" } );
 				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
 				entityMap = result.result;
 				
@@ -2454,7 +2455,7 @@ var FormUtil = new function() {
 					for (key in entityMap) {
 						entity = entityMap[key];
 						if(entity.type == entityTypeOrder[typeOrder]) {
-							$table.append($("<tr>")
+							$tableBody.append($("<tr>")
 									.append($("<td>").append(_this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)))
 									.append($("<td>").append(getTypeDisplayName(entity.type)))
 									.append($("<td>").append(entity.permId))
@@ -2463,8 +2464,23 @@ var FormUtil = new function() {
 						}
 					}
 				}
-				
-				$window.append($table);
+
+				var $tableHeader = $("<table>", { class : "popup-table" } )
+								.append($("<tr>")
+										.append($("<th>").append("Selected"))
+										.append($("<th>").append("Type"))
+										.append($("<th>").append("PermId"))
+										.append($("<th>").append("Name"))
+								);
+
+				var $tableContainer = $("<div>");
+				$tableContainer.css({
+				                'height' : '100px',
+                                'overflow' : 'auto'
+                                });
+				$tableContainer.append($tableBody);
+
+				$window.append($tableHeader).append($tableContainer);
 				
 				//
 				// Warning
@@ -2472,16 +2488,12 @@ var FormUtil = new function() {
 				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Write the word FREEZE, after they are frozen no more changes will be possible:"));
-				$window.append($("<p>")
-						.append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
-						.append($("<span>", { style : "color:red; font-size: large;" }).append(" This operation is irreversible!")));
-				
+						.append(" Write the 'CODE FREEZE', after they are frozen no more changes will be possible:"));
 				//
 				// Password
 				//
-				var $passField = FormUtil._getInputField('freeze', null, 'Freeze', null, true);
-				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Freeze", null);
+				var $passField = FormUtil._getInputField('freeze', null, 'Code Freeze', null, true);
+				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Code Freeze", null);
 				$window.append($passwordGroup);
 				
 				//
@@ -2502,7 +2514,7 @@ var FormUtil = new function() {
 					if (_this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing(entityMap)) {
 						var username = mainController.serverFacade.getUserId();
 						var password = $passField.val();
-									if(password !== 'FREEZE') {
+									if(password !== code + ' FREEZE') {
 										Util.showUserError('The given word is not correct.');
 									} else {
 										for (key in entityMap) {
@@ -2559,7 +2571,7 @@ var FormUtil = new function() {
 						'height' : '400px',
 						'left' : '15%',
 						'right' : '20%',
-						'overflow' : 'auto'
+						'overflow' : 'none'
 				};
 				
 				Util.blockUI($window, css);

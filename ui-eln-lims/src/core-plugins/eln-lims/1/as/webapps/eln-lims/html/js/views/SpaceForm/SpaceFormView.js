@@ -124,7 +124,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                     dropdownOptionsModel.push({
                         label : "Freeze Entity (Disable further modifications)",
                         action : function() {
-                            FormUtil.showFreezeForm("SPACE", _this._spaceFormModel.v3_space.permId.permId);
+                            FormUtil.showFreezeForm("SPACE", _this._spaceFormModel.v3_space.permId.permId,  _this._spaceFormModel.v3_space.code);
                         }
                     });
                 }

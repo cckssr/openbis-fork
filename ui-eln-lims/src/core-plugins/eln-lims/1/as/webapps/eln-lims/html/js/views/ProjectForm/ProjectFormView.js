@@ -143,7 +143,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
                     dropdownOptionsModel.push({
                         label : "Freeze Entity (Disable further modifications)",
                         action : function() {
-                            FormUtil.showFreezeForm("PROJECT", _this._projectFormModel.v3_project.permId.permId);
+                            FormUtil.showFreezeForm("PROJECT", _this._projectFormModel.v3_project.permId.permId, _this._projectFormModel.v3_project.code);
                         }
                     });
                 }
