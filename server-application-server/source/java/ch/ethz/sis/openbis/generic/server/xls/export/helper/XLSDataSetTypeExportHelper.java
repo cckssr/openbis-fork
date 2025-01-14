@@ -15,12 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.poi.ss.usermodel.Workbook;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
@@ -29,18 +23,28 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
+import org.apache.poi.ss.usermodel.Workbook;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
 
 public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelper<DataSetType>
 {
 
+
     public XLSDataSetTypeExportHelper(final Workbook wb)
     {
         super(wb);
     }
+
 
     @Override
     public DataSetType getEntityType(final IApplicationServerApi api, final String sessionToken,
@@ -71,11 +75,12 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
     protected Attribute[] getAttributes(final DataSetType entityType)
     {
         return new Attribute[] { CODE, INTERNAL, DESCRIPTION, VALIDATION_SCRIPT, MAIN_DATA_SET_PATTERN, MAIN_DATA_SET_PATH, DISALLOW_DELETION,
-                MODIFICATION_DATE };
+                MODIFICATION_DATE, ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION };
     }
 
     @Override
-    protected String getAttributeValue(final DataSetType dataSetType, final Attribute attribute)
+    protected String getAttributeValue(IApplicationServerApi api, String sessionToken,
+            final DataSetType dataSetType, final Attribute attribute)
     {
         switch (attribute)
         {
@@ -113,6 +118,44 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
             {
                 return DATE_FORMAT.format(dataSetType.getModificationDate());
             }
+            case ONTOLOGY_ID:
+            {
+                // create a helper method, give kind as argument
+                List<SemanticAnnotation>
+                        searchResult =
+                        getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.DATA_SET,
+                                dataSetType.getCode(), null);
+
+                return searchResult.stream().map(
+                                SemanticAnnotation::getDescriptorOntologyId)
+                        .collect(Collectors.joining("\n"));
+
+            }
+            case ONTOLOGY_VERSION:
+            {
+                List<SemanticAnnotation>
+                        searchResult =
+                        getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.DATA_SET,
+                                dataSetType.getCode(), null);
+
+                return searchResult.stream().map(
+                                SemanticAnnotation::getDescriptorOntologyVersion)
+                        .collect(Collectors.joining("\n"));
+
+            }
+            case ONTOLOGY_ANNOTATION_ID:
+            {
+                List<SemanticAnnotation>
+                        searchResult =
+                        getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.DATA_SET,
+                                dataSetType.getCode(), null);
+
+                return searchResult.stream().map(
+                                SemanticAnnotation::getPredicateAccessionId)
+                        .collect(Collectors.joining("\n"));
+
+            }
+
             default:
             {
                 return null;
@@ -124,6 +167,12 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
     protected ExportableKind getExportableKind()
     {
         return ExportableKind.DATASET_TYPE;
+    }
+
+    @Override
+    protected EntityKind getEntityKind()
+    {
+        return EntityKind.DATA_SET;
     }
 
 }

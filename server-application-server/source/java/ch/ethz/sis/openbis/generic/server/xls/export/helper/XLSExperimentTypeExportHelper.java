@@ -15,12 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.poi.ss.usermodel.Workbook;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
@@ -31,6 +25,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
+import org.apache.poi.ss.usermodel.Workbook;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.server.xls.export.Attribute.*;
 
@@ -45,11 +45,13 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
     @Override
     protected Attribute[] getAttributes(final ExperimentType entityType)
     {
-        return new Attribute[] { CODE, INTERNAL, DESCRIPTION, VALIDATION_SCRIPT, MODIFICATION_DATE };
+        return new Attribute[] { CODE, INTERNAL, DESCRIPTION, VALIDATION_SCRIPT, MODIFICATION_DATE,
+                ONTOLOGY_ID, ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION };
     }
 
     @Override
-    protected String getAttributeValue(final ExperimentType experimentType, final Attribute attribute)
+    protected String getAttributeValue(IApplicationServerApi api, String sessionToken,
+            final ExperimentType experimentType, final Attribute attribute)
     {
         switch (attribute)
         {
@@ -76,6 +78,28 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
             {
                 return DATE_FORMAT.format(experimentType.getModificationDate());
             }
+            case ONTOLOGY_ID:
+            {
+                return getSemanticAnnotationSearchResult(api, sessionToken,
+                        EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
+                        .map(x -> x.getDescriptorOntologyId()).collect(
+                                Collectors.joining("\n"));
+            }
+            case ONTOLOGY_VERSION:
+            {
+                return getSemanticAnnotationSearchResult(api, sessionToken,
+                        EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
+                        .map(x -> x.getDescriptorOntologyVersion()).collect(
+                                Collectors.joining("\n"));
+            }
+            case ONTOLOGY_ANNOTATION_ID:
+            {
+                return getSemanticAnnotationSearchResult(api, sessionToken,
+                        EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
+                        .map(x -> x.getPredicateAccessionId()).collect(
+                                Collectors.joining("\n"));
+            }
+
             default:
             {
                 return null;
@@ -113,4 +137,11 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
     {
         return ExportableKind.EXPERIMENT_TYPE;
     }
+
+    @Override
+    protected EntityKind getEntityKind()
+    {
+        return EntityKind.EXPERIMENT;
+    }
+
 }

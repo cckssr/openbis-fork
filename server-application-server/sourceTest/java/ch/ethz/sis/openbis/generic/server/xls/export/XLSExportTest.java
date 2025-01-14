@@ -15,36 +15,12 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.DATASET;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.DATASET_TYPE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.EXPERIMENT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.EXPERIMENT_TYPE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.MASTER_DATA_EXPORTABLE_KINDS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.PROJECT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SAMPLE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SAMPLE_TYPE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SPACE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.VOCABULARY_TYPE;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -58,10 +34,14 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.*;
+import static org.testng.Assert.*;
 
 public class XLSExportTest
 {
@@ -281,6 +261,32 @@ public class XLSExportTest
                 throw e;
             }
         }
+    }
+
+    @Test
+    public void testAnnotations() throws IOException
+    {
+
+        SearchResult<SemanticAnnotation> searchResult = new SearchResult<>(List.of(), 1);
+
+        final Expectations expectations = new SampleSemanticAnnotationsExpectations(api, false);
+        mockery.checking(expectations);
+        List<ExportablePermId> exportablePermIds =
+                List.of(new ExportablePermId(SAMPLE_TYPE, "200001010000000-0001"));
+        final XLSExport.PrepareWorkbookResult actualResult = XLSExport.prepareWorkbook(
+                api, SESSION_TOKEN, exportablePermIds,
+                false, null, XLSExport.TextFormatting.PLAIN, false);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(
+                "ch/ethz/sis/openbis/generic/server/xls/export/resources/export-semantic-annotations.xlsx");
+        if (stream == null)
+        {
+            throw new IllegalArgumentException("File not found.");
+        }
+        final Workbook expectedResult = new XSSFWorkbook(stream);
+
+        assertWorkbooksEqual(actualResult.getWorkbook(), expectedResult);
+
+
     }
 
     /**

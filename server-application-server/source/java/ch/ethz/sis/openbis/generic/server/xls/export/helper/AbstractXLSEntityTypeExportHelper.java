@@ -17,30 +17,28 @@
 
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.poi.ss.usermodel.Workbook;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.lang.Nullable;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEntityType> extends AbstractXLSExportHelper<ENTITY_TYPE>
 {
@@ -87,7 +85,10 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                 addRow(rowNumber++, true, exportableKind, permId, warnings, valueFiles, attributeHeaders);
 
                 // Values
-                final String[] values = Arrays.stream(attributes).map(attribute -> getAttributeValue(entityType, attribute)).toArray(String[]::new);
+                // clean ontology cache
+                final String[] values = Arrays.stream(attributes)
+                        .map(attribute -> getAttributeValue(api, sessionToken,
+                                entityType, attribute)).toArray(String[]::new);
                 addRow(rowNumber++, false, exportableKind, permId, warnings, valueFiles, values);
             } else
             {
@@ -135,13 +136,15 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                         .filter(map -> !selectedExportFieldSet.contains(map))
                         .collect(Collectors.toList())
                         : List.of();
+
                 final String[] entityValues = Stream.concat(selectedExportAttributes.stream(), extraExportFields.stream())
                         .filter(field -> isFieldAcceptable(possibleAttributeNameSet, field))
                         .map(field ->
                         {
                             if (FieldType.valueOf(field.get(FIELD_TYPE_KEY)) == FieldType.ATTRIBUTE)
                             {
-                                return getAttributeValue(entityType, Attribute.valueOf(field.get(FIELD_ID_KEY)));
+                                return getAttributeValue(api, sessionToken, entityType,
+                                        Attribute.valueOf(field.get(FIELD_ID_KEY)));
                             } else
                             {
                                 throw new IllegalArgumentException();
@@ -151,9 +154,10 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                 addRow(rowNumber++, false, exportableKind, permId, warnings, valueFiles, entityValues);
             }
 
-            final AdditionResult additionResult = addEntityTypePropertyAssignments(rowNumber,
-                    entityType.getPropertyAssignments(), exportableKind, permId,
-                    compatibleWithImport);
+            final AdditionResult additionResult =
+                    addEntityTypePropertyAssignments(api, sessionToken,
+                            rowNumber, entityType.getPropertyAssignments(),
+                            exportableKind, entityType.getCode(), permId, compatibleWithImport);
             warnings.addAll(additionResult.getWarnings());
             rowNumber = additionResult.getRowNumber();
 
@@ -164,8 +168,10 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
         }
     }
 
-    protected AdditionResult addEntityTypePropertyAssignments(int rowNumber,
-            final Collection<PropertyAssignment> propertyAssignments, final ExportableKind exportableKind,
+    protected AdditionResult addEntityTypePropertyAssignments(IApplicationServerApi api,
+            String sessionToken, int rowNumber,
+            final Collection<PropertyAssignment> propertyAssignments,
+            final ExportableKind exportableKind, String code,
             final String permId, final boolean compatibleWithImport)
     {
         final Collection<String> warnings = new ArrayList<>();
@@ -176,6 +182,10 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
             final PropertyType propertyType = propertyAssignment.getPropertyType();
             final Plugin plugin = propertyAssignment.getPlugin();
             final Vocabulary vocabulary = propertyType.getVocabulary();
+            List<SemanticAnnotation>
+                    semanticAnnotations =
+                    getSemanticAnnotationSearchResult(api, sessionToken, getEntityKind(), code,
+                            propertyType.getCode());
 
             final String[] values = {
                     propertyType.getCode(),
@@ -193,7 +203,17 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                     String.valueOf(propertyAssignment.isUnique() != null && propertyAssignment.isUnique()).toUpperCase(),
                     String.valueOf(propertyAssignment.getPattern() != null ? propertyAssignment.getPattern() : ""),
                     String.valueOf(propertyAssignment.getPatternType() != null ? propertyAssignment.getPatternType() : ""),
-                    String.valueOf(propertyAssignment.isManagedInternally() != null && propertyAssignment.isManagedInternally()).toUpperCase()
+                    String.valueOf(
+                            propertyAssignment.isManagedInternally() != null && propertyAssignment.isManagedInternally()).toUpperCase(),
+                    semanticAnnotations.stream()
+                            .map(SemanticAnnotation::getPredicateOntologyId).collect(
+                            Collectors.joining("\n")),
+                    semanticAnnotations.stream()
+                            .map(SemanticAnnotation::getPredicateAccessionId).collect(
+                            Collectors.joining("\n")),
+                    semanticAnnotations.stream().map(
+                            SemanticAnnotation::getPredicateOntologyVersion).collect(
+                            Collectors.joining("\n")),
             };
             addRow(rowNumber++, false, exportableKind, permId, warnings, valueFiles, values);
         }
@@ -227,8 +247,115 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
 
     protected abstract Attribute[] getAttributes(final ENTITY_TYPE entityType);
 
-    protected abstract String getAttributeValue(final ENTITY_TYPE entityType, final Attribute attribute);
+    protected abstract String getAttributeValue(IApplicationServerApi api, String sessionToken,
+            final ENTITY_TYPE entityType, final Attribute attribute);
 
     protected abstract ExportableKind getExportableKind();
+
+    protected Map<SemanticAnnotationKey, List<SemanticAnnotation>>
+            semanticAnnotationsCache = new HashMap<>();
+
+    private static class SemanticAnnotationKey
+    {
+        private final String entityTypeCode;
+
+        private final String propertyTypeCode;
+
+        private final EntityKind entityKind;
+
+        public SemanticAnnotationKey(EntityKind entityKind,
+                String entityTypeCode, String propertyTypeCode)
+        {
+            this.entityTypeCode = entityTypeCode;
+            this.propertyTypeCode = propertyTypeCode;
+            this.entityKind = entityKind;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (o == null || getClass() != o.getClass())
+                return false;
+            SemanticAnnotationKey key = (SemanticAnnotationKey) o;
+            return Objects.equals(entityTypeCode, key.entityTypeCode) && Objects.equals(
+                    propertyTypeCode, key.propertyTypeCode) && entityKind == key.entityKind;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(entityTypeCode, propertyTypeCode, entityKind);
+        }
+
+        @Override
+        public String toString()
+        {
+            return "SemanticAnnotationKey{" +
+                    "entityTypeCode='" + entityTypeCode + '\'' +
+                    ", propertyTypeCode='" + propertyTypeCode + '\'' +
+                    ", entityKind=" + entityKind +
+                    '}';
+        }
+    }
+
+    protected List<SemanticAnnotation> getSemanticAnnotationSearchResult(
+            IApplicationServerApi api, String sessionToken, EntityKind entityKind,
+            String entityTypeCode, @Nullable String propertyTypeCode)
+    {
+        SemanticAnnotationKey key =
+                new SemanticAnnotationKey(entityKind, entityTypeCode, propertyTypeCode);
+
+        if (!semanticAnnotationsCache.containsKey(key))
+        {
+            SemanticAnnotationSearchCriteria semanticCriteria =
+                    new SemanticAnnotationSearchCriteria();
+
+
+            if (propertyTypeCode != null)
+            {
+                semanticCriteria.withPropertyAssignment().withPropertyType().withCode()
+                        .thatEquals(propertyTypeCode);
+                semanticCriteria.withPropertyAssignment().withEntityType().withKind()
+                        .thatEquals(entityKind);
+
+            } else
+            {
+                semanticCriteria.withEntityType().withCode().thatEquals(entityTypeCode);
+                semanticCriteria.withEntityType().withKind().thatEquals(entityKind);
+            }
+
+            SemanticAnnotationFetchOptions fetchOptions = new SemanticAnnotationFetchOptions();
+            fetchOptions.withPropertyType();
+            fetchOptions.withEntityType();
+            PropertyAssignmentFetchOptions propertyAssignmentFetchOptions =
+                    fetchOptions.withPropertyAssignment();
+            propertyAssignmentFetchOptions.withEntityType();
+            propertyAssignmentFetchOptions.withPropertyType();
+            propertyAssignmentFetchOptions.withEntityType();
+
+            SearchResult<SemanticAnnotation> result =
+                    api.searchSemanticAnnotations(sessionToken, semanticCriteria, fetchOptions);
+
+            if (propertyTypeCode != null)
+            {
+                result.getObjects().stream().collect(
+                                Collectors.groupingBy(x -> x.getPropertyAssignment().getEntityType()))
+                        .forEach((k, v) -> semanticAnnotationsCache.put(
+                                new SemanticAnnotationKey(entityKind, k.getCode(),
+                                        propertyTypeCode), v));
+
+            } else
+            {
+
+                semanticAnnotationsCache.put(key,
+                        result.getObjects());
+            }
+        }
+
+        return semanticAnnotationsCache.get(key);
+    }
+
+    abstract protected EntityKind getEntityKind();
+
 
 }
