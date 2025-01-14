@@ -2,6 +2,8 @@ import _ from 'lodash'
 import React from 'react'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
+import { alpha } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import Table from '@mui/material/Table'
 import TableHead from '@mui/material/TableHead'
@@ -23,10 +25,21 @@ import GridFiltersConfig from '@src/js/components/common/grid/GridFiltersConfig.
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import logger from '@src/js/common/logger.js'
 
+
 const styles = theme => ({
+  gridWrapper: {
+    flex: '1 1 auto',
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
+  },
   container: {
-    minWidth: '800px',
-    height: '100%'
+    width: '100%',
+    flex: '1 1 auto',
+    display: 'block',
+    width: '100%',
+    overflowY: 'auto',
+    maxHeight: 'calc(100vh - (' + theme.spacing(36)  + ' ))',  
   },
   loadingContainer: {
     flex: '1 1 auto'
@@ -49,7 +62,8 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.paper
   },
   titleCell: {
-    border: 0
+    border: 0,
+    maxWidth: '80%'  
   },
   titleContent: {
     paddingLeft: theme.spacing(2)
@@ -60,7 +74,59 @@ const styles = theme => ({
   },
   pagingAndConfigsAndExportsContent: {
     display: 'flex'
+  },
+  //drag overlay
+  overlay: {
+    position: 'absolute',
+    inset: 0,
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),     
+    display: 'flex',
+    alignItems: 'flex-end',
+    paddingBottom: theme.spacing(1),
+    justifyContent: 'center',
+    boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.2)}`,
+    zIndex: 9999
+  },
+  dropContentWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(2) 
+  },
+
+  cloudIcon: {
+    fontSize: '4rem',
+    color: theme.palette.primary.main,
+    animation: `$floatUp 0.6s ease-in-out 10`
+  },
+
+  // Define the keyframes
+  '@keyframes floatUp': {
+    '0%, 100%': {
+      transform: 'translateY(0)'
+    },
+    '50%': {
+      transform: 'translateY(-10px)' // up 10px
+    }
+  },
+
+  dropPill: {
+    display: 'flex',
+    alignItems: 'center',
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    borderRadius: '9999px',
+    padding: theme.spacing(2, 4),    
+    fontWeight: 'bold',
+    boxShadow: theme.shadows[4], 
+  },
+
+  // Example for an icon inside the pill if you wish
+  driveIcon: {
+    marginRight: theme.spacing(1), // space between icon & text
+    fontSize: '1.4rem'
   }
+
 })
 
 class Grid extends React.PureComponent {
@@ -72,7 +138,7 @@ class Grid extends React.PureComponent {
     super(props)
     autoBind(this)
 
-    this.state = {}
+    this.state = {}    
 
     if (this.props.controller) {
       this.controller = this.props.controller
@@ -85,6 +151,7 @@ class Grid extends React.PureComponent {
     if (this.props.controllerRef) {
       this.props.controllerRef(this.controller)
     }
+
   }
 
   componentDidMount() {
@@ -106,42 +173,56 @@ class Grid extends React.PureComponent {
       return <Loading loading={true}></Loading>
     }
 
-    const { id, classes, showHeaders } = this.props
+    const { id, classes, showHeaders, isDragging} = this.props
     const { loading, rows } = this.state
     const doShowHeaders = typeof showHeaders === 'boolean' ? showHeaders : true
 
     return (
-      <div
-        id={id}
-        onClick={this.handleClickContainer}
-        className={classes.container}
-      >
-        <div className={classes.loadingContainer}>
-          <Loading loading={loading} styles={{ root: classes.loading }}>
-            <div className={classes.tableContainer}>
-              <Table
-                classes={{ root: classes.table }}
-                onClick={this.handleClickTable}
-              >
-                <TableHead classes={{ root: classes.tableHead }}>
-                  {this.renderTitle()}
-                  {this.renderPagingAndConfigsAndExports()}
-                  {doShowHeaders && this.renderHeaders()}
-                  {this.renderFilters()}
-                  {this.renderSelectionInfo()}
-                </TableHead>
-                <TableBody>
-                  {rows.map(row => {
-                    return this.renderRow(row)
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            {this.renderExportState()}
-          </Loading>
-        </div>
+      <div className={[classes.gridWrapper, classes.container].join(' ')}>
+        <div
+                id={id}
+                onClick={this.handleClickContainer}>
+                <div className={classes.loadingContainer}>
+                  <Loading loading={loading} styles={{ root: classes.loading }}>
+                    <div className={classes.tableContainer}>
+                      <Table
+                        classes={{ root: classes.table }}
+                        onClick={this.handleClickTable}
+                      >
+                        <TableHead classes={{ root: classes.tableHead }}>
+                          {this.renderTitle()}
+                          {this.renderPagingAndConfigsAndExports()}
+                          {doShowHeaders && this.renderHeaders()}
+                          {this.renderFilters()}
+                          {this.renderSelectionInfo()}
+                        </TableHead>
+                        <TableBody>
+                          {rows.map(row => {
+                            return this.renderRow(row)
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {this.renderExportState()}
+                  </Loading>
+                </div>
+              </div>
+        {isDragging && (
+          <div className={classes.overlay}>
+            <div className={classes.dropContentWrapper}>
+                {/* Large upload/cloud icon above the pill */}
+                <CloudUploadIcon className={classes.cloudIcon} />
+
+                {/* The pill-shaped container */}
+                <div className={classes.dropPill}>
+                  Drop files to upload them
+                </div>
+              </div>
+          </div>
+        )}
       </div>
-    )
+
+      )
   }
 
   renderTitle() {

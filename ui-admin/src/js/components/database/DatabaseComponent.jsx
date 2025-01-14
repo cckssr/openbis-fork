@@ -145,6 +145,7 @@ class DatabaseComponent extends React.PureComponent {
           </Box>
           <TabPanel classes={{ root: classes.tabsPanel }} value="0">
             <DataBrowser
+              key={object.id}
               id={object.id}
               kind={object.type}
               viewType='list'

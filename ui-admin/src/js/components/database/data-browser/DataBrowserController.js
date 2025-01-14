@@ -209,7 +209,7 @@ export default class DataBrowserController extends ComponentController {
       dataArray.push(await blob.arrayBuffer())
       offset += this.CHUNK_SIZE
       
-      const elapsedTime = (downloadEndTime - downloadStartTime) / 1000; // Seconds
+      const elapsedTime = (downloadEndTime - downloadStartTime);
       
       onProgressUpdate(blob.size,file.name, "", elapsedTime)
     }

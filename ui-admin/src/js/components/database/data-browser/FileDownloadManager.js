@@ -1,8 +1,17 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
+import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js'; 
 
 // 2GB limit for total download size
 const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648
+
+const Resolution = {
+  MERGE: 'MERGE',
+  SKIP: 'SKIP',
+  RESUME: 'RESUME',
+  CANCEL: 'CANCEL',
+  REPLACE: 'REPLACE'
+};
 
 export default class FileDownloadManager {
 
@@ -13,7 +22,40 @@ export default class FileDownloadManager {
     this.updateState = updateStateCallback
     this.openErrorDialog = openErrorDialog    
     this.updateResolveDecision = updateResolveDecision
-    this.zip = new JSZip()
+    this.zip = new JSZip()    
+  }
+
+  getDefaultState() {
+   return {
+      loading: false,
+      showFileExistsDialog: false,
+      currentFile: null,
+      processedBytes: 0,
+      totalTransferSize: 0,
+      progress: 0,
+      progressBarFrom:null,
+      progressBarTo:null,
+      loadingDialogVariant:'determinate',
+      customProgressDetails:null,
+      averageSpeed:0,
+      totalFilesToDownload:0,
+      replaceFile: false,
+      skipFile: false,
+      cancelDownload: false,
+      applyToAllFiles: false,
+      showMergeDialog: false,
+      resolveMergeDecision: null,
+      showApplyToAll: true,
+      resolveDecision: null,     
+      rollingSpeed:0,
+      totalSavingTime:0,
+      totalSkippedBytes:0
+    }
+  }
+
+  inferMimeType(fileName) {
+    const extension = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
+    return mimeTypeMap[extension] || 'application/octet-stream'
   }
 
   updateProgress(downloadedChunk, fileName, status, timeElapsed, savingTime=0) {        
@@ -28,18 +70,57 @@ export default class FileDownloadManager {
     }
   }
 
+  updateProgressForResolution(downloadedChunk, fileName, resolution) {
+    let progressStatus = ""
+    switch (resolution) {
+      case Resolution.RESUME:
+        progressStatus = "Resuming..."
+        break;
+      case Resolution.SKIP:
+        progressStatus = "Skipping..."
+        break;
+      case Resolution.REPLACE:
+        progressStatus = "Replacing..."
+        break;
+      case Resolution.MERGE:
+        progressStatus = "Merging..."
+        break;
+      case Resolution.CANCEL:
+        progressStatus = "Cancelling..."
+        break;
+      default:          
+          break;
+    }
 
-  handleProgressUpdate(downloadedChunk, fileName, status, timeElapsed) {        
+    this.handleProgressUpdate(downloadedChunk, fileName, progressStatus, null, resolution)
+  }
+
+  handleProgressUpdate(downloadedChunk, fileName, status, timeElapsed, resolution) {        
     this.updateState((prevState) => {      
-      const downloadedBytes = prevState.totalDownloaded + downloadedChunk;      
-      const progress = Math.round((downloadedBytes / prevState.totalDownloadSize) * 100);
+      const processedBytes = prevState.processedBytes + downloadedChunk;  
+      const totalTransferSize = prevState.totalTransferSize;   
+      const progress = Math.floor((processedBytes / totalTransferSize) * 100);
       const newProgress = Math.min(progress, 100);
   
       var progressStatus = status === "" ? null : status;
-      const totalElapsedTime = (prevState.totalElapsedTime || 0) + timeElapsed;  
-      const averageSpeed = totalElapsedTime > 0 ? downloadedBytes / (totalElapsedTime / 1000) : 0;        
 
-      const bytesRemaining = prevState.totalDownloadSize - downloadedBytes;        
+      let totalSkippedBytes = (prevState.totalSkippedBytes ?? 0);
+      switch (resolution) {
+        case Resolution.RESUME:
+        case Resolution.SKIP:
+            totalSkippedBytes += downloadedChunk;
+            break;     
+        default:            
+            break;
+      }    
+      
+      const processedBytesForSpeed = processedBytes - totalSkippedBytes;
+      const totalTransferSizeForSpeed = totalTransferSize - totalSkippedBytes;
+
+      const totalElapsedTime = (prevState.totalElapsedTime || 0) + timeElapsed;  
+      const averageSpeed = totalElapsedTime > 0 ? processedBytesForSpeed / (totalElapsedTime / 1000) : 0;
+
+      const bytesRemaining = totalTransferSizeForSpeed - processedBytesForSpeed;
       const expectedDownloadTime = averageSpeed > 0 ? bytesRemaining / averageSpeed : 0; 
 
       const remainingFiles = prevState.remainingFiles
@@ -56,7 +137,7 @@ export default class FileDownloadManager {
       const expectedTime = expectedDownloadTime + expectedSavingTime;
 
       return {
-        totalDownloaded: downloadedBytes,
+        processedBytes,
         progress: newProgress,
         loading: true,
         fileName,        
@@ -65,7 +146,8 @@ export default class FileDownloadManager {
         totalElapsedTime, 
         expectedTime,        
         progressStatus,
-        remainingFiles
+        remainingFiles,
+        totalSkippedBytes
       };
     });
   }
@@ -73,34 +155,43 @@ export default class FileDownloadManager {
   
   updateSizeCalculationProgress(fileName, fileSize) {    
     this.updateState((prevState) => {
-        var totalDownloadSize = prevState.totalDownloadSize + fileSize;
-        var formattedTotalDownloadSize = this.controller.formatSize(totalDownloadSize);        
-        var customProgressDetails = "Estimating download size: " + formattedTotalDownloadSize;        
+        var totalTransferSize = prevState.totalTransferSize + fileSize;
+        var formattedtotalTransferSize = this.controller.formatSize(totalTransferSize);        
+        var customProgressDetails = "Estimating download size: " + formattedtotalTransferSize;        
         return {
-            totalDownloadSize,
+            totalTransferSize,
             customProgressDetails,
             fileName
         };
     })
   }
 
-  async calculateTotalSize(files) {
+  async calculateTotalSize(files, maxAllowedSize) {
     let size = 0;
     let numberOfFiles = 0;
   
     for (const file of files) {
-      if (!file.directory) {  
+      if (size > maxAllowedSize) {
+        break;
+      }
+  
+      if (!file.directory) {
         size += file.size;
         this.updateSizeCalculationProgress(file.name, file.size);
-        numberOfFiles++; 
+        numberOfFiles++;
       } else {
         const nestedFiles = await this.controller.listFiles(file.path);
-        const nestedStats = await this.calculateTotalSize(nestedFiles);
-          
+        const nestedStats = await this.calculateTotalSize(nestedFiles, maxAllowedSize - size);
+  
         size += nestedStats.size;
         numberOfFiles += nestedStats.numberOfFiles;
+          
+        if (size > maxAllowedSize) {          
+          break;
+        }
       }
-    }    
+    }
+  
     return { size, numberOfFiles };
   }
 
@@ -116,7 +207,7 @@ export default class FileDownloadManager {
     const normalizedPath = filePath.replace(/\/+/g, '/');
     const cleanPath = normalizedPath.startsWith('/') ? normalizedPath.slice(1) : normalizedPath;
     const segments = cleanPath.split('/');
-    return segments.length > 1 ? "/" + segments[0] : "/";    
+    return segments.length > 2 ? segments[segments.length - 2] : "/";    
   }
 
   async handleDownloadFiles(multiselectedFiles){    
@@ -124,7 +215,7 @@ export default class FileDownloadManager {
     this.updateProgressMainMessage(false)
     try {      
       // for chrome and edge
-      if (this.isDirectoryPickerAvailable()) {
+      if (this.isFileSystemAccessApiAvailable()) {
         await this.handleDownloadWithDirectoryPicker(multiselectedFiles)
       } else {
         // for rest of browsers
@@ -138,28 +229,30 @@ export default class FileDownloadManager {
   }
 
 
-  isDirectoryPickerAvailable() {
-    return ('showSaveFilePicker' in window && 'showDirectoryPicker' in window)
+  // Start :File System API : Limited availability
+  isFileSystemAccessApiAvailable() {
+    
+    const hasFileSystemAccess =
+      'showSaveFilePicker' in window &&
+      'showOpenFilePicker' in window &&
+      'showDirectoryPicker' in window;  
+    
+    const isSecureContext = window.isSecureContext;
+  
+    return hasFileSystemAccess && isSecureContext;
   }
 
-    // Start :File System API : Limited availability
   async checkDownloadQuota(fileSize) {
     if (!navigator.storage || !navigator.storage.estimate) {
       // Storage estimation not supported in this browser
-      return { hasQuota: true, availableQuota: Infinity }; // Assume enough space as fallback
+      return Infinity ; // Assume enough space as fallback
     }
 
     try {
       const { quota, usage } = await navigator.storage.estimate();
-      const availableQuota = quota - usage;
-
-      if (fileSize > availableQuota) {
-        return { hasQuota: false, availableQuota };
-      }
-
-      return { hasQuota: true, availableQuota };
+      return quota - usage;      
     } catch (error) {
-      return { hasQuota: false, availableQuota: 0 }; // Default to 0 available on error
+      return 0; // Default to 0 available on error
     }
   }
 
@@ -176,10 +269,10 @@ export default class FileDownloadManager {
     const topLevelFolder = this.getTopLevelFolder(file.path)
     
     this.showDownloadDialog(topLevelFolder, rootDirHandle.name)
-    const totalSize = await this.calculateDownloadTotals(files);
-
-    const { hasQuota, availableQuota } = await this.checkDownloadQuota(totalSize);
-    if (hasQuota) {
+    const availableQuota  = await this.checkDownloadQuota(totalSize);
+    const totalSize = await this.calculateDownloadTotals(files, availableQuota);   
+    
+    if (availableQuota >= totalSize) {
       this.updateProgressMainMessage(true);      
       if (files.size === 1) {
         const [file] = files; 
@@ -196,12 +289,12 @@ export default class FileDownloadManager {
     }
   }
 
-  async calculateDownloadTotals(files){
+  async calculateDownloadTotals(files, maxAllowedSize){
     this.updateProgressMainMessage(false);      
-    var {size, numberOfFiles} = await this.calculateTotalSize(files)
+    var {size, numberOfFiles} = await this.calculateTotalSize(files,maxAllowedSize)
     this.resetStateAfterSizeCalculation();    
     this.updateState({
-      totalDownloadSize: size,
+      totalTransferSize: size,
       totalFilesToDownload: numberOfFiles,
       remainingFiles: numberOfFiles 
     })
@@ -213,9 +306,9 @@ export default class FileDownloadManager {
     this.updateState({ 
       loading: true,
       progress: 0,
-      downloadBarFrom: fromDir,
-      downloadBarTo: toDir,
-      totalDownloaded: 0,
+      progressBarFrom: fromDir,
+      progressBarTo: toDir,
+      processedBytes: 0,
       loadingDialogVariant:'indeterminate' 
     })   
   }
@@ -223,7 +316,7 @@ export default class FileDownloadManager {
   async handleDirectorySelection() {
     try {
       // Prompt user to select a directory - this should be done 
-      // immediately after click, otherwise browser may throws security error 
+      // immediately after click, otherwise browser may throw security error 
       // if too much time is taken by other processes before selection    
       const rootDirHandle = await window.showDirectoryPicker()
 
@@ -279,7 +372,7 @@ export default class FileDownloadManager {
           if (fileExists) {            
             // Skip file logic if apply-to-all and skip were selected earlier
             if (currentState.applyToAllFiles && currentState.skipFile) {
-              this.updateProgress(file.size, file.name, "Skipping...")
+              this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
               continue;
             }
 
@@ -291,8 +384,9 @@ export default class FileDownloadManager {
                 this.updateResolveDecision(resolve);
               });             
 
+              currentState = this.getCurrentState();
               if (currentState.skipFile) {
-                this.updateProgress(file.size, file.name, "Skipping...")
+                this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
                 continue;
               }
 
@@ -335,9 +429,18 @@ export default class FileDownloadManager {
   }
 
   // End :File System API : Limited availability
+
   async handleDownloadAsBlob(selectedFiles) {
-    this.updateState({ loading: true, totalDownloaded: 0, progress: 0 })    
-    const totalSize = await this.calculateDownloadTotals(selectedFiles);
+    if(selectedFiles && selectedFiles.size == 0){
+      return
+    }
+    const file = selectedFiles.values().next().value;
+
+    const topLevelFolder = this.getTopLevelFolder(file.path)
+    
+    this.showDownloadDialog(topLevelFolder, "Default downloads folder")   
+   
+    const totalSize = await this.calculateDownloadTotals(selectedFiles, ZIP_DOWNLOAD_SIZE_LIMIT);
 
     if (totalSize >= ZIP_DOWNLOAD_SIZE_LIMIT) {
       this.showDownloadErrorDialog(ZIP_DOWNLOAD_SIZE_LIMIT)
@@ -345,15 +448,16 @@ export default class FileDownloadManager {
     }
 
     this.updateProgressMainMessage(true);
-
-    const { id } = this.props
-    const file = selectedFiles.values().next().value;
+    
+    this.resetStateAfterSizeCalculation();    
 
     if (selectedFiles.size > 1 || file.directory) {
       // ZIP download
 
-      const zipBlob = await this.prepareZipBlob(selectedFiles)
-      this.downloadBlob(zipBlob, id)
+      const zipFileName = this.createZipFileNameFromPath(file.path, file.name)
+      const zipBlob = await this.prepareZipBlob(selectedFiles, zipFileName)    
+    
+      this.downloadBlob(zipBlob, zipFileName)
       this.zip = new JSZip()
     } else {
 
@@ -361,8 +465,22 @@ export default class FileDownloadManager {
       await this.downloadFile(file)
     }
   }
-
-  async prepareZipBlob(files) {
+  createZipFileNameFromPath(filePath, fileName, maxLength = 50) {
+    const sanitizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+    let pathWithoutLastElement = sanitizedPath.split('/').slice(0, -1).join('/');
+    if (!pathWithoutLastElement || pathWithoutLastElement === '') {
+      pathWithoutLastElement = fileName;
+    }
+    const zipFileName = pathWithoutLastElement.replace(/\//g, '-');
+    let finalFileName = `openbis_${zipFileName}`;
+    if (finalFileName.length > maxLength - 4) {
+      finalFileName = finalFileName.slice(0, maxLength - 4);
+    }
+    return `${finalFileName}.zip`;
+  }
+  
+ 
+  async prepareZipBlob(files, zipFileName) {
     for (let file of files) {
       if (!file.directory) {        
         const dataArray = await this.controller.download(file, this.updateProgress)
@@ -376,11 +494,39 @@ export default class FileDownloadManager {
         await this.prepareZipBlob(nestedFiles)
       }
     }
-    return await this.zip.generateAsync({ type: 'blob' })
+
+    return await this.generateWithProgress(zipFileName);
+    // this.updateProgress(0, zipFileName , "Zip Files", 0, 0) 
+    // return await this.zip.generateAsync({ type: 'blob' })
   }
 
+  // message will only update on UI if it takes longer than 1 sec
+  async generateWithProgress(zipFileName) {
+    let progressTimeout;
+    let isTimeoutElapsed = false;
+  
+    const timeoutPromise = new Promise((resolve) => {
+        progressTimeout = setTimeout(() => {
+            isTimeoutElapsed = true;
+            this.updateProgress(0, zipFileName, "Zip Files", 0, 0);
+            resolve();
+        }, 1000);
+    });
+    
+    const zipPromise = this.zip.generateAsync({ type: 'blob' });
+
+
+    const result = await Promise.race([timeoutPromise, zipPromise]);
+    clearTimeout(progressTimeout);
+    if (result !== undefined) {
+        return result;
+    }
+
+    return await zipPromise;
+}
+
   async downloadFile(file) {
-    const blob = await this.fileToBlob(file)
+    const blob = await this.fileToBlob(file)   
     this.downloadBlob(blob, file.name)
   }
 
@@ -389,6 +535,7 @@ export default class FileDownloadManager {
   }
 
   downloadBlob(blob, fileName) {
+    this.updateProgress(0, fileName, "Saving File", 0, 0) 
     const link = document.createElement('a')
     link.href = window.URL.createObjectURL(blob)
     link.download = fileName
@@ -398,7 +545,7 @@ export default class FileDownloadManager {
   }
 
   async fileToBlob(file) {
-    const dataArray = await this.controller.download(file, this. downloadManager.updateProgress)
+    const dataArray = await this.controller.download(file, this.updateProgress)
     return new Blob(dataArray, { type: this.inferMimeType(file.path) })
   }
 
@@ -418,21 +565,22 @@ export default class FileDownloadManager {
       expectedTimeFormatted: null,
       lastTimestamp:null,
       averageSpeed:0,
-      downloadBarFrom:null,
-      downloadBarTo:null,
+      progressBarFrom:null,
+      progressBarTo:null,
       loadingDialogVariant:'determinate',
       customProgressDetails: null,
-      totalDownloadSize:0,
-      totalDownloaded:0,
+      totalTransferSize:0,
+      processedBytes:0,
       totalFilesToDownload:0,
-      totalSavingTime:0
+      totalSavingTime:0,
+      totalSkippedBytes:0
     })
   }
 
   resetStateAfterSizeCalculation() {
     this.updateState((prevState) => {
       return { loading: true,
-        totalDownloaded: 0,
+        processedBytes: 0,
         progress: 0,
         loadingDialogVariant:'determinate',
         customProgressDetails:null

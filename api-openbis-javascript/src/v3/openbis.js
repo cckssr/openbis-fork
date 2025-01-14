@@ -44,11 +44,11 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			var dfd = jquery.Deferred();
 			function success(response) {
 				if (response.error) {
-					thisPrivate.log("Request failed - data: " + JSON.stringify(settings.data) + ", error: " + JSON.stringify(response.error));
+					//thisPrivate.log("Request failed - data: " + JSON.stringify(settings.data) + ", error: " + JSON.stringify(response.error));
 					originalError(response.error);
 					dfd.reject(response.error);
 				} else {
-					thisPrivate.log("Request succeeded - data: " + JSON.stringify(settings.data));
+					//thisPrivate.log("Request succeeded - data: " + JSON.stringify(settings.data));
 					stjsUtil.fromJson(returnType, response.result).done(function(dtos) {
 						originalSuccess(dtos);
 						dfd.resolve(dtos);
@@ -60,7 +60,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			}
 
 			function error(xhr, status, error) {
-				thisPrivate.log("Request failed - data: " + JSON.stringify(settings.data) + ", error: " + JSON.stringify(error));
+				//thisPrivate.log("Request failed - data: " + JSON.stringify(settings.data) + ", error: " + JSON.stringify(error));
 				originalError(error);
 				dfd.reject(error);
 			}

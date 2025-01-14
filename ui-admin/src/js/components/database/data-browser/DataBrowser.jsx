@@ -1,9 +1,9 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
+import { alpha } from '@mui/material/styles';
 import autoBind from 'auto-bind'
 import Toolbar from '@src/js/components/database/data-browser/Toolbar.jsx'
 import GridView from '@src/js/components/database/data-browser/GridView.jsx'
-import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js'; 
 import fileTypeConfig from '@src/js/components/database/data-browser/fileTypeConfig.js';
 
 import Grid from '@src/js/components/common/grid/Grid.jsx'
@@ -13,6 +13,7 @@ import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
 import InfoPanel from '@src/js/components/database/data-browser/InfoPanel.jsx'
 import DataBrowserController from '@src/js/components/database/data-browser/DataBrowserController.js'
 import FileDownloadManager from '@src/js/components/database/data-browser/FileDownloadManager.js'
+import FileUploadManager from '@src/js/components/database/data-browser/FileUploadManager.js'
 import messages from '@src/js/common/messages.js'
 import InfoBar from '@src/js/components/database/data-browser/InfoBar.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
@@ -84,6 +85,22 @@ class DataBrowser extends React.Component {
 
     this.controller = controller || new DataBrowserController(id)
     this.controller.attach(this)
+    this.dragDepth = 0;
+
+    this.downloadManager = new FileDownloadManager(
+      this.controller,
+      () => this.state, 
+      this.updateStateCallback,
+      this.openErrorDialog,
+      this.updateResolveDecision      
+    )
+
+    this.uploadManager = new FileUploadManager(
+      this.controller,
+      () => this.state, 
+      this.updateStateCallback,
+      this.openErrorDialog      
+    )
 
     this.state = {
       viewType: props.viewType,
@@ -93,46 +110,20 @@ class DataBrowser extends React.Component {
       showInfo: false,
       path: '/',
       freeSpace: -1,
-      totalSpace: -1,
-      loading: false,
-      totalDownloaded: 0,
-      totalDownloadSize: 0,
-      progress: 0,
+      totalSpace: -1,      
       errorMessage: null,
-      editable: false,
-      showFileExistsDialog: false,
-      currentFile: null,
-      resolveDecision: null,
-      replaceFile: false,
-      skipFile: false,
-      cancelDownload: false,
-      applyToAllFiles: false,
-      showMergeDialog: false,
-      resolveMergeDecision: null,
-      showApplyToAll: true,
-      formattedTotalDownloadSize:0,
-      lastConflictResolution:null,
-      expectedTimeFormatted: null,
-      lastTimestamp:null,
-      rollingSpeed:0,
-      downloadBarFrom:null,
-      downloadBarTo:null,
-      loadingDialogVariant:'determinate',
-      customProgressDetails:null,
-      averageSpeed:0,
-      totalFilesToDownload:0
+      editable: false,                                                
+      isDragging: false,
+      ...(this.downloadManager.getDefaultState()),      
+      ...(this.uploadManager.getDefaultState()),      
     }
-    this.zip = new JSZip()
 
-    this.downloadManager = new FileDownloadManager(
-      this.controller,
-      () => this.state, 
-      this.updateStateCallback,
-      this.openErrorDialog,
-      this.updateResolveDecision      
-    )
+    this.zip = new JSZip()
+  
+   
   }
 
+  
   updateStateCallback(partialStateOrUpdater){   
     if (typeof partialStateOrUpdater === 'function') {
       this.setState(prev => partialStateOrUpdater(prev))
@@ -321,7 +312,7 @@ class DataBrowser extends React.Component {
 
   componentDidMount() {
     this.fetchSpaceStatus()
-    this.fetchRights()
+    this.fetchRights()    
   }
 
   openErrorDialog(errorMessage) {
@@ -332,7 +323,54 @@ class DataBrowser extends React.Component {
     this.setState({ errorMessage: null })
   }
 
+  // Prevent default to allow drop
+  handleDragOver(e) {
+    e.preventDefault()
+  }
 
+  handleDragEnter(e) {
+    e.preventDefault()
+    console.log("handleDragEnter")
+    this.dragDepth++
+    console.log("handleDragEnter " + this.dragDepth)
+      this.setState({ isDragging: true });
+
+  }
+
+  handleDragLeave(e) {
+    e.preventDefault()
+    this.dragDepth--
+    console.log("handleDragLeave " + this.dragDepth)
+    if (this.dragDepth === 0) {
+      this.setState({ isDragging: false });
+    }
+  }
+
+  async handleDrop(e) {    
+    e.preventDefault();
+    this.dragDepth = 0;
+    this.setState({ isDragging: false });
+    this.uploadManager.handleDragAndDropUpload(e)
+  }
+   
+  renderFileExistsDialog(key, dialogProps) {
+    const { open, onReplace, onResume, onSkip, onCancel, onApplyToAllChange, applyToAll, title, content } = dialogProps;
+  
+    return (
+      <FileExistsDialog
+        key={key}
+        open={open}
+        onReplace={onReplace}
+        onResume={onResume}
+        onSkip={onSkip}
+        onCancel={onCancel}
+        onApplyToAllChange={onApplyToAllChange}
+        applyToAll={applyToAll}
+        title={title}
+        content={content}
+      />
+    );
+  };
 
   render() {
     const { classes, sessionToken, id } = this.props
@@ -356,11 +394,11 @@ class DataBrowser extends React.Component {
       applyToAllFiles,
       showMergeDialog,
       showApplyToAll,
-      totalDownloaded, 
-      totalDownloadSize,
+      processedBytes, 
+      totalTransferSize,
       expectedTime,
-      downloadBarFrom,
-      downloadBarTo,
+      progressBarFrom,
+      progressBarTo,
       loadingDialogVariant,
       customProgressDetails,      
       progressStatus
@@ -397,6 +435,10 @@ class DataBrowser extends React.Component {
             classes.boundary,
             classes.content
           ].join(' ')}
+            onDragEnter={this.handleDragEnter}
+            onDragOver={this.handleDragOver}
+            onDragLeave={this.handleDragLeave}
+            onDrop={this.handleDrop}
         >
           {viewType === 'list' && (
             <Grid
@@ -404,7 +446,8 @@ class DataBrowser extends React.Component {
               controllerRef={this.handleGridControllerRef}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
-              classes={{ container: classes.grid }}
+              classes={{container: classes.grid}}
+              isDragging={this.state.isDragging}
               columns={[
                 {
                   name: 'name',
@@ -506,12 +549,12 @@ class DataBrowser extends React.Component {
         controller={this.controller}
         open={loading}
         title={progressMessage}        
-        from={downloadBarFrom}
-        to={downloadBarTo}
+        from={progressBarFrom}
+        to={progressBarTo}
         fileName={fileName}
         progress={progress}
-        currentSize={totalDownloaded}
-        totalSize={totalDownloadSize}
+        currentSize={processedBytes}
+        totalSize={totalTransferSize}
         timeLeft={expectedTime}
         speed={averageSpeed}
         variant={loadingDialogVariant}
@@ -524,18 +567,32 @@ class DataBrowser extends React.Component {
         error={errorMessage}
         onClose={this.closeErrorDialog}
       />,
-      <FileExistsDialog
-        key='overwrite-modal-title'
-        open={showFileExistsDialog}
-        onReplace={this.handleReplace}
-        onSkip={this.handleSkip}
-        onCancel={this.handleCancel}
-        title={messages.get(messages.FILE_EXISTS)}
-        onApplyToAllChange={ showApplyToAll ? this.handleApplyToAllSelection: null}
-        applyToAll={applyToAllFiles}
-        content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE,
-          this.state.currentFile?.name)}
-      />,
+      (
+        <>
+          {this.renderFileExistsDialog('overwrite-modal-title', {
+            open: showFileExistsDialog,
+            onReplace: this.handleReplace,
+            onSkip: this.handleSkip,
+            onCancel: this.handleCancel,
+            onApplyToAllChange: showApplyToAll ? this.handleApplyToAllSelection : null,
+            applyToAll: applyToAllFiles,
+            title: messages.get(messages.FILE_EXISTS),
+            content: messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile?.name),
+          })}
+    
+          {this.renderFileExistsDialog('upload-file-exists-dialog', {
+            open: !!this.state.uploadFileExistsDialogFile,
+            onReplace: this.uploadManager.handleFileExistsReplace,
+            onResume: this.state.allowResume ? this.uploadManager.handleFileExistsResume : null,
+            onSkip: this.uploadManager.handleFileExistsSkip,
+            onCancel: this.uploadManager.handleFileExistsCancel,
+            onApplyToAllChange: this.uploadManager.handleApplyToAllSelection,
+            applyToAll: applyToAllFiles,
+            title: messages.get(messages.FILE_EXISTS),
+            content: messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT, this.state.uploadFileExistsDialogFile?.name),
+          })}
+        </>
+      ),
       <ConfirmationDialog
         key='merge-modal-title'
         open={showMergeDialog}
@@ -546,6 +603,7 @@ class DataBrowser extends React.Component {
       />
     ]
   }
+
 }
 
 export default withStyles(styles)(DataBrowser)

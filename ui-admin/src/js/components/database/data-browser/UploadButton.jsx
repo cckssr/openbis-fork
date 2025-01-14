@@ -73,6 +73,7 @@ class UploadButton extends React.Component {
         {/* Hidden file input */}
         <input
           type="file"
+          multiple
           ref={this.fileInputRef}
           className={classes.invisible}
           onChange={onClick}
