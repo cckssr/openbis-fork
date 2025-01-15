@@ -32,9 +32,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.HarvesterMaintenanceTask;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import org.apache.log4j.Logger;
 
 public class ConfigReader
 {
@@ -93,6 +97,13 @@ public class ConfigReader
                 if (m.matches())
                 {
                     section = m.group(1).trim();
+                    if (!isUppercaseNumbersAndUnderscores(section)) {
+                        throw new ConfigurationFailureException(
+                                "Invalid section name: '" + section + "'" +
+                                        ". Section names must only contain CAPITAL letters (A-Z), numbers (0-9), and underscores (_)" +
+                                        "Other characters MIGHT appear to work but can lead to errors when parsing the prefix."
+                        );
+                    }
                 } else if (section != null)
                 {
                     m = keyValueRegex.matcher(line);
@@ -111,6 +122,14 @@ public class ConfigReader
             }
         }
     }
+
+    public static boolean isUppercaseNumbersAndUnderscores(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        return str.matches("[A-Z0-9_]+");
+    }
+
 
     public void load(String path) throws IOException
     {
