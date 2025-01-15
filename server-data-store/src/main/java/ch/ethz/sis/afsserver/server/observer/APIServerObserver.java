@@ -19,13 +19,15 @@ import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.shared.startup.Configuration;
 
-import java.util.Map;
-
-public interface APIServerObserver<CONNECTION> {
+public interface APIServerObserver<CONNECTION>
+{
 
     public void init(Configuration configuration) throws Exception;
 
     public void beforeAPICall(Worker<CONNECTION> worker, Request request) throws Exception;
 
+    public Object duringAPICall(Worker<CONNECTION> worker, APICall apiCall) throws Exception;
+
     public void afterAPICall(Worker<CONNECTION> worker, Request request) throws Exception;
+
 }

@@ -17,6 +17,7 @@ package ch.ethz.sis.afsserver.worker;
 
 import ch.ethz.sis.afs.api.TransactionalFileSystem;
 import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
 import lombok.NonNull;
@@ -174,4 +175,14 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
         return nextProxy.move(sourceOwner, source, targetOwner, target);
     }
 
+    @Override public @NonNull Boolean create(@NonNull final String owner, @NonNull final String source, @NonNull final Boolean directory)
+            throws Exception
+    {
+        return nextProxy.create(owner, source, directory);
+    }
+
+    @Override public @NonNull FreeSpace free(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        return nextProxy.free(owner, source);
+    }
 }

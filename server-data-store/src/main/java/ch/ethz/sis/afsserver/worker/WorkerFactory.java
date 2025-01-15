@@ -15,28 +15,38 @@
  */
 package ch.ethz.sis.afsserver.worker;
 
+import org.apache.commons.lang3.StringUtils;
+
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.worker.providers.AuthenticationInfoProvider;
 import ch.ethz.sis.afsserver.worker.providers.AuthorizationInfoProvider;
-import ch.ethz.sis.afsserver.worker.proxy.*;
+import ch.ethz.sis.afsserver.worker.proxy.AuditorProxy;
+import ch.ethz.sis.afsserver.worker.proxy.AuthenticationProxy;
+import ch.ethz.sis.afsserver.worker.proxy.AuthorizationProxy;
+import ch.ethz.sis.afsserver.worker.proxy.ExecutorProxy;
+import ch.ethz.sis.afsserver.worker.proxy.InterceptorProxy;
+import ch.ethz.sis.afsserver.worker.proxy.LogProxy;
+import ch.ethz.sis.afsserver.worker.proxy.ValidationProxy;
 import ch.ethz.sis.shared.pool.AbstractFactory;
 import ch.ethz.sis.shared.startup.Configuration;
-import org.apache.commons.lang3.StringUtils;
 
 public class WorkerFactory extends AbstractFactory<Configuration, Configuration, Worker> {
 
     @Override
     public Worker create(Configuration configuration) throws Exception {
 
-        // 5. Execute the operation
+        // 6. Execute the operation
         AuditorProxy executorProxy = new AuditorProxy(new ExecutorProxy(configuration));
+
+        // 5. Interceptor proxy
+        AuditorProxy interceptorProxy = new AuditorProxy(new InterceptorProxy(configuration, executorProxy));
 
         // 4. Check that the user have rights to do the operation
         AuthorizationInfoProvider authorizationInfoProvider = configuration.getInstance(AtomicFileSystemServerParameter.authorizationInfoProviderClass);
         Integer authorizationProxyCacheIdleTimeout = getIntegerParameter(configuration, AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout);
         authorizationInfoProvider.init(configuration);
-        AuditorProxy authorizationProxy = new AuditorProxy(new AuthorizationProxy(executorProxy,
+        AuditorProxy authorizationProxy = new AuditorProxy(new AuthorizationProxy(interceptorProxy,
                 authorizationInfoProvider, authorizationProxyCacheIdleTimeout));
 
         // 3. Pre/Post check correctness of the call and modifications to avoid things that make little sense
