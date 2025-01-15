@@ -13,13 +13,13 @@ Users can only be registered by someone with *Instance admin* role:
 
 3. Select the **Authentication Service**:
 
-a. **Default Authentication Service**. This can be LDAP or SSO.
+a. **Default Authentication Service**. This can be LDAP or single sign-on (SSO), such as for example SWITCHaai or Switch edu-ID.
 
 b. **File Authentication Service**. In this case a username and password need to be created.
 
 ![](img/new-user-authentication-options-1024x212.png)
 
-4. **User ID**. for LDAP authentication, this is the LDAP username; for SSO authentication this is the email address of the user.
+4. **User ID**. for LDAP authentication, this is the LDAP username; for SSO authentication this is the email address of the user, where the "@" symbol is replaced by "\_AT\_" (e.g. name.surname_AT_institute.com)
 
 ![](img/new-user-default-authentication-1024x187.png)
 
@@ -61,10 +61,11 @@ To register new users from the admin UI:
 2.  Click on **Users** in the menu: the **Add** button at the bottom of
     the menu will become active (blue)
 3.  Click the **Add** button
-4.   Enter the U**ser Id**. This is the LDAP username, when LDAP
-    authentication is used, or the email address if SSO is used. Please
-    note that file-based authentication (where username and password can
-    be created) is not supported by the admin UI.
+4.  Enter the U**ser Id**. This is the LDAP username, when LDAP
+    authentication is used, or the email address with "@" replaced by "\_AT\_" if SSO authetication is used (e.g. name.surname_AT_institution.com). 
+   
+    Please note that file-based authentication (where username and password can
+    be created) is NOT supported by the admin UI.
 5.  **Home space**: this sets the default folder a user sees marked as
     **My Space** in the Lab Notebook.
 6.  Click the **Add Role** button at the bottom of the page to assign a
