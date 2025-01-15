@@ -111,7 +111,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.setDirty = function() {
 		this._sampleFormModel.isFormDirty = true;
 	}
-	
+
+	this.setClean = function() {
+        this._sampleFormModel.isFormDirty = false;
+    }
+
+
 	this.isLoaded = function() {
 		return this._sampleFormModel.isFormLoaded;
 	}
@@ -759,7 +764,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
     }
     
     this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, permId, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy) {
-        
+        this.setClean();
+
         var sampleType = profile.getSampleTypeForSampleTypeCode(_this._sampleFormModel.sample.sampleTypeCode);
         var sampleTypeDisplayName = sampleType.description;
         if(!sampleTypeDisplayName) {
