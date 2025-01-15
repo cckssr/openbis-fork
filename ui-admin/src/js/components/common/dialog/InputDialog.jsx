@@ -116,8 +116,8 @@ class InputDialog extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'InputDialog.render')
 
-    const { open, title, inputLabel, inputType, content } = this.props
-    const { value } = this.state
+    const { open, title, inputLabel, inputType, content, error, errorText} = this.props
+    const { value} = this.state
 
     return (
       <Dialog
@@ -127,12 +127,14 @@ class InputDialog extends React.Component {
         content={[<DialogContentText key='dialog-content'>{content}</DialogContentText>,
           <TextField
             key='dialog-text'
+            error={error} 
             autoFocus
             margin='dense'
             label={inputLabel}
             type={inputType || 'text'}
             fullWidth
             variant='standard'
+            helperText={error ? errorText : ""}
             value={value}
             onChange={this.updateValue}
             />]}

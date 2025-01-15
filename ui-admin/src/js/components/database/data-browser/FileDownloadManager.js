@@ -1,6 +1,6 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
-import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js'; 
+import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js';
 
 // 2GB limit for total download size
 const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648
@@ -74,19 +74,19 @@ export default class FileDownloadManager {
     let progressStatus = ""
     switch (resolution) {
       case Resolution.RESUME:
-        progressStatus = "Resuming..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_RESUMING)
         break;
       case Resolution.SKIP:
-        progressStatus = "Skipping..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_SKIPPING);
         break;
       case Resolution.REPLACE:
-        progressStatus = "Replacing..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_REPLACING);
         break;
       case Resolution.MERGE:
-        progressStatus = "Merging..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_MERGING);
         break;
       case Resolution.CANCEL:
-        progressStatus = "Cancelling..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_CANCELING);
         break;
       default:          
           break;
@@ -157,7 +157,7 @@ export default class FileDownloadManager {
     this.updateState((prevState) => {
         var totalTransferSize = prevState.totalTransferSize + fileSize;
         var formattedtotalTransferSize = this.controller.formatSize(totalTransferSize);        
-        var customProgressDetails = "Estimating download size: " + formattedtotalTransferSize;        
+        var customProgressDetails = messages.get(messages.DOWNLOAD_ESTIMATE_SIZE ,formattedtotalTransferSize);        
         return {
             totalTransferSize,
             customProgressDetails,
@@ -322,7 +322,7 @@ export default class FileDownloadManager {
 
       const permission = await rootDirHandle.requestPermission({ mode: 'readwrite' });
       if (permission !== 'granted') {
-        throw new Error("Permission denied by the user.");
+        throw new Error(messages.get(messages.DOWNLOAD_PERMISSION_DENIED));
       }
 
       if (!(await this.isDirectoryEmpty(rootDirHandle))) {
@@ -340,7 +340,7 @@ export default class FileDownloadManager {
         // no feedback needed, user aborted          
       } else {
         console.error(err)
-        this.openErrorDialog("An error occurred while accessing the directory. Please try again."+ err)
+        this.openErrorDialog(messages.get(messages.DOWNLOAD_DIRECTORY_ACCESS_ERROR) + err)
       }
       return { selectionPossible: false, rootDirHandle: null };
     } finally {
@@ -438,7 +438,7 @@ export default class FileDownloadManager {
 
     const topLevelFolder = this.getTopLevelFolder(file.path)
     
-    this.showDownloadDialog(topLevelFolder, "Default downloads folder")   
+    this.showDownloadDialog(topLevelFolder, messages.get(messages.DOWNLOAD_TO_DEFAULT_FOLDER))   
    
     const totalSize = await this.calculateDownloadTotals(selectedFiles, ZIP_DOWNLOAD_SIZE_LIMIT);
 
@@ -496,8 +496,6 @@ export default class FileDownloadManager {
     }
 
     return await this.generateWithProgress(zipFileName);
-    // this.updateProgress(0, zipFileName , "Zip Files", 0, 0) 
-    // return await this.zip.generateAsync({ type: 'blob' })
   }
 
   // message will only update on UI if it takes longer than 1 sec
@@ -508,7 +506,7 @@ export default class FileDownloadManager {
     const timeoutPromise = new Promise((resolve) => {
         progressTimeout = setTimeout(() => {
             isTimeoutElapsed = true;
-            this.updateProgress(0, zipFileName, "Zip Files", 0, 0);
+            this.updateProgress(0, zipFileName, messages.get(messages.DOWNLOAD_STATUS_ZIP_FILES), 0, 0);
             resolve();
         }, 1000);
     });
@@ -535,7 +533,7 @@ export default class FileDownloadManager {
   }
 
   downloadBlob(blob, fileName) {
-    this.updateProgress(0, fileName, "Saving File", 0, 0) 
+    this.updateProgress(0, fileName, messages.get(messages.DOWNLOAD_STATUS_SAVING_FILES), 0, 0) 
     const link = document.createElement('a')
     link.href = window.URL.createObjectURL(blob)
     link.download = fileName

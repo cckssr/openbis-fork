@@ -43,7 +43,8 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
     MD5NotMatch(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10018,"MD5 doesn't match on data given to: %s - for: %s"),
     DeadlockDetected(               RuntimeException.class,         List.of(UserUsageError),            10019,"Deadlock detected, %s is already waiting for %s from %s"),
     TransactionReuse(               RuntimeException.class,         List.of(CoreDeveloperCodingError),  10020,"Transaction with uuid: %s and state: %s was going to be reused"),
-    NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10021,"No shares found");
+    NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10021,"No shares found"),
+    PathInvalid(                  RuntimeException.class,         List.of(ClientDeveloperCodingError),          10022,"Path %s contains invalid characters");
 
     private RuntimeExceptionTemplate template;
 

@@ -34,9 +34,13 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
 
     public static final String FILE_C = "C.txt";
 
+    public static final String FILE_INVALID_C = "D*.txt";
+
     public static final String DIR_C_PATH = IOUtils.PATH_SEPARATOR + getPath(DIR_C);
 
     public static final String FILE_C_PATH = IOUtils.PATH_SEPARATOR + getPath(DIR_C, FILE_C);
+
+    public static final String FILE_INVALID_C_PATH = IOUtils.PATH_SEPARATOR + getPath(DIR_C, FILE_INVALID_C);
 
     @Override
     public void operation() throws Exception {
@@ -71,6 +75,19 @@ public class CreateTransactionOperationTest extends AbstractTransactionOperation
 
         final File file = IOUtils.getFile(realPathC);
         assertTrue(file.getDirectory());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void operation_createFile_fail() throws Exception {
+        begin();
+        try
+        {
+            create(FILE_INVALID_C_PATH, false);
+        } finally {
+            rollback();
+        }
+
+
     }
 
 }

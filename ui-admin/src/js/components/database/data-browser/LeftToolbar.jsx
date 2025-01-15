@@ -42,6 +42,7 @@ const color = 'inherit'
 const iconButtonSize = 'medium'
 const moveLocationMode = 'move'
 const copyLocationMode = 'copy'
+const VALID_FILENAME_PATTERN = /^[0-9A-Za-z $!#%'()+,\-.;=@[\]^_{}~]+$/;
 
 const styles = theme => ({
   buttons: {
@@ -83,7 +84,8 @@ class LeftToolbar extends React.Component {
       deleteDialogOpen: false,
       renameDialogOpen: false,
       locationDialogMode: null,
-      loading: false
+      loading: false,
+      renameError: false
     }
 
     this.controller = this.props.controller
@@ -118,7 +120,7 @@ class LeftToolbar extends React.Component {
   }
 
   openRenameDialog() {
-    this.setState({ renameDialogOpen: true })
+    this.setState({ renameError: false, renameDialogOpen: true })
   }
 
   closeRenameDialog() {
@@ -127,6 +129,14 @@ class LeftToolbar extends React.Component {
 
   async handleRenameConfirm(newName) {
     const { multiselectedFiles } = this.props
+
+    if (!this.isValidFilename(newName)) {
+      this.setState({ renameError: true })
+      return;
+    } else {
+      this.setState({ renameError: false })
+    }
+
     const oldName = multiselectedFiles.values().next().value.name
     this.closeRenameDialog()
 
@@ -136,6 +146,18 @@ class LeftToolbar extends React.Component {
     } finally {
       this.setState({ loading: false })
     }
+  }
+
+  isValidFilename(filename) {
+    if (!filename || filename === '') {
+        return false;
+    }
+    
+    if (filename.startsWith(" ") || filename.endsWith(" ") || filename.startsWith(".") || filename.endsWith(".")) {
+        return false;
+    }
+    
+    return VALID_FILENAME_PATTERN.test(filename);
   }
 
   handleRenameCancel() {
@@ -228,7 +250,8 @@ class LeftToolbar extends React.Component {
       hiddenButtonsPopup,
       deleteDialogOpen,
       renameDialogOpen,
-      locationDialogMode
+      locationDialogMode,
+      renameError
     } = this.state
 
     const ellipsisButtonSize = 24
@@ -346,9 +369,11 @@ class LeftToolbar extends React.Component {
         <InputDialog
           key='rename-dialog'
           open={renameDialogOpen}
+          error={renameError}
           title={selectedValue.directory ? messages.get(messages.RENAME_FOLDER) : messages.get(messages.RENAME_FILE)}
           inputLabel={selectedValue.directory ? messages.get(messages.FOLDER_NAME) : messages.get(messages.FILE_NAME)}
           inputValue={selectedValue.name}
+          errorText={messages.get(messages.FILENAME_INVALID_CHARACTERS)}
           onCancel={this.handleRenameCancel}
           onConfirm={this.handleRenameConfirm}
         />

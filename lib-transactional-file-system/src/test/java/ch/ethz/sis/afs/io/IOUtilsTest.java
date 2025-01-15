@@ -552,4 +552,71 @@ public class IOUtilsTest extends AbstractTest {
         createDirectory(dirB);
         assertTrue(isSameVolume(dirA, dirB));
     }
+
+    @Test
+    public void testValidFilenames() {
+        // Valid filenames
+        assertTrue("Expected 'valid-file.txt' to be valid",
+                IOUtils.isValidFilename("valid-file.txt"));
+        assertTrue("Expected 'valid_file.txt' to be valid",
+                IOUtils.isValidFilename("valid_file.txt"));
+        assertTrue("Expected '1234567890.txt' to be valid",
+                IOUtils.isValidFilename("1234567890.txt"));
+        assertTrue("Expected 'file name.txt' to be valid", IOUtils.isValidFilename("file name.txt"));
+        assertTrue("Expected 'file-name$@!.txt' to be valid",
+                IOUtils.isValidFilename("file-name$@!.txt"));
+        assertTrue("Expected 'invalid@file#%' to be valid",
+                IOUtils.isValidFilename("invalid@file#%"));
+
+        assertTrue("Expected 'file-éñ-äöü.txt' to be valid",
+                IOUtils.isValidFilename("file-éñ-äöü.txt"));
+        assertTrue("Expected 'résumé.txt' to be valid",
+                IOUtils.isValidFilename("résumé.txt"));
+        assertTrue("Expected 'français-file.txt' to be valid",
+                IOUtils.isValidFilename("français-file.txt"));
+        assertTrue("Expected 'mañana.txt' to be valid",
+                IOUtils.isValidFilename("mañana.txt"));
+        assertTrue("Expected 'straße.txt' to be valid",
+                IOUtils.isValidFilename("straße.txt"));
+        assertTrue("Expected 'crème-brûlée.txt' to be valid",
+                IOUtils.isValidFilename("crème-brûlée.txt"));
+        assertTrue("Expected 'smörgåsbord.txt' to be valid",
+                IOUtils.isValidFilename("smörgåsbord.txt"));
+        assertTrue("Expected 'děkujeme.txt' to be valid",
+                IOUtils.isValidFilename("děkujeme.txt"));
+        assertTrue("Expected 'český-žlutý-kůň.txt' to be valid",
+                IOUtils.isValidFilename("český-žlutý-kůň.txt"));
+        assertTrue("Expected 'добрый-день.txt' to be valid",
+                IOUtils.isValidFilename("добрый-день.txt"));
+    }
+
+    @Test
+    public void testInvalidFilenames() {
+        // Invalid filenames
+        assertFalse("Expected ' invalid-file.txt' to be invalid",
+                IOUtils.isValidFilename(" invalid-file.txt"));
+        assertFalse("Expected 'invalid-file.txt ' to be invalid",
+                IOUtils.isValidFilename("invalid-file.txt "));
+        assertFalse("Expected '.hiddenfile' to be invalid", IOUtils.isValidFilename(".hiddenfile"));
+        assertFalse("Expected 'hiddenfile.' to be invalid", IOUtils.isValidFilename("hiddenfile."));
+        assertFalse("Expected an empty string to be invalid", IOUtils.isValidFilename(""));
+        assertFalse("Expected null to be invalid", IOUtils.isValidFilename(null));
+
+        assertFalse("Expected 'file*name.txt' to be invalid",
+                IOUtils.isValidFilename("file*name.txt"));
+        assertFalse("Expected 'file|name.txt' to be invalid",
+                IOUtils.isValidFilename("file|name.txt"));
+        assertFalse("Expected 'file<name.txt' to be invalid",
+                IOUtils.isValidFilename("file<name.txt"));
+        assertFalse("Expected 'file>name.txt' to be invalid",
+                IOUtils.isValidFilename("file>name.txt"));
+        assertFalse("Expected 'file:name.txt' to be invalid",
+                IOUtils.isValidFilename("file:name.txt"));
+        assertFalse("Expected 'file\"name.txt' to be invalid",
+                IOUtils.isValidFilename("file\"name.txt"));
+        assertFalse("Expected 'file\\name.txt' to be invalid",
+                IOUtils.isValidFilename("file\\name.txt"));
+        assertFalse("Expected 'file?name.txt' to be invalid",
+                IOUtils.isValidFilename("file?name.txt"));
+    }
 }

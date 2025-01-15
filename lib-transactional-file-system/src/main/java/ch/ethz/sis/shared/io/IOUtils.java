@@ -49,9 +49,13 @@ import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class IOUtils {
 
+
+    private static final Pattern VALID_FILENAME_PATTERN =
+            Pattern.compile("[0-9\\p{L} $!#%'()+,\\-.;=@\\[\\]^_{}~/]+");
     //
     // Reusable maps with permissions
     //
@@ -759,5 +763,17 @@ public class IOUtils {
             }
         });
         return havePermissionsResult[0];
+    }
+
+    public static boolean isValidFilename(String path) {
+        if (path == null || path.isEmpty()) {
+            return false;
+        }
+
+        String filename = Paths.get(path).getFileName().toString();
+        if (filename.startsWith(" ") || filename.endsWith(" ") || filename.startsWith(".") || filename.endsWith(".")) {
+            return false;
+        }
+        return VALID_FILENAME_PATTERN.matcher(filename).matches();
     }
 }

@@ -414,6 +414,9 @@ public class TransactionConnection implements TransactionalFileSystem {
         if (!source.startsWith(ROOT)) {
             AFSExceptions.throwInstance(AFSExceptions.PathNotStartWithRoot, operationName.name(), source);
         }
+        if(!IOUtils.isValidFilename(source)){
+            AFSExceptions.throwInstance(AFSExceptions.PathInvalid, source);
+        }
         return OperationExecutor.getRealPath(transaction, source);
     }
 

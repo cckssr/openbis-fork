@@ -56,7 +56,7 @@ export default class FileUploadManager {
     this.updateState((prevState) => {
         var totalTransferSize = prevState.totalTransferSize + fileSize;
         var formattedTotalUploadSize = this.controller.formatSize(totalTransferSize);        
-        var customProgressDetails = "Estimating upload size: " + formattedTotalUploadSize;        
+        var customProgressDetails = messages.get(messages.UPLOAD_ESTIMATE_SIZE, formattedTotalUploadSize);        
         return {
           totalTransferSize,
           customProgressDetails,
@@ -78,6 +78,7 @@ export default class FileUploadManager {
   }
 
   async handleDragAndDropUpload(e) {
+    let files;
     try {
       e.preventDefault();
       const dataItems = e.dataTransfer.items?.length
@@ -85,26 +86,25 @@ export default class FileUploadManager {
         : Array.from(e.dataTransfer.files); // Fallback for unsupported browsers
   
       if (dataItems.length === 0) {
-        this.openErrorDialog("No files dropped!");
+        this.openErrorDialog(messages.get(messages.UPLOAD_NO_DROPPED_FILES));
         return;
       }
   
-      const files = await this.prepareDragAndDopUpload(dataItems);
+      files = await this.prepareDragAndDopUpload(dataItems);
   
       if (files.length > 0) {
         await this.upload(files);
       } else {
-        this.openErrorDialog("No valid files found!");
+        this.openErrorDialog(messages.get(messages.UPLOAD_NO_VALID_FILES));
       }
     } catch (err) {
-      console.error(err);
+      const fileNames = files?.map(({ file }) => file.name).join(", ") || "files";
       this.openErrorDialog(
-        `Error uploading ${
-          files?.map(({ file }) => file.name).join(", ") || "files"
-        }: ${err.message || err}`
+        `Error uploading ${fileNames}: ${err.message || err}`
       );
     } finally {
       this.resetUploadDialogStates();
+      await this.controller.gridController.load()
     }
   }
   
@@ -235,6 +235,7 @@ export default class FileUploadManager {
       );
     } finally {
       this.resetUploadDialogStates()
+      await this.controller.gridController.load()
     }
   }
 
@@ -300,19 +301,19 @@ export default class FileUploadManager {
     let progressStatus = ""
     switch (resolution) {
       case Resolution.RESUME:
-        progressStatus = "Resuming..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_RESUMING)
         break;
       case Resolution.SKIP:
-        progressStatus = "Skipping..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_SKIPPING);
         break;
       case Resolution.REPLACE:
-        progressStatus = "Replacing..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_REPLACING);
         break;
       case Resolution.MERGE:
-        progressStatus = "Merging..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_MERGING);
         break;
       case Resolution.CANCEL:
-        progressStatus = "Cancelling..."
+        progressStatus = messages.get(messages.UPLOAD_DOWNLOAD_CANCELING);
         break;
       default:          
           break;
