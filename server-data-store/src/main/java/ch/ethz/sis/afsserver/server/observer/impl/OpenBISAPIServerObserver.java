@@ -1,6 +1,7 @@
 package ch.ethz.sis.afsserver.server.observer.impl;
 
 import java.nio.file.NoSuchFileException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,8 +23,11 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Worker;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.afsserver.server.observer.APICall;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -42,8 +46,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.pathinfo.DataSetFileRecord;
+import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
+import net.lemnik.eodsql.QueryTool;
 
 public class OpenBISAPIServerObserver implements APIServerObserver<TransactionConnection>
 {
@@ -58,6 +65,8 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
     private OpenBISConfiguration openBISConfiguration;
 
+    private IPathInfoAutoClosingDAO pathInfoDAO;
+
     @Override
     public void init(Configuration configuration) throws Exception
     {
@@ -66,6 +75,12 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
         interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
         openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
+
+        DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+        if (pathInfoConfiguration != null)
+        {
+            pathInfoDAO = QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
+        }
     }
 
     @Override
@@ -105,6 +120,40 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
                 }
             }
         }
+    }
+
+    @Override public Object duringAPICall(Worker<TransactionConnection> worker, APICall apiCall)
+            throws Exception
+    {
+        if ("list".equals(apiCall.getMethod()))
+        {
+            if (pathInfoDAO != null)
+            {
+                String sourceOwner = (String) apiCall.getParams().get("sourceOwner");
+                String source = (String) apiCall.getParams().get("source");
+
+                Long dataSetId = pathInfoDAO.tryToGetDataSetId(sourceOwner);
+
+                if (dataSetId != null)
+                {
+                    DataSetFileRecord fileOrFolderRecord = pathInfoDAO.tryToGetRelativeDataSetFile(dataSetId, source);
+                    if (fileOrFolderRecord != null)
+                    {
+                        if (fileOrFolderRecord.is_directory)
+                        {
+                            List<DataSetFileRecord> fileRecords = pathInfoDAO.listChildrenByParentId(dataSetId, fileOrFolderRecord.id);
+                            return fileRecords.stream().map(fileRecord -> convert(sourceOwner, fileRecord))
+                                    .collect(Collectors.toList());
+                        } else
+                        {
+                            return List.of(convert(sourceOwner, fileOrFolderRecord));
+                        }
+                    }
+                }
+            }
+        }
+
+        return apiCall.executeDefault();
     }
 
     @Override
@@ -308,6 +357,12 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
         {
             return null;
         }
+    }
+
+    private static File convert(String owner, DataSetFileRecord record)
+    {
+        return new File(owner, record.relative_path, record.file_name, record.is_directory, record.size_in_bytes,
+                record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null, null, null);
     }
 
 }

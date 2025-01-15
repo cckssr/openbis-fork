@@ -115,7 +115,7 @@ public final class Server<CONNECTION, API>
         workersPool = new Pool<>(poolSize, configuration, workerFactory);
 
         // 2.3 Init API Server observer
-        APIServerObserver<CONNECTION> apiServerObserver = configuration.getInstance(AtomicFileSystemServerParameter.apiServerObserver);
+        APIServerObserver<CONNECTION> apiServerObserver = configuration.getSharableInstance(AtomicFileSystemServerParameter.apiServerObserver);
         if (apiServerObserver == null)
         {
             apiServerObserver = new DummyServerObserver<>();
@@ -159,7 +159,7 @@ public final class Server<CONNECTION, API>
         maintenancePlugins = MaintenanceTaskUtils.startupMaintenancePlugins(maintenanceTaskParameters);
 
         // 2.10 Init observer
-        observer = configuration.getInstance(AtomicFileSystemServerParameter.serverObserver);
+        observer = configuration.getSharableInstance(AtomicFileSystemServerParameter.serverObserver);
         if (observer == null)
         {
             observer = new DummyServerObserver<>();

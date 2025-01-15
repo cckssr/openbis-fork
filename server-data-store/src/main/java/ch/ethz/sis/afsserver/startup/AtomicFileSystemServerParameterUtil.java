@@ -54,7 +54,7 @@ public class AtomicFileSystemServerParameterUtil
 
     public static String getInteractiveSessionKey(Configuration configuration)
     {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.apiServerInteractiveSessionKey, true);
+        return getStringParameter(configuration, AtomicFileSystemServerParameter.apiServerInteractiveSessionKey, false);
     }
 
     public static <E extends Enum<E>, I> I getInstanceParameter(Configuration configuration, E parameter, boolean mandatory)

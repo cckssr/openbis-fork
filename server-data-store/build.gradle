@@ -110,6 +110,13 @@ task testJar(type: Jar, dependsOn: testClasses) {
     from sourceSets.test.output
 }
 
+jar {
+    from('src/main') {
+        include 'sql/**/*.sql'
+        into 'afs-server'
+    }
+}
+
 artifacts {
     tests testJar
 }

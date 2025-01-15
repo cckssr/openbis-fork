@@ -2485,14 +2485,16 @@ var FormUtil = new function() {
 				//
 				// Warning
 				//
+				var confirmationText = code + " FREEZE";
+
 				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Write the 'CODE FREEZE', after they are frozen no more changes will be possible:"));
+						.append(" Write the text '" + confirmationText + "' on the confirmation field, after entities are frozen no more changes will be possible:"));
 				//
 				// Password
 				//
-				var $passField = FormUtil._getInputField('freeze', null, 'Code Freeze', null, true);
+				var $passField = FormUtil._getInputField('input', "CODE_FREEZE_FIELD", confirmationText , null, true);
 				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Code Freeze", null);
 				$window.append($passwordGroup);
 				
@@ -2514,8 +2516,8 @@ var FormUtil = new function() {
 					if (_this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing(entityMap)) {
 						var username = mainController.serverFacade.getUserId();
 						var password = $passField.val();
-									if(password !== code + ' FREEZE') {
-										Util.showUserError('The given word is not correct.');
+									if(password !== confirmationText) {
+										Util.showUserError('The given confirmation is not correct.');
 									} else {
 										for (key in entityMap) {
 											if(!$('#' + _this._createFormFieldId(key))[0].checked) {
@@ -2574,7 +2576,10 @@ var FormUtil = new function() {
 						'overflow' : 'none'
 				};
 				
-				Util.blockUI($window, css);
+				Util.blockUI($window, css, false, function() {
+				    const myInput = document.getElementById("CODE_FREEZE_FIELD");
+				    myInput.onpaste = e => e.preventDefault();
+				});
 			} else {
 				Util.showUserError('List of entities for freezing failed to .', function() {
 					Util.unblockUI();
