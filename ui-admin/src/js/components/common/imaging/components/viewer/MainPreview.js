@@ -20,7 +20,7 @@ const MainPreview = ({ activePreview, resolution, isChanged, isUploadedPreview }
 
 	return (
 		<Grid2 size={{ sm: 12, md: 8 }}>
-			<Grid2 container direction={'row'} sx={{ justifyContent: 'space-between', paddingTop: '8px', alignItems: 'center' }}>
+			<Grid2 container direction={'row'} sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
 				<Grid2 size={{ md: 'auto' }}>
 					<Typography variant='h6'>Selected Preview</Typography>
 				</Grid2>

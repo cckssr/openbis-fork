@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, MenuItem, Select, Grid2 } from "@mui/material";
+import { FormControl, MenuItem, Select, Grid2, InputLabel } from '@mui/material';
 import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js';
 import TextField from '@src/js/components/common/form/TextField.jsx';
 import SelectField from '@src/js/components/common/form/SelectField.jsx';
@@ -21,7 +21,6 @@ const useStyles = makeStyles((theme) => ({
     },
     tagsSelect: {
         width: '100%',
-        marginTop: theme.spacing(2)
     }
 }));
 
@@ -57,8 +56,10 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
     const renderInputFilter = () => {
         switch (galleryFilter.property) {
             case constants.IMAGING_TAGS:
-                return <FormControl variant="standard" className={classes.tagsSelect} >
+                return (<FormControl variant='standard' className={classes.tagsSelect} >
+                    <InputLabel id='gallery-select-preview-tags'>Preview Tags</InputLabel>
                     <Select multiple
+                        id='gallery-select-preview-tags'
                         value={selectedTags}
                         onChange={handleTagsOnChange}
                     >
@@ -68,9 +69,9 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                             </MenuItem>
                         ))}
                     </Select>
-                </FormControl>
+                </FormControl>);
             case constants.DEFAULT_DATASET_VIEW:
-                return <FormControl variant="standard" className={classes.tagsSelect} >
+                return (<FormControl variant='standard' className={classes.tagsSelect} >
                     <Select value={selectedValue}
                         onChange={handleSelectValue}
                     >
@@ -80,15 +81,14 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                             </MenuItem>
                         ))}
                     </Select>
-                </FormControl>
+                </FormControl>);
             default:
-                return <TextField name="text"
+                return (<TextField name='gallery-filter'
+                    label={messages.get(messages.FILTER)}
                     id={`${id}.gallery-filter`}
                     value={galleryFilter.text}
                     onChange={handleGalleryFilterChange}
-                    placeholder="property value"
-                    variant="standard"
-                />
+                    variant='standard'/>);
         }
         
     }
@@ -97,7 +97,8 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
         <Grid2 container spacing={1} sx={{ alignItems: 'center', width: '100%' }}>
             <Grid2 size='auto' xs={{ alignSelf: 'center' }}>
                 <SelectField
-                    name="operator"
+                    name='operator'
+                    label={messages.get(messages.OPERATOR)}
                     options={[
                         {
                             label: messages.get(messages.OPERATOR_AND),
@@ -110,16 +111,16 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                     ]}
                     value={galleryFilter.operator}
                     onChange={handleGalleryFilterChange}
-                    variant="standard"
+                    variant='standard'
                 />
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 4 }}>
-                <SelectField
-                    name="property"
+                <SelectField name='property'
+                    label={messages.get(messages.PROPERTY)}
                     options={options}
                     value={galleryFilter.property}
                     onChange={handleGalleryFilterChange}
-                    variant="standard"
+                    variant='standard'
                 />
             </Grid2>
             <Grid2 size='grow'>

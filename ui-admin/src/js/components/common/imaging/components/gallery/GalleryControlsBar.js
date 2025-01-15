@@ -10,6 +10,13 @@ import GalleryPaging from "@src/js/components/common/imaging/components/gallery/
 import GridPagingOptions from "@src/js/components/common/grid/GridPagingOptions.js";
 import Exporter from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
 import GalleryFilter from "@src/js/components/common/imaging/components/gallery/GalleryFilter.jsx";
+import makeStyles from '@mui/styles/makeStyles';
+
+const useStyles = makeStyles((theme) => ({
+    fw: {
+        width: '100%'
+    }
+}));
 
 const GalleryControlsBar = ({
     isExportDisable, configExports,
@@ -23,6 +30,7 @@ const GalleryControlsBar = ({
     dataSetTypes
 }) => {
 
+    const classes = useStyles();
     const options = GridPagingOptions.GALLERY_PAGE_SIZE_OPTIONS[paging.pageColumns - 1].map(pageSize => ({
         label: pageSize,
         value: pageSize
@@ -58,20 +66,20 @@ const GalleryControlsBar = ({
                         })}
                     />
                 </Grid2>
-                <Grid2 size={{md: 1}}>
+                <Grid2 size={{ md: 1 }}>
                     <CustomSwitch label={messages.get(messages.SHOW)}
                         labelPlacement='top'
                         isChecked={showAll}
                         onChange={setShowAll} />
                 </Grid2>
-                <Grid2 size={{md: 1}}>
+                <Grid2 size={{ md: 1 }}>
                     <CustomSwitch label='Select'
                         labelPlacement='top'
                         disabled={!gridView}
                         isChecked={selectAll}
                         onChange={handleSelectAll} />
                 </Grid2>
-                <Grid2 size={{md: 2}}>
+                <Grid2 size={{ md: 2 }} sx={{ justifyItems: 'center' }}>
                     <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={0} sx={{ alignItems: 'center' }}>
                         <IconButton
                             color={gridView ? 'primary' : 'default'}
@@ -87,17 +95,17 @@ const GalleryControlsBar = ({
                         </IconButton>
                     </Stack>
                 </Grid2>
-                <Grid2 size={{ xs: 10, sm: 12, md: 10 }}>
-                    <OutlinedBox label='Filter'>
-                        <GalleryFilter options={dataSetTypes}
-                            galleryFilter={galleryFilter}
-                            onGalleryFilterChange={onGalleryFilterChange} />
-                    </OutlinedBox>
+                <Grid2 size={{ sm: 12, md: 10 }}>
+                    <GalleryFilter options={dataSetTypes}
+                        galleryFilter={galleryFilter}
+                        onGalleryFilterChange={onGalleryFilterChange} />
                 </Grid2>
-                <Grid2 size={{ xs: 2, sm: 12, md: 2}}>
+                <Grid2 size={{ sm: 12, md: 2 }}>
                     {configExports.length > 0 &&
-                        <Exporter config={configExports} handleExport={handleExport}
-                            disabled={isExportDisable} />}
+                        <Exporter config={configExports} 
+                            handleExport={handleExport}
+                            disabled={isExportDisable} 
+                            styles={{ root: classes.fw }}/>} 
                 </Grid2>
             </Grid2>
         </PaperBox>

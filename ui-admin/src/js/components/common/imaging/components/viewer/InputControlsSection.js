@@ -23,6 +23,7 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 	const renderType = (imageDatasetControl, idx) => {
 		switch (imageDatasetControl.type) {
 			case constants.DROPDOWN:
+			case constants.COLORMAP:
 				return <Dropdown key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
 					initValue={inputValues[imageDatasetControl.label]}
@@ -30,7 +31,7 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					isMulti={imageDatasetControl.multiselect}
 					disabled={isUploadedPreview}
 					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
-					mappingItemsCallback={null} />;
+					mappingItemsCallback={imageDatasetControl.type === constants.DROPDOWN ? null : renderColorMapItems} />;
 			case constants.SLIDER:
 				return <InputSlider key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
@@ -51,15 +52,6 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					playable={imageDatasetControl.playable && !isUploadedPreview}
 					speeds={imageDatasetControl.speeds}
 					onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
-			case constants.COLORMAP:
-				return <Dropdown key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
-					label={imageDatasetControl.label}
-					initValue={inputValues[imageDatasetControl.label]}
-					values={imageDatasetControl.values}
-					isMulti={imageDatasetControl.multiselect}
-					disabled={isUploadedPreview}
-					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
-					mappingItemsCallback={renderColorMapItems} />;
 		}
 	}
 
