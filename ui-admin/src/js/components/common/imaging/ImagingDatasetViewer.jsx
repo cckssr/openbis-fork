@@ -127,6 +127,9 @@ class ImagingDataSetViewer extends React.PureComponent {
             });
             if (onUnsavedChanges !== null)
                 onUnsavedChanges(this.props.objId, true);
+            if(imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true'){
+                window.location.reload();
+            }
         } catch (error) {
             this.setState({ open: false, isChanged: true, isSaved: false });
             this.handleError(error);
