@@ -1,4 +1,4 @@
-[DataSource1]
+[DATASOURCE1]
 
 resource-list-url = https://localhost:9001/datastore_server/re-sync
 data-source-openbis-url = https://localhost:9000/openbis/openbis
