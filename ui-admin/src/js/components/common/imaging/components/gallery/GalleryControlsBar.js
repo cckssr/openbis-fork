@@ -1,15 +1,14 @@
 import React from 'react';
-import { Typography, IconButton, Grid2, Stack, Divider } from "@mui/material";
+import { Typography, IconButton, Grid2, Stack, Divider } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GridOnIcon from '@mui/icons-material/GridOn';
-import messages from "@src/js/common/messages.js";
-import OutlinedBox from "@src/js/components/common/imaging/components/common/OutlinedBox.js";
-import PaperBox from "@src/js/components/common/imaging/components/common/PaperBox.js";
-import CustomSwitch from "@src/js/components/common/imaging/components/common/CustomSwitch.jsx";
-import GalleryPaging from "@src/js/components/common/imaging/components/gallery/GalleryPaging.jsx";
-import GridPagingOptions from "@src/js/components/common/grid/GridPagingOptions.js";
-import Exporter from "@src/js/components/common/imaging/components/viewer/Exporter.jsx";
-import GalleryFilter from "@src/js/components/common/imaging/components/gallery/GalleryFilter.jsx";
+import messages from '@src/js/common/messages.js';
+import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
+import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
+import GalleryPaging from '@src/js/components/common/imaging/components/gallery/GalleryPaging.jsx';
+import GridPagingOptions from '@src/js/components/common/grid/GridPagingOptions.js';
+import Exporter from '@src/js/components/common/imaging/components/viewer/Exporter.jsx';
+import GalleryFilter from '@src/js/components/common/imaging/components/gallery/GalleryFilter.jsx';
 import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles((theme) => ({
@@ -41,8 +40,8 @@ const GalleryControlsBar = ({
             <Typography variant='h6'>
                 Gallery View
             </Typography>
-            <Grid2 container direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                <Grid2 size={{ xs: 12, sm: 12, md: 8 }}>
+            <Grid2 container direction='row' sx={{ alignItems: 'center' }}>
+                <Grid2 container size={{ xs: 12, sm: 12, md: 'grow' }}>
                     <GalleryPaging id='gallery-paging'
                         count={count}
                         page={paging.page}
@@ -66,32 +65,32 @@ const GalleryControlsBar = ({
                         })}
                     />
                 </Grid2>
-                <Grid2 size={{ md: 1 }}>
+                <Grid2 size={{ sm: 4, md: 'auto' }}>
                     <CustomSwitch label={messages.get(messages.SHOW)}
                         labelPlacement='top'
                         isChecked={showAll}
                         onChange={setShowAll} />
                 </Grid2>
-                <Grid2 size={{ md: 1 }}>
+                <Grid2 size={{ sm: 4, md: 'auto' }}>
                     <CustomSwitch label='Select'
                         labelPlacement='top'
                         disabled={!gridView}
                         isChecked={selectAll}
                         onChange={handleSelectAll} />
                 </Grid2>
-                <Grid2 size={{ md: 2 }} sx={{ justifyItems: 'center' }}>
-                    <Stack direction="row" divider={<Divider orientation="vertical" flexItem />} spacing={0} sx={{ alignItems: 'center' }}>
+                <Grid2 size={{ sm: 4, md: 2 }} sx={{ justifyItems: 'center' }}>
+                    <Stack direction='row' divider={<Divider orientation='vertical' flexItem />} spacing={0} sx={{ alignItems: 'center' }}>
                         <IconButton
                             color={gridView ? 'primary' : 'default'}
                             onClick={() => handleViewChange(true)}
-                            size="large">
-                            <GridOnIcon fontSize="large" />
+                            size='large'>
+                            <GridOnIcon fontSize='large' />
                         </IconButton>
                         <IconButton
                             color={!gridView ? 'primary' : 'default'}
                             onClick={() => handleViewChange(false)}
-                            size="large">
-                            <ViewListIcon fontSize="large" />
+                            size='large'>
+                            <ViewListIcon fontSize='large' />
                         </IconButton>
                     </Stack>
                 </Grid2>
