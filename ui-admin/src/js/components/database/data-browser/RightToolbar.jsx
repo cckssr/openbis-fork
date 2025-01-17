@@ -133,6 +133,9 @@ class RightToolbar extends React.Component {
     this.setState({ errorMessage: null })
   }
 
+  cancelFileTransfer() {
+    this.setState({ cancelTransfer: true })
+  }
 
   renderUploadButtons() {
     const { classes, buttonSize} = this.props
@@ -266,6 +269,7 @@ class RightToolbar extends React.Component {
         variant={loadingDialogVariant}        
         customProgressDetails={customProgressDetails}        
         progressStatus={progressStatus}
+        onCancel={this.cancelFileTransfer}
       />,
       <ErrorDialog
         key='right-toolbar-error-dialog'

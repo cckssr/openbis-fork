@@ -47,12 +47,13 @@ export default class FileUploadManager {
       showApplyToAll: true,
       resolveDecision: null,     
       rollingSpeed:0,
-      totalSavingTime:0
+      totalSavingTime:0,
+      cancelTransfer: false
     }
   }
 
 
-  updateSizeCalculationProgress(fileName, fileSize) {    
+  updateSizeCalculationProgress(fileName, fileSize) {
     this.updateState((prevState) => {
         var totalTransferSize = prevState.totalTransferSize + fileSize;
         var formattedTotalUploadSize = this.controller.formatSize(totalTransferSize);        
@@ -98,10 +99,15 @@ export default class FileUploadManager {
         this.openErrorDialog(messages.get(messages.UPLOAD_NO_VALID_FILES));
       }
     } catch (err) {
-      const fileNames = files?.map(({ file }) => file.name).join(", ") || "files";
-      this.openErrorDialog(
-        `Error uploading ${fileNames}: ${err.message || err}`
-      );
+      console.error(err)
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      } else {
+        const fileNames = files?.map(({ file }) => file.name).join(", ") || "files";
+        this.openErrorDialog(
+          `Error uploading ${fileNames}: ${err.message || err}`
+        )
+      }
     } finally {
       this.resetUploadDialogStates();
       await this.controller.gridController.load()
@@ -137,6 +143,7 @@ export default class FileUploadManager {
           const file = await this.readFile(item)
           files.push({ file, path: "" })
           this.updateSizeCalculationProgress(file.name, file.size)
+          this.throwAbortErrorIfTransferCancelled();
         } else if (item.isDirectory) {
           this.updateState({ progressBarFrom: item.name })
           const folderFiles = await this.readDirectory(item, item.name)
@@ -171,6 +178,7 @@ export default class FileUploadManager {
           const file = await this.readFile(entry);
           allFiles.push({ file, path: entryPath });
           this.updateSizeCalculationProgress(file.name, file.size);
+          this.throwAbortErrorIfTransferCancelled()
         } else if (entry.isDirectory) {
           const folderFiles = await this.readDirectory(entry, entryPath);
           allFiles.push(...folderFiles);
@@ -204,10 +212,13 @@ export default class FileUploadManager {
       const totalSize = this.prepareUpload(topLevelFolder, fileList);
       await this.upload(fileList)
     } catch(err){
-      console.error(err)
-      this.openErrorDialog(
-        `Error uploading ${[...fileList].map(({file}) => file.name).join(", ")}: ` + (err.message || err)
-      );
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      } else {
+        this.openErrorDialog(
+          `Error uploading ${[...fileList].map(({file}) => file.name).join(", ")}: ` + (err.message || err)
+        )
+      }
     } finally {
       this.resetUploadDialogStates()
     }
@@ -229,10 +240,13 @@ export default class FileUploadManager {
       this.prepareUpload(topLevelFolder, allFiles);
       await this.upload(allFiles)
     } catch(err){
-      console.error(err)
-      this.openErrorDialog(
-        `Error uploading ${[...event.target.files].map(file => file.name).join(", ")}: ` + (err.message || err)
-      );
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      } else {
+        this.openErrorDialog(
+          `Error uploading ${[...event.target.files].map(file => file.name).join(", ")}: ` + (err.message || err)
+        )
+      }      
     } finally {
       this.resetUploadDialogStates()
       await this.controller.gridController.load()
@@ -277,24 +291,14 @@ export default class FileUploadManager {
 
   resetUploadDialogStates() {
     this.updateState({
-      loading: false,
-      processedBytes:0,      
-      totalTransferSize:0,      
-      applyToAllFiles: false,
-      cancelDownload: false,
-      allowResume: false,
-      progress:0,
-      lastConflictResolution: null,
-      averageSpeed:0,
-      expectedTime: null,
-      lastTimestamp:null,
-      progressBarFrom:null,
-      progressBarTo:null,
-      progressBarFrom:null,
-      progressBarTo:null,
-      progressStatus: null,
-      totalSkippedBytes:0
+      ...this.getDefaultState()
     })
+  }
+
+  throwAbortErrorIfTransferCancelled(){    
+    if(this.getCurrentState().cancelTransfer){
+      throw new DOMException('Upload was cancelled.', 'AbortError');
+    }
   }
 
   updateProgressForResolution(uploadedChunkSize, fileName, resolution) {
@@ -323,7 +327,10 @@ export default class FileUploadManager {
   }
 
   updateProgress(uploadedChunkSize, fileName, status, timeElapsed, resolution) {
-    
+    if(this.getCurrentState().cancelTransfer){
+      throw new DOMException('The operation was aborted.', 'AbortError');
+    }
+
     this.updateState((prevState) => {
       const processedBytes = (prevState.processedBytes ?? 0) + uploadedChunkSize;
       const totalTransferSize = prevState.totalTransferSize;
@@ -451,6 +458,7 @@ export default class FileUploadManager {
       while (offset < file.size) {      
         const sizeUploaded = await this.controller.uploadFile(file, targetFilePath,
           offset, this.updateProgress)
+        this.throwAbortErrorIfTransferCancelled()
         offset += sizeUploaded
       }
     }

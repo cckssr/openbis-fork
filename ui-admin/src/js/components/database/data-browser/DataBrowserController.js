@@ -172,7 +172,7 @@ export default class DataBrowserController extends ComponentController {
     // Calculate download speed      
     const elapsedTime = (uploadEndTime - uploadStartTime);
     
-    onProgressUpdate(blob.size,file.name, "", elapsedTime)
+    onProgressUpdate(blob.size,file.name, "", elapsedTime)    
     return blob.size;
   }
 
@@ -198,7 +198,7 @@ export default class DataBrowserController extends ComponentController {
     return await openbis.write(this.owner, source, offset, data)
   }
 
-  async download(file, onProgressUpdate) {
+  async download(file, onProgressUpdate, throwAbortErrorIfTransferCancelled) {
     let offset = 0
     const dataArray = []
 
@@ -212,6 +212,7 @@ export default class DataBrowserController extends ComponentController {
       const elapsedTime = (downloadEndTime - downloadStartTime);
       
       onProgressUpdate(blob.size,file.name, "", elapsedTime)
+      throwAbortErrorIfTransferCancelled()
     }
 
     return dataArray
@@ -223,7 +224,7 @@ export default class DataBrowserController extends ComponentController {
     return await fileHandle.createWritable();
   }
 
-  async downloadAndAssemble(file, dirHandle, onProgressUpdate) {
+  async downloadAndAssemble(file, dirHandle, onProgressUpdate, throwAbortErrorIfTransferCancelled) {
     let offset = 0;    
     // Create a writable stream for the file in the selected directory
     const fileStream = await this._createWritableStream(dirHandle, file.name);
@@ -244,6 +245,7 @@ export default class DataBrowserController extends ComponentController {
       const elapsedTime = (downloadEndTime - downloadStartTime)      
 
       onProgressUpdate(blob.size ,file.name, "", elapsedTime)
+      throwAbortErrorIfTransferCancelled()
 
       // write to file only when almost 100MB
       if(writeToDiskOffset > 100_000_000 || offset >= file.size){

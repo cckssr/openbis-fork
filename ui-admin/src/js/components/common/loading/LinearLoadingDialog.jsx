@@ -1,12 +1,12 @@
 import React from 'react';
-import { Box, LinearProgress, Dialog, DialogContent, DialogTitle, DialogContentText } from '@mui/material';
+import { Box, LinearProgress, DialogContent, DialogTitle, DialogContentText } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
+import Dialog from '@src/js/components/common/dialog/Dialog.jsx'
+import Button from '@src/js/components/common/form/Button.jsx'
+import messages from '@src/js/common/messages.js'
 
 const styles = (theme) => ({
-  dialogPaper: {
-    borderRadius: theme.shape.borderRadius,    
-  },
   contentText: {
     fontFamily: theme.typography.body2.fontFamily,
     fontSize: theme.typography.body2.fontSize,    
@@ -15,6 +15,9 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     width: '100%',
+  },
+  highlight: {
+    color: theme.palette.primary.main, 
   },
   fileText: {
     fontFamily: theme.typography.body2.fontFamily,
@@ -58,6 +61,9 @@ const styles = (theme) => ({
     '& .MuiLinearProgress-bar': {
         borderRadius: 10        
     }
+  },
+  button: {
+    marginLeft: theme.spacing(1)
   }
 
 });
@@ -71,59 +77,65 @@ class LinearLoadingDialog extends React.Component {
   }
   render() {
     const {
-            open,
-            title,
-            onClose,
-            from,
-            to,
-            fileName,
-            progress,
-            currentSize,
-            totalSize,
-            timeLeft,
-            speed,
-            classes,
-            variant,
-            customProgressDetails,
-            showPercentageAtEnd = false,
-            progressStatus} = this.props
-  
+        open,
+        title,
+      } = this.props
+
+  return (
+        <Dialog
+          open={open}
+          onClose={this.handleClose}
+          title={title}
+          content={this.renderContent()}
+          actions={this.renderButtons()}
+        />
+  )};
+
+  renderContent() {
+    const {      
+        from,
+        to,
+        fileName,
+        progress,      
+        classes,
+        variant,
+        customProgressDetails,
+        showPercentageAtEnd = false,
+        progressStatus,
+        totalSize,
+        currentSize,
+        timeLeft,
+        speed
+      } = this.props
+
+
     const formattedTotalSize = (this.controller && totalSize)
-      ? this.controller.formatSize(totalSize)
-      : ''
-    
+    ? this.controller.formatSize(totalSize)
+    : ''
+
     const formattedCurrentSize = (this.controller && currentSize)
       ? this.controller.formatSize(currentSize)
       : ''
-    
+
     const formattedTimeLeft = (this.controller && timeLeft)
       ? this.controller.formatTime(timeLeft)
       : ''
-    
+
     const formattedSpeed = (this.controller && speed)
       ? this.controller.formatSpeed(speed)
       : ''
-          
-  return (
-    <Dialog
-      open={open}
-      maxWidth="md"
-      fullWidth
-      classes={{ paper: classes.dialogPaper }}
-    >
-      
-      <DialogTitle>{title}</DialogTitle>
 
-      <DialogContent>
+    return (
+      <>
         <DialogContentText className={classes.contentText}>
-          From <span style={{ color: 'blue' }}>{from}</span> to{' '}
-          <span style={{ color: 'blue' }}>{to}</span>
+          From <span className={classes.highlight}>{from}</span> to{' '}
+          <span className={classes.highlight}>{to}</span>
         </DialogContentText>
-        
+
         <DialogContentText className={classes.fileText}>
           File: {fileName}
         </DialogContentText>
-        
+
         {!showPercentageAtEnd && (
           <Box className={variant === 'determinate' ? classes.progressContainer : classes.progressBarIndeterminate}>
             <LinearProgress
@@ -131,7 +143,7 @@ class LinearLoadingDialog extends React.Component {
               value={progress}
               className={classes.progressBar}
             />
-            
+
             {variant === "determinate" && (
               <span className={classes.progressPercentage}>{progress}%</span>
             )}
@@ -171,9 +183,24 @@ class LinearLoadingDialog extends React.Component {
             </>
           )}
         </DialogContentText>
-      </DialogContent>
-    </Dialog>
-  )};
+      </>
+    )
+  }
+
+  renderButtons() {
+    const { onCancel, classes } = this.props
+    return (       
+      <Button
+        name='cancel'
+        label={messages.get(messages.CANCEL)}
+        styles={{ root: classes.button }}
+        color='inherit'
+        variant='outlined'
+        onClick={onCancel}
+      />        
+    )
+  }
+
 }
 
 

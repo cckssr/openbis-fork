@@ -41,7 +41,7 @@ export default class FileDownloadManager {
       totalFilesToDownload:0,
       replaceFile: false,
       skipFile: false,
-      cancelDownload: false,
+      cancelTransfer: false,
       applyToAllFiles: false,
       showMergeDialog: false,
       resolveMergeDecision: null,
@@ -49,13 +49,20 @@ export default class FileDownloadManager {
       resolveDecision: null,     
       rollingSpeed:0,
       totalSavingTime:0,
-      totalSkippedBytes:0
+      totalSkippedBytes:0,
+      cancelTransfer:false
     }
   }
 
   inferMimeType(fileName) {
     const extension = fileName.slice(fileName.lastIndexOf('.')).toLowerCase()
     return mimeTypeMap[extension] || 'application/octet-stream'
+  }
+
+  throwAbortErrorIfTransferCancelled(){    
+    if(this.getCurrentState().cancelTransfer){
+      throw new DOMException('Download was cancelled.', 'AbortError');
+    }
   }
 
   updateProgress(downloadedChunk, fileName, status, timeElapsed, savingTime=0) {        
@@ -95,7 +102,11 @@ export default class FileDownloadManager {
     this.handleProgressUpdate(downloadedChunk, fileName, progressStatus, null, resolution)
   }
 
-  handleProgressUpdate(downloadedChunk, fileName, status, timeElapsed, resolution) {        
+  handleProgressUpdate(downloadedChunk, fileName, status, timeElapsed, resolution) {   
+    if(this.getCurrentState().cancelTransfer){
+      throw new DOMException('The operation was aborted.', 'AbortError');
+    }
+
     this.updateState((prevState) => {      
       const processedBytes = prevState.processedBytes + downloadedChunk;  
       const totalTransferSize = prevState.totalTransferSize;   
@@ -153,7 +164,7 @@ export default class FileDownloadManager {
   }
 
   
-  updateSizeCalculationProgress(fileName, fileSize) {    
+  updateSizeCalculationProgress(fileName, fileSize) {
     this.updateState((prevState) => {
         var totalTransferSize = prevState.totalTransferSize + fileSize;
         var formattedtotalTransferSize = this.controller.formatSize(totalTransferSize);        
@@ -178,6 +189,7 @@ export default class FileDownloadManager {
       if (!file.directory) {
         size += file.size;
         this.updateSizeCalculationProgress(file.name, file.size);
+        this.throwAbortErrorIfTransferCancelled()
         numberOfFiles++;
       } else {
         const nestedFiles = await this.controller.listFiles(file.path);
@@ -220,6 +232,10 @@ export default class FileDownloadManager {
       } else {
         // for rest of browsers
         await this.handleDownloadAsBlob(multiselectedFiles)
+      }
+    }catch (err){
+      if (err.name === "AbortError") {
+          // no feedback needed, user aborted          
       }
     } finally {            
       this.resetDownloadDialogStates() 
@@ -339,7 +355,6 @@ export default class FileDownloadManager {
       if (err.name === "AbortError") {
         // no feedback needed, user aborted          
       } else {
-        console.error(err)
         this.openErrorDialog(messages.get(messages.DOWNLOAD_DIRECTORY_ACCESS_ERROR) + err)
       }
       return { selectionPossible: false, rootDirHandle: null };
@@ -361,7 +376,7 @@ export default class FileDownloadManager {
     try {
       for (const file of files) {
         let currentState = this.getCurrentState();
-        if (currentState.cancelDownload) {
+        if (currentState.cancelTransfer) {
           return;
         }
 
@@ -390,29 +405,33 @@ export default class FileDownloadManager {
                 continue;
               }
 
-              if (currentState.cancelDownload) {
+              if (currentState.cancelTransfer) {
                 return;
               }
             }
           }
 
-          await this.controller.downloadAndAssemble(file, parentDirHandle, this.updateProgress)
+          await this.controller.downloadAndAssemble(file, parentDirHandle,
+                   this.updateProgress, this.throwAbortErrorIfTransferCancelled)
 
         } else {
           // Handle subfolder recursively
           const dirHandle = await parentDirHandle.getDirectoryHandle(file.name, { create: true })
           const filesInDir = await this.controller.listFiles(file.path)
           await this.downloadFilesAndFolders(filesInDir, dirHandle)
-          if (currentState.cancelDownload) {
+          if (currentState.cancelTransfer) {
             return;
           }
         }
       }
     } catch (err) {
-      console.error(err)
-      this.openErrorDialog(
-        `Error downloading ${[...files].map(file => file.name).join(", ")}: ` + (err.message || err)
-      );
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      } else {
+        this.openErrorDialog(
+          `Error downloading ${[...files].map(file => file.name).join(", ")}: ` + (err.message || err)
+        );
+      }
     }
   }
 
@@ -483,7 +502,7 @@ export default class FileDownloadManager {
   async prepareZipBlob(files, zipFileName) {
     for (let file of files) {
       if (!file.directory) {        
-        const dataArray = await this.controller.download(file, this.updateProgress)
+        const dataArray = await this.controller.download(file, this.updateProgress, this.throwAbortErrorIfTransferCancelled)
         this.zip.file(
           file.path,
           new Blob(dataArray, { type: this.inferMimeType(file.path) })
@@ -534,6 +553,8 @@ export default class FileDownloadManager {
 
   downloadBlob(blob, fileName) {
     this.updateProgress(0, fileName, messages.get(messages.DOWNLOAD_STATUS_SAVING_FILES), 0, 0) 
+    this.throwAbortErrorIfTransferCancelled()
+
     const link = document.createElement('a')
     link.href = window.URL.createObjectURL(blob)
     link.download = fileName
@@ -543,35 +564,14 @@ export default class FileDownloadManager {
   }
 
   async fileToBlob(file) {
-    const dataArray = await this.controller.download(file, this.updateProgress)
+    const dataArray = await this.controller.download(file, this.updateProgress, this.throwAbortErrorIfTransferCancelled)
     return new Blob(dataArray, { type: this.inferMimeType(file.path) })
   }
 
 
   resetDownloadDialogStates() {
     this.updateState({
-      loading:false,
-      showFileExistsDialog: false,
-      replaceFile: false,
-      skipFile: false,
-      resolveDecision: false,
-      applyToAllFiles: false,
-      cancelDownload: false,
-      showMergeDialog: false,
-      mergeTopLevelFolder: false,      
-      lastConflictResolution:null,
-      expectedTimeFormatted: null,
-      lastTimestamp:null,
-      averageSpeed:0,
-      progressBarFrom:null,
-      progressBarTo:null,
-      loadingDialogVariant:'determinate',
-      customProgressDetails: null,
-      totalTransferSize:0,
-      processedBytes:0,
-      totalFilesToDownload:0,
-      totalSavingTime:0,
-      totalSkippedBytes:0
+      ...this.getDefaultState()
     })
   }
 

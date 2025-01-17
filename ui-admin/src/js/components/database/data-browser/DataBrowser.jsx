@@ -136,7 +136,9 @@ class DataBrowser extends React.Component {
     this.resolveDecision = resolve
   }
 
-  
+  cancelFileTransfer() {
+    this.setState({ cancelTransfer: true })
+  }
 
   handleConfirmMerge() {
     this.setState({ showMergeDialog: false }, () => {
@@ -178,7 +180,7 @@ class DataBrowser extends React.Component {
 
   // Triggered when the user cancels to overwrite
   handleCancel() {
-    this.setState({ showFileExistsDialog: false, cancelDownload: true }, () => {
+    this.setState({ showFileExistsDialog: false, cancelTransfer: true }, () => {
       if (this.resolveDecision) {
         this.resolveDecision(false);
         this.resolveDecision = null;
@@ -224,9 +226,15 @@ class DataBrowser extends React.Component {
 
 
   async handleDownload() {
-    this.downloadManager.resetDownloadDialogStates()
-    const { multiselectedFiles } = this.state
-    await this.downloadManager.handleDownloadFiles(multiselectedFiles)
+    try {      
+      this.downloadManager.resetDownloadDialogStates()
+      const { multiselectedFiles } = this.state
+      await this.downloadManager.handleDownloadFiles(multiselectedFiles)
+    } catch (err) {      
+      if (err.name === "AbortError") {
+        // no feedback needed, user aborted          
+      }
+    }
   }
 
   async onError(error) {
@@ -560,6 +568,7 @@ class DataBrowser extends React.Component {
         variant={loadingDialogVariant}
         customProgressDetails={customProgressDetails}        
         progressStatus={progressStatus}
+        onCancel={this.cancelFileTransfer}
       />,
       <ErrorDialog
         key='data-browser-error-dialog'
