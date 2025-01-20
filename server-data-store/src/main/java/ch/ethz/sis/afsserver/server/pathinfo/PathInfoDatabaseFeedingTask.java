@@ -29,10 +29,11 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.shuffling.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.shuffling.ILockManager;
 import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
 import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
@@ -42,6 +43,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -49,7 +51,6 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -79,18 +80,6 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     static final String TIME_LIMIT_KEY = "time-limit";
 
-    private static IPathInfoNonAutoClosingDAO createDAO()
-    {
-        DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(ServiceProvider.getConfiguration());
-        if (pathInfoConfiguration != null)
-        {
-            return QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
-        } else
-        {
-            throw new RuntimeException("Path info database is not configured.");
-        }
-    }
-
     private IEncapsulatedOpenBISService service;
 
     private ITimeProvider timeProvider;
@@ -105,19 +94,15 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
     {
     }
 
-    public PathInfoDatabaseFeedingTask(Properties properties, IEncapsulatedOpenBISService service)
-    {
-        this(service, createDAO(), SystemTimeProvider.SYSTEM_TIME_PROVIDER,
-                getComputeChecksumFlag(properties), getAndCheckChecksumType(properties), 0, 0, 0);
-    }
-
     @Private PathInfoDatabaseFeedingTask(IEncapsulatedOpenBISService service,
-            IPathInfoNonAutoClosingDAO dao, ITimeProvider timeProvider, boolean computeChecksum, String checksumType,
-            int chunkSize, int maxNumberOfChunks, long timeLimit)
+            IPathInfoNonAutoClosingDAO dao, ILockManager lockManager, ITimeProvider timeProvider, String storageRoot, boolean computeChecksum,
+            String checksumType, int chunkSize, int maxNumberOfChunks, long timeLimit)
     {
         this.service = service;
         this.dao = dao;
+        this.lockManager = lockManager;
         this.timeProvider = timeProvider;
+        this.storageRoot = storageRoot;
         this.computeChecksum = computeChecksum;
         this.checksumType = checksumType;
         this.chunkSize = chunkSize;
@@ -129,8 +114,20 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
     public void setUp(String pluginName, Properties properties)
     {
         service = ServiceProvider.getOpenBISService();
+        lockManager = ServiceProvider.getLockManager();
         timeProvider = SystemTimeProvider.SYSTEM_TIME_PROVIDER;
-        dao = createDAO();
+
+        DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(ServiceProvider.getConfiguration());
+
+        if (pathInfoConfiguration != null)
+        {
+            dao = QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
+        } else
+        {
+            throw new RuntimeException("Path info database is not configured.");
+        }
+
+        storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(ServiceProvider.getConfiguration());
         computeChecksum = getComputeChecksumFlag(properties);
         checksumType = getAndCheckChecksumType(properties);
         chunkSize = PropertyUtils.getInt(properties, CHUNK_SIZE_KEY, DEFAULT_CHUNK_SIZE);
@@ -245,7 +242,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         {
             ExperimentOrSample experimentOrSample = experimentsAndSamples.get(i);
 
-            if (i <= actualChunkSize)
+            if (i < actualChunkSize)
             {
                 experimentsAndSamplesBatch.add(experimentOrSample);
                 lastImmutableDataDate = experimentOrSample.getImmutableDataDate();
@@ -271,8 +268,6 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     private List<Experiment> listExperiments(Date timestamp, int actualChunkSize)
     {
-        OpenBISFacade facade = ServiceProvider.getOpenBISFacade();
-
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         if (timestamp != null)
         {
@@ -286,7 +281,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         fetchOptions.count(actualChunkSize);
         fetchOptions.sortBy().immutableDataDate().asc();
 
-        List<Experiment> experiments = facade.searchExperiments(criteria, fetchOptions).getObjects();
+        List<Experiment> experiments = service.listExperiments(criteria, fetchOptions);
 
         if (experiments.size() < actualChunkSize || !allValuesTheSame(experiments, Experiment::getImmutableDataDate))
         {
@@ -301,8 +296,6 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
 
     private List<Sample> listSamples(Date timestamp, int actualChunkSize)
     {
-        OpenBISFacade facade = ServiceProvider.getOpenBISFacade();
-
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         if (timestamp != null)
         {
@@ -316,7 +309,7 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         fetchOptions.count(actualChunkSize);
         fetchOptions.sortBy().immutableDataDate().asc();
 
-        List<Sample> samples = facade.searchSamples(criteria, fetchOptions).getObjects();
+        List<Sample> samples = service.listSamples(criteria, fetchOptions);
 
         if (samples.size() < actualChunkSize || !allValuesTheSame(samples, Sample::getImmutableDataDate))
         {

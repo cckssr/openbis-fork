@@ -27,6 +27,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 
 public class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService
 {
@@ -36,6 +42,16 @@ public class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService
     public EncapsulatedOpenBISService(OpenBISFacade openBISFacade)
     {
         this.openBISFacade = openBISFacade;
+    }
+
+    @Override public List<Experiment> listExperiments(final ExperimentSearchCriteria criteria, final ExperimentFetchOptions fetchOptions)
+    {
+        return openBISFacade.searchExperiments(criteria, fetchOptions).getObjects();
+    }
+
+    @Override public List<Sample> listSamples(final SampleSearchCriteria criteria, final SampleFetchOptions fetchOptions)
+    {
+        return openBISFacade.searchSamples(criteria, fetchOptions).getObjects();
     }
 
     @Override public List<SimpleDataSetInformationDTO> listDataSets(final DataSetSearchCriteria criteria, final DataSetFetchOptions fetchOptions)
