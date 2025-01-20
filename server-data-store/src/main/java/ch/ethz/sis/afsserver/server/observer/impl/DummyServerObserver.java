@@ -17,6 +17,7 @@ package ch.ethz.sis.afsserver.server.observer.impl;
 
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Request;
+import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.server.observer.APICall;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
@@ -40,11 +41,11 @@ public class DummyServerObserver<CONNECTION> implements ServerObserver<CONNECTIO
 
     @Override public Object duringAPICall(final Worker<CONNECTION> worker, final APICall apiCall) throws Exception
     {
-        return null;
+        return apiCall.executeDefault();
     }
 
     @Override
-    public void afterAPICall(Worker<CONNECTION> worker, Request request) throws Exception
+    public void afterAPICall(Worker<CONNECTION> worker, Request request, Response response) throws Exception
     {
 
     }

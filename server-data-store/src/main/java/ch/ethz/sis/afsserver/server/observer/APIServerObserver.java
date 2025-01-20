@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.server.observer;
 
 import ch.ethz.sis.afsserver.server.Request;
+import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.shared.startup.Configuration;
 
@@ -28,6 +29,6 @@ public interface APIServerObserver<CONNECTION>
 
     public Object duringAPICall(Worker<CONNECTION> worker, APICall apiCall) throws Exception;
 
-    public void afterAPICall(Worker<CONNECTION> worker, Request request) throws Exception;
+    public void afterAPICall(Worker<CONNECTION> worker, Request request, Response response) throws Exception;
 
 }

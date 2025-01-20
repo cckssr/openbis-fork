@@ -407,9 +407,10 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
 
             observer.beforeAPICall(api, request);
             Object result = apiMethod.invoke(api, requestParamsForApiMethod);
-            observer.afterAPICall(api, request);
+            OUTPUT response = responseBuilder.build(request.getId(), result);
+            observer.afterAPICall(api, request, response);
 
-            return responseBuilder.build(request.getId(), result);
+            return response;
         } else {
             throw new APIServerException(request.getId(), MethodNotFound, APIExceptions.METHOD_NOT_FOUND.getCause(request.getMethod()));
         }

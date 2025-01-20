@@ -22,6 +22,7 @@ import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
+import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
@@ -157,7 +158,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
     }
 
     @Override
-    public void afterAPICall(Worker<TransactionConnection> worker, Request request) throws Exception
+    public void afterAPICall(Worker<TransactionConnection> worker, Request request, Response response) throws Exception
     {
         if (!worker.isInteractiveSessionMode())
         {
