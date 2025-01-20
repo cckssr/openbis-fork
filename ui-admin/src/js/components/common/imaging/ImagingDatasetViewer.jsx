@@ -3,14 +3,12 @@ import withStyles from '@mui/styles/withStyles';
 import { Divider, Grid2, Typography, useMediaQuery } from '@mui/material';
 import { convertToBase64, inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import Container from '@src/js/components/common/form/Container.jsx'
-import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
 import ImagingFacade from '@src/js/components/common/imaging/ImagingFacade.js';
 import constants from '@src/js/components/common/imaging/constants.js';
 import ImagingMapper from '@src/js/components/common/imaging/ImagingMapper.js';
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx';
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx';
 import ImageSection from '@src/js/components/common/imaging/components/viewer/ImageSection.js';
-import PreviewsSection from '@src/js/components/common/imaging/components/viewer/PreviewSection.js';
 import MainPreview from '@src/js/components/common/imaging/components/viewer/MainPreview.js';
 import MainPreviewInputControls from '@src/js/components/common/imaging/components/viewer/MainPreviewInputControls.js';
 import MetadataSection from '@src/js/components/common/imaging/components/viewer/MetadataSection.js';
@@ -21,6 +19,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
+import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 
 const styles = theme => ({
     container: {
@@ -127,7 +126,7 @@ class ImagingDataSetViewer extends React.PureComponent {
             });
             if (onUnsavedChanges !== null)
                 onUnsavedChanges(this.props.objId, true);
-            if(imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true'){
+            if (imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true') {
                 window.location.reload();
             }
         } catch (error) {
@@ -357,6 +356,21 @@ class ImagingDataSetViewer extends React.PureComponent {
         this.saveDataset();
     };
 
+    renderPreviewChanges = (isSaved, isChanged, isUploadedPreview) => {
+        const warnings = []
+        warnings.push(!isSaved && (
+            <Message type='warning'>
+                {messages.get(messages.UNSAVED_CHANGES)}
+            </Message>
+        ))
+        warnings.push(isChanged && !isUploadedPreview && (
+                            <Message type='info'>
+                                {messages.get(messages.UPDATE_CHANGES)}
+                            </Message>
+                        ))
+        return warnings
+    }
+
     render() {
         const { loaded, open, error } = this.state;
         if (!loaded) return null;
@@ -387,54 +401,18 @@ class ImagingDataSetViewer extends React.PureComponent {
                     onActiveItemChange={this.handleActiveImageChange}
                     handleExport={this.onExport}
                 />
-                <PreviewsSection previews={activeImage.previews}
-                    activeImageIdx={activeImageIdx}
-                    activePreviewIdx={activePreviewIdx}
-                    isSaved={isSaved}
-                    onActiveItemChange={this.handleActivePreviewChange}
-                    onMove={this.onMove}
-                    onClickSave={this.saveDataset}
-                    onHandleYes={this.deletePreview}
-                    onClickNew={this.createNewPreview}
-                    onInputFile={this.handleUpload}
-                />
-                <PaperBox>
+                <CollapsableSection title='Preview' isCollapsed={false} canCollapse={false} renderWarnings={this.renderPreviewChanges(isSaved, isChanged, isUploadedPreview)}>
                     <Grid2 container size={{ xs: 12 }} className={classes.gridDirection}>
-
-                        {/* <Grid2 container direction={'row'} size={{ md: 8 }} sx={{ justifyContent: 'space-between' }}>
-                            <Grid2 size={{ md: 'auto' }}>
-                                <Typography variant='h6'>Selected Preview</Typography>
-                            </Grid2>
-                            <Grid2 size={{ md: 'auto' }}>
-                                {isChanged && !isUploadedPreview && (
-                                    <Message type='info'>
-                                        {messages.get(messages.UPDATE_CHANGES)}
-                                    </Message>
-                                )}
-                            </Grid2>
-                        </Grid2> */}
-
-                        {/* <Grid2 container spacing={1} sx={{ justifyContent: 'space-between' }}>
-                            {(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA) && <>
-                                <Grid2 size={{ md: 'auto' }}>
-                                    <Button name='btn-update-preview'
-                                        label={messages.get(messages.UPDATE)}
-                                        variant='outlined'
-                                        type='final'
-                                        color='primary'
-                                        startIcon={<RefreshIcon />}
-                                        onClick={this.handleUpdate}
-                                        disabled={!isChanged || isUploadedPreview} />
-                                </Grid2>
-
-
-                                <Grid2 size={{ md: 'auto' }}>
-                                    <CustomSwitch labelPlacement='start' label={messages.get(messages.SHOW)} isChecked={activePreview.show}
-                                        onChange={this.handleShowPreview} />
-                                </Grid2>
-                            </>}
-                        </Grid2> */}
-                        <MainPreview activePreview={activePreview} resolution={resolution} isChanged={isChanged} isUploadedPreview={isUploadedPreview}/>
+                        <MainPreview activePreview={activePreview} resolution={resolution} isChanged={isChanged} isUploadedPreview={isUploadedPreview} previews={activeImage.previews}
+                            activeImageIdx={activeImageIdx}
+                            activePreviewIdx={activePreviewIdx}
+                            isSaved={isSaved}
+                            onActiveItemChange={this.handleActivePreviewChange}
+                            onMove={this.onMove}
+                            onClickSave={this.saveDataset}
+                            onHandleYes={this.deletePreview}
+                            onClickNew={this.createNewPreview}
+                            onInputFile={this.handleUpload} />
                         <MainPreviewInputControls activePreview={activePreview}
                             configInputs={activeImage.config.inputs}
                             isUserGenerated={imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true'}
@@ -450,8 +428,10 @@ class ImagingDataSetViewer extends React.PureComponent {
                             datasetType={datasetType}
                         />
                     </Grid2>
-                </PaperBox>
-                <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} />
+                </CollapsableSection>
+                <CollapsableSection title='Metadata'>
+                    <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} />
+                </CollapsableSection>
             </Container>
         )
     };

@@ -1,7 +1,6 @@
 import React from 'react'
 import { Divider, Typography } from "@mui/material";
 import { isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
-import PaperBox from "@src/js/components/common/imaging/components/common/PaperBox.js";
 import DefaultMetadataField
 	from "@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js";
 

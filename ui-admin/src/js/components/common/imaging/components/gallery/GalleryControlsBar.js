@@ -3,7 +3,6 @@ import { Typography, IconButton, Grid2, Stack, Divider } from '@mui/material';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import messages from '@src/js/common/messages.js';
-import PaperBox from '@src/js/components/common/imaging/components/common/PaperBox.js';
 import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
 import GalleryPaging from '@src/js/components/common/imaging/components/gallery/GalleryPaging.jsx';
 import GridPagingOptions from '@src/js/components/common/grid/GridPagingOptions.js';
@@ -36,8 +35,8 @@ const GalleryControlsBar = ({
     }))
     // Logic for rendering options, handling view switch, filtering, etc.
     return (
-        <PaperBox>
-            <Typography variant='h6'>
+        <>
+            <Typography variant='h6' component='legend' sx={{ m: '8px 0 8px 0', /* borderBottom: '1px solid rgb(0, 0, 0, 0.12)' */ width: '100%' }}>
                 Gallery View
             </Typography>
             <Grid2 container direction='row' sx={{ alignItems: 'center' }}>
@@ -107,7 +106,7 @@ const GalleryControlsBar = ({
                             styles={{ root: classes.fw }}/>} 
                 </Grid2>
             </Grid2>
-        </PaperBox>
+        </>
     );
 };
 
