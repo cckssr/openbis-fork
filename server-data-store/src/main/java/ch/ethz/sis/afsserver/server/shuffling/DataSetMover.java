@@ -17,6 +17,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 
 import java.io.File;
 
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 
 /**

@@ -21,6 +21,8 @@ import static org.apache.commons.io.FileUtils.ONE_MB;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Simple share finder tries to find the external share with maximum free space larger than the size of the data set to be moved. If no such external
  * share can be found it tries to find the incoming share with maximum free space larger than the size of the data set to be moved and which is not

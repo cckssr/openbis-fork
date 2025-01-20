@@ -18,6 +18,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Strategy of finding a share to move a data set. Classes implementing this interface should have a public constructor with one argument which is of
  * type {@link Properties}.

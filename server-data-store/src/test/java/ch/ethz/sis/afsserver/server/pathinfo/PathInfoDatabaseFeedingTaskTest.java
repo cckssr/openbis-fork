@@ -34,9 +34,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ch.ethz.sis.afs.dto.LockType;
-import ch.ethz.sis.afsserver.server.shuffling.IEncapsulatedOpenBISService;
-import ch.ethz.sis.afsserver.server.shuffling.ILockManager;
-import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractDateObjectValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;

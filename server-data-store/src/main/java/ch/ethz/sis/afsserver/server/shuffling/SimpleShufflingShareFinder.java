@@ -20,6 +20,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 

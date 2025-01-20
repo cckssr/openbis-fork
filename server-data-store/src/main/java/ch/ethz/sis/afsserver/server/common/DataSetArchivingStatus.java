@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.server.shuffling;
-
-import com.google.gwt.user.client.rpc.IsSerializable;
+package ch.ethz.sis.afsserver.server.common;
 
 /**
  * Status of data set archiving process.
@@ -43,7 +41,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  * 
  * @author Piotr Buczek
  */
-public enum DataSetArchivingStatus implements IsSerializable
+public enum DataSetArchivingStatus
 {
     AVAILABLE("AVAILABLE", true, true), // the data set is present in the data store only
 

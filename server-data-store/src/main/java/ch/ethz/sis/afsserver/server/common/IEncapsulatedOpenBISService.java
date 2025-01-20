@@ -1,4 +1,4 @@
-package ch.ethz.sis.afsserver.server.shuffling;
+package ch.ethz.sis.afsserver.server.common;
 
 import java.util.List;
 

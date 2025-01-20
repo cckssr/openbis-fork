@@ -24,6 +24,11 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import ch.ethz.sis.afsserver.server.common.IConfigProvider;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 public abstract class ArchiveFolders
 {
 

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 
 /**

@@ -3,6 +3,7 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.io.IOException;
 
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;

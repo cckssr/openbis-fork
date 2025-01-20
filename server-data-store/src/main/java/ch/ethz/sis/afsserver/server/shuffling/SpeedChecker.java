@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.afsserver.server.shuffling;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Enumeration of {@link ISpeedChecker} ordered in accordance to strictness.
  * 

@@ -18,6 +18,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * A share finder which first searches for the extension share with most free space which matches speed. If nothing is found it does the same also for
  * all extension shares but speed needs not to match but speed hint needs to be respected. If this isn't working {@link SimpleShareFinder} is used

@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.shuffling.IEncapsulatedOpenBISService;
-import ch.ethz.sis.afsserver.server.shuffling.ILockManager;
-import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
-import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;

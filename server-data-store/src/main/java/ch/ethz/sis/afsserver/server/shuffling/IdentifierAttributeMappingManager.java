@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import com.csvreader.CsvReader;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;

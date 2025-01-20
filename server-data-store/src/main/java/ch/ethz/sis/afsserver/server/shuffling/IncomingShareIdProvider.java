@@ -18,6 +18,7 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.util.Collections;
 import java.util.Set;
 
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.startup.Configuration;
 

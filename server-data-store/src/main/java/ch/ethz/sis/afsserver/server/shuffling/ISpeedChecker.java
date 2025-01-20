@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.afsserver.server.shuffling;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Returns <code>true</code> if speed of specified share and speed hint of specified data set are allowed.
  *

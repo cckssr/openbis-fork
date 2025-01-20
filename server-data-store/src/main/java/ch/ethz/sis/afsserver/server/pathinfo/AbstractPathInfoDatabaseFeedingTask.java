@@ -26,8 +26,8 @@ import org.apache.log4j.Logger;
 
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afsserver.server.maintenance.IMaintenanceTask;
-import ch.ethz.sis.afsserver.server.shuffling.ILockManager;
-import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
