@@ -64,14 +64,15 @@ class UploadButton extends React.Component {
     }
   };
 
-  render () {
+  render() {
     const { children, classes, size, variant, color, onClick,
-      startIcon } = this.props;
+      startIcon, accept } = this.props;
 
     return (
       <>
         {/* Hidden file input */}
         <input
+          accept={accept}
           type="file"
           multiple
           ref={this.fileInputRef}
