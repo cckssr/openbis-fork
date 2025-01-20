@@ -2851,8 +2851,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
         this.directory = fileObject.directory;
         this.size = fileObject.size;
         this.lastModifiedTime = fileObject.lastModifiedTime ? Date.parse(fileObject.lastModifiedTime) : null;
-        this.creationTime = fileObject.creationTime ? Date.parse(fileObject.creationTime) : null;
-        this.lastAccessTime = fileObject.lastAccessTime ? Date.parse(fileObject.lastAccessTime) : null;
 
         this.getOwner = function(){
             return this.owner;
@@ -2871,12 +2869,6 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
         }
         this.getLastModifiedTime = function(){
             return this.lastModifiedTime;
-        }
-        this.getCreationTime = function(){
-            return this.creationTime;
-        }
-        this.getLastAccessTime = function(){
-            return this.lastAccessTime;
         }
     }
 

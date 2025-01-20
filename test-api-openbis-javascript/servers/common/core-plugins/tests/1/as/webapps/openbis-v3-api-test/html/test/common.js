@@ -1150,9 +1150,7 @@ define([ 'jquery', 'underscore'], function($, _) {
                 _this.assertTrue(Math.floor(expectedRange[1].getTime() / 1000) >= Math.floor(dateValue / 1000), "Date " + dateName + " = " + new Date(dateValue) + " is before " + expectedRange[1])
             }
 
-            assertDateInRange("creationTime", actualFile.getCreationTime(), expectedFile["creationTime"])
             assertDateInRange("lastModifiedTime", actualFile.getLastModifiedTime(), expectedFile["lastModifiedTime"])
-            assertDateInRange("lastAccessTime", actualFile.getLastAccessTime(), expectedFile["lastAccessTime"])
         }
 
         this.assertFileExists = async function(facade, owner, source) {

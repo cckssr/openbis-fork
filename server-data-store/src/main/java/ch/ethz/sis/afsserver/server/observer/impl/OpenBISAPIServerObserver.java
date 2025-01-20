@@ -362,7 +362,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
     private static File convert(String owner, DataSetFileRecord record)
     {
         return new File(owner, record.relative_path, record.file_name, record.is_directory, record.size_in_bytes,
-                record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null, null, null);
+                record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null);
     }
 
 }

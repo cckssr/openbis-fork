@@ -119,7 +119,7 @@ public class ExecutorProxy extends AbstractProxy
             }
 
             return new File(owner, fileFullPath.substring(ownerFullPath.length()), file.getName(), file.getDirectory(), file.getSize(),
-                    file.getLastModifiedTime(), file.getCreationTime(), file.getLastAccessTime());
+                    file.getLastModifiedTime());
         } catch (IOException e)
         {
             throw new RuntimeException(e);
