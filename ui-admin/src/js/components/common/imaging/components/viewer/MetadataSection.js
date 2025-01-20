@@ -97,13 +97,13 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 		</>);
 	}
 
-	return (<PaperBox>
+	return (<>
 		{renderPreviewMetadata()}
 		<Divider />
 		{renderImageMetadata()}
 		{/*<Divider />
 		 renderImageConfigMetadata() */}
-	</PaperBox>
+	</>
 	);
 };
 

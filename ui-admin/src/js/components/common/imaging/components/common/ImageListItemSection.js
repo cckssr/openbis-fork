@@ -18,6 +18,8 @@ const useStyles = makeStyles(() => ({
     trasparency: {
         opacity: 0.5,
         width: '150px !important',
+        alignSelf: 'center',
+        height: '55% !important'
     },
     imageList: {
         flexWrap: 'nowrap',

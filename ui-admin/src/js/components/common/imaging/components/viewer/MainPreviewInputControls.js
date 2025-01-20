@@ -97,7 +97,14 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 
 	const renderStaticUpdateControls = (isUploadedPreview,) => {
 		return (<>
-			<Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, justifyContent: 'space-between' }} size={{ xs: 12, sm: 12 }}>
+			<Grid2 size={{ md: 12 }} container sx={{ justifyContent: 'space-around', alignContent: 'center', height: '24px' }}>
+				{isChanged && !isUploadedPreview && (
+					<Message type='info'>
+						{messages.get(messages.UPDATE_CHANGES)}
+					</Message>
+				)}
+			</Grid2>
+			<Grid2 container direction='row' sx={{ alignItems: 'center', mb: 1, justifyContent: 'space-between' }} size={{ xs: 12, sm: 12 }}>
 				<Button label={messages.get(messages.UPDATE)}
 					variant='outlined'
 					color='primary'
@@ -106,10 +113,10 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
 					disabled={!isChanged || isUploadedPreview} />
 
 				{/* {isChanged && !isUploadedPreview && (
-				<Message type='info'>
-					{messages.get(messages.UPDATE_CHANGES)}
-				</Message>
-			)} */}
+					<Message type='info'>
+						{messages.get(messages.UPDATE_CHANGES)}
+					</Message>
+				)} */}
 
 				<CustomSwitch labelPlacement='start'
 					label={messages.get(messages.SHOW)}

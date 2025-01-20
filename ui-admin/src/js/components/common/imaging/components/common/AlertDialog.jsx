@@ -1,9 +1,18 @@
 import * as React from 'react';
 import ConfirmationDialog from "@src/js/components/common/dialog/ConfirmationDialog.jsx";
 import Button from "@src/js/components/common/form/Button.jsx";
+import makeStyles from '@mui/styles/makeStyles';
+
+const useStyles = makeStyles((theme) => ({
+    button: {
+        marginLeft: theme.spacing(1)
+    }
+}));
 
 export default function AlertDialog({label, icon, title, content, disabled, onHandleYes}) {
     const [open, setOpen] = React.useState(false);
+
+    const classes = useStyles();
 
     const handleClickOpen = () => {
         setOpen(true);
