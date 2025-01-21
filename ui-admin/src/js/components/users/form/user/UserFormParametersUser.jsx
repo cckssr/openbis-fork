@@ -3,6 +3,7 @@ import withStyles from '@mui/styles/withStyles';
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import TextField from '@src/js/components/common/form/TextField.jsx'
+import DateField from '@src/js/components/common/form/DateField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
@@ -26,7 +27,8 @@ class UserFormParametersUser extends React.PureComponent {
       firstName: React.createRef(),
       lastName: React.createRef(),
       email: React.createRef(),
-      active: React.createRef()
+      active: React.createRef(),
+      expiryDate: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -92,6 +94,7 @@ class UserFormParametersUser extends React.PureComponent {
         {this.renderLastName(user)}
         {this.renderEmail(user)}
         {this.renderSpace(user)}
+        {this.renderExpiryDate(user)}
         {this.renderActive(user)}
       </Container>
     )
@@ -311,6 +314,31 @@ class UserFormParametersUser extends React.PureComponent {
       </div>
     )
   }
+
+  renderExpiryDate(user) {
+      const { visible, enabled, error, value } = { ...user.expiryDate }
+      if (!visible) {
+        return null
+      }
+      const { mode, classes } = this.props
+      return (
+        <div className={classes.field}>
+          <DateField
+            reference={this.references.expiryDate}
+            label={messages.get(messages.EXPIRY_DATE)}
+            name='expiryDate'
+            mandatory={false}
+            error={error}
+            disabled={!enabled}
+            value={value}
+            mode={mode}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      )
+    }
 
   getUser(props) {
     let { user, selection } = props

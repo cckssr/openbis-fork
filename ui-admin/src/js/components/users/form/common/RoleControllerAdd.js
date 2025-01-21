@@ -34,9 +34,6 @@ export default class RoleControllerAdd {
         visible: false
       }),
       original: null,
-      expiryDate: FormUtil.createField({
-        visible: false
-      })
     }
 
     const newRoles = Array.from(roles)

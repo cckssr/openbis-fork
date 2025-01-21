@@ -62,7 +62,10 @@ class UsersGrid extends React.PureComponent {
             getValue: ({ row }) => row.active.value
           },
           GridUtil.registratorColumn({ path: 'registrator.value' }),
-          GridUtil.registrationDateColumn({ path: 'registrationDate.value' })
+          GridUtil.registrationDateColumn({ path: 'registrationDate.value' }),
+          GridUtil.dateObjectColumn({ name: 'expiryDate',
+                    label: messages.get(messages.EXPIRY_DATE),
+                    path: 'expiryDate.value' })
         ]}
         rows={rows}
         exportable={{
