@@ -73,9 +73,6 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
     @JsonProperty
     private Person registrator;
 
-    @JsonProperty
-    private Date expiryDate;
-
     @JsonIgnore
     public RoleAssignmentFetchOptions getFetchOptions()
     {
@@ -215,21 +212,10 @@ public class RoleAssignment implements Serializable, ISpaceHolder, IRegistration
         this.registrator = registrator;
     }
 
-    @JsonIgnore
-    public Date getExpiryDate()
-    {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Date expiryDate)
-    {
-        this.expiryDate = expiryDate;
-    }
-
     @Override
     public String toString()
     {
-        return new ObjectToString(this).append("id", id).append("expiryDate", expiryDate).toString();
+        return new ObjectToString(this).append("id", id).toString();
     }
 
 }

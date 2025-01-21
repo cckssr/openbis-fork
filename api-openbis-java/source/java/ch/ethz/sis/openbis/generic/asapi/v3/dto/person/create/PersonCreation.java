@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.create;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
@@ -22,6 +23,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.IObjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
+
+import java.util.Date;
+import java.util.Map;
 
 /**
  * @author Franz-Josef Elmer
@@ -36,6 +40,12 @@ public class PersonCreation implements ICreation, IObjectCreation
 
     @JsonProperty
     private ISpaceId spaceId;
+
+    @JsonProperty
+    private Date expiryDate;
+
+    @JsonProperty
+    private Map<String, String> metaData;
 
     public String getUserId()
     {
@@ -55,6 +65,26 @@ public class PersonCreation implements ICreation, IObjectCreation
     public void setSpaceId(ISpaceId spaceId)
     {
         this.spaceId = spaceId;
+    }
+
+    public Date getExpiryDate()
+    {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate)
+    {
+        this.expiryDate = expiryDate;
+    }
+
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     @Override

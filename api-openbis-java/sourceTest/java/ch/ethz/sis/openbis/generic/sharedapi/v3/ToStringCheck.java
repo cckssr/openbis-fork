@@ -378,8 +378,7 @@ public class ToStringCheck
     {
         RoleAssignment o = new RoleAssignment();
         o.setId(new RoleAssignmentTechId(1L));
-        o.setExpiryDate(new Date(0L));
-        assertEquals(o.toString(), "RoleAssignment[id=1,expiryDate=Thu Jan 01 01:00:00 CET 1970]");
+        assertEquals(o.toString(), "RoleAssignment[id=1]");
     }
 
     @Test
