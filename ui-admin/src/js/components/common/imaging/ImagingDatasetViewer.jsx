@@ -363,11 +363,11 @@ class ImagingDataSetViewer extends React.PureComponent {
                 {messages.get(messages.UNSAVED_CHANGES)}
             </Message>
         ))
-        warnings.push(isChanged && !isUploadedPreview && (
+        /* warnings.push(isChanged && !isUploadedPreview && (
                             <Message type='info'>
                                 {messages.get(messages.UPDATE_CHANGES)}
                             </Message>
-                        ))
+                        )) */
         return warnings
     }
 
@@ -401,7 +401,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                     onActiveItemChange={this.handleActiveImageChange}
                     handleExport={this.onExport}
                 />
-                <CollapsableSection title='Preview' isCollapsed={false} canCollapse={false} renderWarnings={this.renderPreviewChanges(isSaved, isChanged, isUploadedPreview)}>
+                <CollapsableSection title='Preview' isCollapsed={false} renderWarnings={this.renderPreviewChanges(isSaved, isChanged, isUploadedPreview)}>
                     <Grid2 container size={{ xs: 12 }} className={classes.gridDirection}>
                         <MainPreview activePreview={activePreview} resolution={resolution} isChanged={isChanged} isUploadedPreview={isUploadedPreview} previews={activeImage.previews}
                             activeImageIdx={activeImageIdx}
@@ -429,7 +429,7 @@ class ImagingDataSetViewer extends React.PureComponent {
                         />
                     </Grid2>
                 </CollapsableSection>
-                <CollapsableSection title='Metadata'>
+                <CollapsableSection title='Metadata' isCollapsed={false}>
                     <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} />
                 </CollapsableSection>
             </Container>
