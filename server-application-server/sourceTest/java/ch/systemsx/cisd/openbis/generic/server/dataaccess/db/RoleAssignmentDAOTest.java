@@ -16,9 +16,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Grantee;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
-import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -62,40 +60,6 @@ public class RoleAssignmentDAOTest extends AbstractDAOTest
                 user).size());
     }
 
-    public void testAddGroupAdminRoleWithExpirationToUser() throws Exception
-    {
-        String userId = USER_ID;
-        PersonPE user = createUserInDB(userId);
-        AssertJUnit.assertEquals(0, daoFactory.getPersonDAO().tryFindPersonByUserId(userId)
-                .getRoleAssignments().size());
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-        SpacePE group = daoFactory.getSpaceDAO().listSpaces().get(0);
-        RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
-        roleAssignment.setRole(RoleCode.ADMIN);
-        roleAssignment.setSpace(group);
-        roleAssignment.setRegistrator(getSystemPerson());
-        //no expiry date
-        user.addRoleAssignment(roleAssignment);
-
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(1, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-        // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-        // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(1, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-    }
-
     public void testListRoleAssignmentsWithExpiration() throws Exception
     {
         String userId = USER_ID;
@@ -119,133 +83,14 @@ public class RoleAssignmentDAOTest extends AbstractDAOTest
         AssertJUnit.assertEquals(baseNumber+1, daoFactory.getRoleAssignmentDAO().listRoleAssignments().size());
 
         // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
+        updateExpiryDateForUserInDB(user, new Date(0));
         AssertJUnit.assertEquals(baseNumber, daoFactory.getRoleAssignmentDAO().listRoleAssignments().size());
 
 
         // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
+        updateExpiryDateForUserInDB(user, new Date(System.currentTimeMillis() + 1000000L));
         AssertJUnit.assertEquals(baseNumber+1, daoFactory.getRoleAssignmentDAO().listRoleAssignments().size());
 
-    }
-
-    public void testTryFindSpaceRoleAssignmentExpiration() throws Exception
-    {
-        String userId = USER_ID;
-        PersonPE user = createUserInDB(userId);
-        AssertJUnit.assertEquals(0, daoFactory.getPersonDAO().tryFindPersonByUserId(userId)
-                .getRoleAssignments().size());
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-
-        SpacePE group = daoFactory.getSpaceDAO().listSpaces().get(0);
-
-        RoleAssignmentPE role = daoFactory.getRoleAssignmentDAO().tryFindSpaceRoleAssignment(RoleCode.ADMIN, group.getCode(),
-                Grantee.createPerson(user.getUserId()));
-        AssertJUnit.assertNull(role);
-
-
-        RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
-        roleAssignment.setRole(RoleCode.ADMIN);
-        roleAssignment.setSpace(group);
-        roleAssignment.setRegistrator(getSystemPerson());
-        //no expiry date
-        user.addRoleAssignment(roleAssignment);
-
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindSpaceRoleAssignment(RoleCode.ADMIN, group.getCode(),
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNull(daoFactory.getRoleAssignmentDAO().tryFindSpaceRoleAssignment(RoleCode.ADMIN, group.getCode(),
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindSpaceRoleAssignment(RoleCode.ADMIN, group.getCode(),
-                Grantee.createPerson(user.getUserId())));
-    }
-
-    public void testTryFindProjectRoleAssignmentExpiration() throws Exception
-    {
-        String userId = USER_ID;
-        PersonPE user = createUserInDB(userId);
-        AssertJUnit.assertEquals(0, daoFactory.getPersonDAO().tryFindPersonByUserId(userId)
-                .getRoleAssignments().size());
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-
-        ProjectPE project = daoFactory.getProjectDAO().listProjects().get(0);
-        ProjectIdentifier identifier = new ProjectIdentifier(project.getSpace().getCode(),
-                project.getCode());
-
-        RoleAssignmentPE role = daoFactory.getRoleAssignmentDAO().tryFindProjectRoleAssignment(RoleCode.ADMIN, identifier,
-                Grantee.createPerson(user.getUserId()));
-        AssertJUnit.assertNull(role);
-
-
-        RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
-        roleAssignment.setRole(RoleCode.ADMIN);
-        roleAssignment.setProject(project);
-        roleAssignment.setRegistrator(getSystemPerson());
-        //no expiry date
-        user.addRoleAssignment(roleAssignment);
-
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindProjectRoleAssignment(RoleCode.ADMIN, identifier,
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNull(daoFactory.getRoleAssignmentDAO().tryFindProjectRoleAssignment(RoleCode.ADMIN, identifier,
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindProjectRoleAssignment(RoleCode.ADMIN, identifier,
-                Grantee.createPerson(user.getUserId())));
-    }
-
-    public void testTryFindInstanceRoleAssignmentExpiration() throws Exception
-    {
-        String userId = USER_ID;
-        PersonPE user = createUserInDB(userId);
-        AssertJUnit.assertEquals(0, daoFactory.getPersonDAO().tryFindPersonByUserId(userId)
-                .getRoleAssignments().size());
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO().listRoleAssignmentsByPerson(
-                user).size());
-
-
-        RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
-        roleAssignment.setRole(RoleCode.ADMIN);
-        roleAssignment.setRegistrator(getSystemPerson());
-        //no expiry date
-        user.addRoleAssignment(roleAssignment);
-
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindInstanceRoleAssignment(RoleCode.ADMIN,
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNull(daoFactory.getRoleAssignmentDAO().tryFindInstanceRoleAssignment(RoleCode.ADMIN,
-                Grantee.createPerson(user.getUserId())));
-
-        // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertNotNull(daoFactory.getRoleAssignmentDAO().tryFindInstanceRoleAssignment(RoleCode.ADMIN,
-                Grantee.createPerson(user.getUserId())));
     }
 
     public void testAddGroupAdminRoleToAuthorizationGroup() throws Exception
@@ -264,38 +109,6 @@ public class RoleAssignmentDAOTest extends AbstractDAOTest
         authGroup.addRoleAssignment(roleAssignment);
 
         daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(1, daoFactory.getRoleAssignmentDAO()
-                .listRoleAssignmentsByAuthorizationGroup(authGroup).size());
-    }
-
-    public void testAddGroupAdminRoleWithExpirationToAuthorizationGroup() throws Exception
-    {
-        String code = AUTH_GROUP_ID;
-        AuthorizationGroupPE authGroup = createAuthGroupInDB(code);
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO()
-                .listRoleAssignmentsByAuthorizationGroup(authGroup).size());
-
-        SpacePE group = daoFactory.getSpaceDAO().listSpaces().get(0);
-        RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
-        roleAssignment.setRole(RoleCode.ADMIN);
-        roleAssignment.setSpace(group);
-        roleAssignment.setRegistrator(getSystemPerson());
-        //no expiry date
-
-        authGroup.addRoleAssignment(roleAssignment);
-
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(1, daoFactory.getRoleAssignmentDAO()
-                .listRoleAssignmentsByAuthorizationGroup(authGroup).size());
-
-        // set expiry date in the past
-        roleAssignment.setExpiryDate(new Date(0L));
-        daoFactory.getRoleAssignmentDAO().createRoleAssignment(roleAssignment);
-        AssertJUnit.assertEquals(0, daoFactory.getRoleAssignmentDAO()
-                .listRoleAssignmentsByAuthorizationGroup(authGroup).size());
-
-        // set expiry date in the future
-        roleAssignment.setExpiryDate(new Date(System.currentTimeMillis() + 1000000L));
         AssertJUnit.assertEquals(1, daoFactory.getRoleAssignmentDAO()
                 .listRoleAssignmentsByAuthorizationGroup(authGroup).size());
     }
@@ -320,6 +133,13 @@ public class RoleAssignmentDAOTest extends AbstractDAOTest
         person.setLastName("Of Rivia");
         daoFactory.getPersonDAO().createPerson(person);
         return daoFactory.getPersonDAO().tryFindPersonByUserId(userId);
+    }
+
+    private PersonPE updateExpiryDateForUserInDB(PersonPE person, Date expiryDate)
+    {
+        person.setExpiryDate(expiryDate);
+        daoFactory.getPersonDAO().updatePerson(person);
+        return daoFactory.getPersonDAO().tryFindPersonByUserId(person.getUserId());
     }
 
 }

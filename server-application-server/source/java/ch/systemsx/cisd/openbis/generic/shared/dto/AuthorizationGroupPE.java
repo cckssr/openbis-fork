@@ -170,10 +170,7 @@ public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder im
     @Transient
     public final Set<RoleAssignmentPE> getRoleAssignments()
     {
-        Date currentDate = new Date(System.currentTimeMillis());
-        return getRoleAssignmentsInternal().stream()
-                .filter(x -> x.getExpiryDate() == null || x.getExpiryDate().after(currentDate))
-                .collect(Collectors.toUnmodifiableSet());
+        return new UnmodifiableSetDecorator<RoleAssignmentPE>(getRoleAssignmentsInternal());
     }
 
     public void addRoleAssignment(final RoleAssignmentPE roleAssignment)

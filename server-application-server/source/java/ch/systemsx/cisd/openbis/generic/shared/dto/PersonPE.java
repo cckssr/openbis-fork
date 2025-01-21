@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,9 +42,13 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 
@@ -65,8 +70,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 { @UniqueConstraint(columnNames =
 { ColumnNames.USER_COLUMN }) })
 @Friend(toClasses = RoleAssignmentPE.class)
+@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PersonPE extends HibernateAbstractRegistrationHolder implements
-        Comparable<PersonPE>, IIdentityHolder, Serializable
+        Comparable<PersonPE>, IIdentityHolder, Serializable, IEntityWithMetaData
 {
     private static final long serialVersionUID = IServer.VERSION;
 
@@ -99,6 +105,10 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
     private boolean active;
 
     private PersonDisplaySettingsPE personDisplaySettings;
+
+    private Date expiryDate;
+
+    private Map<String, String> metaData;
 
     private final void setSystemUser(final boolean systemUser)
     {
@@ -233,10 +243,11 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
     @Transient
     public final Set<RoleAssignmentPE> getRoleAssignments()
     {
-        Date currentDate = new Date(System.currentTimeMillis());
-        return getRoleAssignmentsInternal().stream()
-                .filter(x -> x.getExpiryDate() == null || x.getExpiryDate().after(currentDate))
-                .collect(Collectors.toUnmodifiableSet());
+        if(expiryDate != null && new Date(System.currentTimeMillis()).after(expiryDate))
+        {
+            return new UnmodifiableSetDecorator<>(new HashSet<>());
+        }
+        return new UnmodifiableSetDecorator<RoleAssignmentPE>(getRoleAssignmentsInternal());
     }
 
     public void addRoleAssignment(final RoleAssignmentPE roleAssignment)
@@ -283,6 +294,10 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
     @Transient
     public final Set<AuthorizationGroupPE> getAuthorizationGroups()
     {
+        if(expiryDate != null && new Date(System.currentTimeMillis()).after(expiryDate))
+        {
+            return new UnmodifiableSetDecorator<>(new HashSet<>());
+        }
         return new UnmodifiableSetDecorator<AuthorizationGroupPE>(getAuthorizationGroupsInternal());
     }
 
@@ -297,6 +312,27 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
         this.active = isActive;
     }
 
+    @Column(name = ColumnNames.EXPIRY_DATE_COLUMN)
+    public final Date getExpiryDate()
+    {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate) { this.expiryDate = expiryDate; }
+
+    @Override
+    @Column(name = ColumnNames.META_DATA)
+    @Type(type = "JsonMap")
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    @Override
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
+    }
     //
     // IIdentifierHolder
     //
@@ -363,6 +399,7 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
         builder.append("lastName", lastName);
         builder.append("email", email);
         builder.append("systemUser", systemUser);
+        builder.append("expiryDate", expiryDate);
         if (getPersonDisplaySettings() != null)
         {
             builder.append("displaySettings", "<"
@@ -396,6 +433,10 @@ public final class PersonPE extends HibernateAbstractRegistrationHolder implemen
     @Transient
     public Set<RoleAssignmentPE> getAllPersonRoles()
     {
+        if(expiryDate != null && new Date(System.currentTimeMillis()).after(expiryDate))
+        {
+            return Set.of();
+        }
         HashSet<RoleAssignmentPE> result = new HashSet<RoleAssignmentPE>(getRoleAssignments());
         for (AuthorizationGroupPE ag : getAuthorizationGroups())
         {

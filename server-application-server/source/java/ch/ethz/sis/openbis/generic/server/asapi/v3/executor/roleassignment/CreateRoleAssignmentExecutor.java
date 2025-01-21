@@ -116,13 +116,6 @@ public class CreateRoleAssignmentExecutor
                 builder.append(" for authorization group ").append(group.getCode());
             }
         }
-        Date expiryDate = entity.getExpiryDate();
-        if(expiryDate != null)
-        {
-            Format formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String formattedDate = formatter.format(expiryDate);
-            builder.append(" with expiration date ").append(formattedDate);
-        }
         return builder.toString();
     }
 
@@ -184,7 +177,6 @@ public class CreateRoleAssignmentExecutor
                     RoleAssignmentPE roleAssignment = new RoleAssignmentPE();
                     roleAssignment.setRole(RoleCode.valueOf(object.getRole().name()));
                     roleAssignment.setRegistrator(context.getSession().tryGetCreatorPerson());
-                    roleAssignment.setExpiryDate(object.getExpiryDate());
                     roleAssignments.add(roleAssignment);
                 }
 

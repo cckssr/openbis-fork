@@ -120,6 +120,8 @@ public class CreatePersonExecutor
                     person.setDisplaySettings(displaySettings);
                     person.setActive(true);
                     person.setRegistrator(registrator);
+                    person.setExpiryDate(personCreation.getExpiryDate());
+                    person.setMetaData(personCreation.getMetaData());
                     try
                     {
                         Principal principal = authenticationService.getPrincipal(userId);

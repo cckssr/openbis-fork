@@ -35,7 +35,7 @@ public interface PersonQuery extends ObjectQuery
     public List<Long> getPersonIds(LongSet personIds);
 
     @Select(sql =
-            "select id, first_name as firstName, last_name as lastName, user_id as userId, email, registration_timestamp as registrationDate, is_active as isActive "
+            "select id, first_name as firstName, last_name as lastName, user_id as userId, email, registration_timestamp as registrationDate, is_active as isActive, expiry_timestamp as expiryDate, meta_data as metaData "
                     + " from persons where id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PersonBaseRecord> getPersons(LongSet personIds);
 

@@ -37,4 +37,8 @@ public class PersonBaseRecord extends ObjectBaseRecord
 
     public Boolean isActive;
 
+    public Date expiryDate;
+
+    public String metaData;
+
 }

@@ -32,7 +32,7 @@ import net.lemnik.eodsql.Select;
  */
 public interface RoleAssignmentQuery extends ObjectQuery
 {
-    @Select(sql = "select id, role_code, space_id, project_id, registration_timestamp as registrationDate, expiry_timestamp as expiryDate"
+    @Select(sql = "select id, role_code, space_id, project_id, registration_timestamp as registrationDate"
             + " from role_assignments where id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<RoleAssignmentBaseRecord> getRoleAssignments(LongSet roleAssignmentIds);
 

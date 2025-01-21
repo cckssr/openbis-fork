@@ -18,7 +18,9 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.testng.annotations.DataProvider;
@@ -44,6 +46,9 @@ public class CreatePersonTest extends AbstractTest
         PersonCreation personCreation = new PersonCreation();
         personCreation.setUserId("user-" + System.currentTimeMillis());
         personCreation.setSpaceId(new SpacePermId("CISD"));
+        Date expiryDate = new Date(1000000000L);
+        personCreation.setExpiryDate(expiryDate);
+        personCreation.setMetaData(Map.of("key", "value"));
 
         // When
         List<PersonPermId> persons = v3api.createPersons(sessionToken, Arrays.asList(personCreation));
@@ -57,6 +62,9 @@ public class CreatePersonTest extends AbstractTest
         assertEquals(person.getUserId(), personCreation.getUserId());
         assertEquals(person.getRegistrator().getUserId(), TEST_USER);
         assertEquals(person.getSpace().getCode(), "CISD");
+        assertEquals(person.getExpiryDate(), expiryDate);
+        assertEquals(person.getMetaData().size(), 1);
+        assertEquals(person.getMetaData().get("key"), "value");
     }
 
     @Test

@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.person;
 import java.util.Collection;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -104,6 +105,8 @@ public class PersonTranslator extends AbstractCachingTranslator<Long, Person, Pe
         result.setEmail(baseRecord.email);
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setActive(baseRecord.isActive);
+        result.setExpiryDate(baseRecord.expiryDate);
+        result.setMetaData(CommonUtils.asMap(baseRecord.metaData));
 
         if (fetchOptions.hasSpace())
         {
