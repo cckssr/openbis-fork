@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.afsserver.server.common.IDatasetLocation;
+
 /**
  * Describes one dataset which should be processed by the plugin task.
  *

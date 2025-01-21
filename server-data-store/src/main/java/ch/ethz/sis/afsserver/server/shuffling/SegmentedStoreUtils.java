@@ -31,8 +31,10 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 
-import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;

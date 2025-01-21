@@ -33,8 +33,6 @@ public class File implements DTO, Serializable
     private Boolean directory;
     private Long size; // Size in bytes
     private OffsetDateTime lastModifiedTime;
-    private OffsetDateTime creationTime;
 
-    @EqualsAndHashCode.Exclude
-    private OffsetDateTime lastAccessTime;
+
 }

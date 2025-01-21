@@ -24,6 +24,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * @author Franz-Josef Elmer
  */

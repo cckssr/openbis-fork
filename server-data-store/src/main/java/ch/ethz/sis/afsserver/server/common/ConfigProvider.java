@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.server.shuffling;
+package ch.ethz.sis.afsserver.server.common;
 
 import java.io.File;
 

@@ -25,6 +25,7 @@ import java.util.regex.PatternSyntaxException;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;

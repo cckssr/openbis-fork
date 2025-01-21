@@ -77,10 +77,6 @@ public class OpenBISJavaScriptAFSFacade
 
         private String lastModifiedTime;
 
-        private String creationTime;
-
-        private String lastAccessTime;
-
         public String getOwner()
         {
             return owner;
@@ -109,16 +105,6 @@ public class OpenBISJavaScriptAFSFacade
         public String getLastModifiedTime()
         {
             return lastModifiedTime;
-        }
-
-        public String getCreationTime()
-        {
-            return creationTime;
-        }
-
-        public String getLastAccessTime()
-        {
-            return lastAccessTime;
         }
     }
 

@@ -22,6 +22,8 @@ import java.util.List;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * @author Franz-Josef Elmer
  */

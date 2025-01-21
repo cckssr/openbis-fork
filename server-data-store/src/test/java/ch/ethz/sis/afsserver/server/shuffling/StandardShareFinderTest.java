@@ -22,6 +22,8 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * @author Kaloyan Enimanev
  */

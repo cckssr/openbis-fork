@@ -23,6 +23,10 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
+import ch.ethz.sis.afsserver.server.common.IConfigProvider;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.rinn.restrictions.Private;

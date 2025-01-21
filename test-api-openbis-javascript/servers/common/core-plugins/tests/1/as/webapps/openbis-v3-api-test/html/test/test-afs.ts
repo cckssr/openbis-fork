@@ -61,9 +61,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-1",
                         size: testContent1.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[1], {
                         path: "/test-folder-1",
@@ -71,9 +69,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-folder-1",
                         size: null,
                         directory: true,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[2], {
                         path: "/test-folder-1/test-file-2",
@@ -81,9 +77,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-2",
                         size: testContent2.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[3], {
                         path: "/test-folder-1/test-file-3",
@@ -91,9 +85,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-3",
                         size: testContent3.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[4], {
                         path: "/test-folder-2",
@@ -101,9 +93,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-folder-2",
                         size: null,
                         directory: true,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
                     c.assertFileEquals(listAll[5], {
                         path: "/test-folder-2/test-file-4",
@@ -111,9 +101,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-4",
                         size: testContent4.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
 
                     var listFile1WithoutSlash = await facade.getAfsServerFacade().list(ownerPermId, "test-file-1", false)
@@ -124,9 +112,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-1",
                         size: testContent1.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
 
                     var listFile1WithSlash = await facade.getAfsServerFacade().list(ownerPermId, "/test-file-1", false)
@@ -137,9 +123,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-1",
                         size: testContent1.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
 
                     var listFile2WithoutSlash = await facade.getAfsServerFacade().list(ownerPermId, "test-folder-1/test-file-2", false)
@@ -150,9 +134,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-2",
                         size: testContent2.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
 
                     var listFile2WithSlash = await facade.getAfsServerFacade().list(ownerPermId, "/test-folder-1/test-file-2", false)
@@ -163,9 +145,7 @@ exports.default = new Promise((resolve) => {
                         name: "test-file-2",
                         size: testContent2.length,
                         directory: false,
-                        creationTime: [startDate, new Date()],
                         lastModifiedTime: [startDate, new Date()],
-                        lastAccessTime: [startDate, new Date()],
                     })
 
                     c.finish()

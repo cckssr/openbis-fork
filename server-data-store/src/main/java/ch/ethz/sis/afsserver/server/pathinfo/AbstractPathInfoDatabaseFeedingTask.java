@@ -26,13 +26,11 @@ import org.apache.log4j.Logger;
 
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afsserver.server.maintenance.IMaintenanceTask;
-import ch.ethz.sis.afsserver.server.shuffling.ILockManager;
-import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
-import ch.ethz.sis.afsserver.server.shuffling.SimpleDataSetInformationDTO;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
+import ch.ethz.sis.afsserver.server.common.ILockManager;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 
 /**
  * @author Franz-Josef Elmer
@@ -62,6 +60,10 @@ abstract class AbstractPathInfoDatabaseFeedingTask implements IMaintenanceTask
 
     protected IPathInfoNonAutoClosingDAO dao;
 
+    protected ILockManager lockManager;
+
+    protected String storageRoot;
+
     protected boolean computeChecksum;
 
     protected String checksumType;
@@ -70,7 +72,6 @@ abstract class AbstractPathInfoDatabaseFeedingTask implements IMaintenanceTask
     {
         final UUID transactionId = UUID.randomUUID();
 
-        ILockManager lockManager = ServiceProvider.getLockManager();
         lockManager.lock(transactionId, List.of(dataSet), LockType.HierarchicallyExclusive);
 
         Long size = null;
@@ -110,9 +111,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask implements IMaintenanceTask
 
     private File getDataSetRoot(SimpleDataSetInformationDTO dataSet)
     {
-        String path =
-                IOUtils.getPath(AtomicFileSystemServerParameterUtil.getStorageRoot(ServiceProvider.getConfiguration()), dataSet.getDataSetShareId(),
-                        dataSet.getDataSetLocation());
+        String path = IOUtils.getPath(storageRoot, dataSet.getDataSetShareId(), dataSet.getDataSetLocation());
         return new File(path);
     }
 

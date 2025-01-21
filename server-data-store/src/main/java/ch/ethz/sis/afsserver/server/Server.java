@@ -24,7 +24,7 @@ import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
 import ch.ethz.sis.afsserver.server.maintenance.MaintenancePlugin;

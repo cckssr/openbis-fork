@@ -204,9 +204,7 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
                         convertedFile.put("name", file.getName());
                         convertedFile.put("directory", file.getDirectory());
                         convertedFile.put("size", file.getSize());
-                        convertedFile.put("creationTime", formatOffsetDateTime(file.getCreationTime()));
                         convertedFile.put("lastModifiedTime", formatOffsetDateTime(file.getLastModifiedTime()));
-                        convertedFile.put("lastAccessTime", formatOffsetDateTime(file.getLastAccessTime()));
                         convertedResultList.add(convertedFile);
                     }
                 }

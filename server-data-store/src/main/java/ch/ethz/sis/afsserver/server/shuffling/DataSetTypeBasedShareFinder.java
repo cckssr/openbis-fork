@@ -18,6 +18,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Share finder for shares associated to certain data set types as specified in the property {@link ShareFactory#DATA_SET_TYPES_PROP} of
  * {@link ShareFactory#SHARE_PROPS_FILE} file.

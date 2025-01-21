@@ -3,12 +3,12 @@ package ch.ethz.sis.openbis.systemtests.shuffling;
 import java.io.IOException;
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.maintenance.IMaintenanceTask;
 import ch.ethz.sis.afsserver.server.shuffling.DataSetMover;
 import ch.ethz.sis.afsserver.server.shuffling.IChecksumProvider;
 import ch.ethz.sis.afsserver.server.shuffling.IncomingShareIdProvider;
 import ch.ethz.sis.afsserver.server.shuffling.SegmentedStoreShufflingTask;
-import ch.ethz.sis.afsserver.server.shuffling.ServiceProvider;
 import ch.ethz.sis.afsserver.server.shuffling.SimpleChecksumProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 

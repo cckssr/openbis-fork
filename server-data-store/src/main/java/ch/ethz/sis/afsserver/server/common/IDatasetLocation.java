@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.afsserver.server.shuffling;
-
-import java.io.File;
+package ch.ethz.sis.afsserver.server.common;
 
 /**
- * A provider for DSS configuration infos which can be used at runtime.
- *
- * @author Kaloyan Enimanev
+ * Encapsulates location and code of a data set in a store.
+ * 
+ * @author Piotr Buczek
  */
-public interface IConfigProvider
+public interface IDatasetLocation
 {
+    String getDataSetLocation();
 
-    /**
-     * Return the DSS store root.
-     */
-    File getStoreRoot();
+    String getDataSetCode();
 
-    /**
-     * Return the data store code.
-     */
+    String getDataSetShareId();
+
+    String getDataStoreUrl();
+
     String getDataStoreCode();
 
+    Integer getOrderInContainer(String containerDataSetCode);
+    
+    Long getDataSetSize();
 }

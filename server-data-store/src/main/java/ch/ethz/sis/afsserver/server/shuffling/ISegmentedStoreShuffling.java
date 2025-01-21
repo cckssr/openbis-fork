@@ -18,6 +18,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 import java.util.List;
 import java.util.Set;
 
+import ch.ethz.sis.afsserver.server.common.IConfigProvider;
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 

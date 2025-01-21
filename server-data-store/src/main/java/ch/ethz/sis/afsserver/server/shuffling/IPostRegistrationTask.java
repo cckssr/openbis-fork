@@ -17,6 +17,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.EncapsulatedOpenBISService;
+
 /**
  * Interface of a task executed after registration of a data set. Implementing class should have a public constructor with two parameters: First is of
  * type {@link Properties} and second is of type {@link EncapsulatedOpenBISService}.

@@ -17,6 +17,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+
 /**
  * Abstract super class of all implementations of {@link IPostRegistrationTask}.
  *

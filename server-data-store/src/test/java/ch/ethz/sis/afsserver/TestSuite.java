@@ -19,6 +19,8 @@ import ch.ethz.sis.afsserver.client.DummyAuthApiClientTest;
 import ch.ethz.sis.afsserver.client.OpenBisAuthApiClientTest;
 import ch.ethz.sis.afsserver.impl.ApiServerAdapterTest;
 import ch.ethz.sis.afsserver.impl.ApiServerTest;
+import ch.ethz.sis.afsserver.server.pathinfo.DatabaseBasedDataSetPathsInfoFeederTest;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseFeedingTaskTest;
 import ch.ethz.sis.afsserver.server.shuffling.DataSetTypeBasedShareFinderTest;
 import ch.ethz.sis.afsserver.server.shuffling.ExperimentBasedShareFinderTest;
 import ch.ethz.sis.afsserver.server.shuffling.IdentifierAttributeMappingManagerTest;
@@ -42,7 +44,9 @@ import org.junit.runners.Suite;
         MappingBasedShareFinderTest.class,
         SimpleShareFinderTest.class,
         SpeedOptimizedShareFinderTest.class,
-        StandardShareFinderTest.class
+        StandardShareFinderTest.class,
+        PathInfoDatabaseFeedingTaskTest.class,
+        DatabaseBasedDataSetPathsInfoFeederTest.class
 })
 
 public class TestSuite

@@ -20,6 +20,8 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.systemsx.cisd.common.filesystem.FileOperations;

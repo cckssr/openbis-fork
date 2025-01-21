@@ -1,4 +1,4 @@
-package ch.ethz.sis.afsserver.server.shuffling;
+package ch.ethz.sis.afsserver.server.common;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -8,8 +8,6 @@ import java.util.UUID;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.manager.TransactionManager;
-import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.ConnectionFactory;

@@ -17,6 +17,8 @@ package ch.ethz.sis.afsserver.server.shuffling;
 
 import java.util.List;
 
+import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
+
 /**
  * Abstract implementation which fulfills the contract of {@link IShareFinder} concerning speed hint.
  * 

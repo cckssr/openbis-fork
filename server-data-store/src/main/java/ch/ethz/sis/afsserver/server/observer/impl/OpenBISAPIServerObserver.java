@@ -22,6 +22,7 @@ import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
+import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
@@ -157,7 +158,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
     }
 
     @Override
-    public void afterAPICall(Worker<TransactionConnection> worker, Request request) throws Exception
+    public void afterAPICall(Worker<TransactionConnection> worker, Request request, Response response) throws Exception
     {
         if (!worker.isInteractiveSessionMode())
         {
@@ -362,7 +363,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
     private static File convert(String owner, DataSetFileRecord record)
     {
         return new File(owner, record.relative_path, record.file_name, record.is_directory, record.size_in_bytes,
-                record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null, null, null);
+                record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null);
     }
 
 }
