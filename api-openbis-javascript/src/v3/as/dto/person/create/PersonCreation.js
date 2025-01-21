@@ -6,6 +6,8 @@ define([ "stjs" ], function(stjs) {
 		constructor.serialVersionUID = 1;
 		prototype.userId = null;
 		prototype.spaceId = null;
+		prototype.expiryDate = null;
+        prototype.metaData = null;
 
 		prototype.getUserId = function() {
 			return this.userId;
@@ -19,8 +21,25 @@ define([ "stjs" ], function(stjs) {
 		prototype.setSpaceId = function(spaceId) {
 			this.spaceId = spaceId;
 		};
+		prototype.getExpiryDate = function() {
+            return this.expiryDate;
+        };
+        prototype.setExpiryDate = function(expiryDate) {
+            this.expiryDate = expiryDate;
+        };
+        prototype.getMetaData = function() {
+            return this.metaData;
+        };
+        prototype.setMetaData = function(metaData) {
+            this.metaData = metaData;
+        };
 	}, {
-		spaceId: "ISpaceId"
+		spaceId: "ISpaceId",
+		expiryDate : "Date",
+		metaData: {
+             name: "Map",
+             arguments: ["String", "String"]
+        }
 	});
 	return PersonCreation;
 })

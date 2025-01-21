@@ -9,7 +9,6 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.role = null;
 		prototype.spaceId = null;
 		prototype.projectId = null;
-		prototype.expiryDate = null;
 		prototype.getUserId = function() {
 			return this.userId;
 		};
@@ -40,19 +39,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setProjectId = function(projectId) {
 			this.projectId = projectId;
 		};
-		prototype.getExpiryDate = function() {
-            return this.expiryDate;
-        };
-        prototype.setExpiryDate = function(expiryDate) {
-            this.expiryDate = expiryDate;
-        };
 	}, {
 		userId : "IPersonId",
 		authorizationGroupId : "IAuthorizationGroupId",
 		role : "Role",
 		spaceId : "ISpaceId",
-		projectId : "IProjectId",
-		expiryDate : "Date"
+		projectId : "IProjectId"
 	});
 	return RoleAssignmentCreation;
 })

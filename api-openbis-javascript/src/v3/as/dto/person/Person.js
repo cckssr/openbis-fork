@@ -20,6 +20,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.registrator = null;
 		prototype.roleAssignments = null;
 		prototype.webAppSettings = null;
+		prototype.expiryDate = null;
+		prototype.metaData = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -120,7 +122,18 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setWebAppSettings = function(webAppSettings) {
 			this.webAppSettings = webAppSettings;
 		};
-
+		prototype.getExpiryDate = function() {
+            return this.expiryDate;
+        };
+        prototype.setExpiryDate = function(expiryDate) {
+            this.expiryDate = expiryDate;
+        };
+        prototype.getMetaData = function() {
+            return this.metaData;
+        };
+        prototype.setMetaData = function(metaData) {
+            this.metaData = metaData;
+        };
 	}, {
 		fetchOptions : "PersonFetchOptions",
 		permId : "PersonPermId",
@@ -134,7 +147,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		webAppSettings : {
 			name : "Map",
 			arguments : [ "String", "WebAppSettings" ]
-		}
+		},
+		expiryDate : "Date",
+		metaData: {
+             name: "Map",
+             arguments: ["String", "String"]
+        },
 	});
 	return Person;
 })
