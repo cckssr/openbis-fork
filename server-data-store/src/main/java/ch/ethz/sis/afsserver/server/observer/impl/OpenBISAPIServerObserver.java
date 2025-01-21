@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.common.db.DBUtils;
 import net.lemnik.eodsql.QueryTool;
 
 public class OpenBISAPIServerObserver implements APIServerObserver<TransactionConnection>
@@ -132,22 +134,48 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
             {
                 String sourceOwner = (String) apiCall.getParams().get("sourceOwner");
                 String source = (String) apiCall.getParams().get("source");
+                Boolean recursively = (Boolean) apiCall.getParams().get("recursively");
 
                 Long dataSetId = pathInfoDAO.tryToGetDataSetId(sourceOwner);
 
                 if (dataSetId != null)
                 {
+                    if (source == null || source.isBlank())
+                    {
+                        source = "";
+                    } else if (source.startsWith("/"))
+                    {
+                        source = source.substring(1);
+                    }
+
                     DataSetFileRecord fileOrFolderRecord = pathInfoDAO.tryToGetRelativeDataSetFile(dataSetId, source);
+
                     if (fileOrFolderRecord != null)
                     {
                         if (fileOrFolderRecord.is_directory)
                         {
-                            List<DataSetFileRecord> fileRecords = pathInfoDAO.listChildrenByParentId(dataSetId, fileOrFolderRecord.id);
-                            return fileRecords.stream().map(fileRecord -> convert(sourceOwner, fileRecord))
+                            if (!source.isEmpty() && !source.endsWith("/"))
+                            {
+                                source += "/";
+                            }
+
+                            List<DataSetFileRecord> fileRecords;
+
+                            if (Boolean.TRUE.equals(recursively))
+                            {
+                                fileRecords = pathInfoDAO.listDataSetFilesByRelativePathLikeExpression(dataSetId,
+                                        DBUtils.escapeLikeClauseSpecialCharacters(source) + "%");
+                            } else
+                            {
+                                fileRecords = pathInfoDAO.listChildrenByParentId(dataSetId, fileOrFolderRecord.id);
+                            }
+
+                            return fileRecords.stream().filter(fileRecord -> fileRecord.relative_path != null && !fileRecord.relative_path.isEmpty())
+                                    .map(fileRecord -> convert(sourceOwner, fileRecord))
                                     .collect(Collectors.toList());
                         } else
                         {
-                            return List.of(convert(sourceOwner, fileOrFolderRecord));
+                            return Collections.singletonList(convert(sourceOwner, fileOrFolderRecord));
                         }
                     }
                 }
@@ -362,7 +390,7 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
     private static File convert(String owner, DataSetFileRecord record)
     {
-        return new File(owner, record.relative_path, record.file_name, record.is_directory, record.size_in_bytes,
+        return new File(owner, "/" + record.relative_path, record.file_name, record.is_directory, record.is_directory ? null : record.size_in_bytes,
                 record.last_modified != null ? record.last_modified.toInstant().atOffset(OffsetDateTime.now().getOffset()) : null);
     }
 

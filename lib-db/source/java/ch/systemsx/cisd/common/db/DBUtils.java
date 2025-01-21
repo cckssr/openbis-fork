@@ -20,7 +20,7 @@ import java.util.Date;
 
 /**
  * Useful utility method concerning database code.
- * 
+ *
  * @author Basil Neff
  * @author Pawel Glyzewski
  */
@@ -28,7 +28,7 @@ public final class DBUtils
 {
     /**
      * Translates the specified timestamp to a {@link Date} object.
-     * 
+     *
      * @return <code>null</code> if <code>timestamp == null</code>.
      */
     public final static Date tryToTranslateTimestampToDate(final Timestamp timestampOrNull)
@@ -38,7 +38,7 @@ public final class DBUtils
 
     /**
      * Translates given regular expression to database-like pattern if possible. Returns <code>null</code> if translation is not possible.
-     * 
+     *
      * @return regular expression in database-like pattern, or <code>null</code> if translation is not possible.
      */
     public static String tryToTranslateRegExpToLikePattern(String regexpOrNull)
@@ -179,6 +179,32 @@ public final class DBUtils
             result.append('%');
         }
         return result.toString();
+    }
+
+    public static String escapeLikeClauseSpecialCharacters(final String str)
+    {
+        final StringBuilder sb = new StringBuilder();
+        final char[] chars = str.toCharArray();
+        for (final char ch : chars)
+        {
+            switch (ch)
+            {
+                case '_':
+                case '%':
+                case '\\':
+                {
+                    sb.append('\\').append(ch);
+                    break;
+                }
+                default:
+                {
+                    sb.append(ch);
+                    break;
+                }
+            }
+        }
+
+        return sb.toString();
     }
 
     private DBUtils()
