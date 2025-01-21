@@ -1,8 +1,7 @@
 import React from 'react'
-import { Divider, Typography } from "@mui/material";
+import { Chip, Divider, Typography } from "@mui/material";
 import { isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
-import DefaultMetadataField
-	from "@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js";
+import DefaultMetadataField from "@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js";
 
 const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 
@@ -18,7 +17,12 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 			const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
 			trasformedTags.push(matchTag.label);
 		}
-		return trasformedTags;
+		return <DefaultMetadataField key={'property-tags'}
+            label={'Preview Tags'}
+            value={trasformedTags.map(item => (<Chip sx={{ mr: '4px' }} key={item}
+                size='small'
+                tabIndex={-1}
+                label={item} />))} />
 	}
 
 	const renderPreviewMetadata = () => {
@@ -36,11 +40,10 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 					<p>No preview metadata to display</p>}
 
 				{(currPreviewComment !== null && currPreviewComment !== "")  && 
-					<DefaultMetadataField key={'preview-comment-metadata'} keyProp='Preview Comment'
-							valueProp={currPreviewComment} idx={activeImage.index} />}
+					<DefaultMetadataField key={'preview-comment-metadata'} label='Preview Comment'
+							value={currPreviewComment} />}
 				
-				{(currPreviewTags !== null && currPreviewTags.length > 0) && <DefaultMetadataField key={'preview-tags-metadata'} keyProp='Preview Tags'
-							valueProp={matchTagsToLabel()} idx={activeImage.index} />}
+				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
 			</Typography>
 			<Typography key={`preview-metadata-${activePreview.index}`} variant="body2"
 				component={'span'} sx={{
@@ -48,9 +51,8 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 				}}>
 				{!isObjectEmpty(currPreviewMetadata) &&
 					Object.entries(currPreviewMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'preview-property-' + pos} keyProp={'(raw metadata) ' + key}
-							valueProp={value} idx={activeImage.index}
-							pos={pos} />)
+						<DefaultMetadataField key={'preview-property-' + pos} label={'(raw metadata) ' + key}
+							value={value} />)
 				}
 			</Typography>
 		</>);
@@ -68,29 +70,8 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 				{(currImageMetadata === null || isObjectEmpty(currImageMetadata)) ?
 					<p>No image metadata to display</p>
 					: Object.entries(currImageMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'image-property-' + pos} keyProp={key}
-							valueProp={value} idx={activePreview.index}
-							pos={pos} />)
-				}
-			</Typography>
-		</>);
-	}
-
-	const renderImageConfigMetadata = () => {
-		return (<>
-			<Typography gutterBottom variant='h6'>
-				Config Metadata section
-			</Typography>
-			<Typography key={`config-metadata`} variant="body2"
-				component={'span'} sx={{
-					color: "textSecondary"
-				}}>
-				{isObjectEmpty(configMetadata) ?
-					<p>No config metadata to display</p>
-					: Object.entries(configMetadata).map(([key, value], pos) =>
-						<DefaultMetadataField key={'config-property-' + pos} keyProp={key}
-							valueProp={value} idx={activePreview.index}
-							pos={pos} />)
+						<DefaultMetadataField key={'image-property-' + pos} label={key}
+							value={value}/>)
 				}
 			</Typography>
 		</>);
@@ -98,10 +79,8 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 
 	return (<>
 		{renderPreviewMetadata()}
-		<Divider />
+		<Divider variant='middle' />
 		{renderImageMetadata()}
-		{/*<Divider />
-		 renderImageConfigMetadata() */}
 	</>
 	);
 };

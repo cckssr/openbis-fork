@@ -1,8 +1,9 @@
 import React from "react";
-import { FormControl, IconButton, InputLabel, Stack, TextareaAutosize, TextField } from "@mui/material";
+import { FormControl, IconButton, InputLabel, Stack, TextareaAutosize } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
+import TextField from '@src/js/components/common/form/TextField.jsx'
 
 const EditableMetadataField = ({ keyProp, valueProp, idx, onEdit }) => {
 	const [editMode, setEditMode] = React.useState(false);
@@ -22,21 +23,14 @@ const EditableMetadataField = ({ keyProp, valueProp, idx, onEdit }) => {
 	}
 
 	return <Stack direction='row'>
-		{!editMode ? 
-			(<TextField label={keyProp}
-				value={valueProp}
-				variant='standard'
-				fullWidth
-				sx={{my: 1}}
-				slotProps={{
-					input: {
-						readOnly: true,
-					},
-					inputLabel: {
-						disableAnimation: true,
-						sx: { fontWeight: 'bold', color: 'black' }
-					}
-				}}/>
+		{!editMode ?
+			(<div style={{ width: '100%' }}>
+				<TextField label={keyProp}
+					fullWidth
+					value={valueProp}
+					variant='standard'
+					mode='view'/>
+			</div>
 			) :
 			(<FormControl>
 				<strong> {keyProp}: </strong>
@@ -45,7 +39,7 @@ const EditableMetadataField = ({ keyProp, valueProp, idx, onEdit }) => {
 					value={editableValue}
 					onChange={event => setEditableValue(event.target.value)} />
 			</FormControl>
-		)}
+			)}
 		<IconButton aria-label="edit" size="small" color="primary"
 			onClick={toggleEditMode}>
 			<EditIcon />

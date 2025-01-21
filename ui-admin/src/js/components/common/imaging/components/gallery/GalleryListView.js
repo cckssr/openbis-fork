@@ -7,9 +7,9 @@ import {
     ImageListItem,
     Typography,
     Card, Divider,
-    TextField,
     Chip
 } from "@mui/material";
+import TextField from '@src/js/components/common/form/TextField.jsx'
 import makeStyles from '@mui/styles/makeStyles';
 import constants from "@src/js/components/common/imaging/constants.js";
 import { isObjectEmpty } from "@src/js/components/common/imaging/utils.js";
@@ -18,8 +18,9 @@ import EditableMetadataField from "@src/js/components/common/imaging/components/
 
 const useStyles = makeStyles((theme) => ({
     card: {
-        margin: '5px',
+        marginBottom: '5px',
         display: 'flex',
+        boxShadow: 'none',
         [theme.breakpoints.up('md')]: {
             flexDirection: 'row',
             height: '400px'
@@ -34,12 +35,16 @@ const useStyles = makeStyles((theme) => ({
     },
     imgFixedWidth: {
         height: '250px',
+    },
+    field: {
+        paddingBottom: theme.spacing(1)
     }
 }));
 
+
 const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, onEditNote, imagingTags }) => {
     const classes = useStyles();
-    console.log(imagingTags);
+
     const renderDatasetProps = (datasetProperties, datasetId, idx) => {
         if (isObjectEmpty(datasetProperties)) {
             <p>No Properties to display</p>
@@ -51,23 +56,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                         idx={idx}
                         onEdit={newVal => onEditNote(newVal, datasetId)} />
                 } else {
-                    return <TextField key={'property-' + idx + '-' + pos}
-                        label={key}
-                        value={value}
-                        variant='standard'
-                        fullWidth
-                        sx={{ my: 1 }}
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                                disableUnderline: true
-                            },
-                            inputLabel: {
-                                disableAnimation: true,
-                                sx: { fontWeight: 'bold', color: 'black' }
-                            }
-                        }} />
-                    //return <DefaultMetadataField key={'property-' + idx + '-' + pos} keyProp={key} valueProp={value} idx={idx} pos={pos} />
+                    return <DefaultMetadataField key={'property-' + idx + '-' + pos} label={key} value={value} />
                 }
             })
         }
@@ -80,27 +69,12 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
             const matchTag = imagingTags.find(imagingTag => imagingTag.value === activePreviewTag);
             trasformedTags.push(matchTag.label);
         }
-        return <TextField key={'property-tags-' + idx}
-            label='Preview Tags'
-            variant='standard'
-            fullWidth
-            sx={{ my: 1 }}
-            slotProps={{
-                input: {
-                    readOnly: true,
-                    disableUnderline: true,
-                    startAdornment: trasformedTags.map(item => (
-                        <Chip key={item}
-                            size='small'
-                            tabIndex={-1}
-                            label={item}/>
-                      )),
-                },
-                inputLabel: {
-                    disableAnimation: true,
-                    sx: { fontWeight: 'bold', color: 'black' }
-                }
-            }} />
+        return <DefaultMetadataField key={'property-tags-' + idx}
+            label={'Preview Tags'}
+            value={trasformedTags.map(item => (<Chip sx={{ mr: '4px' }} key={item}
+                size='small'
+                tabIndex={-1}
+                label={item} />))} />
     }
 
     const renderCommentField = (previewContainer, idx) => {
@@ -113,38 +87,10 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
 
     const renderMetadataFields = (metadata, idx) => {
         return !isObjectEmpty(metadata) &&
-            Object.entries(metadata).map(([key, value], pos) =>
-                <TextField key={'preview-property-' + pos}
-                        label={'(Raw metadata) ' + key}
-                        value={value}
-                        size='small'
-                        variant='standard'
-                        fullWidth
-                        sx={{ my: 1 }}
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                                disableUnderline: true
-                            },
-                            inputLabel: {
-                                disableAnimation: true,
-                                sx: { fontWeight: 'bold', color: 'black' }
-                            }
-                        }} />)
-        /* <DefaultMetadataField key={'preview-property-' + pos} keyProp={'(raw metadata) ' + key}
-                    valueProp={value} idx={idx}
-                    pos={pos} /> */
-
-        //return <DefaultMetadataField key={'property-metadata'} keyProp={'METADATA'} valueProp={metadata} />
-        /* if (isObjectEmpty(metadata)) {
-            return <DefaultMetadataField key={'property-metadata'} keyProp={'METADATA'} valueProp={metadata} />
-        } else {
-            return Object.entries(metadata).map(([key, value], pos) =>
-                <DefaultMetadataField key={'property-' + idx + '-' + pos} keyProp={key} valueProp={value} idx={idx} pos={pos} />)
-        } */
+            Object.entries(metadata).map(([key, value], pos) => (<DefaultMetadataField key={'preview-property-' + pos} label={'(Raw metadata) ' + key} value={value} />))
     }
 
-    return (<ImageList sx={{ width: '100%', height: '800px' }} cols={1} gap={5}>
+    return (<ImageList sx={{ width: '100%', height: '800px' }} cols={1} gap={1}>
         {previewContainerList.map((previewContainer, idx) => (
             <ImageListItem style={{ height: 'unset' }} key={'image-list-item-' + idx}>
                 <Card className={classes.card} key={'card-list-item-' + idx}>
@@ -162,7 +108,6 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
                         <Typography key={`dataset-types-${idx}`} variant="body2" component={'span'} sx={{ color: "textSecondary" }}>
                             {renderDatasetProps(previewContainer.datasetProperties, previewContainer.datasetId, idx)}
                         </Typography>
-                        <Divider />
                         <Typography key={`preview-metadata-header-${idx}`} gutterBottom variant="h6">
                             Preview Metadata
                         </Typography>

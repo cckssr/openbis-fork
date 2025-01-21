@@ -41,7 +41,7 @@ const CollapsableSection = ({ children, renderActions = () => false, title, isCo
 		{collapsed && <Divider />}
 		<Collapse in={!collapsed}>
 			{children}
-			<Divider />
+			<Divider sx={{mt: 1}}/>
 		</Collapse>
 	</>
 	);
