@@ -463,16 +463,25 @@ class DataBrowser extends React.Component {
                   sortable: true,
                   visible: true,
                   getValue: ({ row }) => row.name,
-                  renderValue: ({ row }) => (
-                    <div className={classes.nameCell}>
-                      <ItemIcon
-                        file={row}
-                        classes={{ icon: classes.icon }}
-                        configuration={fileTypeConfig}
-                      />
-                      <span>{row.name}</span>
-                    </div>
-                  ),
+                  renderValue: ({ row }) => {
+                    const isTruncated = _.isString(row.name) && row.name.length > 100;
+                    const displayedName = isTruncated
+                      ? row.name.slice(0, 100) + '...'
+                      : row.name;
+                  
+                    return (
+                      <div className={classes.nameCell}>
+                        <ItemIcon
+                          file={row}
+                          classes={{ icon: classes.icon }}
+                          configuration={fileTypeConfig}
+                        />
+                        <span {...(isTruncated ? { title: row.name } : {})}>
+                          {displayedName}
+                        </span>
+                      </div>
+                    );
+                  },
                   renderFilter: null
                 },
                 {

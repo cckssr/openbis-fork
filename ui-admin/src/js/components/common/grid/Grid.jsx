@@ -24,6 +24,7 @@ import GridColumnsConfig from '@src/js/components/common/grid/GridColumnsConfig.
 import GridFiltersConfig from '@src/js/components/common/grid/GridFiltersConfig.jsx'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import logger from '@src/js/common/logger.js'
+import messages from '@src/js/common/messages.js'
 
 
 const styles = theme => ({
@@ -95,7 +96,7 @@ const styles = theme => ({
   },
 
   cloudIcon: {
-    fontSize: '4rem',
+    fontSize: '3.5rem',
     color: theme.palette.primary.main,
     animation: `$floatUp 0.6s ease-in-out 10`
   },
@@ -112,18 +113,19 @@ const styles = theme => ({
 
   dropPill: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'center', 
+    justifyContent: 'center',
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
     borderRadius: '9999px',
     padding: theme.spacing(2, 4),    
-    fontWeight: 'bold',
+    fontFamily: theme.typography.body2.fontFamily,
+    fontSize: theme.typography.body2.fontSize,      
     boxShadow: theme.shadows[4], 
   },
-
-  // Example for an icon inside the pill if you wish
+  
   driveIcon: {
-    marginRight: theme.spacing(1), // space between icon & text
+    marginRight: theme.spacing(1),
     fontSize: '1.4rem'
   }
 
@@ -209,13 +211,10 @@ class Grid extends React.PureComponent {
               </div>
         {isDragging && (
           <div className={classes.overlay}>
-            <div className={classes.dropContentWrapper}>
-                {/* Large upload/cloud icon above the pill */}
-                <CloudUploadIcon className={classes.cloudIcon} />
-
-                {/* The pill-shaped container */}
+            <div className={classes.dropContentWrapper}>                
+                <CloudUploadIcon className={classes.cloudIcon} />                
                 <div className={classes.dropPill}>
-                  Drop files to upload them
+                  {messages.get(messages.UPLOAD_DRAG_MESSAGE)}                  
                 </div>
               </div>
           </div>
