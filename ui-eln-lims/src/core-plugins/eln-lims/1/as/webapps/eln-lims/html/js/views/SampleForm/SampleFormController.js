@@ -205,7 +205,6 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 		
 		//On Submit
 		sample.parents = _this._sampleFormModel.sampleLinksParents.getSamples();
-		sample.children = _this._sampleFormModel.sampleLinksChildren.getSamples();
 		var continueSampleCreation = function(sample, newSampleParents, samplesToDelete, newChangesToDo) {
 		    if (!sample.code) {
 		        Util.showUserError("Code is undefined.");
