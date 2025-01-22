@@ -35,6 +35,7 @@ import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
@@ -51,12 +52,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import ch.ethz.sis.shared.io.IOUtils;
+import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.db.DBUtils;
 import net.lemnik.eodsql.QueryTool;
 
 public class OpenBISAPIServerObserver implements APIServerObserver<TransactionConnection>
 {
+
+    private static final Logger logger = LogManager.getLogger(OpenBISAPIServerObserver.class);
 
     private String storageRoot;
 
@@ -159,6 +164,9 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
 
                     if (fileOrFolderRecord != null)
                     {
+                        logger.info("Owner: \"" + sourceOwner + "\" source: \"" + source + "\" found in the path info database with id: "
+                                + fileOrFolderRecord.id);
+
                         if (fileOrFolderRecord.is_directory)
                         {
                             List<DataSetFileRecord> fileRecords;
@@ -300,7 +308,8 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
             {
                 try
                 {
-                    openBIS.createDataSetsAS(List.of(creation));
+                    final List<DataSetPermId> dataSetIds = openBIS.createDataSetsAS(List.of(creation));
+                    logger.info("Created data set: \"" + dataSetIds.get(0) + "\" in the application server.");
                 } catch (Exception e)
                 {
                     if (e.getMessage() == null || !e.getMessage().contains("DataSet already exists in the database and needs to be unique"))
