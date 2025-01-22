@@ -149,8 +149,8 @@ def openbis_definitions(entity):
             "identifier": "typeId",
         },
         "propertyType": {
-            "attrs": "code label description managedInternally dataType vocabulary materialType schema transformation semanticAnnotations registrator registrationDate metaData multiValue".split(),
-            "attrs_new": "code label description managedInternally dataType vocabulary materialType schema transformation metaData multiValue".split(),
+            "attrs": "code label description managedInternally dataType vocabulary sampleType materialType schema transformation semanticAnnotations registrator registrationDate metaData".split(),
+            "attrs_new": "code label description managedInternally dataType vocabulary sampleType materialType schema transformation metaData".split(),
             "attrs_up": "label description schema transformation metaData".split(),
             "search": {"@type": "as.dto.property.search.PropertyTypeSearchCriteria"},
             "create": {"@type": "as.dto.property.create.PropertyTypeCreation"},
@@ -288,6 +288,7 @@ def openbis_definitions(entity):
             "project": "projectId",
             "sample": "sampleId",
             "samples": "sampleIds",
+            "sampleType": "sampleTypeId",
             "dataSet": "dataSetId",
             "dataSets": "dataSetIds",
             "experiment": "experimentId",
@@ -456,6 +457,9 @@ fetch_option = {
         },
         "semanticAnnotations": {
             "@type": "as.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions"
+        },
+        "sampleType": {
+            "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions"
         },
         "registrator": {"@type": "as.dto.person.fetchoptions.PersonFetchOptions"},
     },

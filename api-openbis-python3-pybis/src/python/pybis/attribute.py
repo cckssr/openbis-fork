@@ -127,6 +127,12 @@ class AttrHolder:
             elif attr in ["registrator", "modifier", "dataProducer", "owner"]:
                 self.__dict__["_" + attr] = extract_person(data.get(attr))
 
+            elif attr in ["sampleType"] and self.entity == 'propertyType' and data.get('dataType', None) == 'SAMPLE':
+                if data.get('sampleType', None) is None:
+                    self.__dict__["_" + attr] = "(ALL)"
+                else:
+                    self.__dict__["_" + attr] = data.get(attr, None)
+
             else:
                 self.__dict__["_" + attr] = data.get(attr, None)
 
@@ -523,6 +529,16 @@ class AttrHolder:
                 self.__dict__["_vocabulary"] = {
                     "@type": "as.dto.vocabulary.id.VocabularyPermId",
                     "permId": value.upper(),
+                }
+
+        elif name in ["sampleType"]:
+            if value is None or value == "":
+                self.__dict__["_sampleType"] = None
+            else:
+                self.__dict__["_sampleType"] = {
+                    "@type": "as.dto.entitytype.id.EntityTypePermId",
+                    "permId": value.upper(),
+                    "entityKind": "SAMPLE",
                 }
 
         elif name in ["validationPlugin"]:

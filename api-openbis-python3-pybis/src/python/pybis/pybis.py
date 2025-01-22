@@ -3998,6 +3998,7 @@ class Openbis:
             managedInternally=False,
             vocabulary=None,
             materialType=None,
+            sampleType=None,
             schema=None,
             transformation=None,
             metaData=None,
@@ -4040,6 +4041,7 @@ class Openbis:
             managedInternally=managedInternally,
             vocabulary=vocabulary,
             materialType=materialType,
+            sampleType=sampleType,
             schema=schema,
             transformation=transformation,
             metaData=metaData,
@@ -4147,6 +4149,9 @@ class Openbis:
                 df = DataFrame(columns=attrs)
             else:
                 df = DataFrame(response)
+                df["sampleType"] = df["sampleType"].map(extract_code)
+                df['sampleType'] = df['sampleType'].mask((df['dataType'] == 'SAMPLE') & (df['sampleType'] == ''),
+                                                         '(ALL)')
                 df["registrationDate"] = df["registrationDate"].map(format_timestamp)
                 df["registrator"] = df["registrator"].map(extract_person)
                 df["vocabulary"] = df["vocabulary"].map(extract_code)

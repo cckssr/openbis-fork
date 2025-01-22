@@ -1,4 +1,4 @@
-#   Copyright ETH 2018 - 2024 Zürich, Scientific IT Services
+#   Copyright ETH 2018 - 2025 Zürich, Scientific IT Services
 # 
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ def parse_jackson(input_json):
         "validationPlugin",
         "dataSetPermId",
         "dataStore",
+        "sampleType"
     ]
     found = {}
 
