@@ -58,6 +58,13 @@ class UserSearch extends React.Component {
     }
   }
 
+  formatExpiryDate(expiryDate) {
+    if(expiryDate) {
+      return { dateObject: new Date(expiryDate) };
+    }
+    return expiryDate;
+  }
+
   async loadUsers() {
     if (!this.shouldLoad(objectTypes.USER)) {
       return
@@ -87,6 +94,9 @@ class UserSearch extends React.Component {
         }),
         registrationDate: FormUtil.createField({
           value: _.get(object, 'registrationDate')
+        }),
+        expiryDate: FormUtil.createField({
+          value: this.formatExpiryDate(_.get(object, 'expiryDate'))
         })
       }))
 

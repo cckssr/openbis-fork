@@ -156,7 +156,6 @@ public class RoleAssignmentTranslator
         output.setRole(Role.valueOf(baseRecord.role_code));
         output.setRoleLevel(extractRoleLevel(baseRecord));
         output.setRegistrationDate(baseRecord.registrationDate);
-        output.setExpiryDate(baseRecord.expiryDate);
 
         if (fetchOptions.hasRegistrator())
         {

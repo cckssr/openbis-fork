@@ -77,7 +77,7 @@ export default class UserFormControllerSave extends PageControllerSave {
   }
 
   _isUserUpdateNeeded(user) {
-    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'active'])
+    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'active', 'expiryDate'])
   }
 
   _isGroupAssignmentUpdateNeeded(group) {
@@ -89,8 +89,7 @@ export default class UserFormControllerSave extends PageControllerSave {
       'level',
       'space',
       'project',
-      'role',
-      'expiryDate'
+      'role'
     ])
   }
 
@@ -99,6 +98,10 @@ export default class UserFormControllerSave extends PageControllerSave {
     creation.setUserId(user.userId.value)
     if (user.space.value) {
       creation.setSpaceId(new openbis.SpacePermId(user.space.value))
+    }
+    if(user.expiryDate.value && user.expiryDate.value.dateObject)
+    {
+      creation.setExpiryDate(user.expiryDate.value.dateObject.getTime());
     }
     return new openbis.CreatePersonsOperation([creation])
   }
@@ -113,6 +116,10 @@ export default class UserFormControllerSave extends PageControllerSave {
       update.activate()
     } else {
       update.deactivate()
+    }
+    if(user.expiryDate.value && user.expiryDate.value.dateObject)
+    {
+      update.setExpiryDate(user.expiryDate.value.dateObject.getTime());
     }
     return new openbis.UpdatePersonsOperation([update])
   }
@@ -149,10 +156,6 @@ export default class UserFormControllerSave extends PageControllerSave {
           '/' + role.space.value + '/' + role.project.value
         )
       )
-    }
-    if(role.expiryDate.value && role.expiryDate.value.dateObject)
-    {
-      creation.setExpiryDate(role.expiryDate.value.dateObject.getTime());
     }
     return new openbis.CreateRoleAssignmentsOperation([creation])
   }

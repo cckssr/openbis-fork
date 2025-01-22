@@ -53,9 +53,6 @@ public class RoleAssignmentCreation implements ICreation, IObjectCreation
     @JsonProperty
     private IProjectId projectId;
 
-    @JsonProperty
-    private Date expiryDate;
-
     public IPersonId getUserId()
     {
         return userId;
@@ -106,21 +103,11 @@ public class RoleAssignmentCreation implements ICreation, IObjectCreation
         this.projectId = projectId;
     }
 
-    public Date getExpiryDate()
-    {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Date expiryDate)
-    {
-        this.expiryDate = expiryDate;
-    }
-
     @Override
     public String toString()
     {
         return new ObjectToString(this).append("groupId", authorizationGroupId).append("userId", userId).append("spaceId", spaceId)
-                .append("projectId", projectId).append("role", role).append("expiryDate", expiryDate).toString();
+                .append("projectId", projectId).append("role", role).toString();
     }
 
 }

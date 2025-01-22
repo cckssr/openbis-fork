@@ -15,16 +15,17 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update;
 
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.update.WebAppSettingsUpdateValue;
@@ -34,7 +35,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.person.update.PersonUpdate")
-public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
+public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>, IMetaDataUpdateHolder
 {
 
     private static final long serialVersionUID = 1L;
@@ -50,6 +51,12 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
 
     @JsonProperty
     private Map<String, WebAppSettingsUpdateValue> webAppSettings;
+
+    @JsonProperty
+    private FieldUpdateValue<Date> expiryDate = new FieldUpdateValue<Date>();
+
+    @JsonProperty
+    private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
     public IPersonId getUserId()
     {
@@ -120,6 +127,31 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>
     public void deactivate()
     {
         active.setValue(false);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Date> getExpiryDate()
+    {
+        return expiryDate;
+    }
+
+    @JsonIgnore
+    public void setExpiryDate(Date expiryDate)
+    {
+        this.expiryDate.setValue(expiryDate);
+    }
+
+    @Override
+    @JsonIgnore
+    public ListUpdateMapValues getMetaData()
+    {
+        return metaData;
+    }
+
+    @JsonIgnore
+    public void setMetaDataActions(List<ListUpdateValue.ListUpdateAction<Object>> actions)
+    {
+        metaData.setActions(actions);
     }
 
     @Override

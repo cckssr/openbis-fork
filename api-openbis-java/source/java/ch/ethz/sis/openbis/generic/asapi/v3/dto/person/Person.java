@@ -79,6 +79,12 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
     @JsonProperty
     private Map<String, WebAppSettings> webAppSettings;
 
+    @JsonProperty
+    private Date expiryDate;
+
+    @JsonProperty
+    private Map<String, String> metaData;
+
     // Method automatically generated with DtoGenerator
     @JsonIgnore
     public PersonFetchOptions getFetchOptions()
@@ -270,6 +276,28 @@ public class Person implements Serializable, IPermIdHolder, IRegistrationDateHol
     public void setWebAppSettings(Map<String, WebAppSettings> webAppSettings)
     {
         this.webAppSettings = webAppSettings;
+    }
+
+    @JsonIgnore
+    public Date getExpiryDate()
+    {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Date expiryDate)
+    {
+        this.expiryDate = expiryDate;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     // Method automatically generated with DtoGenerator

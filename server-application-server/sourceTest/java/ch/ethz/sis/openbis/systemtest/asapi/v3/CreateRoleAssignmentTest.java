@@ -95,35 +95,6 @@ public class CreateRoleAssignmentTest extends AbstractTest
         assertEquals(roleAssignment.getProject(), null);
     }
 
-    @Test
-    public void testCreateRoleForMeWithExpiryDate()
-    {
-        // Given
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-        RoleAssignmentCreation creation = new RoleAssignmentCreation();
-        creation.setRole(Role.POWER_USER);
-        creation.setSpaceId(new SpacePermId("TEST-SPACE"));
-        creation.setUserId(new Me());
-        Date expiryDate = new Date();
-        creation.setExpiryDate(expiryDate);
-
-        // When
-        List<RoleAssignmentTechId> ids = v3api.createRoleAssignments(sessionToken, Arrays.asList(creation));
-
-        // Then
-        assertEquals(ids.size(), 1);
-        RoleAssignmentFetchOptions fetchOptions = new RoleAssignmentFetchOptions();
-        fetchOptions.withUser();
-        fetchOptions.withSpace();
-        fetchOptions.withProject();
-        RoleAssignment roleAssignment = v3api.getRoleAssignments(sessionToken, ids, fetchOptions).get(ids.get(0));
-        assertEquals(roleAssignment.getUser().getUserId(), TEST_USER);
-        assertEquals(roleAssignment.getRole(), Role.POWER_USER);
-        assertEquals(roleAssignment.getRoleLevel(), RoleLevel.SPACE);
-        assertEquals(roleAssignment.getSpace().getCode(), "TEST-SPACE");
-        assertEquals(roleAssignment.getProject(), null);
-        assertEquals(roleAssignment.getExpiryDate(), expiryDate);
-    }
 
     @Test
     public void testCreateSpaceETLServerUser()

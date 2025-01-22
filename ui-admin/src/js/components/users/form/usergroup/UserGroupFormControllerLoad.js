@@ -90,6 +90,9 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createUser(loadedUser) {
+
+    const expiryDate =  _.get(loadedUser, 'expiryDate', null);
+
     const user = {
       id: _.uniqueId('user-'),
       userId: FormUtil.createField({
@@ -115,6 +118,9 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
       }),
       registrationDate: FormUtil.createField({
         value: _.get(loadedUser, 'registrationDate', null)
+      }),
+      expiryDate: FormUtil.createField({
+        value: expiryDate ? { dateObject: new Date(expiryDate) } : null
       })
     }
     user.original = _.cloneDeep(user)

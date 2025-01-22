@@ -17,7 +17,6 @@
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -79,8 +78,6 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
     private AuthorizationGroupPE authorizationGroup;
 
     private RoleCode role;
-
-    private Date expiryDate;
 
     @NotNull(message = ValidationMessages.ROLE_NOT_NULL_MESSAGE)
     @Column(name = ColumnNames.ROLE_COLUMN)
@@ -165,17 +162,6 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         this.project = project;
     }
 
-    @Column(name = ColumnNames.EXPIRY_DATE_COLUMN)
-    public Date getExpiryDate()
-    {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Date expiryDate)
-    {
-        this.expiryDate = expiryDate;
-    }
-
     //
     // IIdHolder
     //
@@ -239,7 +225,6 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         builder.append(getAuthorizationGroup(), that.getAuthorizationGroup());
         builder.append(getSpace(), that.getSpace());
         builder.append(getProject(), that.getProject());
-        builder.append(getExpiryDate(), that.getExpiryDate());
         return builder.isEquals();
     }
 
@@ -251,7 +236,6 @@ public final class RoleAssignmentPE extends HibernateAbstractRegistrationHolder
         builder.append(getPerson());
         builder.append(getSpace());
         builder.append(getProject());
-        builder.append(getExpiryDate());
         return builder.toHashCode();
     }
 

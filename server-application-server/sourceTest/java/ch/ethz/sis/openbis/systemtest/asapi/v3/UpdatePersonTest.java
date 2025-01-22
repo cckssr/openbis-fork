@@ -19,6 +19,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -452,6 +453,30 @@ public class UpdatePersonTest extends AbstractTest
         Person person = persons.get(permId);
 
         assertEquals(person.getWebAppSettings(WEB_APP_1).getSetting("testName").getValue(), "testValue");
+    }
+
+    @Test
+    public void testUpdateExpiryDateAndMetaData()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        PersonPermId permId = createPersonToUpdate();
+
+        PersonUpdate update = new PersonUpdate();
+        update.setUserId(permId);
+        update.setExpiryDate(new Date(1L));
+        update.getMetaData().put("key", "value");
+
+        v3api.updatePersons(sessionToken, Arrays.asList(update));
+
+        PersonFetchOptions fo = new PersonFetchOptions();
+
+        Map<IPersonId, Person> persons = v3api.getPersons(sessionToken, Arrays.asList(permId), fo);
+        Person person = persons.get(permId);
+
+        assertEquals(person.getExpiryDate(), new Date(1L));
+        assertEquals(person.getMetaData().size(), 1);
+        assertEquals(person.getMetaData().get("key"), "value");
     }
 
     @Test

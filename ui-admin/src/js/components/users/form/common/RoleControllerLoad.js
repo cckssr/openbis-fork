@@ -28,8 +28,6 @@ export default class RoleControllerLoad {
       project = _.get(loadedRole, 'project.code')
     }
 
-    const expiryDate =  _.get(loadedRole, 'expiryDate', null);
-
     const role = {
       id: _.uniqueId('role-'),
       techId: FormUtil.createField({
@@ -61,10 +59,6 @@ export default class RoleControllerLoad {
       }),
       registrationDate: FormUtil.createField({
         value: _.get(loadedRole, 'registrationDate', null)
-      }),
-      expiryDate: FormUtil.createField({
-        value: expiryDate ? { dateObject: new Date(expiryDate) } : null
-
       })
     }
     role.original = _.cloneDeep(role)
@@ -99,8 +93,7 @@ export default class RoleControllerLoad {
       'inheritedFrom.value',
       'space.value',
       'project.value',
-      'role.value',
-      'expiryDate.value'
+      'role.value'
     ]
     return fields.every(field => _.get(role1, field) === _.get(role2, field))
   }

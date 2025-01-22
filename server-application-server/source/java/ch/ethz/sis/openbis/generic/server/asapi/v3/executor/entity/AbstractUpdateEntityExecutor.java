@@ -149,6 +149,11 @@ public abstract class AbstractUpdateEntityExecutor<UPDATE extends IUpdate, PE ex
         // overwrite in child class if special business rules are to be applied
     }
 
+    protected void postSaveAction(IOperationContext context, Map<UPDATE, PE> updatedMap)
+    {
+
+    }
+
     private void checkAccess(final IOperationContext context, MapBatch<UPDATE, PE> batch)
     {
         new MapBatchProcessor<UPDATE, PE>(context, batch)
@@ -225,6 +230,7 @@ public abstract class AbstractUpdateEntityExecutor<UPDATE extends IUpdate, PE ex
         updateBatch(context, mapBatch);
 
         save(context, new ArrayList<PE>(updateToEntityMap.values()), false);
+        postSaveAction(context, updateToEntityMap);
 
         daoFactory.setBatchUpdateMode(false);
     }

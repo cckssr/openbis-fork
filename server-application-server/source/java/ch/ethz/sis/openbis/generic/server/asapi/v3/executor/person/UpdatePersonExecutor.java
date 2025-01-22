@@ -22,6 +22,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.metadata.IUpdateMetaDataForEntityExecutor;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.pat.IUpdatePersonalAccessTokenExecutor;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPersonalAccessTokenDAO;
+import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
+import ch.systemsx.cisd.openbis.generic.shared.dto.*;
+import org.hibernate.Cache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -38,8 +44,6 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IRoleAssignmentDAO;
-import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 
 /**
  * @author Franz-Josef Elmer
@@ -53,6 +57,12 @@ public class UpdatePersonExecutor
     private IDAOFactory daoFactory;
 
     @Autowired
+    private IPersonalAccessTokenDAO personalAccessTokenDAO;
+
+    @Autowired
+    private IOpenBisSessionManager sessionManager;
+
+    @Autowired
     private IPersonAuthorizationExecutor authorizationExecutor;
 
     @Autowired
@@ -63,6 +73,13 @@ public class UpdatePersonExecutor
 
     @Autowired
     private IUpdateWebAppSettingsExecutor updateWebAppSettingsExecutor;
+
+    @Autowired
+    private IUpdateMetaDataForEntityExecutor<PersonUpdate, PersonPE>
+            updateMetaDataForEntityExecutor;
+
+    @Autowired
+    private IUpdatePersonalAccessTokenExecutor updatePersonalAccessTokenExecutor;
 
     @Override
     protected IPersonId getId(PersonUpdate update)
@@ -103,10 +120,27 @@ public class UpdatePersonExecutor
     }
 
     @Override
+    protected void checkBusinessRules(IOperationContext context, IPersonId id, PersonPE entity, PersonUpdate update)
+    {
+        if(update.getExpiryDate().isModified())
+        {
+            if (entity.equals(context.getSession().tryGetPerson()))
+            {
+                throw new UserFailureException("You can not set expiry date to yourself. Ask another instance admin to do that for you.");
+            }
+            if(entity.isSystemUser() && update.getExpiryDate().getValue() != null)
+            {
+                throw new UserFailureException("System User must not have expiration date set!");
+            }
+        }
+    }
+
+    @Override
     protected void updateBatch(IOperationContext context, MapBatch<PersonUpdate, PersonPE> batch)
     {
         updateHomeSpaceExecutor.update(context, batch);
         updateWebAppSettingsExecutor.update(context, batch);
+        updateMetaDataForEntityExecutor.update(context, batch);
         Set<Entry<PersonUpdate, PersonPE>> entrySet = batch.getObjects().entrySet();
         for (Entry<PersonUpdate, PersonPE> entry : entrySet)
         {
@@ -122,6 +156,10 @@ public class UpdatePersonExecutor
                 {
                     activate(context, person);
                 }
+            }
+            if(personUpdate.getExpiryDate() != null && personUpdate.getExpiryDate().isModified())
+            {
+                person.setExpiryDate(personUpdate.getExpiryDate().getValue());
             }
         }
     }
@@ -177,6 +215,42 @@ public class UpdatePersonExecutor
         for (PersonPE person : entities)
         {
             daoFactory.getPersonDAO().updatePerson(person);
+        }
+    }
+
+    @Override
+    protected void postSaveAction(IOperationContext context, Map<PersonUpdate, PersonPE> updatedMap)
+    {
+        List<PersonalAccessTokenSession> patSessions = personalAccessTokenDAO.listSessions();
+        List<Session> sessions = sessionManager.getSessions();
+        boolean updateSessions = false;
+        for(Map.Entry<PersonUpdate, PersonPE> entry : updatedMap.entrySet())
+        {
+            PersonUpdate update = entry.getKey();
+            if(update.getExpiryDate() != null && update.getExpiryDate().isModified())
+            {
+                PersonPE person = entry.getValue();
+                for(Session session : sessions)
+                {
+                    if(person.equals(session.tryGetPerson()) && !person.equals(context.getSession().tryGetPerson()))
+                    {
+                        updateSessions = true;
+                        break;
+                    }
+                }
+                for(PersonalAccessTokenSession patSession : patSessions)
+                {
+                    if(patSession.getOwnerId().equals(person.getUserId()))
+                    {
+                        updateSessions = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if(updateSessions)
+        {
+            sessionManager.updateAllSessions();
         }
     }
 

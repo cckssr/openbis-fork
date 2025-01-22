@@ -1,8 +1,11 @@
-define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue", "as/dto/webapp/update/WebAppSettingsUpdateValue" ], function(stjs, FieldUpdateValue,
-		IdListUpdateValue, WebAppSettingsUpdateValue) {
+define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/IdListUpdateValue",
+"as/dto/webapp/update/WebAppSettingsUpdateValue", "as/dto/common/update/ListUpdateMapValues" ], function(stjs, FieldUpdateValue,
+		IdListUpdateValue, WebAppSettingsUpdateValue, ListUpdateMapValues) {
 	var PersonUpdate = function() {
 		this.spaceId = new FieldUpdateValue();
 		this.active = new FieldUpdateValue();
+		this.expiryDate = new FieldUpdateValue();
+		this.metaData = new ListUpdateMapValues();
 	};
 	stjs.extend(PersonUpdate, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.person.update.PersonUpdate';
@@ -11,6 +14,8 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.spaceId = null;
 		prototype.webAppSettings = null;
 		prototype.active = null;
+		prototype.expiryDate = null;
+		prototype.metaData = null;
 
 		prototype.getObjectId = function() {
 			return this.getUserId();
@@ -54,6 +59,18 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.deactivate = function() {
 			this.active.setValue(false);
 		};
+		prototype.getExpiryDate = function() {
+            return this.expiryDate;
+        };
+        prototype.setExpiryDate = function(expiryDate) {
+            this.expiryDate.setValue(expiryDate);
+        };
+        prototype.getMetaData = function() {
+            return this.metaData;
+        };
+        prototype.setMetaDataActions = function(actions) {
+            this.metaData.setActions(actions);
+        };
 	}, {
 		userId : "IPersonId",
 		spaceId : {
@@ -68,6 +85,11 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 			name : "FieldUpdateValue",
 			arguments : [ "Boolean" ]
 		},
+		expiryDate : {
+            name : "FieldUpdateValue",
+            arguments : [ "Date" ]
+        },
+        metaData : "ListUpdateMapValues"
 	});
 	return PersonUpdate;
 })

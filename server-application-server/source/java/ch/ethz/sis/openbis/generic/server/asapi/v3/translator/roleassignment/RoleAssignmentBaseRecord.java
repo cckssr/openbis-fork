@@ -31,5 +31,4 @@ public class RoleAssignmentBaseRecord extends ObjectBaseRecord
     public Long space_id;
     public Long project_id;
     public Date registrationDate;
-    public Date expiryDate;
 }

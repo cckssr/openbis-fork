@@ -24,8 +24,7 @@ class RoleParameters extends React.PureComponent {
       level: React.createRef(),
       space: React.createRef(),
       project: React.createRef(),
-      role: React.createRef(),
-      expiryDate: React.createRef()
+      role: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -99,7 +98,6 @@ class RoleParameters extends React.PureComponent {
         {this.renderSpace(role)}
         {this.renderProject(role)}
         {this.renderRole(role)}
-        {this.renderExpiryDate(role)}
       </Container>
     )
   }
@@ -322,30 +320,6 @@ class RoleParameters extends React.PureComponent {
     )
   }
 
-  renderExpiryDate(role) {
-    const { visible, enabled, error, value } = { ...role.expiryDate }
-    if (!visible) {
-      return null
-    }
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <DateField
-          reference={this.references.expiryDate}
-          label={messages.get(messages.EXPIRY_DATE)}
-          name='expiryDate'
-          mandatory={false}
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
 
   getRole(props) {
     let { roles, selection } = props

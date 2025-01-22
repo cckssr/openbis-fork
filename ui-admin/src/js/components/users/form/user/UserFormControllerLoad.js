@@ -84,6 +84,9 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   _createUser(loadedUser) {
+
+    const expiryDate =  _.get(loadedUser, 'expiryDate', true);
+
     const user = {
       id: _.get(loadedUser, 'userId', null),
       userId: FormUtil.createField({
@@ -111,6 +114,9 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       active: FormUtil.createField({
         value: _.get(loadedUser, 'active', true),
         enabled: loadedUser !== null
+      }),
+      expiryDate: FormUtil.createField({
+        value: expiryDate ? { dateObject: new Date(expiryDate) } : null
       })
     }
     if (loadedUser) {
