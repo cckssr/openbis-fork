@@ -162,6 +162,14 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertFile(rootNotRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
         assertFile(rootNotRecursiveFS.get(1), sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
 
+        // FS : list "//" non-recursively
+        List<File> rootNotRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
+        rootNotRecursive2FS.sort(Comparator.comparing(File::getPath));
+
+        assertEquals(2, rootNotRecursive2FS.size());
+        assertFile(rootNotRecursive2FS.get(0), sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
+        assertFile(rootNotRecursive2FS.get(1), sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
+
         // FS : list "test-folder" recursively
         List<File> folderRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
         folderRecursiveFS.sort(Comparator.comparing(File::getPath));
@@ -169,6 +177,15 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertEquals(folderRecursiveFS.size(), 2);
         assertFile(folderRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
         assertFile(folderRecursiveFS.get(1), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
+                49L);
+
+        // FS : list "/test-folder/" recursively
+        List<File> folderRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
+        folderRecursive2FS.sort(Comparator.comparing(File::getPath));
+
+        assertEquals(folderRecursive2FS.size(), 2);
+        assertFile(folderRecursive2FS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        assertFile(folderRecursive2FS.get(1), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
                 49L);
 
         // FS : list "/test-folder" non-recursively
@@ -205,9 +222,17 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         List<File> rootNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
         assertFilesEqual(rootNotRecursiveFS, rootNotRecursiveDB);
 
+        // DB : list "//" non-recursively
+        List<File> rootNotRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
+        assertFilesEqual(rootNotRecursive2FS, rootNotRecursive2DB);
+
         // DB : list "test-folder" recursively
         List<File> folderRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
         assertFilesEqual(folderRecursiveFS, folderRecursiveDB);
+
+        // DB : list "/test-folder/" recursively
+        List<File> folderRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
+        assertFilesEqual(folderRecursive2FS, folderRecursive2DB);
 
         // DB : list "/test-folder" non-recursively
         List<File> folderNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
@@ -251,8 +276,9 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
             assertEquals(file1.getName(), file2.getName());
             assertEquals(file1.getDirectory(), file2.getDirectory());
             assertEquals(file1.getSize(), file2.getSize());
-            // file system and database will differ in precision (check they are different just to make sure we always
-            // hit both the file system and the path info database, but the rest of the dates should be the same)
+            // File system and database dates will differ in precision (we check they are different just to make sure we always
+            // hit both the file system and the path info database, but the rest of the dates should be the same). If they are
+            // exactly the same it means we didn't hit the path info database.
             assertNotEquals(file1.getLastModifiedTime(), file2.getLastModifiedTime());
             assertEquals(file1.getLastModifiedTime().withNano(0), file2.getLastModifiedTime().withNano(0));
         }

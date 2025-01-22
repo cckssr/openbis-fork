@@ -143,9 +143,16 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
                     if (source == null || source.isBlank())
                     {
                         source = "";
-                    } else if (source.startsWith("/"))
+                    } else
                     {
-                        source = source.substring(1);
+                        if (source.startsWith("/"))
+                        {
+                            source = source.substring(1);
+                        }
+                        if (source.endsWith("/"))
+                        {
+                            source = source.substring(0, source.length() - 1);
+                        }
                     }
 
                     DataSetFileRecord fileOrFolderRecord = pathInfoDAO.tryToGetRelativeDataSetFile(dataSetId, source);
@@ -154,17 +161,21 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
                     {
                         if (fileOrFolderRecord.is_directory)
                         {
-                            if (!source.isEmpty() && !source.endsWith("/"))
-                            {
-                                source += "/";
-                            }
-
                             List<DataSetFileRecord> fileRecords;
 
                             if (Boolean.TRUE.equals(recursively))
                             {
-                                fileRecords = pathInfoDAO.listDataSetFilesByRelativePathLikeExpression(dataSetId,
-                                        DBUtils.escapeLikeClauseSpecialCharacters(source) + "%");
+                                String likeClause = DBUtils.escapeLikeClauseSpecialCharacters(source);
+
+                                if (source.isEmpty() || source.endsWith("/"))
+                                {
+                                    likeClause += "%";
+                                } else
+                                {
+                                    likeClause += "/%";
+                                }
+
+                                fileRecords = pathInfoDAO.listDataSetFilesByRelativePathLikeExpression(dataSetId, likeClause);
                             } else
                             {
                                 fileRecords = pathInfoDAO.listChildrenByParentId(dataSetId, fileOrFolderRecord.id);
