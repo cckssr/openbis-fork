@@ -82,7 +82,7 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	        if(_this._mainController.currentView &&
 	            _this._mainController.currentView._settingsFormModel &&
 	            _this._mainController.currentView._settingsFormModel.finishedLoading ) {
-                Util.reloadApexplication("Application will be reloaded to apply the new settings.");
+                Util.reloadApplication("Application will be reloaded to apply the new settings.");
 	        } else {
                 setTimeout(reloadApplication, 100);
 	        }
