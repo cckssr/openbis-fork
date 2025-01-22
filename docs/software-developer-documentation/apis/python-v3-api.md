@@ -363,6 +363,28 @@ The `dataType` attribute can contain any of these values:
 
 When choosing `CONTROLLEDVOCABULARY`, you must specify a `vocabulary` attribute (see example). Likewise, when choosing `MATERIAL`, a `materialType` attribute must be provided.
 
+When choosing `SAMPLE` type property, you may specify sampleType for this property to accept. Otherwise, all sample types will be accepted by this property. 
+Examples:
+```python
+pt_object = o.new_property_type(
+    code        = 'MY_SAMPLE_PROPERTY_TYPE_ACCEPTS_ONLY_CUSTOM_TYPE',
+    label       = 'custom sample property type',
+    description = 'property contains a sample of type CUSTOM_TYPE',
+    dataType    = 'SAMPLE',
+    sampleType  = 'CUSTOM_TYPE'
+)
+pt_object.save()
+
+pt_object_all = o.new_property_type(
+    code        = 'MY_SAMPLE_PROPERTY_TYPE_ACCEPTS_ANY_SAMPLE_TYPE',
+    label       = 'all sample property types',
+    description = 'property contains a sample of any sample type',
+)
+pt_object_all.save()
+
+```
+
+
 To create a **richtext property**, use `MULTILINE_VARCHAR` as `dataType` and set `metaData` to `{'custom_widget' : 'Word Processor'}` as shown in the example above.
 
 To create a **tabular, spreadsheet-like property**, use `XML` as `dataType` and set `metaData` to `{'custom_widget' : 'Spreadhseet'}`as shown in the example above.
