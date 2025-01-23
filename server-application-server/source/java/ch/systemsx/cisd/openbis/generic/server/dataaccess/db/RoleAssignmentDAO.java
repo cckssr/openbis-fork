@@ -16,7 +16,9 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
@@ -78,14 +80,18 @@ public final class RoleAssignmentDAO extends AbstractGenericEntityDAO<RoleAssign
         // returns roles connected directly or indirectly (through space) to current db instance
         final List<RoleAssignmentPE> list =
                 cast(getHibernateTemplate().find(
-                        String.format("select r from %s r " +
-                                "where r.personInternal.expiryDate >= now() or r.personInternal.expiryDate is NULL", TABLE_NAME)));
+                        String.format("select r from %s r ", TABLE_NAME)));
+        Date currentDate = new Date(System.currentTimeMillis());
+        final List<RoleAssignmentPE> result = list.stream().filter(x -> x.getAuthorizationGroupInternal() != null
+                || x.getPersonInternal().getExpiryDate() == null
+                || x.getPersonInternal().getExpiryDate().after(currentDate)).collect(
+                Collectors.toList());
         if (operationLog.isDebugEnabled())
         {
             operationLog.debug(String.format("%s(): %d role assignment(s) have been found.",
                     MethodUtils.getCurrentMethod().getName(), list.size()));
         }
-        return list;
+        return result;
     }
 
     @Override
