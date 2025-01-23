@@ -3,8 +3,9 @@ import { Chip, Divider, Typography } from '@mui/material';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import DefaultMetadataField from '@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
+import EditableMetadataField from "@src/js/components/common/imaging/components/gallery/EditableMetadataField.jsx";
 
-const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
+const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditComment }) => {
 
 	const currImageMetadata = activeImage.metadata;
 	const configMetadata = activeImage.config.metadata;
@@ -37,10 +38,10 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags }) => {
 					&& (currPreviewTags === null || currPreviewTags.length === 0)
 					&& isObjectEmpty(currPreviewMetadata) &&
 					<p>No preview metadata to display</p>}
-
 				{(currPreviewComment !== null && currPreviewComment !== '') &&
-					<DefaultMetadataField key={'preview-comment-metadata'} label='Preview Comment'
-						value={currPreviewComment} />}
+						<EditableMetadataField keyProp={"Preview Comment"}
+            valueProp={currPreviewComment}
+            onEdit={newVal => onEditComment(newVal)} />}
 
 				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
 			</Typography>

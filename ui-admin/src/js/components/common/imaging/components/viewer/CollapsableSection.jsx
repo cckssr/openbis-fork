@@ -31,14 +31,14 @@ const CollapsableSection = ({ children, renderActions = () => false, title, isCo
 
 	return (<>
 		<div className={classes.container + ' ' + classes.jc_sb + ' ' + (span && classes.span)}>
-			<legend className={classes.container}>
+			<div className={classes.container}>
 				<IconButton aria-label="delete" size="large" onClick={canCollapse ? handleChange : () => false} disabled={!canCollapse}>
 					{collapsed ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
 				</IconButton>
 				<Typography variant='h6' >
 					{title}
 				</Typography>
-			</legend>
+			</div>
 			<div>
 				{renderWarnings}
 				{collapsed && renderActions()}

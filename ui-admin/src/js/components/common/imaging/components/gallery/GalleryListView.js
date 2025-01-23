@@ -90,7 +90,7 @@ const GalleryListView = ({ previewContainerList, onOpenPreview, onEditComment, o
             Object.entries(metadata).map(([key, value], pos) => (<DefaultMetadataField key={'preview-property-' + pos} label={'(Raw metadata) ' + key} value={value} />))
     }
 
-    return (<ImageList sx={{ width: '100%', height: '800px' }} cols={1}>
+    return (<ImageList sx={{ width: '100%', height: '60vh' }} cols={1}>
         {previewContainerList.map((previewContainer, idx) => (
             <ImageListItem style={{ height: 'unset' }} key={'image-list-item-' + idx}>
                 <Card className={classes.card} key={'card-list-item-' + idx}>

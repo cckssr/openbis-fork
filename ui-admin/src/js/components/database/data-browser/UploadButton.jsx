@@ -22,7 +22,7 @@ import autoBind from 'auto-bind'
 
 const styles = () => ({
   invisible: {
-    display: 'none'
+    display: 'none !important'
   }
 })
 

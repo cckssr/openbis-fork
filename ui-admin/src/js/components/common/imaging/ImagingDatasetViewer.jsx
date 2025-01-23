@@ -1,6 +1,6 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import { Divider, Grid2, Typography, useMediaQuery } from '@mui/material';
+import { Grid2 } from '@mui/material';
 import { convertToBase64, inRange, isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import Container from '@src/js/components/common/form/Container.jsx'
 import ImagingFacade from '@src/js/components/common/imaging/ImagingFacade.js';
@@ -12,19 +12,16 @@ import ImageSection from '@src/js/components/common/imaging/components/viewer/Im
 import MainPreview from '@src/js/components/common/imaging/components/viewer/MainPreview.js';
 import MainPreviewInputControls from '@src/js/components/common/imaging/components/viewer/MainPreviewInputControls.js';
 import MetadataSection from '@src/js/components/common/imaging/components/viewer/MetadataSection.js';
-import makeStyles from '@mui/styles/makeStyles';
 
-import CustomSwitch from '@src/js/components/common/imaging/components/common/CustomSwitch.jsx';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
-import Button from '@src/js/components/common/form/Button.jsx'
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 
 const styles = theme => ({
     container: {
         height: '100%',
-        overflow: 'auto'
+        overflow: 'auto',
+        padding: '0px 8px'
     },
     gridDirection: {
         [theme.breakpoints.up('md')]: {
@@ -342,6 +339,14 @@ class ImagingDataSetViewer extends React.PureComponent {
         }
     }
 
+    handleEditComment = async (comment) => {
+        this.handleOpen();
+        const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
+        let toUpdateImgDs = { ...imagingDataset };
+        toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx].comment = comment;
+        this.setState({ open: false, imagingDataset: toUpdateImgDs, isSaved: false });
+    }
+
     deletePreview = () => {
         this.handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = this.state;
@@ -391,7 +396,7 @@ class ImagingDataSetViewer extends React.PureComponent {
         const currentMetadata = activePreview.metadata;
         const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
         return (
-            <Container className={classes.container}>
+            <div className={classes.container}>
                 <LoadingDialog loading={open} />
                 <ErrorDialog open={error.state} error={error.error}
                     onClose={this.handleErrorCancel} />
@@ -430,9 +435,9 @@ class ImagingDataSetViewer extends React.PureComponent {
                     </Grid2>
                 </CollapsableSection>
                 <CollapsableSection title='Metadata' isCollapsed={false}>
-                    <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} />
+                    <MetadataSection activePreview={activePreview} activeImage={activeImage} imagingTags={imagingTags} onEditComment={this.handleEditComment} />
                 </CollapsableSection>
-            </Container>
+            </div>
         )
     };
 }
