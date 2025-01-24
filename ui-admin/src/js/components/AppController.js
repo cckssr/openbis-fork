@@ -230,14 +230,15 @@ export class AppController {
         changed: false
       }
       await this.replaceOpenTab(page, oldTab.id, newTab)
+
+      const route = routes.format({ page, type: newType, id: newId })
+      await this.routeReplace(route)
+
       await this.setLastObjectModification(
         newType,
         objectOperation.CREATE,
         Date.now()
       )
-
-      const route = routes.format({ page, type: newType, id: newId })
-      await this.routeReplace(route)
     }
   }
 
