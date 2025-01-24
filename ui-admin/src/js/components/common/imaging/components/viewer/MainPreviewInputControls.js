@@ -11,16 +11,21 @@ import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import InputControlsSection from '@src/js/components/common/imaging/components/viewer/InputControlsSection.js';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
 
-const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions, isUserGenerated, resolution, isChanged,
-  onClickUpdate, onChangeShow, onSelectChangeRes, onChangeActConf, imagingTags, handleTagImage, datasetType }) => {
+const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions }) => {
   const [tags, setTags] = React.useState([])
   const [inputValue, setInputValue] = React.useState('');
 
+  const { state, handleUpdate, handleTagImage,
+    handleResolutionChange, handleActiveConfigChange,
+    handleShowPreview } = useImagingDataContext();
+
+  const { imagingDataset, resolution, isChanged, imagingTags, datasetType } = state;
+
   React.useEffect(() => {
-    if (isUserGenerated)
-      onClickUpdate();
+    if (imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true')
+      handleUpdate();
   }, [])
 
   React.useEffect(() => {
@@ -55,15 +60,15 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
           variant='outlined'
           color='primary'
           startIcon={<RefreshIcon />}
-          onClick={onClickUpdate}
+          onClick={handleUpdate}
           disabled={!isChanged || isUploadedPreview} />
 
         <CustomSwitch labelPlacement='start'
           label={messages.get(messages.SHOW)}
           isChecked={activePreview.show}
-          onChange={onChangeShow} />
+          onChange={handleShowPreview} />
       </Grid2>
-      <Dropdown onSelectChange={onSelectChangeRes}
+      <Dropdown onSelectChange={handleResolutionChange}
         label={messages.get(messages.RESOLUTIONS)}
         values={configResolutions}
         initValue={resolution.join('x')}
@@ -109,7 +114,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
     const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
     var sectionsArray = []
     for (let [key, imageDatasetControlList] of sectionGroups) {
-      sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={onChangeActConf} />)
+      sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
     }
     return sectionsArray;
   }

@@ -1,3 +1,4 @@
+import constants from '@src/js/components/common/imaging/constants.js';
 
 export const convertToBase64 = (file) => {
     return new Promise((resolve, reject) => {

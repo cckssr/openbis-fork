@@ -1,5 +1,5 @@
 import React from "react";
-import { FormControl, IconButton, Stack, TextareaAutosize } from "@mui/material";
+import { FormControl, IconButton, Stack, TextareaAutosize, Typography} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import TextField from '@src/js/components/common/form/TextField.jsx'
@@ -32,7 +32,9 @@ const EditableMetadataField = ({ keyProp, valueProp, onEdit }) => {
 			</div>
 			) :
 			(<FormControl>
-				<strong> {keyProp}: </strong>
+				<Typography variant="body2" component={'span'} sx={{ color: "textSecondary"}}> 
+					{keyProp}: 
+				</Typography>
 				<TextareaAutosize name='text-area-comment'
 					placeholder="Add a comment"
 					value={editableValue}

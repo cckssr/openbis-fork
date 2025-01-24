@@ -1,5 +1,5 @@
 import React from 'react'
-import { Chip, Divider, Typography } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import DefaultMetadataField from '@src/js/components/common/imaging/components/gallery/DefaultMetadataField.js';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
@@ -39,9 +39,9 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 					&& isObjectEmpty(currPreviewMetadata) &&
 					<p>No preview metadata to display</p>}
 				{(currPreviewComment !== null && currPreviewComment !== '') &&
-						<EditableMetadataField keyProp={"Preview Comment"}
-            valueProp={currPreviewComment}
-            onEdit={newVal => onEditComment(newVal)} />}
+					<EditableMetadataField keyProp={"Preview Comment"}
+						valueProp={currPreviewComment}
+						onEdit={newVal => onEditComment(newVal)} />}
 
 				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
 			</Typography>
@@ -74,10 +74,10 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 		</CollapsableSection>);
 	}
 
-	return (<>
+	return (<CollapsableSection title='Metadata' isCollapsed={false}>
 		{renderPreviewMetadata()}
 		{renderImageMetadata()}
-	</>
+	</CollapsableSection>
 	);
 };
 

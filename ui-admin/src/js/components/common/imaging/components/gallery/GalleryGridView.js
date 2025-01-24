@@ -32,10 +32,10 @@ const GalleryGridView = ({
     const classes = useStyles();
 
     return (
-        <ImageList sx={{ width: '100%', maxHeight: '800px' }} cols={cols} >
+        <ImageList sx={{ width: '100%', maxHeight: '70vh' }} cols={cols} >
             {previewContainerList.map((previewContainer, idx) => (
                 <ImageListItem sx={{ height: 'unset', justifyContent: 'space-between' }} key={`image-grid-item-${idx}`}>
-                    <CardActionArea>
+                    <CardActionArea sx={{ justifyItems: 'center' }}>
                         <CardMedia component='img'
                             sx={{ height: '200px', width: 'unset' }}
                             alt={''}
