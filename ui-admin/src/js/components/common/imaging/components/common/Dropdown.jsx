@@ -17,7 +17,7 @@ const Dropdown = ({ label, values, initValue, isMulti, disabled = false, onSelec
     };
 
     return (
-        <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
+        <Grid2 sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
             <FormControl fullWidth variant='standard' onClick={event => event.stopPropagation()}>
                 <InputLabel id={'select-' + label + '-label'}>{label}</InputLabel>
                 <Select labelId={'select-' + label + '-label'}

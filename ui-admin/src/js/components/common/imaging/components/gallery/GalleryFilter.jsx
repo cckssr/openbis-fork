@@ -83,7 +83,7 @@ const GalleryFilter = ({ id, options, galleryFilter, onGalleryFilterChange }) =>
                     </Select>
                 </FormControl>);
             default:
-                return (<TextField name='gallery-filter'
+                return (<TextField name='text'
                     label={messages.get(messages.FILTER)}
                     id={`${id}.gallery-filter`}
                     value={galleryFilter.text}

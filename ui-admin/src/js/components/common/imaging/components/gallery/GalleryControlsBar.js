@@ -65,7 +65,7 @@ const GalleryControlsBar = ({
                     />
                 </Grid2>
                 <Grid2 size={{ sm: 4, md: 'auto' }}>
-                    <CustomSwitch label={messages.get(messages.SHOW)}
+                    <CustomSwitch label={messages.get(messages.SHOW_ALL)}
                         labelPlacement='top'
                         isChecked={showAll}
                         onChange={setShowAll} />

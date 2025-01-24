@@ -1,11 +1,10 @@
 import React from "react";
-import { FormControl, IconButton, InputLabel, Stack, TextareaAutosize } from "@mui/material";
+import { FormControl, IconButton, Stack, TextareaAutosize } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import SaveIcon from "@mui/icons-material/Save";
 import TextField from '@src/js/components/common/form/TextField.jsx'
 
-const EditableMetadataField = ({ keyProp, valueProp, idx, onEdit }) => {
+const EditableMetadataField = ({ keyProp, valueProp, onEdit }) => {
 	const [editMode, setEditMode] = React.useState(false);
 	const [editableValue, setEditableValue] = React.useState("");
 
