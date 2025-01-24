@@ -71,11 +71,7 @@ const MainPreview = ({ activePreview, resolution, isChanged, isUploadedPreview, 
 					)}
 				</Grid2>
 				<Grid2 size={{ md: 12 }} container direction='row' spacing={2} sx={{ justifyContent: 'space-around' }}>
-					{/* {!isSaved && (
-						<Message type='warning'>
-							{messages.get(messages.UNSAVED_CHANGES)}
-						</Message>
-					)} */}
+
 					<Button name='btn-save-preview'
 						label={messages.get(messages.SAVE)}
 						variant='outlined'
