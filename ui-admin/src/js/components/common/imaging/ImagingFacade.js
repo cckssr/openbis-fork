@@ -46,7 +46,7 @@ export default class ImagingFacade {
                         }
                     }
                 })
-        );
+            );
         return Array.from(dataSetTypesSetMap, ([code, values]) => (values));
     }
 
@@ -142,11 +142,14 @@ export default class ImagingFacade {
         const fetchOptions = new this.openbis.SampleFetchOptions();
         fetchOptions.withProperties();
         fetchOptions.withDataSets();
+        fetchOptions.withChildren().withDataSets();
         const samples = await this.openbis.getSamples(
             [new this.openbis.SamplePermId(objId)],
             fetchOptions
         );
-        return await samples[objId].dataSets;
+        var dataSets = samples[objId].dataSets;
+        samples[objId].children.forEach(child => child.dataSets.forEach(dataSet => dataSets.push(dataSet)));
+        return await dataSets;
     }
 
     fetchDataSetsSortingInfo = (dataSets) => {
@@ -217,7 +220,7 @@ export default class ImagingFacade {
         const offset = startIdx + pageSize;
         let previewContainerListAll = [];
 
-        for (const dataSet of dataSets){
+        for (const dataSet of dataSets) {
             let currDatasetId = dataSet.permId.permId;
             let datasetProperties = await this.loadImagingDataset(currDatasetId, true);
             let loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
@@ -229,7 +232,7 @@ export default class ImagingFacade {
                     if (property === constants.IMAGING_TAGS) {
                         const filteringTags = filterText.split(' ');
                         if (operator === messages.get(messages.OPERATOR_OR)) {
-                            if (loadedImgDS.images[imageIdx].previews[previewIdx].tags.some(previewTag => filteringTags.includes(previewTag))) {                                
+                            if (loadedImgDS.images[imageIdx].previews[previewIdx].tags.some(previewTag => filteringTags.includes(previewTag))) {
                                 previewContainerListAll.push({
                                     datasetId: currDatasetId,
                                     preview: loadedImgDS.images[imageIdx].previews[previewIdx],
@@ -239,8 +242,8 @@ export default class ImagingFacade {
                                     exportConfig: loadedImgDS.images[imageIdx].config.exports
                                 });
                             }
-                        } else if (operator === messages.get(messages.OPERATOR_AND)){
-                            if (filteringTags.every(filteringTag => loadedImgDS.images[imageIdx].previews[previewIdx].tags.includes(filteringTag))) {                                
+                        } else if (operator === messages.get(messages.OPERATOR_AND)) {
+                            if (filteringTags.every(filteringTag => loadedImgDS.images[imageIdx].previews[previewIdx].tags.includes(filteringTag))) {
                                 previewContainerListAll.push({
                                     datasetId: currDatasetId,
                                     preview: loadedImgDS.images[imageIdx].previews[previewIdx],
@@ -253,7 +256,7 @@ export default class ImagingFacade {
                         }
                     } else if (property === constants.PREVIEW_COMMENT &&
                         loadedImgDS.images[imageIdx].previews[previewIdx].comment.includes(filterText)) {
-                            previewContainerListAll.push({
+                        previewContainerListAll.push({
                             datasetId: currDatasetId,
                             preview: loadedImgDS.images[imageIdx].previews[previewIdx],
                             imageIdx: imageIdx,
@@ -269,7 +272,7 @@ export default class ImagingFacade {
         //console.log('previewContainerListAll: ', previewContainerListAll);
         const previewContainerList = previewContainerListAll.slice(startIdx, offset)
         const totalCount = previewContainerListAll.length
-        return {previewContainerList, totalCount}
+        return { previewContainerList, totalCount }
     }
 
     filterGallery = async (objId, objType, operator, filterText, property, page, pageSize) => {
