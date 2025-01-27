@@ -15,6 +15,7 @@ import logger from '@src/js/common/logger.js'
 
 const styles = theme => ({
   item: {
+    flexGrow: 0,
     paddingTop: '4px',
     paddingBottom: '4px',
     paddingLeft: 0
