@@ -26,9 +26,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api:2.0.16'
-
-    implementation 'apache:commons-collections4:4.1',
+    implementation 'openbis:openbis-v3-api-batteries-included:6.6.0-EA',
+            'apache:poi:3.17',
+            'apache:poi-ooxml:3.17',
+            'apache:poi-ooxml-schemas:3.17',
+            'apache:commons-collections4:4.1',
             'commons-cli:commons-cli:1.4'
+    implementation project(':lib-ro-crate')
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
     testImplementation 'junit:junit:4.13.1'
     testImplementation('jmock:jmock:2.5.1')
