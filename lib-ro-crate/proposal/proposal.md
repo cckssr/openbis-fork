@@ -252,11 +252,15 @@ interface ISchemaFacade
 
 # API Reference Implementation in Java
 
-A working implementation of the API for Java can be found at: .....
+A working implementation of the API for Java can be found
+at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate?ref_type=heads,
+referencing commit `b46b61809d79edef918620337ed3025d548549fb`.
 
 # API Reference Examples in Java
 
-Working examples of the API in java to read and write can be found at: ....
+Working examples of the API in java to read and write can be found
+at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate/example?ref_type=heads
+referencing commit `b46b61809d79edef918620337ed3025d548549fb`.
 
 # Ongoing Work
 
