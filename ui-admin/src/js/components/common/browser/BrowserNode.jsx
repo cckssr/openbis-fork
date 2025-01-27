@@ -37,7 +37,10 @@ const styles = theme => ({
     margin: '-2px 4px -2px 8px',
     minWidth: '24px'
   },
-  textContainer: {},
+  textContainer: {
+    margin: '0',
+    padding: '4px 0px 4px 0px'
+  },
   text: {
     fontSize: theme.typography.body2.fontSize,
     lineHeight: theme.typography.body2.fontSize
