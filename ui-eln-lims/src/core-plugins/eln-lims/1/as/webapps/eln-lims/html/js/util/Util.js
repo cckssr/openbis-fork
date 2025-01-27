@@ -769,7 +769,7 @@ var Util = new function() {
 	//
 	this.getURLFor = function(menuId, view, argsForView) {
 		var viewData = null;
-		if((typeof arg) !== "string") {
+		if((typeof argsForView) !== "string") {
 			viewData = JSON.stringify(argsForView);
 		} else {
 		    viewData = argsForView;
