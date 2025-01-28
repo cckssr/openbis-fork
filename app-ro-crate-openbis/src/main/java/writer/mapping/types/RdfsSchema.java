@@ -1,13 +1,13 @@
 package writer.mapping.types;
 
 import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.RdfsProperty;
+import ch.eth.sis.rocrate.facade.TypeProperty;
 
 import java.util.List;
 
 public class RdfsSchema
 {
-    public RdfsSchema(List<RdfsClass> classes, List<RdfsProperty> properties)
+    public RdfsSchema(List<RdfsClass> classes, List<TypeProperty> properties)
     {
         this.classes = classes;
         this.properties = properties;
@@ -15,14 +15,14 @@ public class RdfsSchema
 
     List<RdfsClass> classes;
 
-    List<RdfsProperty> properties;
+    List<TypeProperty> properties;
 
     public List<RdfsClass> getClasses()
     {
         return classes;
     }
 
-    public List<RdfsProperty> getProperties()
+    public List<TypeProperty> getProperties()
     {
         return properties;
     }

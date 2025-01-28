@@ -12,7 +12,7 @@ public interface IMetadataEntry
      */
     String getId();
 
-    /* Returns the class ID of this entry */
+    /* Returns the type ID of this entry */
     String getClassId();
 
     /* These are key-value pairs for serialization. These are single-valued.

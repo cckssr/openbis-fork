@@ -3,7 +3,7 @@ package ch.eth.sis.rocrate.facade;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RdfsClass implements IRdfsClass
+public class RdfsClass implements IType
 {
     String id;
 
@@ -13,7 +13,7 @@ public class RdfsClass implements IRdfsClass
 
     List<String> ontologicalAnnotations;
 
-    List<RdfsProperty> rdfsProperties;
+    List<TypeProperty> rdfsProperties;
 
     public RdfsClass()
     {
@@ -44,8 +44,7 @@ public class RdfsClass implements IRdfsClass
      * This is a convenience method for adding a property to a class.
      *
      */
-    @Override
-    public void addProperty(RdfsProperty rdfsProperty)
+    public void addProperty(TypeProperty rdfsProperty)
     {
         List<String> domainIncludes = rdfsProperty.getDomainIncludes();
         if (domainIncludes == null)

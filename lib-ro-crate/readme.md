@@ -16,3 +16,6 @@ Crate metadata.
 To build the RO-Crate, execute `ro-crate-metadata-export-test/create.sh` from this directory.
 To check that it can be read in, run `ro-crate-metadata-export-test/open.py` from this directory,
 this requires the library `rocrate`, it's specified in requirements.txt.
+
+## Usage of Compiled Examples
+

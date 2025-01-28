@@ -4,7 +4,7 @@ import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.ISchemaFacade;
 import ch.eth.sis.rocrate.facade.MetadataEntry;
 import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.RdfsProperty;
+import ch.eth.sis.rocrate.facade.TypeProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
@@ -59,34 +59,34 @@ public class Writer
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_SPACE);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
 
         }
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_OBJECT);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
 
         }
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_COLLECTION);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
         }
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_PROJECT);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
         }
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_DATASET);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
         }
         {
             RdfsClass rdfsClass = new RdfsClass();
             rdfsClass.setId(SYSTEM_VOCABULARY);
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
         }
 
     }
@@ -95,12 +95,12 @@ public class Writer
     {
         for (RdfsClass rdfsClass : mapResult.getSchema().getClasses())
         {
-            facade.addRdfsClass(rdfsClass);
+            facade.addType(rdfsClass);
 
         }
-        for (RdfsProperty rdfsProperty : mapResult.getSchema().getProperties())
+        for (TypeProperty rdfsProperty : mapResult.getSchema().getProperties())
         {
-            facade.addRfsProperty(rdfsProperty);
+            facade.addPropertyType(rdfsProperty);
 
         }
 

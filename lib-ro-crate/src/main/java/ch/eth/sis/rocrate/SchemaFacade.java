@@ -18,9 +18,9 @@ public class SchemaFacade implements ISchemaFacade
 
     private final static String RDFS_PROPERTY = "rdfs:Property";
 
-    private Map<String, IRdfsClass> rdfsClasses;
+    private Map<String, IType> types;
 
-    private Map<String, IRdfsProperty> rdfsProperties;
+    private Map<String, IPropertyType> propertyTypes;
 
     private Map<String, IMetadataEntry> metadataEntries;
 
@@ -29,8 +29,8 @@ public class SchemaFacade implements ISchemaFacade
     public SchemaFacade(RoCrate crate)
     {
         this.crate = crate;
-        this.rdfsClasses = new LinkedHashMap<>();
-        this.rdfsProperties = new LinkedHashMap<>();
+        this.types = new LinkedHashMap<>();
+        this.propertyTypes = new LinkedHashMap<>();
         this.metadataEntries = new LinkedHashMap<>();
     }
 
@@ -43,14 +43,14 @@ public class SchemaFacade implements ISchemaFacade
     }
 
     @Override
-    public void addRdfsClass(IRdfsClass rdfsClass)
+    public void addType(IType rdfsClass)
     {
 
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
         builder.addProperty("@id", rdfsClass.getId());
         builder.addProperty("@type", RDFS_CLASS);
         rdfsClass.getSuperClasses().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
-        this.rdfsClasses.put(rdfsClass.getId(), rdfsClass);
+        this.types.put(rdfsClass.getId(), rdfsClass);
         DataEntity entity = builder.build();
         entity.addIdListProperties("owl:equivalentConcept", rdfsClass.getOntologicalAnnotations());
         crate.addDataEntity(entity);
@@ -58,19 +58,19 @@ public class SchemaFacade implements ISchemaFacade
     }
 
     @Override
-    public List<IRdfsClass> getRdfsClasses()
+    public List<IType> getTypes()
     {
-        return this.rdfsClasses.values().stream().toList();
+        return this.types.values().stream().toList();
     }
 
     @Override
-    public IRdfsClass getRdfsClass(String id)
+    public IType getTypes(String id)
     {
-        return this.rdfsClasses.get(id);
+        return this.types.get(id);
     }
 
     @Override
-    public void addRfsProperty(IRdfsProperty rdfsProperty)
+    public void addPropertyType(IPropertyType rdfsProperty)
     {
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
 
@@ -85,20 +85,20 @@ public class SchemaFacade implements ISchemaFacade
         stuff.addIdListProperties("owl:equivalentConcept",
                 rdfsProperty.getOntologicalAnnotations());
         crate.addDataEntity(stuff);
-        rdfsProperties.put(rdfsProperty.getId(), rdfsProperty);
+        propertyTypes.put(rdfsProperty.getId(), rdfsProperty);
 
     }
 
     @Override
-    public List<IRdfsProperty> getRdfsProperties()
+    public List<IPropertyType> getPropertyTypes()
     {
-        return rdfsProperties.values().stream().toList();
+        return propertyTypes.values().stream().toList();
     }
 
     @Override
-    public IRdfsProperty getRdfsProperty(String id)
+    public IPropertyType getPropertyType(String id)
     {
-        return rdfsProperties.get(id);
+        return propertyTypes.get(id);
     }
 
     @Override
@@ -148,8 +148,8 @@ public class SchemaFacade implements ISchemaFacade
 
     private void parseEntities() throws JsonProcessingException
     {
-        Map<String, IRdfsProperty> properties = new LinkedHashMap<>();
-        Map<String, IRdfsClass> classes = new LinkedHashMap<>();
+        Map<String, IPropertyType> properties = new LinkedHashMap<>();
+        Map<String, IType> classes = new LinkedHashMap<>();
         Map<String, IMetadataEntry> entries = new LinkedHashMap<>();
 
         for (DataEntity entity : crate.getAllDataEntities())
@@ -174,7 +174,7 @@ public class SchemaFacade implements ISchemaFacade
                 }
                 case "rdfs:Property" ->
                 {
-                    RdfsProperty rdfsProperty = new RdfsProperty();
+                    TypeProperty rdfsProperty = new TypeProperty();
                     rdfsProperty.setId(id);
                     rdfsProperty.setOntologicalAnnotations(
                             parseMultiValued(entity, "owl:equivalentConcept"));
@@ -213,7 +213,7 @@ public class SchemaFacade implements ISchemaFacade
             {
                 if (properties.containsKey(a.getKey()))
                 {
-                    IRdfsProperty property = properties.get(a.getKey());
+                    IPropertyType property = properties.get(a.getKey());
                     if (property.getRange().stream().anyMatch(x -> x.equals("xsd:string")))
                     {
                         entryProperties.put(a.getKey(), a.getValue().toString());
@@ -224,8 +224,8 @@ public class SchemaFacade implements ISchemaFacade
             entries.put(id, entry);
         }
         System.out.println("Done");
-        this.rdfsClasses = classes;
-        this.rdfsProperties = properties;
+        this.types = classes;
+        this.propertyTypes = properties;
         this.metadataEntries = entries;
 
     }

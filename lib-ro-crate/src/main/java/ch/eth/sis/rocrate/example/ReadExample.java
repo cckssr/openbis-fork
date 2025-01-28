@@ -15,13 +15,13 @@ public class ReadExample
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
         RoCrate crate = roCrateFolderReader.readCrate(path);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
-        schemaFacade.getRdfsClasses().forEach(
+        schemaFacade.getTypes().forEach(
                 x -> System.out.println("RDFS Class " + x.getId())
         );
-        schemaFacade.getRdfsProperties().forEach(
+        schemaFacade.getPropertyTypes().forEach(
                 x -> System.out.println("RDFS Property " + x.getId())
         );
-        schemaFacade.getEntries(schemaFacade.getRdfsClasses().get(0).getId()).forEach(
+        schemaFacade.getEntries(schemaFacade.getTypes().get(0).getId()).forEach(
                 x -> System.out.println("Metadata entry " + x.getId())
         );
 

@@ -1,7 +1,7 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.MetadataEntry;
-import ch.eth.sis.rocrate.facade.RdfsProperty;
+import ch.eth.sis.rocrate.facade.TypeProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -143,7 +143,7 @@ public class MapperTest extends TestCase
         MapResult result = mapper.transform(parseResult);
 
         assertEquals(result.getSchema().getClasses().size(), 1);
-        RdfsProperty res1 = result.getSchema().getProperties().get(0);
+        TypeProperty res1 = result.getSchema().getProperties().get(0);
         assertEquals("hasNAME", res1.getId());
         assertTrue(result.getMetaDataEntries().isEmpty());
 

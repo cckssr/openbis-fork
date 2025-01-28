@@ -77,4 +77,14 @@ tasks.register('buildRdfTool', Jar) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
+
+
+    tasks.named('jar') {
+        manifest {
+            attributes('Implementation-Title': 'lib-ro-crate',
+                    'Implementation-Version': '0.0.1')
+        }
+    }
+
+
 }

@@ -157,31 +157,34 @@ including Python and Javascript.
 ```Java
 
 /* Represents a class, if we are talking about a schema, it is closely related with the definition of a table or type */
-interface RdfsClass {
+interface IType
+{
 
-    /* Returns the ID of this class */
-    String getId();
-    
-    /* Returns classes this class inherits from */ 
-    List<String> getSuperClasses();
-    
-    /* Returns the ontological annotations of this class */ 
-    List<String> getOntologicalAnnotations();
+  /* Returns the ID of this type */
+  String getId();
+
+  /* Returns IDs of the types this type inherits from */
+  List<String> getSuperClasses();
+
+  /* Returns the ontological annotations of this type */
+  List<String> getOntologicalAnnotations();
+
 }
 
 /* Represents a property in a graph, if we are talking about a schema, is closely related with a table column or type property */
-interface RdfsProperty{
+interface IPropertyType
+{
 
-        /* Returns the ID of this property */
-        String getId();
+  /* Returns the ID of this property type */
+  String getId();
 
-  /* Return possible values for the subject of this property */
+  /* Return possible values for the subject of this property type */
   List<String> getDomain();
 
-  /* Return possible values for the object of this property */
+  /* Return possible values for the object of this property type */
   List<String> getRange();
 
-  /* Returns the ontological annotations of this class */
+  /* Returns the ontological annotations of this property type */
   List<String> getOntologicalAnnotations();
     
     }
@@ -191,7 +194,8 @@ interface RdfsProperty{
 
 ```Java
 /* Represents a metadata entity. It is described */
-interface MetadataEntry{
+interface IMetadataEntry
+{
 
 
     /**
@@ -199,7 +203,7 @@ interface MetadataEntry{
     */ 
     String getId();
 
-  /* Returns the class ID of this entry */
+  /* Returns the type ID of this entry */
   String getClassId();
 
   /* These are key-value pairs for serialization. These are single-valued.
@@ -221,31 +225,31 @@ interface ISchemaFacade
 {
 
   /* Adds a single class */
-  void addRdfsClass(RdfsClass rdfsClass);
+  void addType(IType rdfsClass);
 
   /** Retrieves all Classes */
-  List<RdfsClass> getRdfsClasses();
+  List<IType> getTypes();
 
   /* Get a single type by its ID */
-  RdfsClass getRdfsClass(String id);
+  IType getTypes(String id);
 
   /* Adds a single property */
-  void addProperty(RdfsProperty property);
+  void addPropertyType(IPropertyType property);
 
   /* Get all Properties */
-  List<RdfsProperty> getRdfsProperties();
+  List<IPropertyType> getPropertyTypes();
 
   /* Gets a single property by its ID. */
-  RdfsProperty getRdfsProperty(String id);
+  IPropertyType getPropertyType(String id);
 
   /* Add a single metadata entry */
-    void addEntry(MetadataEntry entry);
+  void addEntry(IMetadataEntry entry);
 
   /* Get a single metadata entry by its ID */
-  MetadataEntry getEntry(String id);
+  IMetadataEntry getEntry(String id);
 
   /* Get all metadata entities */
-  List<MetadataEntry> getEntries(String rdfsClassId);
+  List<IMetadataEntry> getEntries(String rdfsClassId);
 
 }
 ```
@@ -253,14 +257,21 @@ interface ISchemaFacade
 # API Reference Implementation in Java
 
 A working implementation of the API for Java can be found
-at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate?ref_type=heads,
-referencing commit `b46b61809d79edef918620337ed3025d548549fb`.
+at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/.
+
+A compiled jar can be downloaded
+at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/dist/lib-ro-crate.jar.
+The dependencies are specified in the module's `build.gradle`
+file: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/build.gradle.
 
 # API Reference Examples in Java
 
 Working examples of the API in java to read and write can be found
-at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate/example?ref_type=heads
-referencing commit `b46b61809d79edef918620337ed3025d548549fb`.
+at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/, specifically the class
+files
+
+- ch.eth.sis.rocrate.example.ReadExample
+- ch.eth.sis.rocrate.example.WriteExample
 
 # Ongoing Work
 
@@ -274,6 +285,7 @@ referencing commit `b46b61809d79edef918620337ed3025d548549fb`.
 - We would like to store the schema and metadata information in separate files and indicate the
   format of the file in `ro-crate-metadata.json`
 - Other serialization formats could be supported when using separate files
+- Adding methods for deleting to facade to have all CRUD operations
 
 # People
 

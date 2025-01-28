@@ -6,22 +6,22 @@ public interface ISchemaFacade
 {
 
     /* Adds a single class */
-    void addRdfsClass(IRdfsClass rdfsClass);
+    void addType(IType rdfsClass);
 
     /** Retrieves all Classes */
-    List<IRdfsClass> getRdfsClasses();
+    List<IType> getTypes();
 
     /* Get a single type by its ID */
-    IRdfsClass getRdfsClass(String id);
+    IType getTypes(String id);
 
     /* Adds a single property */
-    void addRfsProperty(IRdfsProperty property);
+    void addPropertyType(IPropertyType property);
 
     /* Get all Properties */
-    List<IRdfsProperty> getRdfsProperties();
+    List<IPropertyType> getPropertyTypes();
 
     /* Gets a single property by its ID. */
-    IRdfsProperty getRdfsProperty(String id);
+    IPropertyType getPropertyType(String id);
 
     /* Add a single metadata entry */
     void addEntry(IMetadataEntry entry);

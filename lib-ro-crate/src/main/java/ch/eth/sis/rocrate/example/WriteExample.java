@@ -24,9 +24,9 @@ public class WriteExample
             rdfsClass.setSubClassOf(List.of("https://schema.org/Thing"));
             rdfsClass.setOntologicalAnnotations(
                     List.of("https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dcmitype/Text/"));
-            schemaFacade.addRdfsClass(rdfsClass);
+            schemaFacade.addType(rdfsClass);
 
-            RdfsProperty property = new RdfsProperty();
+            TypeProperty property = new TypeProperty();
             property.setId("hasDateSubmitted");
             property.setTypes(List.of(LiteralType.DATETIME));
             rdfsClass.addProperty(property);
@@ -34,7 +34,7 @@ public class WriteExample
 
             property.setOntologicalAnnotations(
                     List.of("https://www.dublincore.org/specifications/dublin-core/dcmi-terms/terms/dateSubmitted/"));
-            schemaFacade.addRfsProperty(property);
+            schemaFacade.addPropertyType(property);
 
         }
         {

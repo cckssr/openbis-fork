@@ -3,7 +3,7 @@ package ch.eth.sis.rocrate.facade;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RdfsProperty implements IRdfsProperty
+public class TypeProperty implements IPropertyType
 {
     List<String> domainIncludes;
 

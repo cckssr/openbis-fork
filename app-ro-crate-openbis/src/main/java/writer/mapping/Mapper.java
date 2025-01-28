@@ -2,7 +2,7 @@ package writer.mapping;
 
 import ch.eth.sis.rocrate.facade.MetadataEntry;
 import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.RdfsProperty;
+import ch.eth.sis.rocrate.facade.TypeProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -37,7 +37,7 @@ public class Mapper
         Map<IEntityType, String> typeToRdfsName = new HashMap<>();
 
         List<RdfsClass> classes = new ArrayList<RdfsClass>();
-        List<RdfsProperty> properties = new ArrayList<RdfsProperty>();
+        List<TypeProperty> properties = new ArrayList<TypeProperty>();
         Map<String, List<IEntityType>> reverseMapping = new HashMap<String, List<IEntityType>>();
         Map<String, List<IEntityType>> rdfsPropertiesUsedIn =
                 new HashMap<String, List<IEntityType>>();
@@ -95,7 +95,7 @@ public class Mapper
         for (Map.Entry<String, List<Pair<PropertyAssignment, RdfsClass>>> a : classesUsingProperty
                 .entrySet())
         {
-            RdfsProperty rdfsProperty = new RdfsProperty();
+            TypeProperty rdfsProperty = new TypeProperty();
             rdfsProperty.setId(a.getKey());
 
             List<String> domainIncludes =
