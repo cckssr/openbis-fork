@@ -117,9 +117,17 @@ export default class UserFormControllerSave extends PageControllerSave {
     } else {
       update.deactivate()
     }
-    if(user.expiryDate.value && user.expiryDate.value.dateObject)
+    if(user.expiryDate.value)
     {
-      update.setExpiryDate(user.expiryDate.value.dateObject.getTime());
+      if(user.expiryDate.value.dateObject == null)
+      {
+        update.setExpiryDate(user.expiryDate.value.dateObject);
+      }
+      else
+      {
+        update.setExpiryDate(user.expiryDate.value.dateObject.getTime());
+      }
+
     }
     return new openbis.UpdatePersonsOperation([update])
   }
