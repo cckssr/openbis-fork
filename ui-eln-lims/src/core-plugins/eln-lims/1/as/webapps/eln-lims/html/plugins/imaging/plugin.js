@@ -116,10 +116,11 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                     reactImagingComponent = React.createElement(window.NgComponents.default.ImagingGalleryViewer, props)
                 }
                 ReactDOM.render(
+                    React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true },
                     React.createElement(
                         window.NgComponents.default.ThemeProvider,
                         {},
-                        reactImagingComponent),
+                        reactImagingComponent)),
                     $element.get(0)
                 );
             }

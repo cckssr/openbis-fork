@@ -56,7 +56,7 @@ function DataGridController(
     }
 
     this._init = function ($container, extraOptions) {
-        var GridElement = React.createElement(
+        var GridElement = React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true }, React.createElement(
             window.NgComponents.default.ThemeProvider,
             {},
             React.createElement(
@@ -81,7 +81,7 @@ function DataGridController(
                     actions: _this._actions(extraOptions),
                 })
             )
-        )
+        ))
 
         ReactDOM.render(GridElement, $container.get(0))
     }

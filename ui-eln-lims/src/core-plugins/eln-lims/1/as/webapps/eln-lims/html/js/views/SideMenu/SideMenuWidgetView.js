@@ -263,7 +263,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         this._sideMenuWidgetModel.menuDOMBody.empty().css("border-top", "1px solid #dbdbdb")
 
-        var BrowserElement = React.createElement(
+        var BrowserElement = React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true }, React.createElement(
             window.NgComponents.default.ThemeProvider,
             {},
             React.createElement(window.NgComponents.default.Browser, {
@@ -273,7 +273,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     nodes: "sideMenuNodes",
                 },
             })
-        )
+        ))
 
         ReactDOM.render(BrowserElement, this._sideMenuWidgetModel.menuDOMBody.get(0))
     }
