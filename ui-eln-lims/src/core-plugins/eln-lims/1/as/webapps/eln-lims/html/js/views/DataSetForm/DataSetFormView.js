@@ -484,17 +484,29 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 }, pagOptionsToSend);
             }
 
-            if(this._dataSetFormModel.paginationInfo.currentIndex > 0) {
-                var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
-                    moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
-                }, "Previous");
-                rightToolbarModel.push({ component : $backBtn, tooltip: null });
-            }
+            if(this._dataSetFormModel.paginationInfo) {
 
-            if(this._dataSetFormModel.paginationInfo.currentIndex+1 < this._dataSetFormModel.paginationInfo.totalCount) {
-                var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
-                    moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);
-                }, "Next");
+                var $backBtn = FormUtil.getButtonWithIcon(null, function () {
+                                    moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
+                }, "<");
+
+                if(this._dataSetFormModel.paginationInfo.currentIndex <= 0) {
+                    $backBtn.attr("disabled",true);
+                }
+
+                var $paginationInfoLabel = this._dataSetFormModel.paginationInfo.currentIndex+1 + " of " + this._dataSetFormModel.paginationInfo.totalCount;
+                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel);
+
+                var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
+                                        moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);
+                }, ">");
+
+                if(this._dataSetFormModel.paginationInfo.currentIndex+1 >= this._dataSetFormModel.paginationInfo.totalCount) {
+                    $nextBtn.attr("disabled",true);
+                }
+
+                rightToolbarModel.push({ component : $backBtn, tooltip: null });
+                rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
                 rightToolbarModel.push({ component : $nextBtn, tooltip: null });
             }
             $header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
