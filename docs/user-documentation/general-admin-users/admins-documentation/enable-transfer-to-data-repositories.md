@@ -10,7 +10,7 @@ This enables data direct data transfer from openBIS to Zenodo.
 
 This feature needs to be configured on *system level* as explained
 here: [openBIS DSS configuration
-file](../../../system-documentation/standalone/installation-and-configuration-guide.md#installation-steps). 
+file](../../../system-documentation/configuration/configuration-properties-by-module.md#ELN). 
 
 If this is done, the Zenodo Export needs to be made visible in the ELN
 UI by a lab manager, who has should have admin rights for the

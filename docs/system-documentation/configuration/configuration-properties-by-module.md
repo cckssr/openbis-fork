@@ -325,73 +325,73 @@ e.g
 
 #### DSS PROPERTIES
 
-| Key                                                                                  | Example Value | Short Explanation |
-|--------------------------------------------------------------------------------------|---------------|-------------------|
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.incoming-data-completeness-condition        |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.top-level-data-set-handler                  |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.script-path                                 |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.storage-processor                           |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.discard-files-patterns                      |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox.illegal-files-patterns                      |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.incoming-data-completeness-condition |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.top-level-data-set-handler           |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.script-path                          |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.storage-processor                    |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.discard-files-patterns               |               |                   |
-| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.illegal-files-patterns               |               |                   |
-| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.resolver-class            |               |                   |
-| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.code                      |               |                   |
-| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.script-file               |               |                   |
-| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.ftp.resolver-dev-mode     |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.interval                                      |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.dataset-types                                 |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.entity-sequence-properties                    |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.file-types                                    |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.last-seen-data-set-file                       |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.blast-databases-folder                        |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.blast-temp-folder                             |               |                   |
-| eln-lims.dss.maintenance-tasks.blastdb.blast-tools-directory                         |               |                   |
-| eln-lims.dss.reporting-plugins.archiving-api.sub-directory-name                      |               |                   |
-| eln-lims.dss.reporting-plugins.archiving-api.label                                   |               |                   |
-| eln-lims.dss.reporting-plugins.dropbox-monitor-api.label                             |               |                   |
-| eln-lims.dss.reporting-plugins.dropbox-monitor-api.script-path                       |               |                   |
-| eln-lims.dss.reporting-plugins.dropbox-monitor-api.share-id                          |               |                   |
-| eln-lims.dss.reporting-plugins.eln-lims-api.label                                    |               |                   |
-| eln-lims.dss.reporting-plugins.eln-lims-api.script-path                              |               |                   |
-| eln-lims.dss.reporting-plugins.eln-lims-api.share-id                                 |               |                   |
-| eln-lims.dss.reporting-plugins.exports-api.label                                     |               |                   |
-| eln-lims.dss.reporting-plugins.exports-api.script-path                               |               |                   |
-| eln-lims.dss.reporting-plugins.exports-api.limit-data-size-megabytes                 |               |                   |
-| eln-lims.dss.reporting-plugins.exports-api.share-id                                  |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.label                              |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.script-path                        |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.max-delay-in-minutes               |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.password-reset-request-subject     |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.password-reset-request-body        |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.new-password-subject               |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.new-password-body                  |               |                   |
-| eln-lims.dss.reporting-plugins.password-reset-api.share-id                           |               |                   |
-| eln-lims.dss.reporting-plugins.rc-exports-api.label                                  |               |                   |
-| eln-lims.dss.reporting-plugins.rc-exports-api.script-path                            |               |                   |
-| eln-lims.dss.reporting-plugins.rc-exports-api.realm                                  |               |                   |
-| eln-lims.dss.reporting-plugins.rc-exports-api.share-id                               |               |                   |
-| eln-lims.dss.reporting-plugins.zenodo-exports-api.label                              |               |                   |
-| eln-lims.dss.reporting-plugins.zenodo-exports-api.script-path                        |               |                   |
-| eln-lims.dss.reporting-plugins.zenodo-exports-api.share-id                           |               |                   |
-| zenodo-exports-api-limit-data-size-megabytes                                         |               |                   |
-| zenodo-exports-api-zenodoUrl                                                         |               |                   |
-| zenodo-exports-api-accessToken                                                       |               |                   |
-| eln-lims.dss.search-domain-services.blastsearch.blast-tools-directory                |               |                   |
-| eln-lims.dss.search-domain-services.blastsearch.blast-databases-folder               |               |                   |
-| rc-exports-api-limit-data-size-megabytes                                             |               |                   |
-| rc-exports-api-service-document-url                                                  |               |                   |
-| rc-exports-api-user                                                                  |               |                   |
-| rc-exports-api-password                                                              |               |                   |
-| dataset-uploader.h5-folders                                                          |               |                   |
-| dataset-uploader.h5ar-folders                                                        |               |                   |
-| default-incoming-share-id                                                            |               |                   |
-| default-incoming-share-minimum-free-space-in-gb                                      |               |                   |
-| download-url                                                                         |               |                   |
+| Key                                                                                  | Sub Module    | Example Value | Short Explanation |
+|--------------------------------------------------------------------------------------|---------------|---------------|-------------------|
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.incoming-data-completeness-condition        |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.top-level-data-set-handler                  |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.script-path                                 |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.storage-processor                           |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.discard-files-patterns                      |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox.illegal-files-patterns                      |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.incoming-data-completeness-condition |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.top-level-data-set-handler           |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.script-path                          |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.storage-processor                    |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.discard-files-patterns               |               |               |                   |
+| eln-lims.dss.drop-boxes.eln-lims-dropbox-marker.illegal-files-patterns               |               |               |                   |
+| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.resolver-class            |               |               |                   |
+| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.code                      |               |               |                   |
+| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.script-file               |               |               |                   |
+| eln-lims.dss.file-system.plugins.eln-tree.resolver-plugins.ftp.resolver-dev-mode     |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.interval                                      |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.dataset-types                                 |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.entity-sequence-properties                    |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.file-types                                    |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.last-seen-data-set-file                       |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.blast-databases-folder                        |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.blast-temp-folder                             |               |               |                   |
+| eln-lims.dss.maintenance-tasks.blastdb.blast-tools-directory                         |               |               |                   |
+| eln-lims.dss.reporting-plugins.archiving-api.sub-directory-name                      |               |               |                   |
+| eln-lims.dss.reporting-plugins.archiving-api.label                                   |               |               |                   |
+| eln-lims.dss.reporting-plugins.dropbox-monitor-api.label                             |               |               |                   |
+| eln-lims.dss.reporting-plugins.dropbox-monitor-api.script-path                       |               |               |                   |
+| eln-lims.dss.reporting-plugins.dropbox-monitor-api.share-id                          |               |               |                   |
+| eln-lims.dss.reporting-plugins.eln-lims-api.label                                    |               |               |                   |
+| eln-lims.dss.reporting-plugins.eln-lims-api.script-path                              |               |               |                   |
+| eln-lims.dss.reporting-plugins.eln-lims-api.share-id                                 |               |               |                   |
+| eln-lims.dss.reporting-plugins.exports-api.label                                     |               |               |                   |
+| eln-lims.dss.reporting-plugins.exports-api.script-path                               |               |               |                   |
+| eln-lims.dss.reporting-plugins.exports-api.limit-data-size-megabytes                 |               |               |                   |
+| eln-lims.dss.reporting-plugins.exports-api.share-id                                  |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.label                              |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.script-path                        |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.max-delay-in-minutes               |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.password-reset-request-subject     |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.password-reset-request-body        |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.new-password-subject               |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.new-password-body                  |               |               |                   |
+| eln-lims.dss.reporting-plugins.password-reset-api.share-id                           |               |               |                   |
+| eln-lims.dss.reporting-plugins.rc-exports-api.label                                  | Zenodo RC     |               |                   |
+| eln-lims.dss.reporting-plugins.rc-exports-api.script-path                            | Zenodo RC     |               |                   |
+| eln-lims.dss.reporting-plugins.rc-exports-api.realm                                  | Zenodo RC     |               |                   |
+| eln-lims.dss.reporting-plugins.rc-exports-api.share-id                               | Zenodo RC     |               |                   |
+| eln-lims.dss.reporting-plugins.zenodo-exports-api.label                              | Export Zenodo |               |                   |
+| eln-lims.dss.reporting-plugins.zenodo-exports-api.script-path                        | Export Zenodo |               |                   |
+| eln-lims.dss.reporting-plugins.zenodo-exports-api.share-id                           | Export Zenodo |               |                   |
+| zenodo-exports-api-limit-data-size-megabytes                                         | Export Zenodo |               |                   |
+| zenodo-exports-api-zenodoUrl                                                         | Export Zenodo |               |                   |
+| zenodo-exports-api-accessToken                                                       | Export Zenodo |               |                   |
+| eln-lims.dss.search-domain-services.blastsearch.blast-tools-directory                |               |               |                   |
+| eln-lims.dss.search-domain-services.blastsearch.blast-databases-folder               |               |               |                   |
+| rc-exports-api-limit-data-size-megabytes                                             |               |               |                   |
+| rc-exports-api-service-document-url                                                  |               |               |                   |
+| rc-exports-api-user                                                                  |               |               |                   |
+| rc-exports-api-password                                                              |               |               |                   |
+| dataset-uploader.h5-folders                                                          |               |               |                   |
+| dataset-uploader.h5ar-folders                                                        |               |               |                   |
+| default-incoming-share-id                                                            |               |               |                   |
+| default-incoming-share-minimum-free-space-in-gb                                      |               |               |                   |
+| download-url                                                                         |               |               |                   |
 
 ### ADMIN
 
