@@ -409,19 +409,33 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				}, pagOptionsToSend);
 			}
 
-			if(this._sampleFormModel.paginationInfo.currentIndex > 0) {
-				var $backBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-left", function () {
-					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
-				}, "Previous");
-				rightToolbarModel.push({ component : $backBtn, tooltip: null });
-			}
+            if(_this._sampleFormModel.paginationInfo) {
 
-			if(this._sampleFormModel.paginationInfo.currentIndex+1 < this._sampleFormModel.paginationInfo.totalCount) {
-				var $nextBtn = FormUtil.getButtonWithIcon("glyphicon-arrow-right", function () {
-					moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
-				}, "Next");
-				rightToolbarModel.push({ component : $nextBtn, tooltip: null });
-			}
+                var $backBtn = FormUtil.getButtonWithIcon(null, function () {
+                                    moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
+                }, "<");
+
+                if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
+                    $backBtn.attr("disabled", true);
+                    $backBtn.off('click');
+                }
+
+                var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
+                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel);
+
+                var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
+                                        moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
+                }, ">");
+
+                if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
+                    $nextBtn.attr("disabled", true);
+                    $nextBtn.off('click');
+                }
+
+                rightToolbarModel.push({ component : $backBtn, tooltip: null });
+                rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
+                rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+            }
 		}
 
 		var $header = views.header;

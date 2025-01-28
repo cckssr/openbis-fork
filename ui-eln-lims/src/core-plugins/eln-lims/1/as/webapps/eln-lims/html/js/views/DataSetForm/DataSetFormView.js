@@ -492,6 +492,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex <= 0) {
                     $backBtn.attr("disabled",true);
+                    $backBtn.off('click');
                 }
 
                 var $paginationInfoLabel = this._dataSetFormModel.paginationInfo.currentIndex+1 + " of " + this._dataSetFormModel.paginationInfo.totalCount;
@@ -503,6 +504,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex+1 >= this._dataSetFormModel.paginationInfo.totalCount) {
                     $nextBtn.attr("disabled",true);
+                    $nextBtn.off('click');
                 }
 
                 rightToolbarModel.push({ component : $backBtn, tooltip: null });
