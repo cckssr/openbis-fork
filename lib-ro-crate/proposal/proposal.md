@@ -1,4 +1,4 @@
-# Proposal - RO-Crate Manifest Convention to Include Schema and Metadata
+# Extension Proposal - RO-Crate Convention to Include Schema and Metadata
 
 **Index:**
 
@@ -270,8 +270,8 @@ Working examples of the API in java to read and write can be found
 at: https://sissource.ethz.ch/sispub/openbis/-/tree/master/lib-ro-crate/, specifically the class
 files
 
-- ch.eth.sis.rocrate.example.ReadExample
-- ch.eth.sis.rocrate.example.WriteExample
+- https://sissource.ethz.ch/sispub/openbis/-/blob/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate/example/ReadExample.java
+- https://sissource.ethz.ch/sispub/openbis/-/blob/master/lib-ro-crate/src/main/java/ch/eth/sis/rocrate/example/WriteExample.java
 
 # Ongoing Work
 
@@ -279,6 +279,7 @@ files
 - Using `rdfs:Label` to indicate the original name of a property (this could also help in resolving
   properties with the same name)
 - Validation of data types expressed in the schema, e.g. enforcing ISO 8601 for dates
+- Bundling ontologies in the RO-Crate
 
 # Possible Future Directions
 
