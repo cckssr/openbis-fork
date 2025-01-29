@@ -21,13 +21,14 @@ public class ParserUtilsTest extends TestCase {
 
         String typeURI = "typeURI";
         modelRDF.sampleTypeList = List.of(new SampleType(typeCode, typeURI));
+        modelRDF.subClassChanisMap = Map.of();
 
         SampleObject object = new SampleObject("code", typeURI,typeCode);
 
         Map<String, List<SampleObject>> objects = Map.of(typeCode, List.of(object));
 
         ResourceParsingResult result = ParserUtils.removeObjectsOfUnknownType(modelRDF, objects, Map.of(), null);
-        assertEquals(1, result.getUnchangedObjects().size());
+        assertEquals(1, result.getDeletedObjects().size());
 
 
 
@@ -63,7 +64,7 @@ public class ParserUtilsTest extends TestCase {
         String typeURI = "typeURI";
         SampleType sampleType = new SampleType(typeCode, typeURI);
         String propertyType = "myProperty";
-        SamplePropertyType samplePropertyType = new SamplePropertyType(propertyType, "annotationId");
+        SamplePropertyType samplePropertyType = new SamplePropertyType(propertyType, "uri");
         samplePropertyType.setMandatory(1);
         sampleType.properties = List.of(samplePropertyType);
         modelRDF.sampleTypeList = List.of(sampleType);
@@ -73,7 +74,7 @@ public class ParserUtilsTest extends TestCase {
 
         samplePropertyType.dataType = typeCode2;
 
-        SampleObject object = new SampleObject("code1", typeURI, typeCode);
+        SampleObject object = new SampleObject("code1", typeCode, typeCode);
         SampleObjectProperty sampleObjectProperty =
                 new SampleObjectProperty("uri", propertyType, "code2", "valueURI");
         object.properties = List.of(sampleObjectProperty);
