@@ -49,7 +49,7 @@ public class SchemaFacade implements ISchemaFacade
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
         builder.addProperty("@id", rdfsClass.getId());
         builder.addProperty("@type", RDFS_CLASS);
-        rdfsClass.getSuperClasses().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
+        rdfsClass.getSubClassOf().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
         this.types.put(rdfsClass.getId(), rdfsClass);
         DataEntity entity = builder.build();
         entity.addIdListProperties("owl:equivalentConcept", rdfsClass.getOntologicalAnnotations());

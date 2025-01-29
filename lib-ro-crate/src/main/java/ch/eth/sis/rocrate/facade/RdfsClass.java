@@ -29,7 +29,7 @@ public class RdfsClass implements IType
     }
 
     @Override
-    public List<String> getSuperClasses()
+    public List<String> getSubClassOf()
     {
         return subClassOf;
     }

@@ -9,7 +9,7 @@ public interface IType
     String getId();
 
     /* Returns IDs of the types this type inherits from */
-    List<String> getSuperClasses();
+    List<String> getSubClassOf();
 
     /* Returns the ontological annotations of this type */
     List<String> getOntologicalAnnotations();
