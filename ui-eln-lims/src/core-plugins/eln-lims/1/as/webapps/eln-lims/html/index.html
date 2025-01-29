@@ -366,6 +366,8 @@
 			)
 
 			var dedicatedDomContainer = document.createElement("div")
+			dedicatedDomContainer.style.width = "100%"
+			dedicatedDomContainer.style.height = "100%"
 			domContainer.appendChild(dedicatedDomContainer)
 
 			var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
