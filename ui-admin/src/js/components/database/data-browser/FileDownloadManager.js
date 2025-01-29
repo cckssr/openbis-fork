@@ -1,6 +1,7 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
 import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js';
+import JSZip from 'jszip';
 
 // 2GB limit for total download size
 const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648
@@ -273,16 +274,17 @@ export default class FileDownloadManager {
   }
 
   async handleDownloadWithDirectoryPicker(files) {
-    const { selectionPossible, rootDirHandle } = await this.handleDirectorySelection()
+    const rootDirHandle =  await this.handleDirectorySelection()
+   
+    const selectionPossible = await this.validateFolderAndShowMergeDialog(rootDirHandle, files)
     if (!selectionPossible) {
       return;
     }
-   
-    const iterator = files.values()
-    const file = iterator.next().value
-   
 
-    const topLevelFolder = this.getTopLevelFolder(file.path)
+    const iterator = files.values()
+    const firstFile = iterator.next().value
+   
+    const topLevelFolder = this.getTopLevelFolder(firstFile.path)
     
     this.showDownloadDialog(topLevelFolder, rootDirHandle.name)
     const availableQuota  = await this.checkDownloadQuota(totalSize);
@@ -340,17 +342,8 @@ export default class FileDownloadManager {
       if (permission !== 'granted') {
         throw new Error(messages.get(messages.DOWNLOAD_PERMISSION_DENIED));
       }
-
-      if (!(await this.isDirectoryEmpty(rootDirHandle))) {
-        this.updateState({ showMergeDialog: true })
-        const decision = await new Promise((resolve) => {
-          this.updateResolveDecision(resolve);
-        });
-        if (!decision) {
-          return { selectionPossible: false, rootDirHandle };
-        }
-      }
-      return { selectionPossible: true, rootDirHandle };
+    
+      return rootDirHandle 
     } catch (err) {
       if (err.name === "AbortError") {
         // no feedback needed, user aborted          
@@ -363,10 +356,31 @@ export default class FileDownloadManager {
     }
   }
 
-  async isDirectoryEmpty(dirHandle) {
-    const entries = dirHandle.entries();
+  async validateFolderAndShowMergeDialog(rootDirHandle, files) {
+    const fileIterator = files.values();
+    const firstFile = fileIterator.next().value;
+  
+    const isSingleFile = firstFile && fileIterator.next().done;
+    const isSingleFileValid = isSingleFile && !firstFile.directory;    
+  
+    if (!isSingleFileValid && !(await this.isDirectoryEmpty(rootDirHandle))) {
+      this.updateState({ showMergeDialog: true });
+  
+      const userDecision = await new Promise((resolve) => {
+        this.updateResolveDecision(resolve);
+      });
+  
+      return userDecision;
+    }
+    return true;
+  }
+  
+  
 
-    for await (const _ of entries) {
+
+  async isDirectoryEmpty(dirHandle) {
+
+    for await (const _ of dirHandle.entries()) {
       return false;
     }
     return true;
@@ -393,7 +407,14 @@ export default class FileDownloadManager {
 
             // Prompt user decision if not applying to all files
             if (!currentState.applyToAllFiles) {              
-              this.updateState({ currentFile: file, showFileExistsDialog: true });
+              this.updateState({ currentFile: file, 
+                showFileExistsDialog: true ,
+                allowResume:false, // not avaliable for download
+                allowSkip: files.length > 1,
+                showApplyToAll: files.length > 1,
+                loading: false,
+                progress: 0, 
+              });
 
               const decision = await new Promise((resolve) => {
                 this.updateResolveDecision(resolve);
@@ -556,11 +577,13 @@ export default class FileDownloadManager {
     this.throwAbortErrorIfTransferCancelled()
 
     const link = document.createElement('a')
-    link.href = window.URL.createObjectURL(blob)
+    const objectURL = window.URL.createObjectURL(blob)
     link.download = fileName
+    link.href = objectURL
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    window.URL.revokeObjectURL(objectURL)
   }
 
   async fileToBlob(file) {

@@ -128,6 +128,12 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
+  async moveFileByPath(filePath, newLocation){
+    await this.handleError(async () => {
+        await openbis.move(this.owner, filePath, this.owner, newLocation)
+    })
+   }
+
   async move(files, newLocation) {
     await this.handleError(async () => {
       for (const file of files) {

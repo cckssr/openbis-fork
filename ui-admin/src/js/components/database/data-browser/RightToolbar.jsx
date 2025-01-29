@@ -278,13 +278,13 @@ class RightToolbar extends React.Component {
         onClose={this.closeErrorDialog}
       />,
       <FileExistsDialog
-        key='file-exists-dialog'
+        key='right-toolbar-file-exists-dialog'
         open={!!uploadFileExistsDialogFile}
         onReplace={this.uploadManager.handleFileExistsReplace}
         onResume={allowResume ? this.uploadManager.handleFileExistsResume : null}
-        onSkip={this.uploadManager.handleFileExistsSkip}
+        onSkip={this.state.allowSkip ? this.uploadManager.handleFileExistsSkip : null}
         onCancel={this.uploadManager.handleFileExistsCancel}
-        onApplyToAllChange={this.uploadManager.handleApplyToAllSelection}
+        onApplyToAllChange={this.state.showApplyToAll ? this.uploadManager.handleApplyToAllSelection: null}
         applyToAll={applyToAllFiles}
         title={messages.get(messages.FILE_EXISTS)}        
         content={messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT,

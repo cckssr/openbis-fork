@@ -1,7 +1,7 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import { alpha } from '@mui/material/styles';
 import autoBind from 'auto-bind'
+import JSZip from 'jszip';
 import Toolbar from '@src/js/components/database/data-browser/Toolbar.jsx'
 import GridView from '@src/js/components/database/data-browser/GridView.jsx'
 import fileTypeConfig from '@src/js/components/database/data-browser/fileTypeConfig.js';
@@ -321,6 +321,25 @@ class DataBrowser extends React.Component {
   componentDidMount() {
     this.fetchSpaceStatus()
     this.fetchRights()    
+    if (this.state.viewType === 'grid') {
+      this.fetchFiles();
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.viewType !== this.state.viewType && this.state.viewType === 'grid') {
+      this.fetchFiles();
+    }
+  }
+
+  async fetchFiles() {
+    try {
+      const filesList = await this.controller.listFiles();
+      this.setState({ files: filesList });
+    } catch (error) {
+      console.error('Error loading files:', error);
+      this.setState({ errorMessage: 'Failed to load files.' });
+    }
   }
 
   openErrorDialog(errorMessage) {
@@ -337,18 +356,23 @@ class DataBrowser extends React.Component {
   }
 
   handleDragEnter(e) {
-    e.preventDefault()
-    console.log("handleDragEnter")
+    e.preventDefault()    
     this.dragDepth++
-    console.log("handleDragEnter " + this.dragDepth)
-      this.setState({ isDragging: true });
+    const dataItems = e.dataTransfer.items?.length
+            ? Array.from(e.dataTransfer.items)
+            : Array.from(e.dataTransfer.files); // Fallback for unsupported browsers
+      
+    if (dataItems.length === 0) {     
+      return;
+    }
+    
+    this.setState({ isDragging: true });
 
   }
 
   handleDragLeave(e) {
     e.preventDefault()
-    this.dragDepth--
-    console.log("handleDragLeave " + this.dragDepth)
+    this.dragDepth--    
     if (this.dragDepth === 0) {
       this.setState({ isDragging: false });
     }
@@ -358,6 +382,14 @@ class DataBrowser extends React.Component {
     e.preventDefault();
     this.dragDepth = 0;
     this.setState({ isDragging: false });
+
+    const dataItems = e.dataTransfer.items?.length
+            ? Array.from(e.dataTransfer.items)
+            : Array.from(e.dataTransfer.files); // Fallback for unsupported browsers
+      
+    if (dataItems.length === 0) {     
+      return;
+    }
     this.uploadManager.handleDragAndDropUpload(e)
   }
    
@@ -551,6 +583,8 @@ class DataBrowser extends React.Component {
               files={files}
               selectedFile={selectedFile}
               multiselectedFiles={multiselectedFiles}
+              filterModes={[GridFilterOptions.COLUMN_FILTERS]}
+              header='Files'
             />
           )}
           {showInfo && selectedFile && (
@@ -585,39 +619,36 @@ class DataBrowser extends React.Component {
         error={errorMessage}
         onClose={this.closeErrorDialog}
       />,
-      (
-        <>
-          {this.renderFileExistsDialog('overwrite-modal-title', {
-            open: showFileExistsDialog,
-            onReplace: this.handleReplace,
-            onSkip: this.handleSkip,
-            onCancel: this.handleCancel,
-            onApplyToAllChange: showApplyToAll ? this.handleApplyToAllSelection : null,
-            applyToAll: applyToAllFiles,
-            title: messages.get(messages.FILE_EXISTS),
-            content: messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile?.name),
-          })}
-    
-          {this.renderFileExistsDialog('upload-file-exists-dialog', {
-            open: !!this.state.uploadFileExistsDialogFile,
-            onReplace: this.uploadManager.handleFileExistsReplace,
-            onResume: this.state.allowResume ? this.uploadManager.handleFileExistsResume : null,
-            onSkip: this.uploadManager.handleFileExistsSkip,
-            onCancel: this.uploadManager.handleFileExistsCancel,
-            onApplyToAllChange: this.uploadManager.handleApplyToAllSelection,
-            applyToAll: applyToAllFiles,
-            title: messages.get(messages.FILE_EXISTS),
-            content: messages.get(messages.CONFIRMATION_FILE_NAME_CONFLICT, this.state.uploadFileExistsDialogFile?.name),
-          })}
-        </>
-      ),
+      <FileExistsDialog
+        key="db-overwrite-modal-title"
+        open={showFileExistsDialog}
+        onReplace={this.handleReplace}
+        onSkip={this.state.allowSkip ? this.handleSkip : null}
+        onCancel={this.handleCancel}
+        onApplyToAllChange={showApplyToAll ? this.handleApplyToAllSelection : null}
+        applyToAll={applyToAllFiles}
+        title={messages.get(messages.FILE_EXISTS)}
+        content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile?.name)}
+      />,
+      <FileExistsDialog
+        key="upload-file-exists-dialog"
+        open={!!this.state.uploadFileExistsDialogFile}
+        onReplace={this.uploadManager.handleFileExistsReplace}
+        onResume={this.state.allowResume ? this.uploadManager.handleFileExistsResume : null}
+        onSkip={this.state.allowSkip ? this.uploadManager.handleFileExistsSkip : null}
+        onCancel={this.uploadManager.handleFileExistsCancel}
+        onApplyToAllChange={showApplyToAll ? this.uploadManager.handleApplyToAllSelection : null}
+        applyToAll={applyToAllFiles}
+        title={messages.get(messages.FILE_EXISTS)}
+        content={messages.get(this.state.allowResume ? messages.CONFIRMATION_FILE_NAME_RESUME_CONFLICT : messages.CONFIRMATION_FILE_NAME_CONFLICT, this.state.uploadFileExistsDialogFile?.name)}
+      />,
       <ConfirmationDialog
         key='merge-modal-title'
         open={showMergeDialog}
         onConfirm={this.handleConfirmMerge}
         onCancel={this.handleCancelMerge}
-        title={messages.get(messages.CONFIRM_MERGE)}
-        content={messages.get(messages.CONFIRMATION_MERGE_DOWNLOAD)}
+        title={messages.get(messages.NON_EMPTY_FOLDER)}
+        content={messages.get(messages.NON_EMPTY_FOLDER_MSG)}
       />
     ]
   }

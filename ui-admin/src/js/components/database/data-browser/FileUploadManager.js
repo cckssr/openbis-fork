@@ -1,6 +1,7 @@
 
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
+import JSZip from 'jszip';
 
 const Resolution = {
   MERGE: 'MERGE',
@@ -35,8 +36,7 @@ export default class FileUploadManager {
       progressBarFrom:null,
       progressBarTo:null,
       loadingDialogVariant:'determinate',
-      customProgressDetails:null,
-      averageSpeed:0,
+      customProgressDetails:null,      
       totalFilesToDownload:0,
       replaceFile: false,
       skipFile: false,
@@ -48,7 +48,15 @@ export default class FileUploadManager {
       resolveDecision: null,     
       rollingSpeed:0,
       totalSavingTime:0,
-      cancelTransfer: false
+      cancelTransfer: false,
+      lastConflictResumeResolution: null,
+      lastConflictResolution: null,
+      totalSkippedBytes:0,                 
+      fileName:null,
+      averageSpeed:0,
+      totalElapsedTime:0, 
+      expectedTime:0,       
+      progressStatus:null,
     }
   }
 
@@ -334,9 +342,9 @@ export default class FileUploadManager {
     this.updateState((prevState) => {
       const processedBytes = (prevState.processedBytes ?? 0) + uploadedChunkSize;
       const totalTransferSize = prevState.totalTransferSize;
-      const progress = Math.floor((processedBytes / totalTransferSize) * 100);
+      const progressFloor = Math.floor((processedBytes / totalTransferSize) * 100);
       var progressStatus = status === "" ? null : status;
-      const newProgress = Math.min(progress, 100);
+      const newProgress = Math.min(progressFloor, 100);
 
       let totalSkippedBytes = (prevState.totalSkippedBytes ?? 0);
       switch (resolution) {
@@ -371,9 +379,9 @@ export default class FileUploadManager {
     });
   }
 
-  async resolveNameConflict(newFile, allowResume) {
+  async resolveNameConflict(newFile, allowResume, allowSkip, showApplyToAll) {
     return new Promise((resolve) => {
-      this.updateState({ allowResume, loading: false, progress: 0 })
+      this.updateState({ allowResume, allowSkip,showApplyToAll,loading: false, progress: 0})
       this.openFileExistsDialog(newFile)
       this.resolveConflict = resolve
     })
@@ -408,7 +416,7 @@ export default class FileUploadManager {
   handleFileExistsResume() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict(Resolution.RESUME)
-    this.updateState({ loading: true, progress: 0 ,lastConflictResolution: Resolution.RESUME})
+    this.updateState({ loading: true, progress: 0 , applyResumeToAllResumableFiles: this.getCurrentState().applyToAllFiles, lastConflictResumeResolution: Resolution.RESUME})
   }
 
   handleFileExistsSkip() {
@@ -437,30 +445,49 @@ export default class FileUploadManager {
         ? filePath.split('/')[0]
         : file.name;
       this.updateState({ progressBarFrom: topLevelFolder})
-      
+            
       const targetFilePath = this.controller.path + '/' + filePath
-      const existingFiles = await this.controller.listFiles(targetFilePath)
+      const tempTargetFilePath = this.controller.path + '/' + filePath + ".part"
+      const tempTargetFileName = file.name + ".part"
 
-      const fileExists = existingFiles.length > 0
-      const existingFileSize = existingFiles.length === 0 ? 0
-        : existingFiles[0].size
+      const {
+        fileExists,
+        existingFile,
+        fileTempExists,
+        existingTempFile
+      }  = await this.checkFilesAndTempExistOnServer(file.name, tempTargetFileName, targetFilePath)
 
       let offset = 0;
 
-      if (fileExists) {
-        const resolution = await this.handleExistingFile(file, existingFileSize);
+      if (fileExists || fileTempExists) {
+        const resolution = await this.handleExistingFile(file, fileExists,existingFile,
+          fileTempExists, existingTempFile, fileList.length);
+                  
         if (resolution === Resolution.CANCEL) return; // Cancel uploading entirely
-        if (resolution === Resolution.SKIP) continue; // Skip this file and continue with others
-        offset = resolution === Resolution.REPLACE ? 0 : existingFileSize;// handles resume also                
+        if (resolution === Resolution.SKIP) continue; // Skip this file and continue with others        
+        if(resolution == Resolution.REPLACE){
+          offset = 0
+          if(fileTempExists){           
+            await this.controller.delete([existingTempFile])
+          }
+        } else {
+          offset = existingTempFile.size
+        }             
       }
 
       // Replace or resume upload from the last point in the file
       while (offset < file.size) {      
-        const sizeUploaded = await this.controller.uploadFile(file, targetFilePath,
+        const sizeUploaded = await this.controller.uploadFile(file, tempTargetFilePath,
           offset, this.updateProgress)
         this.throwAbortErrorIfTransferCancelled()
         offset += sizeUploaded
       }
+      
+      if(fileExists){
+        await this.controller.delete([existingFile])
+      }
+
+      await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath)
     }
     
     if (this.controller.gridController) {
@@ -468,31 +495,88 @@ export default class FileUploadManager {
     }
   }   
 
+  async checkFilesAndTempExistOnServer(fileName, tmpFileName, targetFilePath) {
+    const parentFolderPath = this.getParentFolder(targetFilePath);
+    const filesInParentFolder = await this.controller.listFiles(parentFolderPath);
 
-  async handleExistingFile(file, existingFileSize) {
-    var state = this.getCurrentState();
-    var resolutionResult = state.lastConflictResolution;
-    
-    if (!state.applyToAllFiles) {      
-      resolutionResult = await this.resolveNameConflict(file, true);
+    let fileExists = false
+    let existingFile = null    
+    let fileTempExists = false
+    let existingTempFile = null    
+
+    for (const file of filesInParentFolder) {
+      if (file.name === fileName) {
+        fileExists = true        
+        existingFile = file
+      } else if (file.name === tmpFileName) {
+        fileTempExists = true
+        existingTempFile = file
+      }
+      
+      if (fileExists && fileTempExists) {
+        break;
+      }      
+    }
+
+    return {
+        fileExists,
+        existingFile,
+        fileTempExists,
+        existingTempFile
+      }
+  }
+
+
+
+  getParentFolder(filePath) {
+    const normalizedPath = filePath.replace(/\/+$/, '');
+    if (normalizedPath === '/') {
+        return '/';
+    }
+    const lastSlashIndex = normalizedPath.lastIndexOf('/');
+    if (lastSlashIndex === 0) {
+        return '/';
+    }
+    return normalizedPath.substring(0, lastSlashIndex);
+}
+
+
+  async handleExistingFile(file, fileExists, existingFile,
+        fileTempExists,tempFile, numberFilesUploaded) {
+
+    var state = this.getCurrentState()
+    var resolutionResult = state.lastConflictResolution
+    var lastConflictResumeResolution = state.lastConflictResumeResolution
+    var applyResumeToAllResumableFiles = state.applyResumeToAllResumableFiles
+    var lastResolutionStillValid = (applyResumeToAllResumableFiles && (lastConflictResumeResolution  === Resolution.RESUME) && fileTempExists)
+                                        || (state.applyToAllFiles && resolutionResult && !fileTempExists)
+                                        
+
+    if (!lastResolutionStillValid) {         
+      const multiFileUpload = numberFilesUploaded > 1   
+      const allowResume = fileTempExists && (tempFile.size < file.size)
+      // TODO how to handle multifile upload       
+      resolutionResult = await this.resolveNameConflict(file, allowResume,
+          multiFileUpload , multiFileUpload)
+         
+    }
+
+    if (fileTempExists && (resolutionResult === Resolution.RESUME || applyResumeToAllResumableFiles)) {              
+      this.updateProgressForResolution(tempFile.size, file.name, Resolution.RESUME)
+      return Resolution.RESUME
     }
 
     if (resolutionResult === Resolution.SKIP) {
-      this.updateState({skipFile :true});
-      this.updateProgressForResolution(file.size, file.name, Resolution.SKIP);
-      return Resolution.SKIP;
-    }
-
-    if (resolutionResult === Resolution.RESUME) {        
-      this.updateProgressForResolution(existingFileSize, file.name, Resolution.RESUME);
-      return Resolution.RESUME;
+      this.updateState({skipFile :true})
+      this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
+      return Resolution.SKIP
     }
 
     if (resolutionResult === Resolution.CANCEL) {
-      this.updateProgressForResolution(file.size, file.name, Resolution.CANCEL);
-      return Resolution.CANCEL;
+      this.updateProgressForResolution(file.size, file.name, Resolution.CANCEL)
+      return Resolution.CANCEL
     }
 
-    return Resolution.REPLACE;
+    return Resolution.REPLACE
   }
 }
