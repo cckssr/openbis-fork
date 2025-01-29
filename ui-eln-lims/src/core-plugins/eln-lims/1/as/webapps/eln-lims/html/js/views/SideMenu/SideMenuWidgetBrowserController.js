@@ -3115,9 +3115,13 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         var experimentIdentifier = experiment.getIdentifier().getIdentifier()
         var experimentSpaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier)
         var isInventorySpace = profile.isInventorySpace(experimentSpaceCode)
+        var isFormView = experiment.properties &&
+                            experiment.properties["$DEFAULT_COLLECTION_VIEW"] &&
+                            experiment.properties["$DEFAULT_COLLECTION_VIEW"] === "FORM_VIEW"
 
-        var isInventoryCollectionExperiment = experiment.getType().getCode() === "COLLECTION" || isInventorySpace
-        return !isInventoryCollectionExperiment
+        var isExperimentWithChildren = isFormView
+        var isExperimentWithNoChildren = experiment.getType().getCode() === "COLLECTION" || isInventorySpace
+        return isExperimentWithChildren || !isExperimentWithNoChildren
     }
 
     _isExperimentSample(sample) {
