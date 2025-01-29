@@ -115,14 +115,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                     props['onLoadDisplaySettings'] = loadDisplaySettings;
                     reactImagingComponent = React.createElement(window.NgComponents.default.ImagingGalleryViewer, props)
                 }
-                ReactDOM.render(
-                    React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true },
-                    React.createElement(
-                        window.NgComponents.default.ThemeProvider,
-                        {},
-                        reactImagingComponent)),
-                    $element.get(0)
-                );
+
+                NgComponentsManager.renderComponent(reactImagingComponent, $element.get(0));
             }
         );
         $container.append($element);

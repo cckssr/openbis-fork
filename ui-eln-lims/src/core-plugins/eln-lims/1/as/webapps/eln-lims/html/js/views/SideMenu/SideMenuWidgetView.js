@@ -263,19 +263,15 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         this._sideMenuWidgetModel.menuDOMBody.empty().css("border-top", "1px solid #dbdbdb")
 
-        var BrowserElement = React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true }, React.createElement(
-            window.NgComponents.default.ThemeProvider,
-            {},
-            React.createElement(window.NgComponents.default.Browser, {
+        var BrowserElement = React.createElement(window.NgComponents.default.Browser, {
                 controller: _this._sideMenuWidgetController._browserController,
                 renderDOMNode: _this._renderDOMNode,
                 styles: {
                     nodes: "sideMenuNodes",
                 },
             })
-        ))
 
-        ReactDOM.render(BrowserElement, this._sideMenuWidgetModel.menuDOMBody.get(0))
+        NgComponentsManager.renderComponent(BrowserElement, this._sideMenuWidgetModel.menuDOMBody.get(0));
     }
 }
 

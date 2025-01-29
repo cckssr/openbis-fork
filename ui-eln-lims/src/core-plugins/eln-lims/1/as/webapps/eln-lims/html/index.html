@@ -341,10 +341,62 @@
 	<script type="text/javascript" src="./js/test/ReactTestUtils.js"></script>
 
 	<script type="text/javascript">
-	
+
+	//
+	// NgComponents manager that keeps track of rendered React components and cleans them up periodically when they are no longer used
+	//
+
+	window.NgComponentsManager = new function(){
+		var thisManager = this
+
+		this.components = []
+
+		this.renderComponent = function(reactComponent, domContainer){
+			var reactComponentWithProviders = React.createElement(
+				window.NgComponents.default.StyledEngineProvider,
+				{ injectFirst : true },
+				React.createElement(
+					window.NgComponents.default.ThemeProvider,
+					{},
+					React.createElement(
+						window.NgComponents.default.DatePickerProvider,
+						{},
+						reactComponent)
+				)
+			)
+
+			var dedicatedDomContainer = document.createElement("div")
+			domContainer.appendChild(dedicatedDomContainer)
+
+			var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
+			reactRoot.render(reactComponentWithProviders)
+
+			this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer })
+		}
+		
+		this.cleanupComponents = function(){
+			var stillConnectedComponents = []
+
+			this.components.forEach(function(component){
+				if (component.domContainer.isConnected) {
+					stillConnectedComponents.push(component)
+				} else {
+					component.reactRoot.unmount()
+				}
+			})
+
+			this.components = stillConnectedComponents
+		}
+		
+		setInterval(function(){
+			thisManager.cleanupComponents()
+		}, 1000)
+	}
+
 	//
 	// Application Startup
 	//
+
     window.addEventListener('popstate', function(event) {
         if (sessionStorage.getItem("normalLoginHasBeenForces") == "true") {
             location.reload();

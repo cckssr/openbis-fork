@@ -39,13 +39,6 @@ function DataGridController(
     this.init = function ($container, extraOptions) {
         let $element = $("<div>")
 
-        ReactDOM.render(
-            React.createElement(window.NgComponents.default.Loading, {
-                loading: true,
-            }),
-            $element.get(0)
-        )
-
         this._init($element, extraOptions)
 
         $container.empty().append($element)
@@ -56,13 +49,7 @@ function DataGridController(
     }
 
     this._init = function ($container, extraOptions) {
-        var GridElement = React.createElement(window.NgComponents.default.StyledEngineProvider, { injectFirst : true }, React.createElement(
-            window.NgComponents.default.ThemeProvider,
-            {},
-            React.createElement(
-                window.NgComponents.default.DatePickerProvider,
-                {},
-                React.createElement(window.NgComponents.default.Grid, {
+        var GridElement = React.createElement(window.NgComponents.default.Grid, {
                     controllerRef: function (controller) {
                         _this.controller = controller
                     },
@@ -80,10 +67,8 @@ function DataGridController(
                     multiselectable: multiselectable,
                     actions: _this._actions(extraOptions),
                 })
-            )
-        ))
 
-        ReactDOM.render(GridElement, $container.get(0))
+        NgComponentsManager.renderComponent(GridElement, $container.get(0));
     }
 
     this._loadSettings = function () {
