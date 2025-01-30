@@ -889,10 +889,11 @@ def test_parent_child_in_project(space):
 
     samples = o.get_samples(sample_parent)
     assert len(samples) == 1
-    assert samples[0].children is None
+    assert samples[0].children == '--NOT FETCHED--'
     child = samples[0].get_children()
     assert child is not None
     assert len(child) == 1
+    assert samples[0].children[0] == sample_child.identifier
     children = samples.get_children()
     assert children is not None
     assert len(children) == 1

@@ -421,6 +421,44 @@ class AttrHolder:
                     )
                 return ras
 
+            elif int_name == '_parents':
+                result = None
+                if "_fetchOptions" in self.__dict__ and self.__dict__["_fetchOptions"] is not None:
+                    if 'parents' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"][
+                        'parents'] is None:
+                        return '--NOT FETCHED--'
+                    result = self.__dict__[int_name]
+                else:
+                    result = self.__dict__[int_name]
+                if isinstance(result, list):
+                    values = []
+                    for item in result:
+                        if "identifier" in item:
+                            values.append(item["identifier"])
+                        else:
+                            values.append(item)
+                    return values
+                return result
+
+            elif int_name == '_children':
+                result = None
+                if "_fetchOptions" in self.__dict__ and self.__dict__["_fetchOptions"] is not None:
+                    if 'children' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"][
+                        'children'] is None:
+                        return '--NOT FETCHED--'
+                    result = self.__dict__[int_name]
+                else:
+                    result = self.__dict__[int_name]
+                if isinstance(result, list):
+                    values = []
+                    for item in result:
+                        if "identifier" in item:
+                            values.append(item["identifier"])
+                        else:
+                            values.append(item)
+                    return values
+                return result
+
             # if the attribute contains a list,
             # return a list of either identifiers, codes or
             # permIds (whatever is available first)
@@ -772,14 +810,18 @@ class AttrHolder:
         """get the current parents and return them as a list (Things/DataFrame)
         or return empty list
         """
-        if self.__dict__["_fetchOptions"] is not None:
-            if 'parents' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"]['parents'] is None:
-                parents = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
-                    withChildren=self.identifier, **kwargs
-                )
-                if len(parents) > 0:
-                    self.__dict__["_parents"] = list(parents[['identifier']].values[0])
-        if self.parents is None or self.parents == []:
+        parents = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
+            withChildren=self.identifier, **kwargs
+        )
+        if self.__dict__["_fetchOptions"] is None:
+            self.__dict__["_fetchOptions"] = {}
+        if 'parents' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['parents'] is None:
+            self.__dict__["_fetchOptions"]['parents'] = {}
+        if len(parents) > 0:
+            self.__dict__["_parents"] = list(parents[['identifier']].values[0])
+        else:
+            self.__dict__["_parents"] = []
+        if self.__dict__["_parents"] is None or self.__dict__["_parents"] == []:
             return []
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.parents, **kwargs
@@ -827,14 +869,18 @@ class AttrHolder:
         """get the current children and return them as a list (Things/DataFrame)
         or return empty list
         """
-        if self.__dict__["_fetchOptions"] is not None:
-            if 'children' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"]['children'] is None:
-                children = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
-                    withParents=self.identifier, **kwargs
-                )
-                if len(children) > 0:
-                    self.__dict__["_children"] = list(children[['identifier']].values[0])
-        if self.children is None or self.children == []:
+        children = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
+            withParents=self.identifier, **kwargs
+        )
+        if self.__dict__["_fetchOptions"] is None:
+            self.__dict__["_fetchOptions"] = {}
+        if 'children' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['children'] is None:
+            self.__dict__["_fetchOptions"]['children'] = {}
+        if len(children) > 0:
+            self.__dict__["_children"] = list(children[['identifier']].values[0])
+        else:
+            self.__dict__["_children"] = []
+        if self.__dict__["_children"] is None or self.__dict__["_children"] == []:
             return []
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.children, **kwargs
