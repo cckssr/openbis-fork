@@ -64,7 +64,6 @@ def _dfs_samples(data_base, prop, func):
     while ids:
         data = func(ids)
         data = list(data.values())
-        output += data
         ids = []
         children = []
         for obj in data:
@@ -72,6 +71,7 @@ def _dfs_samples(data_base, prop, func):
             children += [x[prop][prop] for x in obj['children']]
             if key not in visited:
                 visited.add(key)
+                output += [obj]
         for child in children:
             if child not in visited:
                 ids += [child]
