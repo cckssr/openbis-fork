@@ -76,6 +76,8 @@ class AttrHolder:
         """
         # entity is read from openBIS, so it is not new anymore
         self.__dict__["_is_new"] = False
+        if 'fetchOptions' in data:
+            self.__dict__["_fetchOptions"] = data['fetchOptions']
 
         for attr in self._defs["attrs"]:
             if attr in ["code", "permId", "identifier", "type"]:
@@ -770,8 +772,15 @@ class AttrHolder:
         """get the current parents and return them as a list (Things/DataFrame)
         or return empty list
         """
+        if self.__dict__["_fetchOptions"] is not None:
+            if 'parents' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"]['parents'] is None:
+                parents = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
+                    withChildren=self.identifier, **kwargs
+                )
+                if len(parents) > 0:
+                    self.__dict__["_parents"] = list(parents[['identifier']].values[0])
         if self.parents is None or self.parents == []:
-            return self.parents
+            return []
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.parents, **kwargs
         )
@@ -818,8 +827,15 @@ class AttrHolder:
         """get the current children and return them as a list (Things/DataFrame)
         or return empty list
         """
+        if self.__dict__["_fetchOptions"] is not None:
+            if 'children' in self.__dict__["_fetchOptions"] and self.__dict__["_fetchOptions"]['children'] is None:
+                children = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
+                    withParents=self.identifier, **kwargs
+                )
+                if len(children) > 0:
+                    self.__dict__["_children"] = list(children[['identifier']].values[0])
         if self.children is None or self.children == []:
-            return self.children
+            return []
         return getattr(self._openbis, "get_" + self._entity.lower())(
             self.children, **kwargs
         )

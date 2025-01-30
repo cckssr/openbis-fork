@@ -51,9 +51,7 @@ class Spreadsheet:
         self.width = [50 for _ in range(columns)]
         self.values = [["" for _ in range(columns)] for _ in range(rows)]
 
-    def _get_index(self, index):
-        if index is None or not isinstance(index, str):
-            raise ValueError("Not valid index!")
+    def _get_index_str(self, index):
         index = index.strip()
         column = ""
         row = ""
@@ -77,6 +75,33 @@ class Spreadsheet:
             raise ValueError(f"Row '{row}' does not exists!")
 
         return row - 1, self.headers.index(column)
+
+    def _get_index_tuple(self, index):
+        column, row = index
+        if column is None or column == "" or row is None or row == "":
+            raise ValueError(f"'{index}' is not a valid index!")
+
+        if str(column).isdigit():
+            column = int(column)
+        else:
+            if not column in self.headers:
+                raise ValueError(f"Column '{column}' does not exists!")
+            column = self.headers.index(column)
+
+        row = int(row)
+        if len(self.data) < row or row < 1:
+            raise ValueError(f"Row '{row}' does not exists!")
+
+        return row, column
+
+    def _get_index(self, index):
+        if index is None:
+            raise ValueError("Index must not be None!")
+        if isinstance(index, str):
+            return self._get_index_str(index)
+        if isinstance(index, tuple):
+            return self._get_index_tuple(index)
+        raise ValueError(f"'{index}' is not a valid index!")
 
     def __getitem__(self, index):
         (row, column) = self._get_index(index)

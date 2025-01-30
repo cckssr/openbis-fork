@@ -2,11 +2,16 @@
 
 - Changed versioning scheme
 - Added Imaging technology preview functionalities
-- Implemented Fast download V2 
+
+## Changes with pybis-1.37.1
+
+- Implemented Fast download V2
 - Fixed dataset with parents creation
 - Fixed type checking for python <3.10
 - Added ELN Spreadsheet support
 - Added support for new OBJECT property creation with OBJECT type limitation
+- Refactored AttributeHolder class to include fetchOptions
+- Refactored get_children and get_parents methods to pull data in case of missing fetchOptions
 
 ## Changes with pybis-1.37.0
 

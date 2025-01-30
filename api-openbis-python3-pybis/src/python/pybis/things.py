@@ -142,19 +142,19 @@ class Things:
                 # get all objects that have this object as a child == parent
                 try:
                     parents = getattr(self.openbis, "get_" + self.entity.lower() + "s")(
-                        withParent=ident, **kwargs
+                        withParents=ident, **kwargs
                     )
                     dfs.append(parents.df)
                 except ValueError:
                     pass
 
-                return Things(
-                    self.openbis,
-                    self.entity,
-                    self.identifier_name,
-                    response=dfs,
-                    df_initializer=self.__create_data_frame,
-                )
+            return Things(
+                self.openbis,
+                self.entity,
+                self.identifier_name,
+                response=dfs,
+                df_initializer=self.__create_data_frame,
+            )
 
     def get_samples(self, **kwargs):
         if self.entity not in ["space", "project", "experiment"]:
@@ -217,7 +217,7 @@ class Things:
                     return self.objects[key]
                 else:
                     # get thing by rowid
-                    row = self.df.loc[[key]]
+                    row = self.df.iloc[[key]]
             elif isinstance(key, list):
                 # treat it as a normal dataframe
                 return self.df[key]

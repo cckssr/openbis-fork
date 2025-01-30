@@ -861,3 +861,41 @@ def test_create_sample_with_spreadsheet(space):
     assert sample.props[ptc1.lower()] is not None
     assert sample.props[ptc1.lower()].data[0][0] == 10
 
+def test_parent_child_in_project(space):
+    o = space.openbis
+
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+
+    project = space.new_project(f'my_project_{timestamp}')
+    project.save()
+
+    collection = o.new_experiment('UNKNOWN', f'my_collection_{timestamp}', project)
+    collection.save()
+
+    sample_type = "UNKNOWN"
+
+    parent_code = (
+            "parent_sample_{}".format(timestamp) + "_" + str(random.randint(0, 1000))
+    )
+    sample_parent = o.new_sample(code=parent_code, type=sample_type, collection=collection)
+    sample_parent.save()
+
+    child_code = "child_sample_{}".format(timestamp)
+    sample_child = o.new_sample(
+        code=child_code, type=sample_type, collection=collection, parent=sample_parent
+    )
+    sample_child.save()
+    time.sleep(5)
+
+    samples = o.get_samples(sample_parent)
+    assert len(samples) == 1
+    assert samples[0].children is None
+    child = samples[0].get_children()
+    assert child is not None
+    assert len(child) == 1
+    children = samples.get_children()
+    assert children is not None
+    assert len(children) == 1
+    assert samples[0].get_children().get_parents()[0].identifier == samples[0].identifier
+
+
