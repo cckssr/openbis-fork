@@ -18,13 +18,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.openbis.rocrate.app.parser.helper.SemanticAnnotationHelper;
 import junit.framework.TestCase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
-import parser.results.ParseResult;
-import writer.mapping.Mapper;
-import writer.mapping.types.MapResult;
+import ch.openbis.rocrate.app.parser.results.ParseResult;
+import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +42,8 @@ public class MapperTest extends TestCase
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
         Map<String, Space> spaces = new HashMap<>();
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
         assertTrue(result.getSchema().getClasses().isEmpty());
@@ -89,7 +90,10 @@ public class MapperTest extends TestCase
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
         Map<String, Space> spaces = new HashMap<>();
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
 
@@ -137,8 +141,9 @@ public class MapperTest extends TestCase
         Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
         Map<String, Space> spaces = new HashMap<>();
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
 
@@ -204,8 +209,9 @@ public class MapperTest extends TestCase
 
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
         Map<String, Space> spaces = new HashMap<>();
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
 
@@ -231,7 +237,9 @@ public class MapperTest extends TestCase
 
         Map<String, Space> spaces = Map.of("SPACE", space);
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
@@ -256,8 +264,9 @@ public class MapperTest extends TestCase
         Map<ProjectIdentifier, Project> projects =
                 Map.of(new ProjectIdentifier("SPACE", "PROJECT"), project);
         Map<String, Space> spaces = new HashMap<>();
+        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces);
+        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(parseResult);
         MetadataEntry entry = result.getMetaDataEntries().get(0);

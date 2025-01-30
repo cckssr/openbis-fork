@@ -12,8 +12,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import junit.framework.TestCase;
 import org.junit.Test;
-import parser.ExcelConversionParser;
-import parser.results.ParseResult;
+import ch.openbis.rocrate.app.parser.results.ParseResult;
 
 import java.io.IOException;
 

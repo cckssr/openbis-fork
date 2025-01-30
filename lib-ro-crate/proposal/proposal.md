@@ -74,7 +74,7 @@ Because the schema is graph-based this can be easily integrated into the RO-Crat
 
 The schema could also be included in a separate file in a future version of this specification.
 
-Ontologies are added using OWL's `equivalentConcept` property.
+Ontologies are added using OWL's `equivalentClass` and `equivalentProperty` properties.
 
 What are the advantages of this?
 
@@ -107,13 +107,13 @@ Based on RDFS classes, these can be used as object and subjects of triples.
 RDFS Properties, these represent predicates in triples.
 They also specify, which classes they can interact with.
 
-| Type/Property         | Required? | Description                                                                |
-|-----------------------|-----------|----------------------------------------------------------------------------|
-| @id                   | MUST      | ID of the entry                                                            |
-| @type                 | MUST      |  Is `rdfs:Property`                                                        |
-| owl:equivalentClass   | MAY       | Ontological annotation  https://www.w3.org/TR/owl-ref/#equivalentClass-def |
-| schema:domainIncludes | MUST      | Describes the possible types of the subject. This can be one or many.      |
-| schema:rangeIncludes  | MUST      | Describes the possible types of the object. This can be one or many.       |
+| Type/Property          | Required? | Description                                                                |
+|------------------------|-----------|----------------------------------------------------------------------------|
+| @id                    | MUST      | ID of the entry                                                            |
+| @type                  | MUST      | Is `rdfs:Property`                                                         |
+| owl:equivalentProperty | MAY       | Ontological annotation  https://www.w3.org/TR/owl-ref/#equivalentClass-def |
+| schema:domainIncludes  | MUST      | Describes the possible types of the subject. This can be one or many.      |
+| schema:rangeIncludes   | MUST      | Describes the possible types of the object. This can be one or many.       |
 
 ## Metadata Representation
 

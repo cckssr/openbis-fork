@@ -14,9 +14,15 @@ import java.util.*;
 
 public class SchemaFacade implements ISchemaFacade
 {
+
     private final static String RDFS_CLASS = "rdfs:Class";
 
     private final static String RDFS_PROPERTY = "rdfs:Property";
+
+    public static final String EQUIVALENT_CLASS = "owl:equivalentClass";
+
+    public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
+
 
     private Map<String, IType> types;
 
@@ -52,7 +58,7 @@ public class SchemaFacade implements ISchemaFacade
         rdfsClass.getSubClassOf().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
         this.types.put(rdfsClass.getId(), rdfsClass);
         DataEntity entity = builder.build();
-        entity.addIdListProperties("owl:equivalentConcept", rdfsClass.getOntologicalAnnotations());
+        entity.addIdListProperties(EQUIVALENT_CLASS, rdfsClass.getOntologicalAnnotations());
         crate.addDataEntity(entity);
 
     }
@@ -82,7 +88,7 @@ public class SchemaFacade implements ISchemaFacade
                 rdfsProperty.getRange());
         stuff.addIdListProperties("schema:domainIncludes",
                 rdfsProperty.getDomain());
-        stuff.addIdListProperties("owl:equivalentConcept",
+        stuff.addIdListProperties(EQUIVALENT_CONCEPT,
                 rdfsProperty.getOntologicalAnnotations());
         crate.addDataEntity(stuff);
         propertyTypes.put(rdfsProperty.getId(), rdfsProperty);
@@ -167,7 +173,7 @@ public class SchemaFacade implements ISchemaFacade
                     RdfsClass rdfsClass = new RdfsClass();
                     rdfsClass.setSubClassOf(parseMultiValued(entity, "rdfs:subClassOf"));
                     rdfsClass.setOntologicalAnnotations(
-                            parseMultiValued(entity, "owl:equivalentConcept"));
+                            parseMultiValued(entity, EQUIVALENT_CLASS));
                     rdfsClass.setId(id);
                     classes.put(id, rdfsClass);
 
@@ -177,7 +183,7 @@ public class SchemaFacade implements ISchemaFacade
                     TypeProperty rdfsProperty = new TypeProperty();
                     rdfsProperty.setId(id);
                     rdfsProperty.setOntologicalAnnotations(
-                            parseMultiValued(entity, "owl:equivalentConcept"));
+                            parseMultiValued(entity, EQUIVALENT_CLASS));
                     rdfsProperty.setRangeIncludes(
                             parseMultiValued(entity, "schema:rangeIncludes"));
                     rdfsProperty.setDomainIncludes(
