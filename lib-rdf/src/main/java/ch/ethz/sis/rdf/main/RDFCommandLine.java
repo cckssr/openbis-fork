@@ -28,7 +28,8 @@ public class RDFCommandLine {
 
     private static final String dssURL = "http://localhost:8889/datastore_server";
 
-    private static final String helperCommand = "java -jar lib-rdf-tool.jar -i <TTL> -o <XLSX, OPENBIS, OPENBIS-DEV> <TTL input file path> [<XLSX output file path>] -pid <project identifier> [[[-u <username> -p] <openBIS AS URL>] <openBIS DSS URL>]";
+    private static final String helperCommand =
+            "java -jar lib-rdf-tool.jar -i <TTL> -o <XLSX, OPENBIS, OPENBIS-DEV> <TTL input file path> [<XLSX output file path>] -a [additional files] -pid <project identifier> [[[-u <username> -p] <openBIS AS URL>] <openBIS DSS URL>]";
 
     //!!! DEV_MODE is used only for pure dev turn it to FALSE for PRODUCTION !!!
     private static final boolean DEV_MODE = false;
@@ -142,7 +143,8 @@ public class RDFCommandLine {
         Option help = new Option("h", "help", false, "Display this help message");
         options.addOption(help);
 
-        Option additionalFiles = new Option("a", ADDITIONALFILES, true, "Additional files");
+        Option additionalFiles = new Option("a", ADDITIONALFILES, true,
+                "Additional files. These are additional ontologies that are referenced by the main import file. If an ontology is not found, this can lead to dummy entries in openBIS. At the moment, these have to be on the file system and are not fetched from remote sources.");
         additionalFiles.setArgs(Option.UNLIMITED_VALUES);
         options.addOption(additionalFiles);
 
