@@ -358,11 +358,8 @@ class DataBrowser extends React.Component {
   handleDragEnter(e) {
     e.preventDefault()    
     this.dragDepth++
-    const dataItems = e.dataTransfer.items?.length
-            ? Array.from(e.dataTransfer.items)
-            : Array.from(e.dataTransfer.files); // Fallback for unsupported browsers
-      
-    if (dataItems.length === 0) {     
+         
+    if (!this.containsFiles(e)) {     
       return;
     }
     
@@ -378,18 +375,25 @@ class DataBrowser extends React.Component {
     }
   }
 
+  containsFiles(e){
+    if (e.dataTransfer.types) {
+      for (var i = 0; i < e.dataTransfer.types.length; i++) {
+        if (e.dataTransfer.types[i] === "Files") return true;
+      }
+    }
+    return false;
+  };
+
+
   async handleDrop(e) {    
     e.preventDefault();
     this.dragDepth = 0;
     this.setState({ isDragging: false });
 
-    const dataItems = e.dataTransfer.items?.length
-            ? Array.from(e.dataTransfer.items)
-            : Array.from(e.dataTransfer.files); // Fallback for unsupported browsers
-      
-    if (dataItems.length === 0) {     
+    if (!this.containsFiles(e)) {     
       return;
     }
+
     this.uploadManager.handleDragAndDropUpload(e)
   }
    

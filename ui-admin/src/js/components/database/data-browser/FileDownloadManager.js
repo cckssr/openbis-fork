@@ -51,7 +51,12 @@ export default class FileDownloadManager {
       rollingSpeed:0,
       totalSavingTime:0,
       totalSkippedBytes:0,
-      cancelTransfer:false
+      cancelTransfer:false,
+      fileName : null,
+      totalElapsedTime:0, 
+      expectedTime:0,        
+      progressStatus:null,
+      remainingFiles:0
     }
   }
 
@@ -152,7 +157,6 @@ export default class FileDownloadManager {
         processedBytes,
         progress: newProgress,
         loading: true,
-        fileName,        
         fileName,
         averageSpeed,
         totalElapsedTime, 
@@ -275,10 +279,13 @@ export default class FileDownloadManager {
 
   async handleDownloadWithDirectoryPicker(files) {
     const rootDirHandle =  await this.handleDirectorySelection()
-   
+    if(rootDirHandle == null)  {
+      return
+    }
+
     const selectionPossible = await this.validateFolderAndShowMergeDialog(rootDirHandle, files)
     if (!selectionPossible) {
-      return;
+      return
     }
 
     const iterator = files.values()
@@ -290,18 +297,18 @@ export default class FileDownloadManager {
     const availableQuota  = await this.checkDownloadQuota(totalSize);
     const totalSize = await this.calculateDownloadTotals(files, availableQuota);   
     
-    if (availableQuota >= totalSize) {
+    if (availableQuota >= totalSize) {           
+      
       this.updateProgressMainMessage(true);      
-      if (files.size === 1) {
-        const [file] = files; 
-        if (!file?.directory) {
-          this.updateState({
-            showApplyToAll: false
-          });
-        }
-      }
+      const singleFile = files.size === 1 && ![...files][0]?.directory;
 
-      await this.downloadFilesAndFolders(files, rootDirHandle);
+      this.updateState({
+        allowResume: false, // not available for download
+        showApplyToAll: !singleFile,
+        allowSkip: !singleFile,
+      });
+
+      await this.downloadFilesAndFolders(Array.from(files), rootDirHandle);
     } else {
       this.showDownloadErrorDialog(availableQuota)
     }
@@ -350,7 +357,7 @@ export default class FileDownloadManager {
       } else {
         this.openErrorDialog(messages.get(messages.DOWNLOAD_DIRECTORY_ACCESS_ERROR) + err)
       }
-      return { selectionPossible: false, rootDirHandle: null };
+      return null;
     } finally {
       this.resetDownloadDialogStates()
     }
@@ -387,7 +394,7 @@ export default class FileDownloadManager {
   }
 
   async downloadFilesAndFolders(files, parentDirHandle) {
-    try {
+    try {      
       for (const file of files) {
         let currentState = this.getCurrentState();
         if (currentState.cancelTransfer) {
@@ -408,10 +415,7 @@ export default class FileDownloadManager {
             // Prompt user decision if not applying to all files
             if (!currentState.applyToAllFiles) {              
               this.updateState({ currentFile: file, 
-                showFileExistsDialog: true ,
-                allowResume:false, // not avaliable for download
-                allowSkip: files.length > 1,
-                showApplyToAll: files.length > 1,
+                showFileExistsDialog: true ,               
                 loading: false,
                 progress: 0, 
               });
@@ -449,9 +453,8 @@ export default class FileDownloadManager {
       if (err.name === "AbortError") {
         // no feedback needed, user aborted          
       } else {
-        this.openErrorDialog(
-          `Error downloading ${[...files].map(file => file.name).join(", ")}: ` + (err.message || err)
-        );
+        const fileName = files.length === 1 ? files[0].name : " files";
+        this.openErrorDialog(`Error downloading ${fileName}: ` + (err.message || err))        
       }
     }
   }
