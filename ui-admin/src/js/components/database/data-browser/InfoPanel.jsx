@@ -75,16 +75,8 @@ class InfoPanel extends React.Component {
               <TableCell>{selectedFile.size}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell variant='head' component='th'>{messages.get(messages.CREATED)}</TableCell>
-              <TableCell>{selectedFile.creationTime.toLocaleString()}</TableCell>
-            </TableRow>
-            <TableRow>
               <TableCell variant='head' component='th'>{messages.get(messages.MODIFIED)}</TableCell>
               <TableCell>{selectedFile.lastModifiedTime.toLocaleString()}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell variant='head' component='th'>{messages.get(messages.ACCESSED)}</TableCell>
-              <TableCell>{selectedFile.lastAccessTime.toLocaleString()}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

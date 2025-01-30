@@ -535,14 +535,6 @@ class DataBrowser extends React.Component {
                   getValue: ({ row }) => this.sizeToString(row.size)
                 },
                 {
-                  name: 'created',
-                  label: messages.get(messages.CREATED),
-                  sortable: true,
-                  visible: false,
-                  getValue: ({ row }) => row.creationTime,
-                  renderValue: ({ row }) => this.timeToString(row.creationTime)
-                },
-                {
                   name: 'modified',
                   label: messages.get(messages.MODIFIED),
                   sortable: true,
@@ -550,15 +542,6 @@ class DataBrowser extends React.Component {
                   getValue: ({ row }) => row.lastModifiedTime,
                   renderValue: ({ row }) =>
                     this.timeToString(row.lastModifiedTime)
-                },
-                {
-                  name: 'accessed',
-                  label: messages.get(messages.ACCESSED),
-                  sortable: true,
-                  visible: false,
-                  getValue: ({ row }) => row.lastAccessTime,
-                  renderValue: ({ row }) =>
-                    this.timeToString(row.lastAccessTime)
                 }
               ]}
               loadRows={this.controller.load}

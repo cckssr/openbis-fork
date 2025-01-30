@@ -1,7 +1,6 @@
 // prettier-ignore
 const keys = {
   ACCESS: 'ACCESS',
-  ACCESSED: 'ACCESSED',
   ACCESS_DATE: 'ACCESS_DATE',
   ACTIONS: 'ACTIONS',
   ACTIVATE_USER: 'ACTIVATE_USER',
@@ -64,7 +63,6 @@ const keys = {
   CONVERTED: 'CONVERTED',
   COPY: 'COPY',
   CRASH: 'CRASH',
-  CREATED: 'CREATED',
   CURRENT_PAGE: 'CURRENT_PAGE',
   CUSTOM_SORTING: 'CUSTOM_SORTING',
   DATABASE: 'DATABASE',
@@ -383,7 +381,6 @@ const keys = {
 // prettier-ignore
 const messages_en = {
   [keys.ACCESS]: 'Access',
-  [keys.ACCESSED]: 'Accessed',
   [keys.ACCESS_DATE]: 'Access Date',
   [keys.ACTIONS]: 'Actions',
   [keys.ACTIVATE_USER]: 'Activate user',
@@ -446,7 +443,6 @@ const messages_en = {
   [keys.CONVERTED]: 'Converted',
   [keys.COPY]: 'Copy',
   [keys.CRASH]: 'Something went wrong :(',
-  [keys.CREATED]: 'Created',
   [keys.CURRENT_PAGE]: 'Current Page',
   [keys.CUSTOM_SORTING]: 'Custom Sorting',
   [keys.DATABASE]: 'Database',
