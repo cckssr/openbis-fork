@@ -17,24 +17,6 @@
 
 package ch.ethz.sis.openbis.generic.server.xls.export.helper;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.poi.ss.usermodel.Workbook;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
@@ -48,6 +30,13 @@ import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
 import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
+import org.apache.poi.ss.usermodel.Workbook;
+
+import java.io.Serializable;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder & IPropertiesHolder,
         ENTITY_TYPE extends IEntityType> extends AbstractXLSExportHelper<ENTITY_TYPE>
@@ -72,9 +61,10 @@ public abstract class AbstractXLSEntityExportHelper<ENTITY extends IPermIdHolder
         // Sorting after grouping is needed only to make sure that the tests pass, because entrySet() can have elements
         // in arbitrary order.
         final Collection<Map.Entry<ENTITY_TYPE, List<ENTITY>>> groupedEntities =
+                entities.size() != 0 ?
                 entities.stream().collect(Collectors.groupingBy(getTypeFunction())).entrySet().stream()
                         .sorted(Comparator.comparing(entry -> entry.getKey().getPermId().toString()))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()) : List.of();
 
         final ExportableKind exportableKind = getExportableKind();
         final String entityTypeName = getEntityTypeName();

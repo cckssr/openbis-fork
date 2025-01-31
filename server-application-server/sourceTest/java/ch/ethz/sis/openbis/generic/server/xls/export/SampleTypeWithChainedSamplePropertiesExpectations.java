@@ -15,19 +15,8 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
-import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExportData.DATE_RANGE_VALIDATION_SCRIPT_CONTENT;
-
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import org.jmock.Expectations;
-import org.jmock.api.Invocation;
-import org.jmock.lib.action.CustomAction;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
@@ -36,7 +25,17 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
+import org.jmock.Expectations;
+import org.jmock.api.Invocation;
+import org.jmock.lib.action.CustomAction;
+
+import java.util.*;
+
+import static ch.ethz.sis.openbis.generic.server.xls.export.XLSExportData.DATE_RANGE_VALIDATION_SCRIPT_CONTENT;
 
 class SampleTypeWithChainedSamplePropertiesExpectations extends Expectations
 {
@@ -77,6 +76,12 @@ class SampleTypeWithChainedSamplePropertiesExpectations extends Expectations
                 }
 
             });
+            allowing(api).searchSemanticAnnotations(with(XLSExportTest.SESSION_TOKEN), with(any(
+                            SemanticAnnotationSearchCriteria.class)),
+                    with(any(SemanticAnnotationFetchOptions.class)));
+            SearchResult<SemanticAnnotation> searchResult =
+                    new SearchResult<>(List.of(), 0);
+            will(returnValue(searchResult));
 
             allowing(api).getSampleTypes(with(XLSExportTest.SESSION_TOKEN), with(new CollectionMatcher<>(
                             Collections.singletonList(new EntityTypePermId("PERSON", EntityKind.SAMPLE)))),
