@@ -329,9 +329,9 @@ export default class GridController {
       if (filter) {
         return value !== null && value !== undefined
           ? String(value)
-              .trim()
-              .toUpperCase()
-              .includes(filter.trim().toUpperCase())
+            .trim()
+            .toUpperCase()
+            .includes(filter.trim().toUpperCase())
           : false
       } else {
         return true
@@ -1037,14 +1037,23 @@ export default class GridController {
     this.clearSelection()
   }
 
-  clearSelection() {
-    this.multiselectRows([])
+  async handleSelectAllPages() {
+    await this.context.setState({
+      allPagesSelected: true
+    })
+  }
+
+  async clearSelection() {
+    await this.multiselectRows([])
+    await this.context.setState({
+      allPagesSelected: false
+    })
   }
 
   async handleExecuteAction(action) {
     if (action && action.execute) {
-      const { multiselectedRows } = this.context.getState()
-      action.execute({ multiselectedRows })
+      const { multiselectedRows, allPagesSelected } = this.context.getState()
+      action.execute({ multiselectedRows, allPagesSelected })
     }
   }
 
