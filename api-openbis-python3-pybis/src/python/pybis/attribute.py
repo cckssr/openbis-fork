@@ -435,6 +435,8 @@ class AttrHolder:
                     for item in result:
                         if "identifier" in item:
                             values.append(item["identifier"])
+                        elif "permId" in item:
+                            values.append(item["permId"])
                         else:
                             values.append(item)
                     return values
@@ -454,6 +456,8 @@ class AttrHolder:
                     for item in result:
                         if "identifier" in item:
                             values.append(item["identifier"])
+                        elif "permId" in item:
+                            values.append(item["permId"])
                         else:
                             values.append(item)
                     return values
