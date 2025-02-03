@@ -61,7 +61,7 @@ export default class ImagingFacade {
             [new this.openbis.DataSetPermId(objId)],
             fetchOptions
         )
-        console.log("dataset: ", dataset);
+        //console.log("dataset: ", dataset);
         if (withProperties)
             return dataset[objId].properties;
         if (withType)
@@ -138,18 +138,43 @@ export default class ImagingFacade {
         return await experiments[objId].dataSets;
     }
 
+    getRecursiveDescendants = sample => {
+        let children = sample.getChildren();
+        let datasetList = [];
+
+        children.forEach(child => {
+            let childDatasets = this.getRecursiveDescendants(child);
+            childDatasets.forEach(dataset => {
+                if (!datasetList.some(existing => existing.getCode() === dataset.getCode())) {
+                    datasetList.push(dataset);
+                }
+            });
+        });
+
+        sample.getDataSets().forEach(dataset => {
+            if (!datasetList.some(existing => existing.getCode() === dataset.getCode())) {
+                datasetList.push(dataset);
+            }
+        });
+
+        return datasetList;
+    }
+
+
     fetchSampleDataSets = async (objId) => {
         const fetchOptions = new this.openbis.SampleFetchOptions();
+        fetchOptions.withType();
         fetchOptions.withProperties();
         fetchOptions.withDataSets();
-        fetchOptions.withChildren().withDataSets();
+        fetchOptions.withChildrenUsing(fetchOptions);
+
         const samples = await this.openbis.getSamples(
             [new this.openbis.SamplePermId(objId)],
             fetchOptions
         );
-        var dataSets = samples[objId].dataSets;
-        samples[objId].children.forEach(child => child.dataSets.forEach(dataSet => dataSets.push(dataSet)));
-        return await dataSets;
+
+        const dataSets = this.getRecursiveDescendants(samples[objId]);
+        return dataSets;
     }
 
     fetchDataSetsSortingInfo = (dataSets) => {
