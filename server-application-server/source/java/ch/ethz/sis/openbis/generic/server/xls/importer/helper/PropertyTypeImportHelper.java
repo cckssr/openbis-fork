@@ -16,7 +16,6 @@
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
 import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.SAMPLE_DATA_TYPE_MANDATORY_TYPE;
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.SAMPLE_DATA_TYPE_PREFIX;
 
 import java.util.HashMap;
 import java.util.List;
@@ -146,6 +145,19 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         if (!propertyData.equals(this.propertyCache.get(code)))
         {
             throw new UserFailureException("Ambiguous property " + code + " found, it has been declared before with different attributes.");
+        }
+
+        if(!delayedExecutor.isSystem())
+        {
+            String internal = getValueByColumnName(headers, values, Attribute.Internal);
+            boolean isInternal = ImportUtils.isTrue(internal);
+            if(isInternal)
+            {
+                PropertyType pt = delayedExecutor.getPropertyType(new PropertyTypePermId(code), new PropertyTypeFetchOptions());
+                if(pt == null) {
+                    throw new UserFailureException("Non-system user can not create internal property types!");
+                }
+            }
         }
     }
 

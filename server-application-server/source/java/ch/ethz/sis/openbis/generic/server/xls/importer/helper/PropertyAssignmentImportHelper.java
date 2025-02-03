@@ -31,7 +31,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.PluginPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
@@ -132,6 +131,28 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         return ImportTypes.PROPERTY_TYPE;
     }
 
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        if (code == null)
+        {
+            throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.Code);
+        }
+
+        String internalAssignment = getValueByColumnName(header, values, Attribute.InternalAssignment);
+        boolean isInternalNamespace = ImportUtils.isTrue(internalAssignment);
+
+        boolean isSystem = delayedExecutor.isSystem();
+        boolean canUpdate = (isInternalNamespace == false) || isSystem;
+
+        if (canUpdate == false) {
+            if(!existingDynamicPluginsByPropertyCode.containsKey(code))
+            {
+                throw new UserFailureException("Non-system user can not assign new internal assignments!");
+            }
+        }
+    }
+
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         String version = getValueByColumnName(header, values, Attribute.Version);
@@ -139,14 +160,8 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         String internalAssignment = getValueByColumnName(header, values, Attribute.InternalAssignment);
         boolean isInternalNamespace = ImportUtils.isTrue(internalAssignment);
 
-        if (code == null)
-        {
-            throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.Code);
-        }
-
         boolean isSystem = delayedExecutor.isSystem();
         boolean canUpdate = (isInternalNamespace == false) || isSystem;
-
         if (canUpdate == false) {
             return false;
         } if (canUpdate && (version == null || version.isEmpty())) {
@@ -278,6 +293,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             creation.setOrdinal(propertyAssignment.getOrdinal());
             creation.setSection(propertyAssignment.getSection());
             creation.setShowInEditView(propertyAssignment.isShowInEditView());
+            creation.setManagedInternally(propertyAssignment.isManagedInternally());
             newPropertyAssignmentCreations.add(creation);
         }
         return newPropertyAssignmentCreations;

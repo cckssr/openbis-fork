@@ -97,6 +97,21 @@ public class SampleTypeImportHelper extends BasicImportHelper
         return ImportTypes.SAMPLE_TYPE;
     }
 
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+
+        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
+        {
+            SampleType
+                    st = delayedExecutor.getSampleType(new EntityTypePermId(code), new SampleTypeFetchOptions());
+            if(st == null) {
+                throw new UserFailureException("Non-system user can not create new internal entity types!");
+            }
+        }
+    }
+
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
         return isNewVersionWithInternalNamespace(header, values, versions,

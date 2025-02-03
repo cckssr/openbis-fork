@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.VersionUtils;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class ExperimentTypeImportHelper extends BasicImportHelper
 {
@@ -93,6 +94,20 @@ public class ExperimentTypeImportHelper extends BasicImportHelper
     @Override protected ImportTypes getTypeName()
     {
         return ImportTypes.EXPERIMENT_TYPE;
+    }
+
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String code = getValueByColumnName(header, values, Attribute.Code);
+        String internal = getValueByColumnName(header, values, Attribute.Internal);
+
+        if(!delayedExecutor.isSystem() && ImportUtils.isTrue(internal))
+        {
+            ExperimentType exp = delayedExecutor.getExperimentType(new EntityTypePermId(code), new ExperimentTypeFetchOptions());
+            if(exp == null) {
+                throw new UserFailureException("Non-system user can not create new internal entity types!");
+            }
+        }
     }
 
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)

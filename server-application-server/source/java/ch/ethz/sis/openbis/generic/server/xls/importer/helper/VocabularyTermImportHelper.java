@@ -15,10 +15,15 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyTermCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyTermPermId;
@@ -77,6 +82,10 @@ public class VocabularyTermImportHelper extends BasicImportHelper
 
     private String vocabularyCode;
 
+    private Vocabulary vocabulary;
+
+    private List<String> vocabularyCodes;
+
     private final Map<String, Integer> versions;
 
     private final DelayedExecutionDecorator delayedExecutor;
@@ -95,6 +104,15 @@ public class VocabularyTermImportHelper extends BasicImportHelper
     {
         Map<String, Integer> header = parseHeader(page.get(start), false);
         vocabularyCode = getValueByColumnName(header, page.get(start + 1), VOCABULARY_CODE_FIELD);
+        VocabularyFetchOptions fetchOptions = new VocabularyFetchOptions();
+        fetchOptions.withTerms();
+        vocabulary = delayedExecutor.getVocabulary(new VocabularyPermId(vocabularyCode), fetchOptions);
+        if(vocabulary != null) {
+            vocabularyCodes = vocabulary.getTerms().stream().map(VocabularyTerm::getCode).collect(
+                    Collectors.toList());
+        } else {
+            vocabularyCodes = new ArrayList<>();
+        }
         super.importBlock(page, pageIndex, start + 2, end);
     }
 
@@ -103,20 +121,24 @@ public class VocabularyTermImportHelper extends BasicImportHelper
         return ImportTypes.VOCABULARY_TERM;
     }
 
+    @Override
+    protected void validateLine(Map<String, Integer> header, List<String> values) {
+        String vocabularyTermCode = getValueByColumnName(header, values, Attribute.Code);
+
+        String isInternalVocabularyTermValue = getValueByColumnName(header, values, Attribute.Internal);
+        boolean isInternalVocabularyTerm = ImportUtils.isTrue(isInternalVocabularyTermValue);
+
+        if(isInternalVocabularyTerm && !delayedExecutor.isSystem())
+        {
+            if(vocabulary != null && !vocabularyCodes.contains(vocabularyTermCode))
+            {
+                throw new UserFailureException("Non-system user can not create internal vocabulary terms!");
+            }
+        }
+    }
+
     @Override protected boolean isNewVersion(Map<String, Integer> header, List<String> values)
     {
-        String vocabularyTermCode = getValueByColumnName(header, values, Attribute.Code);
-        if (ImportUtils.isTrue(vocabularyTermCode) && !ImportUtils.isTrue(vocabularyCode)) {
-            throw new UserFailureException("Internal Vocabulary Terms can only be created on Internal Vocabularies: " + vocabularyTermCode);
-        }
-
-        boolean isInternalNamespace = ImportUtils.isTrue(vocabularyCode);
-        boolean canUpdate = (isInternalNamespace == false) || delayedExecutor.isSystem();
-
-        if (canUpdate == false) {
-            return false;
-        }
-
         return isNewVersionWithInternalNamespace(header, values, versions,
                 delayedExecutor.isSystem(),
                 ImportTypes.VOCABULARY_TERM.getType() + "-" + vocabularyCode,
@@ -165,7 +187,6 @@ public class VocabularyTermImportHelper extends BasicImportHelper
         creation.setLabel(label);
         creation.setDescription(description);
         creation.setManagedInternally(isInternalNamespace);
-        // import internal
 
         this.delayedExecutor.createVocabularyTerm(creation);
     }
