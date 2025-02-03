@@ -147,12 +147,13 @@ class GridRow extends React.PureComponent {
   }
 
   renderMultiselect() {
-    const { multiselectable, multiselected } = this.props
+    const { multiselectable, multiselected, allPagesSelected } = this.props
 
     if (multiselectable) {
       return (
         <GridMultiselectCell
-          value={multiselected}
+          value={allPagesSelected || multiselected}
+          disabled={allPagesSelected}
           onClick={this.handleMultiselect}
         />
       )

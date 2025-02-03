@@ -40,7 +40,7 @@ const styles = theme => ({
     display: 'block',
     width: '100%',
     overflowY: 'auto',
-    maxHeight: 'calc(100vh - (' + theme.spacing(36)  + ' ))',  
+    maxHeight: 'calc(100vh - (' + theme.spacing(36) + ' ))',
   },
   loadingContainer: {
     flex: '1 1 auto'
@@ -64,7 +64,7 @@ const styles = theme => ({
   },
   titleCell: {
     border: 0,
-    maxWidth: '80%'  
+    maxWidth: '80%'
   },
   titleContent: {
     paddingLeft: theme.spacing(2)
@@ -80,7 +80,7 @@ const styles = theme => ({
   overlay: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),     
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),
     display: 'flex',
     alignItems: 'flex-end',
     paddingBottom: theme.spacing(1),
@@ -92,7 +92,7 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: theme.spacing(2) 
+    gap: theme.spacing(2)
   },
 
   cloudIcon: {
@@ -113,17 +113,17 @@ const styles = theme => ({
 
   dropPill: {
     display: 'flex',
-    alignItems: 'center', 
+    alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
     borderRadius: '9999px',
-    padding: theme.spacing(2, 4),    
+    padding: theme.spacing(2, 4),
     fontFamily: theme.typography.body2.fontFamily,
-    fontSize: theme.typography.body2.fontSize,      
-    boxShadow: theme.shadows[4], 
+    fontSize: theme.typography.body2.fontSize,
+    boxShadow: theme.shadows[4],
   },
-  
+
   driveIcon: {
     marginRight: theme.spacing(1),
     fontSize: '1.4rem'
@@ -140,7 +140,7 @@ class Grid extends React.PureComponent {
     super(props)
     autoBind(this)
 
-    this.state = {}    
+    this.state = {}
 
     if (this.props.controller) {
       this.controller = this.props.controller
@@ -175,53 +175,53 @@ class Grid extends React.PureComponent {
       return <Loading loading={true}></Loading>
     }
 
-    const { id, classes, showHeaders, isDragging} = this.props
+    const { id, classes, showHeaders, isDragging } = this.props
     const { loading, rows } = this.state
     const doShowHeaders = typeof showHeaders === 'boolean' ? showHeaders : true
 
     return (
       <div className={[classes.gridWrapper, classes.container].join(' ')}>
         <div
-                id={id}
-                onClick={this.handleClickContainer}>
-                <div className={classes.loadingContainer}>
-                  <Loading loading={loading} styles={{ root: classes.loading }}>
-                    <div className={classes.tableContainer}>
-                      <Table
-                        classes={{ root: classes.table }}
-                        onClick={this.handleClickTable}
-                      >
-                        <TableHead classes={{ root: classes.tableHead }}>
-                          {this.renderTitle()}
-                          {this.renderPagingAndConfigsAndExports()}
-                          {doShowHeaders && this.renderHeaders()}
-                          {this.renderFilters()}
-                          {this.renderSelectionInfo()}
-                        </TableHead>
-                        <TableBody>
-                          {rows.map(row => {
-                            return this.renderRow(row)
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                    {this.renderExportState()}
-                  </Loading>
-                </div>
+          id={id}
+          onClick={this.handleClickContainer}>
+          <div className={classes.loadingContainer}>
+            <Loading loading={loading} styles={{ root: classes.loading }}>
+              <div className={classes.tableContainer}>
+                <Table
+                  classes={{ root: classes.table }}
+                  onClick={this.handleClickTable}
+                >
+                  <TableHead classes={{ root: classes.tableHead }}>
+                    {this.renderTitle()}
+                    {this.renderPagingAndConfigsAndExports()}
+                    {doShowHeaders && this.renderHeaders()}
+                    {this.renderFilters()}
+                    {this.renderSelectionInfo()}
+                  </TableHead>
+                  <TableBody>
+                    {rows.map(row => {
+                      return this.renderRow(row)
+                    })}
+                  </TableBody>
+                </Table>
               </div>
+              {this.renderExportState()}
+            </Loading>
+          </div>
+        </div>
         {isDragging && (
           <div className={classes.overlay}>
-            <div className={classes.dropContentWrapper}>                
-                <CloudUploadIcon className={classes.cloudIcon} />                
-                <div className={classes.dropPill}>
-                  {messages.get(messages.UPLOAD_DRAG_MESSAGE)}                  
-                </div>
+            <div className={classes.dropContentWrapper}>
+              <CloudUploadIcon className={classes.cloudIcon} />
+              <div className={classes.dropPill}>
+                {messages.get(messages.UPLOAD_DRAG_MESSAGE)}
               </div>
+            </div>
           </div>
         )}
       </div>
 
-      )
+    )
   }
 
   renderTitle() {
@@ -371,7 +371,7 @@ class Grid extends React.PureComponent {
 
   renderHeaders() {
     const { multiselectable } = this.props
-    const { sortings, rows, multiselectedRows } = this.state
+    const { sortings, rows, multiselectedRows, allPagesSelected } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -386,6 +386,7 @@ class Grid extends React.PureComponent {
         }
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
+        allPagesSelected={allPagesSelected}
       />
     )
   }
@@ -414,7 +415,7 @@ class Grid extends React.PureComponent {
 
   renderSelectionInfo() {
     const { multiselectable, actions } = this.props
-    const { rows, multiselectedRows } = this.state
+    const { rows, multiselectedRows, allPagesSelected } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -425,15 +426,17 @@ class Grid extends React.PureComponent {
         actions={actions}
         onExecuteAction={this.controller.handleExecuteAction}
         onMultiselectionClear={this.controller.handleMultiselectionClear}
+        onSelectAllPages={this.controller.handleSelectAllPages}
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
+        allPagesSelected={allPagesSelected}
       />
     )
   }
 
   renderRow(row) {
     const { selectable, multiselectable, onRowClick, onRowDoubleClick } = this.props
-    const { selectedRow, multiselectedRows, heights } = this.state
+    const { selectedRow, multiselectedRows, allPagesSelected, heights } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -449,6 +452,7 @@ class Grid extends React.PureComponent {
         selected={selectedRow ? selectedRow.id === row.id : false}
         multiselectable={multiselectable}
         multiselected={multiselectedRows && multiselectedRows[row.id]}
+        allPagesSelected={allPagesSelected}
         onClick={this.controller.handleRowClick}
         onDoubleClick={this.controller.handleRowDoubleClick}
         onSelect={this.controller.handleRowSelect}

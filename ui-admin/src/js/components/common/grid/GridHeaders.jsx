@@ -101,16 +101,25 @@ class GridHeaders extends React.PureComponent {
   }
 
   renderMultiselectCell() {
-    const { multiselectable, multiselectedRows, rows, classes } = this.props
+    const { multiselectable, multiselectedRows, allPagesSelected, rows, classes } = this.props
 
     if (multiselectable) {
-      const multiselectedRowIds = Object.keys(multiselectedRows)
-      const rowIds = rows.map(row => String(row.id))
-      const rowIdsSelected = _.intersection(rowIds, multiselectedRowIds)
+      let value, indeterminate, disabled
 
-      const value = rowIds.length > 0 && rowIds.length === rowIdsSelected.length
-      const indeterminate =
-        rowIdsSelected.length > 0 && rowIdsSelected.length < rowIds.length
+      if (allPagesSelected) {
+        value = true
+        indeterminate = false
+        disabled = true
+      } else {
+        const multiselectedRowIds = Object.keys(multiselectedRows)
+        const rowIds = rows.map(row => String(row.id))
+        const rowIdsSelected = _.intersection(rowIds, multiselectedRowIds)
+
+        value = rowIds.length > 0 && rowIds.length === rowIdsSelected.length
+        indeterminate =
+          rowIdsSelected.length > 0 && rowIdsSelected.length < rowIds.length
+        disabled = false
+      }
 
       return (
         <TableCell classes={{ root: classes.multiselect }}>
@@ -118,6 +127,7 @@ class GridHeaders extends React.PureComponent {
             <CheckboxField
               value={value}
               indeterminate={indeterminate}
+              disabled={disabled}
               onChange={this.handleMultiselectAllRowsChange}
             />
           </div>
