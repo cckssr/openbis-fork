@@ -34,14 +34,9 @@ const MetadataSection = ({ activePreview, activeImage, imagingTags, onEditCommen
 				component={'span'} sx={{
 					color: 'textSecondary'
 				}}>
-				{(currPreviewComment === null || currPreviewComment === '')
-					&& (currPreviewTags === null || currPreviewTags.length === 0)
-					&& isObjectEmpty(currPreviewMetadata) &&
-					<p>No preview metadata to display</p>}
-				{(currPreviewComment !== null && currPreviewComment !== '') &&
-					<EditableMetadataField keyProp={"Preview Comment"}
-						valueProp={currPreviewComment}
-						onEdit={newVal => onEditComment(newVal)} />}
+				<EditableMetadataField keyProp={"Preview Comment"}
+					valueProp={currPreviewComment}
+					onEdit={newVal => onEditComment(newVal)} />
 
 				{(currPreviewTags !== null && currPreviewTags.length > 0) && matchTagsToLabel()}
 			</Typography>
