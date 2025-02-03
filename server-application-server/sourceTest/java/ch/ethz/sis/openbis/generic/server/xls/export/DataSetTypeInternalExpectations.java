@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -23,6 +24,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
 import org.jmock.Expectations;
 import org.jmock.api.Invocation;
@@ -39,11 +43,12 @@ class DataSetTypeInternalExpectations extends Expectations
         calendar.set(2023, Calendar.MARCH, 10, 17, 23, 44);
 
         final Date modificationDate = calendar.getTime();
-
         allowing(api).getDataSetTypes(with(XLSExportTest.SESSION_TOKEN), with(new CollectionMatcher<>(
                         Collections.singletonList(
                                 new EntityTypePermId("INTERNAL_ATTACHMENT", EntityKind.DATA_SET)))),
                 with(any(DataSetTypeFetchOptions.class)));
+
+
 
         will(new CustomAction("getting data set types")
         {
@@ -115,6 +120,13 @@ class DataSetTypeInternalExpectations extends Expectations
             }
 
         });
+
+        allowing(api).searchSemanticAnnotations(with(XLSExportTest.SESSION_TOKEN), with(any(
+                        SemanticAnnotationSearchCriteria.class)),
+                with(any(SemanticAnnotationFetchOptions.class)));
+        SearchResult<SemanticAnnotation> searchResult =
+                new SearchResult<>(List.of(), List.of().size());
+        will(returnValue(searchResult));
     }
 
 }

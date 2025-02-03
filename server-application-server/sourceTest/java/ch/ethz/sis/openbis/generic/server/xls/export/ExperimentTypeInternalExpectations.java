@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
@@ -24,6 +25,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
 import org.jmock.Expectations;
 import org.jmock.api.Invocation;
@@ -42,6 +46,7 @@ class ExperimentTypeInternalExpectations extends Expectations
                         Collections.singletonList(
                                 new EntityTypePermId("INTERNAL_DEFAULT_EXPERIMENT", EntityKind.EXPERIMENT)))),
                 with(any(ExperimentTypeFetchOptions.class)));
+
 
         will(new CustomAction("getting experiment types")
         {
@@ -130,6 +135,15 @@ class ExperimentTypeInternalExpectations extends Expectations
             }
 
         });
+
+        allowing(api).searchSemanticAnnotations(with(XLSExportTest.SESSION_TOKEN), with(any(
+                        SemanticAnnotationSearchCriteria.class)),
+                with(any(SemanticAnnotationFetchOptions.class)));
+        SearchResult<SemanticAnnotation> searchResult =
+                new SearchResult<>(List.of(), 0);
+        will(returnValue(searchResult));
+
+
     }
 
 }

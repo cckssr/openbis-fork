@@ -15,19 +15,8 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.jmock.Expectations;
-import org.jmock.api.Invocation;
-import org.jmock.lib.action.CustomAction;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
@@ -43,8 +32,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
+import org.jmock.Expectations;
+import org.jmock.api.Invocation;
+import org.jmock.lib.action.CustomAction;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 class ExperimentExpectations extends Expectations
 {
@@ -60,6 +59,14 @@ class ExperimentExpectations extends Expectations
             allowing(api).getExperiments(with(XLSExportTest.SESSION_TOKEN), with(new CollectionMatcher<>(
                     List.of(new ExperimentPermId("200001010000000-0003")))), with(any(ExperimentFetchOptions.class)));
         }
+        allowing(api).searchSemanticAnnotations(with(XLSExportTest.SESSION_TOKEN), with(any(
+                        SemanticAnnotationSearchCriteria.class)),
+                with(any(SemanticAnnotationFetchOptions.class)));
+        SearchResult<SemanticAnnotation> searchResult =
+                new SearchResult<>(List.of(), 0);
+        will(returnValue(searchResult));
+
+
 
         allowing(api).getExperiments(with(XLSExportTest.SESSION_TOKEN), with(new CollectionMatcher<>(
                         List.of(new ExperimentPermId("200001010000000-0001"),

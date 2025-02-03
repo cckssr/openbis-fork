@@ -15,25 +15,24 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import org.jmock.Expectations;
-import org.jmock.api.Invocation;
-import org.jmock.lib.action.CustomAction;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyTermFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.CollectionMatcher;
+import org.jmock.Expectations;
+import org.jmock.api.Invocation;
+import org.jmock.lib.action.CustomAction;
+
+import java.util.*;
 
 class VocabularyExpectations extends Expectations
 {
@@ -53,6 +52,7 @@ class VocabularyExpectations extends Expectations
         allowing(api).getVocabularies(with(XLSExportTest.SESSION_TOKEN), with(new CollectionMatcher<>(
                         Collections.singletonList(new VocabularyPermId("ANTIBODY.DETECTION")))),
                 with(any(VocabularyFetchOptions.class)));
+
 
         will(new CustomAction("getting vocabularies")
         {
@@ -99,6 +99,15 @@ class VocabularyExpectations extends Expectations
             }
 
         });
+
+        allowing(api).searchSemanticAnnotations(with(XLSExportTest.SESSION_TOKEN), with(any(
+                        SemanticAnnotationSearchCriteria.class)),
+                with(any(SemanticAnnotationFetchOptions.class)));
+        SearchResult<SemanticAnnotation> searchResult =
+                new SearchResult<>(List.of(), 0);
+        will(returnValue(searchResult));
+
+
     }
 
 }

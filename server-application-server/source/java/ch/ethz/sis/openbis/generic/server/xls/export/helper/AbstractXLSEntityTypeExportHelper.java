@@ -338,11 +338,18 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
 
             if (propertyTypeCode != null)
             {
+
                 result.getObjects().stream().collect(
                                 Collectors.groupingBy(x -> x.getPropertyAssignment().getEntityType()))
                         .forEach((k, v) -> semanticAnnotationsCache.put(
                                 new SemanticAnnotationKey(entityKind, k.getCode(),
                                         propertyTypeCode), v));
+
+                if (result.getTotalCount() == 0)
+                {
+                    semanticAnnotationsCache.put(key, List.of());
+
+                }
 
             } else
             {
