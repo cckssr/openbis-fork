@@ -17,6 +17,8 @@
 function SampleFormView(sampleFormController, sampleFormModel) {
 	this._sampleFormController = sampleFormController;
 	this._sampleFormModel = sampleFormModel;
+	this._previousGlobalEventListener = null;
+	this._sampleFormViewGlobalEventListener = null;
 
 	this.repaint = function(views, loadFromTemplate) {
 		var $container = views.content;
@@ -397,19 +399,47 @@ function SampleFormView(sampleFormController, sampleFormModel) {
 				pagOptionsToSend.pageSize = 1;
 				_this._sampleFormModel.paginationInfo.pagFunction(function(result) {
 					if(result && result.objects && result.objects[0] && result.objects[0].permId) {
-						_this._sampleFormModel.paginationInfo.currentIndex = index;
+					    var paginationInfo = $.extend(true, {}, _this._sampleFormModel.paginationInfo);
+					    paginationInfo.previousIndex = _this._sampleFormModel.paginationInfo.currentIndex;
+                        paginationInfo.currentIndex = index;
 						var arg = {
 								permIdOrIdentifier : result.objects[0].permId,
-								paginationInfo : _this._sampleFormModel.paginationInfo
+								paginationInfo : paginationInfo
 						}
-						mainController.changeView('showViewSamplePageFromPermId', arg);
+						mainController.changeView('showViewSamplePageFromPermId', arg, true);
 					} else {
 						window.alert("The item to go to is no longer available.");
 					}
 				}, pagOptionsToSend);
 			}
 
+            var arrowKeyEventListener = function(paginationInfo) {
+                return function(event) {
+                        if(event.key === "ArrowRight") {
+                            if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
+                                moveToIndex(paginationInfo.currentIndex+1);
+                            }
+                        } else if(event.key === "ArrowLeft") {
+                            if(paginationInfo.currentIndex-1 >= 0) {
+                               moveToIndex(paginationInfo.currentIndex-1);
+                            }
+                        } else {
+                            // Ignore others
+                        }
+                };
+            }
+
             if(_this._sampleFormModel.paginationInfo) {
+
+                mainController.currentView.finalize = function(backButtonLogic) {
+                    if(!backButtonLogic) {
+                         _this._previousGlobalEventListener =  _this._sampleFormViewGlobalEventListener;
+                    }
+                    document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
+                }
+
+                this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
+                document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
 
                 var $backBtn = FormUtil.getButtonWithIcon(null, function () {
                                     moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
@@ -421,7 +451,7 @@ function SampleFormView(sampleFormController, sampleFormModel) {
                 }
 
                 var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
-                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel);
+                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
 
                 var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
                                         moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);

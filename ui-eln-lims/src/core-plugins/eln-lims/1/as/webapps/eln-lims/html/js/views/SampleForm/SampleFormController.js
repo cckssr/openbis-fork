@@ -120,7 +120,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 	this.isLoaded = function() {
 		return this._sampleFormModel.isFormLoaded;
 	}
-	
+
+	this.restoreEvents = function() {
+        this._sampleFormView._sampleFormViewGlobalEventListener = this._sampleFormView._previousGlobalEventListener;
+        document.addEventListener('keyup',  this._sampleFormView._sampleFormViewGlobalEventListener);
+    }
+
 	this._addCommentsWidget = function($container) {
 		var commentsController = new CommentsController(this._sampleFormModel.sample, this._sampleFormModel.mode, this._sampleFormModel);
 		if(this._sampleFormModel.mode !== FormMode.VIEW || 

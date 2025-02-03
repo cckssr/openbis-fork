@@ -65,6 +65,29 @@ function MainController(profile) {
 	// Controllers currently being used
 	this.sideMenu = null;
 	this.currentView = null;
+	this.globalEventListeners = function() {
+	    const map = {};
+	    const funcMap = {};
+
+	    return {
+            addEventListener: (event, func) => {
+                  if(func) {
+                    var anonFunc = (parameters) => map[event](parameters);
+                    !map[event] && document.addEventListener(event, anonFunc);
+                    map[event] = func;
+                    funcMap[event] = anonFunc;
+                  }
+                },
+            getEventListener: (event) => {
+                return map[event] ?? null;
+            },
+            removeEventListener: (event) => {
+                document.removeEventListener(event, funcMap[event]);
+                delete map[event];
+                delete funcMap[event];
+            }
+	    };
+	}();
 	
 	// Views currently being displayed
 	this.views = {
@@ -154,19 +177,25 @@ function MainController(profile) {
 			// Standard back button logic
 			if(	this.currentView && 
 				this.currentView.finalize) {
-				this.currentView.finalize();
+				this.currentView.finalize(true);
 			}
 			
 			var toPop = null;
 			if(this.backStack.length > 0) {
 				toPop = this.backStack.pop();
 			}
-			
+
 			if(toPop && toPop.view !== null) {
 				this.views.header = toPop.view.header;
 				this.views.content = toPop.view.content;
 				this.views.auxContent = toPop.view.auxContent;
-				
+				if(toPop.controller !== null) {
+                    this.currentView = toPop.controller;
+                    if(this.currentView.restoreEvents)
+                    {
+                        this.currentView.restoreEvents();
+                    }
+                }
 				LayoutManager.reloadView(this.views);
 			} else {
 				function isEmpty(value) {
@@ -408,7 +437,7 @@ function MainController(profile) {
 		
 		if(	this.currentView && 
 			this.currentView.finalize) {
-			this.currentView.finalize();
+			this.currentView.finalize(false);
 		}
 		
 		CKEditorManager.destroy();
@@ -459,7 +488,8 @@ function MainController(profile) {
 
 			this.backStack.push({
 				view : toPush,
-				url : url
+				url : url,
+				controller: this.currentView,
 			});
 		}
 

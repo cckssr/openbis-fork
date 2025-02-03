@@ -70,7 +70,12 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this.isDirty = function() {
 		return this._dataSetFormModel.isFormDirty;
 	}
-	
+
+    this.restoreEvents = function() {
+        this._dataSetFormView._dataSetFormViewGlobalEventListener = this._dataSetFormView._previousGlobalEventListener;
+        document.addEventListener('keyup',  this._dataSetFormView._dataSetFormViewGlobalEventListener);
+    }
+
 	this._addCommentsWidget = function($container) {
 		this._commentsController  = new CommentsController(this._dataSetFormModel.dataSetV3, this._dataSetFormModel.mode, this._dataSetFormModel);
 		if(this._dataSetFormModel.mode !== FormMode.VIEW || 

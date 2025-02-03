@@ -17,6 +17,8 @@
 function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormController = dataSetFormController;
 	this._dataSetFormModel = dataSetFormModel;
+	this._previousGlobalEventListener = null;
+    this._dataSetFormViewGlobalEventListener = null;
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -472,19 +474,47 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 pagOptionsToSend.pageSize = 1;
                 _this._dataSetFormModel.paginationInfo.pagFunction(function(result) {
                     if(result && result[0] && result[0].permId) {
-                        _this._dataSetFormModel.paginationInfo.currentIndex = index;
+                        var paginationInfo = $.extend(true, {}, _this._dataSetFormModel.paginationInfo);
+                        paginationInfo.previousIndex = _this._dataSetFormModel.paginationInfo.currentIndex;
+                        paginationInfo.currentIndex = index;
                         var arg = {
                                 permIdOrIdentifier : result[0].permId.permId,
-                                paginationInfo : _this._dataSetFormModel.paginationInfo
+                                paginationInfo : paginationInfo
                         }
-                        mainController.changeView('showViewDataSetPageFromPermId', arg);
+                        mainController.changeView('showViewDataSetPageFromPermId', arg, true);
                     } else {
                         window.alert("The item to go to is no longer available.");
                     }
                 }, pagOptionsToSend);
             }
 
+            var arrowKeyEventListener = function(paginationInfo) {
+                return function(event) {
+                        if(event.key === "ArrowRight") {
+                            if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
+                                moveToIndex(paginationInfo.currentIndex+1);
+                            }
+                        } else if(event.key === "ArrowLeft") {
+                            if(paginationInfo.currentIndex-1 >= 0) {
+                               moveToIndex(paginationInfo.currentIndex-1);
+                            }
+                        } else {
+                            // Ignore others
+                        }
+                };
+            }
+
             if(this._dataSetFormModel.paginationInfo) {
+
+                mainController.currentView.finalize = function(backButtonLogic) {
+                    if(!backButtonLogic) {
+                       _this._previousGlobalEventListener =  _this._dataSetFormViewGlobalEventListener;
+                    }
+                    document.removeEventListener('keyup', _this._dataSetFormViewGlobalEventListener);
+                }
+
+                this._dataSetFormViewGlobalEventListener = arrowKeyEventListener(_this._dataSetFormModel.paginationInfo);
+                document.addEventListener('keyup',  this._dataSetFormViewGlobalEventListener);
 
                 var $backBtn = FormUtil.getButtonWithIcon(null, function () {
                                     moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
@@ -496,7 +526,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 }
 
                 var $paginationInfoLabel = this._dataSetFormModel.paginationInfo.currentIndex+1 + " of " + this._dataSetFormModel.paginationInfo.totalCount;
-                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel);
+                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
 
                 var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
                                         moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);

@@ -30,6 +30,7 @@ var SampleDataGridUtil = new function() {
 								pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
 								pagOptions : grid.lastUsedOptions,
 								currentIndex : indexFound,
+								previousIndex: null,
 								totalCount : grid.lastReceivedData.totalCount
 						}
 					}
@@ -91,6 +92,7 @@ var SampleDataGridUtil = new function() {
                                     pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
                                     pagOptions : grid.lastUsedOptions,
                                     currentIndex : indexFound,
+                                    previousIndex: null,
                                     totalCount : grid.lastReceivedData.totalCount
                             }
                         }
@@ -132,6 +134,7 @@ var SampleDataGridUtil = new function() {
 								pagFunction : _this.getDataListDynamic(samplesOrCriteria, false),
 								pagOptions : grid.lastUsedOptions,
 								currentIndex : indexFound,
+								previousIndex: null,
 								totalCount : grid.lastReceivedData.totalCount
 						}
 					}
