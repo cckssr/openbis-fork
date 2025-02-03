@@ -1052,8 +1052,74 @@ export default class GridController {
 
   async handleExecuteAction(action) {
     if (action && action.execute) {
-      const { multiselectedRows, allPagesSelected } = this.context.getState()
-      action.execute({ multiselectedRows, allPagesSelected })
+      const state = this.context.getState()
+      const props = this.context.getProps()
+
+      if (state.allPagesSelected) {
+        var rowsFromAllPages = []
+        var local = false
+
+        if (props.rows) {
+          rowsFromAllPages = props.rows
+          local = true
+        } else if (props.loadRows) {
+          const columns = {}
+
+          state.allColumns.forEach(column => {
+            columns[column.name] = column
+          })
+
+          const loadedResult = await props.loadRows({
+            columns: columns,
+            filterMode: state.filterMode,
+            filters: state.filters,
+            globalFilter: state.globalFilter,
+            page: 0,
+            pageSize: 1000000,
+            sortings: state.sortings
+          })
+
+          if (_.isArray(loadedResult)) {
+            rowsFromAllPages = loadedResult
+            local = true
+          } else {
+            rowsFromAllPages = loadedResult.rows
+          }
+        }
+
+        if (local) {
+          const { newAllColumns, newColumnsVisibility } =
+            await this._loadColumns(
+              rowsFromAllPages,
+              state.columnsVisibility,
+              state.columnsSorting
+            )
+
+          rowsFromAllPages = this._filterRows(
+            rowsFromAllPages,
+            newAllColumns,
+            newColumnsVisibility,
+            state.filterMode,
+            state.filters,
+            state.globalFilter
+          )
+        }
+
+        var visibleRowIds = {}
+        state.rows.forEach(row => {
+          visibleRowIds[row.id] = true
+        })
+
+        var multiselectedRows = rowsFromAllPages.map(row => ({
+          id: row.id,
+          data: row,
+          visible: !!visibleRowIds[row.id]
+        }))
+
+        action.execute({ multiselectedRows })
+      } else {
+        action.execute({ multiselectedRows: state.multiselectedRows })
+      }
     }
   }
 
