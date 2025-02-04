@@ -180,12 +180,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this._getAllSampleTypesDropdown = function() {
 		var _this = this;
 
-		var $sampleTypesSelector = null;
-		if(true profile.isMultiGroup()) {
-		    $sampleTypesSelector = FormUtil.getSampleTypeDropdown(null, false, ["STORAGE", "STORAGE_POSITION"], null, "*"); // This should return all types allowed by all *_ELN_SETTINGS
-		} else {
-		    $sampleTypesSelector = FormUtil.getSampleTypeDropdown(null, false, ["STORAGE", "STORAGE_POSITION"], null, "?"); // This should return the types allowed on the GENERAL_ELN_SETTINGS
-		}
+		var $sampleTypesSelector = $sampleTypesSelector = FormUtil.getSampleTypeDropdown(null, false, ["STORAGE", "STORAGE_POSITION"], null, "*"); // This should return all types allowed by all *_ELN_SETTINGS
 
 		$sampleTypesSelector.change(function() {
 			var sampleTypeToShow = $(this).val();
