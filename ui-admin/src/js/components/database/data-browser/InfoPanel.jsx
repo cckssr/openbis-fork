@@ -27,6 +27,7 @@ import Header from '@src/js/components/common/form/Header.jsx'
 import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
+import {timeToString} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
 
 const styles = () => ({
   container: {
@@ -76,7 +77,7 @@ class InfoPanel extends React.Component {
             </TableRow>
             <TableRow>
               <TableCell variant='head' component='th'>{messages.get(messages.MODIFIED)}</TableCell>
-              <TableCell>{selectedFile.lastModifiedTime.toLocaleString()}</TableCell>
+              <TableCell>{timeToString(selectedFile.lastModifiedTime)}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

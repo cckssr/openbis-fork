@@ -6,7 +6,7 @@ import Toolbar from '@src/js/components/database/data-browser/Toolbar.jsx'
 import GridView from '@src/js/components/database/data-browser/GridView.jsx'
 import fileTypeConfig from '@src/js/components/database/data-browser/fileTypeConfig.js';
 
-import Grid from '@src/js/components/common/grid/Grid.jsx'
+import GridWithOpenbis from '@src/js/components/common/grid/GridWithOpenbis.jsx'
 import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js'
 import AppController from '@src/js/components/AppController.js'
 import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
@@ -21,7 +21,7 @@ import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
-import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError, timeToString} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
 
 
 const styles = theme => ({
@@ -264,10 +264,6 @@ class DataBrowser extends React.Component {
     }
   }
 
-  timeToString(time) {
-    return new Date(time).toLocaleString()
-  }
-
   sizeToString(bytes) {
     if (!bytes) {
       return null
@@ -492,8 +488,9 @@ class DataBrowser extends React.Component {
             onDrop={this.handleDrop}
         >
           {viewType === 'list' && (
-            <Grid
+            <GridWithOpenbis
               id='data-browser-grid'
+              settingsId='data-browser-grid'              
               controllerRef={this.handleGridControllerRef}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
@@ -548,7 +545,7 @@ class DataBrowser extends React.Component {
                   visible: true,
                   getValue: ({ row }) => row.lastModifiedTime,
                   renderValue: ({ row }) =>
-                    this.timeToString(row.lastModifiedTime)
+                    timeToString(row.lastModifiedTime)
                 }
               ]}
               loadRows={this.controller.load}

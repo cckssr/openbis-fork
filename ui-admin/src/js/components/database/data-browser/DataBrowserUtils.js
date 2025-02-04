@@ -22,4 +22,8 @@ const getFileNameFromPath = (filePath) => {
     return parts.length ? parts[parts.length - 1] : '';
   };
 
-  export { getFileNameFromPath, isUserAbortedError };
+const timeToString = (time) => {
+    return new Date(time).toLocaleString()
+  }
+
+  export { getFileNameFromPath, isUserAbortedError,timeToString };
