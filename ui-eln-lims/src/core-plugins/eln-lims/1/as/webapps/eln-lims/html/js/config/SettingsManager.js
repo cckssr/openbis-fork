@@ -53,7 +53,25 @@ var SettingsManagerUtils = new function() {
         showOnNav : 1,
     }
 
+    this.getVisibleObjectTypesForSpaces = function(spaceCodes, showInSpaceSetting) {
+        var objectTypeCodes = [];
+        for(var iSpaceCodes = 0; iSpaceCodes < spaceCodes.length; iSpaceCodes++) {
+            var objectTypeCodesAux = this.getVisibleObjectTypesForSpace(spaceCodes[iSpaceCodes], showInSpaceSetting);
+            for(var iObjectTypeCodesAux = 0; iObjectTypeCodesAux < objectTypeCodesAux.length; iObjectTypeCodesAux++) {
+                var objectType = objectTypeCodesAux[iObjectTypeCodesAux];
+                if($.inArray(objectType, objectTypeCodes) === -1) {
+                    objectTypeCodes.push(objectType);
+                }
+            }
+        }
+        objectTypeCodes.sort();
+        return objectTypeCodes;
+    }
+
     this.getVisibleObjectTypesForSpace = function(spaceCode, showInSpaceSetting) {
+        if(spaceCode === "*") {
+            return this.getVisibleObjectTypesForSpaces(this.getGroups(), showInSpaceSetting);
+        }
         var spaceSettings = this.getSpaceSettings(spaceCode);
 
         var objectTypeCodes = [];
