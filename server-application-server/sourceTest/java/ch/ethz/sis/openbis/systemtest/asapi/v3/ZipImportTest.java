@@ -104,7 +104,7 @@ public class ZipImportTest extends AbstractImportTest
                                            v3api.executeImport(sessionToken, importData, importOptions);
                                        }
                                    },
-                "Vocabulary INTERNAL_VOCABULARY_TYPE does not exist.");
+                "Non-system user can not create new internal entity types!");
     }
 
     @Test
