@@ -2,7 +2,6 @@ import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import Container from '@src/js/components/common/form/Container.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
-import DateField from '@src/js/components/common/form/DateField.jsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import RoleSelectionType from '@src/js/components/users/form/common/RoleSelectionType.js'

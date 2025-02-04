@@ -157,7 +157,7 @@ class DateField extends React.PureComponent {
         <FormFieldContainer error={error}>
           <div className={classes.container}>
             <DateTimePicker
-              sx={{ width:'100%' }}
+              sx={{ width: '100%' }}
               name={name}
               ampm={false}
               label={this.renderEditLabel()}
@@ -165,18 +165,14 @@ class DateField extends React.PureComponent {
               value={dateObject}
               inputValue={dateString}
               onChange={this.handleChange}
-              onClose={this.props.onBlur}
+              onBlur={this.handleBlur}
               format={'yyyy-MM-dd HH:mm:ss'}
               fullWidth={true}
-              slots={{ 
-                onBlur: this.handleBlur,
+              slots={{
                 textField: this.renderEditInput
               }}
-              slotProps={{ 
-                textField: 
-                { 
-                  variant: variant,
-                } 
+              slotProps={{
+                textField: { variant: variant, }
               }}
               disabled={disabled}
               error={!!error}
@@ -195,18 +191,14 @@ class DateField extends React.PureComponent {
               value={dateObject}
               inputValue={dateString}
               onChange={this.handleChange}
-              onClose={this.props.onBlur}
+              onBlur={this.handleBlur}
               format={'yyyy-MM-dd'}
               fullWidth={true}
-              slots={{ 
-                onBlur: this.handleBlur,
+              slots={{
                 textField: this.renderEditInput,
               }}
-              slotProps={{ 
-                textField: 
-                { 
-                  variant: variant,
-                } 
+              slotProps={{
+                textField: { variant: variant, }
               }}
               disabled={disabled}
               error={!!error}
