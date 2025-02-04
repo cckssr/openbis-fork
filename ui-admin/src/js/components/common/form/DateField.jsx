@@ -158,6 +158,7 @@ class DateField extends React.PureComponent {
           <div className={classes.container}>
             <DateTimePicker
               sx={{ width: '100%' }}
+              views={['year','month','day','hours', 'minutes', 'seconds']}
               name={name}
               ampm={false}
               label={this.renderEditLabel()}
