@@ -168,20 +168,26 @@ class LinearLoadingDialog extends React.Component {
         )}
         
         <DialogContentText className={classes.progressDetails}>
-          {customProgressDetails || (
-            <>
-              {formattedCurrentSize && formattedTotalSize && (
-                <>
-                  {`${formattedCurrentSize} / ${formattedTotalSize}`}
-                </>
-              )}
-              {formattedCurrentSize && formattedTotalSize && (formattedTimeLeft || progressStatus || formattedSpeed) && ', '}
-              {formattedTimeLeft && `${formattedTimeLeft} left`}
-              {formattedTimeLeft && (progressStatus || formattedSpeed) && ', '}
-              {progressStatus || formattedSpeed}
+          {customProgressDetails ? (
+              <>
+                {customProgressDetails}
+                {progressStatus && `, ${progressStatus}`}
+              </>
+            ) : (
+              <>
+                {formattedCurrentSize && formattedTotalSize && (
+                  <>
+                    {`${formattedCurrentSize} / ${formattedTotalSize}`}
+                  </>
+                )}
+                {formattedCurrentSize && formattedTotalSize && (formattedTimeLeft || progressStatus || formattedSpeed) && ', '}
+                {formattedTimeLeft && `${formattedTimeLeft} left`}
+                {formattedTimeLeft && (progressStatus || formattedSpeed) && ', '}
+                {progressStatus || formattedSpeed}
 
-            </>
-          )}
+              </>
+            )
+          }
         </DialogContentText>
       </>
     )
