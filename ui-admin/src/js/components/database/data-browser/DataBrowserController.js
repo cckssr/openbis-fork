@@ -17,7 +17,9 @@
 import ComponentController from '@src/js/components/common/ComponentController.js'
 import autoBind from 'auto-bind'
 import openbis from '@src/js/services/openbis.js'
-import error from '../../common/error/ErrorObject'
+import RetryCaller from '@src/js/components/database/data-browser/RetryCaller.js';
+import { getFileNameFromPath } from '@src/js/components/database/data-browser/DataBrowserUtils.js';
+
 
 export default class DataBrowserController extends ComponentController {
 
@@ -30,11 +32,31 @@ export default class DataBrowserController extends ComponentController {
     this.path = ''
     this.fileNames = []
     this.CHUNK_SIZE = 1024 * 1024 * 10;// 10MiB
+    this.retryCaller = new RetryCaller({ maxRetries: 8, initialWaitTime: 1000, waitFactor: 2 });
+  }
+
+  abortCurrentApiOperation(){
+    this.retryCaller.abort()   
   }
 
   async free() {
     try {
-      return await openbis.free(this.owner, this.path)
+      return await this.retryCaller.callWithRetry(() => openbis.free(this.owner, this.path))
+    } catch (error) {
+      if (error.message.includes('NoSuchFileException')) {
+        return []
+      } else {
+        throw error
+      }
+    }
+  }
+  async listFilesAndUpdateProgress(path, onProgressUpdate) {
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, path);
+    // Use this.path if path is not specified
+    const pathToList = path ? path : this.path
+    try {
+      return await this.retryCaller.callWithRetry( () => openbis.list(this.owner, pathToList, false),
+                onRetryCallback)
     } catch (error) {
       if (error.message.includes('NoSuchFileException')) {
         return []
@@ -44,11 +66,14 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-  async listFiles(path) {
+
+
+  async listFiles(path, onProgressUpdate = undefined) {
+    const onRetryCallback = onProgressUpdate ? this.createOnRetryCallback(onProgressUpdate, file.name) : null;
     // Use this.path if path is not specified
     const pathToList = path ? path : this.path
     try {
-      return await openbis.list(this.owner, pathToList, false)
+      return await this.retryCaller.callWithRetry( () => openbis.list(this.owner, pathToList, false))
     } catch (error) {
       if (error.message.includes('NoSuchFileException')) {
         return []
@@ -105,8 +130,19 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-  async _delete(file) {
-    await openbis.delete(this.owner, file.path)
+
+  async deleteAndUpdateProgress(file,onProgressUpdate) {    
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
+    await this.retryCaller.callWithRetry(() => 
+      openbis.delete(this.owner, file.path),
+      onRetryCallback
+    )
+  }
+
+  async _delete(file, onProgressUpdate = undefined){    
+    await this.handleError(async () => {
+      await openbis.delete(this.owner, file.path)      
+    })   
   }
 
   async copy(files, newLocation) {
@@ -128,10 +164,13 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-  async moveFileByPath(filePath, newLocation){
-    await this.handleError(async () => {
-        await openbis.move(this.owner, filePath, this.owner, newLocation)
-    })
+  async moveFileByPath(filePath, newLocation, onProgressUpdate){
+    const fileName =  getFileNameFromPath(filePath)
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, fileName);
+    await this.retryCaller.callWithRetry(() => 
+        openbis.move(this.owner, filePath, this.owner, newLocation),
+        onRetryCallback
+    )
    }
 
   async move(files, newLocation) {
@@ -149,7 +188,7 @@ export default class DataBrowserController extends ComponentController {
   async _move(file, newLocation){
     if (!this.isSubdirectory(file.path, newLocation)) {
       const cleanNewLocation = this._removeLeadingSlash(newLocation) + file.name
-      await openbis.move(this.owner, file.path, this.owner, cleanNewLocation)
+      await this.retryCaller.callWithRetry(() => openbis.move(this.owner, file.path, this.owner, cleanNewLocation))
     }
   }
 
@@ -168,12 +207,14 @@ export default class DataBrowserController extends ComponentController {
 
 
   async uploadFile(file, targetFilePath, offset,onProgressUpdate) {
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
+
     const blob = file.slice(offset, offset + this.CHUNK_SIZE)
     const arrayBuffer = await blob.arrayBuffer();
     const data = new Uint8Array(arrayBuffer);
 
     const uploadStartTime = Date.now();
-    await this._uploadChunk(targetFilePath, offset, data)
+    await this._uploadChunk(targetFilePath, offset, data, onRetryCallback)
     const uploadEndTime = Date.now();            
     // Calculate download speed      
     const elapsedTime = (uploadEndTime - uploadStartTime);
@@ -200,17 +241,18 @@ export default class DataBrowserController extends ComponentController {
     })
   }
 
-  async _uploadChunk(source, offset, data) {
-    return await openbis.write(this.owner, source, offset, data)
+  async _uploadChunk(source, offset, data, onRetryCallback = undefined) {
+    return await this.retryCaller.callWithRetry(() => openbis.write(this.owner, source, offset, data), onRetryCallback)
   }
 
   async download(file, onProgressUpdate, throwAbortErrorIfTransferCancelled) {
     let offset = 0
     const dataArray = []
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
 
     while (offset < file.size) {
       const downloadStartTime = Date.now();
-      const blob = await this._download(file, offset)
+      const blob = await this._download(file, offset, onRetryCallback)
       const downloadEndTime = Date.now();
       dataArray.push(await blob.arrayBuffer())
       offset += this.CHUNK_SIZE
@@ -230,16 +272,25 @@ export default class DataBrowserController extends ComponentController {
     return await fileHandle.createWritable();
   }
 
+  createOnRetryCallback(onProgressUpdate, fileName) {
+    return (attempts, maxAttempts,waitTime, error) => {
+      const message = `Connection issue: Retry ${attempts} of ${maxAttempts} in ${this.formatTimeMs(waitTime)}`;
+      onProgressUpdate(0, fileName, message, 0);
+    };
+  }
+
   async downloadAndAssemble(file, dirHandle, onProgressUpdate, throwAbortErrorIfTransferCancelled) {
     let offset = 0;    
     // Create a writable stream for the file in the selected directory
     const fileStream = await this._createWritableStream(dirHandle, file.name);
+    
+    const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
 
     let writeToDiskOffset = 0;
     var dataArrayForDisk = []
     while (offset < file.size) {
       const downloadStartTime = Date.now();
-      const blob = await this._download(file, offset);
+      const blob = await this._download(file, offset, onRetryCallback);
       const downloadEndTime = Date.now();
 
       dataArrayForDisk.push(await blob.arrayBuffer());
@@ -322,8 +373,6 @@ export default class DataBrowserController extends ComponentController {
     }
   }
 
-
-
   formatSize(bytes) {
     // Convert bytes to KB, MB, GB, etc.
     const units = ['B', 'KB', 'MB', 'GB'];
@@ -343,17 +392,24 @@ export default class DataBrowserController extends ComponentController {
     return this.formatSize(speed) + '/s'; 
   }
 
-  formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
+  formatTimeMs(milliseconds) {
+    const seconds = milliseconds / 1000;
+    return this.formatTime(seconds);
+  }
+
+  formatTime(seconds) {    
+    const totalSeconds = Math.ceil(seconds);    
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
     return minutes > 0
       ? `${minutes} min ${remainingSeconds} sec`
       : `${remainingSeconds} sec`;
   }
 
-  async _download(file, offset) {
+  async _download(file, offset, onRetry = undefined) {
     const limit = Math.min(this.CHUNK_SIZE, file.size - offset)
-    return await openbis.read(this.owner, file.path, offset, limit)
+    return await this.retryCaller.callWithRetry(
+          () => openbis.read(this.owner, file.path, offset, limit), onRetry)
   }
 
   _removeLeadingSlash(path) {

@@ -21,7 +21,7 @@ import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
-
+import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
 
 
 const styles = theme => ({
@@ -138,6 +138,7 @@ class DataBrowser extends React.Component {
 
   cancelFileTransfer() {
     this.setState({ cancelTransfer: true })
+    this.controller.abortCurrentApiOperation()
   }
 
   handleConfirmMerge() {
@@ -231,8 +232,10 @@ class DataBrowser extends React.Component {
       const { multiselectedFiles } = this.state
       await this.downloadManager.handleDownloadFiles(multiselectedFiles)
     } catch (err) {      
-      if (err.name === "AbortError") {
+      if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
+      } else {
+        this.openErrorDialog(err)
       }
     }
   }
@@ -319,10 +322,14 @@ class DataBrowser extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchSpaceStatus()
-    this.fetchRights()    
-    if (this.state.viewType === 'grid') {
-      this.fetchFiles();
+    try {
+      this.fetchSpaceStatus()
+      this.fetchRights()    
+      if (this.state.viewType === 'grid') {
+        this.fetchFiles();
+      }
+    } catch (err){
+        this.openErrorDialog(err)
     }
   }
 
@@ -615,7 +622,7 @@ class DataBrowser extends React.Component {
         onApplyToAllChange={showApplyToAll ? this.handleApplyToAllSelection : null}
         applyToAll={applyToAllFiles}
         title={messages.get(messages.FILE_EXISTS)}
-        content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile?.name)}
+        content={messages.get(messages.CONFIRMATION_FILE_OVERWRITE, this.state.currentFile)}
       />,
       <FileExistsDialog
         key="upload-file-exists-dialog"
@@ -627,7 +634,16 @@ class DataBrowser extends React.Component {
         onApplyToAllChange={showApplyToAll ? this.uploadManager.handleApplyToAllSelection : null}
         applyToAll={applyToAllFiles}
         title={messages.get(messages.FILE_EXISTS)}
-        content={messages.get(this.state.allowResume ? messages.CONFIRMATION_FILE_NAME_RESUME_CONFLICT : messages.CONFIRMATION_FILE_NAME_CONFLICT, this.state.uploadFileExistsDialogFile?.name)}
+        content={messages.get(
+          this.state.allowResume 
+            ? (this.state.allowSkip 
+                ? messages.CONFIRMATION_FILE_NAME_RESUME_CONFLICT 
+                : messages.CONFIRMATION_FILE_NAME_RESUME_NOSKIP_CONFLICT)
+            : (this.state.allowSkip 
+                ? messages.CONFIRMATION_FILE_NAME_CONFLICT 
+                : messages.CONFIRMATION_FILE_NAME_REPLACE_CONFLICT),
+          this.state.uploadFileExistsDialogFile?.path
+        )}
       />,
       <ConfirmationDialog
         key='merge-modal-title'

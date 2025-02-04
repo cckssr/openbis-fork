@@ -2,6 +2,7 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
+import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
 
 const Resolution = {
   MERGE: 'MERGE',
@@ -49,7 +50,7 @@ export default class FileUploadManager {
       rollingSpeed:0,
       totalSavingTime:0,
       cancelTransfer: false,
-      lastConflictResumeResolution: null,
+      lastConflictResumableResolution: null,
       lastConflictResolution: null,
       totalSkippedBytes:0,                 
       fileName:null,
@@ -57,6 +58,7 @@ export default class FileUploadManager {
       totalElapsedTime:0, 
       expectedTime:0,       
       progressStatus:null,
+      applyResolutionToAllResumableFiles:false
     }
   }
 
@@ -108,7 +110,7 @@ export default class FileUploadManager {
       }
     } catch (err) {
       console.error(err)
-      if (err.name === "AbortError") {
+      if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
       } else {
         const fileNames = files?.map(({ file }) => file.name).join(", ") || "files";
@@ -131,7 +133,7 @@ export default class FileUploadManager {
       loading: true,
       progress: 0,
       progressBarFrom: "",
-      progressBarTo: this.normalizePath(this.controller.path, '/'),
+      progressBarTo: this.getTopLevelFolder(this.controller.path),
       totalTransferSize: 0,
       loadingDialogVariant: 'indeterminate'
     })
@@ -220,7 +222,7 @@ export default class FileUploadManager {
       const totalSize = this.prepareUpload(topLevelFolder, fileList);
       await this.upload(fileList)
     } catch(err){
-      if (err.name === "AbortError") {
+      if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
       } else {
         this.openErrorDialog(
@@ -248,7 +250,7 @@ export default class FileUploadManager {
       this.prepareUpload(topLevelFolder, allFiles);
       await this.upload(allFiles)
     } catch(err){
-      if (err.name === "AbortError") {
+      if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
       } else {
         this.openErrorDialog(
@@ -267,7 +269,7 @@ export default class FileUploadManager {
       loading: true,
       progress: 0,
       progressBarFrom: topLevelFolder,
-      progressBarTo: this.normalizePath(this.controller.path, '/'),
+      progressBarTo: this.getTopLevelFolder(this.controller.path),
       totalTransferSize: 0,
       loadingDialogVariant: 'indeterminate'
     });
@@ -287,15 +289,16 @@ export default class FileUploadManager {
     return totalSize;
   }
 
-  normalizePath(basePath, suffix) {        
+  getTopLevelFolder(basePath) {        
     if (basePath.endsWith('/')) {
         basePath = basePath.slice(0, -1);
-    }    
-    if (suffix.startsWith('/')) {
-        suffix = suffix.slice(1);
-    }
-    return `${basePath}/${suffix}`;
-  };
+    }       
+    const lastFolder = basePath.includes('/') 
+        ? basePath.substring(basePath.lastIndexOf('/') + 1) 
+        : basePath;    
+    
+    return lastFolder || '/';
+}
 
   resetUploadDialogStates() {
     this.updateState({
@@ -410,19 +413,32 @@ export default class FileUploadManager {
   handleFileExistsReplace() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict(Resolution.REPLACE)
-    this.updateState({ loading: true, progress: 0,lastConflictResolution: Resolution.REPLACE})
+    
+    this.updateState((prevState) => ({
+       loading: true,
+        progress: 0,
+        lastConflictResolution: Resolution.REPLACE,
+        applyResolutionToAllResumableFiles: prevState.allowResume ? prevState.applyToAllFiles : prevState.applyResolutionToAllResumableFiles,
+        lastConflictResumableResolution: prevState.allowResume ? Resolution.REPLACE :prevState.lastConflictResumableResolution
+      }))
   }
 
   handleFileExistsResume() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict(Resolution.RESUME)
-    this.updateState({ loading: true, progress: 0 , applyResumeToAllResumableFiles: this.getCurrentState().applyToAllFiles, lastConflictResumeResolution: Resolution.RESUME})
+    this.updateState({ loading: true, progress: 0 , applyResolutionToAllResumableFiles: this.getCurrentState().applyToAllFiles, lastConflictResumableResolution: Resolution.RESUME})
   }
 
   handleFileExistsSkip() {
     this.closeFileExistsDialog()
     this.resolveConflict && this.resolveConflict(Resolution.SKIP)
-    this.updateState({ loading: true, progress: 0 ,lastConflictResolution: Resolution.SKIP})
+    this.updateState((prevState) => ({
+      loading: true,
+       progress: 0,
+       lastConflictResolution: Resolution.SKIP,
+       applyResolutionToAllResumableFiles: prevState.allowResume ? prevState.applyToAllFiles : prevState.applyResolutionToAllResumableFiles,
+       lastConflictResumableResolution: prevState.allowResume ? Resolution.SKIP :prevState.lastConflictResumableResolution
+     }))    
   }
 
   handleFileExistsCancel() {
@@ -446,8 +462,8 @@ export default class FileUploadManager {
         : file.name;
       this.updateState({ progressBarFrom: topLevelFolder})
             
-      const targetFilePath = this.controller.path + '/' + filePath
-      const tempTargetFilePath = this.controller.path + '/' + filePath + ".part"
+      const targetFilePath = this.controller.path +  filePath
+      const tempTargetFilePath = this.controller.path + filePath + ".part"
       const tempTargetFileName = file.name + ".part"
 
       const {
@@ -468,11 +484,15 @@ export default class FileUploadManager {
         if(resolution == Resolution.REPLACE){
           offset = 0
           if(fileTempExists){           
-            await this.controller.delete([existingTempFile])
+            await this.controller.deleteAndUpdateProgress(existingTempFile,this.updateProgress)
           }
         } else {
           offset = existingTempFile.size
         }             
+      }
+
+      if(file.size < 1){
+        continue
       }
 
       // Replace or resume upload from the last point in the file
@@ -484,10 +504,10 @@ export default class FileUploadManager {
       }
       
       if(fileExists){
-        await this.controller.delete([existingFile])
+        await this.controller.deleteAndUpdateProgress(existingFile, this.updateProgress)
       }
 
-      await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath)
+      await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
     }
     
     if (this.controller.gridController) {
@@ -497,7 +517,7 @@ export default class FileUploadManager {
 
   async checkFilesAndTempExistOnServer(fileName, tmpFileName, targetFilePath) {
     const parentFolderPath = this.getParentFolder(targetFilePath);
-    const filesInParentFolder = await this.controller.listFiles(parentFolderPath);
+    const filesInParentFolder = await this.controller.listFilesAndUpdateProgress(parentFolderPath, this.updateProgress);
 
     let fileExists = false
     let existingFile = null    
@@ -546,22 +566,31 @@ export default class FileUploadManager {
 
     var state = this.getCurrentState()
     var resolutionResult = state.lastConflictResolution
-    var lastConflictResumeResolution = state.lastConflictResumeResolution
-    var applyResumeToAllResumableFiles = state.applyResumeToAllResumableFiles
-    var lastResolutionStillValid = (applyResumeToAllResumableFiles && (lastConflictResumeResolution  === Resolution.RESUME) && fileTempExists)
-                                        || (state.applyToAllFiles && resolutionResult && !fileTempExists)
-                                        
+    var lastConflictResumableResolution = state.lastConflictResumableResolution
+    var applyResolutionToAllResumableFiles = state.applyResolutionToAllResumableFiles
+    const allowResume = fileTempExists && (tempFile.size < file.size) 
 
+    const isLastResumableResolutionValid = applyResolutionToAllResumableFiles 
+        && lastConflictResumableResolution
+        && allowResume;
+
+    const isApplyToAllValid = state.applyToAllFiles 
+          && resolutionResult && !allowResume;
+
+    const lastResolutionStillValid = isLastResumableResolutionValid || isApplyToAllValid;        
+
+    if(allowResume){
+      resolutionResult = lastConflictResumableResolution
+    }
+    
     if (!lastResolutionStillValid) {         
-      const multiFileUpload = numberFilesUploaded > 1   
-      const allowResume = fileTempExists && (tempFile.size < file.size)
-      // TODO how to handle multifile upload       
-      resolutionResult = await this.resolveNameConflict(file, allowResume,
-          multiFileUpload , multiFileUpload)
-         
+      const multiFileUpload = numberFilesUploaded > 1     
+      const fileInDialog = tempFile != null ? tempFile : existingFile     
+      resolutionResult = await this.resolveNameConflict(fileInDialog, allowResume,
+          multiFileUpload , multiFileUpload)   
     }
 
-    if (fileTempExists && (resolutionResult === Resolution.RESUME || applyResumeToAllResumableFiles)) {              
+    if (allowResume && (resolutionResult === Resolution.RESUME)) {              
       this.updateProgressForResolution(tempFile.size, file.name, Resolution.RESUME)
       return Resolution.RESUME
     }

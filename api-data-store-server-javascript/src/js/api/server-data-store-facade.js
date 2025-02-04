@@ -49,15 +49,24 @@ _DataStoreServerInternal.prototype.jsonRequestData = function(params) {
 }
 
 _DataStoreServerInternal.prototype.sendHttpRequest = function(httpMethod, contentType, url, data) {
+    const { promise, abortFn } = this._internal.sendHttpRequestAbortable(httpMethod, contentType, url, data)
+    return promise
+}
+
+_DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMethod, contentType, url, data) {
 	const xhr = new XMLHttpRequest();
 	xhr.open(httpMethod, url);
 	xhr.responseType = "blob";
+    // Set a timeout, 30 seconds
+	xhr.timeout = 30000; 
 
-	return new Promise((resolve, reject) => {
+    let abortFn;
+
+	const promise = new Promise((resolve, reject) => {
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === XMLHttpRequest.DONE) {
 				const status = xhr.status;
-				const response = xhr.response;
+				const response = xhr.response;                
 
 				if (status >= 200 && status < 300) {
 					const contentType = this.getResponseHeader('content-type');
@@ -93,8 +102,26 @@ _DataStoreServerInternal.prototype.sendHttpRequest = function(httpMethod, conten
 				}
 			}
 		};
+
+        // Handle network errors
+		xhr.onerror = function() {
+			reject(new Error("Network error: Unable to reach the server."));
+		};
+
+		// Handle timeout errors
+		xhr.ontimeout = function() {
+			reject(new Error("Request timed out: The server did not respond."));
+		};
+
+        abortFn = () => {
+            xhr.abort();
+            reject(new Error("Request aborted by user."));
+        };
+
 		xhr.send(data);
 	});
+
+    return { promise, abortFn: abortFn };
 }
 
 
@@ -407,26 +434,28 @@ DataStoreServer.prototype.list = function(owner, source, recursively){
 		"source":  source,
 		"recursively":  recursively
 	});
-	return this._internal.sendHttpRequest(
+	const {promise, abortFn} = this._internal.sendHttpRequestAbortable(
 		"GET",
 		"application/octet-stream",
 		this._internal.buildGetUrl(data),
 		{}
-	).then((response) => parseJsonResponse(response)).then((response) => {
-        if(response && Array.isArray(response.result) && response.result.length === 2){
-            var files = []
-            if(Array.isArray(response.result[1])){
-                response.result[1].forEach(function(item){
-                    if(Array.isArray(item) && item.length === 2){
-                        files.push(new File(item[1]));
-                    }
-                });
+	)
+    return {promise :promise.then((response) => parseJsonResponse(response)).then((response) => {
+            if(response && Array.isArray(response.result) && response.result.length === 2){
+                var files = []
+                if(Array.isArray(response.result[1])){
+                    response.result[1].forEach(function(item){
+                        if(Array.isArray(item) && item.length === 2){
+                            files.push(new File(item[1]));
+                        }
+                    });
+                }
+                return files;
+            } else {
+                return response
             }
-            return files;
-        } else {
-            return response
-        }
-	});
+        }),
+        abortFn};
 }
 
 /**
@@ -444,7 +473,7 @@ DataStoreServer.prototype.read = function(owner, source, offset, limit){
 		"offset":  offset,
 		"limit":  limit
 	});
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"GET",
 		"application/octet-stream",
 		this._internal.buildGetUrl(data),
@@ -467,7 +496,7 @@ DataStoreServer.prototype.write = function(owner, source, offset, data){
 		"offset": offset
 	});
 
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"POST",
 		"application/octet-stream",
 		this._internal.buildGetUrl(params),
@@ -486,7 +515,7 @@ DataStoreServer.prototype.delete = function(owner, source){
 		"owner" : owner,
 		"source": source
 	});
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"DELETE",
 		"application/octet-stream",
 		this._internal.datastoreUrl,
@@ -505,7 +534,7 @@ DataStoreServer.prototype.copy = function(sourceOwner, source, targetOwner, targ
 		"targetOwner": targetOwner,
 		"target" : target
 	});
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"POST",
 		"application/octet-stream",
 		this._internal.datastoreUrl,
@@ -524,7 +553,7 @@ DataStoreServer.prototype.move = function(sourceOwner, source, targetOwner, targ
 		"targetOwner": targetOwner,
 		"target" : target
 	});
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"POST",
 		"application/octet-stream",
 		this._internal.datastoreUrl,
@@ -542,7 +571,7 @@ DataStoreServer.prototype.create = function(owner, source, directory){
 		"source": source,
 		"directory": directory
 	});
-	return this._internal.sendHttpRequest(
+	return this._internal.sendHttpRequestAbortable(
 		"POST",
 		"application/octet-stream",
 		this._internal.datastoreUrl,
@@ -559,18 +588,20 @@ DataStoreServer.prototype.free = function(owner, source){
 		"owner" :  owner,
 		"source":  source,
 	});
-	return this._internal.sendHttpRequest(
+	const {promise, abortFn} = this._internal.sendHttpRequestAbortable(
 		"GET",
 		"application/octet-stream",
 		this._internal.buildGetUrl(data),
 		{}
-	).then((response) => parseJsonResponse(response)).then((response) => {
+	)
+    return {promise :promise.then((response) => parseJsonResponse(response)).then((response) => {
         if(response && Array.isArray(response.result) && response.result.length === 2){
             return new FreeSpace(response.result[1])
         } else {
             return response
         }
-    });
+    }),
+    abortFn}
 }
 
 /**

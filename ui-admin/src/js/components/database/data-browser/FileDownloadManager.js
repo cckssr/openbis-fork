@@ -2,6 +2,7 @@ import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
 import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js';
 import JSZip from 'jszip';
+import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
 
 // 2GB limit for total download size
 const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648
@@ -177,7 +178,8 @@ export default class FileDownloadManager {
         return {
             totalTransferSize,
             customProgressDetails,
-            fileName
+            fileName,
+            progressStatus: null
         };
     })
   }
@@ -197,7 +199,7 @@ export default class FileDownloadManager {
         this.throwAbortErrorIfTransferCancelled()
         numberOfFiles++;
       } else {
-        const nestedFiles = await this.controller.listFiles(file.path);
+        const nestedFiles = await this.controller.listFilesAndUpdateProgress(file.path,this.updateProgress)
         const nestedStats = await this.calculateTotalSize(nestedFiles, maxAllowedSize - size);
   
         size += nestedStats.size;
@@ -239,8 +241,13 @@ export default class FileDownloadManager {
         await this.handleDownloadAsBlob(multiselectedFiles)
       }
     }catch (err){
-      if (err.name === "AbortError") {
+      if (isUserAbortedError(err)) {
           // no feedback needed, user aborted          
+      } else {    
+        if (typeof console !== 'undefined' && typeof console.error === 'function') {
+          console.error(err); 
+        }
+        this.openErrorDialog(`Error downloading : ` + (err.message || err))        
       }
     } finally {            
       this.resetDownloadDialogStates() 
@@ -307,8 +314,8 @@ export default class FileDownloadManager {
         showApplyToAll: !singleFile,
         allowSkip: !singleFile,
       });
-
-      await this.downloadFilesAndFolders(Array.from(files), rootDirHandle);
+      const localDirPath = rootDirHandle.name + "/"
+      await this.downloadFilesAndFolders(Array.from(files), rootDirHandle, localDirPath);
     } else {
       this.showDownloadErrorDialog(availableQuota)
     }
@@ -338,8 +345,7 @@ export default class FileDownloadManager {
     })   
   }
 
-  async handleDirectorySelection() {
-    try {
+  async handleDirectorySelection() {    
       // Prompt user to select a directory - this should be done 
       // immediately after click, otherwise browser may throw security error 
       // if too much time is taken by other processes before selection    
@@ -350,17 +356,7 @@ export default class FileDownloadManager {
         throw new Error(messages.get(messages.DOWNLOAD_PERMISSION_DENIED));
       }
     
-      return rootDirHandle 
-    } catch (err) {
-      if (err.name === "AbortError") {
-        // no feedback needed, user aborted          
-      } else {
-        this.openErrorDialog(messages.get(messages.DOWNLOAD_DIRECTORY_ACCESS_ERROR) + err)
-      }
-      return null;
-    } finally {
-      this.resetDownloadDialogStates()
-    }
+      return rootDirHandle     
   }
 
   async validateFolderAndShowMergeDialog(rootDirHandle, files) {
@@ -393,70 +389,64 @@ export default class FileDownloadManager {
     return true;
   }
 
-  async downloadFilesAndFolders(files, parentDirHandle) {
-    try {      
-      for (const file of files) {
-        let currentState = this.getCurrentState();
-        if (currentState.cancelTransfer) {
-          return;
-        }
+  async downloadFilesAndFolders(files, parentDirHandle, localDirPath) {
+       
+    for (const file of files) {
+      let currentState = this.getCurrentState();
+      if (currentState.cancelTransfer) {
+        return;
+      }
 
-        if (!file.directory) {
+      if (!file.directory) {
 
-          const fileExists = await parentDirHandle.getFileHandle(file.name, { create: false }).catch(() => null);
+        const fileExists = await parentDirHandle.getFileHandle(file.name, { create: false }).catch(() => null);
 
-          if (fileExists) {            
-            // Skip file logic if apply-to-all and skip were selected earlier
-            if (currentState.applyToAllFiles && currentState.skipFile) {
+        if (fileExists) {            
+          // Skip file logic if apply-to-all and skip were selected earlier
+          if (currentState.applyToAllFiles && currentState.skipFile) {
+            this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
+            continue;
+          }
+
+          // Prompt user decision if not applying to all files
+          if (!currentState.applyToAllFiles) {              
+            this.updateState({ currentFile: localDirPath + file.name, 
+              showFileExistsDialog: true ,               
+              loading: false,
+              progress: 0, 
+            });
+
+            const decision = await new Promise((resolve) => {
+              this.updateResolveDecision(resolve);
+            });             
+
+            currentState = this.getCurrentState();
+            if (currentState.skipFile) {
               this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
               continue;
             }
 
-            // Prompt user decision if not applying to all files
-            if (!currentState.applyToAllFiles) {              
-              this.updateState({ currentFile: file, 
-                showFileExistsDialog: true ,               
-                loading: false,
-                progress: 0, 
-              });
-
-              const decision = await new Promise((resolve) => {
-                this.updateResolveDecision(resolve);
-              });             
-
-              currentState = this.getCurrentState();
-              if (currentState.skipFile) {
-                this.updateProgressForResolution(file.size, file.name, Resolution.SKIP)
-                continue;
-              }
-
-              if (currentState.cancelTransfer) {
-                return;
-              }
+            if (currentState.cancelTransfer) {
+              return;
             }
           }
+        }
 
-          await this.controller.downloadAndAssemble(file, parentDirHandle,
-                   this.updateProgress, this.throwAbortErrorIfTransferCancelled)
+        await this.controller.downloadAndAssemble(file, parentDirHandle,
+                  this.updateProgress, this.throwAbortErrorIfTransferCancelled)
 
-        } else {
-          // Handle subfolder recursively
-          const dirHandle = await parentDirHandle.getDirectoryHandle(file.name, { create: true })
-          const filesInDir = await this.controller.listFiles(file.path)
-          await this.downloadFilesAndFolders(filesInDir, dirHandle)
-          if (currentState.cancelTransfer) {
-            return;
-          }
+      } else {
+        // Handle subfolder recursively          
+        const dirHandle = await parentDirHandle.getDirectoryHandle(file.name, { create: true })
+        const filesInDir = await this.controller.listFilesAndUpdateProgress(file.path,this.updateProgress)
+        localDirPath += file.name + "/"
+        await this.downloadFilesAndFolders(filesInDir, dirHandle, localDirPath)
+        if (currentState.cancelTransfer) {
+          return;
         }
       }
-    } catch (err) {
-      if (err.name === "AbortError") {
-        // no feedback needed, user aborted          
-      } else {
-        const fileName = files.length === 1 ? files[0].name : " files";
-        this.openErrorDialog(`Error downloading ${fileName}: ` + (err.message || err))        
-      }
     }
+   
   }
 
   async fileExistsInDirectory(dirHandle, fileName) {
@@ -533,7 +523,7 @@ export default class FileDownloadManager {
         )
       } else {
         this.zip.folder(file.path)
-        const nestedFiles = await this.controller.listFiles(file.path)
+        const nestedFiles = await this.controller.listFilesAndUpdateProgress(file.path,this.updateProgress)
         await this.prepareZipBlob(nestedFiles)
       }
     }
