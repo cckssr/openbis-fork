@@ -2485,17 +2485,23 @@ var FormUtil = new function() {
 				//
 				// Warning
 				//
-				var confirmationText = code + " FREEZE";
+				var operationMin = 0;
+				var operationMax = 100;
+				var operationNumberOne = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+				var operationNumberTwo = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+				var operationOperand = Math.random() < 0.5; // 50% provability of getting true
+				var operationResult = (operationOperand)?operationNumberOne+operationNumberTwo:operationNumberOne-operationNumberTwo;
+				var confirmationText = operationNumberOne + ' ' + ((operationOperand)?'+':'-') + ' ' + operationNumberTwo + ' = ?';
 
 				$window.append("<br>");
 				$window.append($("<p>")
 						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Write the text '" + confirmationText + "' on the confirmation field, after entities are frozen no more changes will be possible:"));
+						.append(" Write the result to '" + confirmationText + "' on the confirmation field, after entities are frozen no more changes will be possible:"));
 				//
 				// Password
 				//
 				var $passField = FormUtil._getInputField('input', "CODE_FREEZE_FIELD", confirmationText , null, true);
-				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Code Freeze", null);
+				var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Operation Result", null);
 				$window.append($passwordGroup);
 				
 				//
@@ -2516,8 +2522,8 @@ var FormUtil = new function() {
 					if (_this._atLeastOnyEntitySelectedHasBeenSelectedForFreezing(entityMap)) {
 						var username = mainController.serverFacade.getUserId();
 						var password = $passField.val();
-									if(password !== confirmationText) {
-										Util.showUserError('The given confirmation is not correct.');
+									if(password != operationResult) {
+										Util.showUserError('The given result is not correct.');
 									} else {
 										for (key in entityMap) {
 											if(!$('#' + _this._createFormFieldId(key))[0].checked) {
