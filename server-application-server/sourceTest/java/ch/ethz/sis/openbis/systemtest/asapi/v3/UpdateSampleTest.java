@@ -823,10 +823,13 @@ public class UpdateSampleTest extends AbstractSampleTest
         creation.setTypeId(sampleType);
         creation.setSpaceId(new SpacePermId("CISD"));
 
-        Spreadsheet mySpreadsheetBefore = new Spreadsheet();
-        mySpreadsheetBefore.setHeaders(new String[]{"A", "B", "C"});
-        mySpreadsheetBefore.setData(new String[][]{ {"a", "b", "c"} });
-        mySpreadsheetBefore.setWidth(new Integer[]{ 20, 20, 30});
+        Spreadsheet mySpreadsheetBefore = new Spreadsheet(3, 3);
+        mySpreadsheetBefore.column(1).setWidth(20);
+        mySpreadsheetBefore.column(2).setWidth(20);
+        mySpreadsheetBefore.column(3).setWidth(30);
+        mySpreadsheetBefore.cell("A", 1).setValue("a");
+        mySpreadsheetBefore.cell("B", 1).setValue("b");
+        mySpreadsheetBefore.cell("C", 1).setValue("c");
         creation.setSpreadsheetProperty(propertyType1.getPermId(), mySpreadsheetBefore);
         creation.setSpreadsheetProperty(propertyType2.getPermId(), mySpreadsheetBefore);
 
@@ -836,9 +839,16 @@ public class UpdateSampleTest extends AbstractSampleTest
         update.setSampleId(ids.get(0));
 
         Spreadsheet mySpreadsheetAfter = new Spreadsheet();
-        mySpreadsheetAfter.setHeaders(new String[]{"A1", "B1", "C1"});
-        mySpreadsheetAfter.setData(new String[][]{ {"ccc", "bbbb", "aa"} });
-        mySpreadsheetAfter.setWidth(new Integer[]{ 40, 50, 100});
+        mySpreadsheetAfter.column(1).setHeader("A1");
+        mySpreadsheetAfter.column(1).setWidth(40);
+        mySpreadsheetAfter.column(2).setHeader("B1");
+        mySpreadsheetAfter.column(2).setWidth(50);
+        mySpreadsheetAfter.column(3).setHeader("C1");
+        mySpreadsheetAfter.column(3).setWidth(100);
+
+        mySpreadsheetAfter.cell("A1", 1).setValue("ccc");
+        mySpreadsheetAfter.cell("B1", 1).setValue("bbbb");
+        mySpreadsheetAfter.cell("C1", 1).setValue("aa");
 
         // change existing property
         update.setSpreadsheetProperty(propertyType1.getPermId(), mySpreadsheetAfter);
@@ -861,18 +871,22 @@ public class UpdateSampleTest extends AbstractSampleTest
 
         Spreadsheet spreadsheet = sample.getSpreadsheetProperty(propertyType1.getPermId());
         assertEquals(spreadsheet.getVersion(), mySpreadsheetAfter.getVersion());
-        assertEquals(spreadsheet.getWidth(), mySpreadsheetAfter.getWidth());
-        assertEquals(spreadsheet.getData(), mySpreadsheetAfter.getData());
-        assertEquals(spreadsheet.getHeaders(), mySpreadsheetAfter.getHeaders());
-
+        for(int i=1;i<=spreadsheet.getColumnCount();i++)
+        {
+            assertEquals(spreadsheet.column(i).getHeader(), mySpreadsheetAfter.column(i).getHeader());
+            assertEquals(spreadsheet.column(i).getWidth(), mySpreadsheetAfter.column(i).getWidth());
+            assertEquals(spreadsheet.cell(i, 1).getValue(), mySpreadsheetAfter.cell(i, 1).getValue());
+        }
         assertNull(sample.getSpreadsheetProperty(propertyType2.getPermId()));
 
         spreadsheet = sample.getSpreadsheetProperty(propertyType3.getPermId());
+        for(int i=1;i<=spreadsheet.getColumnCount();i++)
+        {
+            assertEquals(spreadsheet.column(i).getHeader(), mySpreadsheetBefore.column(i).getHeader());
+            assertEquals(spreadsheet.column(i).getWidth(), mySpreadsheetBefore.column(i).getWidth());
+            assertEquals(spreadsheet.cell(i, 1).getValue(), mySpreadsheetBefore.cell(i, 1).getValue());
+        }
         assertEquals(spreadsheet.getVersion(), mySpreadsheetBefore.getVersion());
-        assertEquals(spreadsheet.getWidth(), mySpreadsheetBefore.getWidth());
-        assertEquals(spreadsheet.getData(), mySpreadsheetBefore.getData());
-        assertEquals(spreadsheet.getHeaders(), mySpreadsheetBefore.getHeaders());
-
     }
 
 

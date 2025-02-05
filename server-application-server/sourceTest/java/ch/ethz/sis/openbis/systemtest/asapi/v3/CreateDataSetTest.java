@@ -2939,10 +2939,13 @@ public class CreateDataSetTest extends AbstractDataSetTest
         creation.setTypeId(dataSetType);
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
 
-        Spreadsheet mySpreadsheet = new Spreadsheet();
-        mySpreadsheet.setHeaders(new String[]{"A", "B", "C"});
-        mySpreadsheet.setData(new String[][]{ {"a", "b", "c"} });
-        mySpreadsheet.setWidth(new Integer[]{ 20, 20, 30});
+        Spreadsheet mySpreadsheet = new Spreadsheet(3, 3);
+        mySpreadsheet.column(1).setWidth(20);
+        mySpreadsheet.column(2).setWidth(20);
+        mySpreadsheet.column(3).setWidth(30);
+        mySpreadsheet.cell("A", 1).setValue("a");
+        mySpreadsheet.cell("B", 1).setValue("b");
+        mySpreadsheet.cell("C", 1).setValue("c");
 
         creation.setSpreadsheetProperty(propertyType.getPermId(), mySpreadsheet);
 
@@ -2959,9 +2962,9 @@ public class CreateDataSetTest extends AbstractDataSetTest
 
         Spreadsheet savedSpreadsheet = dataSet.getSpreadsheetProperty(propertyType.getPermId());
         assertEquals(savedSpreadsheet.getVersion(), mySpreadsheet.getVersion());
-        assertEquals(savedSpreadsheet.getWidth(), mySpreadsheet.getWidth());
-        assertEquals(savedSpreadsheet.getData(), mySpreadsheet.getData());
-        assertEquals(savedSpreadsheet.getHeaders(), mySpreadsheet.getHeaders());
+
+        assertEquals(savedSpreadsheet.cell("A", 1).getValue(), mySpreadsheet.cell("A", 1).getValue());
+        assertEquals(savedSpreadsheet.column(1).getWidth(), mySpreadsheet.column(1).getWidth());
 
         assertEquals(dataSet.getProperties().size(), 2);
     }

@@ -1736,9 +1736,12 @@ public class CreateExperimentTest extends AbstractExperimentTest
         creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
 
         Spreadsheet mySpreadsheet = new Spreadsheet();
-        mySpreadsheet.setHeaders(new String[]{"A", "B", "C"});
-        mySpreadsheet.setData(new String[][]{ {"a", "b", "c"} });
-        mySpreadsheet.setWidth(new Integer[]{ 20, 20, 30});
+        mySpreadsheet.column(1).setWidth(20);
+        mySpreadsheet.column(2).setWidth(20);
+        mySpreadsheet.column(3).setWidth(30);
+        mySpreadsheet.cell("A", 1).setValue("a");
+        mySpreadsheet.cell("B", 1).setValue("b");
+        mySpreadsheet.cell("C", 1).setValue("c");
 
         creation.setSpreadsheetProperty(propertyType.getPermId(), mySpreadsheet);
 
@@ -1755,9 +1758,12 @@ public class CreateExperimentTest extends AbstractExperimentTest
 
         Spreadsheet savedSpreadsheet = experiment2.getSpreadsheetProperty(propertyType.getPermId());
         assertEquals(savedSpreadsheet.getVersion(), mySpreadsheet.getVersion());
-        assertEquals(savedSpreadsheet.getWidth(), mySpreadsheet.getWidth());
-        assertEquals(savedSpreadsheet.getData(), mySpreadsheet.getData());
-        assertEquals(savedSpreadsheet.getHeaders(), mySpreadsheet.getHeaders());
+        for(int i=1;i<=savedSpreadsheet.getColumnCount();i++)
+        {
+            assertEquals(mySpreadsheet.column(i).getHeader(), savedSpreadsheet.column(i).getHeader());
+            assertEquals(mySpreadsheet.column(i).getWidth(), savedSpreadsheet.column(i).getWidth());
+            assertEquals(mySpreadsheet.cell(i, 1).getValue(), savedSpreadsheet.cell(i, 1).getValue());
+        }
 
         assertEquals(experiment2.getProperties().size(), 2);
     }
