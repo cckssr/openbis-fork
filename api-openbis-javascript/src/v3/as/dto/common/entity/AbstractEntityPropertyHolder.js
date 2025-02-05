@@ -195,7 +195,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
                 var b64 = rawValue.substring('<DATA>'.length, rawValue.length - '</DATA>'.length);
                 var decoded = atob(b64);
                 var json = JSON.parse(decoded);
-                return json;
+                var Spreadsheet = require("as/dto/common/property/Spreadsheet");
+                return new Spreadsheet().fromJson(json);
             } else {
                 return rawValue;
             }
