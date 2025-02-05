@@ -67,7 +67,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                     action : function() {
                         var modalView = new DeleteEntityController(function(reason) {
                             _this._spaceFormController.deleteSpace(reason);
-                        }, true);
+                        }, true, null, null, true);
                         modalView.init();
                     }
                 });

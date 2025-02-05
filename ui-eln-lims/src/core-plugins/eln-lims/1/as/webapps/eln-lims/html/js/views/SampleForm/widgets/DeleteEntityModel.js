@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-function DeleteEntityModel(deleteFunction, includeReason, warningText) {
+function DeleteEntityModel(deleteFunction, includeReason, warningText, bypassesTrashcan) {
 	this.deleteFunction = deleteFunction;
 	this.includeReason = includeReason;
 	this.warningText = warningText;
+	this.bypassesTrashcan = bypassesTrashcan;
 	this.reason = null;
 	this.numberOfEntities = 1;
 }

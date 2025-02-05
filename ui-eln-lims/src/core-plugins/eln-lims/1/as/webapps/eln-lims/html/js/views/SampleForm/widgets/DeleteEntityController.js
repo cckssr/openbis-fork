@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-function DeleteEntityController(deleteFunction, includeReason, warningText, $plugin) {
-	this._deleteEntityModel = new DeleteEntityModel(deleteFunction, includeReason, warningText);
+function DeleteEntityController(deleteFunction, includeReason, warningText, $plugin, bypassesTrashcan) {
+	this._deleteEntityModel = new DeleteEntityModel(deleteFunction, includeReason, warningText, bypassesTrashcan);
 	this._deleteEntityView = new DeleteEntityView(this, this._deleteEntityModel, $plugin);
 	
 	this.init = function() {

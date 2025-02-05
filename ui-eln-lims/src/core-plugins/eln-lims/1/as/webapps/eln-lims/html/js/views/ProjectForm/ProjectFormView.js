@@ -487,7 +487,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
             } else {
                 var modalView = new DeleteEntityController(function(reason) {
                     _this._projectFormController.deleteProject(reason);
-                }, true, null, $component);
+                }, true, null, $component, true);
                 modalView.init();
             }
         });
