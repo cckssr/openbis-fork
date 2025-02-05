@@ -30,6 +30,11 @@
 	width: 100% !important;
 }
 
+.select2-min-sized,
+.select2-selection {
+    min-width: 200px !important;
+}
+
 .form-group {
     margin-bottom: 5px;
 }
