@@ -13,9 +13,7 @@ class RetryCaller {
 
         while (attempts < this.maxRetries) {
             try {
-                const { promise, abortFn } = callFunction()            
-                this.abortFn = abortFn
-                return await promise
+                return await callFunction()  
             } catch (error) {
                 if (this.isRetryableError(error)) {
                     attempts++

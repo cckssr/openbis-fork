@@ -276,47 +276,47 @@ class Facade {
   }
 
   list(owner, source, recursively) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().list(owner, source, recursively)
     )
   }
 
   read(owner, source, offset, limit) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().read(owner, source, offset, limit)
     )
   }
 
   write(owner, source, offset, data) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().write(owner, source, offset, data)
     )
   }
 
   delete(owner, source) {
-    return this.promiseWithAbort(this._getAfsServerFacade().delete(owner, source))
+    return this.promise(this._getAfsServerFacade().delete(owner, source))
   }
 
   copy(sourceOwner, source, targetOwner, target) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().copy(sourceOwner, source, targetOwner, target)
     )
   }
 
   move(sourceOwner, source, targetOwner, target) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().move(sourceOwner, source, targetOwner, target)
     )
   }
 
   create(owner, source, directory) {
-    return this.promiseWithAbort(
+    return this.promise(
       this._getAfsServerFacade().create(owner, source, directory)
     )
   }
 
   free(owner, source) {
-    return this.promiseWithAbort(this._getAfsServerFacade().free(owner, source))
+    return this.promise(this._getAfsServerFacade().free(owner, source))
   }
 
   getRights(idMap, fo) {
