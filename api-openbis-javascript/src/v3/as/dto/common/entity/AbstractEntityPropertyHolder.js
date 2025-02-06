@@ -203,7 +203,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         };
         prototype.setSpreadsheetProperty = function(propertyName, propertyValue) {
             if(propertyValue) {
-                propertyValue = `<DATA>${btoa(JSON.stringify(propertyValue))}</DATA>`
+                var replacer = function(key,value) {
+                                   if(key == "@type") return undefined;
+                                   return value;
+                               };
+                propertyValue = `<DATA>${btoa(JSON.stringify(propertyValue, replacer))}</DATA>`
             }
             this.setProperty(propertyName, propertyValue);
         };
