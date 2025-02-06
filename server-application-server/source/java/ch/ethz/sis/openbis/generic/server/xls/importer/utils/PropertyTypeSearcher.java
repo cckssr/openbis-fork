@@ -21,11 +21,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.usermodel.DateUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +47,8 @@ public class PropertyTypeSearcher
     public static final String SAMPLE_DATA_TYPE_MANDATORY_TYPE = ":";
 
     public static final String VARIABLE_PREFIX = "$";
+
+    private static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
 
     private Map<String, PropertyType> code2PropertyType;
 
@@ -91,6 +97,20 @@ public class PropertyTypeSearcher
         if(propertyType.isMultiValue()) {
             if(value == null || value.trim().isEmpty()){
                 return getPropertyValueInternal(propertyType, value);
+            }
+            if(propertyType.getDataType() == DataType.JSON) {
+                List<Serializable> results = new ArrayList<>();
+                try {
+                    Object[] objects = OBJECT_MAPPER.readValue(
+                                            new ByteArrayInputStream(("["+value+"]").getBytes()),
+                                            Object[].class);
+                    for(Object o : objects) {
+                        results.add(OBJECT_MAPPER.writeValueAsString(o));
+                    }
+                    return results.toArray(Serializable[]::new);
+                } catch (Exception e) {
+                    throw new UserFailureException(String.format("Multi-value json property '%s' could not be imported!", value));
+                }
             }
             return Stream.of(value.split(","))
                     .map(String::trim)
