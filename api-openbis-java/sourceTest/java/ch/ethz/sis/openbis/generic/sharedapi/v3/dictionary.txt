@@ -33,6 +33,7 @@ addAttachments
 addBooleanField
 addClassForImport
 addCode
+addColumn
 addComparators
 addDateField
 addDescription
@@ -47,6 +48,7 @@ addPluralFetchedField
 addProperties
 addRegistrationDate
 addRegistrator
+addRow
 AddressSearchCriteria
 addSample
 addSimpleField
@@ -125,6 +127,7 @@ BooleanPropertySearchCriteria
 CACHE
 CacheMode
 cacheMode
+cell
 CHILD
 CHILDREN
 clear
@@ -135,6 +138,7 @@ CodeComparator
 CodeSearchCriteria
 CodesSearchCriteria
 CollectionFieldSearchCriteria
+column
 compare
 Complete
 Complete Search Criteria
@@ -314,6 +318,7 @@ DateObjectLaterThanOrEqualToValue
 DatePropertySearchCriteria
 deactivate
 DELETE
+deleteColumn
 delete Authorization Groups
 Delete Authorization Groups Operation
 Delete Authorization Groups Operation Result
@@ -379,6 +384,7 @@ DeletePersonalAccessTokensOperationResult
 deleteProjects
 DeleteProjectsOperation
 DeleteProjectsOperationResult
+deleteRow
 deleteSamples
 DeleteSamplesOperation
 DeleteSamplesOperationResult
@@ -806,6 +812,7 @@ getChecksumType
 getChildIds
 getChildren
 getCode
+getColumnCount
 getComparator
 getComplete
 getComponentIds
@@ -1044,6 +1051,7 @@ getResourceReader
 getResult
 getResults
 getRichTextProperty
+getRowCount
 getSample
 getSampleId
 getSampleProperty
