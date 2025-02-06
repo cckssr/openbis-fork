@@ -229,6 +229,21 @@ export default class FileDownloadManager {
     return segments.length > 2 ? segments[segments.length - 2] : "/";    
   }
 
+  getContainingFolder(filePath) {    
+    let normalizedPath = filePath.replace(/\/+/g, '/');
+    if (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
+      normalizedPath = normalizedPath.slice(0, -1);
+    }
+  
+    const lastSlashIndex = normalizedPath.lastIndexOf('/');
+    let folderPath = normalizedPath.slice(0, lastSlashIndex + 1);
+    if (!folderPath) {
+      folderPath = '/';
+    }
+  
+    return folderPath;
+  }
+  
   async handleDownloadFiles(multiselectedFiles){    
 
     this.updateProgressMainMessage(false)
@@ -486,9 +501,9 @@ export default class FileDownloadManager {
 
     if (selectedFiles.size > 1 || file.directory) {
       // ZIP download
-
+      const containingFolder = this.getContainingFolder(file.path)
       const zipFileName = this.createZipFileNameFromPath(file.path, file.name)
-      const zipBlob = await this.prepareZipBlob(selectedFiles, zipFileName)    
+      const zipBlob = await this.prepareZipBlob(selectedFiles, zipFileName, containingFolder)    
     
       this.downloadBlob(zipBlob, zipFileName)
       this.zip = new JSZip()
@@ -513,22 +528,33 @@ export default class FileDownloadManager {
   }
   
  
-  async prepareZipBlob(files, zipFileName) {
+  async prepareZipBlob(files, zipFileName, containingFolder) {
     for (let file of files) {
+      const filePath = this.removeContainingFolder(file.path, containingFolder)
       if (!file.directory) {        
         const dataArray = await this.controller.download(file, this.updateProgress, this.throwAbortErrorIfTransferCancelled)
         this.zip.file(
-          file.path,
+          filePath,
           new Blob(dataArray, { type: this.inferMimeType(file.path) })
         )
       } else {
-        this.zip.folder(file.path)
+        this.zip.folder(filePath)
         const nestedFiles = await this.controller.listFilesAndUpdateProgress(file.path,this.updateProgress)
-        await this.prepareZipBlob(nestedFiles)
+        await this.prepareZipBlob(nestedFiles, zipFileName, containingFolder)
       }
     }
 
     return await this.generateWithProgress(zipFileName);
+  }
+
+  removeContainingFolder(filePath, folderPath) {
+    if (!folderPath.endsWith('/')) {
+      folderPath += '/';
+    }
+    if (filePath.startsWith(folderPath)) {
+      return filePath.slice(folderPath.length);
+    }
+    return filePath;
   }
 
   // message will only update on UI if it takes longer than 1 sec
