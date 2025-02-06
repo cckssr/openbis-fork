@@ -669,6 +669,9 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
                     } else if (isFirstLoggedAFSServer(person, persons))
                     {
                         grantRoleAtFirstLogin(persons, person, RoleCode.ETL_SERVER);
+                    } else if(person.getExpiryDate() != null && person.getExpiryDate().before(new Date(System.currentTimeMillis())))
+                    {
+                        throw createException(person, "no valid assigned rights");
                     } else
                     {
                         throw createException(person, "has no role assignments");

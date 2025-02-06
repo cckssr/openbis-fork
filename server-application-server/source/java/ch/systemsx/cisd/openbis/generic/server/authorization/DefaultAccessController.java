@@ -17,16 +17,7 @@ package ch.systemsx.cisd.openbis.generic.server.authorization;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -65,6 +56,10 @@ public final class DefaultAccessController implements IAccessController
     @Private
     static final String USER_ROLE_ASSIGNMENTS_NOT_FOUND_TEMPLATE =
             "No role assignments could be found for user '%s'.";
+
+    @Private
+    static final String USER_EXPIRED_TEMPLATE =
+            "No valid assignments could be found for user '%s'.";
 
     @Private
     static final String METHOD_ROLES_NOT_FOUND_TEMPLATE =
@@ -140,7 +135,13 @@ public final class DefaultAccessController implements IAccessController
             PersonPE person = session.tryGetPerson();
             if (person == null || person.getAllPersonRoles().size() == 0)
             {
-                String msg = String.format(USER_ROLE_ASSIGNMENTS_NOT_FOUND_TEMPLATE, session.getUserName());
+                String msg = null;
+                if(person != null && person.getExpiryDate() != null && person.getExpiryDate().before(new Date(System.currentTimeMillis()))) {
+                    msg = String.format(USER_EXPIRED_TEMPLATE, session.getUserName());
+                } else {
+                    msg = String.format(USER_ROLE_ASSIGNMENTS_NOT_FOUND_TEMPLATE, session.getUserName());
+                }
+
                 return Status.createError(msg);
             }
             final List<RoleWithIdentifier> userRoles = getUserRoles(person);
