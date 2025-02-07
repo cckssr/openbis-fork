@@ -6,7 +6,6 @@ import Browser from '@src/js/components/common/browser/Browser.jsx'
 import BrowserCommon from '@src/js/components/common/browser/BrowserCommon.js'
 import BrowserController from '@src/js/components/common/browser/BrowserController.js'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
-import GridRowFetchOptions from '@src/js/components/common/grid/GridRowFetchOptions.js'
 import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.js'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import DatePickerProvider from '@src/js/components/common/date/DatePickerProvider.jsx'
@@ -24,7 +23,6 @@ export default {
   BrowserCommon,
   BrowserController,
   Grid,
-  GridRowFetchOptions,
   GridExportOptions,
   SelectField,
   DatePickerProvider,

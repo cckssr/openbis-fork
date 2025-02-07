@@ -3,7 +3,6 @@ import autoBind from 'auto-bind'
 import FileSaver from 'file-saver'
 import { stringify } from 'csv-stringify'
 import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js'
-import GridRowFetchOptions from '@src/js/components/common/grid/GridRowFetchOptions.js'
 import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.js'
 import GridPagingOptions from '@src/js/components/common/grid/GridPagingOptions.js'
 import GridSortingOptions from '@src/js/components/common/grid/GridSortingOptions.js'
@@ -527,7 +526,7 @@ export default class GridController {
     return settings
   }
 
-  async _loadRowsFromAllPages(fetchOptions) {
+  async _loadRowsFromAllPages() {
     const state = this.context.getState()
     const props = this.context.getProps()
 
@@ -549,8 +548,7 @@ export default class GridController {
         globalFilter: state.globalFilter,
         page: 0,
         pageSize: 1000000,
-        sortings: state.sortings,
-        fetchOptions: fetchOptions
+        sortings: state.sortings
       })
 
       if (_.isArray(loadedResult)) {
@@ -1075,7 +1073,7 @@ export default class GridController {
   }
 
   async handleSelectAllPages() {
-    const rowsFromAllPages = await this._loadRowsFromAllPages(GridRowFetchOptions.ROW_WITH_ID_ONLY)
+    const rowsFromAllPages = await this._loadRowsFromAllPages()
     const newMultiselectedRowIds = rowsFromAllPages.map(row => String(row.id))
     this.multiselectRows(newMultiselectedRowIds)
   }
@@ -1425,7 +1423,7 @@ export default class GridController {
     const { exportOptions, rows, multiselectedRows } = this.context.getState()
 
     if (exportOptions.rows === GridExportOptions.ROWS.ALL_PAGES) {
-      return await this._loadRowsFromAllPages(GridRowFetchOptions.FULL_ROW)
+      return await this._loadRowsFromAllPages()
     } else if (exportOptions.rows === GridExportOptions.ROWS.CURRENT_PAGE) {
       return rows
     } else if (exportOptions.rows === GridExportOptions.ROWS.SELECTED_ROWS) {
