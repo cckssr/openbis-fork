@@ -509,6 +509,7 @@ var SampleDataGridUtil = new function() {
 			}
 			
 			var fetchOptions = {
+					idOnly : options.fetchOptions === DataGridRowFetchOptions.ROW_WITH_ID_ONLY,
 					minTableInfo : true,
 					withExperiment : withExperiment,
 					withChildrenInfo : true,

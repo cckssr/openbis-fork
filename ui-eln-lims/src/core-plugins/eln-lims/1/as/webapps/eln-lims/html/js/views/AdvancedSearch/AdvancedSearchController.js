@@ -187,6 +187,7 @@ function AdvancedSearchController(mainController, forceSearch) {
 			if(options) {
 				fetchOptions.count = options.pageSize;
 				fetchOptions.from = options.pageIndex * options.pageSize;
+				fetchOptions.idOnly = options.fetchOptions === DataGridRowFetchOptions.ROW_WITH_ID_ONLY
 				fetchOptions.minTableInfo = true;
 				fetchOptions.withExperiment = true;
 				fetchOptions.withParents = false;

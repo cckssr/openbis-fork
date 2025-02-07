@@ -1483,7 +1483,9 @@ function ServerFacade(openbisServer) {
 				var escapeWildcards = advancedFetchOptions && advancedFetchOptions.escapeWildcards;
 
 				//Optional fetchOptions
-				if(!advancedFetchOptions ||
+				if(advancedFetchOptions && advancedFetchOptions.idOnly) {
+				    // do not specify any fetch options
+				} else if(!advancedFetchOptions ||
 				   (advancedFetchOptions && !(advancedFetchOptions.minTableInfo || advancedFetchOptions.only))
 				   ) {
 					if(fetchOptions.withType) {

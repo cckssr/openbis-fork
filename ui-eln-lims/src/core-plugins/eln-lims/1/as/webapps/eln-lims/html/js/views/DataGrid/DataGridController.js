@@ -223,6 +223,7 @@ function DataGridController(
             globalSearch: params.globalFilter,
             searchMap: params.filters,
             columnMap: params.columns,
+            fetchOptions: params.fetchOptions
         }
 
         function checkRowIds(rows) {
