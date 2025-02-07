@@ -1073,9 +1073,67 @@ export default class GridController {
   }
 
   async handleSelectAllPages() {
+    const { local, totalCount } = this.context.getState()
+
+    if (!local && totalCount > 1000) {
+      await this.context.setState({
+        confirmSelectAllPagesOpen: true
+      })
+    } else {
+      await this._selectAllPages()
+    }
+  }
+
+  async _selectAllPages() {
+    const { multiselectable, onMultiselectedRowsChange } = this.context.getProps()
+    const { rows } = this.context.getState()
+
+    if (!multiselectable) {
+      return
+    }
+
     const rowsFromAllPages = await this._loadRowsFromAllPages()
-    const newMultiselectedRowIds = rowsFromAllPages.map(row => String(row.id))
-    this.multiselectRows(newMultiselectedRowIds)
+
+    const rowsMap = {}
+    rows.forEach(row => {
+      rowsMap[row.id] = row
+    })
+
+    const newMultiselectedRows = {}
+
+    rowsFromAllPages.forEach(row => {
+      const visible = rowsMap[row.id] !== undefined
+      newMultiselectedRows[row.id] = {
+        id: row.id,
+        data: row,
+        visible
+      }
+    })
+
+    await this.context.setState(() => ({
+      multiselectedRows: newMultiselectedRows
+    }))
+
+    if (onMultiselectedRowsChange) {
+      onMultiselectedRowsChange(newMultiselectedRows)
+    }
+  }
+
+  async handleConfirmSelectAllPages() {
+    await this.context.setState({
+      confirmSelectAllPagesOpen: false,
+      loading: true,
+    })
+    await this._selectAllPages()
+    await this.context.setState({
+      loading: false,
+    })
+  }
+
+  handleCancelSelectAllPages() {
+    this.context.setState({
+      confirmSelectAllPagesOpen: false
+    })
   }
 
   async clearSelection() {

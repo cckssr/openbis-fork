@@ -9,6 +9,7 @@ import Table from '@mui/material/Table'
 import TableHead from '@mui/material/TableHead'
 import TableBody from '@mui/material/TableBody'
 import Header from '@src/js/components/common/form/Header.jsx'
+import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import GridController from '@src/js/components/common/grid/GridController.js'
 import GridFilters from '@src/js/components/common/grid/GridFilters.jsx'
 import GridHeaders from '@src/js/components/common/grid/GridHeaders.jsx'
@@ -176,7 +177,7 @@ class Grid extends React.PureComponent {
     }
 
     const { id, classes, showHeaders, isDragging } = this.props
-    const { loading, rows } = this.state
+    const { loading, rows, confirmSelectAllPagesOpen } = this.state
     const doShowHeaders = typeof showHeaders === 'boolean' ? showHeaders : true
 
     return (
@@ -219,6 +220,13 @@ class Grid extends React.PureComponent {
             </div>
           </div>
         )}
+        <ConfirmationDialog
+          open={confirmSelectAllPagesOpen}
+          onConfirm={this.controller.handleConfirmSelectAllPages}
+          onCancel={this.controller.handleCancelSelectAllPages}
+          title={messages.get(messages.SELECT_ALL_PAGES)}
+          content={messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES)}
+        />
       </div>
 
     )
