@@ -371,7 +371,7 @@ class Grid extends React.PureComponent {
 
   renderHeaders() {
     const { multiselectable } = this.props
-    const { sortings, rows, multiselectedRows, allPagesSelected } = this.state
+    const { sortings, rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -386,7 +386,6 @@ class Grid extends React.PureComponent {
         }
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
-        allPagesSelected={allPagesSelected}
       />
     )
   }
@@ -415,7 +414,7 @@ class Grid extends React.PureComponent {
 
   renderSelectionInfo() {
     const { multiselectable, actions } = this.props
-    const { rows, multiselectedRows, allPagesSelected } = this.state
+    const { rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -429,14 +428,13 @@ class Grid extends React.PureComponent {
         onSelectAllPages={this.controller.handleSelectAllPages}
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
-        allPagesSelected={allPagesSelected}
       />
     )
   }
 
   renderRow(row) {
     const { selectable, multiselectable, onRowClick, onRowDoubleClick } = this.props
-    const { selectedRow, multiselectedRows, allPagesSelected, heights } = this.state
+    const { selectedRow, multiselectedRows, heights } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -452,7 +450,6 @@ class Grid extends React.PureComponent {
         selected={selectedRow ? selectedRow.id === row.id : false}
         multiselectable={multiselectable}
         multiselected={multiselectedRows && multiselectedRows[row.id]}
-        allPagesSelected={allPagesSelected}
         onClick={this.controller.handleRowClick}
         onDoubleClick={this.controller.handleRowDoubleClick}
         onSelect={this.controller.handleRowSelect}

@@ -1073,41 +1073,19 @@ export default class GridController {
   }
 
   async handleSelectAllPages() {
-    await this.context.setState({
-      allPagesSelected: true
-    })
+    const rowsFromAllPages = await this._loadRowsFromAllPages()
+    const newMultiselectedRowIds = rowsFromAllPages.map(row => String(row.id))
+    this.multiselectRows(newMultiselectedRowIds)
   }
 
   async clearSelection() {
     await this.multiselectRows([])
-    await this.context.setState({
-      allPagesSelected: false
-    })
   }
 
   async handleExecuteAction(action) {
     if (action && action.execute) {
-      const state = this.context.getState()
-      const props = this.context.getProps()
-
-      if (state.allPagesSelected) {
-        var rowsFromAllPages = await this._loadRowsFromAllPages()
-
-        var visibleRowIds = {}
-        state.rows.forEach(row => {
-          visibleRowIds[row.id] = true
-        })
-
-        var multiselectedRows = rowsFromAllPages.map(row => ({
-          id: row.id,
-          data: row,
-          visible: !!visibleRowIds[row.id]
-        }))
-
-        action.execute({ multiselectedRows })
-      } else {
-        action.execute({ multiselectedRows: state.multiselectedRows })
-      }
+      const { multiselectedRows } = this.context.getState()
+      action.execute({ multiselectedRows })
     }
   }
 
@@ -1442,20 +1420,16 @@ export default class GridController {
   }
 
   async _getExportedRows() {
-    const { exportOptions, allPagesSelected, rows, multiselectedRows } = this.context.getState()
+    const { exportOptions, rows, multiselectedRows } = this.context.getState()
 
     if (exportOptions.rows === GridExportOptions.ROWS.ALL_PAGES) {
       return await this._loadRowsFromAllPages()
     } else if (exportOptions.rows === GridExportOptions.ROWS.CURRENT_PAGE) {
       return rows
     } else if (exportOptions.rows === GridExportOptions.ROWS.SELECTED_ROWS) {
-      if (allPagesSelected) {
-        return await this._loadRowsFromAllPages()
-      } else {
-        return Object.values(multiselectedRows).map(
-          selectedRow => selectedRow.data
-        )
-      }
+      return Object.values(multiselectedRows).map(
+        selectedRow => selectedRow.data
+      )
     } else {
       throw Error('Unsupported rows option: ' + exportOptions.rows)
     }

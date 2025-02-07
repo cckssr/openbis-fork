@@ -24,12 +24,12 @@ class GridMultiselectCell extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridMultiselectCell.render')
 
-    const { value, disabled, onClick, classes } = this.props
+    const { value, onClick, classes } = this.props
 
     return (
       <TableCell classes={{ root: classes.multiselect }}>
         <div className={classes.checkbox}>
-          <CheckboxField value={value} disabled={disabled} onClick={onClick} />
+          <CheckboxField value={value} onClick={onClick} />
         </div>
       </TableCell>
     )
