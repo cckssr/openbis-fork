@@ -56,7 +56,7 @@ public enum Attribute
 
     MODIFIER("Modifier", false, false, true),
 
-    ONTOLOGY_ID("Ontology ID", true, false, true),
+    ONTOLOGY_ID("Ontology Id", true, false, true),
 
     ONTOLOGY_VERSION("Ontology Version", true, false, true),
 
