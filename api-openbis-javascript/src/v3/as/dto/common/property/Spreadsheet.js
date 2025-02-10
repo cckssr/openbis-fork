@@ -178,9 +178,9 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 
                 }
                 if(!columnNumber) {
-                    this.columnIndex = parent.headers.indexOf(labelOrNumber);
+                    this.columnIndex = parent.headers.indexOf(column);
                     if(this.columnIndex < 0) {
-                        throw new exceptions.IllegalArgumentException("Could not find column '" + labelOrNumber + "'");
+                        throw new exceptions.IllegalArgumentException("Could not find column '" + column + "'");
                     }
                     this.columnHeader = parent.headers[this.columnIndex];
                 }
