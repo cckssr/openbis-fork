@@ -77,23 +77,19 @@ class GridSelectionInfo extends React.PureComponent {
   }
 
   renderNumberOfSelectedRows(numberOfSelectedRows) {
-    const { allPagesSelected, classes } = this.props
+    const { classes } = this.props
 
     return (
       <div className={classes.message}>
         <Message type='info'>
-          {allPagesSelected ? messages.get(messages.ALL_PAGES_SELECTED) : messages.get(messages.NUMBER_OF_SELECTED_ROWS, numberOfSelectedRows)}
+          {messages.get(messages.NUMBER_OF_SELECTED_ROWS, numberOfSelectedRows)}
         </Message>
       </div>
     )
   }
 
   renderNumberOfSelectedRowsNotVisible(numberOfSelectedRowsNotVisible) {
-    const { allPagesSelected, classes } = this.props
-
-    if (allPagesSelected) {
-      return null
-    }
+    const { classes } = this.props
 
     if (numberOfSelectedRowsNotVisible === 0) {
       return null
@@ -111,7 +107,7 @@ class GridSelectionInfo extends React.PureComponent {
   }
 
   renderButtons() {
-    const { actions, allPagesSelected, onExecuteAction, onMultiselectionClear, onSelectAllPages, classes } =
+    const { actions, onExecuteAction, onMultiselectionClear, onSelectAllPages, classes } =
       this.props
 
     return (
@@ -129,7 +125,6 @@ class GridSelectionInfo extends React.PureComponent {
           ))}
         <Button
           label={messages.get(messages.SELECT_ALL_PAGES)}
-          disabled={allPagesSelected}
           onClick={onSelectAllPages}
           color='secondary'
           styles={{ root: classes.button }}

@@ -9,6 +9,7 @@ import Table from '@mui/material/Table'
 import TableHead from '@mui/material/TableHead'
 import TableBody from '@mui/material/TableBody'
 import Header from '@src/js/components/common/form/Header.jsx'
+import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import GridController from '@src/js/components/common/grid/GridController.js'
 import GridFilters from '@src/js/components/common/grid/GridFilters.jsx'
 import GridHeaders from '@src/js/components/common/grid/GridHeaders.jsx'
@@ -219,6 +220,7 @@ class Grid extends React.PureComponent {
             </div>
           </div>
         )}
+        {this.renderConfirmSelectAllPages()}
       </div>
 
     )
@@ -371,7 +373,7 @@ class Grid extends React.PureComponent {
 
   renderHeaders() {
     const { multiselectable } = this.props
-    const { sortings, rows, multiselectedRows, allPagesSelected } = this.state
+    const { sortings, rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -386,7 +388,6 @@ class Grid extends React.PureComponent {
         }
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
-        allPagesSelected={allPagesSelected}
       />
     )
   }
@@ -415,7 +416,7 @@ class Grid extends React.PureComponent {
 
   renderSelectionInfo() {
     const { multiselectable, actions } = this.props
-    const { rows, multiselectedRows, allPagesSelected } = this.state
+    const { rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -429,14 +430,13 @@ class Grid extends React.PureComponent {
         onSelectAllPages={this.controller.handleSelectAllPages}
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
-        allPagesSelected={allPagesSelected}
       />
     )
   }
 
   renderRow(row) {
     const { selectable, multiselectable, onRowClick, onRowDoubleClick } = this.props
-    const { selectedRow, multiselectedRows, allPagesSelected, heights } = this.state
+    const { selectedRow, multiselectedRows, heights } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
 
@@ -452,7 +452,6 @@ class Grid extends React.PureComponent {
         selected={selectedRow ? selectedRow.id === row.id : false}
         multiselectable={multiselectable}
         multiselected={multiselectedRows && multiselectedRows[row.id]}
-        allPagesSelected={allPagesSelected}
         onClick={this.controller.handleRowClick}
         onDoubleClick={this.controller.handleRowDoubleClick}
         onSelect={this.controller.handleRowSelect}
@@ -460,6 +459,18 @@ class Grid extends React.PureComponent {
         onMeasured={this.controller.handleMeasured}
       />
     )
+  }
+
+  renderConfirmSelectAllPages() {
+    const { confirmSelectAllPagesOpen, totalCount } = this.state
+
+    return (<ConfirmationDialog
+      open={confirmSelectAllPagesOpen}
+      onConfirm={this.controller.handleConfirmSelectAllPages}
+      onCancel={this.controller.handleCancelSelectAllPages}
+      title={messages.get(messages.SELECT_ALL_PAGES)}
+      content={messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES, totalCount)}
+    />)
   }
 }
 
