@@ -12,6 +12,7 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
+from pandas import DataFrame
 
 import json
 
@@ -40,8 +41,10 @@ class Spreadsheet:
     meta: dict
     width: list
     values: list
+    version: str
 
     def __init__(self, columns=10, rows=10):
+        self.version = "1"
         self.headers = _get_headers(columns)
         self.data = [["" for _ in range(columns)] for _ in range(rows)]
         self.style = {
@@ -97,19 +100,13 @@ class Spreadsheet:
     def _get_index(self, index):
         if index is None:
             raise ValueError("Index must not be None!")
-        if isinstance(index, str):
-            return self._get_index_str(index)
         if isinstance(index, tuple):
             return self._get_index_tuple(index)
         raise ValueError(f"'{index}' is not a valid index!")
 
     def __getitem__(self, index):
         (row, column) = self._get_index(index)
-        return self.data[row][column]
-
-    def __setitem__(self, key, value):
-        (row, column) = self._get_index(key)
-        self.data[row][column] = value
+        return self.CellBuilder(self, column, row)
 
     def add_column(self, column_name=None):
         if column_name is None:
@@ -125,6 +122,171 @@ class Spreadsheet:
 
     def add_row(self):
         self.data += [['' for _ in range(len(self.headers))]]
+        self.values += [['' for _ in range(len(self.headers))]]
+
+        for header in self.headers:
+            self.style[header + str(len(self.data))] =  "text-align: center;"
+
+    def delete_row(self, row_number):
+        row = int(row_number)
+        if len(self.data) < row or row < 1:
+            raise ValueError(f"Row '{row}' does not exists!")
+
+        self.data.pop(row-1)
+        self.values.pop(row-1)
+
+        for header in self.headers:
+            for i in range(row-1, len(self.data), 1):
+                self.style[header + str(i)] = self.style[header + str(i+1)]
+            del self.style[header + str(len(self.data))]
+
+    def delete_column(self, column_identifier):
+        if str(column_identifier).isdigit():
+            column_identifier = int(column_identifier)
+            if column_identifier < 1 or column_identifier > len(self.headers):
+                raise ValueError(f"Column '{column_identifier}' does not exists!")
+            column_index = column_identifier-1
+            column_label = self.headers[column_index]
+        else:
+            if not column_identifier in self.headers:
+                raise ValueError(f"Column '{column_identifier}' does not exists!")
+            column_index = self.headers.index(column_identifier)
+            column_label = self.headers[column_index]
+
+        self.headers.pop(column_index)
+        self.width.pop(column_index)
+        for i in range(len(self.data)):
+            self.data[i].pop(column_index)
+            self.values[i].pop(column_index)
+            del self.style[column_label+str(i+1)]
+
+
+    def cell(self, column_identifier, row_number):
+        return self.CellBuilder(self, column_identifier, row_number)
+
+    def column(self, column_identifier):
+        return self.ColumnBuilder(self, column_identifier)
+
+    class CellBuilder:
+
+        def __init__(self, parent, column_identifier, row_number):
+            self.__dict__['parent'] = parent
+            if column_identifier is None or column_identifier == "" or row_number is None or row_number == "":
+                raise ValueError(f"('{column_identifier}','{row_number}') is not a valid index!")
+
+            if str(column_identifier).isdigit():
+                column_identifier = int(column_identifier)
+                if column_identifier < 1 or column_identifier > len(parent.headers):
+                    raise ValueError(f"Column '{column_identifier}' does not exists!")
+                self.__dict__['column_index'] = column_identifier - 1
+                self.__dict__['column_label'] = parent.headers[self.__dict__['column_index']]
+            else:
+                if not column_identifier in parent.headers:
+                    raise ValueError(f"Column '{column_identifier}' does not exists!")
+                self.__dict__['column_index'] = parent.headers.index(column_identifier)
+                self.__dict__['column_label'] = parent.headers[self.__dict__['column_index']]
+
+            row = int(row_number)
+            if len(parent.data) < row or row < 1:
+                raise ValueError(f"Row '{row}' does not exists!")
+            self.__dict__['row_index'] = row - 1
+
+        def __getattr__(self, name):
+            row = self.__dict__['row_index']
+            column = self.__dict__['column_index']
+            label = self.__dict__['column_label']
+            if name == "formula":
+                return self.__dict__['parent'].data[row][column]
+            elif name == "value":
+                return self.__dict__['parent'].values[row][column]
+            elif name == "style":
+                return self.__dict__['parent'].style[label + str(column+1)]
+            elif name == "column_header":
+                return label
+            elif name == "column_number":
+                return column+1
+            elif name == "row_number":
+                return row+1
+            else:
+                raise ValueError(f"No such attribute '{name}' found!")
+
+
+        def __setattr__(self, name, value):
+            row = self.__dict__['row_index']
+            column = self.__dict__['column_index']
+            label = self.__dict__['column_label']
+            if name == "formula":
+                self.__dict__['parent'].data[row][column] = value
+            elif name == "value":
+                self.__dict__['parent'].values[row][column] = value
+            elif name == "style":
+                self.__dict__['parent'].style[label + str(column + 1)]  = value
+            else:
+                raise ValueError(f"No such attribute '{name}' found!")
+
+        def __str__(self):
+            attr = self.__dict__
+            row = attr['row_index']
+            column = attr['column_index']
+            return f"Cell[column={column}, row={row}, formula={attr['parent'].data[row][column]}, value={attr['parent'].values[row][column]}]"
+
+
+    class ColumnBuilder:
+        def __init__(self, parent, column_identifier):
+            self.__dict__['__df'] = None
+            self.__dict__['parent'] = parent
+            if column_identifier is None or column_identifier == "":
+                raise ValueError(f"('{column_identifier}') is not a valid column index!")
+
+            if str(column_identifier).isdigit():
+                column_identifier = int(column_identifier)
+                if column_identifier < 1 or column_identifier > len(parent.headers):
+                    raise ValueError(f"Column '{column_identifier}' does not exists!")
+                self.__dict__['column_index'] = column_identifier - 1
+                self.__dict__['column_label'] = parent.headers[self.__dict__['column_index']]
+            else:
+                if not column_identifier in parent.headers:
+                    raise ValueError(f"Column '{column_identifier}' does not exists!")
+                self.__dict__['column_index'] = parent.headers.index(column_identifier)
+                self.__dict__['column_label'] = parent.headers[self.__dict__['column_index']]
+
+        # @property
+        # def df(self):
+        #     if self.__dict__['__df'] is None:
+        #         header = self.__dict__['column_label']
+        #         index = self.__dict__['column_index']
+        #         data = []
+        #         for row in self.__dict__['parent'].data:
+        #             data += [row[index]]
+        #         self.__dict__['__df'] = DataFrame({header: data})
+        #     return self.__dict__['__df']
+
+        # @df.setter # TODO
+        # def df(self, df):
+        #     _df = self.__dict__['__df']
+
+        def __getattr__(self, name):
+            if name == "header":
+                return self.__dict__['column_label']
+            elif name == "width":
+                return self.__dict__['parent'].width[self.__dict__['column_index']]
+            elif name == "column_number":
+                return self.__dict__['column_index']+1
+            else:
+                raise ValueError(f"No such attribute '{name}' found!")
+
+        def __setattr__(self, name, value):
+            if name == "header":
+                self.__dict__['parent'].headers[self.__dict__['column_index']] = value
+            elif name == "width":
+                self.__dict__['parent'].width[self.__dict__['column_index']] = value
+            else:
+                raise ValueError(f"No such attribute '{name}' found!")
+
+        def __str__(self):
+            attr = self.__dict__
+            return f"Column[column={attr['column_index']}, header={attr['column_label']}]"
+
 
     def __str__(self):
         return json.dumps(self.__dict__, default=lambda x: x.__dict__)
