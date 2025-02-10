@@ -2415,6 +2415,8 @@ class Openbis:
         collection   -- same as above
         tags         -- only return samples with the specified tags
         where        -- key-value pairs of property values to search for
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
 
         Paging
         ------
@@ -2423,8 +2425,6 @@ class Openbis:
 
         Include in result list
         ----------------------
-        withParents  -- the list of parent's permIds in a column 'parents'
-        withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
                         space, project, experiment, container: returns identifier
                         parents, children, components: return a list of identifiers
@@ -2829,6 +2829,8 @@ class Openbis:
         tags         -- only return dataSets with the specified tags
         type         -- a dataSetType code
         where        -- key-value pairs of property values to search for
+        withParents  -- the list of parent's permIds in a column 'parents'
+        withChildren -- the list of children's permIds in a column 'children'
 
         Paging
         ------
@@ -2837,8 +2839,6 @@ class Openbis:
 
         Include in result list
         ----------------------
-        withParents  -- the list of parent's permIds in a column 'parents'
-        withChildren -- the list of children's permIds in a column 'children'
         attrs        -- list of all desired attributes. Examples:
                         project, experiment, sample: returns identifier
                         parents, children, components, containers: return a list of identifiers

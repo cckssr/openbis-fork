@@ -1049,45 +1049,109 @@ the Pandas dataFrame of the results.
 
 ```python
 samples = o.get_samples(
-    space      ='MY_SPACE',
-    type       ='YEAST',
-    tags       =['*'],                # only sample with existing tags
+    space      ='MY_SPACE',           # search in 'MY_SPACE' space
+    type       ='YEAST',              # only samples with type 'YEAST'
+    tags       =['*'],                # with any existing tags
+    withParents='/MY_SPACE/SAMPLE1',  # that have a parent with identifier '/MY_SPACE/SAMPLE1'
     start_with = 0,                   # start_with and count
     count      = 10,                  # enable paging
-    where = {
-        "$SOME.WEIRD-PROP": "hello"   # only receive samples where properties match
-    }
-
-    registrationDate = "2020-01-01",  # date format: YYYY-MM-DD
-    modificationDate = "<2020-12-31", # use > or < to search for specified date and later / earlier
-    attrs=[                           # show these attributes in the dataFrame
-        'sample.code',
+    attrs=[                           # include these attributes in the dataFrame
+        'code',
         'registrator.email',
-        'type.generatedCodePrefix'
+        'type.generatedCodePrefix',
+        'parents'
     ],
-    parent_property = 'value',        # search in a parent's property
-    child_property  = 'value',        # search in a child's property
-    container_property = 'value'      # search in a container's property
-    parent = '/MY_SPACE/PARENT_SAMPLE', # sample has this as its parent
-    parent = '*',                     # sample has at least one parent
-    child  = '/MY_SPACE/CHILD_SAMPLE',
-    child  = '*',                     # sample has at least one child
-    container = 'MY_SPACE/CONTAINER',
-    container = '*'                   # sample lives in a container
-    props=['$NAME', 'MATING_TYPE']    # show these properties in the result
-)
+    container = '*',                  # sample lives in a container
+    props=['NAME', 'MATING_TYPE'],    # show these properties in the result
+    where = {
+        "SOME.PROPERTY": "hello"      # only receive samples where value of property 'SOME.PROPERTY' match 'hello'
+    })
 
 sample = samples[9]                   # get the 10th sample
                                       # of the search results
+                                      
 sample = samples['/SPACE/AABC']       # same, fetched by identifier
-for sample in samples:                # iterate over the
-   print(sample.code)                 # search results
+for sample in samples:                # iterate over the search results
+   print(sample.code)                 
 
 
 samples.df                            # returns a Pandas DataFrame object
 
 samples = o.get_samples(props="*")    # retrieve all properties of all samples
 ```
+
+Parameters that can be specified in get_samples/get_objects:
+```
+Filters
+-------
+type         -- sampleType code or object
+space        -- space code or object
+project      -- project code or object
+experiment   -- experiment code or object (can be a list, too)
+collection   -- same as above
+tags         -- only return samples with the specified tags
+where        -- key-value pairs of property values to search for (see below for details)
+withParents  -- text string or a list of parent's ids in a column 'parents'
+withChildren -- text string or a list of children's ids in a column 'children'
+
+Paging
+------
+start_with   -- default=None
+count        -- number of samples that should be fetched. default=None.
+
+Include in result list
+----------------------
+attrs        -- list of all desired attributes. Examples:
+                --  space, project, experiment, container: returns identifier
+                --  parents, children, components: return a list of identifiers
+                --  space.code, project.code, experiment.code
+                --  registrator.email, registrator.firstName
+                --  type.generatedCodePrefix
+props        -- list of all desired properties. Returns an empty string if
+                a) property is not present
+                b) property is not defined for this sampleType
+
+
+```
+
+Filtering parameters allow usage of wildcards for more general searches:
+```python
+samples = o.get_samples(
+    space      ='MY_*',               # search in spaces with code starts with 'MY_' prefix
+    type       ='*YEAST',             # only samples with types that have suffix 'YEAST' ('YEAST' type included)
+    tags       =['*'],                # with any existing tags
+    withChildren=[                    # with a child with identifier that starts with '/MY_SPACE/SAMPLE' or '/DIFF/'
+        '/MY_SPACE/SAMPLE*',
+        '/DIFF/*'],  
+    withParents='*',                  # with any parent
+    container = '*',                  # sample lives in a container
+    where = {
+        "SOME.PRTY": "*ello world*"   # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
+    })
+
+```
+
+
+`where` parameter allows to specify a dictionary with search criteria for properties and some attributes of searched samples. 
+It allows wildcards and comparison signs in case of dates.
+```python
+samples = o.get_samples(
+    where = {
+      # Attributes
+      "registrationDate": "2020-01-01",  # date format: YYYY-MM-DD
+      "modificationDate": "<2020-12-31", # use > or < to search for specified date and later / earlier
+      
+      # Properties
+      "SOME.PRTY": "*ello world*",       # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
+      
+      # Properties of linked objects, format: <linked_object>_<property_name>
+      "parent_name": 'parent_value',     # search in a parent's property 'name' for value 'parent_value'
+      "child_some.prty": '*_value',      # search in a child's property 'some.prty' for values containing '_value' suffix
+      "container_property": 'value'      # search in a container's property 'property' value 'value'
+    })
+```
+
+
 
 ***Note: Attributes download***
 
@@ -1176,6 +1240,108 @@ Datasets are by all means the most important openBIS entity. The actual files ar
 #### working with existing dataSets
 
 **search for datasets**
+
+The result of a search is always list, even when no items are found. The `.df` attribute returns
+the Pandas dataFrame of the results.
+```python
+ds = o.get_datasets(
+    space      ='MY_SPACE',           # search in 'MY_SPACE' space
+    type       ='MY_TYPE',            # only datasets with type 'MY_TYPE'
+    tags       =['*'],                # with any existing tags
+    withParents='2025051612345-123',  # that have a parent with permId '2025051612345-123'
+    start_with = 0,                   # start_with and count
+    count      = 10,                  # enable paging
+    attrs=[                           # include these attributes in the dataFrame
+        'code',
+        'registrator.email',
+        'type.generatedCodePrefix',
+        'parents'
+    ],
+    props=['NAME', 'MY_PROPERTY'],    # show these properties in the result
+    where = {
+        "SOME.PROPERTY": "hello"      # only receive datasets where value of property 'SOME.PROPERTY' match 'hello'
+    })
+
+dataset = ds[9]                       # get the 10th dataset
+                                      # of the search results
+                                      
+dataset = ds['20250207164630213-18976']     # same, fetched by permId
+for dataset in ds:                    # iterate over the search results
+   print(dataset.code)                 
+
+
+dataset.df                            # returns a Pandas DataFrame object
+
+dataset = o.get_datasets(props="*")   # retrieve all properties of all samples
+```
+
+Parameters that can be specified in get_datasets:
+```
+Filters
+-------
+permId       -- the permId is the unique identifier of a dataSet. A list of permIds can be provided.
+code         -- actually a synonym for the permId of the dataSet.
+project      -- a project code or a project object
+experiment   -- an experiment code or an experiment object
+sample       -- a sample code/permId or a sample/object
+collection   -- same as experiment
+tags         -- only return dataSets with the specified tags
+type         -- a dataSetType code
+where        -- key-value pairs of property values to search for
+withParents  -- text string or a list of parent's ids in a column 'parents'
+withChildren -- text string or a list of children's ids in a column 'children'
+
+Paging
+------
+start_with   -- default=None
+count        -- number of dataSets that should be fetched. default=None.
+
+Include in result list
+----------------------
+attrs        -- list of all desired attributes. Examples:
+                -- project, experiment, sample: returns identifier
+                -- parents, children, components, containers: return a list of identifiers
+                -- space.code, project.code, experiment.code
+                -- registrator.email, registrator.firstName
+                -- type.generatedCodePrefix
+props        -- list of all desired properties. Returns an empty string if
+                a) property is not present
+                b) property is not defined for this dataSetType
+```
+
+Filtering parameters allow usage of wildcards for more general searches:
+```python
+datasets = o.get_datasets(
+    space      ='MY_*',               # search in spaces with code starts with 'MY_' prefix
+    type       ='*YEAST',             # only datasets with types that have suffix 'YEAST' ('YEAST' type included)
+    tags       =['*'],                # with any existing tags
+    withChildren=[                    # with a child with permId that starts with '20250210'
+        '20250210*'],  
+    withParents='*',                  # with any parent
+    where = {
+        "SOME.PRTY": "*ello world*"   # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
+    })
+
+```
+
+
+`where` parameter allows to specify a dictionary with search criteria for properties and some attributes of searched datasets. 
+It allows wildcards and comparison signs in case of dates.
+```python
+datasets = o.get_datasets(
+    where = {
+      # Attributes
+      "registrationDate": "2020-01-01",  # date format: YYYY-MM-DD
+      "modificationDate": "<2020-12-31", # use > or < to search for specified date and later / earlier
+      
+      # Properties
+      "SOME.PRTY": "*ello world*",       # only receive samples where value of property 'SOME.PRTY' contains 'ello world'
+      
+      # Properties of linked objects, format: <linked_object>_<property_name>
+      "parent_name": 'parent_value',     # search in a parent's property 'name' for value 'parent_value'
+      "child_some.prty": '*_value',      # search in a child's property 'some.prty' for values containing '_value' suffix
+    })
+```
 
 This example does the following
 
