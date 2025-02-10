@@ -30,6 +30,9 @@ const config = {
     warning: {
       main: '#ff9609'
     },
+    error: {
+      main: '#e64444'
+    },
     hint: {
       main: '#bdbdbd'
     },

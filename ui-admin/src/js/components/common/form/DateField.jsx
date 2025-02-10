@@ -136,11 +136,12 @@ class DateField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value } = this.props
+    const { label, value, color } = this.props
     return (
       <FormFieldView
         label={label}
         value={value && value.dateObject ? date.format(value.dateObject) : null}
+        color={color}
       />
     )
   }

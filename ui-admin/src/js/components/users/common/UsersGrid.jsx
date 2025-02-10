@@ -5,6 +5,8 @@ import withStyles from '@mui/styles/withStyles';
 import GridWithOpenbis from '@src/js/components/common/grid/GridWithOpenbis.jsx'
 import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.js'
 import GridUtil from '@src/js/components/common/grid/GridUtil.js'
+import Message from '@src/js/components/common/form/Message.jsx'
+import date from '@src/js/common/date.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -65,7 +67,40 @@ class UsersGrid extends React.PureComponent {
           GridUtil.registrationDateColumn({ path: 'registrationDate.value' }),
           GridUtil.dateObjectColumn({ name: 'expiryDate',
                     label: messages.get(messages.EXPIRY_DATE),
-                    path: 'expiryDate.value' })
+                    path: 'expiryDate.value' }),
+          {
+           name: 'validityLeft',
+           label: messages.get(messages.VALIDITY_LEFT),
+           getValue: ({ row }) => {
+             if (
+               !row.expiryDate.value ||
+               !row.expiryDate.value.dateObject
+             ) {
+               return null
+             }
+
+             return (
+               row.expiryDate.value.dateObject.getTime() -
+               new Date().getTime()
+             )
+           },
+           renderValue: ({ value }) => {
+             if (value) {
+                 if(value < 0) {
+                    return (
+                           <Message type='error'>
+                             {messages.get(messages.INVALID)}
+                           </Message>
+                         )
+                 }
+               return date.duration(value)
+             } else {
+               return null
+             }
+           },
+           filterable: false,
+           nowrap: true
+          }
         ]}
         rows={rows}
         exportable={{

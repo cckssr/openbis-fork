@@ -8,6 +8,7 @@ import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import UserFormSelectionType from '@src/js/components/users/form/user/UserFormSelectionType.js'
+import Message from '@src/js/components/common/form/Message.jsx'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 
@@ -95,6 +96,7 @@ class UserFormParametersUser extends React.PureComponent {
         {this.renderEmail(user)}
         {this.renderSpace(user)}
         {this.renderExpiryDate(user)}
+        {this.renderAccessRevoked(user)}
         {this.renderActive(user)}
       </Container>
     )
@@ -335,10 +337,36 @@ class UserFormParametersUser extends React.PureComponent {
             onChange={this.handleChange}
             onFocus={this.handleFocus}
             onBlur={this.handleBlur}
+            color={this.getColor(value)}
           />
         </div>
       )
     }
+
+  renderAccessRevoked(user) {
+        const { visible, enabled, error, value } = { ...user.expiryDate }
+        if (!visible || !value || !value.dateObject || value.dateObject.getTime() - new Date().getTime() > 0 ) {
+          return null
+        }
+        const { mode, classes } = this.props
+        return (
+          <div className={classes.field}>
+            <Message type='error'>
+                {messages.get(messages.USER_ROLES_EXPIRED)}
+              </Message>
+          </div>
+        )
+      }
+
+  getColor(value) {
+      let date = new Date().getTime();
+      if(value && value.dateObject) {
+        if(date - value.dateObject.getTime() > 0) {
+            return 'error';
+        }
+      }
+    return null;
+  }
 
   getUser(props) {
     let { user, selection } = props
