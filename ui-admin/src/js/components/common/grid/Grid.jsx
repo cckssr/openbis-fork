@@ -177,7 +177,7 @@ class Grid extends React.PureComponent {
     }
 
     const { id, classes, showHeaders, isDragging } = this.props
-    const { loading, rows, confirmSelectAllPagesOpen } = this.state
+    const { loading, rows } = this.state
     const doShowHeaders = typeof showHeaders === 'boolean' ? showHeaders : true
 
     return (
@@ -220,13 +220,7 @@ class Grid extends React.PureComponent {
             </div>
           </div>
         )}
-        <ConfirmationDialog
-          open={confirmSelectAllPagesOpen}
-          onConfirm={this.controller.handleConfirmSelectAllPages}
-          onCancel={this.controller.handleCancelSelectAllPages}
-          title={messages.get(messages.SELECT_ALL_PAGES)}
-          content={messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES)}
-        />
+        {this.renderConfirmSelectAllPages()}
       </div>
 
     )
@@ -465,6 +459,18 @@ class Grid extends React.PureComponent {
         onMeasured={this.controller.handleMeasured}
       />
     )
+  }
+
+  renderConfirmSelectAllPages() {
+    const { confirmSelectAllPagesOpen, totalCount } = this.state
+
+    return (<ConfirmationDialog
+      open={confirmSelectAllPagesOpen}
+      onConfirm={this.controller.handleConfirmSelectAllPages}
+      onCancel={this.controller.handleCancelSelectAllPages}
+      title={messages.get(messages.SELECT_ALL_PAGES)}
+      content={messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES, totalCount)}
+    />)
   }
 }
 

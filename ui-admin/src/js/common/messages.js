@@ -437,7 +437,7 @@ const messages_en = {
   [keys.CONFIRMATION_REMOVE]: 'Are you sure you want to remove "${0}"?',
   [keys.CONFIRMATION_REMOVE_IT]: 'Are you sure you want to remove it?',
   [keys.CONFIRMATION_UNSAVED_CHANGES]: 'Are you sure you want to lose the unsaved changes?',
-  [keys.CONFIRMATION_SELECT_ALL_PAGES]: 'Are you sure you want to select all rows on all pages? Depending on the number of rows it may take a while.',
+  [keys.CONFIRMATION_SELECT_ALL_PAGES]: 'Are you sure you want to select all ${0} rows? Depending on the number of rows it may take a while.',
   [keys.CONFIRM]: 'Confirm',
   [keys.CONFIRM_MERGE]: 'Confirm Merge',
   [keys.CONTAINER]: 'Container',

@@ -69,6 +69,7 @@ export default class GridController {
       allRows: [],
       selectedRow: null,
       multiselectedRows: {},
+      confirmSelectAllPagesOpen: false,
       heights: {},
       sortings: sortings,
       totalCount: 0,
