@@ -14,6 +14,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.metadata = null;
 		prototype.comment = null;
 		prototype.tags = null;
+		prototype.filterConfig = null;
 
 		prototype.getConfig = function() {
 			return this.config;
@@ -75,6 +76,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype.setTags = function(tags) {
             this.tags = tags;
         };
+        prototype.getFilterConfig = function() {
+            return this.filterConfig;
+        };
+        prototype.setFilterConfig = function(filterConfig) {
+            this.filterConfig = filterConfig;
+        };
 		prototype.toString = function() {
             return "ImagingDataSetPreview: " + this.config;
         };
@@ -87,6 +94,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         metadata : {
             name : "Map",
             arguments : [ "String", "Serializable" ]
+        },
+        filterConfig : {
+            name : "List",
+            arguments : [ "Map<String, String[]>" ]
         }
 	});
 	return ImagingDataSetPreview;

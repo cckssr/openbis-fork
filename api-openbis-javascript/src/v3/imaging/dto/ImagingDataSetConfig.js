@@ -12,6 +12,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.exports = null;
 		prototype.inputs = null;
 		prototype.metadata = null;
+		prototype.filters = null;
 
 		prototype.getAdaptor = function() {
 			return this.adaptor;
@@ -61,6 +62,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setMetadata = function(metadata) {
 			this.metadata = metadata;
 		};
+        prototype.getFilters = function() {
+            return this.filters;
+        };
+        prototype.setFilters = function(filters) {
+            this.filters = filters;
+        };
 		prototype.toString = function() {
             return "ImagingDataSetConfig: " + this.adaptor;
         };
@@ -85,6 +92,10 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         metadata : {
             name : "Map",
             arguments : [ "String", "String" ]
+        },
+        filters : {
+            name : "Map",
+            arguments : [ "String", "List<ImagingDataSetControl>" ]
         }
 	});
 	return ImagingDataSetConfig;
