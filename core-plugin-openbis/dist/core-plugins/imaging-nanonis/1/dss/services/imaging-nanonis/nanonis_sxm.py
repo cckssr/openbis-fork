@@ -59,6 +59,7 @@ image_config = json.loads(sys.argv[3])
 image_metadata = json.loads(sys.argv[4])
 preview_config = json.loads(sys.argv[5])
 preview_metadata = json.loads(sys.argv[6])
+filter_config = json.loads(sys.argv[7])
 
 
 params = preview_config
@@ -79,7 +80,8 @@ def remove_line_average(chData):
     return chData
 
 
-def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling, resolution, filter, other_params):
+def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, colormap_scaling,
+                  resolution, filter, other_params, filter_config):
     img = load_image(file_path)
     img_byte_arr = io.BytesIO()
 
@@ -88,7 +90,43 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
         log = True
     clim = None
 
-    if filter is not "NONE":
+    if filter_config is not None and len(filter_config) > 0:
+        (chData,chUnit) = img.get_channel('z', direction = 'forward', flatten=False, offset=False)
+        for f in filter_config:
+            min_before = numpy.nanmin(chData)
+            max_before = numpy.nanmax(chData)
+            filter_name = f.upper()
+            if filter_name == "GAUSSIAN":
+                chData = skimage.filters.gaussian(chData, sigma=int(filter_config[f][0]), truncate=float(filter_config[f][1]))
+            elif filter_name == "LAPLACE":
+                chData = skimage.filters.laplace(chData, ksize=int(filter_config[f][0]))
+            elif filter_name == 'ZERO BACKGROUND':
+                chData = chData - min_before
+            elif filter_name == 'PLANE SUBTRACTION':
+                if ~numpy.isnan(numpy.sum(chData)):
+                    chData, _ = spiepy.flatten_xy(chData)
+                else:
+                    m,n = numpy.shape(chData)
+                    i = numpy.argwhere(numpy.isnan(chData))[0,0]
+                    im_cut = chData[:i-1,:]
+                    chData, _ = spiepy.flatten_xy(im_cut)
+                    empty = numpy.full((m-i,n),numpy.nan)
+                    chData = numpy.vstack((chData,empty))
+            elif filter_name == 'LINE SUBTRACTION':
+                chData = remove_line_average(chData)
+
+            range_before = numpy.abs(min_before-max_before)
+
+            x = (color_scale[0]-min_before)/range_before
+            y = (color_scale[1]-min_before)/range_before
+
+            min_after = numpy.nanmin(chData)
+            max_after = numpy.nanmax(chData)
+            range_after = numpy.abs(min_after-max_after)
+
+            color_scale = (x*range_after+min_after, y*range_after+min_after)
+
+    elif filter is not "NONE":
         (chData,chUnit) = img.get_channel('z', direction = 'forward', flatten=False, offset=False)
 
         min_before = numpy.nanmin(chData)
@@ -157,7 +195,7 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
     #         preview[key] = print_params[x]
     return preview
 
-def sxm_mode(parameters):
+def sxm_mode(parameters, filter_config):
 
     colormap_scaling = False
     include_param_info = False
@@ -191,14 +229,14 @@ def sxm_mode(parameters):
                 resolution = float(resolution[:-3])
             else:
                 resolution = float(resolution)
-        elif key == 'filter':
+        elif key == 'filter': # TODO remove this once filtering UI is done
             filter = parameters[param_key].upper() if parameters[param_key] is not None else "NONE"
         else:
             other_params[param_key] = parameters[param_key]
 
     preview = get_sxm_image(channel, x_axis, y_axis, scaling, color_scale, colormap,
-                            colormap_scaling, resolution, filter, other_params)
+                            colormap_scaling, resolution, filter, other_params, filter_config)
     print(f'{json.dumps(preview)}')
 
 print(params)
-sxm_mode(preview_config)
+sxm_mode(preview_config, filter_config)

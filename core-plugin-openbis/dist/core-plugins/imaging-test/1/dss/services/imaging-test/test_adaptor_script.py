@@ -14,6 +14,7 @@ image_config = json.loads(sys.argv[3])
 image_metadata = json.loads(sys.argv[4])
 preview_config = json.loads(sys.argv[5])
 preview_metadata = json.loads(sys.argv[6])
+filter_config = json.loads(sys.argv[7])
 
 
 

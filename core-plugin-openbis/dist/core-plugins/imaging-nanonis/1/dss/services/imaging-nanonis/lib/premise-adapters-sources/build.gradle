@@ -8,7 +8,9 @@ apply from: 'repository.gradle'
 
 dependencies {
 
-    api files("../../../../../../../imaging/1/dss/services/imaging/lib/openBIS-imaging-technology.jar")
+    api files("../../../../../../../imaging/1/dss/services/imaging/lib/openBIS-imaging-technology.jar"),
+            project(':api-openbis-java'),
+            project(':server-original-data-store')
 
     implementation 'fasterxml:jackson-annotations:2.9.10',
             'fasterxml:jackson-core:2.9.10',
