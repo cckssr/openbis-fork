@@ -20,11 +20,17 @@ public class LoaderRDF {
         return model;
     }
 
-    public static OntModel loadOntModel(String inputFileName, String inputFormatValue)
+    public static OntModel loadOntModel(String[] inputFileNames, String inputFormatValue)
     {
-        checkFileExists(inputFileName);
+
         OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM);
-        readModel(model, inputFileName, inputFormatValue);
+
+        for (String inputFileName : inputFileNames)
+        {
+            checkFileExists(inputFileName);
+            readModel(model, inputFileName, inputFormatValue);
+
+        }
         return model;
     }
 

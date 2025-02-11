@@ -24,18 +24,28 @@ import java.util.stream.Stream;
 
 public class RDFReader
 {
-    public ModelRDF read(String inputFileName, String inputFormatValue, OntModel additionalModel)
+    public ModelRDF read(String[] inputFileNames, String inputFormatValue, OntModel additionalModel)
     {
-        return read(inputFileName, inputFormatValue, false, additionalModel);
+        return read(inputFileNames, inputFormatValue, false, additionalModel);
     }
 
-    public ModelRDF read(String inputFileName, String inputFormatValue, boolean verbose, OntModel additionalModel)
+    public ModelRDF read(String[] inputFileNames, String inputFormatValue, boolean verbose,
+            OntModel additionalModel)
     {
-        Model model = LoaderRDF.loadModel(inputFileName, inputFormatValue);
+        Model model = ModelFactory.createDefaultModel();
+
+        for (String inputFileName : inputFileNames)
+        {
+
+            Model partialModel = LoaderRDF.loadModel(inputFileName, inputFormatValue);
+            model.add(partialModel);
+        }
+
+        ;
         ModelRDF modelRDF = initializeModelRDF(model);
 
         handleSubclassChains(model, modelRDF);
-        handleOntologyModel(model, inputFileName, inputFormatValue, modelRDF);
+        handleOntologyModel(model, inputFileNames, inputFormatValue, modelRDF);
         ResourceParsingResult resourceParsingResult =  handleResources(model, modelRDF, additionalModel);
         printResourceParsingResult(resourceParsingResult);
 
@@ -62,10 +72,11 @@ public class RDFReader
         modelRDF.subClassChanisMap = getSubclassChainsEndingWithClass(model, model.listStatements(null, RDFS.subClassOf, (RDFNode) null));
     }
 
-    private void handleOntologyModel(Model model, String inputFileName, String inputFormatValue, ModelRDF modelRDF)
+    private void handleOntologyModel(Model model, String[] inputFileNames, String inputFormatValue,
+            ModelRDF modelRDF)
     {
         if (canCreateOntModel(model)) {
-            OntModel ontModel = LoaderRDF.loadOntModel(inputFileName, inputFormatValue);
+            OntModel ontModel = LoaderRDF.loadOntModel(inputFileNames, inputFormatValue);
             processOntologyModel(ontModel, modelRDF);
         } else {
             modelRDF.sampleTypeList = new ArrayList<>();

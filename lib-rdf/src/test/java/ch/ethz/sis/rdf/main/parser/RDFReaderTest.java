@@ -29,13 +29,14 @@ public class RDFReaderTest {
     public void setup() {
         rdfReader = new RDFReader();
         model = LoaderRDF.loadModel(inputFileName, inputFormatValue);
-        ontModel = LoaderRDF.loadOntModel(inputFileName, inputFormatValue);
+        ontModel = LoaderRDF.loadOntModel(new String[] { inputFileName }, inputFormatValue);
     }
 
     @Test
     public void testReadBasicRDFModel() {
         OntModel ontModel1 = ModelFactory.createOntologyModel();
-        ModelRDF modelRDF = rdfReader.read(inputFileName, inputFormatValue, false, ontModel1);
+        ModelRDF modelRDF =
+                rdfReader.read(new String[] { inputFileName }, inputFormatValue, false, ontModel1);
 
         assertNotNull(modelRDF);
         assertEquals("https://biomedit.ch/rdf/sphn-schema/sphn#", modelRDF.ontNamespace);
@@ -99,6 +100,8 @@ public class RDFReaderTest {
         String invalidFormat = "UNKNOWN";
         OntModel addiionalModel = ModelFactory.createOntologyModel();
 
-        assertThrows(Exception.class, () -> rdfReader.read(invalidFileName, invalidFormat, false, addiionalModel));
+        assertThrows(Exception.class,
+                () -> rdfReader.read(new String[] { invalidFileName }, invalidFormat, false,
+                        addiionalModel));
     }
 }
