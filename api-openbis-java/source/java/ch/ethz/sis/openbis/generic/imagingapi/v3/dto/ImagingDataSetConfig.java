@@ -54,6 +54,9 @@ public class ImagingDataSetConfig implements Serializable
     private List<ImagingDataSetControl> inputs;
 
     @JsonProperty
+    private Map<String, List<ImagingDataSetControl>> filters;
+
+    @JsonProperty
     @JsonDeserialize(contentUsing = PropertiesDeserializer.class)
     private Map<String, String> metadata;
 
@@ -165,6 +168,18 @@ public class ImagingDataSetConfig implements Serializable
     public void setMetadata(Map<String, String> metadata)
     {
         this.metadata = metadata;
+    }
+
+    @JsonIgnore
+    public Map<String, List<ImagingDataSetControl>> getFilters()
+    {
+        return filters;
+    }
+
+    public void setFilters(
+            Map<String, List<ImagingDataSetControl>> filters)
+    {
+        this.filters = filters;
     }
 
     @Override

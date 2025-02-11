@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @JsonObject("imaging.dto.ImagingDataSetPreview")
@@ -35,6 +36,9 @@ public class ImagingDataSetPreview implements Serializable
     @JsonProperty
     @JsonDeserialize(contentUsing = PropertiesDeserializer.class)
     private Map<String, Serializable> config;
+
+    @JsonProperty
+    private List<Map<String, String[]>> filterConfig;
 
     @JsonProperty
     private String format;
@@ -177,6 +181,17 @@ public class ImagingDataSetPreview implements Serializable
 
     public void setTags(String[] tags) {
         this.tags = tags;
+    }
+
+    @JsonIgnore
+    public List<Map<String, String[]>> getFilterConfig()
+    {
+        return filterConfig;
+    }
+
+    public void setFilters(List<Map<String, String[]>> filterConfig)
+    {
+        this.filterConfig = filterConfig;
     }
 
     @Override
