@@ -69,6 +69,7 @@ public class RDFReader
             processOntologyModel(ontModel, modelRDF);
         } else {
             modelRDF.sampleTypeList = new ArrayList<>();
+            modelRDF.stringOntClassExtensionMap = new HashMap<>();
         }
     }
 
