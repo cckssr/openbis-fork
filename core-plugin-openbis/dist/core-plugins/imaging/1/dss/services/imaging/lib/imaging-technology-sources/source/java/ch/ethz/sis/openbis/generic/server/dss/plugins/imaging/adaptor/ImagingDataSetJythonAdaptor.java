@@ -27,6 +27,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -46,7 +47,8 @@ public class ImagingDataSetJythonAdaptor implements IImagingDataSetAdaptor
             Map<String, Serializable> imageConfig,
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
-            Map<String, Serializable> previewMetadata)
+            Map<String, Serializable> previewMetadata,
+            List<Map<String, String[]>> filterConfig)
     {
         CustomDSSServiceExecutionOptions options = new CustomDSSServiceExecutionOptions();
         options.withParameter("sessionToken", context.getSessionToken());
@@ -72,7 +74,7 @@ public class ImagingDataSetJythonAdaptor implements IImagingDataSetAdaptor
     {
         Map<String, Serializable> map = process(context, rootFile, preview.getFormat(),
                 image.getImageConfig(), image.getMetadata(),
-                preview.getConfig(), preview.getMetadata());
+                preview.getConfig(), preview.getMetadata(), preview.getFilterConfig());
 
         preview.getMetadata().clear();
         for (Map.Entry<String, Serializable> entry : map.entrySet())

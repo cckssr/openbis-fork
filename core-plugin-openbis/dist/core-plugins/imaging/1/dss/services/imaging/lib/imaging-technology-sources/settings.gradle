@@ -1,6 +1,7 @@
-def includes = ['lib-common', 'lib-commonbase', 'lib-json', 'api-data-store-server-java', 'api-openbis-java',
-'api-openbis-javascript', 'lib-openbis-common', 'lib-dbmigration', 'lib-authentication', 'api-data-store-server-javascript',
-'server-original-data-store', 'server-application-server'
+def includes = ['lib-common', 'lib-logging', 'lib-commonbase', 'lib-json', 'api-data-store-server-java',
+'lib-two-phase-transaction', 'api-openbis-java', 'api-openbis-javascript', 'lib-openbis-common',
+'lib-db', 'lib-dbmigration', 'lib-authentication', 'api-data-store-server-javascript',
+'lib-pathinfo-db', 'server-original-data-store', 'server-application-server'
 ]
 
 includes.forEach { name ->

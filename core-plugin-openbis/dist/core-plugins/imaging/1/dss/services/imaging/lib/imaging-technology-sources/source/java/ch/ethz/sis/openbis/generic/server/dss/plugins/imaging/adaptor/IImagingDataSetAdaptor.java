@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceCont
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 public interface IImagingDataSetAdaptor
@@ -31,7 +32,8 @@ public interface IImagingDataSetAdaptor
             Map<String, Serializable> imageConfig,
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
-            Map<String, Serializable> previewMetadata);
+            Map<String, Serializable> previewMetadata,
+            List<Map<String, String[]>> filterConfig);
 
     void computePreview(ImagingServiceContext context, File rootFile,
             ImagingDataSetImage image, ImagingDataSetPreview preview);

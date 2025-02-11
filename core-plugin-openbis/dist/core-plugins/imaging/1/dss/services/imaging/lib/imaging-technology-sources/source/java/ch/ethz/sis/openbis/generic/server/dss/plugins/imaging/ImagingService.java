@@ -520,7 +520,7 @@ public class ImagingService implements ICustomDSSServiceExecutor
                 previewConfig.put("resolution", exportConfig.getResolution());
                 Map<String, Serializable> img = adaptor.process(context,
                         rootFile, format, imageConfig, image.getMetadata(), previewConfig,
-                        preview.getMetadata());
+                        preview.getMetadata(), preview.getFilterConfig());
                 imgString = img.get("bytes").toString();
             } else
             {

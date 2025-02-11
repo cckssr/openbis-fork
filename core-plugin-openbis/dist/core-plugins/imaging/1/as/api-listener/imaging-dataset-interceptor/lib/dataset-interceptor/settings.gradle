@@ -1,18 +1,7 @@
-//includeFlat 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-common', 'lib-authentication', 'lib-dbmigration', 'server-application-server',
-//        'server-original-data-store', 'server-screening', 'server-external-data-store',
-//        'ui-admin', 'lib-microservice-server', 'ui-eln-lims', 'api-openbis-javascript'
-//
-//def includes = ['lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-common', 'api-openbis-javascript',
-//                'lib-authentication', 'lib-dbmigration', 'server-application-server', 'server-original-data-store']
-//
-//includes.forEach { name ->
-//    includeFlat(name)
-//    project(":${name}").projectDir = new File("../openbis/${name}")
-//}
-
-def includes = ['lib-common', 'lib-commonbase', 'lib-json', 'api-data-store-server-java', 'api-openbis-java',
-'api-data-store-server-javascript', 'api-openbis-javascript', 'lib-openbis-common', 'lib-dbmigration', 'lib-authentication',
-'server-original-data-store', 'server-application-server'
+def includes = ['lib-common', 'lib-logging', 'lib-commonbase', 'lib-json', 'api-data-store-server-java',
+'lib-two-phase-transaction', 'api-openbis-java', 'api-data-store-server-javascript',
+'api-openbis-javascript', 'lib-openbis-common', 'lib-db', 'lib-dbmigration', 'lib-authentication',
+'lib-pathinfo-db', 'server-original-data-store', 'server-application-server'
 ]
 
 includes.forEach { name ->

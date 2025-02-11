@@ -26,10 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.Serializable;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public final class ImagingDataSetExampleAdaptor implements IImagingDataSetAdaptor
 {
@@ -45,7 +42,8 @@ public final class ImagingDataSetExampleAdaptor implements IImagingDataSetAdapto
             Map<String, Serializable> imageConfig,
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
-            Map<String, Serializable> previewMetadata)
+            Map<String, Serializable> previewMetadata,
+            List<Map<String, String[]>> filterConfig)
     {
         BufferedImage img = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
         for(int y=0;y<HEIGHT; y++)
@@ -85,7 +83,7 @@ public final class ImagingDataSetExampleAdaptor implements IImagingDataSetAdapto
     {
         Map<String, Serializable> map = process(context, rootFile, preview.getFormat(),
                 image.getImageConfig(), image.getMetadata(),
-                preview.getConfig(), preview.getMetadata());
+                preview.getConfig(), preview.getMetadata(), preview.getFilterConfig());
 
         preview.getMetadata().clear();
         for (Map.Entry<String, Serializable> entry : map.entrySet())

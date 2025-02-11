@@ -48,6 +48,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
     static final String IMAGING_TYPE = "IMAGING_DATA";
     static final String USER_DEFINED_IMAGING_DATA = "USER_DEFINED_IMAGING_DATA";
     static final List<String> IMAGING_TYPES = Arrays.asList(IMAGING_TYPE, USER_DEFINED_IMAGING_DATA);
+    static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
 
     static final String PREVIEW_TOTAL_COUNT = "preview-total-count";
 
@@ -70,8 +71,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
     {
         try
         {
-            ObjectMapper objectMapper = new GenericObjectMapper();
-            return objectMapper.readValue(new ByteArrayInputStream(val.getBytes()),
+            return OBJECT_MAPPER.readValue(new ByteArrayInputStream(val.getBytes()),
                     ImagingDataSetPropertyConfig.class);
         } catch (JsonMappingException mappingException)
         {
@@ -86,8 +86,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
     {
         try
         {
-            ObjectMapper objectMapper = new GenericObjectMapper();
-            return objectMapper.writeValueAsString(val);
+            return OBJECT_MAPPER.writeValueAsString(val);
         } catch (JsonMappingException mappingException)
         {
             throw new UserFailureException(mappingException.toString(), mappingException);

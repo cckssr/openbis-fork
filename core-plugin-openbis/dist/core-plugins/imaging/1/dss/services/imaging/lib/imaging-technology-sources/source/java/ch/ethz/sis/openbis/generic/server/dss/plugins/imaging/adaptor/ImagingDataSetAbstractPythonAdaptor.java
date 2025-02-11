@@ -29,7 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDataSetAdaptor
@@ -44,11 +46,13 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             Map<String, Serializable> imageConfig,
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
-            Map<String, Serializable> previewMetadata)
+            Map<String, Serializable> previewMetadata,
+            List<Map<String, String[]>> filterConfig)
     {
         ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
                 scriptPath, rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
-                convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata));
+                convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata),
+                convertListToJson(filterConfig));
         processBuilder.redirectErrorStream(false);
 
         String fullOutput;
@@ -83,7 +87,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
     {
         Map<String, Serializable> map = process(context, rootFile, preview.getFormat(),
                 image.getImageConfig(), image.getMetadata(),
-                preview.getConfig(), preview.getMetadata());
+                preview.getConfig(), preview.getMetadata(), preview.getFilterConfig());
 
         preview.getMetadata().clear();
         for (Map.Entry<String, Serializable> entry : map.entrySet())
@@ -116,6 +120,22 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         {
             ObjectMapper objectMapper = new GenericObjectMapper();
             return objectMapper.writeValueAsString(mapToConvert);
+        } catch (Exception e)
+        {
+            throw new UserFailureException("Couldn't convert map to string", e);
+        }
+    }
+
+    private String convertListToJson(List<?> list)
+    {
+        List<?> listToConvert = list;
+        if(listToConvert == null) {
+            listToConvert = new ArrayList<>();
+        }
+        try
+        {
+            ObjectMapper objectMapper = new GenericObjectMapper();
+            return objectMapper.writeValueAsString(listToConvert);
         } catch (Exception e)
         {
             throw new UserFailureException("Couldn't convert map to string", e);
