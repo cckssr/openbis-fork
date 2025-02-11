@@ -1,7 +1,8 @@
-# Extension Proposal - RO-Crate Convention to Include Schema and Metadata
+# Profile/Module - RO-Crate Convention to Include Schema and Metadata
 
 **Index:**
 
+- [Version](#version)
 - [Definitions](#definitions)
 - [Goals](#goals)
 - [Technologies and Usage](#technologies-and-usage)
@@ -20,6 +21,10 @@
 - [Ongoing Work](#ongoing-work)
 - [Possible Future Directions](#possible-future-directions)
 - [People](#people)
+
+# Version
+
+0.0.1, initial version, compatible with RO-Crate 1.1
 
 # Definitions
 
