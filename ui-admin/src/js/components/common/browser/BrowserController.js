@@ -189,6 +189,13 @@ export default class BrowserController extends ComponentController {
       if (_.isEmpty(nodeSetAsRootPath)) {
         nodeSetAsRoot = null
       }
+    } else if(this.settings.nodeSetAsRoot) {
+      const nodeSetAsRootPath = await this._doLoadNodePath({
+              object: this.settings.nodeSetAsRoot.object
+            })
+      if (!_.isEmpty(nodeSetAsRootPath)) {
+        nodeSetAsRoot = this.settings.nodeSetAsRoot
+      }
     }
 
     await this._getTreeController().load(nodeSetAsRoot)
@@ -461,7 +468,8 @@ export default class BrowserController extends ComponentController {
     const settings = {
       common: {},
       fullTree: {},
-      filteredTree: {}
+      filteredTree: {},
+      nodeSetAsRoot: null
     }
 
     if (_.isObject(loaded.common)) {
@@ -482,6 +490,10 @@ export default class BrowserController extends ComponentController {
       settings.filteredTree = loaded.filteredTree
     }
 
+    if (_.isObject(loaded.nodeSetAsRoot)) {
+      settings.nodeSetAsRoot = loaded.nodeSetAsRoot
+    }
+
     return settings
   }
 
@@ -493,7 +505,8 @@ export default class BrowserController extends ComponentController {
         autoShowSelectedObject: state.autoShowSelectedObject
       },
       fullTree: this.settings.fullTree || {},
-      filteredTree: this.settings.filteredTree || {}
+      filteredTree: this.settings.filteredTree || {},
+      nodeSetAsRoot: state.nodeSetAsRoot || null
     }
 
     await this.onSettingsChange(settings)
