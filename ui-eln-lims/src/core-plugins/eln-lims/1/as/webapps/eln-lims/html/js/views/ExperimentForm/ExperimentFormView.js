@@ -93,45 +93,121 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			}
 			if (_this._allowedToDelete() && toolbarConfig.DELETE) {
 				//Delete
-                var maxNumToShow = 10;
-                var $component = $("<div>");
-                var experiment = this._experimentFormModel.v3_experiment;
-                var experimentKindName = ELNDictionary.getExperimentKindName(experiment.getType().getCode()).toLowerCase();
-                var samples = experiment.samples;
-                if (samples.length > 0) {
-                    var warningText = "The " + experimentKindName + " has " + samples.length + " " 
-                            + ELNDictionary.sample + "s, which will also be deleted:";
-                    for (var cIdx = 0; cIdx < Math.min(maxNumToShow, samples.length); cIdx++) {
-                        warningText += "\n  " + Util.getDisplayNameForEntity(samples[cIdx]);
+
+				var loadDeletionModalData = function(){
+				    return new Promise(function(resolve, reject){
+                        require([ "as/dto/sample/search/SampleSearchCriteria", "as/dto/sample/fetchoptions/SampleFetchOptions",
+                            "as/dto/dataset/search/DataSetSearchCriteria", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                            function(SampleSearchCriteria, SampleFetchOptions, DataSetSearchCriteria, DataSetFetchOptions){
+                                var maxNumToShow = 10;
+
+                                var sampleCriteria = new SampleSearchCriteria();
+                                sampleCriteria.withExperiment().withPermId().thatEquals(_this._experimentFormModel.experiment.permId);
+                                var sampleFetchOptions = new SampleFetchOptions();
+                                sampleFetchOptions.withProperties();
+                                sampleFetchOptions.count(maxNumToShow);
+
+                                var dataSetCriteria = new DataSetSearchCriteria();
+                                dataSetCriteria.withExperiment().withPermId().thatEquals(_this._experimentFormModel.experiment.permId);
+                                var dataSetFetchOptions = new DataSetFetchOptions();
+                                dataSetFetchOptions.withProperties();
+                                dataSetFetchOptions.count(maxNumToShow);
+
+                                $.when(
+                                    mainController.openbisV3.searchSamples(sampleCriteria, sampleFetchOptions),
+                                    mainController.openbisV3.searchDataSets(dataSetCriteria, dataSetFetchOptions)
+                                ).then(function(
+                                    sampleResult,
+                                    dataSetResult) {
+                                    resolve({
+                                        experiment: _this._experimentFormModel.v3_experiment,
+                                        firstSamples: sampleResult.getObjects(),
+                                        firstDataSets: dataSetResult.getObjects(),
+                                        sampleTotalCount: sampleResult.getTotalCount(),
+                                        dataSetTotalCount: dataSetResult.getTotalCount()
+                                    })
+                                }, reject)
+                            }
+                        )
+				    })
+				}
+
+				var createDeletionModal = function(modalData){
+                    var $component = $("<div>");
+
+                    var experimentKindName = ELNDictionary.getExperimentKindName(modalData.experiment.getType().getCode()).toLowerCase();
+
+                    if (modalData.sampleTotalCount > 0) {
+                        var warningText = "The " + experimentKindName + " has " + modalData.sampleTotalCount + " "
+                                + ELNDictionary.sample + "s, which will also be deleted:";
+                        for (var cIdx = 0; cIdx < modalData.firstSamples.length; cIdx++) {
+                            warningText += "\n  " + Util.getDisplayNameForEntity(modalData.firstSamples[cIdx]);
+                        }
+                        if (modalData.firstSamples.length < modalData.sampleTotalCount) {
+                            warningText += "\n  ...";
+                        }
+                        var $warning = FormUtil.getFieldForLabelWithText(null, warningText);
+                        $warning.css('color', FormUtil.warningColor);
+                        $component.append($warning);
                     }
-                    if (maxNumToShow < samples.length) {
-                        warningText += "\n  ...";
+
+                    if (modalData.dataSetTotalCount > 0) {
+                        var warningText = "The " + experimentKindName + " has " + modalData.dataSetTotalCount + " data sets "
+                                + "which will also be deleted:";
+                        for (var cIdx = 0; cIdx < modalData.firstDataSets.length; cIdx++) {
+                            warningText += "\n  " + Util.getDisplayNameForEntity(modalData.firstDataSets[cIdx]);
+                        }
+                        if (modalData.firstDataSets.length < modalData.dataSetTotalCount) {
+                            warningText += "\n  ...";
+                        }
+                        var $warning = FormUtil.getFieldForLabelWithText(null, warningText);
+                        $warning.css('color', FormUtil.warningColor);
+                        $component.append($warning);
                     }
-                    var $warning = FormUtil.getFieldForLabelWithText(null, warningText);
-                    $warning.css('color', FormUtil.warningColor);
-                    $component.append($warning);
-                }
-                var dataSets = experiment.dataSets;
-                if (dataSets.length > 0) {
-                    var warningText = "The " + experimentKindName + " has " + dataSets.length + " data sets " 
-                            + "which will also be deleted:";
-                    for (var cIdx = 0; cIdx < Math.min(maxNumToShow, dataSets.length); cIdx++) {
-                        warningText += "\n  " + Util.getDisplayNameForEntity(dataSets[cIdx]);
-                    }
-                    if (maxNumToShow < dataSets.length) {
-                        warningText += "\n  ...";
-                    }
-                    var $warning = FormUtil.getFieldForLabelWithText(null, warningText);
-                    $warning.css('color', FormUtil.warningColor);
-                    $component.append($warning);
-                }
+
+                    return $component
+				}
+
+				var onDeletionConfirmation = function(reason){
+                    require([ "as/dto/dataset/search/DataSetSearchCriteria", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                        function(DataSetSearchCriteria, DataSetFetchOptions){
+                            var dataSetCriteria = new DataSetSearchCriteria();
+                            dataSetCriteria.withExperiment().withPermId().thatEquals(_this._experimentFormModel.experiment.permId);
+                            var dataSetFetchOptions = new DataSetFetchOptions();
+                            dataSetFetchOptions.withType();
+
+                            mainController.openbisV3.searchDataSets(dataSetCriteria, dataSetFetchOptions).then(function(dataSetResult){
+                                var numberOfUndeletableDataSets = 0;
+
+                                dataSetResult.getObjects().forEach(function(dataSet) {
+                                    if (dataSet.frozen || dataSet.type.disallowDeletion) {
+                                        numberOfUndeletableDataSets++;
+                                    }
+                                });
+
+                                if(numberOfUndeletableDataSets > 0){
+                                    Util.showError("Experiment cannot be deleted. It contains data sets which are either frozen or have type that disallows deletion.");
+                                }else{
+                                    _this._experimentFormController.deleteExperiment(reason);
+                                }
+                            }, function(error){
+                                Util.showError(error);
+                            })
+                        }
+                    )
+				}
+
                 dropdownOptionsModel.push({
                     label : "Delete",
                     action : function() {
-                        var modalView = new DeleteEntityController(function(reason) {
-                            _this._experimentFormController.deleteExperiment(reason);
-                        }, true, null, $component);
-                        modalView.init();
+                        loadDeletionModalData().then(function(modalData){
+                            var modalView = new DeleteEntityController(function(reason) {
+                                onDeletionConfirmation(reason)
+                            }, true, null, createDeletionModal(modalData));
+                            modalView.init();
+                        }, function(error){
+                            Util.showError(error);
+                        });
                     }
                 });
 			}
@@ -328,15 +404,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 
 	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
-	        this._experimentFormModel.v3_experiment.dataSets.length > 0) {
-            var belongToExperiment = false;
-            for(var dIdx = 0; dIdx < this._experimentFormModel.v3_experiment.dataSets.length; dIdx++) {
-                if(this._experimentFormModel.v3_experiment.dataSets[dIdx].sample === null) {
-                    belongToExperiment = true;
-                    break;
-                }
-            }
-            if(belongToExperiment) {
+	        this._experimentFormModel.experimentDataSetCount > 0) {
                 //Preview image
                 this._reloadPreviewImage();
 
@@ -346,7 +414,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, 
                         profile.getDefaultDataStoreURL(), null, false, true, this._experimentFormModel.mode);
                 this._experimentFormModel.dataSetViewer.init();
-            }
         }
 
 		//
@@ -800,14 +867,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 	this._allowedToDelete = function() {
 		var experiment = this._experimentFormModel.v3_experiment;
-        var numberOfUndeletableDataSets = 0;
-        experiment.dataSets.forEach(function(dataSet) {
-            if (dataSet.frozen || dataSet.type.disallowDeletion) {
-                numberOfUndeletableDataSets++;
-            }
-        });
         return (experiment.frozen == false && experiment.project.frozenForExperiments == false)
-                && numberOfUndeletableDataSets == 0
                 && this._experimentFormModel.rights.rights.indexOf("DELETE") >= 0;
 	}
 
