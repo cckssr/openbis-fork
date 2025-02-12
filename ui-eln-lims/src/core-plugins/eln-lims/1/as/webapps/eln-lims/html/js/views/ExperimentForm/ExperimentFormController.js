@@ -24,18 +24,15 @@ function ExperimentFormController(mainController, mode, experiment) {
 		mainController.serverFacade.getExperimentType(experiment.experimentTypeCode, function(experimentType) {
         _this._experimentFormModel.experimentType = experimentType;
 		require([ "as/dto/experiment/id/ExperimentPermId", "as/dto/sample/id/SampleIdentifier", 
-            "as/dto/dataset/id/DataSetPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions" ],
-            function(ExperimentPermId, SampleIdentifier, DataSetPermId, ExperimentFetchOptions) {
+            "as/dto/dataset/id/DataSetPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/dataset/search/DataSetSearchCriteria",
+            "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+            function(ExperimentPermId, SampleIdentifier, DataSetPermId, ExperimentFetchOptions, DataSetSearchCriteria, DataSetFetchOptions) {
 				if (experiment.permId) {
 					var id = new ExperimentPermId(experiment.permId);
 					var fetchOptions = new ExperimentFetchOptions();
 					fetchOptions.withProject().withSpace();
                     fetchOptions.withType();
                     fetchOptions.withProperties();
-                    fetchOptions.withSamples().withProperties();
-                    fetchOptions.withDataSets().withType();
-                    fetchOptions.withDataSets().withProperties();
-                    fetchOptions.withDataSets().withSample();
 					mainController.openbisV3.getExperiments([ id ], fetchOptions).done(function(map) {
 						_this._experimentFormModel.v3_experiment = map[id];
 						var expeId = _this._experimentFormModel.v3_experiment.getIdentifier().getIdentifier();
@@ -45,7 +42,17 @@ function ExperimentFormController(mainController, mode, experiment) {
                             _this._experimentFormModel.rights = rightsByIds[id];
                             _this._experimentFormModel.sampleRights = rightsByIds[dummySampleId];
                             _this._experimentFormModel.dataSetRights = rightsByIds[dummyDataSetId];
-                            _this._experimentFormView.repaint(views);
+
+                            var dataSetCriteria = new DataSetSearchCriteria()
+                            dataSetCriteria.withExperiment().withPermId().thatEquals(experiment.permId)
+                            dataSetCriteria.withoutSample()
+                            var dataSetFetchOptions = new DataSetFetchOptions()
+                            dataSetFetchOptions.count(0)
+
+                            mainController.openbisV3.searchDataSets(dataSetCriteria, dataSetFetchOptions).done(function(dataSetResult) {
+                                _this._experimentFormModel.experimentDataSetCount = dataSetResult.getTotalCount()
+                                _this._experimentFormView.repaint(views);
+                            });
 						});
 					});
 				} else {
