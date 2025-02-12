@@ -24,5 +24,6 @@ function ExperimentFormModel(mode, experiment) {
 	}
 	this.experiment = experiment;
 	this.v3_experiment = null;
+	this.experimentDataSetCount = 0;
 	this.isSimpleFolder = false;
 }
