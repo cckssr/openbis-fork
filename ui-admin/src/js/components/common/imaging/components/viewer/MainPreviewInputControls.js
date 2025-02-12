@@ -7,6 +7,8 @@ import CustomSwitch from '@src/js/components/common/imaging/components/common/Cu
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import AddToQueueIcon from '@mui/icons-material/AddToQueue';
+
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
@@ -16,12 +18,13 @@ import { useImagingDataContext } from '@src/js/components/common/imaging/compone
 const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions }) => {
   const [tags, setTags] = React.useState([])
   const [inputValue, setInputValue] = React.useState('');
+  const [spectraLocator, setSpectraLocator] = React.useState(constants.NONE);
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview } = useImagingDataContext();
 
-  const { imagingDataset, resolution, isChanged, imagingTags, datasetType } = state;
+  const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
   React.useEffect(() => {
     if (imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true')
@@ -44,6 +47,12 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
     setTags(newTags);
     const tagsArray = newTags.map(tag => tag.value);
     handleTagImage(false, tagsArray);
+  }
+
+  const handleLocatorWidget = () => {
+    const [sxmPermId, sxmFilePath] = spectraLocator.split(' - ');
+    console.log(sxmPermId, sxmFilePath);
+    createLocatedSXMPreview(sxmPermId, sxmFilePath);
   }
 
   const renderStaticUpdateControls = (isUploadedPreview,) => {
@@ -123,12 +132,38 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
   activePreview.config = inputValues;
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
+
+  const datasetFilePathsMenu = datasetFilePaths.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
+  datasetFilePathsMenu.splice(0, 0, constants.NONE);
+
+  //console.log('datasetFilePathsMenu', datasetFilePaths, datasetFilePathsMenu);
+
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
 
       <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '30%', width: '100%' }}>
         {(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
           && renderStaticUpdateControls(isUploadedPreview)}
+
+        <Grid2 container sx={{ justifyItems: 'center', alignItems: 'center' }} size={{ xs: 12, sm: 12 }}>
+          <Grid2 size='grow'>
+            <Dropdown onSelectChange={event => setSpectraLocator(event.target.value)}
+              label='Spectra Locator'
+              values={datasetFilePathsMenu}
+              initValue={spectraLocator}
+              isMulti={false}
+              disabled={false}
+              key={'InputsPanel-Spectra'} />
+          </Grid2>
+          <Grid2 size='auto'>
+            <Button label='NEW'
+              variant='outlined'
+              color='inherit'
+              startIcon={<AddToQueueIcon />}
+              onClick={handleLocatorWidget}
+              disabled={spectraLocator === constants.NONE} />
+          </Grid2>
+        </Grid2>
 
       </Grid2>
       <Grid2 container size={{ xs: 12, sm: 12 }}>

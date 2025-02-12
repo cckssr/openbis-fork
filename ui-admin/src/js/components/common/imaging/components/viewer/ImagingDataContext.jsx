@@ -22,14 +22,15 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         activePreviewIdx: 0,
         resolution: ['original'],
         imagingTags: [],
-        datasetType: ''
+        datasetType: '',
+        datasetFilePaths: [],
     });
 
     const loadImagingDataset = useCallback(async () => {
         if (!state.loaded) {
             try {
                 const imagingFacade = new ImagingFacade(extOpenbis);
-                const [datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true);
+                const [datasetFilePaths, datasetType, imagingDataSetPropertyConfig] = await imagingFacade.loadImagingDataset(objId, false, true, true);
                 const imagingTagsArr = await imagingFacade.loadImagingVocabularyTerms(constants.IMAGING_TAGS);
 
                 const isInitConfigEmpty = isObjectEmpty(imagingDataSetPropertyConfig.images[0].previews[0].config);
@@ -43,7 +44,8 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                     isChanged: isInitConfigEmpty,
                     imagingDataset: imagingDataSetPropertyConfig,
                     imagingTags: imagingTagsArr,
-                    datasetType: datasetType
+                    datasetType: datasetType,
+                    datasetFilePaths: datasetFilePaths
                 }));
                 console.log('imagingDataSetPropertyConfig : ', imagingDataSetPropertyConfig);
             } catch (error) {
@@ -51,6 +53,33 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
             }
         }
     }, [state.loaded, objId, extOpenbis]);
+
+    const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
+        const { activeImageIdx, activePreviewIdx, imagingDataset } = state
+        const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[activePreviewIdx];
+        createNewPreview();
+        //saveDataset();
+        //handleOpen();
+        //console.log('createLocatedSXMPreview: ', selectedSpectraPreview, objId, sxmPermId, sxmFilePath);
+        const newSpectraPreview = await new ImagingFacade(extOpenbis).createLocatedSXMPreview(objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview);
+        //console.log('newSpectraPreview: ', newSpectraPreview);
+        if (newSpectraPreview.error) {
+            setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
+            handleError(newSpectraPreview.error);
+        }
+        delete newSpectraPreview.preview['@id']; //@id are duplicated across different previews on update, need to be deleted
+        let toUpdateImgDs = { ...imagingDataset };
+        toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx] = newSpectraPreview.preview;
+        setState(prev => ({
+            ...prev,
+            open: false,
+            imagingDataset: toUpdateImgDs,
+            isChanged: false,
+            isSaved: false
+        }));
+        if (onUnsavedChanges !== null)
+            onUnsavedChanges(objId, true);
+    }
 
     useEffect(() => {
         loadImagingDataset();
@@ -271,7 +300,8 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
             handleActiveImageChange, handleActivePreviewChange,
             onMove, handleEditComment, handleTagImage,
             handleResolutionChange, handleActiveConfigChange,
-            handleShowPreview, createNewPreview, handleUpload
+            handleShowPreview, createNewPreview, handleUpload,
+            createLocatedSXMPreview
         }}>
             {children}
         </ImagingDataContext.Provider>

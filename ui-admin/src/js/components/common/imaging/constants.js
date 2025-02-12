@@ -28,6 +28,7 @@ const IMAGING_TAGS = 'IMAGING_TAGS';
 const IMAGING_TAGS_LABEL = 'Imaging Tags';
 const METADATA_PREVIEW_COUNT = 'preview-total-count';
 const MULTI_EXPORT_TYPE = 'multi-export';
+const NONE = 'None';
 const PREVIEW_COMMENT = 'PREVIEW_COMMENT';
 const PREVIEW_TYPE = 'preview';
 const RANGE = 'Range';
@@ -53,6 +54,7 @@ export default {
     IMAGING_TAGS_LABEL,
     METADATA_PREVIEW_COUNT,
     MULTI_EXPORT_TYPE,
+    NONE,
     PREVIEW_COMMENT,
     PREVIEW_TYPE,
     RANGE,

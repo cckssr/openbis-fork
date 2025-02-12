@@ -50,25 +50,155 @@ export default class ImagingFacade {
         return Array.from(dataSetTypesSetMap, ([code, values]) => (values));
     }
 
-    loadImagingDataset = async (objId, withProperties = false, withType = false) => {
+    loadDatasetFiles = async (objId) => {
+        const dataSetSearchCriteria = new this.openbis.DataSetSearchCriteria();
+        dataSetSearchCriteria.withPermId().thatEquals(objId);
+
+        const dataSetFetchOptions = new this.openbis.DataSetFetchOptions();
+        dataSetFetchOptions.withSample().withParents().withChildren().withDataSets();
+
+        const result = await this.openbis.searchDataSets(dataSetSearchCriteria, dataSetFetchOptions);
+        const dataSets = result.getObjects();
+
+        //console.log('loadDatasetFiles - dataSets: ', dataSets);
+
+        const dataSetFileSearchCriteria = new this.openbis.DataSetFileSearchCriteria();
+        dataSetFileSearchCriteria.withDataSet().withCodes().thatIn('20250210092310782-50');//["20250210092505801-102"]);
+
+        const datasetFiles = await this.openbis.searchFiles(dataSetFileSearchCriteria, new this.openbis.DataSetFileFetchOptions());
+
+        //console.log('loadDatasetFiles - datasetFiles: ', objId, datasetFiles);
+
+        const paths = datasetFiles.getObjects().filter(datasetFile => !datasetFile.directory).map(datasetFile => [datasetFile.dataSetPermId.permId, datasetFile.path]);
+        //console.log('loadDatasetFiles - paths: ', objId, paths);
+        
+        //return dataSets.map(dataset => { this.getDatasetFilesPath(dataset) }).flat();
+        /* const datasetList = dataSets.map(dataset => {
+            if (dataset.sample.parents[0])
+                return dataset.sample.parents[0].children.map(brother =>
+                    brother.dataSets.map(brotherdataset =>
+                        brotherdataset.code
+                    )
+                ).flat()
+            else
+                return []
+        }
+        ).flat()
+        console.log('datasetList: ', datasetList);
+
+        if (datasetList.length > 0) {
+            const dataSetFileSearchCriteria = new this.openbis.DataSetFileSearchCriteria();
+            dataSetFileSearchCriteria.withDataSet().withCodes().thatIn(datasetList);//["20250210092505801-102"]);
+
+            const datasetFiles = await this.openbis.searchFiles(dataSetFileSearchCriteria, new this.openbis.DataSetFileFetchOptions());
+
+            console.log('loadDatasetFiles - datasetFiles: ', objId, datasetFiles);
+
+            const paths = datasetFiles.getObjects().filter(datasetFile => !datasetFile.directory).map(datasetFile => [datasetFile.dataSetPermId.permId, datasetFile.path]);
+            console.log('loadDatasetFiles - paths: ', objId, paths);
+        } */
+    }
+
+    //TODO
+    createLocatedSXMPreview = async (objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview) => {
+        const sxmPreviewConfig = await this.getImagingDatasetPreviewConfig(sxmPermId);
+        //console.log('createLocatedSXMPreview: ', selectedSpectraPreview);
+        const spectraConfig = {spectraLocator: true, objId, sxmPreviewConfig, sxmPermId, sxmFilePath, 'Grouping': selectedSpectraPreview.config.Grouping}
+        
+        selectedSpectraPreview.config = spectraConfig;
+        //console.log('createLocatedSXMPreview: ', selectedSpectraPreview);
+        
+        return this.updateImagingDataset(objId, activeImageIdx, selectedSpectraPreview);
+    }
+
+    getDatasetFilesPath = async (dataset) => {
+        /* if (dataset.sample.parents[0]) {
+            const datasetList = dataset.sample.parents[0].children.map(brother =>
+                brother.dataSets.map(brotherdataset =>
+                    brotherdataset.code
+                )
+            ).flat();
+
+            console.log('getDatasetFilesPath - datasetList: ', datasetList);
+
+            const dataSetFileSearchCriteria = new this.openbis.DataSetFileSearchCriteria();
+            dataSetFileSearchCriteria.withDataSet().withCodes().thatIn(datasetList);//["20250210092505801-102"]);
+
+            const datasetFiles = await this.openbis.searchFiles(dataSetFileSearchCriteria, new this.openbis.DataSetFileFetchOptions());
+
+            console.log('getDatasetFilesPath - datasetFiles: ', datasetFiles);
+
+            const paths = datasetFiles.getObjects().filter(datasetFile => !datasetFile.directory).map(datasetFile => [datasetFile.dataSetPermId.permId, datasetFile.path]);
+            
+            console.log('getDatasetFilesPath - paths: ', paths);
+
+            return paths;
+        } else */ if (dataset.sample.children.length > 0) {
+            const datasetList = dataset.sample.children.map(brother =>
+                brother.dataSets.map(brotherdataset =>
+                    brotherdataset.code
+                )
+            ).flat();
+
+            //console.log('getDatasetFilesPath - datasetList: ', datasetList);
+
+            const dataSetFileSearchCriteria = new this.openbis.DataSetFileSearchCriteria();
+            dataSetFileSearchCriteria.withDataSet().withCodes().thatIn(datasetList);//["20250210092505801-102"]);
+
+            const datasetFiles = await this.openbis.searchFiles(dataSetFileSearchCriteria, new this.openbis.DataSetFileFetchOptions());
+
+            //console.log('getDatasetFilesPath - datasetFiles: ', datasetFiles);
+
+            const paths = datasetFiles.getObjects().filter(datasetFile => !datasetFile.directory).map(datasetFile => [datasetFile.dataSetPermId.permId, datasetFile.path]);
+            
+            console.log('getDatasetFilesPath - paths: ', paths);
+            return paths
+        } else {
+            return [];
+        }
+    }
+
+    loadImagingDataset = async (objId, withProperties = false, withType = false, withDatasetsHierarchy = false) => {
+        //this.loadDatasetFiles(objId);
         const fetchOptions = new this.openbis.DataSetFetchOptions();
-        fetchOptions.withExperiment();
-        fetchOptions.withSample();
-        fetchOptions.withParents();
         fetchOptions.withProperties();
         fetchOptions.withType();
+        if (withDatasetsHierarchy) {
+            //fetchOptions.withSample().withParents().withChildren().withDataSets();
+            fetchOptions.withSample().withChildren().withDataSets();
+        }
+        
         const dataset = await this.openbis.getDataSets(
             [new this.openbis.DataSetPermId(objId)],
             fetchOptions
         )
-        //console.log("dataset: ", dataset);
+        //console.log("loadImagingDataset - dataset: ", dataset);
+
         if (withProperties)
             return dataset[objId].properties;
+
         if (withType)
-            return [dataset[objId].type.code, await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]))]
+            if (withDatasetsHierarchy)
+                return [await this.getDatasetFilesPath(dataset[objId]), dataset[objId].type.code, await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]))]
+            else 
+                return [dataset[objId].type.code, await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]))]
 
         return await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]));
     };
+
+    getImagingDatasetPreviewConfig = async (objId) => {
+        const fetchOptions = new this.openbis.DataSetFetchOptions();
+        fetchOptions.withProperties();
+        
+        const dataset = await this.openbis.getDataSets(
+            [new this.openbis.DataSetPermId(objId)],
+            fetchOptions
+        )
+
+        const loadedImgDS = await this.openbis.fromJson(null, JSON.parse(dataset[objId].properties[constants.IMAGING_DATA_CONFIG]));
+
+        return loadedImgDS.images[0]?.previews[0]?.config;
+    }
 
     editImagingDatasetNote = async (permId, note) => {
         let imagingDataset = await this.loadImagingDataset(permId);
@@ -107,6 +237,7 @@ export default class ImagingFacade {
         const serviceId = new this.openbis.CustomDssServiceCode(constants.IMAGING_CODE);
         const options = new this.openbis.CustomDSSServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingUpdateParams(objId, activeImageIdx, preview);
+        //console.log(options)
         const updatedImagingDataset = await this.openbis.executeCustomDSSService(serviceId, options);
         return await this.openbis.fromJson(null, updatedImagingDataset);
     }
@@ -159,7 +290,6 @@ export default class ImagingFacade {
 
         return datasetList;
     }
-
 
     fetchSampleDataSets = async (objId) => {
         const fetchOptions = new this.openbis.SampleFetchOptions();
@@ -323,7 +453,7 @@ export default class ImagingFacade {
                 fetchOptions
             );
             dataSets = searchDataSets.getObjects();
-            //console.log('filterGallery - fetchDataSets: ', dataSets);
+            console.log('filterGallery - fetchDataSets: ', dataSets);
 
             return await this.filterAndPaginateImagingDatasets(dataSets, page, pageSize, operator, filterText, property);
 
