@@ -85,7 +85,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
 
   _createUser(loadedUser) {
 
-    const expiryDate =  _.get(loadedUser, 'expiryDate', true);
+    const expiryDate =  _.get(loadedUser, 'expiryDate', false);
 
     const user = {
       id: _.get(loadedUser, 'userId', null),
