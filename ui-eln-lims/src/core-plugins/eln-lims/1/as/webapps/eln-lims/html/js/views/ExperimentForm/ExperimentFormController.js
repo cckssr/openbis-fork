@@ -33,27 +33,34 @@ function ExperimentFormController(mainController, mode, experiment) {
 					fetchOptions.withProject().withSpace();
                     fetchOptions.withType();
                     fetchOptions.withProperties();
-					mainController.openbisV3.getExperiments([ id ], fetchOptions).done(function(map) {
+
+					mainController.openbisV3.getExperiments([ id ], fetchOptions).then(function(map) {
 						_this._experimentFormModel.v3_experiment = map[id];
+
 						var expeId = _this._experimentFormModel.v3_experiment.getIdentifier().getIdentifier();
                         var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
                         var dummyDataSetId = new DataSetPermId(IdentifierUtil.createDummyDataSetIdentifierFromExperimentIdentifier(expeId));
-                        mainController.openbisV3.getRights([ id , dummySampleId, dummyDataSetId], null).done(function(rightsByIds) {
+
+                        var dataSetCriteria = new DataSetSearchCriteria()
+                        dataSetCriteria.withExperiment().withPermId().thatEquals(experiment.permId)
+                        dataSetCriteria.withoutSample()
+                        var dataSetFetchOptions = new DataSetFetchOptions()
+                        dataSetFetchOptions.count(0)
+
+                        $.when(
+                            mainController.openbisV3.getRights([ id , dummySampleId, dummyDataSetId], null),
+                            mainController.openbisV3.searchDataSets(dataSetCriteria, dataSetFetchOptions)
+                        ).then(function(rightsByIds, dataSetResult){
                             _this._experimentFormModel.rights = rightsByIds[id];
                             _this._experimentFormModel.sampleRights = rightsByIds[dummySampleId];
                             _this._experimentFormModel.dataSetRights = rightsByIds[dummyDataSetId];
-
-                            var dataSetCriteria = new DataSetSearchCriteria()
-                            dataSetCriteria.withExperiment().withPermId().thatEquals(experiment.permId)
-                            dataSetCriteria.withoutSample()
-                            var dataSetFetchOptions = new DataSetFetchOptions()
-                            dataSetFetchOptions.count(0)
-
-                            mainController.openbisV3.searchDataSets(dataSetCriteria, dataSetFetchOptions).done(function(dataSetResult) {
-                                _this._experimentFormModel.experimentDataSetCount = dataSetResult.getTotalCount()
-                                _this._experimentFormView.repaint(views);
-                            });
-						});
+                            _this._experimentFormModel.experimentDataSetCount = dataSetResult.getTotalCount()
+                            _this._experimentFormView.repaint(views);
+                        }, function(error){
+                            Util.showError(error);
+                        });
+					}, function(error){
+					    Util.showError(error);
 					});
 				} else {
 					_this._experimentFormView.repaint(views);
