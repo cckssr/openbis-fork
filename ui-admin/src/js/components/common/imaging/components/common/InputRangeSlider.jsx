@@ -1,8 +1,19 @@
 import * as React from 'react';
-import { Input, Slider, Grid2, FormHelperText, FilledInput, InputLabel } from '@mui/material';
+import { Input, Slider, Grid2, FormHelperText, InputLabel } from '@mui/material';
 import Player from '@src/js/components/common/imaging/components/common/Player.jsx';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles(theme => ({
+    showText: {
+        '&:hover': {
+            overflow: 'unset'
+        }
+    }
+}));
 
 const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, disabled = false, onChange, unit = null }) => {
+    const classes = useStyles();
+
     const min = Number(range[0]);
     const max = Number(range[1]);
     const step = Number(range[2]);
@@ -52,7 +63,7 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
     return (
         <Grid2 container spacing={2} direction='row' sx={{ alignItems: 'center', mb: 1, px: 1 }} size={{ xs: 12, sm: 12 }}>
             <Grid2 size={{ xs: 12, sm: 'grow' }}>
-                <InputLabel htmlFor='input-min-helper-text'>{label} (min)</InputLabel>
+                <InputLabel className={classes.showText} htmlFor='input-min-helper-text' >{label} (min)</InputLabel>
                 <Input id='input-min-helper-text'
                     name={label}
                     value={initValue == null ? min : Number(initValue[0])}
@@ -82,7 +93,7 @@ const InputRangeSlider = ({ label, range, initValue = null, playable, speeds, di
                 />
             </Grid2>
             <Grid2 size={{ xs: 12, sm: 'grow' }}>
-                <InputLabel htmlFor='input-max-helper-text'>{label} (max)</InputLabel>
+                <InputLabel className={classes.showText} htmlFor='input-max-helper-text'>{label} (max)</InputLabel>
                 <Input
                     variant="filled"
                     name={label}

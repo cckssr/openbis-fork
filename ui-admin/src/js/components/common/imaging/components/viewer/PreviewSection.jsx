@@ -33,7 +33,7 @@ const PreviewSection = ({ activeImage, activePreview }) => {
 	}
 
 	return <CollapsableSection title='Preview' isCollapsed={false} renderWarnings={renderPreviewChanges(isSaved)}>
-		<Grid2 container size={{ xs: 12 }} className={classes.gridDirection}>
+		<Grid2 container className={classes.gridDirection}>
 			<MainPreview activePreview={activePreview}
 				previews={activeImage.previews} />
 			<MainPreviewInputControls activePreview={activePreview}
