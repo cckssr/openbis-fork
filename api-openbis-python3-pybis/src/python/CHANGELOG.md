@@ -1,7 +1,7 @@
 ## Changes with pybis-6.6.0.0
 
 - Changed versioning scheme
-- Added Imaging technology preview functionalities
+- Added Imaging technology beta functionalities
 
 ## Changes with pybis-1.37.1
 
