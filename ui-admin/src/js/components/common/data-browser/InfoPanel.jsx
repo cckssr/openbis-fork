@@ -24,10 +24,10 @@ import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
 import TableRow from '@mui/material/TableRow'
 import Header from '@src/js/components/common/form/Header.jsx'
-import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
+import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
-import {timeToString} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
+import {timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 
 const styles = () => ({
   container: {

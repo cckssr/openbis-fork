@@ -20,7 +20,7 @@ import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid'
 import Card from '@mui/material/Card'
 import { CardContent, CardMedia } from '@mui/material'
-import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
+import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import autoBind from 'auto-bind';
 
 const styles = (theme) => ({

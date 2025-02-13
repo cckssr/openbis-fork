@@ -19,6 +19,40 @@ import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
+import { library } from '@fortawesome/fontawesome-svg-core';
+// Register FontAwesome icons with the library so they can be rendered
+// in our components. Without this registration, the icons in the exported
+// component wouldn't show up.
+import {
+  faFolder,
+  faFile,
+  faFileAudio,
+  faFileAlt,       
+  faFileVideo,
+  faFileImage,
+  faFileArchive,
+  faFileCode,
+  faFilePdf,
+  faFileWord,
+  faFileExcel,
+  faFilePowerpoint
+} from '@fortawesome/free-regular-svg-icons';
+
+library.add(
+  faFolder,
+  faFile,
+  faFileAudio,
+  faFileAlt,       
+  faFileVideo,
+  faFileImage,
+  faFileArchive,
+  faFileCode,
+  faFilePdf,
+  faFileWord,
+  faFileExcel,
+  faFilePowerpoint
+);
+
 
 const styles = (theme) => ({
   icon: {

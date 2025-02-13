@@ -17,7 +17,7 @@
 
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import GridViewItem from '@src/js/components/database/data-browser/GridViewItem.jsx'
+import GridViewItem from '@src/js/components/common/data-browser/GridViewItem.jsx'
 import Grid from '@mui/material/Grid'
 import autoBind from 'auto-bind'
 import logger from '@src/js/common/logger.js'

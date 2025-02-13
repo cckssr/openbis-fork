@@ -23,7 +23,7 @@ import TableCell from '@mui/material/TableCell'
 import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
-import { ListViewItem } from '@src/js/components/database/data-browser/ListViewItem.jsx'
+import { ListViewItem } from '@src/js/components/common/data-browser/ListViewItem.jsx'
 import logger from '@src/js/common/logger.js'
 
 const styles = (theme) => ({

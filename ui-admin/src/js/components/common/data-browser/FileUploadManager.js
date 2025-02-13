@@ -2,7 +2,7 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
-import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 
 const Resolution = {
   MERGE: 'MERGE',

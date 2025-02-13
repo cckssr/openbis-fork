@@ -1621,6 +1621,53 @@ var FormUtil = new function() {
 		
 		return $toolbarContainer;
 	}
+
+
+	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel) {		
+		var $toolbarButtons = this.getToolbar(toolbarModel);
+		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
+		$rightToolbarButtons.css({marginBottom : "0px"})	
+		
+		var $tabsContainer = $("<ul>", { 
+			class: "nav nav-tabs toolbar-tabs", 
+			style: "border-bottom: 0; margin: 0; padding: 0; display: flex;" 
+		});
+		tabsModel.forEach(function(tab) {
+			var liClass = tab.active ? "active" : "";
+			var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
+			var $a = $("<a>", {
+				href: tab.href,
+				"data-toggle": "tab",
+				text: tab.label
+			});
+			$li.append($a);
+			$tabsContainer.append($li);
+		});	
+		
+		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "space-between",
+			width: "100%"
+		});
+	
+		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" }).append($toolbarButtons);
+	
+		var $rightSideContainer = $("<div>", { class: "right-side-container" }).css({
+			display: "flex",
+			alignItems: "center",
+			gap: "10px"
+		});
+		$rightSideContainer.append($rightToolbarButtons).append($tabsContainer);
+	
+		$combinedContainer.append($buttonsWrapper).append($rightSideContainer);
+	
+		return $combinedContainer;
+	};
+	
+	
+	
+	
 	
 	this.getOperationsMenu = function(items) {
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });

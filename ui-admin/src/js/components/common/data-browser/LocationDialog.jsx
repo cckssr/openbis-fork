@@ -6,10 +6,10 @@ import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 import { DialogContentText } from '@mui/material'
 import autoBind from 'auto-bind'
-import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
+import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import Grid from '@src/js/components/common/grid/Grid.jsx'
-import DataBrowserController from '@src/js/components/database/data-browser/DataBrowserController.js'
-import NavigationBar from "@src/js/components/database/data-browser/NavigationBar.jsx"
+import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
+import NavigationBar from "@src/js/components/common/data-browser/NavigationBar.jsx"
 import AppController from '@src/js/components/AppController.js'
 
 const styles = theme => ({
@@ -45,7 +45,7 @@ class LocationDialog extends React.Component {
     super(props)
     autoBind(this)
 
-    const { path, sessionToken, owner } = this.props
+    const { path, owner } = this.props
 
     this.controller = new DataBrowserController(owner)
     this.controller.attach(this)

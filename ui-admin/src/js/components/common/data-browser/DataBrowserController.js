@@ -16,17 +16,17 @@
 
 import ComponentController from '@src/js/components/common/ComponentController.js'
 import autoBind from 'auto-bind'
-import openbis from '@src/js/services/openbis.js'
-import RetryCaller from '@src/js/components/database/data-browser/RetryCaller.js';
-import { getFileNameFromPath } from '@src/js/components/database/data-browser/DataBrowserUtils.js';
+import RetryCaller from '@src/js/components/common/data-browser/RetryCaller.js';
+import { getFileNameFromPath } from '@src/js/components/common/data-browser/DataBrowserUtils.js';
 
 
 export default class DataBrowserController extends ComponentController {
 
-  constructor(owner) {
+  constructor(owner, extOpenbis) {
     super()
     autoBind(this)
 
+    this.openbis = extOpenbis;
     this.owner = owner
     this.gridController = null
     this.path = ''
@@ -41,7 +41,7 @@ export default class DataBrowserController extends ComponentController {
 
   async free() {
     try {
-      return await this.retryCaller.callWithRetry(() => openbis.free(this.owner, this.path))
+      return await this.retryCaller.callWithRetry(() => this.openbis.free(this.owner, this.path))
     } catch (error) {
       if (error.message.includes('NoSuchFileException')) {
         return []
@@ -55,7 +55,7 @@ export default class DataBrowserController extends ComponentController {
     // Use this.path if path is not specified
     const pathToList = path ? path : this.path
     try {
-      return await this.retryCaller.callWithRetry( () => openbis.list(this.owner, pathToList, false),
+      return await this.retryCaller.callWithRetry( () => this.openbis.list(this.owner, pathToList, false),
                 onRetryCallback)
     } catch (error) {
       if (error.message.includes('NoSuchFileException')) {
@@ -73,7 +73,7 @@ export default class DataBrowserController extends ComponentController {
     // Use this.path if path is not specified
     const pathToList = path ? path : this.path
     try {
-      return await this.retryCaller.callWithRetry( () => openbis.list(this.owner, pathToList, false))
+      return await this.retryCaller.callWithRetry( () => this.openbis.list(this.owner, pathToList, false))
     } catch (error) {
       if (error.message.includes('NoSuchFileException')) {
         return []
@@ -101,7 +101,7 @@ export default class DataBrowserController extends ComponentController {
 
   async createNewFolder(name) {
     await this.handleError(async () => {
-      await openbis.create(this.owner, this.path + name, true)
+      await this.openbis.create(this.owner, this.path + name, true)
     })
 
     if (this.gridController) {
@@ -111,7 +111,7 @@ export default class DataBrowserController extends ComponentController {
 
   async rename(oldName, newName) {
     await this.handleError(async () => {
-      await openbis.move(this.owner, this.path + oldName, this.owner, this.path + newName)
+      await this.openbis.move(this.owner, this.path + oldName, this.owner, this.path + newName)
     })
     if (this.gridController) {
       await this.gridController.load()
@@ -134,14 +134,14 @@ export default class DataBrowserController extends ComponentController {
   async deleteAndUpdateProgress(file,onProgressUpdate) {    
     const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, file.name);
     await this.retryCaller.callWithRetry(() => 
-      openbis.delete(this.owner, file.path),
+      this.openbis.delete(this.owner, file.path),
       onRetryCallback
     )
   }
 
   async _delete(file, onProgressUpdate = undefined){    
     await this.handleError(async () => {
-      await openbis.delete(this.owner, file.path)      
+      await this.openbis.delete(this.owner, file.path)      
     })   
   }
 
@@ -160,7 +160,7 @@ export default class DataBrowserController extends ComponentController {
   async _copy(file, newLocation){
     if (!this.isSubdirectory(file.path, newLocation)) {
       const cleanNewLocation = this._removeLeadingSlash(newLocation) + file.name
-      await openbis.copy(this.owner, file.path, this.owner, cleanNewLocation)
+      await this.openbis.copy(this.owner, file.path, this.owner, cleanNewLocation)
     }
   }
 
@@ -168,7 +168,7 @@ export default class DataBrowserController extends ComponentController {
     const fileName =  getFileNameFromPath(filePath)
     const onRetryCallback = this.createOnRetryCallback(onProgressUpdate, fileName);
     await this.retryCaller.callWithRetry(() => 
-        openbis.move(this.owner, filePath, this.owner, newLocation),
+        this.openbis.move(this.owner, filePath, this.owner, newLocation),
         onRetryCallback
     )
    }
@@ -188,7 +188,7 @@ export default class DataBrowserController extends ComponentController {
   async _move(file, newLocation){
     if (!this.isSubdirectory(file.path, newLocation)) {
       const cleanNewLocation = this._removeLeadingSlash(newLocation) + file.name
-      await this.retryCaller.callWithRetry(() => openbis.move(this.owner, file.path, this.owner, cleanNewLocation))
+      await this.retryCaller.callWithRetry(() => this.openbis.move(this.owner, file.path, this.owner, cleanNewLocation))
     }
   }
 
@@ -242,7 +242,7 @@ export default class DataBrowserController extends ComponentController {
   }
 
   async _uploadChunk(source, offset, data, onRetryCallback = undefined) {
-    return await this.retryCaller.callWithRetry(() => openbis.write(this.owner, source, offset, data), onRetryCallback)
+    return await this.retryCaller.callWithRetry(() => this.openbis.write(this.owner, source, offset, data), onRetryCallback)
   }
 
   async download(file, onProgressUpdate, throwAbortErrorIfTransferCancelled) {
@@ -409,7 +409,7 @@ export default class DataBrowserController extends ComponentController {
   async _download(file, offset, onRetry = undefined) {
     const limit = Math.min(this.CHUNK_SIZE, file.size - offset)
     return await this.retryCaller.callWithRetry(
-          () => openbis.read(this.owner, file.path, offset, limit), onRetry)
+          () => this.openbis.read(this.owner, file.path, offset, limit), onRetry)
   }
 
   _removeLeadingSlash(path) {
@@ -420,7 +420,18 @@ export default class DataBrowserController extends ComponentController {
     this.path = path
   }
 
-  async getRights(ids) {
-    return await openbis.getRights(ids, new openbis.RightsFetchOptions())
+  async getRights(idMap) {
+    const ids = idMap.map(id => {
+      switch (id.entityKind) {
+        case 'object': {
+          return new this.openbis.SamplePermId(id.permId)
+        }
+        case 'collection': {
+          return new this.openbis.ExperimentPermId(id.permId)
+        }
+      }
+      return null
+    })
+    return await this.openbis.getRightsByIds(ids, new this.openbis.RightsFetchOptions())
   }
 }

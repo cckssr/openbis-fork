@@ -18,8 +18,8 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
-import LeftToolbar from '@src/js/components/database/data-browser/LeftToolbar.jsx'
-import RightToolbar from '@src/js/components/database/data-browser/RightToolbar.jsx'
+import LeftToolbar from '@src/js/components/common/data-browser/LeftToolbar.jsx'
+import RightToolbar from '@src/js/components/common/data-browser/RightToolbar.jsx'
 import logger from '@src/js/common/logger.js'
 
 const buttonSize = 'small'

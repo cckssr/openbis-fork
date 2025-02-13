@@ -12,6 +12,7 @@ import DatePickerProvider from '@src/js/components/common/date/DatePickerProvide
 import DateRangeField from '@src/js/components/common/form/DateRangeField.jsx'
 import ImagingDatasetViewer from '@src/js/components/common/imaging/ImagingDatasetViewer.jsx'
 import ImagingGalleryViewer from "@src/js/components/common/imaging/ImagingGalleryViewer.jsx";
+import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx';
 
 
 export default {
@@ -28,5 +29,6 @@ export default {
   DatePickerProvider,
   DateRangeField,
   ImagingDatasetViewer,
-  ImagingGalleryViewer
+  ImagingGalleryViewer,
+  DataBrowser
 }
