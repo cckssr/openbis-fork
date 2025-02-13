@@ -95,14 +95,14 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
         for f in filter_config:
             min_before = numpy.nanmin(chData)
             max_before = numpy.nanmax(chData)
-            filter_name = f.upper()
-            if filter_name == "GAUSSIAN":
-                chData = skimage.filters.gaussian(chData, sigma=int(filter_config[f][0]), truncate=float(filter_config[f][1]))
-            elif filter_name == "LAPLACE":
-                chData = skimage.filters.laplace(chData, ksize=int(filter_config[f][0]))
-            elif filter_name == 'ZERO BACKGROUND':
+            filter_name = list(f.keys())[0]
+            if filter_name.upper() == "GAUSSIAN":
+                chData = skimage.filters.gaussian(chData, sigma=int(f[filter_name][0]), truncate=float(f[filter_name][1]))
+            elif filter_name.upper() == "LAPLACE":
+                chData = skimage.filters.laplace(chData, ksize=int(f[filter_name][0]))
+            elif filter_name.upper() == 'ZERO BACKGROUND':
                 chData = chData - min_before
-            elif filter_name == 'PLANE SUBTRACTION':
+            elif filter_name.upper() == 'PLANE SUBTRACTION':
                 if ~numpy.isnan(numpy.sum(chData)):
                     chData, _ = spiepy.flatten_xy(chData)
                 else:
@@ -112,7 +112,7 @@ def get_sxm_image(channel_name, x_axis, y_axis, scaling, color_scale, colormap, 
                     chData, _ = spiepy.flatten_xy(im_cut)
                     empty = numpy.full((m-i,n),numpy.nan)
                     chData = numpy.vstack((chData,empty))
-            elif filter_name == 'LINE SUBTRACTION':
+            elif filter_name.upper() == 'LINE SUBTRACTION':
                 chData = remove_line_average(chData)
 
             range_before = numpy.abs(min_before-max_before)

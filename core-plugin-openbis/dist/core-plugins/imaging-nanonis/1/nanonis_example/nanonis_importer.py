@@ -125,6 +125,8 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         imaging.ImagingDataSetControl('Color-scale', "Range", section="Data", visibility=color_scale_visibility),
         imaging.ImagingDataSetControl('Scaling', "Dropdown", section="Data", values=['linear', 'logarithmic']),
         imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
+
+        # TODO Remove below params once filter UI is done
         imaging.ImagingDataSetControl('Filter', "Dropdown", section="Filter", values=['None', 'Gaussian', 'Laplace', 'Zero background', 'Plane Subtraction', 'Line Subtraction']),
         imaging.ImagingDataSetControl('Gaussian Sigma', "Slider", section="Filter", visibility=[
             imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
@@ -138,17 +140,29 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
             imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Gaussian', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
             imaging.ImagingDataSetControlVisibility('Filter', ['Laplace'], ['3', '30', '1']),
         ]),
+        # TODO END of removal part
+
     ]
 
+    filters = {
+        'Gaussian': [imaging.ImagingDataSetControl('Sigma', "Slider", section="Gaussian", values_range=['1', '100', '1']),
+                     imaging.ImagingDataSetControl('Truncate', "Slider", section="Gaussian", values_range=['0', '1', '0.1'])],
+        'Laplace': [imaging.ImagingDataSetControl('Size', "Slider", section="Laplace", values_range=['3', '30', '1'])],
+        'Zero background': [],
+        'Plane Subtraction': [],
+        'Line Subtraction': []
+    }
+
     imaging_config = imaging.ImagingDataSetConfig(
-        SXM_ADAPTOR,
-        1.0,
-        ['original', '200x200', '2000x2000'],
-        True,
-        [1000, 2000, 5000],
-        exports,
-        inputs,
-        {})
+        adaptor=SXM_ADAPTOR,
+        version=1.0,
+        resolutions=['original', '200x200', '2000x2000'],
+        playable=True,
+        speeds=[1000, 2000, 5000],
+        exports=exports,
+        inputs=inputs,
+        metadata={},
+        filters=filters)
 
     images = [imaging.ImagingDataSetImage(imaging_config,
                                           previews=[imaging.ImagingDataSetPreview(preview_format="png")],
@@ -387,9 +401,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         files=[d.path for d in data])
 
 
-def create_preview(openbis, perm_id, config, preview_format="png", image_index=0):
+def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[]):
     imaging_control = ImagingControl(openbis)
-    preview = imaging.ImagingDataSetPreview(preview_format, config)
+    preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
@@ -437,14 +451,18 @@ def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[i
     imaging_control.export_previews(perm_ids, image_ids, preview_ids, path_to_download, **export_config)
 
 
-def demo_sxm_flow(openbis, file_sxm, permId=None):
+def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
 
     perm_id = permId
+    if experiment is None:
+        experiment = '/IMAGING/NANONIS/SXM_COLLECTION'
+    if sample is None:
+        sample = '/IMAGING/NANONIS/TEMPLATE-SXM'
     if perm_id is None:
         dataset_sxm = create_sxm_dataset(
             openbis=openbis,
-            experiment='/IMAGING/NANONIS/SXM_COLLECTION',
-            sample='/IMAGING/NANONIS/TEMPLATE-SXM',
+            experiment=experiment,
+            sample=sample,
             file_path=file_sxm)
         perm_id = dataset_sxm.permId
         print(f'Created imaging .SXM dataset: {dataset_sxm.permId}')
@@ -480,13 +498,25 @@ def demo_sxm_flow(openbis, file_sxm, permId=None):
 
     config_preview = config_sxm_preview.copy()
     config_preview['Scaling'] = 'logarithmic'
-    preview = create_preview(openbis, perm_id, config_preview)
+
+    filter_config = [
+        {"Gaussian": ["20", "0.3"] },
+        {"Laplace": ["3"] }
+    ]
+
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
     preview.index = 1
     update_image_with_preview(openbis, perm_id, 0, preview)
 
     config_preview = config_sxm_preview.copy()
     config_preview['Colormap'] = 'inferno'
-    preview = create_preview(openbis, perm_id, config_preview)
+
+    filter_config = [
+        {"Gaussian": ["20", "0.3"] },
+        {"Zero background": [] }
+    ]
+
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
     preview.index = 2
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -616,6 +646,7 @@ for group in grouped_measurement_files:
         file_path = os.path.join(data_folder, group[0])
         try:
             demo_sxm_flow(o, file_path)
+            # exit(0)
         except ValueError as e:
             print(f"Cannot upload {group[0]}. Reason: {e}")
     else:
