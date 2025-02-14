@@ -370,9 +370,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveUnsynchronizedDataSetsSuccessfullyAndRemoveThemFromStore()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -410,9 +410,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveDataSetThrowsException()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -453,9 +453,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveDataSetsWhichDoNotFulfillPrerequests()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -495,7 +495,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveDataSetWithUnknownSizeAndPause() throws Exception
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").location("ds1").getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").location("ds1").store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -541,9 +541,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveUnsynchronizedDataSetsSuccessfullyButDoNotRemoveThemFromStore()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -574,9 +574,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveUnarchivedDataSetsSuccessfullyAndRemoveThemFromStore()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -612,9 +612,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveDataSetsSomeSuccessfullySomeNot()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -654,7 +654,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveAnUnarchivedDataSetFailing()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -685,7 +685,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testArchiveAnUnarchivedDataSetAndRemoveItFromStoreFailing()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -721,9 +721,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testUnarchivDataSetsSuccessfully()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -756,7 +756,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testUnarchivDataSetsWhichDoNotFulfillPrerequests()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -792,9 +792,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testUnarchivDataSetFailing()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final DatasetDescription ds2 =
-                new DatasetDescriptionBuilder("ds2").size(43).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
@@ -835,7 +835,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     public void testUnarchivDataSetsThrowsException()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").size(42).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
             {
