@@ -5,6 +5,7 @@ import AppController from '@src/js/components/AppController.js'
 import openbis from '@src/js/services/openbis.js'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
+import ComponentContext from '@src/js/components/common/ComponentContext.js'
 
 export default class GridWithOpenbis extends React.PureComponent {
   constructor(props) {
@@ -43,6 +44,10 @@ export default class GridWithOpenbis extends React.PureComponent {
 
     if (!settingsId) {
       return null
+    }
+
+    if(this.props.fromExternalApp === true) { 
+      AppController.getInstance().init(new ComponentContext(this))
     }
 
     return await AppController.getInstance().getSetting(settingsId)

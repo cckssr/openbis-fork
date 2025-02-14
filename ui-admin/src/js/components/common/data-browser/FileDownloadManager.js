@@ -1,8 +1,8 @@
 import messages from '@src/js/common/messages.js'
 import autoBind from 'auto-bind'
-import mimeTypeMap from '@src/js/components/database/data-browser/mimeTypes.js';
+import mimeTypeMap from '@src/js/components/common/data-browser/mimeTypes.js';
 import JSZip from 'jszip';
-import {isUserAbortedError} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 
 // 2GB limit for total download size
 const ZIP_DOWNLOAD_SIZE_LIMIT = 2147483648

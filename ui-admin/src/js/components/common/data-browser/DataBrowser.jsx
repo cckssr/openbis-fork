@@ -2,26 +2,26 @@ import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
-import Toolbar from '@src/js/components/database/data-browser/Toolbar.jsx'
-import GridView from '@src/js/components/database/data-browser/GridView.jsx'
-import fileTypeConfig from '@src/js/components/database/data-browser/fileTypeConfig.js';
+import Toolbar from '@src/js/components/common/data-browser/Toolbar.jsx'
+import GridView from '@src/js/components/common/data-browser/GridView.jsx'
+import fileTypeConfig from '@src/js/components/common/data-browser/fileTypeConfig.js';
 
-import GridWithOpenbis from '@src/js/components/common/grid/GridWithOpenbis.jsx'
+import Grid from '@src/js/components/common/grid/Grid.jsx'
 import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js'
 import AppController from '@src/js/components/AppController.js'
-import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
-import InfoPanel from '@src/js/components/database/data-browser/InfoPanel.jsx'
-import DataBrowserController from '@src/js/components/database/data-browser/DataBrowserController.js'
-import FileDownloadManager from '@src/js/components/database/data-browser/FileDownloadManager.js'
-import FileUploadManager from '@src/js/components/database/data-browser/FileUploadManager.js'
+import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
+import InfoPanel from '@src/js/components/common/data-browser/InfoPanel.jsx'
+import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
+import FileDownloadManager from '@src/js/components/common/data-browser/FileDownloadManager.js'
+import FileUploadManager from '@src/js/components/common/data-browser/FileUploadManager.js'
 import messages from '@src/js/common/messages.js'
-import InfoBar from '@src/js/components/database/data-browser/InfoBar.jsx'
+import InfoBar from '@src/js/components/common/data-browser/InfoBar.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
-import {isUserAbortedError, timeToString} from "@src/js/components/database/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 
 
 const styles = theme => ({
@@ -81,9 +81,15 @@ class DataBrowser extends React.Component {
     super(props, context)
     autoBind(this)
 
-    const { sessionToken, controller, id, showFileExistsDialog, currentFile } = this.props
+    const { sessionToken,
+            controller,
+            id,
+            showFileExistsDialog,
+            currentFile,
+            extOpenbis,
+            fromExternalApp } = this.props
 
-    this.controller = controller || new DataBrowserController(id)
+    this.controller = controller || new DataBrowserController(id, extOpenbis)
     this.controller.attach(this)
     this.dragDepth = 0;
 
@@ -119,7 +125,6 @@ class DataBrowser extends React.Component {
     }
 
     this.zip = new JSZip()
-  
    
   }
 
@@ -305,22 +310,23 @@ class DataBrowser extends React.Component {
     return mimeTypeMap[extension] || 'application/octet-stream'
   }
 
-  fetchRights() {
-    const { id, kind } = this.props
-    this.controller.getRights([{ permId: id, entityKind: kind }]).then(right => {
-      if (right[id] && right[id].rights) {
-        const editable = right[id].rights.includes("UPDATE")
+  async fetchRights() {
+    const { objId, objKind } = this.props
+    const right = await this.controller.getRights([{ permId: objId, entityKind: objKind }])
+    
+      if (right[objId] && right[objId].rights) {
+        const editable = right[objId].rights.includes("UPDATE")
         this.setState({ editable: editable })
       } else {
         this.setState({ editable: false })
       }
-    })
+    
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     try {
       this.fetchSpaceStatus()
-      this.fetchRights()    
+      await this.fetchRights()    
       if (this.state.viewType === 'grid') {
         this.fetchFiles();
       }
@@ -488,14 +494,17 @@ class DataBrowser extends React.Component {
             onDrop={this.handleDrop}
         >
           {viewType === 'list' && (
-            <GridWithOpenbis
+            <Grid
               id='data-browser-grid'
               settingsId='data-browser-grid'              
+              loadSettings={this.props.onLoadDisplaySettings}
+              onSettingsChange={this.props.onStoreDisplaySettings}
               controllerRef={this.handleGridControllerRef}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
               classes={{container: classes.grid}}
               isDragging={this.state.isDragging}
+              fromExternalApp={this.props.fromExternalApp}
               columns={[
                 {
                   name: 'name',
@@ -551,10 +560,8 @@ class DataBrowser extends React.Component {
               loadRows={this.controller.load}
               exportable={false}
               selectable={true}
-              multiselectable={true}
-              loadSettings={null}
-              showHeaders={true}
-              onSettingsChange={null}
+              multiselectable={true}              
+              showHeaders={true}              
               onError={this.onError}
               onSelectedRowChange={this.handleSelect}
               onMultiselectedRowsChange={this.handleMultiselect}

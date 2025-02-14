@@ -17,7 +17,7 @@
 import React from 'react'
 import TableRow from '@mui/material/TableRow'
 import TableCell from '@mui/material/TableCell'
-import ItemIcon from '@src/js/components/database/data-browser/ItemIcon.jsx'
+import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import withStyles from '@mui/styles/withStyles';
 
 const styles = (theme) => ({

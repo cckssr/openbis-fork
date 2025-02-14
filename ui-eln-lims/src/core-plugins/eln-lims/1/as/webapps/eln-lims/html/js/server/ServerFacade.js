@@ -40,8 +40,17 @@ function ServerFacade(openbisServer) {
             var testUrl = testProtocol + "//" + testHost + ":" + testPort;
             var testApiUrl = testUrl + "/openbis/openbis/rmi-application-server-v3.json";
 
-            var openbisV3 = new openbis(testApiUrl);
-            callbackFunction(openbisV3);
+            var testUrl = testProtocol + "//" + testHost + ":" + testPort;
+
+			var openbisInt = new openbis(testApiUrl)
+	        openbisInt.getServerPublicInformation().then(result => {
+				const afsServerUrlKey = 'server-public-information.afs-server.url'
+				const afsServerUrl = result[afsServerUrlKey]
+			
+				var openbisV3 = new openbis(testApiUrl, afsServerUrl);
+				callbackFunction(openbisV3);
+			})
+			
         });
     }
 
@@ -62,12 +71,7 @@ function ServerFacade(openbisServer) {
 				Util.showError("User has no assigned rights. Please contact your group admin.", function() {
 					location.reload(true);
 				}, true, false, false, true);
-			} else if(response.error.message && response.error.message.indexOf("no valid assigned rights") !== -1) {
-                isError = true;
-                Util.showError("User has no valid assigned rights. Please contact your admin", function() {
-                    location.reload(true);
-                }, true, false, false, true);
-            } else if(response.error === "Request failed: ") {
+			} else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
 		}
