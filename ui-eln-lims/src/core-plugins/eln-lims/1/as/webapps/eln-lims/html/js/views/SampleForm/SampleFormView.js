@@ -22,29 +22,7 @@
 	
 		this.repaint = function(views, loadFromTemplate) {
 			var $container = views.content;
-	
-			var $tabsContainer = $('<div class="tabs-container">');
-	
-			var tabsModel = [
-				{ label: "Details", href: "#sampleFormTab", active: true },
-				{ label: "Files", href: "#dssWidgetTab", active: false }
-			];
-			var $tabsContent = $('<div class="tab-content">');
-			var $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
-			var $dssWidgetTab = $('<div id="dssWidgetTab" class="tab-pane fade"></div>');
-	
-			$tabsContent.append($sampleFormTab);
-			$tabsContent.append($dssWidgetTab);
-			$tabsContainer.append($tabsContent);
-	
-			// Replace the original container's content with the tab structure
-			$container.empty();
-			$container.append($tabsContainer);
-	
-			
-	
-	
-	
+				
 			mainController.profile.beforeViewPaint(ViewType.SAMPLE_FORM, this._sampleFormModel, $container);
 			var _this = this;
 			var spaceSettings = SettingsManagerUtils.getSpaceSettings(_this._sampleFormModel.sample.spaceCode);
@@ -708,28 +686,93 @@
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
 	
 			
-			var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel);
-			$header.append($toolbarWithTabs);
-			
-			//$header.append(FormUtil.getToolbar(toolbarModel));
-			//$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right", "right:30px;"));
+			if(this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT){
+				$header.append(FormUtil.getToolbar(toolbarModel));
+				$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+				$container.empty();
+				$container.append($form);
+
+			} else {
+				var $tabsContainer = $('<div class="tabs-container">');
+	
+				var tabsModel = {
+					containerId: "tabsContainer",
+					tabs: [
+						{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true },
+						{ id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false }
+					]
+				};
+	
+				var $tabsContent = $('<div class="tab-content">');
+				var $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
+				var $dssWidgetTab = $('<div id="dssWidgetTab" class="tab-pane fade"></div>');
+	
+				$tabsContent.append($sampleFormTab);
+				$tabsContent.append($dssWidgetTab);
+				$tabsContainer.append($tabsContent);
+
+				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel);
+				$header.append($toolbarWithTabs);
+				$container.empty();
+				$container.append($tabsContainer);
+				$sampleFormTab.append($form);
+
+				// new dss widget display
+				$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+					var target = $(e.target).attr("href");
+					if (target === "#dssWidgetTab") {
+						if (!$("#dssWidgetTab").data("dssLoaded")) {
+							_this._displayNewDSSWidget($dssWidgetTab, _this._sampleFormModel.sample.permId);
+							$dssWidgetTab.data("dssLoaded", true);
+						}
+                        // disable enable buttons in toolbar
+                        for (var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
+                            var $toolbarComponent = toolbarModel[tbIdx].component;
+                            $toolbarComponent.prop("disabled", true);
+                            $toolbarComponent.addClass("disabled");
+
+                            if ($toolbarComponent.hasClass("dropdown")) {
+                              $toolbarComponent
+                                .find(".dropdown-toggle")
+                                .removeAttr("data-toggle")
+                                .on("click", function(e) {
+                                  e.preventDefault();
+                                })
+                                .css({
+                                  "pointer-events": "none",
+                                  "opacity": "0.5",
+                                  "cursor": "not-allowed"
+                                });
+                            }
+                          }
+                    } else {
+                      for (var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
+                        var $toolbarComponent = toolbarModel[tbIdx].component;
+                        $toolbarComponent.prop("disabled", false);
+                        $toolbarComponent.removeClass("disabled");
+
+                        if ($toolbarComponent.hasClass("dropdown")) {
+                          var $dropdownToggle = $toolbarComponent.find(".dropdown-toggle");
+                          $dropdownToggle.attr("data-toggle", "dropdown");
+                          $dropdownToggle.off("click.disabled");
+                          $dropdownToggle.css({
+                            "pointer-events": "",
+                            "opacity": "",
+                            "cursor": ""
+                          });
+                        }
+                      }
+                    }
+				});
+				
+			}
+
 			if(documentEditorEditableToolbar) {
 				documentEditorEditableToolbar.css("margin-top", "10px");
 				$header.append($("<br>")).append(documentEditorEditableToolbar);
 			}
-			//$container.append($form);
-			$sampleFormTab.append($form);
-	
-			// widget display
-			$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-				var target = $(e.target).attr("href");
-				if (target === "#dssWidgetTab") {
-					if (!$dssWidgetTab.data("dssLoaded")) {
-						_this._displayNewDSSWidget($dssWidgetTab, _this._sampleFormModel.sample.permId);
-						$dssWidgetTab.data("dssLoaded", true);
-					}
-				}
-			});
+
+			
 	
 	
 			//

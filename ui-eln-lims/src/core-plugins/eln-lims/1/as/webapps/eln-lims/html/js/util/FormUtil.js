@@ -1628,18 +1628,39 @@ var FormUtil = new function() {
 		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
 		$rightToolbarButtons.css({marginBottom : "0px"})	
 		
-		var $tabsContainer = $("<ul>", { 
+		// Expecting tabsModel to be an object like:
+		// {
+		//    containerId: "myTabsContainer",
+		//    tabs: [
+		//       { id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true },
+		//       { id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false }
+		//    ]
+		// }
+		var containerId = tabsModel.containerId || "";
+		var tabs = tabsModel.tabs || [];
+			
+		var tabsContainerOptions = { 
 			class: "nav nav-tabs toolbar-tabs", 
-			style: "border-bottom: 0; margin: 0; padding: 0; display: flex;" 
-		});
-		tabsModel.forEach(function(tab) {
+			style: "border-bottom: 0; margin: 0; padding: 0; display: flex;"
+		};
+		if (containerId) {
+			tabsContainerOptions.id = containerId;
+		}
+		var $tabsContainer = $("<ul>", tabsContainerOptions);
+			
+		tabs.forEach(function(tab) {
 			var liClass = tab.active ? "active" : "";
 			var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
-			var $a = $("<a>", {
+			var aOptions = {
 				href: tab.href,
 				"data-toggle": "tab",
 				text: tab.label
-			});
+			};
+			
+			if (tab.id) {
+				aOptions.id = tab.id;
+			}
+			var $a = $("<a>", aOptions);
 			$li.append($a);
 			$tabsContainer.append($li);
 		});	
