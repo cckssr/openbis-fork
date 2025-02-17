@@ -71,7 +71,7 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                         type: 'number'
                     }}
                 />
-                <FormHelperText id='single-input-helper-text'>{unit ? unit : '-'}</FormHelperText>
+                <FormHelperText id='single-input-helper-text'>{unit}</FormHelperText>
             </Grid2>
             <Grid2 size={{ sm: 8 }} sx={{ pr: 1 }}>
                 <Slider name={label}

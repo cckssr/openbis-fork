@@ -38,6 +38,7 @@ const PreviewSection = ({ activeImage, activePreview }) => {
 				previews={activeImage.previews} />
 			<MainPreviewInputControls activePreview={activePreview}
 				configInputs={activeImage.config.inputs}
+				configFilters={activeImage.config.filters}
 				configResolutions={activeImage.config.resolutions}
 			/>
 		</Grid2>
