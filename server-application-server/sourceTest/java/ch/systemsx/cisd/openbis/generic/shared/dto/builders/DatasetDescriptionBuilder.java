@@ -74,6 +74,11 @@ public class DatasetDescriptionBuilder
         return this;
     }
 
+    public DatasetDescriptionBuilder store(String storeCode){
+        datasetDescription.setDataStoreCode(storeCode);
+        return this;
+    }
+
     public DatasetDescription getDatasetDescription()
     {
         return datasetDescription;
