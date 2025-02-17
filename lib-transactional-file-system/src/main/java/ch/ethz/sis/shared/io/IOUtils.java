@@ -54,6 +54,17 @@ import java.util.regex.Pattern;
 public class IOUtils {
 
 
+    /**
+     * Regular expression pattern to validate filenames.
+     * - Allows digits (0-9)
+     * - Supports Unicode letters (\p{L}) for international filenames
+     * - Permits common special characters:
+     *   - Space, dollar sign ($), exclamation mark (!), hash (#), percent (%),
+     *     single quote ('), parentheses (()), plus (+), comma (,), hyphen (-),
+     *     period (.), semicolon (;), equal sign (=), at (@), square brackets ([]),
+     *     caret (^), underscore (_), curly braces ({}), tilde (~), and slash (/).
+     * - Ensures that filenames only contain allowed characters and avoid illegal ones.
+     */
     private static final Pattern VALID_FILENAME_PATTERN =
             Pattern.compile("[0-9\\p{L} $!#%'()+,\\-.;=@\\[\\]^_{}~/]+");
     //
