@@ -15,9 +15,22 @@ import { useImagingDataContext } from '@src/js/components/common/imaging/compone
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import TuneIcon from '@mui/icons-material/Tune';
 import PhotoFilterIcon from '@mui/icons-material/PhotoFilter';
-import FilterSelector from '@src/js/components/common/imaging/components/viewer//FilterSelector.jsx';
+import FilterSelector from '@src/js/components/common/imaging/components/viewer/FilterSelector.jsx';
+import { makeStyles } from '@mui/styles';
+
+const useStyles = makeStyles(theme => ({
+    scrollableTab: {
+      padding: '0',
+      maxHeight: '60vh'
+    },
+    overflowAuto: {
+      overflow: 'auto'
+    }
+}));
 
 const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, configResolutions }) => {
+  const classes = useStyles();
+
   const [tags, setTags] = React.useState([])
   const [inputValue, setInputValue] = React.useState('');
   const [tab, setTab] = React.useState('1');
@@ -148,19 +161,19 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       <Grid2 container size={{ xs: 12 }}>
         <Divider variant='middle' sx={{ margin: '16px 0px 16px 0px', width: '100%', height: '2px' }} />
       </Grid2>
-      <Grid2 fullWidth>
+      <Grid2 >
         <TabContext value={tab} >
           <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' color='secondary'>
             <Tab icon={<TuneIcon />} label='Parameters' value='1' />
             <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
           </TabList>
-          <TabPanel sx={{p:0}} value='1'>
+          <TabPanel className={classes.scrollableTab + ' ' + classes.overflowAuto} value='1'>
             <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}>
               {configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
             </Grid2>
           </TabPanel>
-          <TabPanel sx={{p:0}} value='2'>
-            <FilterSelector data={configFilters} onApplyFilter={onApplyFilter} />
+          <TabPanel className={classes.scrollableTab} value='2'>
+            <FilterSelector configFilters={configFilters} onApplyFilter={onApplyFilter} />
           </TabPanel>
         </TabContext>
       </Grid2>

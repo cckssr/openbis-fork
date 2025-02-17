@@ -46,16 +46,7 @@ const Dropdown = ({
                     onChange={handleChange}
                     disabled={disabled}
                 >
-                    {mappingItemsCallback 
-                        ? mappingItemsCallback(values, label) 
-                        : values.map((v, i) => (
-                            <MenuItem 
-                                key={`select-${label}-menuitem-${i}`} 
-                                value={v} 
-                            >
-                                {v}
-                            </MenuItem>
-                        ))}
+                    {menuItems}
                 </Select>
             </FormControl>
         </Grid2>
