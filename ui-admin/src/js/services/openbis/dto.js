@@ -187,6 +187,7 @@ const CLASS_FULL_NAMES = [
   'imaging/dto/ImagingDataSetImage',
   'imaging/dto/ImagingDataSetMultiExport',
   'imaging/dto/ImagingDataSetPreview',
+  'imaging/dto/ImagingDataSetFilter',
   'imaging/dto/ImagingDataSetPropertyConfig',
   'imaging/dto/ImagingPreviewContainer',
   'imaging/dto/ImagingExportContainer',
