@@ -6,12 +6,14 @@ import Dropdown from '@src/js/components/common/imaging/components/common/Dropdo
 import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import Button from '@src/js/components/common/form/Button.jsx'
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
+import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
 
-const FilterSelector = ({ configFilters, onApplyFilter }) => {
-
+const FilterSelector = ({ configFilters, onAddFilter }) => {
 	const [selectedFilter, setSelectedFilter] = useState('');
 	const [history, setHistory] = useState([]);
 	const [sliderValues, setSliderValues] = useState({});
+	const [editingIndex, setEditingIndex] = useState(null);
 
 	const handleSelect = (event) => {
 		setSelectedFilter(event.target.value);
@@ -33,16 +35,34 @@ const FilterSelector = ({ configFilters, onApplyFilter }) => {
 			const newHistoryItem = { filter: selectedFilter, values };
 			const newHistory = [...history, newHistoryItem];
 			setHistory(newHistory);
-			onApplyFilter(newHistory);
+			onAddFilter(newHistory);
 		}
 	};
 
 	const removeFromHistory = (index) => {
 		const newHistory = history.filter((_, i) => i !== index);
 		setHistory(newHistory);
-		onApplyFilter(newHistory);
+		onAddFilter(newHistory);
 	};
 
+	const startEditing = (index) => {
+		setEditingIndex(index);
+		setSelectedFilter(history[index].filter);
+		setSliderValues(Object.fromEntries(history[index].values.map(v => [v.label, v.value])));
+	};
+
+	const applyEdits = () => {
+		if (editingIndex !== null) {
+			const updatedHistory = [...history];
+			updatedHistory[editingIndex] = {
+				filter: selectedFilter,
+				values: Object.keys(sliderValues).map(label => ({ label, value: sliderValues[label] }))
+			};
+			setHistory(updatedHistory);
+			setEditingIndex(null);
+			onAddFilter(updatedHistory);
+		}
+	};
 
 	const renderFilterControls = () => {
 		if (!selectedFilter) return null;
@@ -73,7 +93,7 @@ const FilterSelector = ({ configFilters, onApplyFilter }) => {
 
 	return (
 		<>
-			{!isObjectEmpty(configFilters) ? (
+			{configFilters != null && !isObjectEmpty(configFilters) ? (
 				<Grid2
 					container
 					direction='row'
@@ -95,31 +115,33 @@ const FilterSelector = ({ configFilters, onApplyFilter }) => {
 					</Grid2>
 					<Grid2 size={12} height='59%'>
 						<Button
-							label='Apply'
+							label={editingIndex !== null ? 'Save Changes' : 'Add'}
 							fullWidth
 							variant='outlined'
 							color='inherit'
-							startIcon={<AddIcon />}
-							onClick={addToHistory}
+							startIcon={editingIndex !== null ? <SaveIcon /> : <AddIcon />}
+							onClick={editingIndex !== null ? applyEdits : addToHistory}
 							disabled={!selectedFilter}
 						/>
 						<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>History</Typography>
 						<Divider />
 						<List sx={{ height: '68%', overflow: 'auto' }}>
 							{history.map((item, index) => (
-								<ListItem key={index} secondaryAction={
-									<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
-										<DeleteIcon />
-									</IconButton>	
-								}>
+								<ListItem key={index}>
 									<ListItemText primary={`${item.filter} - ${item.values.map(v => `${v.label}: ${v.value}`).join(', ')}`} />
+									<IconButton edge="end" onClick={() => startEditing(index)} color="inherit">
+										<EditIcon />
+									</IconButton>
+									<IconButton edge="end" onClick={() => removeFromHistory(index)} color="inherit">
+										<DeleteIcon />
+									</IconButton>
 								</ListItem>
 							))}
 						</List>
 					</Grid2>
 				</Grid2>
 			) : (
-				<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>No Filters</Typography>
+				<Typography px={1} my={1} textAlign={'center'}>No filters configuration provided</Typography>
 			)}
 		</>
 	);
