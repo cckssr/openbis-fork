@@ -20,11 +20,15 @@ package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingService;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.Util;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +41,8 @@ import java.util.Map;
 
 public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDataSetAdaptor
 {
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingDataSetAbstractPythonAdaptor.class);
 
     protected String pythonPath;
 
@@ -67,6 +73,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             {
                 String error =
                         new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                logOutput(fullOutput);
                 throw new UserFailureException("Script evaluation failed: " + error);
             }
         } catch (IOException | InterruptedException e)
@@ -78,6 +85,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         {
             throw new UserFailureException("Script produced no results!");
         }
+        logOutput(fullOutput);
         String[] result = fullOutput.split("\n");
         return convertPythonOutput(result[result.length-1]);
     }
@@ -156,6 +164,17 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         } catch (Exception e)
         {
             return Map.of("bytes", line);
+        }
+    }
+
+    private void logOutput(String output) {
+        if(output != null && !output.trim().isEmpty()) {
+            String[] lines = output.split("\n");
+            for(String line : lines) {
+                operationLog.info(String.format("Adapter output: '%s'", line));
+            }
+        } else {
+            operationLog.info("Adapter output: empty");
         }
     }
 
