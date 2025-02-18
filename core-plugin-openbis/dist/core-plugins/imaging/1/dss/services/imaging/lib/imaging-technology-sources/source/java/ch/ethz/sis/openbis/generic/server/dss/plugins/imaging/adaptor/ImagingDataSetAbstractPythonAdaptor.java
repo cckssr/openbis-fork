@@ -17,6 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
@@ -47,12 +48,12 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
             Map<String, Serializable> previewMetadata,
-            List<Map<String, String[]>> filterConfig)
+            List<ImagingDataSetFilter> filterConfig)
     {
         ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
                 scriptPath, rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
                 convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata),
-                convertListToJson(filterConfig));
+                convertFilterConfig(filterConfig));
         processBuilder.redirectErrorStream(false);
 
         String fullOutput;
@@ -126,16 +127,22 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         }
     }
 
-    private String convertListToJson(List<?> list)
+    private String convertFilterConfig(List<ImagingDataSetFilter> list)
     {
-        List<?> listToConvert = list;
+        List<ImagingDataSetFilter> listToConvert = list;
         if(listToConvert == null) {
             listToConvert = new ArrayList<>();
         }
+
+        List<Map<String, Map<String, Serializable>>> output = new ArrayList<>();
+        for(ImagingDataSetFilter filter : listToConvert) {
+            output.add(Map.of(filter.getName(), filter.getParameters()));
+        }
+
         try
         {
             ObjectMapper objectMapper = new GenericObjectMapper();
-            return objectMapper.writeValueAsString(listToConvert);
+            return objectMapper.writeValueAsString(output);
         } catch (Exception e)
         {
             throw new UserFailureException("Couldn't convert map to string", e);

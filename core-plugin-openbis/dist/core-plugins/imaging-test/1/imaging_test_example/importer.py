@@ -1,4 +1,4 @@
-#   Copyright ETH 2023 Zürich, Scientific IT Services
+#   Copyright ETH 2023 - 2025 Zürich, Scientific IT Services
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.I
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "https://localhost:8443/openbis"
-DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
+# DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
 def get_instance(url=None):

@@ -17,6 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
@@ -43,7 +44,7 @@ public final class ImagingDataSetExampleAdaptor implements IImagingDataSetAdapto
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
             Map<String, Serializable> previewMetadata,
-            List<Map<String, String[]>> filterConfig)
+            List<ImagingDataSetFilter> filterConfig)
     {
         BufferedImage img = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
         for(int y=0;y<HEIGHT; y++)

@@ -374,7 +374,6 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         imaging.ImagingDataSetControl('Grouping', "Dropdown", values=[d.name for d in data], multiselect=True),
         imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
         imaging.ImagingDataSetControl('Scaling', "Dropdown", values=['lin-lin', 'lin-log', 'log-lin', 'log-log']),
-        imaging.ImagingDataSetControl('Include parameter information', "Dropdown", values=['True', 'False']),
         # imaging.ImagingDataSetControl('Print legend', "Dropdown", values=['True', 'False']),
     ]
 
@@ -499,9 +498,10 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
     config_preview = config_sxm_preview.copy()
     config_preview['Scaling'] = 'logarithmic'
 
+
     filter_config = [
-        {"Gaussian": ["20", "0.3"] },
-        {"Laplace": ["3"] }
+        imaging.ImagingDataSetFilter("Gaussian", {"Sigma":"20", "Truncate":"0.3"}),
+        imaging.ImagingDataSetFilter("Laplace", {"Size":"3"})
     ]
 
     preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
@@ -512,8 +512,8 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
     config_preview['Colormap'] = 'inferno'
 
     filter_config = [
-        {"Gaussian": ["20", "0.3"] },
-        {"Zero background": [] }
+        imaging.ImagingDataSetFilter("Gaussian", {"Sigma":"20", "Truncate":"0.3"}),
+        imaging.ImagingDataSetFilter("Zero background", {}),
     ]
 
     preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
@@ -639,44 +639,96 @@ if len(group) > 0:
     grouped_measurement_files.append(group)
     group = []
 
+IMPORT = True
+# IMPORT = False
 
-for group in grouped_measurement_files:
-    if group[0].endswith(".sxm"):
-        print(f"SXM file: {group[0]}")
-        file_path = os.path.join(data_folder, group[0])
-        try:
-            demo_sxm_flow(o, file_path)
-            # exit(0)
-        except ValueError as e:
-            print(f"Cannot upload {group[0]}. Reason: {e}")
-    else:
-
-        # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
-        dat_files_types = []
-        for dat_file in group:
-            dat_data = spm(f"{data_folder}/{dat_file}")
-            dat_files_types.append(get_dat_type(dat_data.header))
-
-        grouped = defaultdict(list)
-
-        for item1, item2 in zip(group, dat_files_types):
-            grouped[item2].append(item1)
-
-        dat_files_grouped_by_type = list(grouped.values())
-        # ---------------
-
-        for dat_files_group in dat_files_grouped_by_type:
-            dat_files_directory = os.path.join(data_folder, "dat_files")
-            shutil.rmtree(dat_files_directory, ignore_errors=True)
-            os.mkdir(dat_files_directory)
-
-            for dat_file in dat_files_group:
-                shutil.copy(os.path.join(data_folder, dat_file), os.path.join(dat_files_directory, dat_file))
+if IMPORT:
+    for group in grouped_measurement_files:
+        if group[0].endswith(".sxm"):
+            print(f"SXM file: {group[0]}")
+            file_path = os.path.join(data_folder, group[0])
             try:
-                demo_dat_flow(o, dat_files_directory)
+                demo_sxm_flow(o, file_path)
+                # exit(0)
             except ValueError as e:
-                print(f"Cannot upload {dat_files_directory}. Reason: {e}")
-            shutil.rmtree(dat_files_directory)
+                print(f"Cannot upload {group[0]}. Reason: {e}")
+        else:
+
+            # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
+            dat_files_types = []
+            for dat_file in group:
+                dat_data = spm(f"{data_folder}/{dat_file}")
+                dat_files_types.append(get_dat_type(dat_data.header))
+
+            grouped = defaultdict(list)
+
+            for item1, item2 in zip(group, dat_files_types):
+                grouped[item2].append(item1)
+
+            dat_files_grouped_by_type = list(grouped.values())
+            # ---------------
+
+            for dat_files_group in dat_files_grouped_by_type:
+                dat_files_directory = os.path.join(data_folder, "dat_files")
+                shutil.rmtree(dat_files_directory, ignore_errors=True)
+                os.mkdir(dat_files_directory)
+
+                for dat_file in dat_files_group:
+                    shutil.copy(os.path.join(data_folder, dat_file), os.path.join(dat_files_directory, dat_file))
+                try:
+                    demo_dat_flow(o, dat_files_directory)
+                except ValueError as e:
+                    print(f"Cannot upload {dat_files_directory}. Reason: {e}")
+                shutil.rmtree(dat_files_directory)
+
+else:
+
+    perm_id_sxm = '20250213122403858-19036'
+    perm_id_dat = '20250217145145421-19046'
+
+    config_dat_preview = {
+        "spectraLocator": True,
+        "objId": perm_id_dat,
+        "sxmPreviewConfig": {
+            "Channel": 'z',  # usually one of these: ['z', 'I', 'dIdV', 'dIdV_Y']
+            "X-axis": ["0", "3.0"],  # file dependent
+            "Y-axis": ["0", "3.0"],  # file dependent
+            "Color-scale": ["-71", "-68"],  # file dependent
+            "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
+            "Scaling": "linear",  # ['linear', 'logarithmic']
+            "Filter": "None",
+            "Gaussian Sigma": "0",
+            "Gaussian Truncate": "0",
+            "Laplace Size": "3"
+        },
+        "sxmPermId": perm_id_sxm,
+        "sxmFilePath": "original/img_0150.sxm",
+        "Grouping": [
+            "didv_00063.dat",
+            "didv_00064.dat",
+            "didv_00065.dat",
+            "didv_00066.dat",
+            "didv_00067.dat",
+        ],
+
+
+        "Channel X": "V",
+        "Channel Y": "I",
+        "X-axis": ["-3.0", "1"],
+        "Y-axis": ["-331", "107"],
+        "Colormap": "rainbow",
+        "Scaling": "lin-lin",  # ['lin-lin', 'lin-log', 'log-lin', 'log-log']
+        "Print legend": "True", # disable legend in image
+    }
+
+    config_preview = config_dat_preview.copy()
+
+    preview = create_preview(o, perm_id_dat, config_preview)
+
+    preview.index = 2
+    update_image_with_preview(o, perm_id_dat, 0, preview)
+
+
 
 # export_image(o, '20241218074117986-44', 0, '/home/alaskowski/PREMISE/test')
 # export_image(o, '20240111135043750-39', 0, '/home/alaskowski/PREMISE')
