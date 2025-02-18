@@ -5617,12 +5617,16 @@ class ImagingControl:
 
     def make_preview(self, perm_id: str, index: int, preview: ImagingDataSetPreview) -> ImagingDataSetPreview:
         """Execute preview generation of preview of imaging dataset with the config parameters"""
+        preview_params = preview.__dict__
+        filter_config = [] if preview_params["filterConfig"] is None else preview_params["filterConfig"]
+        filter_params = [f.__dict__ for f in filter_config]
+        preview_params["filterConfig"] = filter_params
         parameters = {
             "type": "preview",
             "permId": perm_id,
             "index": index,
             "error": None,
-            "preview": preview.__dict__
+            "preview": preview_params
         }
         service_response = self._openbis.execute_custom_dss_service(self._service_name, parameters)
         if service_response['error'] is None:
@@ -5630,6 +5634,9 @@ class ImagingControl:
                 del service_response['@id']
             if '@id' in service_response['preview']:
                 del service_response['preview']['@id']
+            for config in service_response['preview']['filterConfig']:
+                if '@id' in config:
+                    del config['@id']
             preview.__dict__ = service_response["preview"]
             return preview
         else:

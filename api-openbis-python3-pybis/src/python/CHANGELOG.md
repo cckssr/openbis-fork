@@ -3,6 +3,10 @@
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
 
+## Changes with pybis-1.37.2
+
+
+
 ## Changes with pybis-1.37.1
 
 - Implemented Fast download V2

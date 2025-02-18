@@ -66,6 +66,27 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
         return
 
 
+class ImagingDataSetFilter(AbstractImagingClass):
+    name: str
+    parameters: dict
+
+    def __init__(self, name, parameters=None):
+        self.__dict__["@type"] = "imaging.dto.ImagingDataSetFilter"
+        self.name = name
+        self.parameters = parameters if parameters is not None else dict()
+
+    @classmethod
+    def from_dict(cls, data):
+        if data is None:
+            return None
+        if "@id" in data:
+            del data["@id"]
+        imaging_filter = cls('', None)
+        for prop in cls.__annotations__.keys():
+            attribute = data.get(prop)
+            imaging_filter.__dict__[prop] = attribute
+        return imaging_filter
+
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
     format: str
