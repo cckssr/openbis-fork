@@ -225,27 +225,19 @@ def sxm_mode(sxm_file_path, format, parameters, filter_config, print_out=True):
 
 
 params = preview_config
-print(params)
 
 if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
 
     sxmConfig = params['sxmPreviewConfig']
-    print(f'SXM_CONFIG:{sxmConfig}')
     root_folder_path = params['sxmRootPath']
     file_path = params['sxmFilePath']
     sxm_path = os.path.join(root_folder_path, file_path)
 
     img = sxm_mode(sxm_path, format, sxmConfig, {}, print_out=False)
 
-
-    ref_img = img
-    ref_channel = 'z'
-
-    # img.plot(channel = ref_channel, show = 0)
-
     specs = spmpy.importall(folder_dir, '', 'spec')
-    if 'grouping' in params and params['grouping'] is not None:
-        grouping = params['grouping']
+    if 'Grouping' in params and params['Grouping'] is not None:
+        grouping = params['Grouping']
     else:
         grouping = None
 
@@ -263,12 +255,7 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
 
     col = pl.cm.rainbow(np.linspace(0,1,len(specs_sub)))
 
-    # ref_img.plot(channel = ref_channel, show = 0);
-
-    ax = plt.gca()
-    im = ax.images
-    cb = im[-1].colorbar
-
+    ref_img = img
     legend = []
     # plot circle for each location
     for (s,c) in zip(specs_sub,col):
@@ -277,19 +264,19 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
         legend += [patch]
         plt.plot(x,y,'ro',color = c)
 
-    # fig = plt.figure()
-    # size = fig.get_size_inches()*fig.dpi
-    plt.legend(handles=legend, loc='best', bbox_to_anchor=(1, 0))
+    fig = plt.gcf()
+    fig_width, fig_height = fig.get_size_inches()
 
-    # fig = plt.figure()
-    # fig.legend(handles=legend, loc="outside center left")
-    # fig.legend(handles=legend, loc='outside left upper', bbox_to_anchor=(1, 0.8))
+    # Stupid, but works
+    fig.set_figwidth(fig_width*1.5)
+    ax = fig.add_subplot(1, 4, 1)
+    ax.axis('off')
+    ax.legend(handles=legend, loc='best')
 
-    # plt.xlabel('x (nm)')
-    # plt.ylabel('y (nm)')
+    # fig.legend(handles=legend, loc='outside left center')
 
     img_byte_arr = io.BytesIO()
-    plt.savefig(img_byte_arr, format=format, dpi=resolution)
+    plt.savefig(img_byte_arr, format=format, dpi=resolution, bbox_inches="tight")
 
     fig = plt.figure()
     size = fig.get_size_inches()*fig.dpi

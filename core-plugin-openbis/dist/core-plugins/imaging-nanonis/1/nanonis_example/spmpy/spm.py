@@ -132,12 +132,12 @@ class Spm:
 
     # get channel
     def get_channel(
-        self,
-        channel: str,
-        direction: str = "forward",
-        flatten: bool = False,
-        offset: bool = False,
-        zero: bool = False,
+            self,
+            channel: str,
+            direction: str = "forward",
+            flatten: bool = False,
+            offset: bool = False,
+            zero: bool = False,
     ):
         """
         Returns the measurement values and the channel unit.

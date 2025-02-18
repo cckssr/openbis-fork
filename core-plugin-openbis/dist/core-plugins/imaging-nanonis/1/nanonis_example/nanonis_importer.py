@@ -77,16 +77,47 @@ def reorder_sxm_channels(channels, header):
             Oscillation Control>output off: FALSE > I vs V
     """
     channel_index = -1
-    if header["lock-in>lock-in status"] == "ON":
-        channel_index = channels.index("dIdV")
-    else:
-        if header["z-controller>controller status"] == "ON":
-            channel_index = channels.index("z")
+
+    lock_in_status = -1
+    z_controller_status = -1
+    oscillation_control_output_off = -1
+
+    if "lock-in>lock-in status" in header:
+        if header["lock-in>lock-in status"] == "ON":
+            lock_in_status = 1
         else:
-            if header["oscillation control>output off"] == "TRUE":
-                channel_index = channels.index("df")
+            lock_in_status = 0
+
+    if "z-controller>controller status" in header:
+        if header["z-controller>controller status"] == "ON":
+            z_controller_status = 1
+        else:
+            z_controller_status = 0
+
+    if "oscillation control>output off" in header:
+        if header["oscillation control>output off"] == "TRUE":
+            oscillation_control_output_off = 1
+        else:
+            oscillation_control_output_off = 0
+
+    try:
+        if lock_in_status == 1:
+            channel_index = channels.index("dIdV")
+        elif lock_in_status == 0:
+            if z_controller_status == 1:
+                channel_index = channels.index("z")
             else:
-                channel_index = channels.index("I")
+                if oscillation_control_output_off == 1:
+                    channel_index = channels.index("df")
+                else:
+                    channel_index = channels.index("I")
+        else:
+            if "z" in channels:
+                channel_index = channels.index("z")
+            else:
+                channel_index = 0 # Select first channel available
+    except:
+        channel_index = 0
 
     # If the channel index is less than 0, it means the tree did not find the measurement type
     if channel_index >= 0:
@@ -201,40 +232,72 @@ def reorder_dat_channels(channels, header):
     channel_x_index = -1
     channel_y_index = -1
 
-    if {} == header:
-        return channels_x, channels_y
+    lock_in_status = -1
+    z_control_hold = -1
+    oscillation_control_output_off = -1
 
-    def get_header_value(text):
-        if text in header:
-            return header[text]
-        return None
-
-    if get_header_value("Experiment") == "bias spectroscopy":
-        if get_header_value("Lock-in>Lock-in status") == "ON":
-            channel_x_index = channels_x.index(("V","V",1))
-            channel_y_index = channels_y.index(("dIdV","pA",10**12))
+    if "Lock-in>Lock-in status" in header:
+        if header["Lock-in>Lock-in status"] == "ON":
+            lock_in_status = 1
         else:
-            if get_header_value("Z-Ctrl hold") == "FALSE":
-                channel_x_index = channels_x.index(("V","V",1))
-                channel_y_index = channels_y.index(("zspec","nm",10**9))
-            else:
-                if get_header_value("Oscillation Control>output off") == "TRUE":
+            lock_in_status = 0
+
+    if "Z-Ctrl hold" in header:
+        if header["Z-Ctrl hold"] == "TRUE":
+            z_control_hold = 1
+        else:
+            z_control_hold = 0
+
+    if "Oscillation Control>output off" in header:
+        if header["Oscillation Control>output off"] == "TRUE":
+            oscillation_control_output_off = 1
+        else:
+            oscillation_control_output_off = 0
+
+    try:
+        if header["Experiment"] == "bias spectroscopy":
+            try:
+                if lock_in_status == 1:
                     channel_x_index = channels_x.index(("V","V",1))
-                    channel_y_index = channels_y.index(("df","Hz",1))
+                    channel_y_index = channels_y.index(("dIdV","pS",10**12))
+                elif lock_in_status == 0:
+                    if z_control_hold == 0:
+                        channel_x_index = channels_x.index(("V","V",1))
+                        channel_y_index = channels_y.index(("zspec","nm",10**9))
+                    else:
+                        if oscillation_control_output_off == 1:
+                            channel_x_index = channels_x.index(("V","V",1))
+                            channel_y_index = channels_y.index(("df","Hz",1))
+                        else:
+                            channel_x_index = channels_x.index(("V","V",1))
+                            channel_y_index = channels_y.index(("I","pA",10**12))
                 else:
                     channel_x_index = channels_x.index(("V","V",1))
-                    channel_y_index = channels_y.index(("I","pA",10**12))
-    else:
-        if get_header_value("Lock-in>Lock-in status") == "ON":
-            channel_x_index = channels_x.index(("zspec","nm",10**9))
-            channel_y_index = channels_y.index(("dIdV","pA",10**12))
+                    channel_y_index = 1
+            except:
+                channel_x_index = channels_x.index(("V","V",1))
+                channel_y_index = 1
         else:
-            if get_header_value("Oscillation Control>output off") == "TRUE":
+            try:
+                if lock_in_status == 1:
+                    channel_x_index = channels_x.index(("zspec","nm",10**9))
+                    channel_y_index = channels_y.index(("dIdV","pS",10**12))
+                elif lock_in_status == 0:
+                    if oscillation_control_output_off == 1:
+                        channel_x_index = channels_x.index(("zspec","nm",10**9))
+                        channel_y_index = channels_y.index(("df","Hz",1))
+                    else:
+                        channel_x_index = channels_x.index(("zspec","nm",10**9))
+                        channel_y_index = channels_y.index(("I","pA",10**12))
+                else:
+                    channel_x_index = channels_x.index(("zspec","nm",10**9))
+                    channel_y_index = 1
+            except:
                 channel_x_index = channels_x.index(("zspec","nm",10**9))
-                channel_y_index = channels_y.index(("df","Hz",1))
-            else:
-                channel_x_index = channels_x.index(("zspec","nm",10**9))
-                channel_y_index = channels_y.index(("I","pA",10**12))
+                channel_y_index = 1
+    except:
+        channel_x_index = 0
+        channel_y_index = 1
 
     if channel_x_index >= 0:
         channels_x[channel_x_index], channels_x[0] = channels_x[0], channels_x[channel_x_index]
@@ -257,32 +320,46 @@ def get_dat_type(header):
             Oscillation Control>output off: TRUE > df vs z
             Oscillation Control>output off: FALSE > I vs z
     """
-    if {} == header:
-        return "bias spectroscopy z vs V"
-
-    def get_header_value(text):
-        if text in header:
-            return header[text]
-        return None
-
     measurement_type = ""
 
-    if get_header_value("Experiment") == "bias spectroscopy":
-        if get_header_value("Lock-in>Lock-in status") == "ON":
-            measurement_type = "bias spectroscopy dIdV vs V"
+    lock_in_status = -1
+    z_control_hold = -1
+    oscillation_control_output_off = -1
+
+    if "Lock-in>Lock-in status" in header:
+        if header["Lock-in>Lock-in status"] == "ON":
+            lock_in_status = 1
         else:
-            if get_header_value("Z-Ctrl hold") == "TRUE":
+            lock_in_status = 0
+
+    if "Z-Ctrl hold" in header:
+        if header["Z-Ctrl hold"] == "TRUE":
+            z_control_hold = 1
+        else:
+            z_control_hold = 0
+
+    if "Oscillation Control>output off" in header:
+        if header["Oscillation Control>output off"] == "TRUE":
+            oscillation_control_output_off = 1
+        else:
+            oscillation_control_output_off = 0
+
+    if header["Experiment"] == "bias spectroscopy":
+        if lock_in_status == 1:
+            measurement_type = "bias spectroscopy dIdV vs V"
+        elif lock_in_status == 0:
+            if z_control_hold == 0:
                 measurement_type = "bias spectroscopy z vs V"
             else:
-                if get_header_value("Oscillation Control>output off") == "TRUE":
+                if oscillation_control_output_off == 1:
                     measurement_type = "bias spectroscopy df vs V"
                 else:
                     measurement_type = "bias spectroscopy I vs V"
     else:
-        if get_header_value("Lock-in>Lock-in status") == "ON":
+        if lock_in_status == 1:
             measurement_type = "z spectroscopy dIdV vs z"
-        else:
-            if get_header_value("Oscillation Control>output off") == "TRUE":
+        elif lock_in_status == 0:
+            if oscillation_control_output_off == 1:
                 measurement_type = "z spectroscopy df vs z"
             else:
                 measurement_type = "z spectroscopy I vs z"
@@ -344,8 +421,52 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         unit_y = channels_y[idx][1]
         scaling_y = channels_y[idx][2]
 
-        (minimum_x, maximum_x, step_x) = _min_max_step(channel_x, data)
-        (minimum_y, maximum_y, step_y) = _min_max_step(channel_y, data)
+        minimum_x, maximum_x = [], []
+        minimum_y, maximum_y = [], []
+        for spec in data:
+            # # -------- Boolean flag was added to the code -------
+            # channel_in_signals_list = False
+            # for signal_settings in spec.SignalsList:
+            #     if channel_x in signal_settings["ChannelNickname"]:
+            #         channel_in_signals_list = True
+            # if channel_in_signals_list:
+            # # ---------------------------------------------------
+            minimum_x += [np.nanmin(spec.get_channel(f'{channel_x}')[0])]
+            maximum_x += [np.nanmax(spec.get_channel(f'{channel_x}')[0])]
+
+            minimum_y += [np.nanmin(spec.get_channel(f'{channel_y}')[0])]
+            maximum_y += [np.nanmax(spec.get_channel(f'{channel_y}')[0])]
+        minimum_x = np.nanmin(minimum_x)
+        maximum_x = np.nanmax(maximum_x)
+
+        minimum_y = np.nanmin(minimum_y)
+        maximum_y = np.nanmax(maximum_y)
+        step_x = abs(round((maximum_x - minimum_x) / 100, 2))
+        step_y = abs(round((maximum_y - minimum_y) / 100, 2))
+
+        if step_x >= 1:
+            step_x = 1
+        elif step_x > 0:
+            step_x = 0.01
+        else:
+            step_x = abs((maximum_x - minimum_x) / 100)
+            step_x = np.log10(step_x)
+            if np.isnan(step_x) or np.isinf(step_x):
+                step_x = 0.01
+            else:
+                step_x = 10 ** np.floor(step_x)
+
+        if step_y >= 1:
+            step_y = 1
+        elif step_y > 0:
+            step_y = 0.01
+        else:
+            step_y = abs((maximum_y - minimum_y) / 100)
+            step_y = np.log10(step_y)
+            if np.isnan(step_y) or np.isinf(step_y):
+                step_y = 0.01
+            else:
+                step_y = 10 ** np.floor(step_y)
 
         color_scale_visibility_x += [imaging.ImagingDataSetControlVisibility(
             "Channel X",
@@ -590,6 +711,147 @@ def demo_dat_flow(openbis, folder_path, permId=None):
     update_image_with_preview(openbis, perm_id, 0, preview)
 
 
+######## TODO test this
+def get_1D_measurement_props(full_dat_filepath):
+    pass
+
+def get_2D_measurement_props(full_sxm_filepath):
+    img = spm(full_sxm_filepath)
+    properties = {
+        "$name": full_sxm_filepath.split("/")[-1],
+        "start_time": datetime.strptime(f"{img.header['rec_date']} {img.header['rec_time']}", "%d.%m.%Y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S"),
+        "duration": json.dumps({"has_value": float(img.header["acq_time"]), "has_unit": "http://qudt.org/vocab/unit/SEC"}),
+    }
+    if "bias>bias (v)" in img.header:
+        properties["bias_setpoint"] = json.dumps({"has_value": float(img.header["bias>bias (v)"]), "has_unit": "http://qudt.org/vocab/unit/V"})
+
+    if "current>current (a)" in img.header:
+        properties["current_setpoint"] = json.dumps({"has_value": float(img.header["current>current (a)"]), "has_unit": "http://qudt.org/vocab/unit/A"})
+
+    return properties
+
+def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid, sample_permid, measurements_permid, instrument_permid = None):
+    o = get_instance(openbis_url)
+
+    measurement_files = [f for f in os.listdir(data_folder)]
+    production = True
+
+    if production:
+        readable_measurement_files = []
+        measurement_datetimes = []
+        # Check measurement files and measurement datetimes
+        for f in measurement_files:
+            if f.endswith(".sxm"):
+                img = spm(f"{data_folder}/{f}")
+                img_datetime = datetime.strptime(f"{img.header['rec_date']} {img.header['rec_time']}", "%d.%m.%Y %H:%M:%S")
+                readable_measurement_files.append(f)
+                measurement_datetimes.append(img_datetime)
+
+            elif f.endswith(".dat"):
+                img = spm(f"{data_folder}/{f}")
+                if "Saved Date" in img.header:
+                    img_datetime = datetime.strptime(img.header['Saved Date'], "%d.%m.%Y %H:%M:%S")
+                else:
+                    img_datetime = datetime.strptime(img.header['Date'], "%d.%m.%Y %H:%M:%S")
+                readable_measurement_files.append(f)
+                measurement_datetimes.append(img_datetime)
+
+        # Sort files by datetime first, then filename
+        paired = list(zip(measurement_datetimes, readable_measurement_files))
+        paired.sort(key=lambda x: (x[0], x[1]))
+
+        # Extract filenames in sorted order
+        sorted_measurement_files = [filename for _, filename in paired]
+
+        # Dat files belonging to the same measurement session, i.e., that are consecutive, should be grouped into just one list of files, except when they do not have the same channels.
+        grouped_measurement_files = []
+        group = []
+        for i,f in enumerate(sorted_measurement_files):
+            if f.endswith(".sxm"):
+                if len(group) > 0:
+                    grouped_measurement_files.append(group)
+                    group = []
+                grouped_measurement_files.append([f])
+            elif f.endswith(".dat"):
+                # If the files contain different channels, they must be separated even if they are from a sequence that was taken sequentally with no SXM file in between.
+                f_img = spm(f"{data_folder}/{f}")
+                files_with_different_channels = False
+
+                for file in group:
+                    img = spm(f"{data_folder}/{file}")
+                    if img.channels != f_img.channels:
+                        files_with_different_channels = True
+                        break
+
+                if files_with_different_channels:
+                    grouped_measurement_files.append(group)
+                    group = [f]
+                else:
+                    group.append(f)
+
+        if len(group) > 0:
+            grouped_measurement_files.append(group)
+            group = []
+
+        if collection_permid:
+            for group in grouped_measurement_files:
+                measurement_parents = [sample_permid, measurements_permid]
+                if instrument_permid:
+                    measurement_parents.append(instrument_permid)
+                if group[0].endswith(".sxm"):
+                    print(f"SXM file: {group[0]}")
+                    twoD_measurement_sample = o.new_sample(
+                        type = "2D_MEASUREMENT",
+                        experiment = collection_permid,
+                        props = get_2D_measurement_props(os.path.join(data_folder, group[0])),
+                        parents = measurement_parents
+                    )
+                    twoD_measurement_sample.save()
+                    file_path = os.path.join(data_folder, group[0])
+                    demo_sxm_flow(o, file_path, collection_permid, twoD_measurement_sample.permId)
+                    # try:
+                    #     demo_sxm_flow(o, file_path, collection_permid, twoD_measurement_sample.permId)
+                    # except:
+                    #     print(f"Cannot upload {group[0]}.")
+                else:
+
+                    # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
+                    dat_files_types = []
+                    for dat_file in group:
+                        dat_data = spm(f"{data_folder}/{dat_file}")
+                        dat_files_types.append(get_dat_type(dat_data.header))
+
+                    grouped = defaultdict(list)
+
+                    for item1, item2 in zip(group, dat_files_types):
+                        grouped[item2].append(item1)
+
+                    dat_files_grouped_by_type = list(grouped.values())
+                    # ---------------
+
+                    for dat_files_group in dat_files_grouped_by_type:
+                        oneD_measurement_sample = o.new_sample(
+                            type = "1D_MEASUREMENT",
+                            experiment = collection_permid,
+                            props = {"$name": "Experimental 1D Measurement"},
+                            parents = measurement_parents
+                        )
+                        oneD_measurement_sample.save()
+
+                        dat_files_directory = os.path.join(data_folder, "dat_files")
+                        os.mkdir(dat_files_directory)
+
+                        for dat_file in dat_files_group:
+                            shutil.copy(os.path.join(data_folder, dat_file), os.path.join(dat_files_directory, dat_file))
+
+                        demo_dat_flow(o, dat_files_directory, collection_permid, oneD_measurement_sample.permId)
+
+                        shutil.rmtree(dat_files_directory)
+
+        o.logout()
+########## END TODO
+
+
 openbis_url = None
 data_folder = 'data'
 
@@ -639,8 +901,8 @@ if len(group) > 0:
     grouped_measurement_files.append(group)
     group = []
 
-IMPORT = True
-# IMPORT = False
+# IMPORT = True
+IMPORT = False
 
 if IMPORT:
     for group in grouped_measurement_files:

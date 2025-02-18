@@ -79,7 +79,6 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
             String spectraLocator = previewConfig.get("spectraLocator").toString().trim().toUpperCase();
             if("TRUE".equals(spectraLocator))
             {
-                //TODO spectra locator file logic
                 String objId = previewConfig.get("objId").toString();
                 String sxmPermId = previewConfig.get("sxmPermId").toString();
                 previewConfig.get("sxmFilePath");

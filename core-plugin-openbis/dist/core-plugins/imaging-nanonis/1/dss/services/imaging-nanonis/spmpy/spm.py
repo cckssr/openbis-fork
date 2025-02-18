@@ -653,6 +653,7 @@ class Spm:
 
             ### >>>> PREMISE - specific modifications
             fig = plt.figure()
+            # fig = plt.gcf()
             ### ---- PREMISE - specific modifications
             # fig = plt.figure(figsize=(7, 8))
 
