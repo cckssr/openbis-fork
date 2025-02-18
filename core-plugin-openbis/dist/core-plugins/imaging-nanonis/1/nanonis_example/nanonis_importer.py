@@ -901,8 +901,8 @@ if len(group) > 0:
     grouped_measurement_files.append(group)
     group = []
 
-# IMPORT = True
-IMPORT = False
+IMPORT = True
+# IMPORT = False
 
 if IMPORT:
     for group in grouped_measurement_files:
