@@ -209,10 +209,12 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
         operationLog.info("Archiving of the following datasets has been requested: " + dataSetsDescription);
 
-        ProcessingStatus checkStatus = checkDSSDataSetsOnly(datasets);
-        if (!checkStatus.getErrorStatuses().isEmpty())
+        try
         {
-            return checkStatus;
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
         }
 
         pauseStarting(dataSetsDescription, "archiving");
@@ -425,10 +427,12 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
         operationLog.info("Unarchiving of the following datasets has been requested: " + dataSetsDescription);
 
-        ProcessingStatus checkStatus = checkDSSDataSetsOnly(datasets);
-        if (!checkStatus.getErrorStatuses().isEmpty())
+        try
         {
-            return checkStatus;
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
         }
 
         pauseStarting(dataSetsDescription, "unarchiving");
@@ -501,10 +505,12 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
         operationLog.info("Deletion from archive of the following datasets has been requested: " + dataSetsDescription);
 
-        ProcessingStatus checkStatus = checkDSSDataSetsOnly(datasets);
-        if (!checkStatus.getErrorStatuses().isEmpty())
+        try
         {
-            return checkStatus;
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
         }
 
         DatasetProcessingStatuses status = doDeleteFromArchive(datasets);
@@ -538,49 +544,74 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         }
     }
 
-    private ProcessingStatus checkDSSDataSetsOnly(final List<? extends IDatasetLocation> datasets)
+    private <T extends IDatasetLocation> List<T> filterDSSDataOnly(final List<T> datasets) throws FilterDSSDataOnlyException
     {
-        ProcessingStatus status = new ProcessingStatus();
-
-        if (datasets != null)
+        if (datasets == null || datasets.isEmpty())
         {
-            List<String> datasetsWithoutDataStore = new ArrayList<>();
-            List<String> datasetsWithAFSDataStore = new ArrayList<>();
+            return datasets;
+        }
 
-            for (IDatasetLocation dataset : datasets)
+        List<String> datasetsWithoutDataStore = new ArrayList<>();
+        List<String> datasetsWithAFSDataStore = new ArrayList<>();
+        List<T> dssOnlyDatasets = new ArrayList<>();
+
+        for (T dataset : datasets)
+        {
+            if (dataset != null)
             {
-                if (dataset != null)
+                if (dataset.getDataStoreCode() == null || dataset.getDataStoreCode().isBlank())
                 {
-                    if (dataset.getDataStoreCode() == null || dataset.getDataStoreCode().isBlank())
-                    {
-                        status.addDatasetStatus(dataset.getDataSetCode(),
-                                Status.createError("Data set " + dataset.getDataSetCode() + " has data store code null or empty."));
-                        datasetsWithoutDataStore.add(dataset.getDataSetCode());
-                    } else if (dataset.getDataStoreCode().equals(Constants.AFS_DATA_STORE_CODE))
-                    {
-                        status.addDatasetStatus(dataset.getDataSetCode(),
-                                Status.createError("Data set " + dataset.getDataSetCode() + " was created by " + Constants.AFS_DATA_STORE_CODE
-                                        + " data store, therefore it cannot be manipulated by DSS archiver."));
-                        datasetsWithAFSDataStore.add(dataset.getDataSetCode());
-                    }
+                    datasetsWithoutDataStore.add(dataset.getDataSetCode());
+                } else if (dataset.getDataStoreCode().equals(Constants.AFS_DATA_STORE_CODE))
+                {
+                    datasetsWithAFSDataStore.add(dataset.getDataSetCode());
+                } else
+                {
+                    dssOnlyDatasets.add(dataset);
                 }
-            }
-
-            if (!datasetsWithoutDataStore.isEmpty())
-            {
-                operationLog.error("Data sets " + CollectionUtils.abbreviate(datasetsWithoutDataStore, 10)
-                        + " have data store code null or empty.");
-            }
-
-            if (!datasetsWithAFSDataStore.isEmpty())
-            {
-                operationLog.error("Data sets " + CollectionUtils.abbreviate(datasetsWithAFSDataStore, 10)
-                        + " were created by " + Constants.AFS_DATA_STORE_CODE
-                        + " data store, therefore they cannot be manipulated by DSS archiver.");
             }
         }
 
-        return status;
+        if (!datasetsWithoutDataStore.isEmpty())
+        {
+            ProcessingStatus processingStatus = new ProcessingStatus();
+
+            for (String dataSetCode : datasetsWithoutDataStore)
+            {
+                processingStatus.addDatasetStatus(dataSetCode,
+                        Status.createError("Data set " + dataSetCode + " has data store code null or empty."));
+            }
+
+            operationLog.error("Data sets " + CollectionUtils.abbreviate(datasetsWithoutDataStore, 10)
+                    + " have data store code null or empty.");
+
+            throw new FilterDSSDataOnlyException(processingStatus);
+        }
+
+        if (!datasetsWithAFSDataStore.isEmpty())
+        {
+            operationLog.info("Data sets " + CollectionUtils.abbreviate(datasetsWithAFSDataStore, 10)
+                    + " were created by " + Constants.AFS_DATA_STORE_CODE
+                    + " data store. They will be ignored by the archiver.");
+        }
+
+        return dssOnlyDatasets;
+    }
+
+    private static class FilterDSSDataOnlyException extends Exception
+    {
+
+        private final ProcessingStatus status;
+
+        public FilterDSSDataOnlyException(ProcessingStatus status)
+        {
+            this.status = status;
+        }
+
+        public ProcessingStatus getStatus()
+        {
+            return status;
+        }
     }
 
     protected static enum Operation

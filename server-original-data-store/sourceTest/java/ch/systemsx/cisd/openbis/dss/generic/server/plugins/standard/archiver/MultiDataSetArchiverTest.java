@@ -1183,21 +1183,17 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     }
 
     @Test
-    public void testArchiveDataSetsFromAFS()
+    public void testArchiveDataSetsWithNullDataStore()
     {
         DatasetDescription ds3 = new DatasetDescription();
         ds3.setDataSetCode("ds3");
-        ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
-
-        DatasetDescription ds4 = new DatasetDescription();
-        ds4.setDataSetCode("ds4");
-        ds4.setDataStoreCode(null);
+        ds3.setDataStoreCode(null);
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds3, ds4), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds3), archiverContext, false);
 
         assertEquals(
-                "[ERROR: \"Data set ds3 was created by AFS data store, therefore it cannot be manipulated by DSS archiver.\", ERROR: \"Data set ds4 has data store code null or empty.\"]",
+                "[ERROR: \"Data set ds3 has data store code null or empty.\"]",
                 status.getErrorStatuses().toString());
         assertEquals("", statusUpdater.toString());
         assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
@@ -1206,21 +1202,34 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     }
 
     @Test
-    public void testUnarchiveDataSetsFromAFS()
+    public void testArchiveDataSetsWithAFSDataStore()
     {
         DatasetDescription ds3 = new DatasetDescription();
         ds3.setDataSetCode("ds3");
         ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
 
-        DatasetDescription ds4 = new DatasetDescription();
-        ds4.setDataSetCode("ds4");
-        ds4.setDataStoreCode(null);
+        MultiDataSetArchiver archiver = createArchiver(null);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds3), archiverContext, false);
+
+        assertEquals("[]", status.getErrorStatuses().toString());
+        assertEquals("", statusUpdater.toString());
+        assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
+        assertEquals("[]", cleaner.toString());
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testUnarchiveDataSetsWithNullDataStore()
+    {
+        DatasetDescription ds3 = new DatasetDescription();
+        ds3.setDataSetCode("ds3");
+        ds3.setDataStoreCode(null);
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds3, ds4), archiverContext);
+        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds3), archiverContext);
 
         assertEquals(
-                "[ERROR: \"Data set ds3 was created by AFS data store, therefore it cannot be manipulated by DSS archiver.\", ERROR: \"Data set ds4 has data store code null or empty.\"]",
+                "[ERROR: \"Data set ds3 has data store code null or empty.\"]",
                 status.getErrorStatuses().toString());
         assertEquals("", statusUpdater.toString());
         assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
@@ -1229,22 +1238,52 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     }
 
     @Test
-    public void testDeleteDataSetsFromAFS()
+    public void testUnarchiveDataSetsWithAFSDataStore()
+    {
+        DatasetDescription ds3 = new DatasetDescription();
+        ds3.setDataSetCode("ds3");
+        ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
+
+        MultiDataSetArchiver archiver = createArchiver(null);
+        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds3), archiverContext);
+
+        assertEquals("[]", status.getErrorStatuses().toString());
+        assertEquals("", statusUpdater.toString());
+        assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
+        assertEquals("[]", cleaner.toString());
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testDeleteDataSetsWithNullDataStore()
+    {
+        DatasetLocation ds3 = new DatasetLocation();
+        ds3.setDatasetCode("ds3");
+        ds3.setDataStoreCode(null);
+
+        MultiDataSetArchiver archiver = createArchiver(null);
+        ProcessingStatus status = archiver.deleteFromArchive(Arrays.asList(ds3));
+
+        assertEquals(
+                "[ERROR: \"Data set ds3 has data store code null or empty.\"]",
+                status.getErrorStatuses().toString());
+        assertEquals("", statusUpdater.toString());
+        assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
+        assertEquals("[]", cleaner.toString());
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testDeleteDataSetsWithAFSDataStore()
     {
         DatasetLocation ds3 = new DatasetLocation();
         ds3.setDatasetCode("ds3");
         ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
 
-        DatasetLocation ds4 = new DatasetLocation();
-        ds4.setDatasetCode("ds4");
-        ds4.setDataStoreCode(null);
-
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.deleteFromArchive(Arrays.asList(ds3, ds4));
+        ProcessingStatus status = archiver.deleteFromArchive(Arrays.asList(ds3));
 
-        assertEquals(
-                "[ERROR: \"Data set ds3 was created by AFS data store, therefore it cannot be manipulated by DSS archiver.\", ERROR: \"Data set ds4 has data store code null or empty.\"]",
-                status.getErrorStatuses().toString());
+        assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("", statusUpdater.toString());
         assertEquals("Containers:\nData sets:\ncommitted: false, rolledBack: false", transaction.toString());
         assertEquals("[]", cleaner.toString());
