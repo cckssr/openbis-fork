@@ -19,13 +19,13 @@ import FilterSelector from '@src/js/components/common/imaging/components/viewer/
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles(theme => ({
-    scrollableTab: {
-      padding: '0',
-      maxHeight: '60vh'
-    },
-    overflowAuto: {
-      overflow: 'auto'
-    }
+  scrollableTab: {
+    padding: '0',
+    maxHeight: '60vh'
+  },
+  overflowAuto: {
+    overflow: 'auto'
+  }
 }));
 
 const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, configResolutions }) => {
@@ -41,7 +41,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview } = useImagingDataContext();
+    handleShowPreview, handleOnApplyFilter } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType } = state;
 
@@ -141,15 +141,35 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
     return sectionsArray;
   }
 
-  const onApplyFilter = (filterHistory) => {
+  const trasformHistoryToFilterConfig = (filterHistory) => {
     console.log(filterHistory);
+    return filterHistory.map(item => {
+      const values = item.values.map(v => Array.isArray(v.value) ? v.value.map(String) : [String(v.value)]).flat();
+      return { [item.filter]: values };
+    });
+  }
+
+  function transformFilterConfigToHistory(output) {
+    return output.map(item => {
+        const filter = Object.keys(item)[0];
+        const values = item[filter].map(value => ({ label: "", value: isNaN(value) ? value : Number(value) }));
+        return { filter, values };
+    });
+}
+
+  const onApplyFilter = (filterHistory) => {
+    const updatedFilterConfig = trasformHistoryToFilterConfig(filterHistory);
+    console.log(updatedFilterConfig);
+    console.log(transformFilterConfigToHistory(updatedFilterConfig));
+    handleOnApplyFilter(updatedFilterConfig);
   }
 
   const inputValues = createInitValues(configInputs, activePreview.config);
   activePreview.config = inputValues;
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
-
+  const currentFilterConfig = activePreview.filterConfig;
+  console.log(currentFilterConfig);
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
 

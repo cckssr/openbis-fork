@@ -87,6 +87,10 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         }
     };
 
+    const handleOnApplyFilter = () => {
+
+    }
+
     const handleUpdate = async () => {
         handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = state;
@@ -267,7 +271,8 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     return (
         <ImagingDataContext.Provider value={{
             state, handleOpen, handleError, handleErrorCancel,
-            saveDataset, handleUpdate, onExport, deletePreview,
+            saveDataset, handleOnApplyFilter, 
+            handleUpdate, onExport, deletePreview,
             handleActiveImageChange, handleActivePreviewChange,
             onMove, handleEditComment, handleTagImage,
             handleResolutionChange, handleActiveConfigChange,

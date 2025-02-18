@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IconButton, Typography, List, ListItem, ListItemText, Divider, Grid2 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import Button from '@src/js/components/common/form/Button.jsx'
@@ -108,9 +108,9 @@ const FilterSelector = ({ configFilters, onApplyFilter }) => {
 						<List sx={{ height: '68%', overflow: 'auto' }}>
 							{history.map((item, index) => (
 								<ListItem key={index} secondaryAction={
-									<IconButton edge='end' onClick={() => removeFromHistory(index)} color='secondary'>
-										<RemoveIcon />
-									</IconButton>
+									<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
+										<DeleteIcon />
+									</IconButton>	
 								}>
 									<ListItemText primary={`${item.filter} - ${item.values.map(v => `${v.label}: ${v.value}`).join(', ')}`} />
 								</ListItem>
