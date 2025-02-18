@@ -255,6 +255,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
     private DatasetDescription ds2;
 
+    private DatasetDescription afsDataSet;
+
     private File store;
 
     private File share;
@@ -326,6 +328,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         replicate.mkdirs();
         ds1 = dataSet("ds1", "0123456789");
         ds2 = dataSet("ds2", "01234567890123456789");
+        afsDataSet = dataSet("afsDataSet", "0123");
+        afsDataSet.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
         properties = new Properties();
         properties.setProperty(STAGING_DESTINATION_KEY, staging.getAbsolutePath());
         properties.setProperty(FINAL_DESTINATION_KEY, archive.getAbsolutePath());
@@ -374,7 +378,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "35");
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, false);
 
         assertEquals("[ERROR: \"Set of data sets specified for archiving is too small (30 bytes) "
                         + "to be archived with multi dataset archiver because minimum size is 35 bytes.\"]",
@@ -394,7 +398,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MAXIMUM_CONTAINER_SIZE_IN_BYTES, "27");
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, false);
 
         assertEquals("[ERROR: \"Set of data sets specified for archiving is too big (30 bytes) "
                         + "to be archived with multi dataset archiver because maximum size is 27 bytes.\"]",
@@ -416,10 +420,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MultiDataSetFileOperationsManager.WAITING_FOR_FREE_SPACE_POLLING_TIME_KEY, "2 min");
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -496,10 +501,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         });
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, true);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, true);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -582,10 +588,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         });
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, true);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, true);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -677,10 +684,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(HDF5_FILES_IN_DATA_SET, "false");
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, false);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Condition fulfilled after 1sec, condition: "
                         + "Free space: 20.00 GB, needed space: 1.00 GB\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
@@ -756,10 +764,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         transaction.commit();
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds2']",
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n",
                 getLogContent());
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("[]", Arrays.asList(staging.list()).toString());
@@ -786,10 +795,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         assertEquals(true, new File(share, ds2.getDataSetCode()).exists());
 
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, true);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, true);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
                         + staging.getAbsolutePath() + "/ds1-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 397 bytes in 2 chunks took < 1sec.\n"
@@ -858,7 +868,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         prepareFileOperationsDelete(containerPath);
 
         MultiDataSetArchiver archiver = createArchiver(fileOperations);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
         assertEquals("[ERROR: \"Couldn't create archive file 123-456.tar. Reason: Failed\"]",
                 status.getErrorStatuses().toString());
@@ -883,7 +893,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         // When
         MultiDataSetArchiver archiver = createArchiver(fileOperations);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
         // Then
         String errorMessage = String.join("\n- ", errorMessages);
@@ -949,7 +959,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         prepareFileOperationsDelete(containerPath);
 
         MultiDataSetArchiver archiver = createArchiver(fileOperations);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds2), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
         assertEquals("[ERROR: \"Couldn't create archive file 123-456.tar. Reason: Failed\"]",
                 status.getErrorStatuses().toString());
@@ -973,9 +983,10 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         prepareFixedFreeSpace(35 * FileUtils.ONE_GB);
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2), archiverContext, true);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, true);
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - Starts consistency check between data store and pathinfo database for [Dataset 'ds1', Dataset 'ds2']\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - Consistency check finished.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
@@ -1007,10 +1018,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         prepareNotifyDataSetAccess(ds1.getDataSetCode(), ds2.getDataSetCode());
 
-        status = archiver.unarchive(Arrays.asList(ds1, ds2), archiverContext);
+        status = archiver.unarchive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
-                + "has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                + "has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Free space on unarchiving scratch share '1': "
                 + "34.00 GB, requested space for unarchiving 2 data sets: 30.00 GB\n", getFilteredLogContent());
         assertEquals("[ds1, ds2]: ARCHIVED true\n[ds1, ds2]: AVAILABLE true\n", statusUpdater.toString());
@@ -1034,10 +1046,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiver archiver = createArchiver(null);
 
-        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds1, ds2), archiverContext);
+        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
-                + "has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
+                + "has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Unarchiving delayed\n", getFilteredLogContent());
         assertEquals("", statusUpdater.toString());
         assertEquals("[]", status.getErrorStatuses().toString());
@@ -1056,9 +1069,10 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MultiDataSetArchiver.DELAY_UNARCHIVING, "true");
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "5");
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds1), archiverContext, true);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds1, afsDataSet), archiverContext, true);
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
-                        + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
                         + staging.getAbsolutePath() + "/ds1-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 397 bytes in 2 chunks took < 1sec.\n"
@@ -1085,10 +1099,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         prepareNotifyDataSetAccess(ds1.getDataSetCode());
 
-        status = archiver.unarchive(Arrays.asList(ds1), archiverContext);
+        status = archiver.unarchive(Arrays.asList(ds1, afsDataSet), archiverContext);
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
-                + "has been requested: [Dataset 'ds1']\n"
+                + "has been requested: [Dataset 'ds1', Dataset 'afsDataSet']\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Free space on unarchiving scratch share '1': "
                 + "34.00 GB, requested space for unarchiving 1 data sets: 10.00 GB\n", getFilteredLogContent());
         assertEquals("[ds1]: ARCHIVED true\n[ds1]: AVAILABLE true\n", statusUpdater.toString());
@@ -1111,7 +1126,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiver archiver = createArchiver(null);
 
-        archiver.unarchive(Arrays.asList(ds1, ds2), archiverContext);
+        archiver.unarchive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext);
         assertEquals("[]", cleaner.toString());
         context.assertIsSatisfied();
     }
@@ -1204,12 +1219,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     @Test
     public void testArchiveDataSetsWithAFSDataStore()
     {
-        DatasetDescription ds3 = new DatasetDescription();
-        ds3.setDataSetCode("ds3");
-        ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
-
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.archive(Arrays.asList(ds3), archiverContext, false);
+        ProcessingStatus status = archiver.archive(Arrays.asList(afsDataSet), archiverContext, false);
 
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("", statusUpdater.toString());
@@ -1240,12 +1251,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     @Test
     public void testUnarchiveDataSetsWithAFSDataStore()
     {
-        DatasetDescription ds3 = new DatasetDescription();
-        ds3.setDataSetCode("ds3");
-        ds3.setDataStoreCode(Constants.AFS_DATA_STORE_CODE);
-
         MultiDataSetArchiver archiver = createArchiver(null);
-        ProcessingStatus status = archiver.unarchive(Arrays.asList(ds3), archiverContext);
+        ProcessingStatus status = archiver.unarchive(Arrays.asList(afsDataSet), archiverContext);
 
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("", statusUpdater.toString());
