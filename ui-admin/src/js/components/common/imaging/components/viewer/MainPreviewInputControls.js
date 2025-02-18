@@ -24,7 +24,8 @@ const useStyles = makeStyles(theme => ({
     maxHeight: '60vh'
   },
   overflowAuto: {
-    overflow: 'auto'
+    overflowY: 'auto',
+    overflowX: 'hidden'
   }
 }));
 
@@ -41,7 +42,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, handleOnApplyFilter } = useImagingDataContext();
+    handleShowPreview, handleOnAddFilter } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType } = state;
 
@@ -141,35 +142,39 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
     return sectionsArray;
   }
 
-  const trasformHistoryToFilterConfig = (filterHistory) => {
-    console.log(filterHistory);
-    return filterHistory.map(item => {
-      const values = item.values.map(v => Array.isArray(v.value) ? v.value.map(String) : [String(v.value)]).flat();
-      return { [item.filter]: values };
+  function transformArray(arr) {
+    return arr.map(obj => {
+      const newObj = { ...obj };
+  
+      if (newObj.parameters) {
+        const newParameters = {};
+        for (const key in newObj.parameters) {
+          if (newObj.parameters.hasOwnProperty(key)) {
+            const value = newObj.parameters[key];
+            if (Array.isArray(value) && value.length === 1) {
+              newParameters[key] = value[0];
+            } else {
+              newParameters[key] = value; 
+            }
+          }
+        }
+        newObj.parameters = newParameters;
+      }
+  
+      return newObj;
     });
   }
 
-  function transformFilterConfigToHistory(output) {
-    return output.map(item => {
-        const filter = Object.keys(item)[0];
-        const values = item[filter].map(value => ({ label: "", value: isNaN(value) ? value : Number(value) }));
-        return { filter, values };
-    });
-}
-
-  const onApplyFilter = (filterHistory) => {
-    const updatedFilterConfig = trasformHistoryToFilterConfig(filterHistory);
-    console.log(updatedFilterConfig);
-    console.log(transformFilterConfigToHistory(updatedFilterConfig));
-    handleOnApplyFilter(updatedFilterConfig);
+  const onAddFilter = (filterHistory) => {
+    const updatedFilterConfig = transformArray(filterHistory);
+    handleOnAddFilter(updatedFilterConfig);
   }
 
   const inputValues = createInitValues(configInputs, activePreview.config);
   activePreview.config = inputValues;
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
-  const currentFilterConfig = activePreview.filterConfig;
-  console.log(currentFilterConfig);
+
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
 
@@ -193,7 +198,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
             </Grid2>
           </TabPanel>
           <TabPanel className={classes.scrollableTab} value='2'>
-            <FilterSelector configFilters={configFilters} onApplyFilter={onApplyFilter} />
+            <FilterSelector configFilters={configFilters} onAddFilter={onAddFilter} historyFilters={activePreview.filterConfig} />
           </TabPanel>
         </TabContext>
       </Grid2>
