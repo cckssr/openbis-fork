@@ -28,6 +28,8 @@ from spmpy_terry import spm   # <--- class spm defines objects of type spm with 
 import spmpy_terry as spmpy   # <--- spmpy has other methods
 from datetime import datetime
 
+import spiepy
+
 import matplotlib.pyplot as plt
 # %matplotlib inline
 
