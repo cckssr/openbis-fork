@@ -105,6 +105,7 @@ public class DeleteFromArchiveMaintenanceTask extends
         DatasetLocation dsLocation = new DatasetLocation();
         dsLocation.setDatasetCode(deletedDS.getIdentifier());
         dsLocation.setDataSetLocation(deletedDS.getLocationOrNull());
+        dsLocation.setDataStoreCode(deletedDS.getDatastoreCodeOrNull());
         return dsLocation;
     }
 }

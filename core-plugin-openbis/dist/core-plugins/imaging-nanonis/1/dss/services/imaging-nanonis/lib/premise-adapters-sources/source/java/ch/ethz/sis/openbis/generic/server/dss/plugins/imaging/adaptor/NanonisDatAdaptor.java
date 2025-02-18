@@ -17,15 +17,30 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
+
+import java.io.File;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
 {
     static final String DAT_SCRIPT_PROPERTY = "nanonis.dat-script-path";
 
+    private IHierarchicalContentProvider contentProvider;
 
     public NanonisDatAdaptor(Properties properties)
     {
@@ -43,6 +58,67 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
         }
         this.scriptPath = script.toString();
         this.pythonPath = properties.getProperty("python3-path", "python3");
+    }
+
+    @Override
+    public void computePreview(ImagingServiceContext context, File rootFile,
+            ImagingDataSetImage image, ImagingDataSetPreview preview)
+    {
+        super.computePreview(context, rootFile, image, preview);
+    }
+
+    @Override
+    public Map<String, Serializable> process(ImagingServiceContext context, File rootFile, String format,
+            Map<String, Serializable> imageConfig,
+            Map<String, Serializable> imageMetadata,
+            Map<String, Serializable> previewConfig,
+            Map<String, Serializable> previewMetadata,
+            List<ImagingDataSetFilter> filterConfig)
+    {
+        if(previewConfig != null && previewConfig.containsKey("spectraLocator") && previewConfig.get("spectraLocator") != null) {
+            String spectraLocator = previewConfig.get("spectraLocator").toString().trim().toUpperCase();
+            if("TRUE".equals(spectraLocator))
+            {
+                //TODO spectra locator file logic
+                String objId = previewConfig.get("objId").toString();
+                String sxmPermId = previewConfig.get("sxmPermId").toString();
+                previewConfig.get("sxmFilePath");
+
+                if (sxmPermId != null && !sxmPermId.trim().isEmpty())
+                {
+                    if (sxmPermId.equals(objId))
+                    {
+                        previewConfig.put("sxmRootPath", rootFile.getAbsolutePath());
+                    } else
+                    {
+                        File sxmFile = getRootFile(context.getSessionToken(), sxmPermId);
+                        previewConfig.put("sxmRootPath", sxmFile.getAbsolutePath());
+                    }
+
+                }
+            }
+
+        }
+        return super.process(context, rootFile, format, imageConfig, imageMetadata, previewConfig, previewMetadata, filterConfig);
+    }
+
+    private IHierarchicalContentProvider getHierarchicalContentProvider(String sessionToken)
+    {
+        if (contentProvider == null)
+        {
+            contentProvider = ServiceProvider.getHierarchicalContentProvider();
+        }
+        OpenBISSessionHolder sessionTokenHolder = new OpenBISSessionHolder();
+        sessionTokenHolder.setSessionToken(sessionToken);
+        return contentProvider.cloneFor(sessionTokenHolder);
+    }
+
+    private File getRootFile(String sessionToken, String permId)
+    {
+        IHierarchicalContent content =
+                getHierarchicalContentProvider(sessionToken).asContent(permId);
+        IHierarchicalContentNode root = content.getRootNode();
+        return root.getFile();
     }
 
 }
