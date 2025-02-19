@@ -66,6 +66,27 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
         return
 
 
+class ImagingDataSetFilter(AbstractImagingClass):
+    name: str
+    parameters: dict
+
+    def __init__(self, name, parameters=None):
+        self.__dict__["@type"] = "imaging.dto.ImagingDataSetFilter"
+        self.name = name
+        self.parameters = parameters if parameters is not None else dict()
+
+    @classmethod
+    def from_dict(cls, data):
+        if data is None:
+            return None
+        if "@id" in data:
+            del data["@id"]
+        imaging_filter = cls('', None)
+        for prop in cls.__annotations__.keys():
+            attribute = data.get(prop)
+            imaging_filter.__dict__[prop] = attribute
+        return imaging_filter
+
 class ImagingDataSetPreview(AbstractImagingRequest):
     config: dict
     format: str
@@ -77,8 +98,9 @@ class ImagingDataSetPreview(AbstractImagingRequest):
     metadata: dict
     comment: str
     tags: list
+    filterConfig: list
 
-    def __init__(self, preview_format, config=None, metadata=None, index=0, comment="", tags=[]):
+    def __init__(self, preview_format, config=None, metadata=None, index=0, comment="", tags=[], filterConfig=[]):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetPreview"
         self.bytes = None
         self.format = preview_format
@@ -86,7 +108,8 @@ class ImagingDataSetPreview(AbstractImagingRequest):
         self.metadata = metadata if metadata is not None else dict()
         self.index = index
         self.comment = comment
-        self.tags = tags
+        self.tags = tags if tags is not None else []
+        self.filterConfig = filterConfig if filterConfig is not None else []
         self._validate_data()
 
     def set_preview_image_bytes(self, width, height, bytes):
@@ -275,10 +298,11 @@ class ImagingDataSetConfig(AbstractImagingClass):
     exports: list[ImagingDataSetControl]
     inputs: list[ImagingDataSetControl]
     metadata: dict
+    filters: dict
 
     def __init__(self, adaptor: str, version: float, resolutions: list[str], playable: bool,
                  speeds: list[int] = None, exports: list[ImagingDataSetControl] = None,
-                 inputs: list[ImagingDataSetControl] = None, metadata: dict = None):
+                 inputs: list[ImagingDataSetControl] = None, metadata: dict = None, filters: dict = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetConfig"
         self.adaptor = adaptor
         self.version = version
@@ -288,7 +312,8 @@ class ImagingDataSetConfig(AbstractImagingClass):
             self.speeds = speeds
         self.exports = exports
         self.inputs = inputs
-        self.metadata = metadata
+        self.metadata = metadata if metadata is not None else dict()
+        self.filters = filters if filters is not None else dict()
 
     @classmethod
     def from_dict(cls, data):
@@ -299,8 +324,14 @@ class ImagingDataSetConfig(AbstractImagingClass):
         config = cls(None, None, None, None)
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
-            if prop in ['exports', 'inputs'] and attribute is not None:
-                attribute = [ImagingDataSetControl.from_dict(control) for control in attribute]
+            if attribute is not None:
+                if prop in ['exports', 'inputs']:
+                    attribute = [ImagingDataSetControl.from_dict(control) for control in attribute]
+                elif prop in ['filters']:
+                    filters = {}
+                    for attr in attribute:
+                        filters[attr] = [ImagingDataSetControl.from_dict(control) for control in attribute[attr]]
+                    attribute = filters
             config.__dict__[prop] = attribute
         return config
 
@@ -308,15 +339,15 @@ class ImagingDataSetConfig(AbstractImagingClass):
 class ImagingDataSetImage(AbstractImagingClass):
     config: ImagingDataSetConfig
     previews: list[ImagingDataSetPreview]
-    image_config: dict
+    imageConfig: dict
     index: int
     metadata: dict
 
-    def __init__(self, config: ImagingDataSetConfig, image_config=None, previews=None, metadata=None, index=0):
+    def __init__(self, config: ImagingDataSetConfig, imageConfig=None, previews=None, metadata=None, index=0):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetImage"
         assert config is not None, "Config must not be None!"
         self.config = config
-        self.image_config = image_config if image_config is not None else dict()
+        self.imageConfig = imageConfig if imageConfig is not None else dict()
         self.previews = previews if previews is not None else [ImagingDataSetPreview("png")]
         self.metadata = metadata if metadata is not None else dict()
         self.index = index if index is not None else 0

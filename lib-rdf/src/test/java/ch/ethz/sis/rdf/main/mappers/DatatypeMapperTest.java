@@ -18,7 +18,7 @@ public class DatatypeMapperTest
     @Before
     public void setUp(){
         String inputFilePath = "src/test/resources/sphn_test_datatype_prop.ttl";
-        model = LoaderRDF.loadOntModel(inputFilePath, "TTL");
+        model = LoaderRDF.loadOntModel(new String[] { inputFilePath }, "TTL");
     }
 
     @Test

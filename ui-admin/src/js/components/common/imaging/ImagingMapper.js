@@ -6,7 +6,7 @@ export default class ImagingMapper{
         this.openbis = extOpenbis;
     }
 
-    getImagingDataSetPreview(config, format, bytes, width, height, index, show, metadata, tags, comment) {
+    getImagingDataSetPreview(config, format, bytes, width, height, index, show, metadata, tags, comment, filterConfig) {
         let imagingDataSetPreview = new this.openbis.ImagingDataSetPreview();
         imagingDataSetPreview.config = config;
         imagingDataSetPreview.format = format;
@@ -18,6 +18,7 @@ export default class ImagingMapper{
         imagingDataSetPreview.metadata = metadata;
         imagingDataSetPreview.tags = tags;
         imagingDataSetPreview.comment = comment;
+        imagingDataSetPreview.filterConfig = filterConfig;
         return imagingDataSetPreview;
     }
 
@@ -33,17 +34,11 @@ export default class ImagingMapper{
         imagingDataSetPreview.metadata = preview.metadata;
         imagingDataSetPreview.tags = preview.tags;
         imagingDataSetPreview.comment = preview.comment;
+        imagingDataSetPreview.filterConfig = preview.filterConfig;
         return imagingDataSetPreview;
     }
 
     mapToImagingUpdateParams(objId, activeImageIdx, preview) {
-        /*let imagingPreviewContainer = new this.openbis.ImagingPreviewContainer();
-        imagingPreviewContainer.type = constants.PREVIEW_TYPE;
-        imagingPreviewContainer.permId = objId;
-        imagingPreviewContainer.error = null;
-        imagingPreviewContainer.index = activeImageIdx;
-        imagingPreviewContainer.preview = this.mapToImagingDataSetPreview(preview)
-        return imagingPreviewContainer;*/
         return {
             "type" : "preview",
             "permId" : objId,

@@ -17,6 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.service.CustomDSSServiceExecutionOptions;
@@ -48,7 +49,7 @@ public class ImagingDataSetJythonAdaptor implements IImagingDataSetAdaptor
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
             Map<String, Serializable> previewMetadata,
-            List<Map<String, String[]>> filterConfig)
+            List<ImagingDataSetFilter> filterConfig)
     {
         CustomDSSServiceExecutionOptions options = new CustomDSSServiceExecutionOptions();
         options.withParameter("sessionToken", context.getSessionToken());

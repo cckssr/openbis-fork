@@ -278,6 +278,16 @@ function MainController(profile) {
                                                                 localReference.changeView(viewName, viewData);
                                                             })
                                                         } else {
+                                                             profile.getHomeSpace(function(homeSpaceCode) {
+                                                                if(homeSpaceCode) {
+                                                                    localReference.sideMenu._browserController.load().then(x => {
+                                                                        if(!localReference.sideMenu.getNodeSetAsRoot()) {
+                                                                            //if it is not rooted
+                                                                            localReference.sideMenu.setSpaceAsRoot(homeSpaceCode);
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
                                                             localReference.changeView(profile.defaultStartView.page, profile.defaultStartView.args);
                                                         }
                                                         
@@ -289,7 +299,7 @@ function MainController(profile) {
 
                                                     });
                                                 };
-                                                
+
                                                 localReference.profile.init(startAppFunc);
                                             });
                                         });

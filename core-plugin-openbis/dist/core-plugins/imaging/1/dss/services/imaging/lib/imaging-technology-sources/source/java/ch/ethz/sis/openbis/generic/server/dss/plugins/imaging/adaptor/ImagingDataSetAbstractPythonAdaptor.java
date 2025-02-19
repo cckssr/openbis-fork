@@ -17,13 +17,18 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
+import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingService;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.Util;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +41,8 @@ import java.util.Map;
 
 public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDataSetAdaptor
 {
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingDataSetAbstractPythonAdaptor.class);
 
     protected String pythonPath;
 
@@ -47,12 +54,12 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
             Map<String, Serializable> previewMetadata,
-            List<Map<String, String[]>> filterConfig)
+            List<ImagingDataSetFilter> filterConfig)
     {
         ProcessBuilder processBuilder = new ProcessBuilder(pythonPath,
                 scriptPath, rootFile.getAbsolutePath(), format, convertMapToJson(imageConfig),
                 convertMapToJson(imageMetadata), convertMapToJson(previewConfig), convertMapToJson(previewMetadata),
-                convertListToJson(filterConfig));
+                convertFilterConfig(filterConfig));
         processBuilder.redirectErrorStream(false);
 
         String fullOutput;
@@ -66,6 +73,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
             {
                 String error =
                         new String(process.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+                logOutput(fullOutput);
                 throw new UserFailureException("Script evaluation failed: " + error);
             }
         } catch (IOException | InterruptedException e)
@@ -77,6 +85,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         {
             throw new UserFailureException("Script produced no results!");
         }
+        logOutput(fullOutput);
         String[] result = fullOutput.split("\n");
         return convertPythonOutput(result[result.length-1]);
     }
@@ -126,16 +135,22 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         }
     }
 
-    private String convertListToJson(List<?> list)
+    private String convertFilterConfig(List<ImagingDataSetFilter> list)
     {
-        List<?> listToConvert = list;
+        List<ImagingDataSetFilter> listToConvert = list;
         if(listToConvert == null) {
             listToConvert = new ArrayList<>();
         }
+
+        List<Map<String, Map<String, Serializable>>> output = new ArrayList<>();
+        for(ImagingDataSetFilter filter : listToConvert) {
+            output.add(Map.of(filter.getName(), filter.getParameters()));
+        }
+
         try
         {
             ObjectMapper objectMapper = new GenericObjectMapper();
-            return objectMapper.writeValueAsString(listToConvert);
+            return objectMapper.writeValueAsString(output);
         } catch (Exception e)
         {
             throw new UserFailureException("Couldn't convert map to string", e);
@@ -149,6 +164,17 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         } catch (Exception e)
         {
             return Map.of("bytes", line);
+        }
+    }
+
+    private void logOutput(String output) {
+        if(output != null && !output.trim().isEmpty()) {
+            String[] lines = output.split("\n");
+            for(String line : lines) {
+                operationLog.info(String.format("Adapter output: '%s'", line));
+            }
+        } else {
+            operationLog.info("Adapter output: empty");
         }
     }
 

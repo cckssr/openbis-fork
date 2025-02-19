@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
@@ -74,7 +76,7 @@ import ch.systemsx.cisd.openbis.generic.shared.translator.SimpleDataSetHelper;
 
 /**
  * The base class for archiving.
- * 
+ *
  * @author Piotr Buczek
  * @author Kaloyan Enimanev
  */
@@ -170,7 +172,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
     /**
      * NOTE: this method is not allowed to throw exception as this will leave data sets in the openBIS database with an inconsistent status.
-     * 
+     *
      * @param removeFromDataStore TODO
      */
     abstract protected DatasetProcessingStatuses doArchive(List<DatasetDescription> datasets,
@@ -206,6 +208,15 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     {
         String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
         operationLog.info("Archiving of the following datasets has been requested: " + dataSetsDescription);
+
+        try
+        {
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
+        }
+
         pauseStarting(dataSetsDescription, "archiving");
 
         DatasetProcessingStatuses finalstatuses = new DatasetProcessingStatuses();
@@ -415,6 +426,15 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     {
         String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
         operationLog.info("Unarchiving of the following datasets has been requested: " + dataSetsDescription);
+
+        try
+        {
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
+        }
+
         pauseStarting(dataSetsDescription, "unarchiving");
         if (delayUnarchiving(datasets, context))
         {
@@ -482,6 +502,17 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     @Override
     public ProcessingStatus deleteFromArchive(List<DatasetLocation> datasets)
     {
+        String dataSetsDescription = CollectionUtils.abbreviate(datasets, 10);
+        operationLog.info("Deletion from archive of the following datasets has been requested: " + dataSetsDescription);
+
+        try
+        {
+            datasets = filterDSSDataOnly(datasets);
+        } catch (FilterDSSDataOnlyException e)
+        {
+            return e.getStatus();
+        }
+
         DatasetProcessingStatuses status = doDeleteFromArchive(datasets);
         return status != null ? status.getProcessingStatus() : null;
     }
@@ -510,6 +541,76 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         } else
         {
             return Status.OK;
+        }
+    }
+
+    private <T extends IDatasetLocation> List<T> filterDSSDataOnly(final List<T> datasets) throws FilterDSSDataOnlyException
+    {
+        if (datasets == null || datasets.isEmpty())
+        {
+            return datasets;
+        }
+
+        List<String> datasetsWithoutDataStore = new ArrayList<>();
+        List<String> datasetsWithAFSDataStore = new ArrayList<>();
+        List<T> dssOnlyDatasets = new ArrayList<>();
+
+        for (T dataset : datasets)
+        {
+            if (dataset != null)
+            {
+                if (dataset.getDataStoreCode() == null || dataset.getDataStoreCode().isBlank())
+                {
+                    datasetsWithoutDataStore.add(dataset.getDataSetCode());
+                } else if (dataset.getDataStoreCode().equals(Constants.AFS_DATA_STORE_CODE))
+                {
+                    datasetsWithAFSDataStore.add(dataset.getDataSetCode());
+                } else
+                {
+                    dssOnlyDatasets.add(dataset);
+                }
+            }
+        }
+
+        if (!datasetsWithoutDataStore.isEmpty())
+        {
+            ProcessingStatus processingStatus = new ProcessingStatus();
+
+            for (String dataSetCode : datasetsWithoutDataStore)
+            {
+                processingStatus.addDatasetStatus(dataSetCode,
+                        Status.createError("Data set " + dataSetCode + " has data store code null or empty."));
+            }
+
+            operationLog.error("Data sets " + CollectionUtils.abbreviate(datasetsWithoutDataStore, 10)
+                    + " have data store code null or empty.");
+
+            throw new FilterDSSDataOnlyException(processingStatus);
+        }
+
+        if (!datasetsWithAFSDataStore.isEmpty())
+        {
+            operationLog.info("Data sets " + CollectionUtils.abbreviate(datasetsWithAFSDataStore, 10)
+                    + " were created by " + Constants.AFS_DATA_STORE_CODE
+                    + " data store. They will be ignored by the archiver.");
+        }
+
+        return dssOnlyDatasets;
+    }
+
+    private static class FilterDSSDataOnlyException extends Exception
+    {
+
+        private final ProcessingStatus status;
+
+        public FilterDSSDataOnlyException(ProcessingStatus status)
+        {
+            this.status = status;
+        }
+
+        public ProcessingStatus getStatus()
+        {
+            return status;
         }
     }
 
@@ -681,15 +782,15 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         if (statusUpdater == null)
         {
             statusUpdater = new IDataSetStatusUpdater()
+            {
+                @Override
+                public void update(List<String> codes, DataSetArchivingStatus status,
+                        boolean present)
                 {
-                    @Override
-                    public void update(List<String> codes, DataSetArchivingStatus status,
-                            boolean present)
-                    {
-                        QueueingDataSetStatusUpdaterService.update(new DataSetCodesWithStatus(
-                                codes, status, present));
-                    }
-                };
+                    QueueingDataSetStatusUpdaterService.update(new DataSetCodesWithStatus(
+                            codes, status, present));
+                }
+            };
         }
         statusUpdater.update(dataSetCodes, newStatus, presentInArchive);
     }

@@ -17,6 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.ImagingServiceContext;
@@ -33,7 +34,7 @@ public interface IImagingDataSetAdaptor
             Map<String, Serializable> imageMetadata,
             Map<String, Serializable> previewConfig,
             Map<String, Serializable> previewMetadata,
-            List<Map<String, String[]>> filterConfig);
+            List<ImagingDataSetFilter> filterConfig);
 
     void computePreview(ImagingServiceContext context, File rootFile,
             ImagingDataSetImage image, ImagingDataSetPreview preview);

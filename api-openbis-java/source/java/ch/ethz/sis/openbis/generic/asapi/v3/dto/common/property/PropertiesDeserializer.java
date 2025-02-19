@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PropertiesDeserializer extends JsonDeserializer<Serializable>
 {
@@ -37,6 +39,8 @@ public class PropertiesDeserializer extends JsonDeserializer<Serializable>
             ArrayList<String> list = new ArrayList<>();
             node.forEach(value -> list.add(value.asText()));
             return list.toArray(new String[0]);
+        } else if(node.isObject()) {
+            return readValue(node.toString(), HashMap.class);
         } else {
             return node.asText();
         }

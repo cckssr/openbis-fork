@@ -31,7 +31,8 @@ public class RDFCommandLineTest
     public void setup() {
         RDFReader rdfReader = new RDFReader();
         OntModel ontModel = ModelFactory.createOntologyModel();
-        modelRDF = rdfReader.read(inputFilePath, inputFormatValue, false, ontModel);
+        modelRDF =
+                rdfReader.read(new String[] { inputFilePath }, inputFormatValue, false, ontModel);
     }
 
     @Test

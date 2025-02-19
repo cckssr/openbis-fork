@@ -38,7 +38,7 @@ public class ImagingDataSetPreview implements Serializable
     private Map<String, Serializable> config;
 
     @JsonProperty
-    private List<Map<String, String[]>> filterConfig;
+    private List<ImagingDataSetFilter> filterConfig;
 
     @JsonProperty
     private String format;
@@ -184,12 +184,12 @@ public class ImagingDataSetPreview implements Serializable
     }
 
     @JsonIgnore
-    public List<Map<String, String[]>> getFilterConfig()
+    public List<ImagingDataSetFilter> getFilterConfig()
     {
         return filterConfig;
     }
 
-    public void setFilters(List<Map<String, String[]>> filterConfig)
+    public void setFilters(List<ImagingDataSetFilter> filterConfig)
     {
         this.filterConfig = filterConfig;
     }

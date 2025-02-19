@@ -199,7 +199,9 @@ class spm:
             if ParamListReference[paNum]['ParamScaling'] == 'na':
                 return self.napImport.header[ParamListReference[paNum]['ParamName']]
             else:
-                return (float(self.napImport.header[ParamListReference[paNum]['ParamName']])*ParamListReference[paNum]['ParamScaling'],ParamListReference[paNum]['ParamUnit'])
+                param_name = float(self.napImport.header[ParamListReference[paNum]['ParamName']])
+                param_scaling = ParamListReference[paNum]['ParamScaling']
+                return (param_name*param_scaling,ParamListReference[paNum]['ParamUnit'])
 
 
         elif param == 'width' or param == 'height':

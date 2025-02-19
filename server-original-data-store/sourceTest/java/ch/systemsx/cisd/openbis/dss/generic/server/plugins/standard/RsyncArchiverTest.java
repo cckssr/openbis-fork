@@ -65,7 +65,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     public void testSuccessfulArchivingIfDataSetPresentInArchive()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").location(LOCATION).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").location(LOCATION).store(DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
@@ -102,7 +102,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     public void testSuccessfulArchiving()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").location(LOCATION).size(42L)
+                new DatasetDescriptionBuilder("ds1").location(LOCATION).size(42L).store(DATA_STORE_CODE)
                         .getDatasetDescription();
         final File retrievedDataSet = new File(store, RsyncArchiver.STAGING_FOLDER + "/ds1");
         retrievedDataSet.mkdirs();
@@ -152,7 +152,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         final DatasetDescription ds1 =
                 new DatasetDescriptionBuilder("ds1").experiment("exp1")
                         .location("loc1").project("p1").sample("s1").space("space").size(11l)
-                        .type("my-type").getDatasetDescription();
+                        .type("my-type").store(DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
@@ -207,7 +207,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         final DatasetDescription ds1 =
                 new DatasetDescriptionBuilder("ds1").experiment("exp1")
                         .location("loc1").project("p1").sample("s1").space("space")
-                        .type("my-type").getDatasetDescription();
+                        .type("my-type").store(DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
@@ -231,8 +231,8 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     @Test
     public void testUnarchivingWithDefaultShareFinder()
     {
-        final DatasetDescription ds1 = new DatasetDescriptionBuilder("ds1").getDatasetDescription();
-        final DatasetDescription ds2 = new DatasetDescriptionBuilder("ds2").getDatasetDescription();
+        final DatasetDescription ds1 = new DatasetDescriptionBuilder("ds1").store(DATA_STORE_CODE).getDatasetDescription();
+        final DatasetDescription ds2 = new DatasetDescriptionBuilder("ds2").store(DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
@@ -254,6 +254,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         properties.setProperty(RsyncArchiver.ONLY_MARK_AS_DELETED_KEY, "false");
         final DatasetLocation datasetLocation = new DatasetLocation();
         datasetLocation.setDataSetLocation("my-location");
+        datasetLocation.setDataStoreCode(DATA_STORE_CODE);
         context.checking(new Expectations()
             {
                 {
@@ -271,6 +272,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         final DatasetLocation datasetLocation = new DatasetLocation();
         datasetLocation.setDataSetLocation("my-location");
+        datasetLocation.setDataStoreCode(DATA_STORE_CODE);
         context.checking(new Expectations()
             {
                 {

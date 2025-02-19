@@ -116,6 +116,25 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         }
     };
 
+    const handleOnAddFilter = async (updatedFilterConfig) => {
+        const { imagingDataset, activeImageIdx, activePreviewIdx } = state;
+        let toUpdateImgDs = { ...imagingDataset };
+        let currentPreview = toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx]
+        currentPreview.filterConfig = updatedFilterConfig;
+        setState(prev => ({
+            ...prev,
+            imagingDataset: toUpdateImgDs,
+            isChanged: true
+        }));
+    }
+
+    const deleteSerializationIds = (imagingDataset) => {
+        delete imagingDataset.preview['@id']; //@id are duplicated across different previews on update, need to be deleted
+        imagingDataset.preview.filterConfig.forEach(element => {
+            delete element['@id']
+        });
+    }
+
     const handleUpdate = async () => {
         handleOpen();
         const { imagingDataset, activeImageIdx, activePreviewIdx } = state;
@@ -126,7 +145,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                 setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
                 handleError(updatedImagingDataset.error);
             }
-            delete updatedImagingDataset.preview['@id']; //@id are duplicated across different previews on update, need to be deleted
+            deleteSerializationIds(updatedImagingDataset);
             let toUpdateImgDs = { ...imagingDataset };
             toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx] = updatedImagingDataset.preview;
             setState(prev => ({
@@ -192,7 +211,8 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
                 false,
                 { 'file': file },
                 [],
-                ''
+                '',
+                []
             );
             toUpdateImgDs.images[activeImageIdx].previews = [...toUpdateImgDs.images[activeImageIdx].previews, previewTemplate];
             setState(prev => ({ ...prev, open: false, imagingDataset: toUpdateImgDs, isSaved: false }));
@@ -280,7 +300,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         let activeImage = toUpdateImgDs.images[activeImageIdx];
         let newLastIdx = activeImage.previews.length;
         let inputValues = createInitValues(imagingDataset.images[0].config.inputs, activeImage.previews[activePreviewIdx].config);
-        let imagingDataSetPreview = new ImagingMapper(extOpenbis).getImagingDataSetPreview(inputValues, 'png', null, null, null, newLastIdx, false, {}, [], '');
+        let imagingDataSetPreview = new ImagingMapper(extOpenbis).getImagingDataSetPreview(inputValues, 'png', null, null, null, newLastIdx, false, {}, [], '', []);
         activeImage.previews = [...activeImage.previews, imagingDataSetPreview];
         setState(prev => ({
             ...prev,
@@ -296,7 +316,8 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     return (
         <ImagingDataContext.Provider value={{
             state, handleOpen, handleError, handleErrorCancel,
-            saveDataset, handleUpdate, onExport, deletePreview,
+            saveDataset, handleOnAddFilter,
+            handleUpdate, onExport, deletePreview,
             handleActiveImageChange, handleActivePreviewChange,
             onMove, handleEditComment, handleTagImage,
             handleResolutionChange, handleActiveConfigChange,

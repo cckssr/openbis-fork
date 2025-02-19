@@ -36,6 +36,7 @@ class FormButton extends React.Component {
       onClick,
       startIcon,
       endIcon,
+      fullWidth
     } = this.props
 
     let theColor = null
@@ -58,7 +59,7 @@ class FormButton extends React.Component {
     }
 
     return (
-      <Button
+      <Button fullWidth={fullWidth}
         ref={reference}
         id={id}
         name={name}

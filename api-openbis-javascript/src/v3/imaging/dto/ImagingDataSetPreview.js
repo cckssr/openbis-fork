@@ -95,10 +95,19 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
             name : "Map",
             arguments : [ "String", "Serializable" ]
         },
+//        filterConfig : {
+//            name : "List",
+//            arguments : [
+//              {
+//                name : "Map",
+//                arguments: [ "String", "String[]" ]
+//              }
+//            ]
+//        },
         filterConfig : {
             name : "List",
-            arguments : [ "Map<String, String[]>" ]
-        }
+            arguments : [ "ImagingDataSetFilter"]
+        },
 	});
 	return ImagingDataSetPreview;
 })

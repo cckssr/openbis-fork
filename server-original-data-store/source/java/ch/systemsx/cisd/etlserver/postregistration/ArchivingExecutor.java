@@ -214,6 +214,7 @@ class ArchivingExecutor implements IPostRegistrationTaskExecutor
                 DatasetLocation dataset = new DatasetLocation();
                 dataset.setDatasetCode(dataSetCode);
                 dataset.setDataSetLocation(dataSet.getDataSetLocation());
+                dataset.setDataStoreCode(dataSet.getDataStoreCode());
 
                 List<DatasetLocation> dataSetAsList = Collections.singletonList(dataset);
                 getArchiver().deleteFromArchive(dataSetAsList);

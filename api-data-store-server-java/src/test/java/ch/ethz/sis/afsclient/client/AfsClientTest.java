@@ -10,6 +10,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -155,9 +157,7 @@ public class AfsClientTest
                 + "    \"name\" : \"%s\",\n"
                 + "    \"directory\" : false,\n"
                 + "    \"size\" : 4,\n"
-                + "    \"lastModifiedTime\" : \"2023-06-27T17:18:08.900154283+02:00\",\n"
-                + "    \"creationTime\" : \"2023-06-27T17:18:08.900154283+02:00\",\n"
-                + "    \"lastAccessTime\" : \"2023-06-27T17:18:08.900154283+02:00\"\n"
+                + "    \"lastModifiedTime\" : \"2023-06-27T17:18:08.900154283+02:00\"\n"
                 + "  } ] ] ],\n"
                 + "  \"error\" : null\n"
                 + "}", sourceFileName, sourceFileName);
@@ -201,13 +201,14 @@ public class AfsClientTest
     public void write_methodIsPost() throws Exception
     {
         login();
-
-        httpServer.setNextResponse("{\"result\": true}");
-        Boolean result = afsClient.write("", "", 0L, new byte[0]);
+        byte[] requestBody = "".getBytes(StandardCharsets.UTF_8);
+        String responseBody = "{\"result\": true}";
+        httpServer.setNextResponse(responseBody);
+        Boolean result = afsClient.write("", "", 0L, requestBody);
 
         assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
         assertTrue(result);
-        assertTrue(httpServer.getLastRequestBody().length > 0);
+        assertEquals(httpServer.getLastRequestBody().length, requestBody.length);
     }
 
     @Test

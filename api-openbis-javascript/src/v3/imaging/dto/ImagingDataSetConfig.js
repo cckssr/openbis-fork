@@ -95,7 +95,14 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         },
         filters : {
             name : "Map",
-            arguments : [ "String", "List<ImagingDataSetControl>" ]
+            arguments :
+                [
+                    "String",
+                    {
+                        name : "List",
+                        arguments : [ "ImagingDataSetControl" ]
+                    }
+                ]
         }
 	});
 	return ImagingDataSetConfig;

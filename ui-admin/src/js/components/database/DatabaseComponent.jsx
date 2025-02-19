@@ -1,7 +1,7 @@
 import React from 'react'
 import Container from '@src/js/components/common/form/Container.jsx'
 import AppController from '@src/js/components/AppController.js'
-import DataBrowser from '@src/js/components/database/data-browser/DataBrowser.jsx'
+import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx'
 import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -129,6 +129,30 @@ class DatabaseComponent extends React.PureComponent {
         extOpenbis={openbis} />
   }
 
+  getGridSettingsId() {
+    return "ata-browser-grid"
+  }
+
+  async loadGridSettings() {
+    const settingsId = this.getGridSettingsId()
+
+    if (!settingsId) {
+      return null
+    }
+
+    return await AppController.getInstance().getSetting(settingsId)
+  }
+
+  async onGridSettingsChange(settings) {
+    const settingsId = this.getGridSettingsId()
+
+    if (!settingsId) {
+      return
+    }
+
+    await AppController.getInstance().setSetting(settingsId, settings)
+  }
+
   renderDataBrowsers() {
     const { object, classes } = this.props
     const { value } = this.state
@@ -147,8 +171,13 @@ class DatabaseComponent extends React.PureComponent {
             <DataBrowser
               key={object.id}
               id={object.id}
+              objId={object.id}
+              objKind={object.type}
               kind={object.type}
               viewType='list'
+              extOpenbis={openbis}
+              onLoadDisplaySettings={this.loadGridSettings}
+              onStoreDisplaySettings={this.onGridSettingsChange}
               sessionToken={AppController.getInstance().getSessionToken()}
             />
           </TabPanel>

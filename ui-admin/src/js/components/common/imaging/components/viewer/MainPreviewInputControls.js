@@ -1,5 +1,5 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, FormControlLabel, styled, Switch } from '@mui/material';
+import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, FormControlLabel, styled, Switch, Tab, Box } from '@mui/material';
 import { isObjectEmpty, createInitValues } from '@src/js/components/common/imaging/utils.js';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
@@ -14,15 +14,38 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
 import InputControlsSection from '@src/js/components/common/imaging/components/viewer/InputControlsSection.js';
 import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import TuneIcon from '@mui/icons-material/Tune';
+import PhotoFilterIcon from '@mui/icons-material/PhotoFilter';
+import FilterSelector from '@src/js/components/common/imaging/components/viewer/FilterSelector.jsx';
+import { makeStyles } from '@mui/styles';
 
-const MainPreviewInputControls = ({ activePreview, configInputs, configResolutions }) => {
+const useStyles = makeStyles(theme => ({
+  scrollableTab: {
+    padding: '0',
+    maxHeight: '60vh'
+  },
+  overflowAuto: {
+    overflowY: 'auto',
+    overflowX: 'hidden'
+  }
+}));
+
+const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, configResolutions }) => {
+  const classes = useStyles();
+
   const [tags, setTags] = React.useState([])
   const [inputValue, setInputValue] = React.useState('');
   const [spectraLocator, setSpectraLocator] = React.useState(constants.NONE);
+  const [tab, setTab] = React.useState('1');
+
+  const handleChange = (event, newValue) => {
+    setTab(newValue);
+  };
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, createLocatedSXMPreview } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
@@ -128,6 +151,10 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
     return sectionsArray;
   }
 
+  const onAddFilter = (filterHistory) => {
+    handleOnAddFilter(filterHistory);
+  }
+
   const inputValues = createInitValues(configInputs, activePreview.config);
   activePreview.config = inputValues;
   const currentMetadata = activePreview.metadata;
@@ -166,12 +193,26 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configResolutio
         </Grid2>
 
       </Grid2>
-      <Grid2 container size={{ xs: 12, sm: 12 }}>
+      <Grid2 container size={{ xs: 12 }}>
         <Divider variant='middle' sx={{ margin: '16px 0px 16px 0px', width: '100%', height: '2px' }} />
       </Grid2>
-      <Grid2 container sx={{ justifyContent: 'space-between', overflow: 'auto', maxHeight: '70%', width: '100%', minHeight: '300px' }}>
-        {configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
+      <Grid2 >
+        <TabContext value={tab} >
+          <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' textColor='inherit' indicatorColor='secondary'>
+            <Tab icon={<TuneIcon />} label='Parameters' value='1' />
+            <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
+          </TabList>
+          <TabPanel className={classes.scrollableTab + ' ' + classes.overflowAuto} value='1'>
+            <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}>
+              {configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
+            </Grid2>
+          </TabPanel>
+          <TabPanel className={classes.scrollableTab} value='2'>
+            <FilterSelector configFilters={configFilters} onAddFilter={onAddFilter} historyFilters={activePreview.filterConfig} />
+          </TabPanel>
+        </TabContext>
       </Grid2>
+
     </Grid2>
   );
 };
