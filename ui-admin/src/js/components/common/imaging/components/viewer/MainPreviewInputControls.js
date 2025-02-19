@@ -142,32 +142,8 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
     return sectionsArray;
   }
 
-  function transformArray(arr) {
-    return arr.map(obj => {
-      const newObj = { ...obj };
-  
-      if (newObj.parameters) {
-        const newParameters = {};
-        for (const key in newObj.parameters) {
-          if (newObj.parameters.hasOwnProperty(key)) {
-            const value = newObj.parameters[key];
-            if (Array.isArray(value) && value.length === 1) {
-              newParameters[key] = value[0];
-            } else {
-              newParameters[key] = value; 
-            }
-          }
-        }
-        newObj.parameters = newParameters;
-      }
-  
-      return newObj;
-    });
-  }
-
   const onAddFilter = (filterHistory) => {
-    const updatedFilterConfig = transformArray(filterHistory);
-    handleOnAddFilter(updatedFilterConfig);
+    handleOnAddFilter(filterHistory);
   }
 
   const inputValues = createInitValues(configInputs, activePreview.config);
@@ -188,7 +164,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       </Grid2>
       <Grid2 >
         <TabContext value={tab} >
-          <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' color='secondary'>
+          <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' textColor='inherit' indicatorColor='secondary'>
             <Tab icon={<TuneIcon />} label='Parameters' value='1' />
             <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
           </TabList>

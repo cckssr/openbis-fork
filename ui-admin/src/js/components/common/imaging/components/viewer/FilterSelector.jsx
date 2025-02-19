@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { IconButton, Typography, List, ListItem, ListItemText, Divider, Grid2 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,19 +8,22 @@ import Dropdown from '@src/js/components/common/imaging/components/common/Dropdo
 import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
+import { DragDropContext, Droppable, Draggable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 
 
 const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
-	const [selectedFilter, setSelectedFilter] = useState('');
-	const [history, setHistory] = useState([]);
-	const [sliderValues, setSliderValues] = useState({});
-	const [editingIndex, setEditingIndex] = useState(null);
+	const [selectedFilter, setSelectedFilter] = React.useState('');
+    const [history, setHistory] = React.useState([]);
+    const [sliderValues, setSliderValues] = React.useState({});
+    const [editingIndex, setEditingIndex] = React.useState(null);
 
-	useEffect(() => {
-		if (historyFilters && historyFilters.length) {
-			setHistory(historyFilters);
-		}
-	}, [historyFilters]);
+	const isEditing = editingIndex !== null; 
+
+    React.useEffect(() => {
+        if (historyFilters && historyFilters.length) {
+            setHistory(historyFilters);
+        }
+    }, [historyFilters]);
 
 	const handleSelect = (event) => {
 		setSelectedFilter(event.target.value);
@@ -31,6 +34,24 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 		setSliderValues((prev) => ({ ...prev, [label]: value }));
 	};
 
+    const transformParameters = React.useCallback((parameters) => {
+        return Object.entries(parameters).reduce((acc, [key, value]) => {
+            acc[key] = Array.isArray(value) && value.length === 1 ? value[0] : value;
+            return acc;
+        }, {});
+    }, []);
+
+	const getValuesFromSelectedFilter = () => {
+		const selectedControls = configFilters[selectedFilter] || []; // Get the controls for the selected filter
+
+		const values = selectedControls.reduce((acc, control) => { // use selectedControls here
+			acc[control.label] = sliderValues[control.label] || control.range[0]; // Access by control.label
+			return acc;
+		}, {});
+
+		return transformParameters(values);
+	}
+
 	const formatHistoryItem = (filterName, values) => {
 		return {
 			name: filterName,
@@ -38,40 +59,49 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 		};
 	};
 
-	const addToHistory = () => {
-		if (selectedFilter) {
-			const selectedControls = configFilters[selectedFilter] || [];
-			const values = selectedControls.reduce((acc, control) => {
-				acc[control.label] = sliderValues[control.label] || control.range[0];
-				return acc;
-			}, {});
-			const newHistoryItem = formatHistoryItem(selectedFilter, values);
-			const newHistory = [...history, newHistoryItem];
-			setHistory(newHistory);
-			onAddFilter(newHistory);
-		}
-	};
+    const updateHistory = React.useCallback((newHistory) => {
+        setHistory(newHistory);
+        onAddFilter(newHistory);
+    }, [onAddFilter]);
 
-	const removeFromHistory = (index) => {
-		const newHistory = history.filter((_, i) => i !== index);
-		setHistory(newHistory);
-		onAddFilter(newHistory);
-	};
 
-	const startEditing = (index) => {
-		setEditingIndex(index);
-		setSelectedFilter(history[index].name);
-		setSliderValues(history[index].parameters);
-	};
 
-	const applyEdits = () => {
-		if (editingIndex !== null) {
-			const updatedHistory = [...history];
-			updatedHistory[editingIndex] = { name: selectedFilter, parameters: sliderValues };
-			setHistory(updatedHistory);
-			setEditingIndex(null);
-			onAddFilter(updatedHistory);
-		}
+    const addToHistory = () => {
+        if (selectedFilter) {
+            const transformedValues = getValuesFromSelectedFilter();
+            updateHistory([...history, formatHistoryItem(selectedFilter, transformedValues)]);
+        }
+    };
+
+    const applyEdits = () => {
+        if (editingIndex !== null) {
+            const transformedValues = getValuesFromSelectedFilter();
+            const updatedHistory = [...history];
+            updatedHistory[editingIndex] = formatHistoryItem(selectedFilter, transformedValues);
+            updateHistory(updatedHistory);
+            setEditingIndex(null);
+        }
+    };
+
+    const startEditing = (index) => {
+        setEditingIndex(index);
+        const item = history[index];
+        setSelectedFilter(item.name);
+        setSliderValues(item.parameters);
+    };
+
+    const removeFromHistory = (index) => {
+        updateHistory(history.filter((_, i) => i !== index));
+    };
+
+	const onDragEnd = (result) => {
+		if (!result.destination || isEditing) {
+            return;
+        }
+		const items = Array.from(history);
+		const [reorderedItem] = items.splice(result.source.index, 1);
+		items.splice(result.destination.index, 0, reorderedItem);
+		updateHistory(items);
 	};
 
 	const renderFilterControls = () => {
@@ -125,19 +155,47 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 						/>
 						<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>History</Typography>
 						<Divider />
-						<List sx={{ height: '68%', overflow: 'auto' }}>
-							{history.map((item, index) => (
-								<ListItem key={index}>
-									<ListItemText primary={`${item.name} - ${Object.entries(item.parameters).map(([key, value]) => `${key}: ${value}`).join(', ')}`} />
-									<IconButton edge='end' onClick={() => startEditing(index)} color='inherit'>
-										<EditIcon />
-									</IconButton>
-									<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
-										<DeleteIcon />
-									</IconButton>
-								</ListItem>
-							))}
-						</List>
+						<DragDropContext onDragEnd={onDragEnd}>
+							<Droppable droppableId='history-list'>
+								{(provided) => (
+									<List
+										{...provided.droppableProps}
+										ref={provided.innerRef}
+										sx={{ height: '68%', overflow: 'auto' }}
+									>
+										{history.map((item, index) => (
+											<Draggable key={index} draggableId={index.toString()} index={index} isDragDisabled={isEditing}>
+												{(provided, snapshot) => (
+													<ListItem
+														{...provided.draggableProps}
+														{...provided.dragHandleProps}
+														ref={provided.innerRef}
+														sx={{
+															border: editingIndex === index ? '2px solid #039be5' : 'none',
+															borderRadius: '5px',
+															backgroundColor: snapshot.isDragging ? 'lightgray' : 'white', // Visual feedback while dragging
+															transition: 'background-color 0.2s ease',
+															display: 'flex', // Important for drag and drop to work correctly
+															alignItems: 'center', // Vertically align items
+															cursor: isEditing ? 'default' : (snapshot.isDragging ? 'grabbing' : 'grab'),
+														}}
+													>
+														<ListItemText primary={`${item.name} - ${Object.entries(item.parameters).map(([key, value]) => `${key}: ${value}`).join(', ')}`} />
+														<IconButton edge='end' onClick={() => startEditing(index)} color='inherit'>
+															<EditIcon />
+														</IconButton>
+														<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
+															<DeleteIcon />
+														</IconButton>
+													</ListItem>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder} {/* Important: This is needed for the drag and drop to work */}
+									</List>
+								)}
+							</Droppable>
+						</DragDropContext>
 					</Grid2>
 				</Grid2>
 			) : (
