@@ -3,6 +3,7 @@ import { Typography, Grid2 } from "@mui/material";
 
 import ImagingFacade from "@src/js/components/common/imaging/ImagingFacade.js";
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
+import Loading from "@src/js/components/common/loading/Loading.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
 
 import GalleryGridView from "@src/js/components/common/imaging/components/gallery/GalleryGridView.js";
@@ -17,6 +18,7 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
 
     const [gridView, setGridView] = React.useState(true);
     const [isLoaded, setIsLoaded] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(false);
     const [open, setOpen] = React.useState(false);
     const [error, setError] = React.useState({ open: false, error: null });
     const [previewsInfo, setPreviewsInfo] = React.useState({
@@ -61,16 +63,18 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
         let isCancelled = false;
 
         const loadGalleryView = async () => {
-            const { previewContainerList, totalCount } = await loadPreviewsInfo(imagingFacade, objId, objType, galleryFilter, paging);
+            const { previewContainerList, totalCount } = await loadPreviewsInfo(imagingFacade, objId, objType, galleryFilter, paging, setOpen);
             if (!isCancelled) {
                 setPreviewsInfo({ previewContainerList, totalCount });
                 setIsLoaded(true);
+                setOpen(false);
+                setIsLoading(false);
             }
         };
 
         loadGalleryView();
         //Cleanup function is called when useEffect is called again or on unmount
-        return () => { isCancelled = true; };
+        return () => { isCancelled = true; setIsLoading(true) };
     }, [paging.page, paging.pageSize, galleryFilter])
 
     const handleErrorCancel = () => {
@@ -203,35 +207,43 @@ const ImagingGalleryViewer = ({ objId, objType, extOpenbis, onOpenPreview, onSto
     }
 
     if (!isLoaded) return null;
-    if (previewsInfo.previewContainerList.length === 0) {
-        return (<>
-            <LoadingDialog loading={open} />
-            <ErrorDialog open={error.state} error={error.error} onClose={handleErrorCancel} />
-            {renderControlsBar(true, {})}
-            <Grid2 container sx={{ justifyContent: "space-evenly" }}>
-                <Typography key="no-dataset-comment" gutterBottom variant="h6">
-                    No Datasets to display.
-                </Typography>
-            </Grid2>
-        </>);
-    }
     //console.log("RENDER.ImagingGalleryViewer - previewsInfo: ", previewsInfo);
-    const previewContainerList = showAll ? previewsInfo.previewContainerList : previewsInfo.previewContainerList.filter(previewContainer => previewContainer.preview.show);
-    const isExportDisable = (!(previewContainerList.filter(previewContainer => previewContainer.select === true).length > 0) || !gridView)
+    const previewContainerList = showAll
+        ? previewsInfo.previewContainerList
+        : previewsInfo.previewContainerList.filter(previewContainer => previewContainer.preview.show);
+
+    const isExportDisable = !(previewContainerList.some(previewContainer => previewContainer.select) && gridView);
     const commonExportConfig = extractCommonExportsConfig();
     return (
         <>
             <LoadingDialog loading={open} />
             <ErrorDialog open={error.state} error={error.error} onClose={handleErrorCancel} />
             {renderControlsBar(isExportDisable, commonExportConfig)}
-            {gridView ? <GalleryGridView previewContainerList={previewContainerList}
-                cols={paging.pageColumns}
-                selectAll={selectAll}
-                onOpenPreview={onOpenPreview}
-                handleShowPreview={handleShowPreview}
-                handleSelectPreview={handleSelectPreview} />
-                : <GalleryListView previewContainerList={previewContainerList} onOpenPreview={onOpenPreview} onEditComment={handleEditComment} onEditNote={handleEditNote} imagingTags={imagingTags} />}
-
+            <Loading loading={isLoading}>
+                {gridView ? (
+                    <GalleryGridView
+                        previewContainerList={previewContainerList}
+                        cols={paging.pageColumns}
+                        selectAll={selectAll}
+                        onOpenPreview={onOpenPreview}
+                        handleShowPreview={handleShowPreview}
+                        handleSelectPreview={handleSelectPreview}
+                        isLoading={isLoading} />
+                ) : (
+                    <GalleryListView
+                        previewContainerList={previewContainerList}
+                        onOpenPreview={onOpenPreview}
+                        onEditComment={handleEditComment}
+                        onEditNote={handleEditNote}
+                        imagingTags={imagingTags} />
+                )}
+                {previewContainerList.length === 0 && !isLoading && ( // Conditional rendering for empty state
+                    <Grid2 container sx={{ justifyContent: "space-evenly" }}>
+                        <Typography key="no-dataset-comment" gutterBottom >
+                            No Datasets to display.
+                        </Typography>
+                    </Grid2>
+                )}</Loading>
         </>
     );
 }

@@ -185,7 +185,7 @@ export default class ImagingFacade {
         fetchOptions.withProperties();
         fetchOptions.withDataSets();
         const experiments = await this.openbis.getExperiments([new this.openbis.ExperimentPermId(objId)], fetchOptions);
-        return experiments[objId]?.dataSets || []; 
+        return experiments[objId]?.dataSets || [];
     };
 
     getRecursiveDescendants = sample => {
@@ -238,177 +238,160 @@ export default class ImagingFacade {
     }
 
     paginateImagingDatasets = async (datasetCodeList, page, pageSize) => {
-        let startIdx = page * pageSize;
-        const offset = startIdx + pageSize;
-        let prevDatasetId = null;
+        const startIdx = page * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, datasetCodeList.length); // Calculate end index correctly
+        const previewContainerList = [];
+
+        let currentDatasetId = null;
         let loadedImgDS = null;
         let datasetProperties = null;
-        let previewContainerList = [];
-        while (startIdx < datasetCodeList.length && startIdx < offset) {
-            let currDatasetId = datasetCodeList[startIdx].datasetId;
-            if (currDatasetId !== prevDatasetId) {
-                prevDatasetId = currDatasetId;
-                datasetProperties = await this.loadImagingDataset(currDatasetId, true);
+
+        for (let i = startIdx; i < endIdx; i++) {
+            const { datasetId, sortingId } = datasetCodeList[i];
+
+            if (datasetId !== currentDatasetId) {
+                currentDatasetId = datasetId;
+                datasetProperties = await this.loadImagingDataset(datasetId, true);
                 loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
                 delete datasetProperties[constants.IMAGING_DATA_CONFIG];
-                //console.log(loadedImgDS);
             }
-            let partialIdxCount = 0
-            for (let imageIdx = 0; imageIdx < loadedImgDS.images.length; imageIdx++) {
-                let hypoteticalPreviewIdx = datasetCodeList[startIdx].sortingId;
-                for (let previewIdx = hypoteticalPreviewIdx - partialIdxCount;
-                    previewIdx < loadedImgDS.images[imageIdx].previews.length && startIdx < offset;
-                    previewIdx++, startIdx++) {
-                    previewContainerList.push({
-                        datasetId: currDatasetId,
-                        preview: loadedImgDS.images[imageIdx].previews[previewIdx],
-                        imageIdx: imageIdx,
-                        select: false,
-                        datasetProperties: datasetProperties,
-                        exportConfig: loadedImgDS.images[imageIdx].config.exports
-                    });
+
+            let previewIndexInDataset = 0;
+            for (const image of loadedImgDS.images) {
+                for (const preview of image.previews) {
+                    if (previewIndexInDataset === sortingId) {
+                        previewContainerList.push({
+                            datasetId,
+                            preview,
+                            imageIdx: loadedImgDS.images.indexOf(image), // Get image index
+                            select: false,
+                            datasetProperties,
+                            exportConfig: image.config.exports
+                        });
+                        break; // Preview found, move to next dataset
+                    }
+                    previewIndexInDataset++;
                 }
-                partialIdxCount += loadedImgDS.images[imageIdx].previews.length
+                if (previewIndexInDataset > sortingId) break; // Preview found, move to next dataset
             }
         }
-        return previewContainerList
-    }
+        return previewContainerList;
+    };
 
     loadPaginatedGalleryDatasets = async (objId, objType, page, pageSize) => {
-        //console.log("loadPaginatedGalleryDatasets: ", objType);
-        let dataSets = []
-        if (objType === ObjectType.COLLECTION)
-            dataSets = await this.fetchExperimentDataSets(objId);
-        if (objType === ObjectType.OBJECT)
-            dataSets = await this.fetchSampleDataSets(objId);
-        const datasetCodeList = this.fetchDataSetsSortingInfo(dataSets);
+        const dataSets = objType === ObjectType.COLLECTION
+            ? await this.fetchExperimentDataSets(objId)
+            : objType === ObjectType.OBJECT
+                ? await this.fetchSampleDataSets(objId)
+                : []; // Handle other object types or return empty array
 
+        const datasetCodeList = this.fetchDataSetsSortingInfo(dataSets);
         const totalCount = datasetCodeList.length;
         const previewContainerList = await this.paginateImagingDatasets(datasetCodeList, page, pageSize);
-        //console.log("loadPaginatedGalleryDatasets - previewContainerList: ", previewContainerList);
+
         return { previewContainerList, totalCount };
-    }
+    };
 
     filterAndPaginateImagingDatasets = async (dataSets, page, pageSize, operator, filterText, property) => {
-        let startIdx = page * pageSize;
-        const offset = startIdx + pageSize;
-        let previewContainerListAll = [];
+        const filteredDatasets = [];
 
         for (const dataSet of dataSets) {
-            let currDatasetId = dataSet.permId.permId;
-            let datasetProperties = await this.loadImagingDataset(currDatasetId, true);
-            let loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
+            const datasetProperties = await this.loadImagingDataset(dataSet.permId.permId, true);
+            const loadedImgDS = await this.openbis.fromJson(null, JSON.parse(datasetProperties[constants.IMAGING_DATA_CONFIG]));
             delete datasetProperties[constants.IMAGING_DATA_CONFIG];
-            //console.log('filterAndPaginateImagingDatasets - loadedImgDS: ', loadedImgDS);
 
-            for (let imageIdx = 0; imageIdx < loadedImgDS.images.length; imageIdx++) {
-                for (let previewIdx = 0; previewIdx < loadedImgDS.images[imageIdx].previews.length; previewIdx++) {
+            for (const image of loadedImgDS.images) {
+                for (const preview of image.previews) {
+                    let match = false;
                     if (property === constants.IMAGING_TAGS) {
                         const filteringTags = filterText.split(' ');
-                        if (operator === messages.get(messages.OPERATOR_OR)) {
-                            if (loadedImgDS.images[imageIdx].previews[previewIdx].tags.some(previewTag => filteringTags.includes(previewTag))) {
-                                previewContainerListAll.push({
-                                    datasetId: currDatasetId,
-                                    preview: loadedImgDS.images[imageIdx].previews[previewIdx],
-                                    imageIdx: imageIdx,
-                                    select: false,
-                                    datasetProperties: datasetProperties,
-                                    exportConfig: loadedImgDS.images[imageIdx].config.exports
-                                });
-                            }
-                        } else if (operator === messages.get(messages.OPERATOR_AND)) {
-                            if (filteringTags.every(filteringTag => loadedImgDS.images[imageIdx].previews[previewIdx].tags.includes(filteringTag))) {
-                                previewContainerListAll.push({
-                                    datasetId: currDatasetId,
-                                    preview: loadedImgDS.images[imageIdx].previews[previewIdx],
-                                    imageIdx: imageIdx,
-                                    select: false,
-                                    datasetProperties: datasetProperties,
-                                    exportConfig: loadedImgDS.images[imageIdx].config.exports
-                                });
-                            }
-                        }
-                    } else if (property === constants.PREVIEW_COMMENT &&
-                        loadedImgDS.images[imageIdx].previews[previewIdx].comment.includes(filterText)) {
-                        previewContainerListAll.push({
-                            datasetId: currDatasetId,
-                            preview: loadedImgDS.images[imageIdx].previews[previewIdx],
-                            imageIdx: imageIdx,
+                        match = operator === messages.get(messages.OPERATOR_OR)
+                            ? preview.tags.some(tag => filteringTags.includes(tag))
+                            : operator === messages.get(messages.OPERATOR_AND)
+                                ? filteringTags.every(tag => preview.tags.includes(tag))
+                                : false; // Handle other operators or invalid input
+
+                    } else if (property === constants.PREVIEW_COMMENT) {
+                        match = preview.comment.includes(filterText);
+                    }
+
+                    if (match) {
+                        filteredDatasets.push({
+                            datasetId: dataSet.permId.permId,
+                            preview,
+                            imageIdx: loadedImgDS.images.indexOf(image),
                             select: false,
-                            datasetProperties: datasetProperties,
-                            exportConfig: loadedImgDS.images[imageIdx].config.exports
+                            datasetProperties,
+                            exportConfig: image.config.exports
                         });
                     }
                 }
             }
         }
 
-        //console.log('previewContainerListAll: ', previewContainerListAll);
-        const previewContainerList = previewContainerListAll.slice(startIdx, offset)
-        const totalCount = previewContainerListAll.length
-        return { previewContainerList, totalCount }
-    }
+        const startIdx = page * pageSize;
+        const endIdx = Math.min(startIdx + pageSize, filteredDatasets.length);
+        const previewContainerList = filteredDatasets.slice(startIdx, endIdx);
+        const totalCount = filteredDatasets.length;
+
+        return { previewContainerList, totalCount };
+    };
 
     filterGallery = async (objId, objType, operator, filterText, property, page, pageSize) => {
-        console.log(objId, objType, operator, filterText, property, page, pageSize);
+        let dataSets = [];
 
-        var dataSets = []
-        var totalCount = -1
-        var previewContainerList = []
-        const criteria = new this.openbis.DataSetSearchCriteria();
-        criteria.withAndOperator();
-        if (objType === ObjectType.COLLECTION)
+        if (objType === ObjectType.COLLECTION) {
+            const criteria = new this.openbis.DataSetSearchCriteria();
             criteria.withExperiment().withPermId().thatEquals(objId);
-        else if (objType === ObjectType.OBJECT)
-            criteria.withSample().withPermId().thatEquals(objId);
-
-        if ([constants.IMAGING_TAGS, constants.PREVIEW_COMMENT].includes(property)) {
-
             const fetchOptions = new this.openbis.DataSetFetchOptions();
             fetchOptions.withProperties();
-
-            const searchDataSets = await this.openbis.searchDataSets(
-                criteria,
-                fetchOptions
-            );
+            const searchDataSets = await this.openbis.searchDataSets(criteria, fetchOptions);
             dataSets = searchDataSets.getObjects();
-            console.log('filterGallery - fetchDataSets: ', dataSets);
+        } else if (objType === ObjectType.OBJECT) {
+            const criteria = new this.openbis.DataSetSearchCriteria();
+            criteria.withSample().withPermId().thatEquals(objId);
+            const fetchOptions = new this.openbis.DataSetFetchOptions();
+            fetchOptions.withProperties();
+            const searchDataSets = await this.openbis.searchDataSets(criteria, fetchOptions);
+            dataSets = searchDataSets.getObjects();
 
-            return await this.filterAndPaginateImagingDatasets(dataSets, page, pageSize, operator, filterText, property);
+        }
 
+        if ([constants.IMAGING_TAGS, constants.PREVIEW_COMMENT].includes(property)) {
+            return this.filterAndPaginateImagingDatasets(dataSets, page, pageSize, operator, filterText, property);
         } else {
+            const criteria = new this.openbis.DataSetSearchCriteria();
+            if (objType === ObjectType.COLLECTION) {
+                criteria.withExperiment().withPermId().thatEquals(objId);
+            } else if (objType === ObjectType.OBJECT) {
+                criteria.withSample().withPermId().thatEquals(objId);
+            }
+
             if (filterText && filterText.trim().length > 0) {
                 const subCriteria = criteria.withSubcriteria();
                 operator === messages.get(messages.OPERATOR_AND) ? subCriteria.withAndOperator() : subCriteria.withOrOperator();
                 const splittedText = filterText.split(' ');
-                //console.log('splittedText: ', splittedText);
+
                 for (const value of splittedText) {
-                    //console.log('Search on [', property, '] with text [', value, ']')
                     if (property === messages.get(messages.ALL)) {
                         subCriteria.withAnyStringProperty().thatContains(value);
-                        //subCriteria.withAnyProperty().thatContains(value);
                     } else {
-                        //subCriteria.withStringProperty(property).thatContains(value);
                         subCriteria.withProperty(property).thatContains(value);
                     }
                 }
             }
-            //console.log('filterGallery - criteria: ', criteria);
+
             const fetchOptions = new this.openbis.DataSetFetchOptions();
             fetchOptions.withProperties();
 
-            const searchDataSets = await this.openbis.searchDataSets(
-                criteria,
-                fetchOptions
-            );
+            const searchDataSets = await this.openbis.searchDataSets(criteria, fetchOptions);
             dataSets = searchDataSets.getObjects();
-            //console.log('filterGallery - searchDataSets: ', dataSets);
 
             const datasetCodeList = this.fetchDataSetsSortingInfo(dataSets);
-            totalCount = datasetCodeList.length;
+            const totalCount = datasetCodeList.length;
+            const previewContainerList = await this.paginateImagingDatasets(datasetCodeList, page, pageSize);
 
-            previewContainerList = await this.paginateImagingDatasets(datasetCodeList, page, pageSize);
             return { previewContainerList, totalCount };
         }
-    }
+    };
 }
