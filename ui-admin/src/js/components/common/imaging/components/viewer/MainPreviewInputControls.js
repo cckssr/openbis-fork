@@ -39,20 +39,17 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   const [spectraLocator, setSpectraLocator] = React.useState(constants.NONE);
   const [tab, setTab] = React.useState('1');
 
-  const handleChange = (event, newValue) => {
-    setTab(newValue);
-  };
-
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter,
+    createNewPreview, saveDataset } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
   React.useEffect(() => {
     if (imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true')
       handleUpdate();
-  }, [])
+  }, []);
 
   React.useEffect(() => {
     if (activePreview && activePreview.tags != null) {
@@ -64,7 +61,11 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       setTags(trasformedTags);
       setInputValue(trasformedTags.join(', '));
     }
-  }, [activePreview])
+  }, [activePreview]);
+
+  const handleChange = (event, newValue) => {
+    setTab(newValue);
+  };
 
   const handleTagsChange = (event, newTags) => {
     setTags(newTags);
@@ -72,9 +73,11 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
     handleTagImage(false, tagsArray);
   }
 
-  const handleLocatorWidget = () => {
+  const handleLocatorWidget = async () => {
+    createNewPreview();
+    await saveDataset();
     const [sxmPermId, sxmFilePath] = spectraLocator.split(' - ');
-    console.log(sxmPermId, sxmFilePath);
+    console.log('handleLocatorWidget:', sxmPermId, sxmFilePath);
     createLocatedSXMPreview(sxmPermId, sxmFilePath);
   }
 
@@ -160,8 +163,8 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 
-  const datasetFilePathsMenu = datasetFilePaths.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
-  datasetFilePathsMenu.splice(0, 0, constants.NONE);
+  const datasetFilePathsMenu = datasetFilePaths?.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
+  datasetFilePathsMenu?.splice(0, 0, constants.NONE);
 
   //console.log('datasetFilePathsMenu', datasetFilePaths, datasetFilePathsMenu);
 

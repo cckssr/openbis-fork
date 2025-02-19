@@ -55,14 +55,15 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     }, [state.loaded, objId, extOpenbis]);
 
     const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
-        const { activeImageIdx, activePreviewIdx, imagingDataset } = state
-        const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[activePreviewIdx];
-        createNewPreview();
+
+        //createNewPreview();
         //saveDataset();
+        const { activeImageIdx, activePreviewIdx, imagingDataset } = state;
+        const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[activePreviewIdx];
         //handleOpen();
-        //console.log('createLocatedSXMPreview: ', selectedSpectraPreview, objId, sxmPermId, sxmFilePath);
+        console.log('createLocatedSXMPreview: ', selectedSpectraPreview, objId, sxmPermId, sxmFilePath);
         const newSpectraPreview = await new ImagingFacade(extOpenbis).createLocatedSXMPreview(objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview);
-        //console.log('newSpectraPreview: ', newSpectraPreview);
+        console.log('newSpectraPreview: ', newSpectraPreview);
         if (newSpectraPreview.error) {
             setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
             handleError(newSpectraPreview.error);
