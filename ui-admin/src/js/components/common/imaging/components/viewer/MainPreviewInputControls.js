@@ -188,7 +188,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       </Grid2>
       <Grid2 >
         <TabContext value={tab} >
-          <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' color='secondary'>
+          <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' textColor='inherit' indicatorColor='secondary'>
             <Tab icon={<TuneIcon />} label='Parameters' value='1' />
             <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
           </TabList>

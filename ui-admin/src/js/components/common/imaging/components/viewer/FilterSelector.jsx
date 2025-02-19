@@ -8,6 +8,7 @@ import Dropdown from '@src/js/components/common/imaging/components/common/Dropdo
 import InputSlider from '@src/js/components/common/imaging/components/common/InputSlider.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
+import { DragDropContext, Droppable, Draggable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 
 
 const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
@@ -91,6 +92,21 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 		));
 	};
 
+	const isEditing = editingIndex !== null; 
+
+	const onDragEnd = (result) => {
+		if (!result.destination || isEditing) {
+            return;
+        }
+
+		const items = Array.from(history);
+		const [reorderedItem] = items.splice(result.source.index, 1);
+		items.splice(result.destination.index, 0, reorderedItem);
+
+		setHistory(items);
+		onAddFilter(items); 
+	};
+
 	return (
 		<>
 			{configFilters != null && !isObjectEmpty(configFilters) ? (
@@ -125,19 +141,47 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 						/>
 						<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>History</Typography>
 						<Divider />
-						<List sx={{ height: '68%', overflow: 'auto' }}>
-							{history.map((item, index) => (
-								<ListItem key={index}>
-									<ListItemText primary={`${item.name} - ${Object.entries(item.parameters).map(([key, value]) => `${key}: ${value}`).join(', ')}`} />
-									<IconButton edge='end' onClick={() => startEditing(index)} color='inherit'>
-										<EditIcon />
-									</IconButton>
-									<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
-										<DeleteIcon />
-									</IconButton>
-								</ListItem>
-							))}
-						</List>
+						<DragDropContext onDragEnd={onDragEnd}>
+							<Droppable droppableId='history-list'>
+								{(provided) => (
+									<List
+										{...provided.droppableProps}
+										ref={provided.innerRef}
+										sx={{ height: '68%', overflow: 'auto' }}
+									>
+										{history.map((item, index) => (
+											<Draggable key={index} draggableId={index.toString()} index={index} isDragDisabled={isEditing}>
+												{(provided, snapshot) => (
+													<ListItem
+														{...provided.draggableProps}
+														{...provided.dragHandleProps}
+														ref={provided.innerRef}
+														sx={{
+															border: editingIndex === index ? '2px solid #039be5' : 'none',
+															borderRadius: '5px',
+															backgroundColor: snapshot.isDragging ? 'lightgray' : 'white', // Visual feedback while dragging
+															transition: 'background-color 0.2s ease',
+															display: 'flex', // Important for drag and drop to work correctly
+															alignItems: 'center', // Vertically align items
+															cursor: isEditing ? 'default' : (snapshot.isDragging ? 'grabbing' : 'grab'),
+														}}
+													>
+														<ListItemText primary={`${item.name} - ${Object.entries(item.parameters).map(([key, value]) => `${key}: ${value}`).join(', ')}`} />
+														<IconButton edge='end' onClick={() => startEditing(index)} color='inherit'>
+															<EditIcon />
+														</IconButton>
+														<IconButton edge='end' onClick={() => removeFromHistory(index)} color='inherit'>
+															<DeleteIcon />
+														</IconButton>
+													</ListItem>
+												)}
+											</Draggable>
+										))}
+										{provided.placeholder} {/* Important: This is needed for the drag and drop to work */}
+									</List>
+								)}
+							</Droppable>
+						</DragDropContext>
 					</Grid2>
 				</Grid2>
 			) : (
