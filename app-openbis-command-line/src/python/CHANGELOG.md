@@ -1,5 +1,6 @@
 # New in version 0.4.6
 
+* Updated pybis dependency to version >= 1.37.2
 * Fixes to data_set search command
 * Added setting of properties in upload command
 

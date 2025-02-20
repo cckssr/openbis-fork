@@ -252,6 +252,7 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
             resolution = float(resolution)
 
     specs_sub = list(filter(lambda spec:spec.name in grouping, specs)) if grouping is not None else specs
+    specs_sub.sort(key=lambda x: x.name)
 
     col = pl.cm.rainbow(np.linspace(0,1,len(specs_sub)))
 
