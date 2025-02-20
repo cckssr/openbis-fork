@@ -17,7 +17,10 @@ const useStyles = makeStyles((theme) => ({
 	},
 	span2: {
 		marginLeft: '32px'
-	}
+	},
+	span4: {
+		marginLeft: '64px'
+	},
 }));
 
 const CollapsableSection = ({ children, renderActions = () => false, title, isCollapsed = true, canCollapse = true, renderWarnings, span = false }) => {
@@ -30,7 +33,7 @@ const CollapsableSection = ({ children, renderActions = () => false, title, isCo
 	const classes = useStyles();
 
 	return (<>
-		<div className={classes.container + ' ' + classes.jc_sb + ' ' + (span && classes.span)}>
+		<div className={`${classes.container} ${classes.jc_sb} ${span && classes.span}`}>
 			<div className={classes.container}>
 				<IconButton aria-label="delete" size="large" onClick={canCollapse ? handleChange : () => false} disabled={!canCollapse}>
 					{collapsed ? <KeyboardArrowRightIcon /> : <KeyboardArrowDownIcon />}
@@ -44,8 +47,8 @@ const CollapsableSection = ({ children, renderActions = () => false, title, isCo
 				{collapsed && renderActions()}
 			</div>
 		</div>
-		{collapsed && <Divider className={span && classes.span2} />}
-		<Collapse in={!collapsed} className={span && classes.span2}>
+		{collapsed && <Divider className={`${span && classes.span2}`} />}
+		<Collapse in={!collapsed} className={`${span && classes.span4}`}>
 			{children}
 			<Divider sx={{ mt: 1 }} />
 		</Collapse>

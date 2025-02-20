@@ -27,7 +27,7 @@ const ImagingDatasetViewerContainer = () => {
         loaded,
         imagingTags,
     } = state;
-    console.log('ImagingDatasetViewerContainer - state: ', state);
+    //console.log('ImagingDatasetViewerContainer - state: ', state);
     if (!loaded) return null;
     const activeImage = imagingDataset.images[activeImageIdx];
     const activePreview = activeImage.previews[activePreviewIdx];

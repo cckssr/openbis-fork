@@ -180,6 +180,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/webapp/create/WebAppSettingCreation',
   'dss/dto/service/id/CustomDssServiceCode',
   'dss/dto/service/CustomDSSServiceExecutionOptions',
+  'dss/dto/datasetfile/search/DataSetFileSearchCriteria', 
+  'dss/dto/datasetfile/fetchoptions/DataSetFileFetchOptions',
   'imaging/dto/ImagingDataSetConfig',
   'imaging/dto/ImagingDataSetControl',
   'imaging/dto/ImagingDataSetControlVisibility',

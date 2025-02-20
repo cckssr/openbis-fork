@@ -271,6 +271,12 @@ class Facade {
     )
   }
 
+  searchFiles(criteria, fetchOptions) {
+    return this.promise(
+      this.v3.getDataStoreFacade().searchFiles(criteria, fetchOptions)
+    );
+  }
+
   fromJson(jsonType, jsonObject) {
     return this.promise(this.stjs.fromJson(jsonType, jsonObject))
   }

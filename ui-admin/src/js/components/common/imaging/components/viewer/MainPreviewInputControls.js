@@ -1,5 +1,5 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, FormControlLabel, styled, Switch, Tab, Box } from '@mui/material';
+import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, Tab } from '@mui/material';
 import { isObjectEmpty, createInitValues } from '@src/js/components/common/imaging/utils.js';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
@@ -7,6 +7,8 @@ import CustomSwitch from '@src/js/components/common/imaging/components/common/Cu
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import AddToQueueIcon from '@mui/icons-material/AddToQueue';
+
 import messages from '@src/js/common/messages.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import Button from '@src/js/components/common/form/Button.jsx'
@@ -34,22 +36,19 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
 
   const [tags, setTags] = React.useState([])
   const [inputValue, setInputValue] = React.useState('');
+  const [spectraLocator, setSpectraLocator] = React.useState(constants.NONE);
   const [tab, setTab] = React.useState('1');
-
-  const handleChange = (event, newValue) => {
-    setTab(newValue);
-  };
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, handleOnAddFilter } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter } = useImagingDataContext();
 
-  const { imagingDataset, resolution, isChanged, imagingTags, datasetType } = state;
+  const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
   React.useEffect(() => {
     if (imagingDataset.metadata[constants.GENERATE] && imagingDataset.metadata[constants.GENERATE].toLowerCase() === 'true')
       handleUpdate();
-  }, [])
+  }, []);
 
   React.useEffect(() => {
     if (activePreview && activePreview.tags != null) {
@@ -61,12 +60,21 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       setTags(trasformedTags);
       setInputValue(trasformedTags.join(', '));
     }
-  }, [activePreview])
+  }, [activePreview]);
+
+  const handleChange = (event, newValue) => {
+    setTab(newValue);
+  };
 
   const handleTagsChange = (event, newTags) => {
     setTags(newTags);
     const tagsArray = newTags.map(tag => tag.value);
     handleTagImage(false, tagsArray);
+  }
+
+  const handleLocatorWidget = async () => {
+    const [sxmPermId, sxmFilePath] = spectraLocator.split(' - ');
+    createLocatedSXMPreview(sxmPermId, sxmFilePath);
   }
 
   const renderStaticUpdateControls = (isUploadedPreview,) => {
@@ -134,12 +142,16 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   }
 
   const renderDynamicControls = (configInputs) => {
-    const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
-    var sectionsArray = []
-    for (let [key, imageDatasetControlList] of sectionGroups) {
-      sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
+    if (configInputs !== null && configInputs.length > 0) {
+      const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
+      var sectionsArray = []
+      for (let [key, imageDatasetControlList] of sectionGroups) {
+        sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
+      }
+      return (<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}> {sectionsArray} </Grid2>);
+    } else {
+      return <Typography px={1} my={1} textAlign={'center'}>No parameters configuration provided</Typography>
     }
-    return sectionsArray;
   }
 
   const onAddFilter = (filterHistory) => {
@@ -151,12 +163,37 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 
+  const datasetFilePathsMenu = datasetFilePaths?.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
+  datasetFilePathsMenu?.splice(0, 0, constants.NONE);
+
+  //console.log('datasetFilePathsMenu', imagingDataset);
+
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
 
       <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '30%', width: '100%' }}>
         {(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
           && renderStaticUpdateControls(isUploadedPreview)}
+
+        <Grid2 container sx={{ justifyItems: 'center', alignItems: 'center' }} size={{ xs: 12, sm: 12 }}>
+          <Grid2 size='grow'>
+            <Dropdown onSelectChange={event => setSpectraLocator(event.target.value)}
+              label='Spectra Locator'
+              values={datasetFilePathsMenu}
+              initValue={spectraLocator}
+              isMulti={false}
+              disabled={false}
+              key={'InputsPanel-Spectra'} />
+          </Grid2>
+          <Grid2 size='auto'>
+            <Button label='NEW'
+              variant='outlined'
+              color='inherit'
+              startIcon={<AddToQueueIcon />}
+              onClick={handleLocatorWidget}
+              disabled={spectraLocator === constants.NONE} />
+          </Grid2>
+        </Grid2>
 
       </Grid2>
       <Grid2 container size={{ xs: 12 }}>
@@ -169,9 +206,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
             <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
           </TabList>
           <TabPanel className={classes.scrollableTab + ' ' + classes.overflowAuto} value='1'>
-            <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}>
-              {configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
-            </Grid2>
+            {renderDynamicControls(configInputs)}
           </TabPanel>
           <TabPanel className={classes.scrollableTab} value='2'>
             <FilterSelector configFilters={configFilters} onAddFilter={onAddFilter} historyFilters={activePreview.filterConfig} />
