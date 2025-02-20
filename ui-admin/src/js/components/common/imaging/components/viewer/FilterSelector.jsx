@@ -20,7 +20,7 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 	const isEditing = editingIndex !== null; 
 
     React.useEffect(() => {
-        if (historyFilters && historyFilters.length) {
+        if (historyFilters) {
             setHistory(historyFilters);
         }
     }, [historyFilters]);
