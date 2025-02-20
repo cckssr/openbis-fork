@@ -320,6 +320,14 @@ def get_dat_type(header):
             Oscillation Control>output off: TRUE > df vs z
             Oscillation Control>output off: FALSE > I vs z
     """
+    if {} == header:
+        return "bias spectroscopy z vs V"
+
+    def get_header_value(text):
+        if text in header:
+            return header[text]
+        return None
+
     measurement_type = ""
 
     lock_in_status = -1
@@ -344,7 +352,7 @@ def get_dat_type(header):
         else:
             oscillation_control_output_off = 0
 
-    if header["Experiment"] == "bias spectroscopy":
+    if get_header_value("Experiment") == "bias spectroscopy":
         if lock_in_status == 1:
             measurement_type = "bias spectroscopy dIdV vs V"
         elif lock_in_status == 0:
