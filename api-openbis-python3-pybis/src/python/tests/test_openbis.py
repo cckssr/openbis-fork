@@ -18,6 +18,7 @@ import time
 import pytest
 
 from pybis import Openbis
+from pybis import ImagingControl
 
 
 def test_token(openbis_instance):
@@ -242,3 +243,175 @@ def test_set_token_accepts_personal_access_token_object(openbis_instance):
 
     openbis_instance.set_token(pat, save_token=True)
     openbis_instance.set_token(pat.permId, save_token=True)
+
+
+
+
+
+def test_openbis():
+    def get_instance():
+        base_url = "http://localhost:8888/openbis"
+        # base_url = "http://local.openbis.ch:8080/openbis"
+        # base_url = "https://alaskowski:8443/openbis"
+        # base_url = "https://openbis-sis-ci-sprint.ethz.ch/"
+        openbis_instance = Openbis(
+            url=base_url,
+            verify_certificates=False,
+            allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
+        )
+        # openbis_instance.set_token('$pat-test-250123130509616x7A0A9FE0C2CD7D2C9D5F54AFB163828C')
+        token = openbis_instance.login('admin', 'changeit')
+        # print(token)
+        return openbis_instance
+
+    o = get_instance()
+
+    # samples = o.get_samples(['20250120153353271-42'])
+    # samples = o.get_samples(collection='/IMAGING/NANONIS/SXM_COLLECTION')
+    # samples = o.get_samples(collection='/IMAGING/NANONIS/SXM_COLLECTION', attrs=['parents', 'children'])
+    # children = samples.get_children()
+    # child = children[1]
+
+    # samples = o.get_samples(attrs=['children', 'parents'])
+    # s = samples[8]
+    # c = s.children
+    # cc = s.get_children()
+    # c = s.children
+    # samples2 = o.get_samples(collection='/IMAGING/NANONIS/SXM_COLLECTION')
+    # samples2 = o.get_samples(collection='/DEFAULT/DEFAULT/DEFAULT')
+    # samples2 = samples2[0]
+
+    # children = samples2.get_children()
+    # print(samples2)
+
+    # s1 = o.new_sample('IMAGING_SAMPLE', collection='/IMAGING/NANONIS/SXM_COLLECTION')
+    # s1.props['DEFAULT_OBJECT_VIEW'.lower()] = 'IMAGING_GALLERY_VIEW'
+    # s1.props['name'] = 'LH021-SPM-meas-sub'
+    # s1.save()
+
+    # sample = o.get_sample('20240820130458427-43')
+    #
+    # dataset = o.new_dataset(
+    #     type="RAW_DATA",
+    #     sample='/DEFAULT/DEFAULT/DEFAULT',
+    #     files=['/home/alaskowski/Downloads/test'],
+    #     props={"$name": "file comma test"},
+    # )
+    # dataset.save()
+
+    # dataset = o.get_dataset('20241018081822706-77')
+    #
+    # ds_new = o.new_dataset(type="RAW_DATA",
+    #                        sample='/DEFAULT/DEFAULT/DEFAULT',
+    #                        files=['/home/alaskowski/Downloads/test'],
+    #                        props={"$name": "some good name"},
+    #                        )
+    # ds_new.save()
+    # dataset = ds_new
+
+    # dataset = o.get_dataset('20241127142823523-96')
+    # # print(dataset.file_list)
+    # dataset.download(destination='/home/alaskowski/Downloads/test/test2', create_default_folders = False, wait_until_finished = False)
+    # vocab = o.get_vocabulary('MY_VOCAB')
+
+    # import random
+    # with open("/home/alaskowski/Downloads/test/original.csv", "a") as f:
+    #     for i in range(10**7):
+    #         f.write(f'{random.uniform(-10.5, 15.9)}\n')
+
+    # f.close()
+
+    dataset = o.new_dataset(
+        type="RAW_DATA",
+        sample='/DEFAULT/DEFAULT/DEFAULT',
+        files=['/home/alaskowski/Downloads/test/original.csv'],
+        props={"name": "corruption fix test 1"},
+    )
+    dataset.save()
+
+    dataset.download(destination='/home/alaskowski/Downloads/test/test3', create_default_folders=False,
+                     wait_until_finished=False)
+
+    import json
+    # sample = o.get_sample('/ELN_SETTINGS/GENERAL_ELN_SETTINGS')
+    # j = json.loads(sample.props['$eln_settings'])
+    # j['instanceSettings']['minBarcodeLength'] = '13'
+    # sample.props['$eln_settings'] = json.dumps(j)
+    # sample.save()
+
+
+
+    # conf = {
+    #     'code': "test",
+    #     'label': 'label',
+    #     'description': 'desc',
+    #     'dataType': 'SAMPLE',
+    #     'multiValue': True
+    # }
+    #
+    # prop = o.new_property_type(**conf)
+    # prop.save()
+    # print(prop)
+
+    # ic = ImagingControl(o)
+    #
+    # from pybis import ImagingDataSetPreview
+    #
+    # # preview_config = ImagingDataSetPreview("png")
+    #
+    # # ic.make_preview('20241129123539459-38', 0, preview_config)
+    #
+    # # ic.export_image('20241129123539459-38', 0, '/home/alaskowski/pendrive/PREMISE')
+    # #
+    # ic.export_previews(permIds, [0 for _ in permIds], [0 for _ in permIds],
+    #                        '/home/alaskowski/pendrive/PREMISE')
+
+
+    # sample = o.new_sample('EXPERIMENTAL_STEP', collection='/DEFAULT/DEFAULT/DEFAULT')
+    # # sample = o.get_sample('20250109094351184-53')
+    # sample = o.get_sample('20250128125335843-49')
+    # spreadsheet = o.new_spreadsheet(columns=10, rows=15)
+    # spreadsheet = sample.props['experimental_step.spreadsheet']
+    # cell = spreadsheet.cell(2,2)
+    #
+    # column = spreadsheet.column(1)
+    # df = column.df
+    # spreadsheet.data[0][0] = '1'
+    # spreadsheet.data[1][0] = '2'
+    # spreadsheet.data[2][0] = '3'
+    # spreadsheet['A4'] = '=SUM(A1:A3)'
+    # spreadsheet.values[0][4] = '3'
+    # spreadsheet['OPENBIS1', 1] = 'test'
+    # spreadsheet.width[0] = 150
+    #
+    # spreadsheet.add_column('OPENBIS')
+    # spreadsheet.width[10] = 150
+    # spreadsheet.add_row()
+    #
+    #
+    # sample.props['experimental_step.spreadsheet'] = spreadsheet
+    # sample.save()
+
+    # experiment = o.get_experiment('20250117123121422-31')
+    #
+    # # sample = o.get_samples('20250120153353271-42', attrs=['children'])
+    # objects = o.get_objects(attrs=['parents'], withParents=['/IMAGING/NANONIS/IMG4', '/IMAGING/NANONIS/IMG3'])
+
+    # parents = o.get_datasets(experiment='20250117123121422-31')
+
+    # ds_new = o.new_dataset(
+    #     type="RAW_DATA",
+    #     experiment=experiment,
+    #     object=sample[0].children[0],
+    #     files=['/home/alaskowski/Downloads/test'],
+    #     props={"name": 'new_file_name'},
+    # )
+    # ds_new.set_parents(parents[0])
+    # ds_new.save()
+
+
+    print("DONE")
+
+
+
+
