@@ -85,11 +85,10 @@ def get_dat_image(folder_dir, format, channel_x, channel_y, x_axis, y_axis, colo
     # sort measurements according to date
     specs.sort(key=lambda d: d.date_time)
     specs_sub = list(filter(lambda spec:spec.name in grouping, specs))
+    specs_sub.sort(key=lambda x: x.name)
 
-    print_legend = print_legend
-    show = False
     fig = spmpy.specs_plot(specs_sub, channelx=channel_x, channely=channel_y, direction='forward',
-                           print_legend=print_legend, show=show, colormap=colormap, scaling=scaling,
+                           print_legend=print_legend, show=False, colormap=colormap, scaling=scaling,
                            x_axis=x_axis, y_axis=y_axis)
     img_byte_arr = io.BytesIO()
     plt.savefig(img_byte_arr, format=format, dpi=resolution)
