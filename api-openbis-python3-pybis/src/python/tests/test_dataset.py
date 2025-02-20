@@ -623,5 +623,5 @@ def test_create_new_dataset_in_chunks(space):
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         dataset.download(destination=tmpdirname, create_default_folders=False)
-        assert filecmp.cmp("testdir/testfile_big", os.path.join(tmpdirname, "testfile_big"))
+        assert filecmp.cmp(testfile_path, os.path.join(tmpdirname, "testfile_big"))
 
