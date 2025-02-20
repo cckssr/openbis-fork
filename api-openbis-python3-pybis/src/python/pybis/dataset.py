@@ -1352,7 +1352,7 @@ class DataSetUploadQueueNew:
                     if partial:
                         with open(filename[1], "rb") as f:
                             f.seek(bytes_range[0])
-                            data = f.read(bytes_range[1] - bytes_range[0])
+                            data = f.read(bytes_range[1] - bytes_range[0] + 1)
                             resp = self.session.post(upload_url, data=data,
                                                      verify=verify_certificates)
                             resp.raise_for_status()

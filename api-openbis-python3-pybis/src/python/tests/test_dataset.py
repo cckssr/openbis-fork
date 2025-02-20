@@ -19,6 +19,8 @@ import time
 import uuid
 
 import pytest
+import tempfile
+import filecmp
 
 from pybis.things import Things
 
@@ -602,5 +604,23 @@ def test_create_new_dataset_with_parent(space):
     assert new_dataset.file_list == ["original/testfile"]
     assert new_dataset.parents == [dataset.permId]
 
+def test_create_new_dataset_in_chunks(space):
+    openbis_instance = space.openbis
 
+    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile_big")
+
+    dataset = openbis_instance.new_dataset(
+        type="RAW_DATA",
+        experiment="/DEFAULT/DEFAULT/DEFAULT",
+        files=[testfile_path],
+        props={"name": "big file upload test"},
+    )
+    dataset.save()
+
+    assert dataset.permId is not None
+    assert dataset.file_list == ["original/testfile_big"]
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        dataset.download(destination=tmpdirname, create_default_folders=False)
+        assert filecmp.cmp("testdir/testfile_big", os.path.join(tmpdirname, "testfile_big"))
 
