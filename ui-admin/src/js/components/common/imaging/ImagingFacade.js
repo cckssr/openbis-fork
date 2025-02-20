@@ -55,11 +55,12 @@ export default class ImagingFacade {
         return Array.from(dataSetTypesMap.values());
     }
 
-    createLocatedSXMPreview = async (objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview) => {
+    createLocatedSXMPreview = async (objId, sxmPermId, sxmFilePath, activeImageIdx, selectedDatPreview) => {
         const sxmPreviewConfig = await this.getImagingDatasetPreviewConfig(sxmPermId);
-        const spectraConfig = { spectraLocator: true, objId, sxmPreviewConfig, sxmPermId, sxmFilePath, ...selectedSpectraPreview.config }
-        selectedSpectraPreview.config = spectraConfig;
-        return this.updateImagingDataset(objId, activeImageIdx, selectedSpectraPreview);
+        const spectraConfig = { spectraLocator: true, objId, sxmPreviewConfig, sxmPermId, sxmFilePath, ...selectedDatPreview.config }
+        selectedDatPreview.config = spectraConfig;
+        const updatedImagingDataset = await this.updateImagingDataset(objId, activeImageIdx, selectedDatPreview);
+        return updatedImagingDataset;
     }
 
     getPathsList = async (datasetList) => {

@@ -55,22 +55,18 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
     }, [state.loaded, objId, extOpenbis]);
 
     const createLocatedSXMPreview = async (sxmPermId, sxmFilePath) => {
-
-        //createNewPreview();
-        //saveDataset();
-        const { activeImageIdx, activePreviewIdx, imagingDataset } = state;
-        const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[activePreviewIdx];
-        //handleOpen();
-        console.log('createLocatedSXMPreview: ', selectedSpectraPreview, objId, sxmPermId, sxmFilePath);
+        handleOpen();
+        const newActivePreviewIdx = createNewPreview();
+        const { activeImageIdx, imagingDataset } = state;
+        const selectedSpectraPreview = imagingDataset.images[activeImageIdx].previews[newActivePreviewIdx];
         const newSpectraPreview = await new ImagingFacade(extOpenbis).createLocatedSXMPreview(objId, sxmPermId, sxmFilePath, activeImageIdx, selectedSpectraPreview);
-        console.log('newSpectraPreview: ', newSpectraPreview);
         if (newSpectraPreview.error) {
             setState(prev => ({ ...prev, open: false, isChanged: true, isSaved: false }));
             handleError(newSpectraPreview.error);
         }
-        delete newSpectraPreview.preview['@id']; //@id are duplicated across different previews on update, need to be deleted
+        deleteSerializationIds(newSpectraPreview);
         let toUpdateImgDs = { ...imagingDataset };
-        toUpdateImgDs.images[activeImageIdx].previews[activePreviewIdx] = newSpectraPreview.preview;
+        toUpdateImgDs.images[activeImageIdx].previews[newActivePreviewIdx] = newSpectraPreview.preview;
         setState(prev => ({
             ...prev,
             open: false,
@@ -312,6 +308,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         }));
         if (onUnsavedChanges !== null)
             onUnsavedChanges(objId, true);
+        return newLastIdx;
     };
 
     return (

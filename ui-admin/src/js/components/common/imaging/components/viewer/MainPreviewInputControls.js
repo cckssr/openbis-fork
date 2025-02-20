@@ -1,5 +1,5 @@
 import React from 'react'
-import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, FormControlLabel, styled, Switch, Tab, Box } from '@mui/material';
+import { Divider, Grid2, TextField, Autocomplete, Checkbox, Typography, Tab } from '@mui/material';
 import { isObjectEmpty, createInitValues } from '@src/js/components/common/imaging/utils.js';
 import Dropdown from '@src/js/components/common/imaging/components/common/Dropdown.jsx';
 import constants from '@src/js/components/common/imaging/constants.js';
@@ -41,8 +41,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
 
   const { state, handleUpdate, handleTagImage,
     handleResolutionChange, handleActiveConfigChange,
-    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter,
-    createNewPreview, saveDataset } = useImagingDataContext();
+    handleShowPreview, createLocatedSXMPreview, handleOnAddFilter } = useImagingDataContext();
 
   const { imagingDataset, resolution, isChanged, imagingTags, datasetType, datasetFilePaths } = state;
 
@@ -74,10 +73,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   }
 
   const handleLocatorWidget = async () => {
-    createNewPreview();
-    await saveDataset();
     const [sxmPermId, sxmFilePath] = spectraLocator.split(' - ');
-    console.log('handleLocatorWidget:', sxmPermId, sxmFilePath);
     createLocatedSXMPreview(sxmPermId, sxmFilePath);
   }
 
@@ -146,12 +142,16 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   }
 
   const renderDynamicControls = (configInputs) => {
-    const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
-    var sectionsArray = []
-    for (let [key, imageDatasetControlList] of sectionGroups) {
-      sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
+    if (configInputs !== null && configInputs.length > 0) {
+      const sectionGroups = Map.groupBy(configInputs, imageDatasetControl => imageDatasetControl.section)
+      var sectionsArray = []
+      for (let [key, imageDatasetControlList] of sectionGroups) {
+        sectionsArray.push(<InputControlsSection key={key} sectionKey={key} imageDatasetControlList={imageDatasetControlList} inputValues={inputValues} isUploadedPreview={isUploadedPreview} onChangeActConf={handleActiveConfigChange} />)
+      }
+      return (<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}> {sectionsArray} </Grid2>);
+    } else {
+      return <Typography px={1} my={1} textAlign={'center'}>No parameters configuration provided</Typography>
     }
-    return sectionsArray;
   }
 
   const onAddFilter = (filterHistory) => {
@@ -166,7 +166,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   const datasetFilePathsMenu = datasetFilePaths?.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
   datasetFilePathsMenu?.splice(0, 0, constants.NONE);
 
-  //console.log('datasetFilePathsMenu', datasetFilePaths, datasetFilePathsMenu);
+  //console.log('datasetFilePathsMenu', imagingDataset);
 
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
@@ -206,9 +206,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
             <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
           </TabList>
           <TabPanel className={classes.scrollableTab + ' ' + classes.overflowAuto} value='1'>
-            <Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}>
-              {configInputs !== null && configInputs.length > 0 ? renderDynamicControls(configInputs) : <Typography>Configuration inputs malformatted</Typography>}
-            </Grid2>
+            {renderDynamicControls(configInputs)}
           </TabPanel>
           <TabPanel className={classes.scrollableTab} value='2'>
             <FilterSelector configFilters={configFilters} onAddFilter={onAddFilter} historyFilters={activePreview.filterConfig} />
