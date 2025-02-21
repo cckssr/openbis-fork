@@ -52,6 +52,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -438,7 +439,8 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
         MultiDataSetArchiverContainerDTO container = transaction.createContainer(containerName);
         for (String code : dataSetCodes)
         {
-            transaction.insertDataset(dataSetDescription(code), container);
+            DatasetDescription datasetDescription = dataSetDescription(code);
+            transaction.insertDataset(datasetDescription.getDataSetCode(), datasetDescription.getDataSetSize(), container);
         }
         transaction.commit();
     }

@@ -140,11 +140,11 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
 
     IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()
     {
-        return MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+        return MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 
     IMultiDataSetArchiverDBTransaction getTransaction()
     {
-        return new MultiDataSetArchiverDBTransaction();
+        return new MultiDataSetArchiverDBTransaction(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 }

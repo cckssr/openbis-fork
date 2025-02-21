@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -28,21 +27,19 @@ import net.lemnik.eodsql.QueryTool;
  */
 public class MultiDataSetArchiverDataSourceUtil
 {
-    private static DataSource dataSource = ServiceProvider.getDataSourceProvider().getDataSource("multi-dataset-archiver-db");
-
-    static IMultiDataSetArchiverQueryDAO getTransactionalQuery()
+    static IMultiDataSetArchiverQueryDAO getTransactionalQuery(DataSource dataSource)
     {
         return QueryTool.getQuery(dataSource, IMultiDataSetArchiverQueryDAO.class);
     }
 
-    public static IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQueryDAO()
+    public static IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQueryDAO(DataSource dataSource)
     {
         return QueryTool.getQuery(dataSource, IMultiDataSetArchiverReadonlyQueryDAO.class);
     }
 
-    public static List<String> getContainerList()
+    public static List<String> getContainerList(DataSource dataSource)
     {
-        List<MultiDataSetArchiverContainerDTO> containerDTOs = getReadonlyQueryDAO().listContainers();
+        List<MultiDataSetArchiverContainerDTO> containerDTOs = getReadonlyQueryDAO(dataSource).listContainers();
         List<String> containers = new ArrayList<String>();
         if (containerDTOs != null)
         {
@@ -54,9 +51,9 @@ public class MultiDataSetArchiverDataSourceUtil
         return containers;
     }
 
-    public static Boolean isDataSetInContainer(String dataSetCode)
+    public static Boolean isDataSetInContainer(DataSource dataSource, String dataSetCode)
     {
-        MultiDataSetArchiverDataSetDTO dataSetDTO = getReadonlyQueryDAO().getDataSetForCode(dataSetCode);
+        MultiDataSetArchiverDataSetDTO dataSetDTO = getReadonlyQueryDAO(dataSource).getDataSetForCode(dataSetCode);
         return dataSetDTO != null && dataSetDTO.getContainerId() > 0;
     }
 

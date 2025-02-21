@@ -61,7 +61,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
     public void setUp(String pluginName, Properties properties)
     {
         archiveFolder = PropertyParametersUtil.extractSingleSectionProperties(properties,
-                PluginTaskInfoProvider.ARCHIVER_SECTION_NAME, false).getProperties()
+                        PluginTaskInfoProvider.ARCHIVER_SECTION_NAME, false).getProperties()
                 .getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY);
         if (archiveFolder == null)
         {
@@ -176,6 +176,6 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
 
     protected IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()
     {
-        return MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+        return MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 }

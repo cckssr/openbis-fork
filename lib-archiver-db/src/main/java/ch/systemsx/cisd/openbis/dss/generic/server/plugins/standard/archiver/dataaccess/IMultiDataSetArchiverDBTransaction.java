@@ -17,8 +17,6 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.da
 
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
-
 /**
  * @author Franz-Josef Elmer
  */
@@ -34,7 +32,7 @@ public interface IMultiDataSetArchiverDBTransaction
 
     public void deleteContainer(String container);
 
-    public MultiDataSetArchiverDataSetDTO insertDataset(DatasetDescription dataSet,
+    public MultiDataSetArchiverDataSetDTO insertDataset(String code, Long size,
             MultiDataSetArchiverContainerDTO container);
 
     public MultiDataSetArchiverDataSetDTO getDataSetForCode(String code);

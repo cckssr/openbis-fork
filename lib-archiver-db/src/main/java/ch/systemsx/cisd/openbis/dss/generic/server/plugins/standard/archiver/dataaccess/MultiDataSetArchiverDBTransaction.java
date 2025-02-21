@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.da
 
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
+import javax.sql.DataSource;
 
 /**
  * @author Jakub Straszewski
@@ -25,17 +25,17 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverDBTransaction
 {
 
-    private IMultiDataSetArchiverQueryDAO transaction;
+    private final IMultiDataSetArchiverQueryDAO query;
 
-    public MultiDataSetArchiverDBTransaction()
+    public MultiDataSetArchiverDBTransaction(DataSource dataSource)
     {
-        this.transaction = MultiDataSetArchiverDataSourceUtil.getTransactionalQuery();
+        this.query = MultiDataSetArchiverDataSourceUtil.getTransactionalQuery(dataSource);
     }
 
     @Override
     public List<MultiDataSetArchiverDataSetDTO> getDataSetsForContainer(MultiDataSetArchiverContainerDTO container)
     {
-        return transaction.listDataSetsForContainerId(container.getId());
+        return query.listDataSetsForContainerId(container.getId());
     }
 
     /**
@@ -48,7 +48,7 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
         MultiDataSetArchiverContainerDTO container =
                 new MultiDataSetArchiverContainerDTO(0, path);
 
-        long id = transaction.addContainer(container);
+        long id = query.addContainer(container);
         container.setId(id);
 
         return container;
@@ -57,31 +57,29 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
     @Override
     public void deleteContainer(long containerId)
     {
-        transaction.deleteContainer(containerId);
+        query.deleteContainer(containerId);
     }
 
     @Override
     public void deleteContainer(String container)
     {
-        transaction.deleteContainer(container);
+        query.deleteContainer(container);
     }
 
     @Override
-    public MultiDataSetArchiverDataSetDTO insertDataset(DatasetDescription dataSet,
+    public MultiDataSetArchiverDataSetDTO insertDataset(String code, Long size,
             MultiDataSetArchiverContainerDTO container)
     {
-        String code = dataSet.getDataSetCode();
-
         MultiDataSetArchiverDataSetDTO mads = getDataSetForCode(code);
 
         if (mads != null)
         {
-            throw new IllegalStateException("Dataset " + dataSet.getDataSetCode() + "is already archived in other container");
+            throw new IllegalStateException("Dataset " + code + "is already archived in other container");
         }
 
-        mads = new MultiDataSetArchiverDataSetDTO(0, code, container.getId(), dataSet.getDataSetSize());
+        mads = new MultiDataSetArchiverDataSetDTO(0, code, container.getId(), size);
 
-        long id = transaction.addDataSet(mads);
+        long id = query.addDataSet(mads);
         mads.setId(id);
 
         return mads;
@@ -90,19 +88,19 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
     @Override
     public MultiDataSetArchiverDataSetDTO getDataSetForCode(String code)
     {
-        return transaction.getDataSetForCode(code);
+        return query.getDataSetForCode(code);
     }
 
     @Override
     public void requestUnarchiving(List<String> dataSetCodes)
     {
-        transaction.requestUnarchiving(dataSetCodes.toArray(new String[dataSetCodes.size()]));
+        query.requestUnarchiving(dataSetCodes.toArray(new String[dataSetCodes.size()]));
     }
 
     @Override
     public void resetRequestUnarchiving(long containerId)
     {
-        transaction.resetRequestUnarchiving(containerId);
+        query.resetRequestUnarchiving(containerId);
     }
 
     /**
@@ -111,7 +109,7 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
     @Override
     public void commit()
     {
-        transaction.commit();
+        query.commit();
     }
 
     /**
@@ -120,7 +118,7 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
     @Override
     public void rollback()
     {
-        transaction.rollback();
+        query.rollback();
     }
 
     /**
@@ -129,6 +127,6 @@ public class MultiDataSetArchiverDBTransaction implements IMultiDataSetArchiverD
     @Override
     public void close()
     {
-        transaction.close();
+        query.close();
     }
 }

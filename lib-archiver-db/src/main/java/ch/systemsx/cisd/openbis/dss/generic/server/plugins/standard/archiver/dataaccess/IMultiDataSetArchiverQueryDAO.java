@@ -15,11 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess;
 
+import ch.systemsx.cisd.common.db.mapper.StringArrayMapper;
 import net.lemnik.eodsql.Select;
 import net.lemnik.eodsql.TransactionQuery;
 import net.lemnik.eodsql.Update;
-
-import ch.systemsx.cisd.common.db.mapper.StringArrayMapper;
 
 /**
  * @author Jakub Straszewski

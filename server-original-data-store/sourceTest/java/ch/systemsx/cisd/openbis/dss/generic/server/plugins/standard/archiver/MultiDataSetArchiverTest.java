@@ -566,7 +566,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     {
         MultiDataSetArchiverContainerDTO container = transaction.createContainer("path");
         ds1.setDataSetSize(10L);
-        transaction.insertDataset(ds1, container);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), container);
         transaction.commit();
         prepareUpdateShareIdAndSize(ds2, 20);
         prepareConsistencyCheck(ds2.getDataSetCode());
@@ -760,7 +760,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiverContainerDTO container = transaction.createContainer("path");
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds2, container);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), container);
         transaction.commit();
 
         MultiDataSetArchiver archiver = createArchiver(null);
@@ -789,7 +789,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "5");
         MultiDataSetArchiverContainerDTO container = transaction.createContainer("path");
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds2, container);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), container);
         transaction.commit();
         assertEquals(true, new File(share, ds1.getDataSetCode()).exists());
         assertEquals(true, new File(share, ds2.getDataSetCode()).exists());
@@ -1039,8 +1039,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         MultiDataSetArchiverContainerDTO container = transaction.createContainer("c1");
         ds1.setDataSetSize(10L);
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds1, container);
-        transaction.insertDataset(ds2, container);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), container);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), container);
         transaction.commit();
         properties.setProperty(MultiDataSetArchiver.DELAY_UNARCHIVING, "true");
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
@@ -1120,8 +1120,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         MultiDataSetArchiverContainerDTO c2 = transaction.createContainer("c2");
         ds1.setDataSetSize(10L);
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds1, c1);
-        transaction.insertDataset(ds2, c2);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), c1);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), c2);
         transaction.commit();
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiver archiver = createArchiver(null);
@@ -1137,8 +1137,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         MultiDataSetArchiverContainerDTO c1 = transaction.createContainer("c1");
         ds1.setDataSetSize(10L);
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds1, c1);
-        transaction.insertDataset(ds2, c1);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), c1);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), c1);
         transaction.commit();
         MultiDataSetArchiver archiver = createArchiver(null);
 
@@ -1156,8 +1156,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         MultiDataSetArchiverContainerDTO c2 = transaction.createContainer("c2");
         ds1.setDataSetSize(10L);
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds1, c1);
-        transaction.insertDataset(ds2, c2);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), c1);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), c2);
         transaction.commit();
         MultiDataSetArchiver archiver = createArchiver(null);
 
@@ -1175,8 +1175,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         MultiDataSetArchiverContainerDTO c2 = transaction.createContainer("c2");
         ds1.setDataSetSize(1 * FileUtils.ONE_MB);
         ds2.setDataSetSize(2 * FileUtils.ONE_MB);
-        transaction.insertDataset(ds1, c1);
-        transaction.insertDataset(ds2, c2);
+        transaction.insertDataset(ds1.getDataSetCode(), ds1.getDataSetSize(), c1);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), c2);
         transaction.commit();
         MultiDataSetArchiver archiver = createArchiver(null);
         try

@@ -190,14 +190,14 @@ public class MultiDataSetDeletionMaintenanceTask
     {
         if (readonlyQuery == null)
         {
-            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         }
         return readonlyQuery;
     }
 
     protected IMultiDataSetArchiverDBTransaction getTransaction()
     {
-        return new MultiDataSetArchiverDBTransaction();
+        return new MultiDataSetArchiverDBTransaction(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 
     protected IDataStoreServiceInternal getDataStoreService()

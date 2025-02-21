@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.base.utilities.OSUtilities;
@@ -42,6 +44,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
@@ -52,7 +55,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
  *
  * @author Franz-Josef Elmer
  */
-class MultiDataSetArchivingUtils
+public class MultiDataSetArchivingUtils
 {
     static IMultiDataSetArchiveCleaner createCleaner(Properties properties)
     {
@@ -158,6 +161,11 @@ class MultiDataSetArchivingUtils
 
         List<String> fullCommand = Arrays.asList(shell.getAbsolutePath(), "-c", command);
         return ProcessExecutionHelper.run(fullCommand, operationLog, machineLog);
+    }
+
+    public static DataSource getMutiDataSetArchiverDataSource()
+    {
+        return ServiceProvider.getDataSourceProvider().getDataSource("multi-dataset-archiver-db");
     }
 
 }

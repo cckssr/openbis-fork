@@ -38,6 +38,7 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -110,7 +111,8 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         List<String> multiDataSetContrainers = null;
         if (isMultiDatasetArchiver)
         {
-            multiDataSetContrainers = MultiDataSetArchiverDataSourceUtil.getContainerList();
+            multiDataSetContrainers =
+                    MultiDataSetArchiverDataSourceUtil.getContainerList(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         }
 
         Set<String> multiDatasetsContainersOnDB = new HashSet<String>();
@@ -172,8 +174,8 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
             }
         }
 
-        operationLog.info("4. Verify if the " + multiDatasetsContainersOnDB.size() 
-            + " containers of the multi data set mapping database are on the file system.");
+        operationLog.info("4. Verify if the " + multiDatasetsContainersOnDB.size()
+                + " containers of the multi data set mapping database are on the file system.");
         List<String> multiOnDBandNotFS = new ArrayList<String>();
         for (String multiDatasetsContainerOnDB : multiDatasetsContainersOnDB)
         {
@@ -194,7 +196,8 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
                     presentInArchiveFS.contains(fileNameZip) == false &&
                     (isMultiDatasetArchiver == false ||
                             (isMultiDatasetArchiver &&
-                                    MultiDataSetArchiverDataSourceUtil.isDataSetInContainer(presentOnDB.toUpperCase()) == false)))
+                                    MultiDataSetArchiverDataSourceUtil.isDataSetInContainer(
+                                            MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource(), presentOnDB.toUpperCase()) == false)))
             {
                 operationLog.debug("Single - Not found in FS for DB: " + presentOnDB);
                 singleOnDBandNotFS.add(presentOnDB);

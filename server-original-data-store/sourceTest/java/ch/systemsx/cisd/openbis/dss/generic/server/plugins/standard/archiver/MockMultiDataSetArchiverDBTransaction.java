@@ -89,11 +89,9 @@ public final class MockMultiDataSetArchiverDBTransaction
     }
 
     @Override
-    public MultiDataSetArchiverDataSetDTO insertDataset(DatasetDescription dataSet, MultiDataSetArchiverContainerDTO container)
+    public MultiDataSetArchiverDataSetDTO insertDataset(String code, Long size, MultiDataSetArchiverContainerDTO container)
     {
-        String dataSetCode = dataSet.getDataSetCode();
-        Long dataSetSize = dataSet.getDataSetSize();
-        MultiDataSetArchiverDataSetDTO dataSetDTO = new MultiDataSetArchiverDataSetDTO(id++, dataSetCode, container.getId(), dataSetSize);
+        MultiDataSetArchiverDataSetDTO dataSetDTO = new MultiDataSetArchiverDataSetDTO(id++, code, container.getId(), size);
         uncommittedDataSets.add(dataSetDTO);
         return dataSetDTO;
     }

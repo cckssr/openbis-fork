@@ -144,7 +144,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         notifyEmails = PropertyUtils.getMandatoryList(properties, NOTIFY_EMAILS_KEY);
         statusFile = PropertyUtils.getMandatoryProperty(properties, STATUS_FILE_KEY);
 
-        multiDataSetDAO = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+        multiDataSetDAO = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         pathInfoDAO = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoNonAutoClosingDAO.class);
     }
 

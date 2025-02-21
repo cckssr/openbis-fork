@@ -192,7 +192,7 @@ class MultiDataSetArchivingFinalizer implements IProcessingPluginTask
         {
             operationLog.warn("Data sets in Multi Data Set Archive database are different from provided data sets: "
                     + "Provided data sets: " + CollectionUtils.abbreviate(dataSetCodes, 30)
-                    + ". Data sets in Multi Data Set Archive database: " 
+                    + ". Data sets in Multi Data Set Archive database: "
                     + CollectionUtils.abbreviate(dataSetCodesFromDb, 20));
             return false;
         }
@@ -256,14 +256,14 @@ class MultiDataSetArchivingFinalizer implements IProcessingPluginTask
     {
         if (readonlyQuery == null)
         {
-            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         }
         return readonlyQuery;
     }
 
     IMultiDataSetArchiverDBTransaction getTransaction()
     {
-        return new MultiDataSetArchiverDBTransaction();
+        return new MultiDataSetArchiverDBTransaction(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 
     private boolean waitUntilReplicated(List<DatasetDescription> dataSets, Parameters parameters)

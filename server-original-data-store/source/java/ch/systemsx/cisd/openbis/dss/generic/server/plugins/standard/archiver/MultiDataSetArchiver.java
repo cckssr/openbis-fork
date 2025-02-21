@@ -403,7 +403,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     private void filterBasedOnArchiveStatus(LinkedList<? extends IDatasetLocation> dataSets,
             DatasetProcessingStatuses result, FilterOption filterOption, Status status, Operation operation)
     {
-        for (Iterator<? extends IDatasetLocation> iterator = dataSets.iterator(); iterator.hasNext();)
+        for (Iterator<? extends IDatasetLocation> iterator = dataSets.iterator(); iterator.hasNext(); )
         {
             IDatasetLocation dataSet = iterator.next();
             boolean isPresentInArchive = isDataSetPresentInArchive(dataSet.getDataSetCode());
@@ -519,7 +519,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         MultiDataSetArchiverContainerDTO container = transaction.createContainer(containerPath);
         for (DatasetDescription dataSet : dataSets)
         {
-            transaction.insertDataset(dataSet, container);
+            transaction.insertDataset(dataSet.getDataSetCode(), dataSet.getDataSetSize(), container);
         }
         return container.getId();
     }
@@ -1055,8 +1055,8 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         if (totalSumInBytes > maximumUnarchivingCapacityInMB * FileUtils.ONE_MB)
         {
             String message = String.format("Total size of selected data sets (%.2f MB)"
-                    + " and those already scheduled for unarchiving (%.2f MB) exceeds capacity."
-                    + " Please narrow down your selection or try again later.",
+                            + " and those already scheduled for unarchiving (%.2f MB) exceeds capacity."
+                            + " Please narrow down your selection or try again later.",
                     ((double) (totalSumInBytes - totalSizeOfUnarchivingRequested) / FileUtils.ONE_MB),
                     ((double) totalSizeOfUnarchivingRequested / FileUtils.ONE_MB));
             throw new UserFailureException(message);
@@ -1127,14 +1127,14 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     @Private
     IMultiDataSetArchiverDBTransaction getTransaction()
     {
-        return new MultiDataSetArchiverDBTransaction();
+        return new MultiDataSetArchiverDBTransaction(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 
     IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()
     {
         if (readonlyQuery == null)
         {
-            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO();
+            readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         }
         return readonlyQuery;
     }
