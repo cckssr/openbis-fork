@@ -108,14 +108,17 @@ export default class ImagingFacade {
         )
         const dataset = datasets[objId];
 
-        if (!dataset) return null; // Handle missing dataset
+        if (!dataset) return null;
 
         if (withProperties) return dataset.properties;
 
         const imagingDataConfig = await this.openbis.fromJson(null, JSON.parse(dataset.properties[constants.IMAGING_DATA_CONFIG]));
 
         if (withType) {
-            const filesPath = withDatasetsHierarchy ? await this.getDatasetFilesPath(dataset) : [];
+            var filesPath = [];
+            if (imagingDataConfig.images[0].config.adaptor.includes('NanonisDatAdaptor')) {
+                filesPath = withDatasetsHierarchy ? await this.getDatasetFilesPath(dataset) : [];
+            }
             return [filesPath, dataset.type.code, imagingDataConfig];
         }
 

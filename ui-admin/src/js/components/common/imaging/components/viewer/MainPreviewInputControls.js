@@ -175,25 +175,26 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
         {(datasetType === constants.IMAGING_DATA || datasetType === constants.USER_DEFINED_IMAGING_DATA)
           && renderStaticUpdateControls(isUploadedPreview)}
 
-        <Grid2 container sx={{ justifyItems: 'center', alignItems: 'center' }} size={{ xs: 12, sm: 12 }}>
-          <Grid2 size='grow'>
-            <Dropdown onSelectChange={event => setSpectraLocator(event.target.value)}
-              label='Spectra Locator'
-              values={datasetFilePathsMenu}
-              initValue={spectraLocator}
-              isMulti={false}
-              disabled={false}
-              key={'InputsPanel-Spectra'} />
-          </Grid2>
-          <Grid2 size='auto'>
-            <Button label='NEW'
-              variant='outlined'
-              color='inherit'
-              startIcon={<AddToQueueIcon />}
-              onClick={handleLocatorWidget}
-              disabled={spectraLocator === constants.NONE} />
-          </Grid2>
-        </Grid2>
+        {datasetFilePathsMenu?.length > 1 && (
+          <Grid2 container sx={{ justifyItems: 'center', alignItems: 'center' }} size={{ xs: 12, sm: 12 }}>
+            <Grid2 size='grow'>
+              <Dropdown onSelectChange={event => setSpectraLocator(event.target.value)}
+                label='Spectra Locator'
+                values={datasetFilePathsMenu}
+                initValue={spectraLocator}
+                isMulti={false}
+                disabled={false}
+                key={'InputsPanel-Spectra'} />
+            </Grid2>
+            <Grid2 size='auto'>
+              <Button label='NEW'
+                variant='outlined'
+                color='inherit'
+                startIcon={<AddToQueueIcon />}
+                onClick={handleLocatorWidget}
+                disabled={spectraLocator === constants.NONE} />
+            </Grid2>
+          </Grid2>)}
 
       </Grid2>
       <Grid2 container size={{ xs: 12 }}>
