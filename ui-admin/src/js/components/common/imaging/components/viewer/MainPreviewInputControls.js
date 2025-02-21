@@ -150,7 +150,7 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       }
       return (<Grid2 container sx={{ justifyContent: 'space-between', maxHeight: '70%', width: '100%', minHeight: '300px' }}> {sectionsArray} </Grid2>);
     } else {
-      return <Typography px={1} my={1} textAlign={'center'}>No parameters configuration provided</Typography>
+      return <Typography px={1} my={1} textAlign={'center'}>{messages.get(messages.NO_CONFIG_PROVIDED, messages.get(messages.PARAMETERS))}</Typography>
     }
   }
 
@@ -202,8 +202,8 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
       <Grid2 >
         <TabContext value={tab} >
           <TabList onChange={handleChange} aria-label='Preview control' variant='fullWidth' textColor='inherit' indicatorColor='secondary'>
-            <Tab icon={<TuneIcon />} label='Parameters' value='1' />
-            <Tab icon={<PhotoFilterIcon />} label='Filters' value='2' />
+            <Tab icon={<TuneIcon />} label={messages.get(messages.PARAMETERS)} value='1' />
+            <Tab icon={<PhotoFilterIcon />} label={messages.get(messages.FILTERS)} value='2' />
           </TabList>
           <TabPanel className={classes.scrollableTab + ' ' + classes.overflowAuto} value='1'>
             {renderDynamicControls(configInputs)}

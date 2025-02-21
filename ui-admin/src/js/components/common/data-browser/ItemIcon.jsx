@@ -57,7 +57,7 @@ library.add(
 const styles = (theme) => ({
   icon: {
     verticalAlign: 'middle',
-    fontSize: '6rem'
+    fontSize: '4rem'
   }
 })
 

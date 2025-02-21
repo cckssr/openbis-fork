@@ -22,6 +22,7 @@ import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
 import {isUserAbortedError, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
+import mimeTypeMap from './mimeTypes';
 
 
 const styles = theme => ({
@@ -254,6 +255,9 @@ class DataBrowser extends React.Component {
   }
 
   handleGridControllerRef(gridController) {
+    if(this.controller.gridController){
+      return
+    }
     this.controller.gridController = gridController
   }
 
@@ -500,63 +504,12 @@ class DataBrowser extends React.Component {
               loadSettings={this.props.onLoadDisplaySettings}
               onSettingsChange={this.props.onStoreDisplaySettings}
               controllerRef={this.handleGridControllerRef}
+              controller={this.controller.gridController}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
               classes={{container: classes.grid}}
-              isDragging={this.state.isDragging}
-              fromExternalApp={this.props.fromExternalApp}
-              columns={[
-                {
-                  name: 'name',
-                  label: messages.get(messages.NAME),
-                  sortable: true,
-                  visible: true,
-                  getValue: ({ row }) => row.name,
-                  renderValue: ({ row }) => {
-                    const isTruncated = _.isString(row.name) && row.name.length > 100;
-                    const displayedName = isTruncated
-                      ? row.name.slice(0, 100) + '...'
-                      : row.name;
-                  
-                    return (
-                      <div className={classes.nameCell}>
-                        <ItemIcon
-                          file={row}
-                          classes={{ icon: classes.icon }}
-                          configuration={fileTypeConfig}
-                        />
-                        <span {...(isTruncated ? { title: row.name } : {})}>
-                          {displayedName}
-                        </span>
-                      </div>
-                    );
-                  },
-                  renderFilter: null
-                },
-                {
-                  name: 'type',
-                  label: messages.get(messages.TYPE),
-                  sortable: true,
-                  visible: false,
-                  getValue: ({ row }) => (row.directory ? 'Directory' : 'File')
-                },
-                {
-                  name: 'size',
-                  label: messages.get(messages.SIZE),
-                  sortable: true,
-                  visible: true,
-                  getValue: ({ row }) => this.sizeToString(row.size)
-                },
-                {
-                  name: 'modified',
-                  label: messages.get(messages.MODIFIED),
-                  sortable: true,
-                  visible: true,
-                  getValue: ({ row }) => row.lastModifiedTime,
-                  renderValue: ({ row }) =>
-                    timeToString(row.lastModifiedTime)
-                }
-              ]}
+              isDragging={this.state.isDragging}              
+              columns={this.getDataBrowserColumns(classes)}
               loadRows={this.controller.load}
               exportable={false}
               selectable={true}
@@ -574,15 +527,22 @@ class DataBrowser extends React.Component {
               clickable={true}
               selectable={true}
               multiselectable={true}
-              onClick={this.handleClick}
+              loadRows={this.controller.load}
+              onClick={this.handleRowDoubleClick}
               onSelect={this.handleSelect}
               onMultiselect={this.handleMultiselect}
               configuration={fileTypeConfig}
               files={files}
               selectedFile={selectedFile}
               multiselectedFiles={multiselectedFiles}
+              controllerRef={this.handleGridControllerRef}
+              controller={this.controller.gridController}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
-              header='Files'
+              onSelectedRowChange={this.handleSelect}
+              onMultiselectedRowsChange={this.handleMultiselect}
+              onRowDoubleClick={this.handleRowDoubleClick}
+              header='Files'                       
+              columns={this.getDataBrowserColumns(classes)}
             />
           )}
           {showInfo && selectedFile && (
@@ -657,6 +617,61 @@ class DataBrowser extends React.Component {
         title={messages.get(messages.NON_EMPTY_FOLDER)}
         content={messages.get(messages.NON_EMPTY_FOLDER_MSG)}
       />
+    ]
+  }
+
+  getDataBrowserColumns(classes){
+    return [
+      {
+        name: 'name',
+        label: messages.get(messages.NAME),
+        sortable: true,
+        visible: true,
+        getValue: ({ row }) => row.name,
+        renderValue: ({ row }) => {
+          const isTruncated = _.isString(row.name) && row.name.length > 100;
+          const displayedName = isTruncated
+            ? row.name.slice(0, 100) + '...'
+            : row.name;
+        
+          return (
+            <div className={classes.nameCell}>
+              <ItemIcon
+                file={row}
+                classes={{ icon: classes.icon }}
+                configuration={fileTypeConfig}
+              />
+              <span {...(isTruncated ? { title: row.name } : {})}>
+                {displayedName}
+              </span>
+            </div>
+          );
+        },
+        renderFilter: null
+      },
+      {
+        name: 'type',
+        label: messages.get(messages.TYPE),
+        sortable: true,
+        visible: false,
+        getValue: ({ row }) => (row.directory ? 'Directory' : 'File')
+      },
+      {
+        name: 'size',
+        label: messages.get(messages.SIZE),
+        sortable: true,
+        visible: true,
+        getValue: ({ row }) => this.sizeToString(row.size)
+      },
+      {
+        name: 'modified',
+        label: messages.get(messages.MODIFIED),
+        sortable: true,
+        visible: true,
+        getValue: ({ row }) => row.lastModifiedTime,
+        renderValue: ({ row }) =>
+          timeToString(row.lastModifiedTime)
+      }
     ]
   }
 
