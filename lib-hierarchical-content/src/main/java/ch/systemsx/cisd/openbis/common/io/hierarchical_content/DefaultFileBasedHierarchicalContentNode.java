@@ -35,7 +35,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
 /**
- * {@link IHierarchicalContent} implementation for normal {@link java.io.File}.
+ * {@link IHierarchicalContent} implementation for normal {@link File}.
  * 
  * @author Piotr Buczek
  */

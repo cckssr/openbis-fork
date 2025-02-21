@@ -19,15 +19,14 @@ import java.io.File;
 
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 
 /**
- * {@link IHierarchicalContent} implementation for normal {@link java.io.File} directory.
+ * {@link IHierarchicalContent} implementation for normal {@link File} directory.
  * <p>
  * NOTE: The directory can contain HDF5 containers inside and they will handled in a special way.
- * 
+ *
  * @author Piotr Buczek
  */
 class DefaultFileBasedHierarchicalContent extends AbstractHierarchicalContent
@@ -82,7 +81,7 @@ class DefaultFileBasedHierarchicalContent extends AbstractHierarchicalContent
     public IHierarchicalContentNode tryGetNode(String relativePath)
     {
         final IHierarchicalContentNode node;
-        if (StringUtils.isBlank(relativePath))
+        if (relativePath == null || relativePath.trim().isEmpty())
         {
             node = getRootNode();
         } else if (relativePath.startsWith("../") || relativePath.contains("/../"))

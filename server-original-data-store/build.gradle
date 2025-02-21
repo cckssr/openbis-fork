@@ -41,7 +41,8 @@ dependencies {
             'docx4j:docx4j:6.1.2',
             'freva:ascii-table:1.2.0',
             'jsoup:jsoup:1.14.2',
-            'dspace:xoai-data-provider:4.2.0'
+            'dspace:xoai-data-provider:4.2.0',
+            'sis:sis-jhdf5:19.04.0'
 
     runtimeOnly 'bioformats:bioformats:6.5.1'
 

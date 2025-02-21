@@ -136,7 +136,7 @@ final class HDF5ContainerReader implements IHDF5ContainerReader
     }
 
     private static final Map<File, Reader> fileToReaderMap =
-            new ReferenceMap<File, HDF5ContainerReader.Reader>();
+            new ReferenceMap<File, Reader>();
 
     private static boolean noCaching = false;
 
