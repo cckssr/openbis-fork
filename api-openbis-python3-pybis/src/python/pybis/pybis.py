@@ -5659,7 +5659,7 @@ class ImagingControl:
         else:
             raise ValueError(service_response['error'])
 
-    def _get_multi_export_url(self, exports: list[ImagingDataSetMultiExport]) -> str:
+    def _get_multi_export_url(self, exports: list) -> str:
         export_params = [export.__dict__ for export in exports]
         for param in export_params:
             param["config"] = param["config"].__dict__
@@ -5713,7 +5713,7 @@ class ImagingControl:
         export_url = self._get_export_url(perm_id, export, image_index)
         self._download(export_url, directory_path)
 
-    def _multi_export_download(self, exports: list[ImagingDataSetMultiExport], directory_path=""):
+    def _multi_export_download(self, exports: list, directory_path=""):
         export_url = self._get_multi_export_url(exports)
         self._download(export_url, directory_path)
 
@@ -5741,7 +5741,7 @@ class ImagingControl:
 
     def create_imaging_dataset(self, dataset_type: str, config: ImagingDataSetPropertyConfig,
                                experiment: str, sample: str,
-                               files: list[str], other_properties=None):
+                               files: list, other_properties=None):
         """Create new imaging dataset with given files and property config."""
         if other_properties is None:
             other_properties = {}

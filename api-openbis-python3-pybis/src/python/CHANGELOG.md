@@ -5,7 +5,7 @@
 
 ## Changes with pybis-1.37.2
 
-
+- Fixes to Fast Upload implementation
 
 ## Changes with pybis-1.37.1
 
