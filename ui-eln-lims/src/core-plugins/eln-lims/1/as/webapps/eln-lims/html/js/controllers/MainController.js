@@ -280,10 +280,19 @@ function MainController(profile) {
                                                         } else {
                                                              profile.getHomeSpace(function(homeSpaceCode) {
                                                                 if(homeSpaceCode) {
-                                                                    localReference.sideMenu._browserController.load().then(x => {
-                                                                        if(!localReference.sideMenu.getNodeSetAsRoot()) {
-                                                                            //if it is not rooted
-                                                                            localReference.sideMenu.setSpaceAsRoot(homeSpaceCode);
+                                                                    localReference.serverFacade.getSetting('hasLoggedOnce', function(hasLoggedOnce) {
+                                                                        if(hasLoggedOnce !== 'true') {
+                                                                            localReference.serverFacade.setSetting('hasLoggedOnce', true);
+                                                                            var homeSpace = {
+                                                                                type: "SPACE",
+                                                                                id: homeSpaceCode
+                                                                            }
+                                                                            localReference.sideMenu._browserController.load().then(x => {
+                                                                                    localReference.sideMenu.moveToNodeId(homeSpace).then(function(){
+                                                                                        localReference.changeView("showSpacePage", homeSpaceCode);
+                                                                                        localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
+                                                                                    })
+                                                                            });
                                                                         }
                                                                     });
                                                                 }

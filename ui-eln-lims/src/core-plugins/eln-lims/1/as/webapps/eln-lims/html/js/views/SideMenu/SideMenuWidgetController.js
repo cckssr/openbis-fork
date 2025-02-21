@@ -137,6 +137,14 @@ function SideMenuWidgetController(mainController) {
         return this._browserController.getNodeSetAsRoot();
     }
 
+    this.setAsRootById = function (code) {
+            var nodes = this._browserController.getNodes();
+            var node = nodes.find(x => x.object.id === code);
+            if(node) {
+                this._browserController.setNodeAsRoot(node.id);
+            }
+        }
+
     this.setSpaceAsRoot = function (homeSpaceCode) {
         var nodes = this._browserController.getNodes();
         var node = nodes.find(x => x.object.id === homeSpaceCode && x.object.type === 'SPACE');
