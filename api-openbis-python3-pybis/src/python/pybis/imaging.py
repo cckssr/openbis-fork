@@ -217,7 +217,7 @@ class ImagingDataSetControlVisibility(AbstractImagingClass):
     range: list
     unit: str
 
-    def __init__(self, label: str, values: list[str], values_range: list[str], unit: str = None):
+    def __init__(self, label: str, values: list, values_range: list, unit: str = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetControlVisibility"
         self.label = label
         self.values = values
@@ -250,10 +250,10 @@ class ImagingDataSetControl(AbstractImagingClass):
     visibility: list
     metadata: dict
 
-    def __init__(self, label: str, control_type: str, section: str = None, values: list[str] = None,
-                 unit: str = None, values_range: list[str] = None, multiselect: bool = None,
-                 playable: bool = False, speeds: list[int] = None,
-                 visibility: list[ImagingDataSetControlVisibility] = None, metadata: dict = None):
+    def __init__(self, label: str, control_type: str, section: str = None, values: list = None,
+                 unit: str = None, values_range: list = None, multiselect: bool = None,
+                 playable: bool = False, speeds: list = None,
+                 visibility: list = None, metadata: dict = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetControl"
         self.label = label
         self.type = control_type
@@ -300,9 +300,9 @@ class ImagingDataSetConfig(AbstractImagingClass):
     metadata: dict
     filters: dict
 
-    def __init__(self, adaptor: str, version: float, resolutions: list[str], playable: bool,
-                 speeds: list[int] = None, exports: list[ImagingDataSetControl] = None,
-                 inputs: list[ImagingDataSetControl] = None, metadata: dict = None, filters: dict = None):
+    def __init__(self, adaptor: str, version: float, resolutions: list, playable: bool,
+                 speeds: list = None, exports: list = None,
+                 inputs: list = None, metadata: dict = None, filters: dict = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetConfig"
         self.adaptor = adaptor
         self.version = version
@@ -377,7 +377,7 @@ class ImagingDataSetPropertyConfig(AbstractImagingClass):
     images: list
     metadata: dict
 
-    def __init__(self, images: list[ImagingDataSetImage], metadata=None):
+    def __init__(self, images: list, metadata=None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetPropertyConfig"
         self.images = images if images is not None else []
         self.metadata = metadata if metadata is not None else dict()
