@@ -213,8 +213,8 @@ class ImagingDataSetMultiExport(AbstractImagingRequest):
 
 class ImagingDataSetControlVisibility(AbstractImagingClass):
     label: str
-    values: list[str]
-    range: list[str]
+    values: list
+    range: list
     unit: str
 
     def __init__(self, label: str, values: list[str], values_range: list[str], unit: str = None):
@@ -241,13 +241,13 @@ class ImagingDataSetControl(AbstractImagingClass):
     label: str
     section: str
     type: str
-    values: list[str]
+    values: list
     unit: str
-    range: list[str]
+    range: list
     multiselect: bool
     playable: bool
-    speeds: list[int]
-    visibility: list[ImagingDataSetControlVisibility]
+    speeds: list
+    visibility: list
     metadata: dict
 
     def __init__(self, label: str, control_type: str, section: str = None, values: list[str] = None,
@@ -292,11 +292,11 @@ class ImagingDataSetControl(AbstractImagingClass):
 class ImagingDataSetConfig(AbstractImagingClass):
     adaptor: str
     version: float
-    speeds: list[int]
-    resolutions: list[str]
+    speeds: list
+    resolutions: list
     playable: bool
-    exports: list[ImagingDataSetControl]
-    inputs: list[ImagingDataSetControl]
+    exports: list
+    inputs: list
     metadata: dict
     filters: dict
 
@@ -338,7 +338,7 @@ class ImagingDataSetConfig(AbstractImagingClass):
 
 class ImagingDataSetImage(AbstractImagingClass):
     config: ImagingDataSetConfig
-    previews: list[ImagingDataSetPreview]
+    previews: list
     imageConfig: dict
     index: int
     metadata: dict
@@ -374,7 +374,7 @@ class ImagingDataSetImage(AbstractImagingClass):
 
 
 class ImagingDataSetPropertyConfig(AbstractImagingClass):
-    images: list[ImagingDataSetImage]
+    images: list
     metadata: dict
 
     def __init__(self, images: list[ImagingDataSetImage], metadata=None):
