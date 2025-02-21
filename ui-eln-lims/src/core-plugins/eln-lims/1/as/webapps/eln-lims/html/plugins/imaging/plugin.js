@@ -46,6 +46,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 "as/dto/dataset/id/DataSetPermId",
                 "as/dto/dataset/fetchoptions/DataSetFetchOptions",
                 "as/dto/dataset/fetchoptions/DataSetTypeFetchOptions",
+                "dss/dto/datasetfile/search/DataSetFileSearchCriteria",
+                "dss/dto/datasetfile/fetchoptions/DataSetFileFetchOptions",
                 "util/Json"],
             function (CustomDssServiceCode, CustomDSSServiceExecutionOptions,
                       ImagingPreviewContainer, ImagingDataSetExport,
@@ -58,6 +60,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                       VocabularyTermFetchOptions,
                       SearchDataSetsOperation, DataSetUpdate, DataSetPermId,
                       DataSetFetchOptions, DataSetTypeFetchOptions,
+                      DataSetFileSearchCriteria, DataSetFileFetchOptions,
                       utilJson) {
                 let props = {
                     objId: objId,
@@ -78,6 +81,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         ExperimentPermId: ExperimentPermId,
                         DataSetSearchCriteria: DataSetSearchCriteria,
                         DataSetTypeSearchCriteria: DataSetTypeSearchCriteria,
+                        DataSetFileSearchCriteria: DataSetFileSearchCriteria,
+                        DataSetFileFetchOptions: DataSetFileFetchOptions,
                         VocabularySearchCriteria: VocabularySearchCriteria,
                         VocabularyTermSearchCriteria: VocabularyTermSearchCriteria,
                         VocabularyTermFetchOptions: VocabularyTermFetchOptions,
@@ -94,6 +99,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         executeCustomDSSService: mainController.openbisV3.getDataStoreFacade().executeCustomDSSService.bind(mainController.openbisV3.getDataStoreFacade()),
                         getExperiments: mainController.openbisV3.getExperiments.bind(mainController.openbisV3),
                         getSamples: mainController.openbisV3.getSamples.bind(mainController.openbisV3),
+                        searchFiles: mainController.openbisV3.getDataStoreFacade().searchFiles.bind(mainController.openbisV3.getDataStoreFacade()),
                         fromJson: utilJson.fromJson.bind(utilJson)
                     }
                 }
@@ -132,28 +138,37 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
                     function (objId) {
-                        var dataSets = model.v3_experiment.dataSets;
-                        var paginationInfo = null;
-                        var indexFound = null;
-                        for(var idx = 0; idx < dataSets.length; idx++) {
-                            if(dataSets[idx].permId.permId === objId) {
-                                indexFound = idx;
-                                break;
-                            }
-                        }
-                        if(indexFound !== null) {
-                            paginationInfo = {
-                                pagFunction : _this._getDataListDynamic(dataSets),
-                                pagOptions : {},
-                                currentIndex : indexFound,
-                                totalCount : dataSets.length
-                            }
-                        }
-                        var arg = {
-                                permIdOrIdentifier : objId,
-                                paginationInfo : paginationInfo
-                        }
-                        mainController.changeView('showViewDataSetPageFromPermId', arg)
+                        require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                        function(DataSetPermId, DataSetFetchOptions) {
+                            var ids = [new DataSetPermId(objId)];
+                            var fetchOptions = new DataSetFetchOptions();
+                            fetchOptions.withProperties();
+                            mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                                var dataSets = Util.mapValuesToList(map);
+                                //var dataSets = model.v3_experiment.dataSets;
+                                var paginationInfo = null;
+                                var indexFound = null;
+                                for(var idx = 0; idx < dataSets.length; idx++) {
+                                    if(dataSets[idx].permId.permId === objId) {
+                                        indexFound = idx;
+                                        break;
+                                    }
+                                }
+                                if(indexFound !== null) {
+                                    paginationInfo = {
+                                        pagFunction : _this._getDataListDynamic(dataSets),
+                                        pagOptions : {},
+                                        currentIndex : indexFound,
+                                        totalCount : dataSets.length
+                                    }
+                                }
+                                var arg = {
+                                        permIdOrIdentifier : objId,
+                                        paginationInfo : paginationInfo
+                                }
+                                mainController.changeView('showViewDataSetPageFromPermId', arg)
+                            });
+                        });
                     }, model.experiment.experimentTypeCode);
             }
         }
