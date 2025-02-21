@@ -9,6 +9,7 @@ import InputSlider from '@src/js/components/common/imaging/components/common/Inp
 import Button from '@src/js/components/common/form/Button.jsx';
 import { isObjectEmpty } from '@src/js/components/common/imaging/utils.js';
 import { DragDropContext, Droppable, Draggable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
+import messages from '@src/js/common/messages';
 
 
 const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
@@ -153,7 +154,7 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 							onClick={editingIndex !== null ? applyEdits : addToHistory}
 							disabled={!selectedFilter}
 						/>
-						<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>History</Typography>
+						<Typography sx={{ mt: 1, mb: 1 }} variant='h6'>{messages.get(messages.HISTORY)}</Typography>
 						<Divider />
 						<DragDropContext onDragEnd={onDragEnd}>
 							<Droppable droppableId='history-list'>
@@ -205,7 +206,7 @@ const FilterSelector = ({ configFilters, onAddFilter, historyFilters }) => {
 					</Grid2>
 				</Grid2>
 			) : (
-				<Typography px={1} my={1} textAlign={'center'}>No filters configuration provided</Typography>
+				<Typography px={1} my={1} textAlign={'center'}>{messages.get(messages.NO_CONFIG_PROVIDED, messages.get(messages.FILTERS))}</Typography>
 			)}
 		</>
 	);
