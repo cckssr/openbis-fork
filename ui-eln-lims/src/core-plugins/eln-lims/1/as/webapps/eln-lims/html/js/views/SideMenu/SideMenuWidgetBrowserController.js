@@ -2339,9 +2339,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_LAB_NOTEBOOK,
                 },
                 expanded: true,
+                rootable: true,
                 canHaveChildren: true,
                 view: "showLabNotebookPage",
-                icon: "glyphicon glyphicon-book",
+                icon: IconUtil.getNavigationIcon(this.TYPE_LAB_NOTEBOOK),
             }
         } else {
             return null
@@ -2391,7 +2392,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 childrenLoadLimit: this.LOAD_LIMIT,
                 childrenLoadRepeatLimitForFullBatch: this.LOAD_REPEAT_LIMIT_FOR_FULL_BATCH,
                 view: "showInventoryPage",
-                icon: "fa fa-cubes",
+                icon: IconUtil.getNavigationIcon(this.TYPE_INVENTORY),
                 sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
             }
         } else {
@@ -2412,7 +2413,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 childrenLoadLimit: this.LOAD_LIMIT,
                 childrenLoadRepeatLimitForFullBatch: this.LOAD_REPEAT_LIMIT_FOR_FULL_BATCH,
                 view: "showStockPage",
-                icon: "fa fa-shopping-cart",
+                icon: IconUtil.getNavigationIcon(this.TYPE_STOCK),
                 sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
             }
         } else {
@@ -2431,7 +2432,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             expanded: true,
             selectable: false,
             view: "showBlancPage",
-            icon: "glyphicon glyphicon-wrench",
+            icon: IconUtil.getNavigationIcon(this.TYPE_UTILITIES),
         }
     }
 
@@ -2474,7 +2475,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_USER_PROFILE,
                 },
                 view: "showUserProfilePage",
-                icon: "glyphicon glyphicon-user",
+                icon: IconUtil.getNavigationIcon(this.TYPE_USER_PROFILE),
             }
         } else {
             return null
@@ -2490,7 +2491,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_GENERATE_BARCODES,
                 },
                 view: "showBarcodesGeneratorPage",
-                icon: "glyphicon glyphicon-barcode",
+                icon: IconUtil.getNavigationIcon(this.TYPE_GENERATE_BARCODES),
             }
         } else {
             return null
@@ -2521,7 +2522,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_SAMPLE_BROWSER,
                 },
                 view: "showSamplesPage",
-                icon: "glyphicon glyphicon-list-alt",
+                icon: IconUtil.getNavigationIcon(this.TYPE_SAMPLE_BROWSER),
             }
         } else {
             return null
@@ -2537,7 +2538,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_VOCABULARY_BROWSER,
                 },
                 view: "showVocabularyManagerPage",
-                icon: "glyphicon glyphicon-list-alt",
+                icon: IconUtil.getNavigationIcon(this.TYPE_VOCABULARY_BROWSER),
             }
         } else {
             return null
@@ -2553,7 +2554,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_ADVANCED_SEARCH,
                 },
                 view: "showAdvancedSearchPage",
-                icon: "glyphicon glyphicon-search",
+                icon: IconUtil.getNavigationIcon(this.TYPE_ADVANCED_SEARCH),
             }
         } else {
             return null
@@ -2569,7 +2570,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_DROPBOX_MONITOR,
                 },
                 view: "showDropboxMonitorPage",
-                icon: "glyphicon glyphicon-info-sign",
+                icon: IconUtil.getNavigationIcon(this.TYPE_DROPBOX_MONITOR),
             }
         } else {
             return null
@@ -2585,8 +2586,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_ARCHIVING_HELPER,
                 },
                 view: "showArchivingHelperPage",
-                icon: "fancytree-icon",
-                iconUrl: "./img/archive-not-requested-icon.png",
+                icon: IconUtil.getNavigationIcon(this.TYPE_ARCHIVING_HELPER),
             }
         } else {
             return null
@@ -2602,7 +2602,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_UNARCHIVING_HELPER,
                 },
                 view: "showUnarchivingHelperPage",
-                icon: "glyphicon glyphicon-open",
+                icon: IconUtil.getNavigationIcon(this.TYPE_UNARCHIVING_HELPER),
             }
         } else {
             return null
@@ -2618,7 +2618,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_CUSTOM_IMPORT,
                 },
                 view: "showCustomImportPage",
-                icon: "glyphicon glyphicon-import",
+                icon: IconUtil.getNavigationIcon(this.TYPE_CUSTOM_IMPORT),
             }
         } else {
             return null
@@ -2640,7 +2640,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 canHaveChildren: true,
                 selectable: false,
                 view: "showBlancPage",
-                icon: "glyphicon glyphicon-export",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORTS),
             }
         } else {
             return null
@@ -2656,7 +2656,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_STORAGE_MANAGER,
                 },
                 view: "showStorageManager",
-                icon: "glyphicon glyphicon-file",
+                icon: IconUtil.getNavigationIcon(this.TYPE_STORAGE_MANAGER)
             }
         } else {
             return null
@@ -2672,7 +2672,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_USER_MANAGER,
                 },
                 view: "showUserManagerPage",
-                icon: "fa fa-users",
+                icon: IconUtil.getNavigationIcon(this.TYPE_USER_MANAGER)
             }
         } else {
             return null
@@ -2692,7 +2692,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_USER_MANAGEMENT_CONFIG,
                 },
                 view: "showUserManagementConfigPage",
-                icon: "fa fa-users",
+                icon: IconUtil.getNavigationIcon(this.TYPE_USER_MANAGEMENT_CONFIG)
             }
         } else {
             return null
@@ -2708,7 +2708,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_TRASHCAN,
                 },
                 view: "showTrashcanPage",
-                icon: "glyphicon glyphicon-trash",
+                icon: IconUtil.getNavigationIcon(this.TYPE_TRASHCAN)
             }
         } else {
             return null
@@ -2724,7 +2724,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_SETTINGS,
                 },
                 view: "showSettingsPage",
-                icon: "glyphicon glyphicon-cog",
+                icon: IconUtil.getNavigationIcon(this.TYPE_SETTINGS)
             }
         } else {
             return null
@@ -2739,7 +2739,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 id: this.TYPE_OTHER_TOOLS,
             },
             view: "showOtherToolsPage",
-            icon: "glyphicon glyphicon-wrench",
+            icon: IconUtil.getNavigationIcon(this.TYPE_OTHER_TOOLS)
         }
     }
 
@@ -2752,7 +2752,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             },
             view: "EXTRA_PLUGIN_UTILITY",
             viewData: extraPluginUtility.uniqueViewName,
-            icon: extraPluginUtility.icon,
+            icon: IconUtil.getNavigationIcon(extraPluginUtility)
         }
     }
 
@@ -2765,7 +2765,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_EXPORT_TO_ZIP,
                 },
                 view: "showExportTreePage",
-                icon: "glyphicon glyphicon-export",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_ZIP)
             }
         } else {
             return null
@@ -2781,8 +2781,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_EXPORT_TO_RESEARCH_COLLECTION,
                 },
                 view: "showResearchCollectionExportPage",
-                icon: "fancytree-icon",
-                iconUrl: "./img/research-collection-icon.png",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_RESEARCH_COLLECTION)
             }
         } else {
             return null
@@ -2798,7 +2797,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     id: this.TYPE_EXPORT_TO_ZENODO,
                 },
                 view: "showZenodoExportPage",
-                icon: "glyphicon glyphicon-export",
+                icon: IconUtil.getNavigationIcon(this.TYPE_EXPORT_TO_ZENODO)
             }
         } else {
             return null
@@ -2813,7 +2812,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 id: this.TYPE_ABOUT,
             },
             view: "showAbout",
-            icon: "glyphicon glyphicon-info-sign",
+            icon: IconUtil.getNavigationIcon(this.TYPE_ABOUT)
         }
     }
 
@@ -2832,6 +2831,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             view: "showSpacePage",
             viewData: space.getCode(),
             sortings: this.SORTINGS_BY_CODE_AND_REGISTRATION_DATE,
+            icon: IconUtil.getNavigationIcon(this.TYPE_SPACE, { isHomeSpace: isHomeSpace })
         }
     }
 
@@ -2850,6 +2850,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             view: "showProjectPageFromPermId",
             viewData: project.getPermId().getPermId(),
             sortings: this.SORTINGS_BY_NAME_AND_REGISTRATION_DATE,
+            icon: IconUtil.getNavigationIcon(this.TYPE_PROJECT)
         }
     }
 
@@ -2884,7 +2885,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             viewData: encodeURIComponent('["' + experiment.getIdentifier().getIdentifier() + '",false]'),
         }
         if (!this._isExperimentWithChildren(experiment)) {
-            experimentResult.icon = "fa fa-table"
+            experimentResult.icon = IconUtil.getNavigationIcon(this.TYPE_EXPERIMENT);
         }
 
         return experimentResult
@@ -2923,15 +2924,6 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _createSampleNode(sample) {
-        var sampleIsExperiment = sample.getType().getCode().indexOf("EXPERIMENT") > -1
-        var sampleIcon
-        if (sampleIsExperiment) {
-            sampleIcon = "fa fa-flask"
-        } else if (sample.getType().getCode() === "ENTRY") {
-            sampleIcon = "fa fa-file-text"
-        } else {
-            sampleIcon = "fa fa-file"
-        }
         var sampleDisplayName = sample.getCode()
         if (sample.getProperties() && sample.getProperties()[profile.propertyReplacingCode]) {
             sampleDisplayName = sample.getProperties()[profile.propertyReplacingCode]
@@ -2947,7 +2939,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             canHaveChildren: true,
             view: "showViewSamplePageFromPermId",
             viewData: sample.getPermId().getPermId(),
-            icon: sampleIcon,
+            icon: IconUtil.getNavigationIcon(this.TYPE_SAMPLE, { sampleTypeCode: sample.getType().getCode()})
         }
     }
 
@@ -2997,7 +2989,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             },
             view: "showViewDataSetPageFromPermId",
             viewData: dataset.getPermId().getPermId(),
-            icon: "fa fa-database",
+            icon: IconUtil.getNavigationIcon(this.TYPE_DATASET)
         }
     }
 

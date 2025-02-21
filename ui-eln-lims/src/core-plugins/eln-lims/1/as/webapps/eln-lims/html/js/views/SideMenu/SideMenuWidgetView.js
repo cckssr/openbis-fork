@@ -221,17 +221,23 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         var $node = $("<div>").addClass("browser-node")
 
-        if (node.icon || node.iconUrl) {
+        if (node.icon) {
             var $icon = null
 
-            if (node.iconUrl) {
-                $icon = $("<img/>").attr("src", node.iconUrl)
+            if (node.icon.url) {
+                $icon = $("<img/>").attr("src", node.icon.url)
             } else {
                 $icon = $("<span/>")
             }
 
-            if (node.icon) {
-                $icon.addClass(node.icon)
+
+            if (node.icon.class) {
+                $icon.addClass(node.icon.class)
+            }
+
+            if(node.icon.text) {
+                $icon.text(node.icon.text);
+                $icon.css("font-size", "18px");
             }
 
             $("<div/>").addClass("browser-node-icon").append($icon).appendTo($node)
@@ -250,9 +256,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 href: href,
                 class: "browser-compatible-javascript-link browser-compatible-javascript-link-tree",
             }).text(text)
-            $("<div/>").append($link).addClass("browser-node-text").appendTo($node)
+            $("<div/>").append($link).addClass("browser-node-text").css("align-content", "center").appendTo($node)
         } else {
-            $("<div/>").text(text).addClass("browser-node-text").appendTo($node)
+            $("<div/>").text(text).addClass("browser-node-text").css("align-content", "center").appendTo($node)
         }
 
         $(container).empty().append($node)
