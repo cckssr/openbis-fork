@@ -709,13 +709,13 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		// Registration and modification info
 		//
 		if (this._dataSetFormModel.mode !== FormMode.CREATE) {
-			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", _this._dataSetFormModel.dataSetV3.registrator.userId);
+			var $registrator = FormUtil.getFieldForLabelWithText("Registrator", (_this._dataSetFormModel.dataSetV3.registrator)?_this._dataSetFormModel.dataSetV3.registrator.userId:'');
 			$dataSetTypeFieldSet.append($registrator);
 			
 			var $registationDate = FormUtil.getFieldForLabelWithText("Registration Date", Util.getFormatedDate(new Date(_this._dataSetFormModel.dataSetV3.registrationDate)))
 			$dataSetTypeFieldSet.append($registationDate);
-			
-			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", _this._dataSetFormModel.dataSetV3.modifier.userId);
+
+			var $modifier = FormUtil.getFieldForLabelWithText("Modifier", (_this._dataSetFormModel.dataSetV3.modifier.userId)?_this._dataSetFormModel.dataSetV3.modifier.userId:'');
 			$dataSetTypeFieldSet.append($modifier);
 			
 			var $modificationDate = FormUtil.getFieldForLabelWithText("Modification Date", Util.getFormatedDate(new Date(_this._dataSetFormModel.dataSetV3.modificationDate)));

@@ -99,9 +99,9 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
                     'type' : dataSet.getType().getCode(),
                     'properties' : properties,
                     'parents' : dataSet.getParents().map(d => d.getCode()),
-                    'registrator' : dataSet.getRegistrator().getUserId(),
+                    'registrator' : (dataSet.getRegistrator())?dataSet.getRegistrator().getUserId():'',
                     'registrationDate' : Util.getFormatedDate(new Date(dataSet.getRegistrationDate())),
-                    'modifier' : dataSet.getModifier().getUserId(),
+                    'modifier' : (dataSet.getModifier())?dataSet.getModifier().getUserId():'',
                     'modificationDate' : Util.getFormatedDate(new Date(dataSet.getModificationDate()))
                 };
                 if (dataSet.getPhysicalData()) {
