@@ -3,6 +3,7 @@ package ch.ethz.sis.afsserver.worker.proxy;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.server.observer.APICall;
@@ -43,40 +44,40 @@ public class InterceptorProxy extends AbstractProxy
     }
 
     @Override
-    public byte[] read(@NonNull String sourceOwner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception
     {
         if (apiServerObserver != null)
         {
-            return (byte[]) apiServerObserver.duringAPICall(nextProxy,
-                    new APICallImpl("read", Map.of("sourceOwner", sourceOwner, "source", source, "offset", offset, "limit", limit))
+            return (Chunk[]) apiServerObserver.duringAPICall(nextProxy,
+                    new APICallImpl("read", Map.of("chunks", chunks))
                     {
                         @Override public Object executeDefault() throws Exception
                         {
-                            return nextProxy.read(sourceOwner, source, offset, limit);
+                            return nextProxy.read(chunks);
                         }
                     });
         } else
         {
-            return nextProxy.read(sourceOwner, source, offset, limit);
+            return nextProxy.read(chunks);
         }
     }
 
     @Override
-    public Boolean write(@NonNull String sourceOwner, @NonNull String source, @NonNull Long offset, @NonNull byte[] data) throws Exception
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception
     {
         if (apiServerObserver != null)
         {
             return (Boolean) apiServerObserver.duringAPICall(nextProxy,
-                    new APICallImpl("write", Map.of("sourceOwner", sourceOwner, "source", source, "offset", offset, "data", data))
+                    new APICallImpl("write", Map.of("chunks", chunks))
                     {
                         @Override public Object executeDefault() throws Exception
                         {
-                            return nextProxy.write(sourceOwner, source, offset, data);
+                            return nextProxy.write(chunks);
                         }
                     });
         } else
         {
-            return nextProxy.write(sourceOwner, source, offset, data);
+            return nextProxy.write(chunks);
         }
     }
 

@@ -332,7 +332,7 @@ public class OpenBIS
 
     private final AfsClient afsClientNoTransactions;
 
-    private final OperationsAPI afsClientWithTransactions;
+    private final AfsClient afsClientWithTransactions;
 
     private String interactiveSessionKey;
 
@@ -377,7 +377,7 @@ public class OpenBIS
         if (afsURL != null)
         {
             this.afsClientNoTransactions = new AfsClient(URI.create(afsURL), timeout);
-            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
+            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, AfsClient.class,
                     afsClientNoTransactions);
         } else
         {

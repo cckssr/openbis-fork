@@ -17,7 +17,6 @@ package ch.ethz.sis.afsserver.server.impl;
 
 import static ch.ethz.sis.afsserver.exception.HTTPExceptions.INVALID_PARAMETERS;
 import static ch.ethz.sis.afsserver.exception.HTTPExceptions.throwInstance;
-import static io.netty.handler.codec.http.HttpMethod.DELETE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 
@@ -28,13 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.exception.HTTPExceptions;
 import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.http.impl.NettyHttpHandler;
-import ch.ethz.sis.afsserver.http.impl.NettyHttpServer;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
 import ch.ethz.sis.afsserver.server.Request;
@@ -129,6 +129,10 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
                         case "transactionId":
                             parsedParameters.put(entry.getKey(), UUID.fromString(getParameter(parameters, entry.getKey())));
                             break;
+                        case "chunks":
+                            String chunksAsString = getParameter(parameters, entry. getKey());
+                            Chunk[] chunks = ChunkEncoderDecoder.decodeChunks(chunksAsString);
+                            parsedParameters.put(entry.getKey(), chunks);
                         default:
                             parseParameters(entry.getKey(), entry.getValue(), parsedParameters);
                             break;

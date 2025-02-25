@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -131,14 +132,17 @@ public class AfsClientTest
     {
         login();
 
-        byte[] data = "ABCD".getBytes();
+        String dataAsString = "ABCD";
+        byte[] dataAsBytes = dataAsString.getBytes();
+        Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, dataAsBytes.length,  dataAsBytes) };
+        byte[] data = ChunkEncoderDecoder.encodeChunks(chunks).getBytes();
         httpServer.setNextResponse(data);
 
-        byte[] result = afsClient.read("", "", 0L, 1000);
+        Chunk[] chunksResult = afsClient.read(chunks);
+        byte[] result = ChunkEncoderDecoder.encodeChunks(chunksResult).getBytes();
 
-        assertEquals("GET", httpServer.getHttpExchange().getRequestMethod());
+        assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
         assertArrayEquals(data, result);
-        assertArrayEquals(httpServer.getLastRequestBody(), new byte[0]);
     }
 
     @Test
@@ -164,13 +168,15 @@ public class AfsClientTest
         byte[] fileData = "ABCD".getBytes();
         Files.write(sourceFilePath, fileData);
 
-        httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), fileData}, new String[] {"application/json", "application/octet-stream"});
+        Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, fileData.length,  fileData) };
+        byte[] encodedChunks = ChunkEncoderDecoder.encodeChunks(chunks).getBytes();
+
+        httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), encodedChunks}, new String[] {"application/json", "application/octet-stream"});
 
         afsClient.resumeRead("", sourceFileName, destinationFilePath, 0L);
 
-        assertEquals("GET", httpServer.getHttpExchange().getRequestMethod());
+        assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
         assertArrayEquals(fileData, Files.readAllBytes(destinationFilePath));
-        assertEquals(0, httpServer.getLastRequestBody().length);
 
         sourceFilePath.toFile().delete();
         destinationFilePath.toFile().delete();
