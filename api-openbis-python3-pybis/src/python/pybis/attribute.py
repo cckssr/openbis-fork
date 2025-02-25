@@ -822,7 +822,7 @@ class AttrHolder:
         if 'parents' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['parents'] is None:
             self.__dict__["_fetchOptions"]['parents'] = {}
         if len(parents) > 0:
-            self.__dict__["_parents"] = list(parents[['identifier']].values[0])
+            self.__dict__["_parents"] = list(parents[['identifier']].values.flatten())
         else:
             self.__dict__["_parents"] = []
         if self.__dict__["_parents"] is None or self.__dict__["_parents"] == []:
@@ -881,7 +881,7 @@ class AttrHolder:
         if 'children' not in self.__dict__["_fetchOptions"] or self.__dict__["_fetchOptions"]['children'] is None:
             self.__dict__["_fetchOptions"]['children'] = {}
         if len(children) > 0:
-            self.__dict__["_children"] = list(children[['identifier']].values[0])
+            self.__dict__["_children"] = list(children[['identifier']].values.flatten())
         else:
             self.__dict__["_children"] = []
         if self.__dict__["_children"] is None or self.__dict__["_children"] == []:
