@@ -16,12 +16,13 @@ const SKIP_RESOLUTIONS = new Set([Resolution.RESUME, Resolution.SKIP]);
 
 export default class FileUploadManager {
 
-  constructor(controller, getCurrentState, updateStateCallback, openErrorDialog) {
+  constructor(controller, getCurrentState, updateStateCallback, openErrorDialog, afterUpload) {
     autoBind(this)
     this.controller = controller
     this.getCurrentState = getCurrentState     
     this.updateState = updateStateCallback
     this.openErrorDialog = openErrorDialog       
+    this.afterUpload = afterUpload
     this.zip = new JSZip()
     this.resolveConflict = null // This function will be shared
   }
@@ -120,7 +121,8 @@ export default class FileUploadManager {
       }
     } finally {
       this.resetUploadDialogStates();
-      await this.controller.gridController.load()
+      await this.controller.gridController.load()      
+      await this.afterUpload()
     }
   }
   
@@ -260,6 +262,7 @@ export default class FileUploadManager {
     } finally {
       this.resetUploadDialogStates()
       await this.controller.gridController.load()
+      await this.afterUpload()
     }
   }
 

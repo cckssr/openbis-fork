@@ -106,7 +106,8 @@ class DataBrowser extends React.Component {
       this.controller,
       () => this.state, 
       this.updateStateCallback,
-      this.openErrorDialog      
+      this.openErrorDialog,
+      this.fetchSpaceStatus    
     )
 
     this.state = {
@@ -330,28 +331,9 @@ class DataBrowser extends React.Component {
   async componentDidMount() {
     try {
       this.fetchSpaceStatus()
-      await this.fetchRights()    
-      if (this.state.viewType === 'grid') {
-        this.fetchFiles();
-      }
+      await this.fetchRights()          
     } catch (err){
         this.openErrorDialog(err)
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.viewType !== this.state.viewType && this.state.viewType === 'grid') {
-      this.fetchFiles();
-    }
-  }
-
-  async fetchFiles() {
-    try {
-      const filesList = await this.controller.listFiles();
-      this.setState({ files: filesList });
-    } catch (error) {
-      console.error('Error loading files:', error);
-      this.setState({ errorMessage: 'Failed to load files.' });
     }
   }
 
@@ -407,7 +389,9 @@ class DataBrowser extends React.Component {
       return;
     }
 
-    this.uploadManager.handleDragAndDropUpload(e)
+    this.uploadManager.handleDragAndDropUpload(e)   
+    this.fetchSpaceStatus();
+
   }
    
   renderFileExistsDialog(key, dialogProps) {
@@ -479,6 +463,8 @@ class DataBrowser extends React.Component {
           owner={id}
           editable={editable}
           path={path}
+          openBis={this.props.extOpenbis}
+          afterUpload={this.fetchSpaceStatus}
         />
         <InfoBar
           path={path}

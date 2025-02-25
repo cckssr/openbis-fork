@@ -56,7 +56,8 @@ class Toolbar extends React.Component {
       owner,
       path,
       editable,
-      onDownload
+      onDownload,
+      afterUpload
     } = this.props
     return (
       <div className={classes.toolbar}>
@@ -68,6 +69,7 @@ class Toolbar extends React.Component {
           path={path}
           editable={editable}
           controller={this.controller}
+          openBis={this.props.openBis}
           onDownload={onDownload}
         />
         <RightToolbar
@@ -78,6 +80,7 @@ class Toolbar extends React.Component {
           editable={editable}
           onViewTypeChange={onViewTypeChange}
           controller={this.controller}
+          afterUpload={this.props.afterUpload}
         />
       </div>
     )

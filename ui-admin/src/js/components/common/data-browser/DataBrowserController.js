@@ -128,6 +128,11 @@ export default class DataBrowserController extends ComponentController {
     if (this.gridController) {
       await this.gridController.load()
     }
+
+    if (this.component) {
+      this.component.fetchSpaceStatus();
+    }
+
   }
 
 
@@ -137,6 +142,9 @@ export default class DataBrowserController extends ComponentController {
       this.openbis.delete(this.owner, file.path),
       onRetryCallback
     )
+    if (this.component) {
+      this.component.fetchSpaceStatus();
+    }
   }
 
   async _delete(file, onProgressUpdate = undefined){    

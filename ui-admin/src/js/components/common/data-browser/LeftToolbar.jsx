@@ -385,6 +385,7 @@ class LeftToolbar extends React.Component {
           sessionToken={sessionToken}
           owner={owner}
           path={path}
+          openBis={this.props.openBis}
           multiselectedFiles={multiselectedFiles}
           onCancel={this.handleLocationCancel}
           onConfirm={this.handleLocationConfirm}

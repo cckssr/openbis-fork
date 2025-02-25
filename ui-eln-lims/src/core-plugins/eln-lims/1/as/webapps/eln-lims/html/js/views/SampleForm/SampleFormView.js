@@ -695,21 +695,26 @@
 			} else {
 				var $tabsContainer = $('<div class="tabs-container">');
 	
-				var tabsModel = {
-					containerId: "tabsContainer",
-					tabs: [
-						{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true },
-						{ id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false }
-					]
-				};
-	
+				const tabs = [
+					{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true }
+				]
+
 				var $tabsContent = $('<div class="tab-content">');
 				var $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
 				var $dssWidgetTab = $('<div id="dssWidgetTab" class="tab-pane fade"></div>');
-	
+				
 				$tabsContent.append($sampleFormTab);
-				$tabsContent.append($dssWidgetTab);
+				
+				if(profile.isAFSAvailable()) {
+					$tabsContent.append($dssWidgetTab);
+					tabs.push({ id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false });
+				}
 				$tabsContainer.append($tabsContent);
+
+				const tabsModel = {
+					containerId: "tabsContainer",
+					tabs
+				}
 
 				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel);
 				$header.append($toolbarWithTabs);

@@ -1283,7 +1283,41 @@ function ServerFacade(openbisServer) {
 	}
 
 	this.listDataStores = function(callbackFunction) {
-		this.openbisServer.listDataStores(callbackFunction);
+		var _this = this;
+		require(
+			[
+				"as/dto/datastore/search/DataStoreSearchCriteria",
+				"as/dto/datastore/fetchoptions/DataStoreFetchOptions",
+				"as/dto/datastore/search/DataStoreKind"
+			],
+			function(DataStoreSearchCriteria, DataStoreFetchOptions, DataStoreKind) {				
+				var criteria = new DataStoreSearchCriteria()
+				criteria.withKind().thatIn([DataStoreKind.DSS, DataStoreKind.AFS])
+	
+				mainController.openbisV3
+					.searchDataStores(criteria, new DataStoreFetchOptions())
+					.done(searchResult => {
+						const transformedResult = _this._transformSearchDataStoresResult(searchResult);
+						callbackFunction(transformedResult);
+					});
+			}
+		)
+	}
+	
+
+	this._transformSearchDataStoresResult = function(searchResult) {
+		return {
+		  jsonrpc: "2.0",
+		  id: String(searchResult['@id']),
+		  result: searchResult.objects			
+			.map((obj, index) => ({
+			  "@type": obj["@type"].replace("as.dto.datastore.", ""),
+			  "@id": index + 1,
+			  code: obj.code,
+			  downloadUrl: obj.code === "STANDARD"? obj.downloadUrl + "/datastore_server" : obj.downloadUrl ,
+			  hostUrl: obj.downloadUrl
+			}))
+		};
 	}
 
 	this.getUserDisplaySettings = function(callbackFunction) {

@@ -45,9 +45,9 @@ class LocationDialog extends React.Component {
     super(props)
     autoBind(this)
 
-    const { path, owner } = this.props
+    const { path, owner, openBis} = this.props
 
-    this.controller = new DataBrowserController(owner)
+    this.controller = new DataBrowserController(owner, openBis)
     this.controller.attach(this)
 
     this.state = {

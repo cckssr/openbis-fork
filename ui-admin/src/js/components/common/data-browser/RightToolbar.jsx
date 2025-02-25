@@ -87,7 +87,8 @@ class RightToolbar extends React.Component {
       this.controller,
       () => this.state, 
       this.updateStateCallback,
-      this.openErrorDialog      
+      this.openErrorDialog,
+      this.props.afterUpload     
     )
 
     this.state = {
