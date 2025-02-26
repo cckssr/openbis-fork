@@ -90,14 +90,16 @@ public class RDFReader
 
         Map<String, List<String>> RDFtoOpenBISDataTypeMap = DatatypeMapper.getRDFtoOpenBISDataTypeMap(ontModel);
         //modelRDF.RDFtoOpenBISDataType = RDFtoOpenBISDataTypeMap;
-        Map<String, List<String>> objectPropToOntClassMap = ObjectPropertyMapper.getObjectPropToOntClassMap(ontModel);
+        Map<String, List<String>> objectPropToOntClassMap =
+                ObjectPropertyMapper.getObjectPropToOntClassMap(ontModel, modelRDF);
         //modelRDF.objectPropertyMap = objectPropToOntClassMap;
         Map<String, OntClassExtension> ontClass2OntClassExtensionMap = ClassCollector.getOntClass2OntClassExtensionMap(ontModel);
         modelRDF.stringOntClassExtensionMap = ontClass2OntClassExtensionMap;
         Set<String> vocabUnionTypes = handleVocabularyUnion(ontModel, "https://biomedit.ch/rdf/sphn-schema/sphn#Terminology", modelRDF);
 
-
-        List<SampleType> sampleTypeList = ClassCollector.getSampleTypeList(ontModel, ontClass2OntClassExtensionMap, vocabUnionTypes);
+        List<SampleType> sampleTypeList =
+                ClassCollector.getSampleTypeList(ontModel, ontClass2OntClassExtensionMap,
+                        vocabUnionTypes, modelRDF);
 
         sampleTypeList.removeIf(sampleType -> modelRDF.vocabularyTypeListGroupedByType.containsKey(sampleType.code));
         restrictionsToSampleMetadata(sampleTypeList, ontClass2OntClassExtensionMap);
@@ -177,10 +179,9 @@ public class RDFReader
 
         Map<String, OntClassExtension> ontClass2OntClassExtensionMap = ClassCollector.getOntClass2OntClassExtensionMap(additionalOntModel);
 
-
-
-
-        List<SampleType> sampleTypeList = ClassCollector.getSampleTypeList(additionalOntModel, ontClass2OntClassExtensionMap, List.of())
+        List<SampleType> sampleTypeList =
+                ClassCollector.getSampleTypeList(additionalOntModel, ontClass2OntClassExtensionMap,
+                                List.of(), new ModelRDF())
                 .stream().filter(sampleType ->  resourceParsingResult.getClassesImported().contains(sampleType.ontologyAnnotationId))
                 .filter(x -> vocabTypes.getVocabAnnotationIds().contains(x.ontologyAnnotationId)).toList();
         modelRDF.sampleTypeList.addAll(sampleTypeList);

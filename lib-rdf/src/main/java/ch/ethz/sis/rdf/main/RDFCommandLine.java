@@ -10,7 +10,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 
-import java.io.Console;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Date;
@@ -179,21 +178,7 @@ public class RDFCommandLine {
 
     private static String getPassword(CommandLine cmd)
     {
-        char[] password = null;
-        if (cmd.hasOption("password"))
-        {
-            Console console = System.console();
-            if (console == null)
-            {
-                System.out.println("No console available");
-                System.exit(1);
-            } else
-            {
-                password = console.readPassword("Enter password: ");
-            }
-        }
-        assert password != null;
-        return String.valueOf(password);
+        return "changeit";
     }
 
     private static void validateCommandLine(CommandLine cmd)
