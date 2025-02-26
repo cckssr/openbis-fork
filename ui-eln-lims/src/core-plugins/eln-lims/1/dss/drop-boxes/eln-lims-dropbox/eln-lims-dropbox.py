@@ -320,7 +320,7 @@ def deleteFiles(file):
 
 def deleteFilesMatchingPatternsExec(file, patterns):
     for pattern in patterns:
-        if pattern.matcher(file.getName()).matches():
+        if pattern.matcher(file.getName()).find():
             deleteFiles(file)
             return
     if file.isDirectory():
@@ -331,7 +331,7 @@ def deleteFilesMatchingPatternsExec(file, patterns):
 def getIllegalFilesMatchingPatterns(file, patterns):
     result = []
     for pattern in patterns:
-        if pattern.matcher(file.getName()).matches():
+        if pattern.matcher(file.getName()).find():
             result.append(file.getPath())
             break
     if file.isDirectory():
