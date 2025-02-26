@@ -1684,6 +1684,13 @@ function ServerFacade(openbisServer) {
 						}
 					}
 
+					if(advancedFetchOptions.withDataSets) {
+					    fetchOptions.withDataSets();
+					    if(advancedFetchOptions.withDataSetSample) {
+					        fetchOptions.withDataSets().withSample();
+					    }
+					}
+
 					if(advancedFetchOptions.withExperiment) {
 						fetchOptions.withExperiment();
 						if(advancedFetchOptions.withExperimentType) {
@@ -2270,6 +2277,7 @@ function ServerFacade(openbisServer) {
                                         break;
                                     case "NULL":
                                         searchCriteria.withoutExperiment();
+                                        break;
                                     case "NOT_NULL":
                                         searchCriteria.withExperiment();
                                         break;
