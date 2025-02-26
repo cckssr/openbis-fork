@@ -1,1 +1,1 @@
-includeFlat 'lib-logging', 'lib-hdf5', 'lib-commonbase'
+includeFlat 'lib-logging', 'lib-commonbase', 'lib-data-store-common', 'lib-pathinfo-db', 'lib-hdf5', 'lib-compress'

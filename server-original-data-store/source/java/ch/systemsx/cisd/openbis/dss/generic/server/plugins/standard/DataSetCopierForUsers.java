@@ -22,6 +22,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
+import ch.systemsx.cisd.common.filesystem.rsync.RsyncCopierFactory;
+import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
+import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;

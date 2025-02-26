@@ -16,4 +16,6 @@ repositories {
 
 dependencies {
     implementation 'apache:commons-collections4:4.1', 'sis:sis-base:23.06.0', 'sis:sis-jhdf5:19.04.0'
+
+    testImplementation 'testng:testng:6.8-CISD'
 }

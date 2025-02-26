@@ -1,0 +1,19 @@
+apply plugin: 'java'
+
+compileJava {
+    options.compilerArgs << '-parameters'
+}
+
+sourceCompatibility = '11'
+targetCompatibility = '11'
+
+repositories {
+    ivy {
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+    }
+}
+
+dependencies {
+    implementation project(':lib-commonbase'), 'apache:commons-compress:1.8'
+}

@@ -15,5 +15,17 @@ repositories {
 }
 
 dependencies {
-    implementation project(':lib-archiver-db')
+    implementation project(':lib-commonbase'),
+            project(':lib-mail'),
+            project(':lib-compress'),
+            project(':lib-hierarchical-content'),
+            project(':lib-data-store-common'),
+            project(':lib-archiver-db'),
+            project(':lib-pathinfo-db'),
+            project(':api-openbis-java'),
+            'fasterxml:jackson-annotations:2.9.10',
+            'fasterxml:jackson-databind:2.9.10.8',
+            'lemnik:eodsql:2.2-CISD',
+            'apache:commons-compress:1.8',
+            'truezip:truezip:6.8.1'
 }
