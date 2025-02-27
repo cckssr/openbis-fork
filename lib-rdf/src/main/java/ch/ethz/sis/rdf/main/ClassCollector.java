@@ -387,23 +387,13 @@ public class ClassCollector {
                         if (vocabTypesFromUnion)
                         {
                             propertyType.metadata.put("VOCABULARY_UNION", "It's a union!");
+                            propertyType.dataType = "VARCHAR";
 
-                            generalVocabularyTypes.stream().forEach(genVocab -> {
-                                String[] parts = genVocab.split("/");
-                                String code = parts[parts.length -1];
-                                SamplePropertyType vocabPropertyType = new SamplePropertyType(propertyType.propertyLabel+"Vocabulary" +code, propertyType.ontologyAnnotationId);
-                                vocabPropertyType.dataType = "VARCHAR";
-                                propertyTypeList.add(vocabPropertyType);
-
-                                    }
-                            );
-
+                            propertyType.metadata.put("TYPE",
+                                    "The type was a union of " + unionOperands.stream().collect(
+                                            Collectors.joining(", ")));
 
                         }
-
-                        propertyType.metadata.put("TYPE", "The type was a union of " + unionOperands.stream().collect(
-                                Collectors.joining(", ")));
-
 
                         propertyType.metadata.put("UNION_TYPE", getUnionClassOperands(range.as(UnionClass.class)).toString());
                     } else if (range.isURIResource())
