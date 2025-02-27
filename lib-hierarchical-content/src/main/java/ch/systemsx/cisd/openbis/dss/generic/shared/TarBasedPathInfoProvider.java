@@ -55,7 +55,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
  *
  * @author Franz-Josef Elmer
  */
-class TarBasedPathInfoProvider implements ISingleDataSetPathInfoProvider
+public class TarBasedPathInfoProvider implements ISingleDataSetPathInfoProvider
 {
     private final File packageFile;
 
@@ -69,7 +69,7 @@ class TarBasedPathInfoProvider implements ISingleDataSetPathInfoProvider
 
     private List<H5FolderFlags> h5FolderFlags;
 
-    TarBasedPathInfoProvider(File packageFile, List<H5FolderFlags> h5FolderFlags, int bufferSize, ISimpleLogger ioSpeedLogger)
+    public TarBasedPathInfoProvider(File packageFile, List<H5FolderFlags> h5FolderFlags, int bufferSize, ISimpleLogger ioSpeedLogger)
     {
         this.packageFile = packageFile;
         this.h5FolderFlags = h5FolderFlags;

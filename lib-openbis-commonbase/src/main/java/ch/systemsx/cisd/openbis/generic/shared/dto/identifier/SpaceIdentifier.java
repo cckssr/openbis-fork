@@ -22,22 +22,28 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import ch.systemsx.cisd.common.string.StringUtilities;
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
-import ch.systemsx.cisd.openbis.generic.shared.util.SpaceCodeHelper;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Identifies a data space.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public class SpaceIdentifier implements
         Comparable<SpaceIdentifier>, Serializable
 {
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
+
+    private static final String HOME_SPACE_CODE = null;
 
     public final static class Constants
     {
         public static final char IDENTIFIER_SEPARATOR = '/';
+    }
+
+    private static boolean isHomeSpace(String spaceCodeOrNull)
+    {
+        return spaceCodeOrNull == HOME_SPACE_CODE;
     }
 
     private String spaceCodeOrNull;
@@ -47,7 +53,9 @@ public class SpaceIdentifier implements
         return new SpaceIdentifier(getHomeSpaceCode());
     }
 
-    /** space in the home database */
+    /**
+     * space in the home database
+     */
     public SpaceIdentifier(final String spaceCode)
     {
         setSpaceCode(spaceCode);
@@ -100,12 +108,12 @@ public class SpaceIdentifier implements
 
     protected static String getHomeSpaceCode()
     {
-        return SpaceCodeHelper.HOME_SPACE_CODE;
+        return HOME_SPACE_CODE;
     }
 
     public boolean isHomeSpace()
     {
-        return SpaceCodeHelper.isHomeSpace(spaceCodeOrNull);
+        return isHomeSpace(spaceCodeOrNull);
     }
 
     // GWT only

@@ -19,8 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicProjectIdentifier;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Identifies a project.
@@ -29,7 +29,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.BasicProjectIdentifier;
  */
 public class ProjectIdentifier extends SpaceIdentifier
 {
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     private String projectCode;
 

@@ -20,6 +20,7 @@ dependencies {
     }
 
     api project(':lib-common'),
+            project(':lib-openbis-commonbase'),
             project(':lib-openbis-common'),
             // lib-authentication and lib-dbmigration are required as they contain later versions of
             // some classes than cisd-cifex.jar. They need to be in classpath before cisd-cifex.jar

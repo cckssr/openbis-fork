@@ -15,7 +15,5 @@ repositories {
 }
 
 dependencies {
-    implementation project(':lib-openbis-commonbase'),
-            project(':api-openbis-java'),
-            'shriop:javacsv:2.0'
+    implementation project(':lib-commonbase'), project(':api-openbis-java')
 }

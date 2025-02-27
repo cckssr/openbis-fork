@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.model.renderer.VocabularyPropertyColRenderer;
-
 import java.io.Serializable;
 
 /**

@@ -22,6 +22,7 @@ dependencies {
             project(':lib-data-store-common'),
             project(':lib-archiver-db'),
             project(':lib-pathinfo-db'),
+            project(':lib-openbis-commonbase'),
             project(':api-openbis-java'),
             'fasterxml:jackson-annotations:2.9.10',
             'fasterxml:jackson-databind:2.9.10.8',

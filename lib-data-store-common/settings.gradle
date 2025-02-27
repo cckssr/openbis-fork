@@ -1,1 +1,1 @@
-includeFlat 'api-openbis-java'
+includeFlat 'lib-openbis-commonbase', 'api-openbis-java'

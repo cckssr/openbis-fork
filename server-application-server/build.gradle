@@ -17,6 +17,7 @@ configurations.create('asExecRuntime')
 dependencies {
     api project(':lib-common'),
             project(':api-openbis-java'),
+            project(':lib-openbis-commonbase'),
             project(':lib-openbis-common'),
             project(':lib-authentication'),
             project(':lib-mail'),

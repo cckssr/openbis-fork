@@ -19,8 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Identifies an experiment.
@@ -29,7 +29,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
  */
 public final class ExperimentIdentifier extends ProjectIdentifier
 {
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     final static String CODE_SEPARATOR = "/";
 
@@ -55,7 +55,7 @@ public final class ExperimentIdentifier extends ProjectIdentifier
 
     public ExperimentIdentifier(final String projectCode, final String experimentCode)
     {
-        this(getHomeSpaceCode(), projectCode, experimentCode);
+        this(SpaceIdentifier.getHomeSpaceCode(), projectCode, experimentCode);
     }
 
     public ExperimentIdentifier(final String groupCode,
