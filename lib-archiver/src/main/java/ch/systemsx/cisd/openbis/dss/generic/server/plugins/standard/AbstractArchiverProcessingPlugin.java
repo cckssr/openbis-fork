@@ -53,7 +53,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
@@ -67,9 +67,9 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SimpleDataSetHelper;
@@ -117,7 +117,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
     private transient IShareIdManager shareIdManager;
 
-    private transient IEncapsulatedOpenBISService service;
+    private transient IOpenBISService service;
 
     transient IDataSetStatusUpdater statusUpdater;
 
@@ -853,7 +853,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         return shareFinder;
     }
 
-    protected IEncapsulatedOpenBISService getService()
+    protected IOpenBISService getService()
     {
         if (service == null)
         {
@@ -872,7 +872,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         this.shareIdManager = shareIdManager;
     }
 
-    protected void setService(IEncapsulatedOpenBISService service)
+    protected void setService(IOpenBISService service)
     {
         this.service = service;
     }
@@ -884,14 +884,14 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     {
         private final IShareFinder shareFinder;
 
-        private final IEncapsulatedOpenBISService service;
+        private final IOpenBISService service;
 
         private final List<Share> shares;
 
         private final IShareIdManager shareIdManager;
 
         UnarchivingPreparation(IShareFinder shareFinder, IShareIdManager shareIdManager,
-                IEncapsulatedOpenBISService service, List<Share> shares)
+                IOpenBISService service, List<Share> shares)
         {
             this.shareFinder = shareFinder;
             this.shareIdManager = shareIdManager;

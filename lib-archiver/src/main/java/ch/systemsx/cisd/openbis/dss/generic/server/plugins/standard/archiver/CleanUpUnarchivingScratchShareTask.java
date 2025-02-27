@@ -37,7 +37,7 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.PluginTaskInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
@@ -53,7 +53,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             CleanUpUnarchivingScratchShareTask.class);
 
-    private IEncapsulatedOpenBISService service;
+    private IOpenBISService service;
 
     private String archiveFolder;
 
@@ -75,7 +75,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
     public void execute()
     {
         File storeRoot = getStoreRoot();
-        IEncapsulatedOpenBISService service = getService();
+        IOpenBISService service = getService();
         IFreeSpaceProvider spaceProvider = createFreeSpaceProvider();
         ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
         IConfigProvider configProvider = getConfigProvider();
@@ -155,7 +155,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
         return ServiceProvider.getConfigProvider().getStoreRoot();
     }
 
-    protected IEncapsulatedOpenBISService getService()
+    protected IOpenBISService getService()
     {
         if (service == null)
         {

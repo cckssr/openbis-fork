@@ -25,10 +25,7 @@ import org.apache.log4j.Logger;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 /**
@@ -99,47 +96,5 @@ public abstract class AbstractDatastorePlugin implements Serializable
     protected File getDatasetDir(IDataSetDirectoryProvider provider, DatasetDescription dataset)
     {
         return provider.getDataSetDirectory(dataset);
-    }
-
-    /**
-     * get directory in the dataset as a Hierarchical Content
-     */
-    protected IHierarchicalContentNode getDataSubDir(IHierarchicalContentProvider provider,
-            DatasetDescription dataset)
-    {
-        if (StringUtils.isBlank(subDirectory))
-        {
-            return getDatasetDir(provider, dataset).getRootNode();
-        } else
-        {
-            return getDatasetDir(provider, dataset).getNode(subDirectory);
-        }
-    }
-
-    protected IHierarchicalContent getDatasetDir(IHierarchicalContentProvider provider,
-            DatasetDescription dataset)
-    {
-        return provider.asContent(dataset.getDataSetCode());
-    }
-
-    /**
-     * get directory in the dataset as a Hierarchical Content
-     */
-    protected IHierarchicalContentNode getDataSubDir(IHierarchicalContentProvider provider,
-            String dataSetCode)
-    {
-        if (StringUtils.isBlank(subDirectory))
-        {
-            return getDatasetDir(provider, dataSetCode).getRootNode();
-        } else
-        {
-            return getDatasetDir(provider, dataSetCode).getNode(subDirectory);
-        }
-    }
-
-    protected IHierarchicalContent getDatasetDir(IHierarchicalContentProvider provider,
-            String dataSetCode)
-    {
-        return provider.asContent(dataSetCode);
     }
 }

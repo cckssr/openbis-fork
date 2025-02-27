@@ -71,8 +71,8 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -81,9 +81,9 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SimpleDataSetHelper;
@@ -688,7 +688,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
 
     private Share findScratchShare()
     {
-        IEncapsulatedOpenBISService service = getService();
+        IOpenBISService service = getService();
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
         ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
         return MultiDataSetArchivingUtils.getScratchShare(this.storeRoot, service, freeSpaceProvider,
@@ -699,13 +699,13 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     {
         private final Share scratchShare;
 
-        private final IEncapsulatedOpenBISService service;
+        private final IOpenBISService service;
 
         private final IShareIdManager shareIdManager;
 
         private final IDataSetDirectoryProvider directoryProvider;
 
-        MultiDataSetUnarchivingPreparations(Share scratchShare, IShareIdManager shareIdManager, IEncapsulatedOpenBISService service,
+        MultiDataSetUnarchivingPreparations(Share scratchShare, IShareIdManager shareIdManager, IOpenBISService service,
                 IDataSetDirectoryProvider directoryProvider)
         {
             this.shareIdManager = shareIdManager;

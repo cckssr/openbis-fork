@@ -16,16 +16,15 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared.utils;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
@@ -39,7 +38,7 @@ final class SharesHolder
 
     private final Map<String, Share> shares;
 
-    private final IEncapsulatedOpenBISService service;
+    private final IOpenBISService service;
 
     private final ISimpleLogger log;
 
@@ -48,7 +47,7 @@ final class SharesHolder
     private boolean areDataSetsAdded;
 
     SharesHolder(String dataStoreCode, Map<String, Share> shares,
-            IEncapsulatedOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
+            IOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
     {
         this.dataStoreCode = dataStoreCode;
         this.shares = shares;
@@ -105,13 +104,6 @@ final class SharesHolder
             }
         }
         areDataSetsAdded = true;
-    }
-
-    public interface IEncapsulatedOpenBISService
-    {
-        List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException;
-
-        void updateShareIdAndSize(String dataSetCode, String shareId, long size) throws UserFailureException;
     }
 
 }

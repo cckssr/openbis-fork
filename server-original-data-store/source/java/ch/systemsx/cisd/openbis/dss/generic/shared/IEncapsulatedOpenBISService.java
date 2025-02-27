@@ -25,7 +25,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.fetchoptions.PersonalAccessTokenFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.IPersonalAccessTokenId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.update.PersonalAccessTokenUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.fetchoptions.SessionInformationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.search.SessionInformationSearchCriteria;
@@ -74,16 +73,16 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 
 /**
  * This interface is very similar to {@link IServiceForDataStoreServer} but <code>sessionToken</code> has been removed from most methods.
- * 
- * @see IServiceForDataStoreServer
+ *
  * @author Christian Ribeaud
+ * @see IServiceForDataStoreServer
  */
-public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISService
+public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISService, IOpenBISService
 {
 
     /**
      * Get the basic version of this service, that will filter the results.
-     * 
+     *
      * @param userName The user used for filtering.
      */
     @ManagedAuthentication
@@ -124,7 +123,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Check which of the list of of data sets the current user can access.
-     * 
+     *
      * @param sessionToken The user's session token.
      * @param dataSetCodes The data set codes the user wants to access.
      */
@@ -140,7 +139,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Tries to get the sample identifier for the sample with specified permanent ID.
-     * 
+     *
      * @return <code>null</code> if nothing found.
      */
     @ManagedAuthentication
@@ -148,7 +147,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Tries to get the sample identifier for the sample with specified permanent ID.
-     * 
+     *
      * @return <code>null</code> if nothing found.
      */
     @ManagedAuthentication
@@ -182,7 +181,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Lists all data sets of the specified sample ID.
-     * 
+     *
      * @param showOnlyDirectlyConnected If <code>true</code> only directly connected data sets are returned.
      */
     @ManagedAuthentication
@@ -191,7 +190,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Returns all data sets found for specified data set codes.
-     * 
+     *
      * @return plain data sets without properties, samples, and experiments.
      */
     @ManagedAuthentication
@@ -200,7 +199,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Registers the specified experiment.
-     * 
+     *
      * @return the technical ID of the new experiment
      */
     @ManagedAuthentication
@@ -208,7 +207,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * Registers the specified sample.
-     * 
+     *
      * @return the technical ID of the new sample
      */
     @ManagedAuthentication
@@ -241,7 +240,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     /**
      * Tries to return the properties of the top sample of the sample with given <var>sampleIdentifier</var>. The top sample is the root of the sample
      * relationship graph of this sample. If a sample has multiple parents or no parents at all, it is considered its own top sample.
-     * 
+     *
      * @return <code>null</code> if no appropriated sample is found. Returns an empty array if a sample is found with no properties.
      */
     @ManagedAuthentication
@@ -251,7 +250,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     /**
      * Tries to return the properties of the sample with given <var>sampleIdentifier</var>.. If sample has no top sample, its own properties are
      * returned.
-     * 
+     *
      * @param sampleIdentifier an identifier which uniquely identifies the sample.
      * @return <code>null</code> if no appropriated sample found. Returns an empty array if a a sample found with no properties.
      */
@@ -259,12 +258,16 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     public IEntityProperty[] tryGetPropertiesOfSample(final SampleIdentifier sampleIdentifier)
             throws UserFailureException;
 
-    /** See {@link IServiceForDataStoreServer#listSamplesByCriteria(String, ListSamplesByPropertyCriteria)} */
+    /**
+     * See {@link IServiceForDataStoreServer#listSamplesByCriteria(String, ListSamplesByPropertyCriteria)}
+     */
     @ManagedAuthentication
     public List<Sample> listSamplesByCriteria(final ListSamplesByPropertyCriteria criteria)
             throws UserFailureException;
 
-    /** See {@link IServiceForDataStoreServer#listShareIds(String, String)} */
+    /**
+     * See {@link IServiceForDataStoreServer#listShareIds(String, String)}
+     */
     @ManagedAuthentication
     public List<DataSetShareId> listDataSetShareIds() throws UserFailureException;
 
@@ -309,7 +312,9 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     @ManagedAuthentication
     public void updatePhysicalDataSetsSize(Map<String, Long> sizeMap) throws UserFailureException;
 
-    /** @see IServiceForDataStoreServer#listDataSets(String, String, TrackingDataSetCriteria) */
+    /**
+     * @see IServiceForDataStoreServer#listDataSets(String, String, TrackingDataSetCriteria)
+     */
     @ManagedAuthentication
     public List<AbstractExternalData> listNewerDataSets(TrackingDataSetCriteria criteria)
             throws UserFailureException;
@@ -352,7 +357,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * List data sets deleted after the last seen deletion event. If event id is null all deleted datasets will be returned.
-     * 
+     *
      * @param maxDeletionDateOrNull when specified only lists data sets that have been deleted before it.
      */
     @ManagedAuthentication
@@ -383,17 +388,23 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     // Archiving
     //
 
-    /** See {@link IServiceForDataStoreServer#listAvailableDataSets(String, String, ArchiverDataSetCriteria)} */
+    /**
+     * See {@link IServiceForDataStoreServer#listAvailableDataSets(String, String, ArchiverDataSetCriteria)}
+     */
     @ManagedAuthentication
     public List<AbstractExternalData> listAvailableDataSets(ArchiverDataSetCriteria criteria)
             throws UserFailureException;
 
-    /** See {@link IServiceForDataStoreServer#archiveDatasets(String, List, boolean)} */
+    /**
+     * See {@link IServiceForDataStoreServer#archiveDatasets(String, List, boolean)}
+     */
     @ManagedAuthentication
     public void archiveDataSets(List<String> dataSetCodes, boolean removeFromDataStore, Map<String, String> options)
             throws UserFailureException;
 
-    /** See {@link IServiceForDataStoreServer#unarchiveDatasets(String, List)} */
+    /**
+     * See {@link IServiceForDataStoreServer#unarchiveDatasets(String, List)}
+     */
     @ManagedAuthentication
     public void unarchiveDataSets(List<String> dataSetCodes) throws UserFailureException;
 
@@ -412,21 +423,27 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
             DataSetArchivingStatus newStatus, boolean newPresentInArchive)
             throws UserFailureException;
 
-    /** See {@link IServiceForDataStoreServer#checkSpaceAccess(String, SpaceIdentifier)} */
+    /**
+     * See {@link IServiceForDataStoreServer#checkSpaceAccess(String, SpaceIdentifier)}
+     */
     @ManagedAuthentication
     public void checkSpaceAccess(String sToken, SpaceIdentifier spaceId);
 
-    /** See {@link IServiceForDataStoreServer#checkExperimentAccess(String, String)} */
+    /**
+     * See {@link IServiceForDataStoreServer#checkExperimentAccess(String, String)}
+     */
     @ManagedAuthentication
     public void checkExperimentAccess(String sToken, String experimentIdentifier);
 
-    /** See {@link IServiceForDataStoreServer#checkSampleAccess(String, String)} */
+    /**
+     * See {@link IServiceForDataStoreServer#checkSampleAccess(String, String)}
+     */
     @ManagedAuthentication
     public void checkSampleAccess(String sToken, String sampleIdentifier);
 
     /**
      * See {@link IServiceForDataStoreServer#tryAuthenticate(String, String)}
-     * 
+     *
      * @param user
      * @param password
      */
@@ -435,7 +452,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
 
     /**
      * See {@link IServiceForDataStoreServer#tryGetSession(String)}
-     * 
+     *
      * @param sessionToken
      */
     @ManagedAuthentication

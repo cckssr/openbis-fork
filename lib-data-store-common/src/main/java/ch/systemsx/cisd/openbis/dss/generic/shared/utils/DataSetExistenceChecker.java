@@ -24,11 +24,12 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 
 /**
  * Helper class checking existence of a data set in a share. Retries existence check in case share is currently not available.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DataSetExistenceChecker
@@ -66,6 +67,12 @@ public class DataSetExistenceChecker
         this.maxRetries = maxRetries;
     }
 
+    public boolean dataSetExists(DeletedDataSet dataset)
+    {
+        return dataSetExists(dataset.getCode(), dataset.getShareIdOrNull(),
+                dataset.getLocationOrNull());
+    }
+
     public boolean dataSetExists(IDatasetLocation dataSetLocation)
     {
         String dataSetCode = dataSetLocation.getDataSetCode();
@@ -73,7 +80,7 @@ public class DataSetExistenceChecker
         return dataSetExists(dataSetCode, shareId, dataSetLocation.getDataSetLocation());
     }
 
-    public boolean dataSetExists(String dataSetCode, String shareId, String location)
+    private boolean dataSetExists(String dataSetCode, String shareId, String location)
     {
         File share = dataSetDirectoryProvider.getDataSetDirectory(shareId, "");
         File dataSetDirectory =

@@ -19,7 +19,7 @@ import java.util.List;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
@@ -64,11 +64,11 @@ public abstract class AbstractDataSetFileOperationsManager
     @Private
     public static final String FOLDER_OF_AS_DELETED_MARKED_DATA_SETS = "DELETED";
 
-    protected transient IEncapsulatedOpenBISService service;
+    protected transient IOpenBISService service;
 
     protected transient IDataSetDirectoryProvider directoryProvider;
 
-    protected IEncapsulatedOpenBISService getService()
+    protected IOpenBISService getService()
     {
         if (service == null)
         {

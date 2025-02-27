@@ -17,17 +17,15 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 
 import static ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier.CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
-import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Parses the given text in the constructor to extract the database instance, the group and the
@@ -49,30 +47,6 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
     public static final SampleIdentifier parse(final Sample sample) throws UserFailureException
     {
         return new SampleIdentifierFactory(sample.getIdentifier()).createIdentifier(null);
-    }
-
-    public static final SampleIdentifier parse(final NewSample sample) throws UserFailureException
-    {
-        SampleIdentifierFactory factory = new SampleIdentifierFactory(sample.getIdentifier());
-        String defaultSpace = sample.getDefaultSpaceIdentifier();
-        SampleIdentifier identifier = factory.createIdentifier(defaultSpace);
-        String currentContainer = sample.getCurrentContainerIdentifier();
-
-        // if current container is defined and identifier includes container code, throw an
-        // exception
-        if (false == StringUtils.isEmpty(currentContainer)
-                && false == StringUtils.isBlank(identifier.tryGetContainerCode()))
-        {
-            throw new UserFailureException("Current container is specified, but the identifier '"
-                    + sample.getIdentifier() + "' includes the container code.");
-        }
-        if (identifier.tryGetContainerCode() == null
-                && StringUtils.isEmpty(currentContainer) == false)
-        {
-            SampleIdentifier defaultContainerIdentifier = parse(currentContainer, defaultSpace);
-            identifier.addContainerCode(defaultContainerIdentifier.getSampleSubCode());
-        }
-        return identifier;
     }
 
     public static final SampleIdentifier parse(final String textToParse, final String defaultSpace)
@@ -104,8 +78,9 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
         {
             return false;
         }
-        String[] codes = text.split(IDENTIFIER_SEPARARTOR_STRING);
-        if(codes.length == 0 || codes.length >= 4) {
+        String[] codes = text.split(AbstractIdentifierFactory.IDENTIFIER_SEPARARTOR_STRING);
+        if (codes.length == 0 || codes.length >= 4)
+        {
             return false;
         }
         for (int i = 0; i < codes.length; i++)
@@ -203,10 +178,10 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
     private static SampleIdentifierOrPattern parse(String text, String defaultSpace,
             boolean isPattern)
     {
-        String tokens[] = text.split(IDENTIFIER_SEPARARTOR_STRING);
+        String tokens[] = text.split(AbstractIdentifierFactory.IDENTIFIER_SEPARARTOR_STRING);
         if (tokens.length == 0)
         {
-            throw new UserFailureException(ILLEGAL_EMPTY_IDENTIFIER);
+            throw new UserFailureException(AbstractIdentifierFactory.ILLEGAL_EMPTY_IDENTIFIER);
         }
         String sampleCode = tokens[tokens.length - 1];
         String[] ownerTokens = (String[]) ArrayUtils.subarray(tokens, 0, tokens.length - 1);
@@ -233,10 +208,10 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
     {
         if (isPattern)
         {
-            assertValidPatternCharacters(token);
+            AbstractIdentifierFactory.assertValidPatternCharacters(token);
         } else
         {
-            assertValidCode(token);
+            AbstractIdentifierFactory.assertValidCode(token);
         }
     }
 
@@ -261,7 +236,7 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
         } else
         // identifier does not start with a slash
         {
-            throw createSlashMissingExcp(originalText);
+            throw AbstractIdentifierFactory.createSlashMissingExcp(originalText);
         }
     }
 
@@ -290,15 +265,15 @@ public final class SampleIdentifierFactory extends AbstractIdentifierFactory
             // case: originalText is e.g. "db:/space/CP1" or "/space/CP1"
             String spaceCode = tokens[1];
             return new SampleOwnerIdentifier(new SpaceIdentifier(
-                    assertValidCode(spaceCode)));
+                    AbstractIdentifierFactory.assertValidCode(spaceCode)));
         } else if (tokens.length == 3)
         {
             // case: originalText is e.g. "/space/project/CP1"
             String spaceCode = tokens[1];
             String projectCode = tokens[2];
             return new SampleOwnerIdentifier(new ProjectIdentifier(
-                    assertValidCode(spaceCode), assertValidCode(projectCode)));
+                    AbstractIdentifierFactory.assertValidCode(spaceCode), AbstractIdentifierFactory.assertValidCode(projectCode)));
         } else
-            throw createTooManyTokensExcp(originalText);
+            throw AbstractIdentifierFactory.createTooManyTokensExcp(originalText);
     }
 }

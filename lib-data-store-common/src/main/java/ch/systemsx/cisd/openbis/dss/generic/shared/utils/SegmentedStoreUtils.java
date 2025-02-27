@@ -55,7 +55,7 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -65,19 +65,19 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
  * Utility methods for segmented stores.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class SegmentedStoreUtils
 {
     private static final IFreeSpaceProvider DUMMY_FREE_SPACE_PROVIDER = new IFreeSpaceProvider()
+    {
+        @Override
+        public long freeSpaceKb(HostAwareFile path) throws IOException
         {
-            @Override
-            public long freeSpaceKb(HostAwareFile path) throws IOException
-            {
-                return Long.MAX_VALUE;
-            }
-        };
+            return Long.MAX_VALUE;
+        }
+    };
 
     private static final String RSYNC_EXEC = "rsync";
 
@@ -86,64 +86,64 @@ public class SegmentedStoreUtils
     public static final Long MINIMUM_FREE_SCRATCH_SPACE = FileUtils.ONE_GB;
 
     private static final Comparator<Share> SHARE_COMPARATOR = new Comparator<Share>()
+    {
+        @Override
+        public int compare(Share o1, Share o2)
         {
-            @Override
-            public int compare(Share o1, Share o2)
-            {
-                return o1.getShareId().compareTo(o2.getShareId());
-            }
-        };
+            return o1.getShareId().compareTo(o2.getShareId());
+        }
+    };
 
     private static final SimpleComparator<SimpleDataSetInformationDTO, Date> ACCESS_TIMESTAMP_COMPARATOR =
             new SimpleComparator<SimpleDataSetInformationDTO, Date>()
+            {
+                @Override
+                public Date evaluate(SimpleDataSetInformationDTO item)
                 {
-                    @Override
-                    public Date evaluate(SimpleDataSetInformationDTO item)
-                    {
-                        return item.getAccessTimestamp();
-                    }
-                };
+                    return item.getAccessTimestamp();
+                }
+            };
 
     private static final FileFilter FILTER_ON_SHARES = new FileFilter()
+    {
+        @Override
+        public boolean accept(File pathname)
         {
-            @Override
-            public boolean accept(File pathname)
+            if (FileOperations.getMonitoredInstanceForCurrentThread().isDirectory(pathname) == false)
             {
-                if (FileOperations.getMonitoredInstanceForCurrentThread().isDirectory(pathname) == false)
-                {
-                    return false;
-                }
-                String name = pathname.getName();
-                return SHARE_ID_PATTERN.matcher(name).matches();
+                return false;
             }
-        };
+            String name = pathname.getName();
+            return SHARE_ID_PATTERN.matcher(name).matches();
+        }
+    };
 
     public static enum FilterOptions
     {
         ALL()
-        {
-            @Override
-            boolean isSelected(Share share)
-            {
-                return true;
-            }
-        },
+                {
+                    @Override
+                    boolean isSelected(Share share)
+                    {
+                        return true;
+                    }
+                },
         AVAILABLE_FOR_SHUFFLING()
-        {
-            @Override
-            boolean isSelected(Share share)
-            {
-                return false == (share.isIgnoredForShuffling() || share.isUnarchivingScratchShare());
-            }
-        },
+                {
+                    @Override
+                    boolean isSelected(Share share)
+                    {
+                        return false == (share.isIgnoredForShuffling() || share.isUnarchivingScratchShare());
+                    }
+                },
         ARCHIVING_SCRATCH()
-        {
-            @Override
-            boolean isSelected(Share share)
-            {
-                return share.isUnarchivingScratchShare();
-            }
-        };
+                {
+                    @Override
+                    boolean isSelected(Share share)
+                    {
+                        return share.isUnarchivingScratchShare();
+                    }
+                };
 
         abstract boolean isSelected(Share share);
     }
@@ -218,19 +218,19 @@ public class SegmentedStoreUtils
         if (incomingShareIdOrNull != null)
         {
             File[] shares = getShares(storeRoot, new FileFilter()
+            {
+                @Override
+                public boolean accept(File pathname)
                 {
-                    @Override
-                    public boolean accept(File pathname)
+                    if (FileOperations.getMonitoredInstanceForCurrentThread().isDirectory(pathname) == false)
                     {
-                        if (FileOperations.getMonitoredInstanceForCurrentThread().isDirectory(pathname) == false)
-                        {
-                            return false;
-                        }
-                        String name = pathname.getName();
-                        Pattern p = Pattern.compile("\\b" + String.valueOf(incomingShareIdOrNull + "\\b"));
-                        return p.matcher(name).matches();
+                        return false;
                     }
-                });
+                    String name = pathname.getName();
+                    Pattern p = Pattern.compile("\\b" + String.valueOf(incomingShareIdOrNull + "\\b"));
+                    return p.matcher(name).matches();
+                }
+            });
 
             if (shares.length != 1)
             {
@@ -284,17 +284,17 @@ public class SegmentedStoreUtils
 
     /**
      * Gets a list of all shares of specified store root directory. As a side effect it calculates and updates the size of all data sets if necessary.
-     * 
-     * @param dataStoreCode Code of the data store to which the root belongs.
-     * @param filterOptions Specifies what kind of shares should be filtered out from the result
-     * @param incomingShares Set of IDs of incoming shares. Will be used to mark {@link Share} object in the returned list.
+     *
+     * @param dataStoreCode     Code of the data store to which the root belongs.
+     * @param filterOptions     Specifies what kind of shares should be filtered out from the result
+     * @param incomingShares    Set of IDs of incoming shares. Will be used to mark {@link Share} object in the returned list.
      * @param freeSpaceProvider Provider of free space used for all shares.
-     * @param service Access to openBIS API in order to get all data sets and to update data set size.
-     * @param log Logger for logging size calculations.
+     * @param service           Access to openBIS API in order to get all data sets and to update data set size.
+     * @param log               Logger for logging size calculations.
      */
     public static List<Share> getSharesWithDataSets(File storeRoot, String dataStoreCode,
             FilterOptions filterOptions, Set<String> incomingShares,
-            IFreeSpaceProvider freeSpaceProvider, IEncapsulatedOpenBISService service,
+            IFreeSpaceProvider freeSpaceProvider, IOpenBISService service,
             ISimpleLogger log)
     {
         final long start = System.currentTimeMillis();
@@ -315,11 +315,11 @@ public class SegmentedStoreUtils
      * Frees space in specified share for unarchived data sets. This method assumes that the size of all specified data sets are known by the
      * {@link DatasetDescription} objects. Data sets with oldest modification date are removed first. The archiving status of these data sets are set
      * back to ARCHIVED.
-     * 
+     *
      * @param dataSets The data sets which should be kept (if already in the specified share). In addition they specify the amount of space to be
-     *            freed.
+     *                 freed.
      */
-    public static void freeSpace(Share unarchivingScratchShare, IEncapsulatedOpenBISService service,
+    public static void freeSpace(Share unarchivingScratchShare, IOpenBISService service,
             List<DatasetDescription> dataSets, IDataSetDirectoryProvider dataSetDirectoryProvider,
             IShareIdManager shareIdManager, ISimpleLogger logger)
     {
@@ -345,7 +345,7 @@ public class SegmentedStoreUtils
             List<SimpleDataSetInformationDTO> dataSetsToRemoveFromShare =
                     listDataSetsToRemoveFromShare(filteredDataSetsInShare, requestedSpace, actualFreeSpace,
                             unarchivingScratchShare, logger);
-            deleteFromUnarchivingScratchShare(dataSetsToRemoveFromShare, unarchivingScratchShare, service, 
+            deleteFromUnarchivingScratchShare(dataSetsToRemoveFromShare, unarchivingScratchShare, service,
                     dataSetDirectoryProvider, shareIdManager, logger);
             availableSpace += calculateTotalSize(dataSetsToRemoveFromShare);
             actualFreeSpace = Math.min(availableSpace, unarchivingScratchShare.calculateFreeSpace());
@@ -358,7 +358,7 @@ public class SegmentedStoreUtils
     }
 
     public static void deleteFromUnarchivingScratchShare(List<SimpleDataSetInformationDTO> dataSetsToRemoveFromShare,
-            Share unarchivingScratchShare, IEncapsulatedOpenBISService service, 
+            Share unarchivingScratchShare, IOpenBISService service,
             IDataSetDirectoryProvider dataSetDirectoryProvider, IShareIdManager shareIdManager, ISimpleLogger logger)
     {
         logger.log(LogLevel.INFO, "Remove the following data sets from share '" + unarchivingScratchShare.getShareId()
@@ -394,7 +394,7 @@ public class SegmentedStoreUtils
     private static void removeCommonDataSets(List<DatasetDescription> dataSets, List<SimpleDataSetInformationDTO> dataSetsInShare)
     {
         Set<String> extractCodes = new HashSet<String>(extractCodes(dataSetsInShare));
-        for (Iterator<DatasetDescription> iterator = dataSets.iterator(); iterator.hasNext();)
+        for (Iterator<DatasetDescription> iterator = dataSets.iterator(); iterator.hasNext(); )
         {
             DatasetDescription dataSet = iterator.next();
             if (extractCodes.remove(dataSet.getDataSetCode()))
@@ -402,7 +402,7 @@ public class SegmentedStoreUtils
                 iterator.remove();
             }
         }
-        for (Iterator<SimpleDataSetInformationDTO> iterator = dataSetsInShare.iterator(); iterator.hasNext();)
+        for (Iterator<SimpleDataSetInformationDTO> iterator = dataSetsInShare.iterator(); iterator.hasNext(); )
         {
             SimpleDataSetInformationDTO dataSet = iterator.next();
             if (extractCodes.contains(dataSet.getDataSetCode()) == false)
@@ -472,7 +472,7 @@ public class SegmentedStoreUtils
 
     static List<Share> getSharesWithDataSets(File storeRoot, String dataStoreCode,
             FilterOptions filterOptions, IFreeSpaceProvider freeSpaceProvider,
-            IEncapsulatedOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
+            IOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
     {
         final Map<String, Share> shares =
                 getShares(storeRoot, dataStoreCode, filterOptions,
@@ -484,7 +484,7 @@ public class SegmentedStoreUtils
 
     private static Map<String, Share> getShares(File storeRoot, String dataStoreCode,
             FilterOptions filterOptions, IFreeSpaceProvider freeSpaceProvider,
-            IEncapsulatedOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
+            IOpenBISService service, ISimpleLogger log, ITimeProvider timeProvider)
     {
         final Map<String, Share> shares = new HashMap<String, Share>();
         final SharesHolder sharesHolder =
@@ -513,12 +513,12 @@ public class SegmentedStoreUtils
      * <li>Changing share id in openBIS AS.
      * <li>Deletes the data set at the old location after all locks on the data set have been released.
      * </ol>
-     * 
-     * @param service to access openBIS AS.
+     *
+     * @param service          to access openBIS AS.
      * @param checksumProvider
      */
     public static void moveDataSetToAnotherShare(final File dataSetDirInStore, File share,
-            IEncapsulatedOpenBISService service, final IShareIdManager shareIdManager,
+            IOpenBISService service, final IShareIdManager shareIdManager,
             IChecksumProvider checksumProvider, final ISimpleLogger logger)
     {
         if (FileOperations.getMonitoredInstanceForCurrentThread().exists(dataSetDirInStore) == false)
@@ -621,7 +621,7 @@ public class SegmentedStoreUtils
 
     /**
      * Deletes specified data set in the old share if it is already in the new one or in the new one if it is still in the old one.
-     * 
+     *
      * @param shareIdManager provides the current share.
      */
     public static void cleanUp(SimpleDataSetInformationDTO dataSet, File storeRoot,

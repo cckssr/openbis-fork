@@ -35,7 +35,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -104,7 +104,7 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
 
     private List<DatasetDescription> loadDataSets(List<String> dataSetCodes)
     {
-        IEncapsulatedOpenBISService service = getASService();
+        IOpenBISService service = getASService();
         List<DatasetDescription> result = new ArrayList<DatasetDescription>();
         for (AbstractExternalData dataSet : service.listDataSetsByCode(dataSetCodes))
         {
@@ -123,7 +123,7 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
         return codes;
     }
 
-    IEncapsulatedOpenBISService getASService()
+    IOpenBISService getASService()
     {
         return ServiceProvider.getOpenBISService();
     }

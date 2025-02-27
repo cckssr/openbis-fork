@@ -15,17 +15,17 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Identifies a sample.
- * 
+ *
  * @author Izabela Adamczyk
  * @author Tomasz Pylak
  */
 public class SampleIdentifier extends SampleOwnerIdentifier
 {
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     public static final String CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING = ":";
 
@@ -48,7 +48,7 @@ public class SampleIdentifier extends SampleOwnerIdentifier
         super(spaceIdentOrNull);
         setSampleCode(sampleCode);
     }
-    
+
     public static SampleIdentifier createOwnedBy(final SampleOwnerIdentifier owner,
             final String sampleCode)
     {
@@ -62,20 +62,26 @@ public class SampleIdentifier extends SampleOwnerIdentifier
         return new SampleIdentifier(owner.getProjectLevel(), sampleCode);
     }
 
-    /** Database-instance level {@link SampleIdentifier}. */
+    /**
+     * Database-instance level {@link SampleIdentifier}.
+     */
     public SampleIdentifier(final String sampleCode)
     {
         super();
         setSampleCode(sampleCode);
     }
 
-    /** Space level {@link SampleIdentifier} in home database instance. */
+    /**
+     * Space level {@link SampleIdentifier} in home database instance.
+     */
     public static SampleIdentifier create(String spaceCode, String sampleCode)
     {
         return new SampleIdentifier(new SpaceIdentifier(spaceCode), sampleCode);
     }
 
-    /** Home space level {@link SampleIdentifier} with type. */
+    /**
+     * Home space level {@link SampleIdentifier} with type.
+     */
     public static SampleIdentifier createHomeGroup(final String sampleCode)
     {
         return new SampleIdentifier(SpaceIdentifier.createHome(), sampleCode);

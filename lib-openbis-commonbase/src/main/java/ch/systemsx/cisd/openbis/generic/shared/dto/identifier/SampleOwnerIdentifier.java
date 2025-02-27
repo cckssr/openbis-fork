@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 import java.io.Serializable;
 
 import ch.systemsx.cisd.common.reflection.AbstractHashable;
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier.Constants;
 
 /**
@@ -27,44 +27,52 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier.Co
  * <li>Space if <code>projectIdentifier == null</code> and <code>spaceIdentOrNull != null</code>
  * <li>Non if <code>projectIdentifier == null</code> and <code>spaceIdentOrNull == null</code>
  * </ol>
- * 
+ *
  * @author Tomasz Pylak
  */
 public class SampleOwnerIdentifier extends AbstractHashable implements Serializable,
         Comparable<SampleOwnerIdentifier>
 {
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     // if not null, sample is defined on the space level
     private SpaceIdentifier spaceIdentOrNull;
-    
+
     private ProjectIdentifier projectIdentifier;
 
-    /** Database-instance level {@link SampleOwnerIdentifier}. */
+    /**
+     * Database-instance level {@link SampleOwnerIdentifier}.
+     */
     public SampleOwnerIdentifier()
     {
     }
 
-    /** Space level {@link SampleOwnerIdentifier}. */
+    /**
+     * Space level {@link SampleOwnerIdentifier}.
+     */
     public SampleOwnerIdentifier(final SpaceIdentifier identifier)
     {
         assert identifier != null : "space identifier cannot be null";
         this.spaceIdentOrNull = identifier;
     }
 
-    /** Project level {@link SampleOwnerIdentifier}. */
+    /**
+     * Project level {@link SampleOwnerIdentifier}.
+     */
     public SampleOwnerIdentifier(final ProjectIdentifier identifier)
     {
         assert identifier != null : "project identifier cannot be null";
         this.projectIdentifier = identifier;
     }
-    
-    /** @return if sample is connected to its home space */
+
+    /**
+     * @return if sample is connected to its home space
+     */
     public boolean isInsideHomeSpace()
     {
         return isSpaceLevel() && spaceIdentOrNull.isHomeSpace();
     }
-    
+
     public boolean isProjectLevel()
     {
         return projectIdentifier != null;
@@ -112,7 +120,7 @@ public class SampleOwnerIdentifier extends AbstractHashable implements Serializa
             throw new IllegalStateException("sample owner is unknown");
         }
     }
-    
+
     public ProjectIdentifier getProjectLevel()
     {
         return projectIdentifier;

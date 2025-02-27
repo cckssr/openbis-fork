@@ -18,18 +18,18 @@ package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 import java.io.Serializable;
 
 import ch.systemsx.cisd.common.reflection.AbstractHashable;
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Identifies a group of samples on the same level (in certain group or on database level)
- * 
+ *
  * @author Tomasz Pylak
  */
 public class SampleIdentifierPattern extends AbstractHashable implements Serializable
 {
     public final static SampleIdentifierPattern[] EMPTY_ARRAY = new SampleIdentifierPattern[0];
 
-    private static final long serialVersionUID = IServer.VERSION;
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     private final SampleOwnerIdentifier owner;
 
@@ -51,7 +51,7 @@ public class SampleIdentifierPattern extends AbstractHashable implements Seriali
         SampleIdentifierPattern dbPattern = new SampleIdentifierPattern(sampleCodePattern, dbOwner);
 
         return new SampleIdentifierPattern[]
-        { groupPattern, dbPattern };
+                { groupPattern, dbPattern };
     }
 
     /**

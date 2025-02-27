@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.AbstractDataSetFileOperationsManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiveFolders;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IdentifierAttributeMappingManager;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -99,7 +99,7 @@ public class DistributedPackagingDataSetFileOperationsManager extends AbstractDa
     }
 
     DistributedPackagingDataSetFileOperationsManager(Properties properties,
-            IEncapsulatedOpenBISService service, IDataSetDirectoryProvider directoryProvider, IPackageManager packageManager)
+            IOpenBISService service, IDataSetDirectoryProvider directoryProvider, IPackageManager packageManager)
     {
         this.service = service;
         this.directoryProvider = directoryProvider;

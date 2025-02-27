@@ -30,7 +30,7 @@ import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 
@@ -51,7 +51,7 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask imple
 
     protected static final String CHUNK_SIZE = "chunk-size";
 
-    protected IEncapsulatedOpenBISService openBISService;
+    protected IOpenBISService openBISService;
 
     protected long delayAfterDeletion;
 
@@ -70,7 +70,7 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask imple
         LogInitializer.init();
     }
 
-    protected IEncapsulatedOpenBISService getOpenBISService()
+    protected IOpenBISService getOpenBISService()
     {
         if (openBISService == null)
         {
