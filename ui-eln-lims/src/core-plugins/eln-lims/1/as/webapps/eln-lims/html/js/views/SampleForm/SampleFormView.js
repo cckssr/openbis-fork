@@ -701,13 +701,13 @@
 
 				var $tabsContent = $('<div class="tab-content">');
 				var $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
-				var $dssWidgetTab = $('<div id="dssWidgetTab" class="tab-pane fade"></div>');
+				var $afsWidgetTab = $('<div id="afsWidgetTab" class="tab-pane fade"></div>');
 				
 				$tabsContent.append($sampleFormTab);
 				
 				if(profile.isAFSAvailable()) {
-					$tabsContent.append($dssWidgetTab);
-					tabs.push({ id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false });
+					$tabsContent.append($afsWidgetTab);
+					tabs.push({ id: "filesTab", label: "Files", href: "#afsWidgetTab", active: false });
 				}
 				$tabsContainer.append($tabsContent);
 
@@ -716,8 +716,11 @@
 					tabs
 				}
 
-				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel);
+				const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId)
+
+				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel, $afsWidgetLeftToolBar);
 				$header.append($toolbarWithTabs);
+				
 				$container.empty();
 				$container.append($tabsContainer);
 				$sampleFormTab.append($form);
@@ -725,50 +728,23 @@
 				// new dss widget display
 				$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 					var target = $(e.target).attr("href");
-					if (target === "#dssWidgetTab") {
-						if (!$("#dssWidgetTab").data("dssLoaded")) {
-							_this._displayNewDSSWidget($dssWidgetTab, _this._sampleFormModel.sample.permId);
-							$dssWidgetTab.data("dssLoaded", true);
-						}
-                        // disable enable buttons in toolbar
-                        for (var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
-                            var $toolbarComponent = toolbarModel[tbIdx].component;
-                            $toolbarComponent.prop("disabled", true);
-                            $toolbarComponent.addClass("disabled");
-
-                            if ($toolbarComponent.hasClass("dropdown")) {
-                              $toolbarComponent
-                                .find(".dropdown-toggle")
-                                .removeAttr("data-toggle")
-                                .on("click", function(e) {
-                                  e.preventDefault();
-                                })
-                                .css({
-                                  "pointer-events": "none",
-                                  "opacity": "0.5",
-                                  "cursor": "not-allowed"
-                                });
-                            }
-                          }
-                    } else {
-                      for (var tbIdx = 0; tbIdx < toolbarModel.length; tbIdx++) {
-                        var $toolbarComponent = toolbarModel[tbIdx].component;
-                        $toolbarComponent.prop("disabled", false);
-                        $toolbarComponent.removeClass("disabled");
-
-                        if ($toolbarComponent.hasClass("dropdown")) {
-                          var $dropdownToggle = $toolbarComponent.find(".dropdown-toggle");
-                          $dropdownToggle.attr("data-toggle", "dropdown");
-                          $dropdownToggle.off("click.disabled");
-                          $dropdownToggle.css({
-                            "pointer-events": "",
-                            "opacity": "",
-                            "cursor": ""
-                          });
-                        }
-                      }
-                    }
-				});
+					
+					if (target === "#afsWidgetTab") {
+					  // When the Files tab is selected, hide the normal toolbar and show the alternate one.
+					  $(".normal-toolbar-container").hide();
+					  $(".alternate-toolbar-container").show();
+					  
+					  if (!$("#afsWidgetTab").data("dssLoaded")) {
+						_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
+						$("#afsWidgetTab").data("dssLoaded", true);
+					  }
+					} else {
+					  // When any other tab is selected, show the normal toolbar and hide the alternate one.
+					  $(".normal-toolbar-container").show();
+					  $(".alternate-toolbar-container").hide();
+					}
+				  });
+				  
 				
 			}
 
@@ -1768,7 +1744,7 @@
 					&& this._sampleFormModel.dataSetRights.rights.indexOf("CREATE") >= 0;
 		}
 	
-		this._displayNewDSSWidget= function ($container, id, objType, onActionCallback, objTypeCode) {
+		this._displayAFSWidget= function ($container, id) {
 			let $element = $("<div>")
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
@@ -1779,8 +1755,7 @@
 						id:id,
 						objId: id,
 						objKind: "object",
-						viewType:'list',
-						fromExternalApp: true,						
+						viewType:'list',												
 	
 						extOpenbis: {
 							RightsFetchOptions: RightsFetchOptions,						
@@ -1797,7 +1772,7 @@
 							list: mainController.openbisV3.getAfsServerFacade().list.bind(mainController.openbisV3),
 						}
 					}
-					let configKey = "NEW-DSS-WIDGET" + id;
+					let configKey = "AFS-WIDGET-KEY";
 										
 					const loadSettings = function () {
 						return new Promise(function (resolve) {
@@ -1848,17 +1823,47 @@
                     props['onStoreDisplaySettings'] = onSettingsChange;
                     props['onLoadDisplaySettings'] = loadSettings;
 
-					let dataBrowserComponent = React.createElement(window.NgComponents.default.DataBrowser, props)
+					let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
 					
-					NgComponentsManager.renderComponent(
-						React.createElement(
-							window.NgComponents.default.ThemeProvider,
-							{},
-							dataBrowserComponent),
-						$element.get(0)
-					);
+					NgComponentsManager.renderComponent(DataBrowser, $element.get(0));					
 				}
 			);		
 			$container.append($element);
+		}
+
+		this._renderAFSWidgetLeftToolBar= function ($container, id) {
+			let $element = $("<div>")
+			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+				"as/dto/sample/id/SamplePermId",
+				"as/dto/experiment/id/ExperimentPermId",
+			],
+				function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+					let props = {						
+						owner: id,	
+						buttonSize: 'small',
+	
+						extOpenbis: {
+							RightsFetchOptions: RightsFetchOptions,						
+							SamplePermId:SamplePermId,
+							ExperimentPermId:ExperimentPermId,
+							getRightsByIds: mainController.openbisV3.getRights.bind(mainController.openbisV3),								
+							free: mainController.openbisV3.getAfsServerFacade().free.bind(mainController.openbisV3),
+							create: mainController.openbisV3.getAfsServerFacade().create.bind(mainController.openbisV3),
+							read: mainController.openbisV3.getAfsServerFacade().read.bind(mainController.openbisV3),
+							write: mainController.openbisV3.getAfsServerFacade().write.bind(mainController.openbisV3),
+							delete: mainController.openbisV3.getAfsServerFacade().delete.bind(mainController.openbisV3),
+							copy: mainController.openbisV3.getAfsServerFacade().copy.bind(mainController.openbisV3),
+							move: mainController.openbisV3.getAfsServerFacade().move.bind(mainController.openbisV3),
+							list: mainController.openbisV3.getAfsServerFacade().list.bind(mainController.openbisV3),
+						}
+					}
+
+
+					let LeftToolbar = React.createElement(window.NgComponents.default.LeftToolbar, props)
+					
+					NgComponentsManager.renderComponent(LeftToolbar, $element.get(0));					
+				}
+			);		
+			return $element;
 		}
 	}

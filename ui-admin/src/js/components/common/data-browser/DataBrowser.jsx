@@ -23,6 +23,7 @@ import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDia
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
 import {isUserAbortedError, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 import mimeTypeMap from './mimeTypes';
+import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 
 
 const styles = theme => ({
@@ -82,13 +83,11 @@ class DataBrowser extends React.Component {
     super(props, context)
     autoBind(this)
 
-    const { sessionToken,
+    const { 
             controller,
             id,
-            showFileExistsDialog,
-            currentFile,
             extOpenbis,
-            fromExternalApp } = this.props
+             } = this.props
 
     this.controller = controller || new DataBrowserController(id, extOpenbis)
     this.controller.attach(this)
@@ -220,11 +219,11 @@ class DataBrowser extends React.Component {
   }
 
   handleMultiselect(selectedRow) {
-    this.setState({
-      multiselectedFiles: new Set(
-        Object.values(selectedRow).map(value => value.data)
-      )
-    })
+    const multiselectedFiles = new Set(
+      Object.values(selectedRow).map(({ data }) => data)
+    );
+    this.setState({ multiselectedFiles });    
+    eventBus.emit('selectionChanged', { multiselectedFiles });
   }
 
 
@@ -270,8 +269,13 @@ class DataBrowser extends React.Component {
     if (this.state.path !== path + '/') {
       this.setState({ path: path + '/' })
       this.controller.setPath(path + '/')
-      await this.controller.gridController.load()
+      await this.onGridActionComplete()      
+      eventBus.emit('pathChanged', { path });
     }
+  }
+
+  async onGridActionComplete(){
+    await this.controller.gridController.load()
   }
 
   sizeToString(bytes) {
@@ -322,6 +326,7 @@ class DataBrowser extends React.Component {
       if (right[objId] && right[objId].rights) {
         const editable = right[objId].rights.includes("UPDATE")
         this.setState({ editable: editable })
+        eventBus.emit('rightsChanged', {editable});
       } else {
         this.setState({ editable: false })
       }
@@ -331,10 +336,23 @@ class DataBrowser extends React.Component {
   async componentDidMount() {
     try {
       this.fetchSpaceStatus()
-      await this.fetchRights()          
+      await this.fetchRights()   
+      eventBus.on('spaceStatusChanged', this.handleSpaceStatusChanged);
+      eventBus.on('gridActionCompleted', this.onGridActionComplete);   
+      eventBus.on('downloadRequested', this.handleDownload);    
     } catch (err){
         this.openErrorDialog(err)
     }
+  }
+
+  componentWillUnmount() {    
+    eventBus.off('selectionChanged', this.handleSelectionChanged);
+    eventBus.off('gridActionCompleted', this.onGridActionComplete);
+    eventBus.off('downloadRequested', this.handleDownload);
+  }
+
+  handleSpaceStatusChanged(){
+    this.fetchSpaceStatus();
   }
 
   openErrorDialog(errorMessage) {
@@ -414,7 +432,7 @@ class DataBrowser extends React.Component {
   };
 
   render() {
-    const { classes, sessionToken, id } = this.props
+    const { classes, id, leftToolbar } = this.props
     const {
       viewType,
       files,
@@ -458,13 +476,12 @@ class DataBrowser extends React.Component {
           onShowInfoChange={this.handleShowInfoChange}
           onDownload={this.handleDownload}
           showInfo={showInfo}
-          multiselectedFiles={multiselectedFiles}
-          sessionToken={sessionToken}
+          multiselectedFiles={multiselectedFiles}          
           owner={id}
           editable={editable}
-          path={path}
           openBis={this.props.extOpenbis}
-          afterUpload={this.fetchSpaceStatus}
+          onSpaceStatusChange={this.fetchSpaceStatus}
+          leftToolbar={leftToolbar}
         />
         <InfoBar
           path={path}

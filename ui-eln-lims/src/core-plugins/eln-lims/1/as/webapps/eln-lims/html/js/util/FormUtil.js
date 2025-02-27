@@ -1622,73 +1622,73 @@ var FormUtil = new function() {
 		return $toolbarContainer;
 	}
 
-
-	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel) {		
-		var $toolbarButtons = this.getToolbar(toolbarModel);
-		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
-		$rightToolbarButtons.css({marginBottom : "0px"})	
+	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel, alternateToolbar) {		
 		
-		// Expecting tabsModel to be an object like:
-		// {
-		//    containerId: "myTabsContainer",
-		//    tabs: [
-		//       { id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true },
-		//       { id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false }
-		//    ]
-		// }
+		var $normalToolbar = this.getToolbar(toolbarModel);
+		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
+		$rightToolbarButtons.css({ marginBottom: "0px" });		
+		
 		var containerId = tabsModel.containerId || "";
 		var tabs = tabsModel.tabs || [];
-			
 		var tabsContainerOptions = { 
-			class: "nav nav-tabs toolbar-tabs", 
-			style: "border-bottom: 0; margin: 0; padding: 0; display: flex;"
+		  class: "nav nav-tabs toolbar-tabs", 
+		  style: "border-bottom: 0; margin: 0; padding: 0; display: flex;"
 		};
 		if (containerId) {
-			tabsContainerOptions.id = containerId;
+		  tabsContainerOptions.id = containerId;
 		}
 		var $tabsContainer = $("<ul>", tabsContainerOptions);
-			
 		tabs.forEach(function(tab) {
-			var liClass = tab.active ? "active" : "";
-			var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
-			var aOptions = {
-				href: tab.href,
-				"data-toggle": "tab",
-				text: tab.label
-			};
-			
-			if (tab.id) {
-				aOptions.id = tab.id;
-			}
-			var $a = $("<a>", aOptions);
-			$li.append($a);
-			$tabsContainer.append($li);
-		});	
-		
-		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "space-between",
-			width: "100%"
+		  var liClass = tab.active ? "active" : "";
+		  var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
+		  var aOptions = {
+			href: tab.href,
+			"data-toggle": "tab",
+			text: tab.label
+		  };
+		  if (tab.id) {
+			aOptions.id = tab.id;
+		  }
+		  var $a = $("<a>", aOptions);
+		  $li.append($a);
+		  $tabsContainer.append($li);
 		});
-	
-		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" }).append($toolbarButtons);
-	
+
+		var $normalToolbarContainer = $("<div>", { class: "normal-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append($normalToolbar);
+		var $alternateToolbarContainer = $("<div>", { class: "alternate-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append(alternateToolbar);
+
+		$alternateToolbarContainer.hide();
+
+		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" })
+		  .css({
+			width: $rightToolbarButtons.children().length > 0 ? "50%" :"100%",
+			display: "flex"
+		  });
+		$buttonsWrapper.append($normalToolbarContainer).append($alternateToolbarContainer);
+		
 		var $rightSideContainer = $("<div>", { class: "right-side-container" }).css({
-			display: "flex",
-			alignItems: "center",
-			gap: "10px"
+		  display: "flex",
+		  alignItems: "center",
+		  gap: "10px"
 		});
 		$rightSideContainer.append($rightToolbarButtons).append($tabsContainer);
-	
+		
+		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
+		  display: "flex",
+		  alignItems: "center",
+		  justifyContent: "space-between",
+		  width: "100%"
+		});
 		$combinedContainer.append($buttonsWrapper).append($rightSideContainer);
-	
+		
 		return $combinedContainer;
-	};
-	
-	
-	
-	
+	  };
+
+		
 	
 	this.getOperationsMenu = function(items) {
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });

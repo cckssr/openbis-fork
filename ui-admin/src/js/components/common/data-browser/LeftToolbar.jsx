@@ -37,6 +37,8 @@ import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDia
 import LocationDialog from '@src/js/components/common/data-browser/LocationDialog.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
 import Download from '@src/js/components/common/data-browser/Download.jsx'
+import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
+import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 
 const color = 'inherit'
 const iconButtonSize = 'medium'
@@ -77,26 +79,45 @@ class LeftToolbar extends React.Component {
     super(props, context)
     autoBind(this)
 
+    const {owner, extOpenbis } = this.props
+    
+    this.onResize = debounce(this.onResize, 1)
+
+    this.controller = new DataBrowserController(owner, extOpenbis)
+    this.controller.attach(this)
+    this.controller.setPath("/");
+
+    this.dragDepth = 0;
+
     this.state = {
       width: 0,
+      path: '/',
       hiddenButtonsPopup: null,
       newFolderDialogOpen: false,
       deleteDialogOpen: false,
       renameDialogOpen: false,
       locationDialogMode: null,
       loading: false,
-      renameError: false
+      renameError: false,
+      editable: false 
     }
-
-    this.controller = this.props.controller
     this.onResize = debounce(this.onResize, 1)
+  }
+
+  openErrorDialog(errorMessage) {
+    this.setState({ errorMessage })
   }
 
   async handleNewFolderCreate(folderName) {
     this.closeNewFolderDialog()
     if (folderName && folderName.trim()) {
-      await this.controller.createNewFolder(folderName.trim())
-    }
+      await this.controller.createNewFolder(folderName.trim())      
+      eventBus.emit('gridActionCompleted', {});
+    }    
+  }
+
+  fetchSpaceStatus(){        
+    eventBus.emit('spaceStatusChanged', {});
   }
 
   handleNewFolderCancel() {
@@ -128,7 +149,7 @@ class LeftToolbar extends React.Component {
   }
 
   async handleRenameConfirm(newName) {
-    const { multiselectedFiles } = this.props
+    const { multiselectedFiles } = this.state
 
     if (!this.isValidFilename(newName)) {
       this.setState({ renameError: true })
@@ -146,6 +167,7 @@ class LeftToolbar extends React.Component {
     } finally {
       this.setState({ loading: false })
     }
+     eventBus.emit('gridActionCompleted', {});
   }
 
   isValidFilename(filename) {
@@ -176,9 +198,8 @@ class LeftToolbar extends React.Component {
     this.setState({ locationDialogMode: null })
   }
 
-  async handleLocationConfirm(newPath) {
-    const { multiselectedFiles } = this.props
-    const { locationDialogMode} = this.state
+  async handleLocationConfirm(newPath) {    
+    const { locationDialogMode, multiselectedFiles} = this.state
     this.closeLocationDialog()
 
     try {
@@ -191,6 +212,7 @@ class LeftToolbar extends React.Component {
     } finally {
       this.setState({ loading: false })
     }
+     eventBus.emit('gridActionCompleted', {});
   }
 
   handleLocationCancel() {
@@ -198,18 +220,61 @@ class LeftToolbar extends React.Component {
   }
 
   async handleDeleteConfirm() {
-    const { multiselectedFiles } = this.props
+    const { multiselectedFiles } = this.state
 
     this.closeDeleteDialog()
     await this.controller.delete(multiselectedFiles)
+    eventBus.emit('gridActionCompleted', {});
   }
 
   handleDeleteCancel() {
     this.closeDeleteDialog()
   }
 
+
+  async handleDownload() {
+    eventBus.emit('downloadRequested', {});
+  }
+
+  componentDidMount() {    
+    eventBus.on('selectionChanged', this.handleSelectionChanged);
+    eventBus.on('pathChanged', this.handlePathChanged);
+    eventBus.on('rightsChanged', this.handleRightsChanged);
+  }
+
+  componentWillUnmount() {    
+    eventBus.off('selectionChanged', this.handleSelectionChanged);
+    eventBus.off('pathChanged', this.handlePathChanged);
+  }
+
+
+  handleSelectionChanged({multiselectedFiles}){
+    this.setState({ multiselectedFiles });
+  }
+
+  
+  handleRightsChanged({editable}){
+    this.setState({ editable });
+  }
+
+  handlePathChanged({path}) {
+
+    const newPath = path || '/';
+    
+    if (newPath !== (this.state.path)) {
+      const formattedPath = newPath.endsWith('/') ? newPath : newPath + '/';
+      if (this.state.path !== formattedPath) {
+        this.setState({ path: formattedPath });
+        this.controller.setPath(formattedPath);
+      }
+    }
+  }
+
+
+
   renderNoSelectionContextToolbar() {
-    const { classes, buttonSize, editable } = this.props
+    const { classes, buttonSize } = this.props
+    
     return ([
       <Button
         key='new-folder'
@@ -217,7 +282,7 @@ class LeftToolbar extends React.Component {
         color={color}
         size={buttonSize}
         variant='outlined'
-        disabled={!editable}
+        disabled={!this.state.editable}
         startIcon={<CreateNewFolderIcon />}
         onClick={this.openNewFolderDialog}
       >
@@ -238,12 +303,8 @@ class LeftToolbar extends React.Component {
     const {
       classes,
       buttonSize,
-      multiselectedFiles,
       sessionToken,
-      owner,
-      path,
-      onDownload,
-      editable
+      owner
     } = this.props
     const {
       width,
@@ -251,7 +312,10 @@ class LeftToolbar extends React.Component {
       deleteDialogOpen,
       renameDialogOpen,
       locationDialogMode,
-      renameError
+      renameError,
+      path,
+      multiselectedFiles,
+      editable      
     } = this.state
 
     const ellipsisButtonSize = 24
@@ -267,7 +331,7 @@ class LeftToolbar extends React.Component {
         controller= {this.controller}              
         buttonSize={buttonSize}
         multiselectedFiles={multiselectedFiles.size === 0}
-        onDownload={onDownload}
+        onDownload={this.handleDownload}
         classes={{ root: classes.button }}
       />
       ,
@@ -381,11 +445,10 @@ class LeftToolbar extends React.Component {
           key='location-dialog'
           open={!!locationDialogMode}
           title={locationDialogMode === moveLocationMode ? messages.get(messages.MOVE) : messages.get(messages.COPY)}
-          content={messages.get(messages.FILE_OR_FILES, multiselectedFiles.size)}
-          sessionToken={sessionToken}
+          content={messages.get(messages.FILE_OR_FILES, multiselectedFiles.size)}          
           owner={owner}
           path={path}
-          openBis={this.props.openBis}
+          openBis={this.props.extOpenbis}
           multiselectedFiles={multiselectedFiles}
           onCancel={this.handleLocationCancel}
           onConfirm={this.handleLocationConfirm}
@@ -424,8 +487,8 @@ class LeftToolbar extends React.Component {
   render() {
     logger.log(logger.DEBUG, 'LeftToolbar.render')
 
-    const { multiselectedFiles, classes, owner } = this.props
-    const { loading } = this.state
+    const { classes, owner } = this.props
+    const { loading, multiselectedFiles } = this.state
 
     return ([
       <ResizeObserver key='resize-observer' onResize={this.onResize}>

@@ -18,6 +18,7 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
+
 const styles = theme => ({
   tabsPanel: {
     padding: "0"
@@ -177,8 +178,9 @@ class DatabaseComponent extends React.PureComponent {
               viewType='list'
               extOpenbis={openbis}
               onLoadDisplaySettings={this.loadGridSettings}
-              onStoreDisplaySettings={this.onGridSettingsChange}
-              sessionToken={AppController.getInstance().getSessionToken()}
+              onStoreDisplaySettings={this.onGridSettingsChange}              
+              leftToolbar={true}
+              
             />
           </TabPanel>
           <TabPanel classes={{ root: classes.tabsPanel }} value="1">
