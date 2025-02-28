@@ -8,9 +8,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.openbis.rocrate.app.parser.helper.*;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.openbis.rocrate.app.parser.results.ParseResult;
 import ch.openbis.rocrate.app.parser.stuff.ImportTypes;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.io.File;
 import java.io.IOException;
@@ -266,6 +266,10 @@ public class ExcelConversionParser
                         case SAMPLE_TYPE:
                             objectTypeHelper.importBlock(page, pageNumber, lineNumber,
                                     lineNumber + 2);
+                            semanticAnnotationHelper.importBlockForEntityType(page,
+                                    pageNumber, lineNumber, lineNumber + 2,
+                                    ImportTypes.SAMPLE_TYPE);
+
                             if (lineNumber + 2 != blockEnd)
                             {
                                 propertyHelper.importBlock(page, pageNumber, lineNumber + 2,

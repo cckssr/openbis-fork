@@ -4,9 +4,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAnnotationPermId;
-import org.apache.commons.lang3.StringUtils;
 import ch.openbis.rocrate.app.parser.IAttribute;
 import ch.openbis.rocrate.app.parser.stuff.ImportTypes;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -112,13 +112,6 @@ public class SemanticAnnotationHelper extends BasicImportHelper
         switch (type)
         {
             case EntityType:
-
-                annotation = new SemanticAnnotation();
-                annotation.setDescriptorOntologyId(ontologyId);
-                annotation.setDescriptorOntologyVersion(ontologyVersion);
-                annotation.setPredicateOntologyId(ontologyId);
-                annotation.setDescriptorAccessionId(ontologyAnnotationId);
-                annotation.setPermId(new SemanticAnnotationPermId(this.permIdOrNull.getPermId()));
                 List<SemanticAnnotation> entityAnnotations = entityTypeAnnotations.get(code);
                 if (entityAnnotations == null)
                 {

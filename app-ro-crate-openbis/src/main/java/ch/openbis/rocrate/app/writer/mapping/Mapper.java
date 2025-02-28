@@ -123,7 +123,7 @@ public class Mapper
             List<String> semanticAnnotations = Optional.ofNullable(
                             parseResult.getSemanticAnnotationByKind().getEntityPropertyTypeAnnotations()
                                     .get(deRdfsName(a.getKey())))
-                    .map(x -> x.stream().map(y -> y.getPredicateOntologyId()).distinct().toList())
+                    .map(x -> x.stream().map(y -> y.getDescriptorAccessionId()).distinct().toList())
                     .orElse(List.of());
 
             rdfsProperty.setOntologicalAnnotations(semanticAnnotations);
