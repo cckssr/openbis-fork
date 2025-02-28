@@ -5,13 +5,13 @@ import ch.eth.sis.rocrate.facade.ISchemaFacade;
 import ch.eth.sis.rocrate.facade.MetadataEntry;
 import ch.eth.sis.rocrate.facade.RdfsClass;
 import ch.eth.sis.rocrate.facade.TypeProperty;
+import ch.openbis.rocrate.app.parser.results.ParseResult;
+import ch.openbis.rocrate.app.writer.mapping.Mapper;
+import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.contextual.ContextualEntity;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
-import ch.openbis.rocrate.app.parser.results.ParseResult;
-import ch.openbis.rocrate.app.writer.mapping.Mapper;
-import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 
 import java.nio.file.Path;
 
@@ -22,19 +22,19 @@ public class Writer
 
     public static final String NAMESPACE_SEPARATOR = ":";
 
-    public static final String SYSTEM_SPACE = ":" + NAMESPACE_SEPARATOR + "Space";
+    public static final String SYSTEM_SPACE = NAMESPACE_SEPARATOR + "Space";
 
-    public static final String SYSTEM_OBJECT = ":" + NAMESPACE_SEPARATOR + "Object";
+    public static final String SYSTEM_OBJECT = NAMESPACE_SEPARATOR + "Object";
 
     public static final String SYSTEM_COLLECTION =
-            ":" + NAMESPACE_SEPARATOR + "Collection";
+            NAMESPACE_SEPARATOR + "Collection";
 
-    public static final String SYSTEM_PROJECT = ":" + NAMESPACE_SEPARATOR + "Project";
+    public static final String SYSTEM_PROJECT = NAMESPACE_SEPARATOR + "Project";
 
-    public static final String SYSTEM_DATASET = ":" + NAMESPACE_SEPARATOR + "Dataset";
+    public static final String SYSTEM_DATASET = NAMESPACE_SEPARATOR + "Dataset";
 
     public static final String SYSTEM_VOCABULARY =
-            ":" + NAMESPACE_SEPARATOR + "Vocabulary";
+            NAMESPACE_SEPARATOR + "Vocabulary";
 
     public void write(ParseResult parseResult, Path outPath) throws JsonProcessingException
     {
