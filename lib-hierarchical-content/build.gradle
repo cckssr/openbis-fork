@@ -17,6 +17,7 @@ repositories {
 dependencies {
     implementation project(':lib-logging'),
             project(':lib-commonbase'),
+            project(':lib-openbis-commonbase'),
             project(':lib-data-store-common'),
             project(':lib-pathinfo-db'),
             project(':lib-hdf5'),

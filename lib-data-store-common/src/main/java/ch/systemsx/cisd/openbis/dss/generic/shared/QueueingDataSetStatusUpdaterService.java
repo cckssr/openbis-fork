@@ -45,7 +45,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
  * Note that the service needs to be started via {@link #start(File, TimingParameters)}.
  * <p>
  * A file that keeps track of all the data sets that are to be updated needs to be specified in order to persist program restart.
- * 
+ *
  * @author Piotr Buczek
  */
 public class QueueingDataSetStatusUpdaterService
@@ -67,7 +67,7 @@ public class QueueingDataSetStatusUpdaterService
 
     /**
      * Initializes the updater thread. <i>Needs to be called before this class is constructed for the first time.</i>
-     * 
+     *
      * @param queueFile the file that will be used to persist the items to be deleted over program restart.
      */
     public static final void start(File queueFile)
@@ -77,7 +77,7 @@ public class QueueingDataSetStatusUpdaterService
 
     /**
      * Initializes the updater thread. <i>Needs to be called before this class is constructed for the first time.</i>
-     * 
+     *
      * @param queueFile the file that will be used to persist the items to be deleted over program restart.
      */
     public static synchronized final void start(final File queueFile, TimingParameters parameters)
@@ -160,7 +160,7 @@ public class QueueingDataSetStatusUpdaterService
                 public void updateDataSetStatuses(List<String> dataSetCodes,
                         DataSetArchivingStatus newStatus, boolean presentInArchive)
                 {
-                    ServiceProvider.getOpenBISService().updateDataSetStatuses(dataSetCodes,
+                    ServiceProviderFactory.getInstance().getOpenBISService().updateDataSetStatuses(dataSetCodes,
                             newStatus, presentInArchive);
                     operationLog.info("Data Sets " + CollectionUtils.abbreviate(dataSetCodes, 10)
                             + " changed status to " + newStatus);
@@ -213,7 +213,7 @@ public class QueueingDataSetStatusUpdaterService
 
     /**
      * Stop the service and wait for it to finish, but at most <var>timeoutMillis</var> milli-seconds.
-     * 
+     *
      * @return <code>true</code>, if stopping was successful, <code>false</code> otherwise.
      */
     public static synchronized final boolean stopAndWait(long timeoutMillis)
@@ -304,14 +304,14 @@ public class QueueingDataSetStatusUpdaterService
 
     /**
      * A role that can update data set status.
-     * 
+     *
      * @author Piotr Buczek
      */
     public interface IDataSetStatusUpdater
     {
         /**
          * Updates status of data sets with given codes.
-         * 
+         *
          * @param dataSetCodes codes of data sets to be updated
          * @param newStatus status to be set
          * @param presentInArchive the present in archive flag to set

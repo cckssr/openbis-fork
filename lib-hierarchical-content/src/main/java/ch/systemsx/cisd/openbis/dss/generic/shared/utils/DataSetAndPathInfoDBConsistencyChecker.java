@@ -40,7 +40,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
@@ -694,10 +694,10 @@ public class DataSetAndPathInfoDBConsistencyChecker
         if (fileProvider == null)
         {
             fileProvider =
-                    new HierarchicalContentProvider(ServiceProvider.getOpenBISService(),
-                            ServiceProvider.getShareIdManager(),
-                            ServiceProvider.getConfigProvider(), ServiceProvider.getContentCache(),
-                            new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders), getServiceFactory(),
+                    new HierarchicalContentProvider(ServiceProviderFactory.getInstance().getOpenBISService(),
+                            ServiceProviderFactory.getInstance().getShareIdManager(),
+                            ServiceProviderFactory.getInstance().getConfigProvider(), ServiceProviderFactory.getInstance().getContentCache(),
+                            new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders), ServiceProviderFactory.getInstance().getServiceFactory(),
                             null, null);
         }
         return fileProvider;
@@ -716,22 +716,14 @@ public class DataSetAndPathInfoDBConsistencyChecker
             } else
             {
                 pathInfoProvider =
-                        new HierarchicalContentProvider(ServiceProvider.getOpenBISService(),
-                                ServiceProvider.getShareIdManager(),
-                                ServiceProvider.getConfigProvider(),
-                                ServiceProvider.getContentCache(), pathInfoDBFactory,
+                        new HierarchicalContentProvider(ServiceProviderFactory.getInstance().getOpenBISService(),
+                                ServiceProviderFactory.getInstance().getShareIdManager(),
+                                ServiceProviderFactory.getInstance().getConfigProvider(),
+                                ServiceProviderFactory.getInstance().getContentCache(), pathInfoDBFactory,
                                 getServiceFactory(), null, null);
             }
         }
         return pathInfoProvider;
     }
 
-    private IDssServiceRpcGenericFactory getServiceFactory()
-    {
-        if (serviceFactory == null)
-        {
-            serviceFactory = new DssServiceRpcGenericFactory();
-        }
-        return serviceFactory;
-    }
 }

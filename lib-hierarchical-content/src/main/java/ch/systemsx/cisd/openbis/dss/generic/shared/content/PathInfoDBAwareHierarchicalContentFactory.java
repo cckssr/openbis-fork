@@ -28,12 +28,11 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalCont
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 
 /**
  * The implementation of {@link IHierarchicalContentFactory} that aware of Path Info DB.
- * 
+ *
  * @author Piotr Buczek
  */
 public class PathInfoDBAwareHierarchicalContentFactory extends
@@ -49,11 +48,11 @@ public class PathInfoDBAwareHierarchicalContentFactory extends
      */
     public static IHierarchicalContentFactory create()
     {
-        if (PathInfoDataSourceProvider.isDataSourceDefined())
+        if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
         {
             operationLog.debug("Path Info DB is properly configured");
             return new PathInfoDBAwareHierarchicalContentFactory(
-                    ServiceProvider.getDataSetPathInfoProvider());
+                    ServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
         } else
         {
             operationLog.warn("Path Info DB was NOT configured. "
@@ -64,8 +63,7 @@ public class PathInfoDBAwareHierarchicalContentFactory extends
 
     private final IDataSetPathInfoProvider pathInfoProvider;
 
-    @Private
-    PathInfoDBAwareHierarchicalContentFactory(IDataSetPathInfoProvider pathInfoProvider)
+    @Private PathInfoDBAwareHierarchicalContentFactory(IDataSetPathInfoProvider pathInfoProvider)
     {
         this.pathInfoProvider = pathInfoProvider;
     }

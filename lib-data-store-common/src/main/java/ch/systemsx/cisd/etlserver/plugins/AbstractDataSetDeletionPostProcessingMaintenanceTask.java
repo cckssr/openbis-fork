@@ -31,13 +31,13 @@ import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 
 /**
  * Maintenance task which executes after a data set has been deleted in openBIS. Example use cases for it include purging data set archives or/and
  * external databases.
- * 
+ *
  * @author Kaloyan Enimanev
  */
 public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask implements
@@ -74,7 +74,7 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask imple
     {
         if (openBISService == null)
         {
-            openBISService = ServiceProvider.getOpenBISService();
+            openBISService = ServiceProviderFactory.getInstance().getOpenBISService();
         }
         return openBISService;
     }

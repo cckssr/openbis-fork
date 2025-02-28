@@ -203,7 +203,7 @@ public abstract class ArchiveFolders
         {
             if (configProvider == null)
             {
-                configProvider = ServiceProvider.getConfigProvider();
+                configProvider = ServiceProviderFactory.getInstance().getConfigProvider();
             }
             return configProvider;
         }
@@ -212,7 +212,7 @@ public abstract class ArchiveFolders
         {
             if (shareIdManager == null)
             {
-                shareIdManager = ServiceProvider.getShareIdManager();
+                shareIdManager = ServiceProviderFactory.getInstance().getShareIdManager();
             }
             return shareIdManager;
         }
@@ -221,7 +221,7 @@ public abstract class ArchiveFolders
         {
             if (service == null)
             {
-                service = ServiceProvider.getOpenBISService();
+                service = ServiceProviderFactory.getInstance().getOpenBISService();
             }
             return service;
         }

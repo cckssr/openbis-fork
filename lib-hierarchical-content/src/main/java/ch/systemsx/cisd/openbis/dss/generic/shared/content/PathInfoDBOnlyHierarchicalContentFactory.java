@@ -24,8 +24,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalCont
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 
 /**
  * @author pkupczyk
@@ -36,10 +35,10 @@ public class PathInfoDBOnlyHierarchicalContentFactory extends
 
     public static IHierarchicalContentFactory create()
     {
-        if (PathInfoDataSourceProvider.isDataSourceDefined())
+        if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
         {
             return new PathInfoDBOnlyHierarchicalContentFactory(
-                    ServiceProvider.getDataSetPathInfoProvider());
+                    ServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
         } else
         {
             return null;
@@ -48,8 +47,7 @@ public class PathInfoDBOnlyHierarchicalContentFactory extends
 
     private final IDataSetPathInfoProvider pathInfoProvider;
 
-    @Private
-    PathInfoDBOnlyHierarchicalContentFactory(IDataSetPathInfoProvider pathInfoProvider)
+    @Private PathInfoDBOnlyHierarchicalContentFactory(IDataSetPathInfoProvider pathInfoProvider)
     {
         this.pathInfoProvider = pathInfoProvider;
     }
