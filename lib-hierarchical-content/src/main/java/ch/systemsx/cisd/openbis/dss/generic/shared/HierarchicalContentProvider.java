@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -29,7 +30,6 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
-import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.HierarchicalContentProxy;
@@ -41,7 +41,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGeneric
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBAwareHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.RemoteHierarchicalContent;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
@@ -57,7 +56,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             HierarchicalContentProvider.class);
 
-    private final IEncapsulatedOpenBISService openbisService;
+    private final IOpenBISService openbisService;
 
     private final IDataSetDirectoryProvider directoryProvider;
 
@@ -75,44 +74,44 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
 
     private final IDssServiceRpcGenericFactory serviceFactory;
 
-    public HierarchicalContentProvider(IEncapsulatedOpenBISService openbisService,
+    public HierarchicalContentProvider(IOpenBISService openbisService,
             IShareIdManager shareIdManager, IConfigProvider configProvider,
             IContentCache contentCache,
             ISessionTokenProvider sessionTokenProvider,
-            ExposablePropertyPlaceholderConfigurer infoProvider)
+            Properties properties)
     {
         this(openbisService, new DataSetDirectoryProvider(configProvider.getStoreRoot(),
                         shareIdManager), null, new DssServiceRpcGenericFactory(), contentCache,
-                sessionTokenProvider, configProvider.getDataStoreCode(), infoProvider);
+                sessionTokenProvider, configProvider.getDataStoreCode(), properties);
     }
 
-    public HierarchicalContentProvider(IEncapsulatedOpenBISService openbisService,
+    public HierarchicalContentProvider(IOpenBISService openbisService,
             IShareIdManager shareIdManager, IConfigProvider configProvider,
             IContentCache contentCache, IHierarchicalContentFactory hierarchicalContentFactory,
             IDssServiceRpcGenericFactory serviceFactory,
             ISessionTokenProvider sessionTokenProvider,
-            ExposablePropertyPlaceholderConfigurer infoProvider)
+            Properties properties)
     {
         this(openbisService, new DataSetDirectoryProvider(configProvider.getStoreRoot(),
                         shareIdManager), hierarchicalContentFactory, serviceFactory, contentCache,
-                sessionTokenProvider, configProvider.getDataStoreCode(), infoProvider);
+                sessionTokenProvider, configProvider.getDataStoreCode(), properties);
     }
 
     @Private
-    public HierarchicalContentProvider(IEncapsulatedOpenBISService openbisService,
+    public HierarchicalContentProvider(IOpenBISService openbisService,
             IDataSetDirectoryProvider directoryProvider,
             IHierarchicalContentFactory hierarchicalContentFactory,
             IDssServiceRpcGenericFactory serviceFactory, IContentCache contentCache,
             ISessionTokenProvider sessionTokenProvider, String dataStoreCode,
-            ExposablePropertyPlaceholderConfigurer infoProvider)
+            Properties properties)
     {
         this(openbisService, directoryProvider, hierarchicalContentFactory, serviceFactory,
-                contentCache, sessionTokenProvider, dataStoreCode, infoProvider != null
-                        && "true".equalsIgnoreCase(infoProvider.getResolvedProps().getProperty(
+                contentCache, sessionTokenProvider, dataStoreCode, properties != null
+                        && "true".equalsIgnoreCase(properties.getProperty(
                         "trust-all-certificates")));
     }
 
-    private HierarchicalContentProvider(IEncapsulatedOpenBISService openbisService,
+    private HierarchicalContentProvider(IOpenBISService openbisService,
             IDataSetDirectoryProvider directoryProvider,
             IHierarchicalContentFactory hierarchicalContentFactory,
             IDssServiceRpcGenericFactory serviceFactory, IContentCache contentCache,
@@ -239,9 +238,9 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
         {
 
             ISingleDataSetPathInfoProvider provider = null;
-            if (PathInfoDataSourceProvider.isDataSourceDefined())
+            if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
             {
-                IDataSetPathInfoProvider dataSetPathInfoProvider = ServiceProvider.getDataSetPathInfoProvider();
+                IDataSetPathInfoProvider dataSetPathInfoProvider = ServiceProviderFactory.getInstance().getDataSetPathInfoProvider();
 
                 provider =
                         dataSetPathInfoProvider.tryGetSingleDataSetPathInfoProvider(locationNode

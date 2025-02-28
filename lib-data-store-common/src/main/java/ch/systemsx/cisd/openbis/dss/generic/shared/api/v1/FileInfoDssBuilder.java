@@ -26,7 +26,7 @@ import java.util.List;
  * Helper Class for creating FileInfoDss objects based on file system.
  * <p>
  * NOTE: This implementation is not using file system abstraction and therefore doesn't support special handling for HDF5 containers or data set
- * containers. In cases when such a support would be required use {@link HierarchicalFileInfoDssBuilder}.
+ * containers. In cases when such a support would be required use HierarchicalFileInfoDssBuilder.
  * 
  * @author Chandrasekhar Ramakrishnan
  */

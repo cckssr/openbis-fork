@@ -8,6 +8,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
@@ -16,6 +17,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 public interface IOpenBISService
 {
     AbstractExternalData tryGetDataSet(String dataSetCode);
+
+    IDatasetLocationNode tryGetDataSetLocation(String dataSetCode);
 
     Experiment tryGetExperiment(ExperimentIdentifier experimentIdentifier) throws UserFailureException;
 
@@ -32,4 +35,5 @@ public interface IOpenBISService
     void updateShareIdAndSize(String dataSetCode, String shareId, long size);
 
     void notifyDatasetAccess(String dataSetCode);
+
 }
