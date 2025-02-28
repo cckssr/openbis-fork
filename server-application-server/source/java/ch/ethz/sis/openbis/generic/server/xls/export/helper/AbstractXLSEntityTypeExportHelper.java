@@ -187,6 +187,18 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                     getSemanticAnnotationSearchResult(api, sessionToken, getEntityKind(), code,
                             propertyType.getCode());
 
+            String semanticAnnotationIds =
+                    semanticAnnotations != null ? semanticAnnotations.stream()
+                            .map(SemanticAnnotation::getPredicateOntologyId).collect(
+                                    Collectors.joining("\n")) : null;
+            String semanticAnnotationAccessionIds =
+                    semanticAnnotations != null ? semanticAnnotations.stream()
+                            .map(SemanticAnnotation::getPredicateAccessionId).collect(
+                                    Collectors.joining("\n")) : null;
+            String semanticAnnotationVersions =
+                    semanticAnnotations != null ? semanticAnnotations.stream().map(
+                            SemanticAnnotation::getPredicateOntologyVersion).collect(
+                            Collectors.joining("\n")) : null;
             final String[] values = {
                     propertyType.getCode(),
                     String.valueOf(propertyType.isManagedInternally()).toUpperCase(),
@@ -205,15 +217,9 @@ public abstract class AbstractXLSEntityTypeExportHelper<ENTITY_TYPE extends IEnt
                     String.valueOf(propertyAssignment.getPatternType() != null ? propertyAssignment.getPatternType() : ""),
                     String.valueOf(
                             propertyAssignment.isManagedInternally() != null && propertyAssignment.isManagedInternally()).toUpperCase(),
-                    semanticAnnotations.stream()
-                            .map(SemanticAnnotation::getPredicateOntologyId).collect(
-                            Collectors.joining("\n")),
-                    semanticAnnotations.stream()
-                            .map(SemanticAnnotation::getPredicateAccessionId).collect(
-                            Collectors.joining("\n")),
-                    semanticAnnotations.stream().map(
-                            SemanticAnnotation::getPredicateOntologyVersion).collect(
-                            Collectors.joining("\n")),
+                    semanticAnnotationIds,
+                    semanticAnnotationAccessionIds,
+                    semanticAnnotationVersions,
             };
             addRow(rowNumber++, false, exportableKind, permId, warnings, valueFiles, values);
         }
