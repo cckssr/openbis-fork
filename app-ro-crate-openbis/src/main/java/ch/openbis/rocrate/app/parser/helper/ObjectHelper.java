@@ -11,10 +11,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.openbis.rocrate.app.parser.IAttribute;
 import ch.openbis.rocrate.app.parser.searcher.AttributeValidator;
 import ch.openbis.rocrate.app.parser.searcher.PropertyTypeSearcher;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -289,8 +289,7 @@ public class ObjectHelper extends BasicImportHelper
 
         });
         identifierToSample = accumulator.values().stream().collect(Collectors.toMap(
-                x -> "/" + x.getSpace().getCode() + "/" + x.getProject()
-                        .getCode() + "/" + x.getCode(), x -> x));
+                this::getIdentifier, x -> x));
 
         childrenToResolve.forEach((key, value) -> {
             Sample sample = accumulator.get(key);
@@ -311,9 +310,34 @@ public class ObjectHelper extends BasicImportHelper
 
     public Map<ObjectIdentifier, AbstractEntity> getResult()
     {
+
         return accumulator.values().stream().collect(Collectors.toMap(
-                x -> new SampleIdentifier(x.getSpace().getCode(), x.getExperiment().getCode(),
+                x -> new SampleIdentifier(x.getSpace().getCode(), getExperimentCode(x),
                         x.getCode()), x -> x));
+    }
+
+    private String getIdentifier(Sample sample)
+    {
+        List<String> parts = new ArrayList<>();
+        parts.add(sample.getSpace().getCode());
+        if (sample.getProject() != null)
+        {
+            parts.add(sample.getProject().getCode());
+        }
+        parts.add(sample.getCode());
+
+        return "/" + parts.stream().collect(Collectors.joining("/"));
+
+    }
+
+    private String getExperimentCode(Sample sample)
+    {
+        if (sample.getExperiment() == null)
+        {
+            return null;
+        }
+        return sample.getExperiment().getCode();
+
     }
 
 }

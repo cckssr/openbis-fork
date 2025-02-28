@@ -20,6 +20,7 @@ import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.Serializable;
 import java.util.*;
 
@@ -247,6 +248,10 @@ public class Mapper
             case TIMESTAMP ->
             {
                 return "xsd:dateTime";
+            }
+            case SAMPLE ->
+            {
+                return ":Object";
             }
             default ->
             {
