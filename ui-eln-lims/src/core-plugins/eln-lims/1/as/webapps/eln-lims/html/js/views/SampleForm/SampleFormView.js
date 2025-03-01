@@ -1754,9 +1754,10 @@
 					let props = {
 						id:id,
 						objId: id,
-						objKind: "object",
-						viewType:'list',												
-	
+						objKind: "object",	
+						viewType:'list',					
+						withoutToobar: true,												
+
 						extOpenbis: {
 							RightsFetchOptions: RightsFetchOptions,						
 							SamplePermId:SamplePermId,
@@ -1840,7 +1841,9 @@
 				function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
 					let props = {						
 						owner: id,	
-						buttonSize: 'small',
+						buttonSize: "small",
+						toolbarType: "unifiedToolbar",
+						viewType:'list',
 	
 						extOpenbis: {
 							RightsFetchOptions: RightsFetchOptions,						
@@ -1859,9 +1862,9 @@
 					}
 
 
-					let LeftToolbar = React.createElement(window.NgComponents.default.LeftToolbar, props)
+					let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
 					
-					NgComponentsManager.renderComponent(LeftToolbar, $element.get(0));					
+					NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));					
 				}
 			);		
 			return $element;

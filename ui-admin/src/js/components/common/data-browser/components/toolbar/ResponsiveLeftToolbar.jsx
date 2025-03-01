@@ -1,0 +1,64 @@
+import React from 'react';
+import ResizeObserver from 'rc-resize-observer';
+import LeftToolbarButtons from '@src/js/components/common/data-browser/components/toolbar/LeftToolbarButtons.jsx';
+import { debounce } from '@mui/material';
+import withStyles from '@mui/styles/withStyles';
+
+const styles = theme => ({
+  buttons: {
+    flex: '1 1 auto',
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    '& > button': {
+      marginRight: theme.spacing(1),
+    },
+    '& > button:nth-last-child(1)': {
+      marginRight: 0,
+    },
+  },
+  toggleButton: {},
+  collapsedButtonsContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    '& > button': {
+      marginBottom: theme.spacing(1),
+    },
+    '& > button:nth-last-child(1)': {
+      marginBottom: 0,
+    },
+  },
+});
+
+class ResponsiveLeftToolbar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { width: 0 };
+    this.onResize = debounce(this.onResize.bind(this), 1);
+  }
+  
+  onResize({ width }) {
+    if (width !== this.state.width) {
+      this.setState({ width });
+    }
+  }
+  
+  render() {
+    // Destructure classes so that we don't pass it along via ...other
+    const { classes, ...other } = this.props;
+    return (
+      <ResizeObserver onResize={this.onResize}>
+        <div className={classes.buttons}>
+          <LeftToolbarButtons
+            width={this.state.width}
+            containerClassName={classes.buttons}
+            {...other}
+          />
+        </div>
+      </ResizeObserver>
+    );
+  }
+}
+
+export default withStyles(styles)(ResponsiveLeftToolbar);

@@ -2,7 +2,7 @@ import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
-import Toolbar from '@src/js/components/common/data-browser/Toolbar.jsx'
+import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
 import GridView from '@src/js/components/common/data-browser/GridView.jsx'
 import fileTypeConfig from '@src/js/components/common/data-browser/fileTypeConfig.js';
 
@@ -196,7 +196,7 @@ class DataBrowser extends React.Component {
   }
 
 
-  handleViewTypeChange(viewType) {
+  handleViewTypeChange({viewType}) {
     this.setState({ viewType })
   }
 
@@ -337,18 +337,22 @@ class DataBrowser extends React.Component {
     try {
       this.fetchSpaceStatus()
       await this.fetchRights()   
-      eventBus.on('spaceStatusChanged', this.handleSpaceStatusChanged);
+      eventBus.on('spaceStatusChanged', this.handleSpaceStatusChanged);      
       eventBus.on('gridActionCompleted', this.onGridActionComplete);   
-      eventBus.on('downloadRequested', this.handleDownload);    
+      eventBus.on('downloadRequested', this.handleDownload); 
+      eventBus.on('viewTypeChanged', this.handleViewTypeChange);
+      eventBus.on('showInfoChanged', this.handleShowInfoChange);         
     } catch (err){
         this.openErrorDialog(err)
     }
   }
 
   componentWillUnmount() {    
-    eventBus.off('selectionChanged', this.handleSelectionChanged);
+    eventBus.off('spaceStatusChanged', this.handleSpaceStatusChanged);    
     eventBus.off('gridActionCompleted', this.onGridActionComplete);
     eventBus.off('downloadRequested', this.handleDownload);
+    eventBus.off('viewTypeChanged', this.handleViewTypeChange);
+    eventBus.off('showInfoChanged', this.handleShowInfoChange);       
   }
 
   handleSpaceStatusChanged(){
@@ -432,7 +436,7 @@ class DataBrowser extends React.Component {
   };
 
   render() {
-    const { classes, id, leftToolbar } = this.props
+    const { classes, id, withoutToobar } = this.props
     const {
       viewType,
       files,
@@ -468,21 +472,14 @@ class DataBrowser extends React.Component {
       <div
         key='data-browser-content'
         className={[classes.boundary, classes.columnFlexContainer].join(' ')}
-      >
-        <Toolbar
-          controller={this.controller}
-          viewType={viewType}
-          onViewTypeChange={this.handleViewTypeChange}
-          onShowInfoChange={this.handleShowInfoChange}
-          onDownload={this.handleDownload}
-          showInfo={showInfo}
-          multiselectedFiles={multiselectedFiles}          
-          owner={id}
-          editable={editable}
-          openBis={this.props.extOpenbis}
-          onSpaceStatusChange={this.fetchSpaceStatus}
-          leftToolbar={leftToolbar}
-        />
+      > 
+        { !withoutToobar &&
+          <DataBrowserToolbar                              
+            owner={id}          
+            openBis={this.props.extOpenbis}
+            viewType={viewType}        
+          />
+        }
         <InfoBar
           path={path}
           onPathChange={this.handlePathChange}
