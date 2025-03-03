@@ -40,6 +40,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 		$form.append($formColumn);
 
+		var isInventoryExperiment = this._experimentFormModel.v3_experiment
+		                && this._experimentFormModel.v3_experiment.project
+		                && profile.isInventorySpace(this._experimentFormModel.v3_experiment.project.space.code);
+
 		//
 		// Title
 		//
@@ -61,25 +65,38 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
 			if (_this._allowedToCreateSample() && toolbarConfig.CREATE) {
-			    var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function () {
-                                    Util.blockUI();
-                                    FormUtil.createNewSample(_this._experimentFormModel.experiment.identifier);
-                				}, "New", null, "new-btn");
-                toolbarModel.push({ component : $createBtn });
+
+			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                     _this._experimentFormController.createObject("ENTRY");
+                 }, null, "New Entry", "create-entry-btn");
+                 toolbarModel.push({ component : $createEntry});
+
+                 if(!isInventoryExperiment) {
+                     var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
+                          _this._experimentFormController.createObject("FOLDER");
+                     }, null, "New Folder", "create-folder-btn");
+                     toolbarModel.push({ component : $createFolder});
+                 }
+                 var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
+                       _this._experimentFormController.createObject();
+                  }, "Other", "Create different object", "create-btn");
+                  toolbarModel.push({ component : $createBtn});
+
 			}
 			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
 				//Edit
-				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
-                    Util.blockUI();
-                    var exp = _this._experimentFormModel.experiment;
-                    var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
-                    mainController.changeView("showEditExperimentPageFromIdentifier", args);
-				}, "Edit", null, "edit-btn");
-				toolbarModel.push({ component : $editBtn });
+				var $editBtn = FormUtil.getToolbarButton("EDIT", function() {
+                   Util.blockUI();
+                   var exp = _this._experimentFormModel.experiment;
+                   var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
+                   mainController.changeView("showEditExperimentPageFromIdentifier", args);
+              }, "Edit", "Edit collection", "edit-btn");
+              rightToolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove() && toolbarConfig.MOVE) {
 				//Move
@@ -215,14 +232,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			//Print
 			dropdownOptionsModel.push(FormUtil.getPrintPDFButtonModel("EXPERIMENT",  _this._experimentFormModel.experiment.permId));
 
-			if(_this._allowedToRegisterDataSet()) {
+			if(_this._allowedToRegisterDataSet() && !isInventoryExperiment) {
 			    if(toolbarConfig.UPLOAD_DATASET) {
-                    //Create Dataset
-                    var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
-                        Util.blockUI();
-                        mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-                    }, "Upload", null, "upload-btn");
-                    toolbarModel.push({ component : $uploadBtn });
+			        //Create Dataset
+			        var $uploadBtn = FormUtil.getToolbarButton("DATA", function() {
+                          Util.blockUI();
+                          mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
+                     }, "Data", "Upload data", "upload-btn");
+                     toolbarModel.push({ component : $uploadBtn});
 	            }
 
 	            if(toolbarConfig.UPLOAD_DATASET_HELPER) {
@@ -309,9 +326,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 });
             }
 		} else { //Create and Edit
-			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
+			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._experimentFormController.updateExperiment();
-			}, "Save", null, "save-btn");
+			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -428,9 +445,16 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		    dropdownOptionsModel = dropdownOptionsModel.concat(profile.experimentTypeDefinitionsExtension[experimentTypeCode].extraToolbarDropdown(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
 		}
 
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
-				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode);
+		FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, true);
+
+        var $helpBtn = FormUtil.getToolbarButton("?", function() {
+                                            mainController.openHelpPage();
+                                        }, null, "Help", "help-btn");
+        rightToolbarModel.push({ component : $helpBtn });
+
 		$header.append(FormUtil.getToolbar(toolbarModel));
+		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 		$container.append($form);
 
         mainController.profile.afterViewPaint(ViewType.EXPERIMENT_FORM, this._experimentFormModel, $container);

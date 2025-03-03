@@ -276,10 +276,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode());
 			if (_this._allowedToEdit()) {
 				//Edit Button
-				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
-				}, "Edit", null, "dataset-edit-btn");
+				}, "Edit", "Edit data", "dataset-edit-btn");
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn });
 				}
@@ -433,9 +433,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 });
             }
 		} else if(!this._dataSetFormModel.isMini) {
-			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
+			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._dataSetFormController.submitDataSet();
-			}, "Save", null, "save-btn");
+			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -464,6 +464,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             }
 
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
+			var $helpBtn = FormUtil.getToolbarButton("?", function() {
+                                        mainController.openHelpPage();
+                                    }, null, "Help", "help-btn");
+            toolbarModel.push({ component : $helpBtn });
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 
@@ -516,9 +520,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 this._dataSetFormViewGlobalEventListener = arrowKeyEventListener(_this._dataSetFormModel.paginationInfo);
                 document.addEventListener('keyup',  this._dataSetFormViewGlobalEventListener);
 
-                var $backBtn = FormUtil.getButtonWithIcon(null, function () {
+                var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                     moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
-                }, "<");
+                }, null, null);
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex <= 0) {
                     $backBtn.attr("disabled",true);
@@ -528,9 +532,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 var $paginationInfoLabel = this._dataSetFormModel.paginationInfo.currentIndex+1 + " of " + this._dataSetFormModel.paginationInfo.totalCount;
                     $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
 
-                var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
+                var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
                                         moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);
-                }, ">");
+                }, null, null);
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex+1 >= this._dataSetFormModel.paginationInfo.totalCount) {
                     $nextBtn.attr("disabled",true);

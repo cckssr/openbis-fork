@@ -54,15 +54,28 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._projectFormModel.mode === FormMode.VIEW) {
+
+		    var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                _this._projectFormController.createObject("ENTRY");
+            }, null, "New Entry", "create-entry-btn");
+            toolbarModel.push({ component : $createEntry});
+
+            if(!isInventoryProject) {
+                 var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
+                      _this._projectFormController.createObject("FOLDER");
+                 }, null, "New Folder", "create-folder-btn");
+                 toolbarModel.push({ component : $createFolder});
+            }
+
 			if (_this._allowedToCreateExperiments()) {
-				//Create Experiment
-                var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function () {
-                    Util.blockUI();
+			    //Create Experiment
+			    var $createOther = FormUtil.getToolbarButton("OTHER", function() {
                     FormUtil.createNewCollection(IdentifierUtil.getProjectIdentifier(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code));
-                }, "New", null, "new-btn");
-                toolbarModel.push({ component : $createBtn });
+                }, "Other", "Create different object", "create-btn");
+                toolbarModel.push({ component : $createOther});
 			}
 			if (_this._allowedToMove()) {
                 //Move
@@ -76,11 +89,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
             }
 			if(_this._allowedToEdit()) {
 				//Edit
-				var $editBtn = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					_this._projectFormController.enableEditing();
-				}, "Edit", null, "edit-btn");
-				toolbarModel.push({ component : $editBtn });
+				}, "Edit", "Edit project", "edit-btn");
+				rightToolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {
 				//Delete
@@ -158,9 +171,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
                 }
             });
 		} else {
-			var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
+			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._projectFormController.updateProject();
-			}, "Save", null, "save-btn");
+			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -184,8 +197,15 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$formColumn.append(this._createExperimentsSection(projectIdentifier, hideShowOptionsModel));
 		}
 
-		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW");
+		FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, true);
+
+		var $helpBtn = FormUtil.getToolbarButton("?", function() {
+                                    mainController.openHelpPage();
+                                }, null, "Help", "help-btn");
+        rightToolbarModel.push({ component : $helpBtn });
+
 		$header.append(FormUtil.getToolbar(toolbarModel));
+		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 
 		$container.append($form);
         mainController.profile.afterViewPaint(ViewType.PROJECT_FORM, this._projectFormModel, $container);

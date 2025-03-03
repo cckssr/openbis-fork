@@ -89,7 +89,9 @@
 			$formTitle
 				.append($("<h2 id='sampleFormTitle'>").append(title));
 				//.append($("<h4>", { "style" : "font-weight:normal;" } ).append(entityPath));
-	
+
+	        var isInventorySample = profile.isInventorySpace(_this._sampleFormModel.sample.spaceCode);
+
 			//
 			// Toolbar
 			//
@@ -100,18 +102,29 @@
 	
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				// New
-				if(_this._allowedToCreateChild() && this._sampleFormModel.isELNSample && toolbarConfig.CREATE) {
-					var $createBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function () {
-										Util.blockUI();
-										FormUtil.createNewSample(_this._sampleFormModel.sample.experimentIdentifierOrNull,_this._sampleFormModel.sample);
-									}, "New", null, "new-btn");
-					toolbarModel.push({ component : $createBtn });
+//				if(_this._allowedToCreateChild() && this._sampleFormModel.isELNSample && toolbarConfig.CREATE) {
+				if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
+					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                         _this._sampleFormController.createObject("ENTRY");
+                     }, null, "New Entry", "create-entry-btn");
+                     toolbarModel.push({ component : $createEntry});
+
+                    if(!isInventorySample){
+                         var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
+                              _this._sampleFormController.createObject("FOLDER");
+                         }, null, "New Folder", "create-folder-btn");
+                         toolbarModel.push({ component : $createFolder});
+                     }
+                     var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
+                           _this._sampleFormController.createObject();
+                      }, "Other", "Create different object", "create-btn");
+                      toolbarModel.push({ component : $createBtn});
 				}
 	
 				if (_this._allowedToEdit()) {
 					//Edit
 					if(this._sampleFormModel.mode === FormMode.VIEW) {
-						var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+						var $editButton = FormUtil.getToolbarButton("EDIT", function () {
 							Util.blockUI();
 							setTimeout(function() {
 								var args = {
@@ -120,9 +133,9 @@
 								};
 								mainController.changeView('showEditSamplePageFromPermId', args);
 							}, 100);
-						}, "Edit", null, "edit-btn");
+						}, "Edit", "Edit object", "edit-btn");
 						if(toolbarConfig.EDIT) {
-							toolbarModel.push({ component : $editButton, tooltip: null });
+							rightToolbarModel.push({ component : $editButton, tooltip: null });
 						}
 					}
 				}
@@ -221,11 +234,11 @@
 					});
 				}
 	
-				if(_this._allowedToRegisterDataSet()) {
+				if(_this._allowedToRegisterDataSet() && !isInventorySample) {
 					//Create Dataset
-					var $uploadBtn = FormUtil.getButtonWithIcon("glyphicon-upload", function () {
+					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-					}, "Upload", null, "upload-btn");
+					}, "Data", "Upload data", "upload-btn");
 					if(toolbarConfig.UPLOAD_DATASET) {
 						toolbarModel.push({ component : $uploadBtn, tooltip: null });
 					}
@@ -313,16 +326,16 @@
 					});
 				}
 			} else { //Create and Edit
-				var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", function() {
+				var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 					_this._sampleFormController.createUpdateCopySample();
-				}, "Save", null, "save-btn");
+				}, "Save", "Save changes", "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
 				toolbarModel.push({ component : $saveBtn });
 	
 				// Templates
 				if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
-					var $templateBtn = FormUtil.getButtonWithIcon("glyphicon-list-alt", function() {
+					var $templateBtn = FormUtil.getToolbarButton("TEMPLATES", function() {
 						var storageGroupPrefix = SettingsManagerUtils.getSpaceGroupPrefix(_this._sampleFormModel.sample.spaceCode);
 						if(storageGroupPrefix == "GENERAL") {
 							storageGroupPrefix = "";
@@ -388,84 +401,8 @@
 								Util.unblockUI();
 							});
 						});
-					}, "Templates");
+					}, "Templates", null);
 					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
-				}
-			}
-	
-			if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
-				var moveToIndex = function(index) {
-					var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
-					pagOptionsToSend.pageIndex = index;
-					pagOptionsToSend.pageSize = 1;
-					_this._sampleFormModel.paginationInfo.pagFunction(function(result) {
-						if(result && result.objects && result.objects[0] && result.objects[0].permId) {
-							var paginationInfo = $.extend(true, {}, _this._sampleFormModel.paginationInfo);
-							paginationInfo.previousIndex = _this._sampleFormModel.paginationInfo.currentIndex;
-							paginationInfo.currentIndex = index;
-							var arg = {
-									permIdOrIdentifier : result.objects[0].permId,
-									paginationInfo : paginationInfo
-							}
-							mainController.changeView('showViewSamplePageFromPermId', arg, true);
-						} else {
-							window.alert("The item to go to is no longer available.");
-						}
-					}, pagOptionsToSend);
-				}
-	
-				var arrowKeyEventListener = function(paginationInfo) {
-					return function(event) {
-							if(event.key === "ArrowRight") {
-								if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
-									moveToIndex(paginationInfo.currentIndex+1);
-								}
-							} else if(event.key === "ArrowLeft") {
-								if(paginationInfo.currentIndex-1 >= 0) {
-								   moveToIndex(paginationInfo.currentIndex-1);
-								}
-							} else {
-								// Ignore others
-							}
-					};
-				}
-	
-				if(_this._sampleFormModel.paginationInfo) {
-	
-					mainController.currentView.finalize = function(backButtonLogic) {
-						if(!backButtonLogic) {
-							 _this._previousGlobalEventListener =  _this._sampleFormViewGlobalEventListener;
-						}
-						document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
-					}
-	
-					this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
-					document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
-	
-					var $backBtn = FormUtil.getButtonWithIcon(null, function () {
-										moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
-					}, "<");
-	
-					if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
-						$backBtn.attr("disabled", true);
-						$backBtn.off('click');
-					}
-	
-					var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
-						$paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
-	
-					var $nextBtn = FormUtil.getButtonWithIcon(null, function () {
-											moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
-					}, ">");
-	
-					if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
-						$nextBtn.attr("disabled", true);
-						$nextBtn.off('click');
-					}
-	
-					rightToolbarModel.push({ component : $backBtn, tooltip: null });
-					rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
-					rightToolbarModel.push({ component : $nextBtn, tooltip: null });
 				}
 			}
 	
@@ -682,9 +619,94 @@
 				dropdownOptionsModel = dropdownOptionsModel.concat(profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 			}
 	
-			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
-					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode);
-	
+			FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, true);
+
+	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
+                                                mainController.openHelpPage();
+                                            }, null, "Help", "help-btn");
+            rightToolbarModel.push({ component : $helpBtn });
+
+
+            //
+            // Pagination info
+            //
+            if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
+            var moveToIndex = function(index) {
+                var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
+                pagOptionsToSend.pageIndex = index;
+                pagOptionsToSend.pageSize = 1;
+                _this._sampleFormModel.paginationInfo.pagFunction(function(result) {
+                    if(result && result.objects && result.objects[0] && result.objects[0].permId) {
+                        var paginationInfo = $.extend(true, {}, _this._sampleFormModel.paginationInfo);
+                        paginationInfo.previousIndex = _this._sampleFormModel.paginationInfo.currentIndex;
+                        paginationInfo.currentIndex = index;
+                        var arg = {
+                                permIdOrIdentifier : result.objects[0].permId,
+                                paginationInfo : paginationInfo
+                        }
+                        mainController.changeView('showViewSamplePageFromPermId', arg, true);
+                    } else {
+                        window.alert("The item to go to is no longer available.");
+                    }
+                }, pagOptionsToSend);
+            }
+
+            var arrowKeyEventListener = function(paginationInfo) {
+                return function(event) {
+                        if(event.key === "ArrowRight") {
+                            if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
+                                moveToIndex(paginationInfo.currentIndex+1);
+                            }
+                        } else if(event.key === "ArrowLeft") {
+                            if(paginationInfo.currentIndex-1 >= 0) {
+                               moveToIndex(paginationInfo.currentIndex-1);
+                            }
+                        } else {
+                            // Ignore others
+                        }
+                };
+            }
+
+            if(_this._sampleFormModel.paginationInfo) {
+
+                mainController.currentView.finalize = function(backButtonLogic) {
+                    if(!backButtonLogic) {
+                         _this._previousGlobalEventListener =  _this._sampleFormViewGlobalEventListener;
+                    }
+                    document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
+                }
+
+                this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
+                document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
+
+                var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
+                                    moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
+                }, null, null);
+
+                if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
+                    $backBtn.attr("disabled", true);
+                    $backBtn.off('click');
+                }
+
+                var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
+                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
+
+                var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
+                                        moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
+                }, null, null);
+
+                if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
+                    $nextBtn.attr("disabled", true);
+                    $nextBtn.off('click');
+                }
+
+                rightToolbarModel.push({ component : $backBtn, tooltip: null });
+                rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
+                rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+            }
+        }
+
 			
 			if(this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT){
 				$header.append(FormUtil.getToolbar(toolbarModel));
@@ -1697,7 +1719,12 @@
 	
 		this._allowedToCreateChild = function() {
 			var sample = this._sampleFormModel.v3_sample;
-			return sample.frozenForChildren == false && (!sample.experiment || sample.experiment.frozenForSamples == false)
+			return sample.frozenForChildren == false
+			        && (
+			            (sample.experiment && sample.experiment.frozenForSamples == false)
+			            || (sample.project && sample.project.frozenForSamples == false)
+			            || (sample.space && sample.space.frozenForSamples == false)
+			        )
 					&& this._sampleFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
 		}
 	
@@ -1735,7 +1762,12 @@
 	
 		this._allowedToCopy = function() {
 			var sample = this._sampleFormModel.v3_sample;
-			return (!sample.experiment || sample.experiment.frozenForSamples == false) && this._sampleFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
+			return (
+			    (sample.experiment && sample.experiment.frozenForSamples == false)
+			    || (sample.project && sample.project.frozenForSamples == false)
+                || (sample.space && sample.space.frozenForSamples == false)
+			)
+			&& this._sampleFormModel.sampleRights.rights.indexOf("CREATE") >= 0;
 		}
 	
 		this._allowedToRegisterDataSet = function() {

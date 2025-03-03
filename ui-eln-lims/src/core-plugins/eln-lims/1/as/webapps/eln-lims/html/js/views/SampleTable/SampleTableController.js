@@ -57,7 +57,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			advancedSampleSearchCriteria = {
 					entityKind : "SAMPLE",
 					logicalOperator : "AND",
-					rules : { "1" : { type : "Experiment", name : "ATTR.PROJECT_PERM_ID", value : this._sampleTableModel.projectPermId } }
+					rules: { "1" : { type : "Attribute", name : "PROJECT_PERM_ID", value : this._sampleTableModel.projectPermId } }
 			}
 		}
 		

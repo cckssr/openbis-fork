@@ -154,7 +154,24 @@ function ProjectFormController(mainController, mode, project) {
             }
         });
 	}
-	
+
+	this.createObject = function(objectTypeCode) {
+        var _this = this;
+        Util.blockUI();
+        if(objectTypeCode) {
+            setTimeout(function() {
+                var argsMap = {
+                    "sampleTypeCode" : objectTypeCode,
+                    "spaceCode": _this._projectFormModel.project.spaceCode,
+                    "projectCode": _this._projectFormModel.project.code
+                };
+                _this._mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+            }, 100);
+        } else {
+            FormUtil.createNewObject(this._projectFormModel.project.spaceCode, this._projectFormModel.project.code);
+        }
+    }
+
 	this.createNewExperiment = function(experimentTypeCode) {
 		var argsMap = {
 				"experimentTypeCode" : experimentTypeCode,

@@ -83,6 +83,29 @@ function ExperimentFormController(mainController, mode, experiment) {
 			return false;
 		}
 	}
+
+	this.createObject = function(objectTypeCode) {
+        var _this = this;
+        Util.blockUI();
+        var identifier = _this._experimentFormModel.experiment.identifier;
+        var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(identifier);
+        var projectCode = IdentifierUtil.getProjectCodeFromExperimentIdentifier(identifier);
+        if(objectTypeCode) {
+            setTimeout(function() {
+                var argsMap = {
+                    "sampleTypeCode" : objectTypeCode,
+                    "spaceCode": spaceCode,
+                    "projectCode": projectCode,
+                    "experimentIdentifier": identifier
+                };
+                _this._mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+            }, 100);
+        } else {
+            FormUtil.createNewObject(spaceCode,
+                                    projectCode,
+                                    identifier);
+        }
+    }
 	
 	this.deleteExperiment = function(reason) {
 		var _this = this;

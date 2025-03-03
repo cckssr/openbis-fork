@@ -54,6 +54,14 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 						    var expeId = _this._sampleFormModel.v3_sample.getExperiment().getIdentifier().getIdentifier();
                             var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
                             var dummyDataSetId = new DataSetPermId(IdentifierUtil.createDummyDataSetIdentifierFromExperimentIdentifier(expeId));
+                        } else {
+                            var spaceCode = _this._sampleFormModel.v3_sample.getSpace().getCode();
+                            var project = _this._sampleFormModel.v3_sample.getProject();
+                            if(project) {
+                                var projectCode = project.getCode();
+                            }
+                            var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifier(spaceCode, projectCode));
+                            var dummyDataSetId = new DataSetPermId(IdentifierUtil.createDummyDataSetIdentifier(spaceCode, projectCode));
                         }
 
 						mainController.openbisV3.getRights([ id, dummySampleId, dummyDataSetId ], null).done(function(rightsByIds) {
@@ -151,6 +159,44 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 					callback(_this._sampleFormModel.sample.code + "_" + (results.length + 1));
 				});
 	}
+
+	this.createObject = function(objectTypeCode) {
+        var _this = this;
+        Util.blockUI();
+
+        if(objectTypeCode) {
+            setTimeout(function() {
+                 var argsMap = {
+                    "sampleTypeCode" : objectTypeCode,
+                    "spaceCode": _this._sampleFormModel.sample.spaceCode,
+                    "projectCode": _this._sampleFormModel.sample.projectCode,
+                    "experimentIdentifier":  _this._sampleFormModel.sample.experimentIdentifierOrNull
+                };
+
+                _this._mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+
+                var setParent = function() {
+                    mainController.currentView._sampleFormModel.sampleLinksParents.addSample(_this._sampleFormModel.sample);
+                    Util.unblockUI();
+                }
+
+                var repeatUntilSet = function() {
+                   if(mainController.currentView.isLoaded()) {
+                       setParent();
+                   } else {
+                       setTimeout(repeatUntilSet, 100);
+                   }
+                }
+               repeatUntilSet();
+
+            }, 100);
+        } else {
+            FormUtil.createNewObject(_this._sampleFormModel.sample.spaceCode,
+                                    _this._sampleFormModel.sample.projectCode,
+                                    _this._sampleFormModel.sample.experimentIdentifierOrNull,
+                                    _this._sampleFormModel.sample);
+        }
+    }
 	
 	this.createUpdateCopySample = function(isCopyWithNewCode, linkParentsOnCopy, copyChildrenOnCopy, copyCommentsLogOnCopy) {
 		Util.blockUI();
@@ -315,6 +361,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
 				sampleSpace = IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier);
 				sampleProject = IdentifierUtil.getProjectCodeFromExperimentIdentifier(experimentIdentifier);
 				sampleExperiment = IdentifierUtil.getCodeFromIdentifier(experimentIdentifier);
+			} else if(sample.projectCode) {
+			    sampleProject = sample.projectCode;
 			}
 			
 			//Children to create
