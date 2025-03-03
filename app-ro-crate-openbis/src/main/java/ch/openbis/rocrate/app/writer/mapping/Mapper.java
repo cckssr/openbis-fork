@@ -253,6 +253,11 @@ public class Mapper
             {
                 return ":Object";
             }
+            case HYPERLINK ->
+            {
+                return "xsd:string";
+            }
+
             default ->
             {
                 throw new RuntimeException("Unknown type: " + openBisType);
