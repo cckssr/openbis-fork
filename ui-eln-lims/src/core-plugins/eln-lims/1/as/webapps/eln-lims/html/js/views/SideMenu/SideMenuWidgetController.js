@@ -145,14 +145,6 @@ function SideMenuWidgetController(mainController) {
             }
         }
 
-    this.setSpaceAsRoot = function (homeSpaceCode) {
-        var nodes = this._browserController.getNodes();
-        var node = nodes.find(x => x.object.id === homeSpaceCode && x.object.type === 'SPACE');
-        if(node) {
-            this._browserController.setNodeAsRoot(node.id);
-        }
-    }
-
     //
     // Init method that builds the menu object hierarchy
     //

@@ -1796,21 +1796,47 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 sampleFetchOptions,
                 (searchResult) => {
-                    var results = { nodes: [], totalCount: 0 }
+                    if(searchResult.totalCount > 0 && profile.isAFSAvailable()) {
+                        var promises = [];
+                        var parentless = [];
+                        var ids = searchResult.objects.map(x => x.permId.permId);
+                        searchResult.objects.forEach((sample) => {
+                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                               promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
+                               parentless.push(sample);
+                            }
+                        })
 
-                    var ids = searchResult.objects.map(x => x.permId.permId);
+                        resolve(
+                            Promise.all(promises.map(p => p.catch(e => e))).then(afsResult => {
+                                var files = afsResult.filter(output => !(output instanceof Error));
+                                var results = { nodes: [], totalCount: searchResult.totalCount }
 
-                    searchResult.objects.forEach((sample) => {
-                        if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
-                            var node = this._createSampleNode(sample);
+                                parentless.forEach((sample) => {
+                                    var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
+                                    results.nodes.push(this._createSampleNode(sample, hasAfsFile));
+                                    results.totalCount++;
+                                })
+                                return results;
+                            })
+                        )
+                    } else {
+                        var results = { nodes: [], totalCount: 0 }
 
-                            results.nodes.push(node);
-                            results.totalCount++;
-                        }
+                        var ids = searchResult.objects.map(x => x.permId.permId);
 
-                    });
+                        searchResult.objects.forEach((sample) => {
+                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                                var node = this._createSampleNode(sample);
 
-                    resolve(results)
+                                results.nodes.push(node);
+                                results.totalCount++;
+                            }
+
+                        });
+
+                        resolve(results)
+                    }
                 }
             )
         })
@@ -1948,19 +1974,44 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 sampleFetchOptions,
                 (searchResult) => {
-                    var results = { nodes: [], totalCount: 0 }
 
-                    var ids = searchResult.objects.map(x => x.permId.permId);
+                    if(searchResult.totalCount > 0 && profile.isAFSAvailable()) {
+                         var promises = [];
+                         var parentless = [];
+                         var ids = searchResult.objects.map(x => x.permId.permId);
+                         searchResult.objects.forEach((sample) => {
+                             if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                                promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
+                                parentless.push(sample);
+                             }
+                         })
 
-                    searchResult.objects.forEach((sample) => {
-                        if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
-                            results.nodes.push(this._createSampleNode(sample))
-                            results.totalCount++;
-                        }
+                        resolve(
+                            Promise.all(promises.map(p => p.catch(e => e))).then(afsResult => {
+                                var files = afsResult.filter(output => !(output instanceof Error));
+                                var results = { nodes: [], totalCount: searchResult.totalCount }
 
-                    })
+                                parentless.forEach((sample) => {
+                                        var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
+                                        results.nodes.push(this._createSampleNode(sample, hasAfsFile));
+                                        results.totalCount++;
+                                })
+                                return results;
+                            })
+                        )
+                    } else {
+                        var results = { nodes: [], totalCount: 0 }
 
-                    resolve(results)
+                        var ids = searchResult.objects.map(x => x.permId.permId);
+                        searchResult.objects.forEach((sample) => {
+                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                                results.nodes.push(this._createSampleNode(sample, false))
+                                results.totalCount++;
+                            }
+                        })
+
+                        resolve(results)
+                    }
                 }
             )
         })
@@ -2461,15 +2512,34 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 sampleFetchOptions,
                 (searchResult) => {
-                    var results = this._filterResultsByFunction(params, searchResult, (sample) => {
-                        if (this._isChildSample(sample)) {
-                            return this._createSampleNode(sample)
-                        } else {
-                            return null
-                        }
-                    })
+                    var promises = [];
+                    var samples = searchResult.objects
+                        .filter(sample => this._isChildSample(sample));
+                    samples.forEach(sample =>
+                        {
+                            promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
+                        })
 
-                    resolve(results)
+                    resolve(
+                        Promise.all(promises.map(p => p.catch(e => e))).then(afsResult => {
+                            var files = afsResult.filter(output => !(output instanceof Error));
+                            var results = { nodes: [], totalCount: 0 }
+
+                            samples.forEach((sample) => {
+                                var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
+                                results.nodes.push(this._createSampleNode(sample, hasAfsFile));
+                            })
+
+                            if (params.offset === 0 && params.limit >= searchResult.totalCount) {
+                            // all available results have been loaded from the server, as the total count let's use the number of results that passed the client-side filtering (that's more accurate)
+                                results.totalCount = results.nodes.length
+                            } else {
+                            // otherwise we have to use the total count from the server as we cannot tell how much of them would pass the client-side filtering without loading them all
+                                results.totalCount = searchResult.totalCount
+                            }
+                            return results;
+                        })
+                    )
                 }
             )
         })
@@ -3188,7 +3258,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         }
     }
 
-    _createSampleNode(sample) {
+    _createSampleNode(sample, hasAfsFile) {
         var sampleDisplayName = sample.getCode()
         if (sample.getProperties() && sample.getProperties()[profile.propertyReplacingCode]) {
             sampleDisplayName = sample.getProperties()[profile.propertyReplacingCode]
@@ -3208,7 +3278,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                                              {
                                                 sampleTypeCode: sample.getType().getCode(),
                                                 dataSets: sample.dataSets,
-                                                properties: sample.properties
+                                                properties: sample.properties,
+                                                hasAfsFile: hasAfsFile
                                                 })
         }
     }
