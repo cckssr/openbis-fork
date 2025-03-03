@@ -21,9 +21,87 @@
  */
 var IconUtil = new function() {
 
+    this.getIcon = function(icon) {
+        var $icon = null
+
+        if (icon.url) {
+            $icon = $("<img/>").attr("src", icon.url)
+        } else {
+            $icon = $("<span/>")
+        }
+
+        if (icon.class) {
+            $icon.addClass(icon.class)
+        }
+
+        if(icon.text) {
+            $icon.text(icon.text);
+            $icon.css("font-size", "18px");
+        }
+        $icon.css("vertical-align", "text-bottom");
+
+        return $icon;
+    }
+
+    this.hasToolbarIconType = function(type, optionalParameters) {
+        var icon = this.getToolbarIconType(type, optionalParameters);
+        return icon.class || icon.url;
+    }
+
+    this.getToolbarIconType = function(type, optionalParameters) {
+        var icon = {
+            url: null,
+            class: null,
+            text: null
+        }
+
+        //TODO logic for user-specific toolbar icons?
+        var materialPlusIcon = "add";
+        if(type === "ENTRY") {
+            icon.class = "material-icons";
+            icon.text = materialPlusIcon + "subject";
+        } else if(type === "FOLDER") {
+            icon.class = "material-icons";
+            icon.text = materialPlusIcon + "folder";
+        } else if(type === "PROJECT") {
+            icon.class = "material-icons";
+            icon.text = materialPlusIcon + "rule_folder";
+        } else if(type === "OTHER") {
+            icon.class = "material-icons";
+            icon.text = materialPlusIcon;
+        } else if(type === "DATA") {
+//            icon.class = "glyphicon glyphicon-upload";
+            icon.class = "material-icons";
+            icon.text = "upload_file";
+        } else if(type === "EDIT") {
+            icon.class = "glyphicon glyphicon-edit";
+//            icon.class = "material-icons";
+//            icon.text = "mode_edit";
+        }  else if(type === "SAVE") {
+//            icon.class = "glyphicon glyphicon-floppy-disk";
+            icon.class = "material-icons";
+            icon.text = "save";
+        } else if(type === "?") {
+            icon.class = "material-icons";
+            icon.text = "help";
+        } else if(type === "PAGINATION_LEFT") {
+            icon.class = "material-icons";
+//            icon.text = "chevron_left";
+            icon.text = "navigate_before";
+        } else if(type === "PAGINATION_RIGHT") {
+            icon.class = "material-icons";
+//            icon.text = "chevron_right";
+            icon.text = "navigate_next";
+        } else if(type === "TEMPLATES") {
+//            icon.class = "glyphicon glyphicon-list-alt";
+            icon.class = "material-icons";
+            icon.text = "list_alt";
+        }
+        return icon;
+    }
+
     this.getNavigationIcon = function(type, optionalParameters) {
         var icon = {
-            type: null,
             url: null,
             class: null,
             text: null
@@ -93,28 +171,78 @@ var IconUtil = new function() {
                 icon.class = "material-icons";
                 icon.text = "folder_shared";
             }
-//            else {
-//                icon.class = "material-icons";
-//                icon.text = "key";
-//            }
+            else {
+                icon.class = "material-icons";
+                icon.text = "key";
+            }
         } else if(type === "SAMPLE") {
             if(optionalParameters && optionalParameters.sampleTypeCode) {
                 var sampleTypeCode = optionalParameters.sampleTypeCode;
-                if(sampleTypeCode.indexOf("EXPERIMENT") > -1) {
-                    icon.class = "fa fa-flask";
-                } else if(sampleTypeCode === "ENTRY") {
-                    icon.class = "fa fa-file-text";
-                } else {
-                    icon.class = "fa fa-file";
+                if(sampleTypeCode === 'FOLDER') {
+                    icon.class = "material-icons";
+                    icon.text = "folder";
+                } else if(sampleTypeCode === 'ENTRY') {
+                    var hasData = false;
+                    if(optionalParameters.dataSets && optionalParameters.dataSets.length > 0) {
+                        hasData = true;
+                    }
+                    if(optionalParameters.hasAfsFile) {
+                        hasData = true;
+                    }
+                    if(optionalParameters.properties && Object.keys(optionalParameters.properties).length > 0) {
+                        var hasMetadata = true;
+                    }
+                    if(hasData) {
+                        if(hasMetadata) {
+                            icon.class = "material-icons";
+                            icon.text = "description";
+                        } else {
+                            icon.class = "material-icons";
+                            icon.text = "attach_file";
+                        }
+                    } else {
+                        icon.class = "material-icons";
+                        icon.text = "subject";
+                    }
+
                 }
+//                if(sampleTypeCode.indexOf("EXPERIMENT") > -1) {
+//                    icon.class = "fa fa-flask";
+//                } else if(sampleTypeCode === "ENTRY") {
+//                    icon.class = "fa fa-file-text";
+//                } else {
+//                    icon.class = "fa fa-file";
+//                }
             }
         } else if(type === "EXPERIMENT") {
-            icon.class = "fa fa-table";
+            if(optionalParameters) {
+                if(optionalParameters.isExperimentWithoutChildren) {
+                    icon.class = "fa fa-table";
+                } else {
+                    if(optionalParameters.dataSets && optionalParameters.dataSets.length > 0) {
+                        var hasData = true;
+                    }
+                    if(optionalParameters.properties && Object.keys(optionalParameters.properties).length > 0) {
+                        var hasMetadata = true;
+                    }
+                    if(hasData) {
+                        if(hasMetadata) {
+                            icon.class = "material-icons";
+                            icon.text = "description";
+                        } else {
+                            icon.class = "material-icons";
+                            icon.text = "attach_file";
+                        }
+                    } else {
+                        icon.class = "material-icons";
+                        icon.text = "subject";
+                    }
+                }
+            }
+        } else if(type === "PROJECT") {
+            icon.class = "material-icons";
+            icon.text = "rule_folder";
         }
-//          else if(type === "PROJECT") {
-//            icon.class = "material-icons";
-//            icon.text = "rule_folder";
-//        }
 
         return icon;
     };

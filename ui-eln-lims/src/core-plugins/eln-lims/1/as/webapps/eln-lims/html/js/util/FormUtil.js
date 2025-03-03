@@ -653,6 +653,33 @@ var FormUtil = new function() {
 	this.getFormAwesomeIcon = function(iconClass) {
 		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
+
+	this.getToolbarButton = function(toolbarButtonType, clickEvent, text, tooltip, id) {
+	    var $btn = null;
+        var buttonClass = 'btn btn-default';
+        $btn = $("<a>", { 'class' : buttonClass });
+
+        if(IconUtil.hasToolbarIconType(toolbarButtonType)) {
+            iconType = IconUtil.getToolbarIconType(toolbarButtonType);
+            $btn.append(IconUtil.getIcon(iconType));
+            if(text) {
+                $btn.append("&nbsp;");
+            }
+        }
+
+        if(text) {
+            $btn.append(text);
+        }
+        if(tooltip) {
+            $btn.attr("title", tooltip);
+//            $btn.tooltipster(); // TODO check if this works properly
+        }
+        if(id) {
+            $btn.attr("id", id);
+        }
+        $btn.click(clickEvent);
+        return $btn;
+	}
 	
     this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip, id, customClass) {
         var $btn = null;
@@ -1516,7 +1543,7 @@ var FormUtil = new function() {
 		});
 	}
 
-	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
+	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title, alignLeft) {
 	    var _this = this;
 		if(!title) {
 			title = "More ... ";
@@ -1533,6 +1560,9 @@ var FormUtil = new function() {
 		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : id})
 				.append(title).append($("<b>", { class : 'caret' }));
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		if(alignLeft) {
+		    $dropdownOptionsMenuList.css("right", "0").css("left", "auto");
+		}
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
@@ -2429,6 +2459,51 @@ var FormUtil = new function() {
         });
     }
 
+    this.createNewObject = function(spaceCode, projectCode, experimentIdentifier, optionalParentSample) {
+            var _this = this;
+
+            var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true, null, null, spaceCode);
+            Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
+
+            $("#sampleTypeDropdown").on("change", function(event) {
+                var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
+                Util.blockUI();
+                setTimeout(function() {
+                    var argsMap = {
+                        "sampleTypeCode" : sampleTypeCode,
+                        "spaceCode" : spaceCode,
+                        "projectCode": projectCode,
+                        "experimentIdentifier": experimentIdentifier
+                    };
+                    mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+
+                    if(optionalParentSample) {
+                        var setParent = function() {
+                            mainController.currentView._sampleFormModel.sampleLinksParents.addSample(optionalParentSample);
+                            Util.unblockUI();
+                        }
+
+                        var repeatUntilSet = function() {
+                           if(mainController.currentView.isLoaded()) {
+                               setParent();
+                           } else {
+                               setTimeout(repeatUntilSet, 100);
+                           }
+                        }
+                       repeatUntilSet();
+                    }
+
+                }, 100);
+            });
+
+            $("#sampleTypeDropdownCancel").on("click", function(event) {
+                Util.unblockUI();
+            });
+    }
+
+    /**
+        DEPRECATED - use createNewObject
+    */
 	this.createNewSample = function(experimentIdentifier, optionalParentSample) {
     		var _this = this;
     		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true, null, null, IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));
