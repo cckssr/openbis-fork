@@ -389,7 +389,7 @@ const messages_en = {
   [keys.ACCESS_DATE]: 'Access Date',
   [keys.ACTIONS]: 'Actions',
   [keys.ACTIVATE_USER]: 'Activate user',
-  [keys.ACTIVE]: 'Active',
+  [keys.ACTIVE]: 'Active roles assigned',
   [keys.ACTIVE_USERS_REPORT]: 'Active Users Report',
   [keys.ACTIVE_USERS_REPORT_DIALOG]: 'Number of active users (${0}) will be sent to',
   [keys.ACTIVE_USERS_REPORT_EMAIL_SENT_CONFIRMATION]: 'E-mail sent. You should get a copy of the e-mail in your mailbox.',
