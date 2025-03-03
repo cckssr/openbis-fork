@@ -15,13 +15,9 @@
  */
 package ch.systemsx.cisd.etlserver.postregistration;
 
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.BACKUP_PENDING;
-
 import java.util.Collections;
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
@@ -37,13 +33,16 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.BACKUP_PENDING;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 
 /**
  * A post-registration task executor that archives data sets.
- * 
+ *
  * @author Kaloyan Enimanev
  */
 class ArchivingExecutor implements IPostRegistrationTaskExecutor
@@ -122,7 +121,7 @@ class ArchivingExecutor implements IPostRegistrationTaskExecutor
         if (statusUpdated)
         {
             DatasetDescription dataSetDescription =
-                    DataSetTranslator.translateToDescription(dataSet);
+                    ExternalDataTranslator.translateToDescription(dataSet);
             List<DatasetDescription> dataSetAsList =
                     Collections.singletonList(dataSetDescription);
             ArchiverTaskContext context =
@@ -260,6 +259,6 @@ class ArchivingExecutor implements IPostRegistrationTaskExecutor
             IEncapsulatedOpenBISService service)
     {
         AbstractExternalData data = tryGetExternalData(dataSetCode, service);
-        return (data != null) ? DataSetTranslator.translateToDescription(data) : null;
+        return (data != null) ? ExternalDataTranslator.translateToDescription(data) : null;
     }
 }

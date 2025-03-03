@@ -32,7 +32,7 @@ import ch.systemsx.cisd.common.mail.IMailClientProvider;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ITimeAndWaitingProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 
 /**
  * Class doing clean ups of corrupted multi-data-set container files. Depending on the file path a container file is deleted immediately or later
@@ -90,13 +90,13 @@ class MultiDataSetArchiveCleaner implements IMultiDataSetArchiveCleaner
             if (deleter == null)
             {
                 deleter = new FileDeleter(deletionRequestsDir, timeProvider, new IMailClientProvider()
+                {
+                    @Override
+                    public IMailClient getMailClient()
                     {
-                        @Override
-                        public IMailClient getMailClient()
-                        {
-                            return ServiceProvider.getDataStoreService().createEMailClient();
-                        }
-                    }, properties);
+                        return ArchiverServiceProviderFactory.getInstance().createEMailClient();
+                    }
+                }, properties);
                 deleters.put(deletionRequestsDir, deleter);
             }
             deleter.start();

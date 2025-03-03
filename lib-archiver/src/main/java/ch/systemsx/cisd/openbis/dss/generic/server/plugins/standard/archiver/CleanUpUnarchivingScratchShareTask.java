@@ -34,12 +34,12 @@ import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
-import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.PluginTaskInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.ArchiverTaskInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -61,12 +61,12 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
     public void setUp(String pluginName, Properties properties)
     {
         archiveFolder = PropertyParametersUtil.extractSingleSectionProperties(properties,
-                        PluginTaskInfoProvider.ARCHIVER_SECTION_NAME, false).getProperties()
+                        ArchiverTaskInfoProvider.ARCHIVER_SECTION_NAME, false).getProperties()
                 .getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY);
         if (archiveFolder == null)
         {
             throw new ConfigurationFailureException("Missing property: "
-                    + PluginTaskInfoProvider.ARCHIVER_SECTION_NAME
+                    + ArchiverTaskInfoProvider.ARCHIVER_SECTION_NAME
                     + "." + MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY);
         }
     }
@@ -142,24 +142,24 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
 
     protected IShareIdManager getShareIdManager()
     {
-        return ServiceProvider.getShareIdManager();
+        return ArchiverServiceProviderFactory.getInstance().getShareIdManager();
     }
 
     protected IDataSetDirectoryProvider getDirectoryProvider()
     {
-        return ServiceProvider.getDataStoreService().getDataSetDirectoryProvider();
+        return ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
     }
 
     protected File getStoreRoot()
     {
-        return ServiceProvider.getConfigProvider().getStoreRoot();
+        return ArchiverServiceProviderFactory.getInstance().getConfigProvider().getStoreRoot();
     }
 
     protected IOpenBISService getService()
     {
         if (service == null)
         {
-            service = ServiceProvider.getOpenBISService();
+            service = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
         }
         return service;
     }
@@ -171,7 +171,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
 
     protected IConfigProvider getConfigProvider()
     {
-        return ServiceProvider.getConfigProvider();
+        return ArchiverServiceProviderFactory.getInstance().getConfigProvider();
     }
 
     protected IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()

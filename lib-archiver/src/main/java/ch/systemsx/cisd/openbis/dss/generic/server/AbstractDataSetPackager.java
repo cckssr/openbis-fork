@@ -28,11 +28,11 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetExistenceChecker;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.MetaDataBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 
 /**
  * Abstract super class of packagers which package all files of a data set together with a meta data file.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public abstract class AbstractDataSetPackager
@@ -52,8 +52,8 @@ public abstract class AbstractDataSetPackager
 
     /**
      * Adds an entry with specified entry path and last modification date filled with data from specified input stream.
-     * 
-     * @param size Number of bytes.
+     *
+     * @param size     Number of bytes.
      * @param checksum Checksum. Can be 0 if {@link #isChecksumNeeded()} return <code>false</code>.
      */
     public abstract void addEntry(String entryPath, long lastModified, long size, long checksum, InputStream in);
@@ -89,7 +89,7 @@ public abstract class AbstractDataSetPackager
                     "Couldn't package meta data for data set '" + externalData.getCode() + "'.", ex);
         }
         if (externalData.isContainer() == false
-                && dataSetExistenceChecker.dataSetExists(DataSetTranslator.translateToDescription(externalData)) == false)
+                && dataSetExistenceChecker.dataSetExists(ExternalDataTranslator.translateToDescription(externalData)) == false)
         {
             throw handleNonExistingDataSet(externalData, null);
         }

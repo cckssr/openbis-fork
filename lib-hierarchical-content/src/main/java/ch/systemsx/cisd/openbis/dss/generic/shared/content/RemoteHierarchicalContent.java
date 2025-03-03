@@ -24,12 +24,13 @@ import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 
 /**
  * Implementation of HierchicalContent that is stored on remote datastore server.
- * 
+ *
  * @author anttil
  */
 public class RemoteHierarchicalContent implements IHierarchicalContent
@@ -43,13 +44,13 @@ public class RemoteHierarchicalContent implements IHierarchicalContent
 
     private final IContentCache cache;
 
-    private final IDssServiceRpcGenericFactory serviceFactory;
+    private final IDssServiceFactory serviceFactory;
 
     private final Resources resources;
 
     public RemoteHierarchicalContent(IDatasetLocationNode location,
             ISingleDataSetPathInfoProvider pathInfoProvider,
-            IDssServiceRpcGenericFactory serviceFactory,
+            IDssServiceFactory serviceFactory,
             ISessionTokenProvider sessionTokenProvider, IContentCache cache)
     {
         this.location = location;
@@ -169,13 +170,13 @@ public class RemoteHierarchicalContent implements IHierarchicalContent
                 new RemoteHierarchicalContentNode(location.getLocation(), info, provider,
                         serviceFactory, sessionTokenProvider, cache);
         resources.add(new IReleasable()
+        {
+            @Override
+            public void release()
             {
-                @Override
-                public void release()
-                {
-                    node.close();
-                }
-            });
+                node.close();
+            }
+        });
         return node;
     }
 

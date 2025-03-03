@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.ReportDescription
  * 
  * @author Chandrasekhar Ramakrishnan
  */
-public interface IDssServiceRpcGeneric extends IRpcService
+public interface IDssServiceRpcGeneric extends IRpcService, IDssService
 {
     public String DSS_SERVICE_NAME = "DSS Service";
 

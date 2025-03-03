@@ -35,9 +35,8 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalCont
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.HierarchicalContentProxy;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentExecuteOnAccess;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBAwareHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.RemoteHierarchicalContent;
@@ -72,7 +71,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
 
     private final IContentCache cache;
 
-    private final IDssServiceRpcGenericFactory serviceFactory;
+    private final IDssServiceFactory serviceFactory;
 
     public HierarchicalContentProvider(IOpenBISService openbisService,
             IShareIdManager shareIdManager, IConfigProvider configProvider,
@@ -81,14 +80,14 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
             Properties properties)
     {
         this(openbisService, new DataSetDirectoryProvider(configProvider.getStoreRoot(),
-                        shareIdManager), null, new DssServiceRpcGenericFactory(), contentCache,
+                        shareIdManager), null, ServiceProviderFactory.getInstance().getDssServiceFactory(), contentCache,
                 sessionTokenProvider, configProvider.getDataStoreCode(), properties);
     }
 
     public HierarchicalContentProvider(IOpenBISService openbisService,
             IShareIdManager shareIdManager, IConfigProvider configProvider,
             IContentCache contentCache, IHierarchicalContentFactory hierarchicalContentFactory,
-            IDssServiceRpcGenericFactory serviceFactory,
+            IDssServiceFactory serviceFactory,
             ISessionTokenProvider sessionTokenProvider,
             Properties properties)
     {
@@ -101,7 +100,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
     public HierarchicalContentProvider(IOpenBISService openbisService,
             IDataSetDirectoryProvider directoryProvider,
             IHierarchicalContentFactory hierarchicalContentFactory,
-            IDssServiceRpcGenericFactory serviceFactory, IContentCache contentCache,
+            IDssServiceFactory serviceFactory, IContentCache contentCache,
             ISessionTokenProvider sessionTokenProvider, String dataStoreCode,
             Properties properties)
     {
@@ -114,7 +113,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
     private HierarchicalContentProvider(IOpenBISService openbisService,
             IDataSetDirectoryProvider directoryProvider,
             IHierarchicalContentFactory hierarchicalContentFactory,
-            IDssServiceRpcGenericFactory serviceFactory, IContentCache contentCache,
+            IDssServiceFactory serviceFactory, IContentCache contentCache,
             ISessionTokenProvider sessionTokenProvider, String dataStoreCode, boolean trustAllCertificates)
     {
         this.openbisService = openbisService;

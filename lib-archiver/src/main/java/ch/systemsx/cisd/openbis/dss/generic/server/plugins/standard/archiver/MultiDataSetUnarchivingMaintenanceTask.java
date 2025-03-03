@@ -31,16 +31,15 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 
 /**
  * Maintenance task for unarchiving multi data set archives.
@@ -62,9 +61,8 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
     {
         IMultiDataSetArchiverReadonlyQueryDAO dao = getReadonlyQuery();
         List<MultiDataSetArchiverContainerDTO> containersForUnarchiving = dao.listContainersForUnarchiving();
-        IDataStoreServiceInternal dataStoreService = getDataStoreService();
-        IArchiverPlugin archiverPlugin = dataStoreService.getArchiverPlugin();
-        IDataSetDirectoryProvider directoryProvider = dataStoreService.getDataSetDirectoryProvider();
+        IArchiverPlugin archiverPlugin = ArchiverServiceProviderFactory.getInstance().getArchiverPlugin();
+        IDataSetDirectoryProvider directoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
         IHierarchicalContentProvider hierarchicalContentProvider = getHierarchicalContentProvider();
         ArchiverTaskContext context = new ArchiverTaskContext(directoryProvider, hierarchicalContentProvider);
         context.setForceUnarchiving(true);
@@ -108,7 +106,7 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
         List<DatasetDescription> result = new ArrayList<DatasetDescription>();
         for (AbstractExternalData dataSet : service.listDataSetsByCode(dataSetCodes))
         {
-            result.add(DataSetTranslator.translateToDescription(dataSet));
+            result.add(ExternalDataTranslator.translateToDescription(dataSet));
         }
         return result;
     }
@@ -125,17 +123,12 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
 
     IOpenBISService getASService()
     {
-        return ServiceProvider.getOpenBISService();
+        return ArchiverServiceProviderFactory.getInstance().getOpenBISService();
     }
 
     IHierarchicalContentProvider getHierarchicalContentProvider()
     {
-        return ServiceProvider.getHierarchicalContentProvider();
-    }
-
-    IDataStoreServiceInternal getDataStoreService()
-    {
-        return ServiceProvider.getDataStoreService();
+        return ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
     }
 
     IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()

@@ -2,6 +2,7 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -16,6 +17,8 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
 
 public interface IOpenBISService
 {
+    String getSessionToken();
+
     AbstractExternalData tryGetDataSet(String dataSetCode);
 
     IDatasetLocationNode tryGetDataSetLocation(String dataSetCode);
@@ -34,6 +37,7 @@ public interface IOpenBISService
 
     void updateShareIdAndSize(String dataSetCode, String shareId, long size);
 
-    void notifyDatasetAccess(String dataSetCode);
+    void archiveDataSets(List<String> dataSetCodes, boolean removeFromDataStore, Map<String, String> options) throws UserFailureException;
 
+    void notifyDatasetAccess(String dataSetCode);
 }

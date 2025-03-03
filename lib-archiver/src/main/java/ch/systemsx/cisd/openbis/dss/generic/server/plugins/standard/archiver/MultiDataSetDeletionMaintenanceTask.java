@@ -52,16 +52,15 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.MappingBasedShareFinder;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -127,8 +126,6 @@ public class MultiDataSetDeletionMaintenanceTask
 
     private IMultiDataSetArchiverReadonlyQueryDAO readonlyQuery;
 
-    private IDataStoreServiceInternal dataStoreService;
-
     private IConfigProvider configProvider;
 
     private Properties properties;
@@ -141,7 +138,7 @@ public class MultiDataSetDeletionMaintenanceTask
         super.setUp(pluginName, properties);
         this.properties = properties;
 
-        dataSetDirectoryProvider = getDataStoreService().getDataSetDirectoryProvider();
+        dataSetDirectoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
         cleaner = MultiDataSetArchivingUtils.createCleaner(
                 PropertyParametersUtil.extractSingleSectionProperties(
                         properties, ARCHIVER_PREFIX + MultiDataSetArchiver.CLEANER_PROPS, false).getProperties());
@@ -200,20 +197,11 @@ public class MultiDataSetDeletionMaintenanceTask
         return new MultiDataSetArchiverDBTransaction(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
     }
 
-    protected IDataStoreServiceInternal getDataStoreService()
-    {
-        if (dataStoreService == null)
-        {
-            dataStoreService = ServiceProvider.getDataStoreService();
-        }
-        return dataStoreService;
-    }
-
     protected IHierarchicalContentProvider getHierarchicalContentProvider()
     {
         if (hierarchicalContentProvider == null)
         {
-            hierarchicalContentProvider = ServiceProvider.getHierarchicalContentProvider();
+            hierarchicalContentProvider = ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
         }
         return hierarchicalContentProvider;
     }
@@ -222,7 +210,7 @@ public class MultiDataSetDeletionMaintenanceTask
     {
         if (v3 == null)
         {
-            v3 = ServiceProvider.getV3ApplicationService();
+            v3 = ArchiverServiceProviderFactory.getInstance().getV3ApplicationService();
         }
         return v3;
     }
@@ -231,7 +219,7 @@ public class MultiDataSetDeletionMaintenanceTask
     {
         if (shareIdManager == null)
         {
-            shareIdManager = ServiceProvider.getShareIdManager();
+            shareIdManager = ArchiverServiceProviderFactory.getInstance().getShareIdManager();
         }
         return shareIdManager;
     }
@@ -240,7 +228,7 @@ public class MultiDataSetDeletionMaintenanceTask
     {
         if (configProvider == null)
         {
-            configProvider = ServiceProvider.getConfigProvider();
+            configProvider = ArchiverServiceProviderFactory.getInstance().getConfigProvider();
         }
         return configProvider;
     }
@@ -343,7 +331,7 @@ public class MultiDataSetDeletionMaintenanceTask
         List<DatasetDescription> dataSets = convertToDataSetDescription(notDeletedDataSets);
         IHierarchicalContent archivedContent = getMultiDataSetFileOperationsManager().getContainerAsHierarchicalContent(containerPath, dataSets);
         ArchiverTaskContext context = new ArchiverTaskContext(dataSetDirectoryProvider, getHierarchicalContentProvider());
-        Properties archiverProperties = getDataStoreService().getArchiverProperties();
+        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
         boolean verifyChecksums =
                 PropertyUtils.getBoolean(archiverProperties, MultiDataSetArchiver.SANITY_CHECK_VERIFY_CHECKSUMS_KEY,
                         MultiDataSetArchiver.DEFAULT_SANITY_CHECK_VERIFY_CHECKSUMS);

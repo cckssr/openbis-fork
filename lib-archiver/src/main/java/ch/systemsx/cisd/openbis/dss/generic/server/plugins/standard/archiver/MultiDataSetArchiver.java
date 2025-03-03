@@ -68,14 +68,13 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetAndPathInfoDBConsistencyChecker;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
@@ -187,8 +186,6 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     public static final boolean DEFAULT_UNARCHIVING_WAIT_FOR_T_FLAG = false;
 
     private transient IMultiDataSetArchiverReadonlyQueryDAO readonlyQuery;
-
-    private transient IDataStoreServiceInternal dataStoreService;
 
     private transient IMultiDataSetArchiveCleaner cleaner;
 
@@ -566,7 +563,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         parameterBindings.put(WAIT_FOR_SANITY_CHECK_MAX_WAITING_TIME_KEY, Long.toString(waitForSanityCheckMaxWaitingTime));
         parameterBindings.put(SANITY_CHECK_VERIFY_CHECKSUMS_KEY, Boolean.toString(sanityCheckVerifyChecksums));
 
-        getDataStoreService().scheduleTask(ARCHIVING_FINALIZER, task, parameterBindings, dataSets,
+        ArchiverServiceProviderFactory.getInstance().getArchiverTaskScheduler().scheduleTask(ARCHIVING_FINALIZER, task, parameterBindings, dataSets,
                 userId, userEmail, userSessionToken);
     }
 
@@ -681,7 +678,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     {
         Share scratchShare = findScratchShare();
 
-        IDataSetDirectoryProvider directoryProvider = ServiceProvider.getDataStoreService().getDataSetDirectoryProvider();
+        IDataSetDirectoryProvider directoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
 
         return new MultiDataSetUnarchivingPreparations(scratchShare, getShareIdManager(), getService(), directoryProvider);
     }
@@ -692,7 +689,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
         ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
         return MultiDataSetArchivingUtils.getScratchShare(this.storeRoot, service, freeSpaceProvider,
-                ServiceProvider.getConfigProvider(), logger);
+                ArchiverServiceProviderFactory.getInstance().getConfigProvider(), logger);
     }
 
     private static class MultiDataSetUnarchivingPreparations implements IUnarchivingPreparation
@@ -742,7 +739,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
                 return dataSetSize;
             }
             // Get the size from pathinfo database
-            IHierarchicalContentProvider contentProvider = ServiceProvider.getHierarchicalContentProvider();
+            IHierarchicalContentProvider contentProvider = ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
             IHierarchicalContentNode rootNode = contentProvider.asContent(dataSet.getDataSetCode()).getRootNode();
             return rootNode.getFileLength();
         }
@@ -1137,15 +1134,6 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
             readonlyQuery = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
         }
         return readonlyQuery;
-    }
-
-    IDataStoreServiceInternal getDataStoreService()
-    {
-        if (dataStoreService == null)
-        {
-            dataStoreService = ServiceProvider.getDataStoreService();
-        }
-        return dataStoreService;
     }
 
     IMultiDataSetArchiveCleaner getCleaner()

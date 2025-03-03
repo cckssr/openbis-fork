@@ -18,9 +18,9 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 import java.util.List;
 
 import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -72,7 +72,7 @@ public abstract class AbstractDataSetFileOperationsManager
     {
         if (service == null)
         {
-            service = ServiceProvider.getOpenBISService();
+            service = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
         }
         return service;
     }
@@ -81,7 +81,7 @@ public abstract class AbstractDataSetFileOperationsManager
     {
         if (directoryProvider == null)
         {
-            directoryProvider = ServiceProvider.getDataStoreService().getDataSetDirectoryProvider();
+            directoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
         }
         return directoryProvider;
     }

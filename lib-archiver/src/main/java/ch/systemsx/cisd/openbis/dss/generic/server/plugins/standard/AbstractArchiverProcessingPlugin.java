@@ -15,9 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.ARCHIVED;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +46,7 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.time.TimingParameters;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
@@ -60,7 +58,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.StandardShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
@@ -68,6 +65,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.Fil
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.ARCHIVED;
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
@@ -415,7 +414,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
             ArchiverTaskContext context)
     {
         // the deletion will happen at a later point in time
-        IDataSetDeleter dataSetDeleter = ServiceProvider.getDataStoreService().getDataSetDeleter();
+        IDataSetDeleter dataSetDeleter = ArchiverServiceProviderFactory.getInstance().getDataSetDeleter();
         dataSetDeleter.scheduleDeletionOfDataSets(datasets,
                 TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
                 TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
@@ -456,7 +455,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
     protected IUnarchivingPreparation getUnarchivingPreparation()
     {
-        String dataStoreCode = ServiceProvider.getConfigProvider().getDataStoreCode();
+        String dataStoreCode = ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreCode();
         Set<String> incomingShares = IncomingShareIdProvider.getIdsOfIncomingShares();
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
         List<Share> shares =
@@ -823,7 +822,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     {
         if (shareIdManager == null)
         {
-            shareIdManager = ServiceProvider.getShareIdManager();
+            shareIdManager = ArchiverServiceProviderFactory.getInstance().getShareIdManager();
         }
         return shareIdManager;
     }
@@ -857,7 +856,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     {
         if (service == null)
         {
-            service = ServiceProvider.getOpenBISService();
+            service = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
         }
         return service;
     }

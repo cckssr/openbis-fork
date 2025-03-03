@@ -51,10 +51,11 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTask;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -65,7 +66,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
  *
  * @author Franz-Josef Elmer
  */
-class MultiDataSetArchivingFinalizer
+class MultiDataSetArchivingFinalizer implements IArchiverTask
 {
     private static final long serialVersionUID = 1L;
 
@@ -140,7 +141,7 @@ class MultiDataSetArchivingFinalizer
                 if (noTimeout && checkMultiDatasetArchiveDatabase(dataSetCodes, parameters))
                 {
                     DataSetCodesWithStatus codesWithStatus = new DataSetCodesWithStatus(dataSetCodes, archivingStatus, true);
-                    IDataSetDeleter dataSetDeleter = ServiceProvider.getDataStoreService().getDataSetDeleter();
+                    IDataSetDeleter dataSetDeleter = ArchiverServiceProviderFactory.getInstance().getDataSetDeleter();
                     if (removeFromDataStore)
                     {
                         dataSetDeleter.scheduleDeletionOfDataSets(datasets,
@@ -210,7 +211,7 @@ class MultiDataSetArchivingFinalizer
         {
             options.put(Constants.SUB_DIR_KEY, parameters.getSubDirectory());
         }
-        ServiceProvider.getOpenBISService().archiveDataSets(dataSetCodes, removeFromDataStore, options);
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(dataSetCodes, removeFromDataStore, options);
         return status;
     }
 
@@ -236,7 +237,7 @@ class MultiDataSetArchivingFinalizer
 
     protected void updateStatus(DataSetCodesWithStatus codesWithStatus)
     {
-        ServiceProvider.getOpenBISService().updateDataSetStatuses(codesWithStatus.getDataSetCodes(),
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().updateDataSetStatuses(codesWithStatus.getDataSetCodes(),
                 codesWithStatus.getStatus(), codesWithStatus.isPresentInArchive());
     }
 
@@ -354,10 +355,10 @@ class MultiDataSetArchivingFinalizer
             @Override protected Map<String, Status> call()
             {
                 ArchiverTaskContext archiverContext = new ArchiverTaskContext(
-                        ServiceProvider.getDataStoreService().getDataSetDirectoryProvider(),
-                        ServiceProvider.getHierarchicalContentProvider());
+                        ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider(),
+                        ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider());
 
-                Properties archiverProperties = ServiceProvider.getDataStoreService().getArchiverProperties();
+                Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
 
                 MultiDataSetFileOperationsManager operationsManager = new MultiDataSetFileOperationsManager(
                         archiverProperties, new RsyncArchiveCopierFactory(), new SshCommandExecutorFactory(),

@@ -1,5 +1,6 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 
 public interface IServiceProvider
@@ -12,8 +13,14 @@ public interface IServiceProvider
 
     IContentCache getContentCache();
 
+    IDataSetDirectoryProvider getDataSetDirectoryProvider();
+
     IDataSetPathInfoProvider getDataSetPathInfoProvider();
 
+    IDataSetDeleter getDataSetDeleter();
+
     IPathInfoDataSourceProvider getPathInfoDataSourceProvider();
+
+    IDssServiceFactory getDssServiceFactory();
 
 }

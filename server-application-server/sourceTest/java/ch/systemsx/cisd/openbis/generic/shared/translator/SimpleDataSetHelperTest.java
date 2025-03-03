@@ -60,7 +60,7 @@ public class SimpleDataSetHelperTest extends AssertJUnit
     @Test
     public void testTranslateDescription()
     {
-        DatasetDescription description = DataSetTranslator.translateToDescription(create(1));
+        DatasetDescription description = ExternalDataTranslator.translateToDescription(create(1));
 
         SimpleDataSetInformationDTO result = SimpleDataSetHelper.translate(description);
 

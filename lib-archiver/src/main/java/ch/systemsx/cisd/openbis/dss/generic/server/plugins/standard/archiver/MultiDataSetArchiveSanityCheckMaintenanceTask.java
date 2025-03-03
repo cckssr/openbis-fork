@@ -55,12 +55,11 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 import net.lemnik.eodsql.QueryTool;
 
 public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenanceTask
@@ -125,7 +124,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         checkToDate = getDateProperty(properties, CHECK_TO_DATE_KEY);
         checkInRandomOrder = PropertyUtils.getBoolean(properties, CHECK_IN_RANDOM_ORDER_KEY, CHECK_IN_RANDOM_ORDER_DEFAULT);
 
-        Properties archiverProperties = ServiceProvider.getDataStoreService().getArchiverProperties();
+        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
         verifyChecksums = PropertyUtils.getBoolean(archiverProperties, MultiDataSetArchiver.SANITY_CHECK_VERIFY_CHECKSUMS_KEY,
                 MultiDataSetArchiver.DEFAULT_SANITY_CHECK_VERIFY_CHECKSUMS);
 
@@ -145,7 +144,8 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         statusFile = PropertyUtils.getMandatoryProperty(properties, STATUS_FILE_KEY);
 
         multiDataSetDAO = MultiDataSetArchiverDataSourceUtil.getReadonlyQueryDAO(MultiDataSetArchivingUtils.getMutiDataSetArchiverDataSource());
-        pathInfoDAO = QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(), IPathInfoNonAutoClosingDAO.class);
+        pathInfoDAO = QueryTool.getQuery(ArchiverServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().getDataSource(),
+                IPathInfoNonAutoClosingDAO.class);
     }
 
     @Override public void execute()
@@ -293,8 +293,8 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
     private void checkConsistency(final MultiDataSetArchiverContainerDTO container)
     {
         ArchiverTaskContext archiverContext = new ArchiverTaskContext(
-                ServiceProvider.getDataStoreService().getDataSetDirectoryProvider(),
-                ServiceProvider.getHierarchicalContentProvider());
+                ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider(),
+                ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider());
 
         MultiDataSetFileOperationsManager operationsManager = getOperationsManager();
 
@@ -340,7 +340,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
 
     private MultiDataSetFileOperationsManager getOperationsManager()
     {
-        Properties archiverProperties = ServiceProvider.getDataStoreService().getArchiverProperties();
+        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
 
         return new MultiDataSetFileOperationsManager(
                 archiverProperties, new RsyncArchiveCopierFactory(), new SshCommandExecutorFactory(),
@@ -352,12 +352,12 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         List<DatasetDescription> list = new ArrayList<>();
         for (MultiDataSetArchiverDataSetDTO dataSet : dataSets)
         {
-            AbstractExternalData externalData = ServiceProvider.getOpenBISService().tryGetDataSet(dataSet.getCode());
+            AbstractExternalData externalData = ArchiverServiceProviderFactory.getInstance().getOpenBISService().tryGetDataSet(dataSet.getCode());
             if (externalData == null)
             {
                 throw new RuntimeException("Data set '" + dataSet.getCode() + "' was not found in the main openBIS database.");
             }
-            DatasetDescription datasetDescription = DataSetTranslator.translateToDescription(externalData);
+            DatasetDescription datasetDescription = ExternalDataTranslator.translateToDescription(externalData);
             list.add(datasetDescription);
         }
         return list;
@@ -426,7 +426,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
             return;
         }
 
-        IMailClient mailClient = ServiceProvider.getDataStoreService().createEMailClient();
+        IMailClient mailClient = ArchiverServiceProviderFactory.getInstance().createEMailClient();
 
         StringBuilder content = new StringBuilder("Consistency check for container '" + container.getPath() + "' failed with error:");
 

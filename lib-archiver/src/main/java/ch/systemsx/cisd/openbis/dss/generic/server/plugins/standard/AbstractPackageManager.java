@@ -24,9 +24,9 @@ import java.util.Properties;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.H5FolderFlags;
 import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetExistenceChecker;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
@@ -81,7 +81,7 @@ abstract class AbstractPackageManager implements IPackageManager
     {
         if (contentProvider == null)
         {
-            contentProvider = ServiceProvider.getHierarchicalContentProvider();
+            contentProvider = ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
         }
         return contentProvider;
     }
@@ -90,7 +90,7 @@ abstract class AbstractPackageManager implements IPackageManager
     {
         if (directoryProvider == null)
         {
-            directoryProvider = ServiceProvider.getDataStoreService().getDataSetDirectoryProvider();
+            directoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
         }
         return directoryProvider;
     }

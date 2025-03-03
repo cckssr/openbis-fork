@@ -35,7 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataStoreBuild
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.SimpleDataSetHelper;
 
 /**
@@ -72,9 +72,9 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
         bigDataSet = createDataSet("/S1/P1/E1", 1001L);
         smallDataSet = createDataSet("/S1/P1/E1", 10L);
 
-        dataSetDescription = DataSetTranslator.translateToDescription(dataSet);
-        bigDataSetDescription = DataSetTranslator.translateToDescription(bigDataSet);
-        smallDataSetDescription = DataSetTranslator.translateToDescription(smallDataSet);
+        dataSetDescription = ExternalDataTranslator.translateToDescription(dataSet);
+        bigDataSetDescription = ExternalDataTranslator.translateToDescription(bigDataSet);
+        smallDataSetDescription = ExternalDataTranslator.translateToDescription(smallDataSet);
     }
 
     private PhysicalDataSet createDataSet(String experimentIdentifier, long dataSetSize)
@@ -343,7 +343,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S1\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 
@@ -360,7 +360,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S1\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 
@@ -377,7 +377,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S1\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 
@@ -394,7 +394,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S1\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 
@@ -411,7 +411,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S1\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 
@@ -428,7 +428,7 @@ public class IdentifierAttributeMappingManagerTest extends AbstractFileSystemTes
                 + "/S.*\t2,3\t\n"
                 + "/S2\t4,5\t");
         IdentifierAttributeMappingManager mappingManager = new IdentifierAttributeMappingManager(mappingFile.getPath(), false, null);
-        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData> asList(dataSet)).get(0);
+        SimpleDataSetInformationDTO ds = SimpleDataSetHelper.filterAndTranslate(Arrays.<AbstractExternalData>asList(dataSet)).get(0);
 
         List<String> shareIds = mappingManager.getShareIds(ds);
 

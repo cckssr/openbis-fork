@@ -23,12 +23,11 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
-import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
-import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * Data source definition.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DataSourceDefinition implements Serializable, Cloneable
@@ -37,21 +36,7 @@ public class DataSourceDefinition implements Serializable, Cloneable
 
     private static final String ATTRIBUTE_DELIM = "\t";
 
-    private static final long serialVersionUID = IServer.VERSION;
-
-    /**
-     * Creates an instance based on specified context object.
-     */
-    public static DataSourceDefinition createFromContext(DatabaseConfigurationContext context)
-    {
-        DataSourceDefinition definition = new DataSourceDefinition();
-        definition.setDriverClassName(context.getDatabaseEngine().getDriverClass());
-        definition.setHostPart(context.getUrlHostPart());
-        definition.setSid(context.getDatabaseName());
-        definition.setUsername(context.getOwner());
-        definition.setPassword(context.getPassword());
-        return definition;
-    }
+    private static final long serialVersionUID = ServiceVersionHolder.VERSION;
 
     /**
      * Creates a list of definitions from specified string which could be the output of {@link #toString(List)}.

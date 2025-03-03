@@ -73,7 +73,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.IQueryApiServer;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.AggregationServiceDescription;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
@@ -82,7 +82,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.translator.QueryTableModelTr
 
 /**
  * Implementation of the generic RPC interface.
- * 
+ *
  * @author Chandrasekhar Ramakrishnan
  */
 public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGenericInternal>
@@ -321,7 +321,8 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
         final File dir = new File(workspaceDir, subDir);
         dir.mkdirs();
         final File file = new File(dir, filename);
-        if (isEmptyDirectory) {
+        if (isEmptyDirectory)
+        {
             file.mkdirs();
         }
         return file;
@@ -387,12 +388,12 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
 
     /**
      * Append file info for the requested node of a file or file hierarchy. Assumes that the parameters have been verified already.
-     * 
-     * @param requestedFile A file known to be accessible by the user
-     * @param dataSetRoot The root of the file hierarchy; used to determine the absolute path of the file
+     *
+     * @param requestedFile   A file known to be accessible by the user
+     * @param dataSetRoot     The root of the file hierarchy; used to determine the absolute path of the file
      * @param listingRootNode The node which is a root of the list hierarchy; used to determine the relative path of the file
-     * @param list The list the files infos are appended to
-     * @param isRecursive If true, directories will be recursively appended to the list
+     * @param list            The list the files infos are appended to
+     * @param isRecursive     If true, directories will be recursively appended to the list
      */
     private void appendFileInfosForFile(IHierarchicalContentNode listingRootNode,
             ArrayList<FileInfoDssDTO> list, boolean isRecursive) throws IOException
@@ -487,7 +488,7 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
         getOpenBISService().checkSession(sessionToken);
         List<Share> shares =
                 SegmentedStoreUtils.getSharesWithDataSets(getStoreDirectory(), dataStoreCode,
-                        FilterOptions.ALL, Collections.<String> emptySet(), freeSpaceProvider,
+                        FilterOptions.ALL, Collections.<String>emptySet(), freeSpaceProvider,
                         getOpenBISService(), new Log4jSimpleLogger(operationLog));
         List<ShareInfo> result = new ArrayList<ShareInfo>();
         for (Share share : shares)
@@ -608,7 +609,7 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
 
     private static DatasetDescription translateToDescription(AbstractExternalData dataSet)
     {
-        return DataSetTranslator.translateToDescription(dataSet);
+        return ExternalDataTranslator.translateToDescription(dataSet);
     }
 
     @Override

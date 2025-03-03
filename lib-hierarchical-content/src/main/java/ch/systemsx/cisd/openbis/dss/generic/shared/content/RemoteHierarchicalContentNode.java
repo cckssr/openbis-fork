@@ -32,14 +32,15 @@ import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceRpcGeneric;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 
 /**
  * A node of hierarchical content that stored on a remote datastore server. If file content is queried, it is downloaded to session workspace and
  * cached there.
- * 
+ *
  * @author anttil
  */
 public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
@@ -57,12 +58,12 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
 
     private final IDatasetLocation dataSetLocation;
 
-    private final IDssServiceRpcGenericFactory serviceFactory;
+    private final IDssServiceFactory serviceFactory;
 
     private final Resources resources;
 
     public RemoteHierarchicalContentNode(IDatasetLocation dataSetetLocation, DataSetPathInfo path,
-            ISingleDataSetPathInfoProvider provider, IDssServiceRpcGenericFactory serviceFactory,
+            ISingleDataSetPathInfoProvider provider, IDssServiceFactory serviceFactory,
             ISessionTokenProvider sessionTokenProvider, IContentCache contentCache)
     {
         this(dataSetetLocation, path, provider, serviceFactory, sessionTokenProvider, contentCache,
@@ -70,7 +71,7 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
     }
 
     private RemoteHierarchicalContentNode(IDatasetLocation dataSetetLocation, DataSetPathInfo path,
-            ISingleDataSetPathInfoProvider provider, IDssServiceRpcGenericFactory serviceFactory,
+            ISingleDataSetPathInfoProvider provider, IDssServiceFactory serviceFactory,
             ISessionTokenProvider sessionTokenProvider, IContentCache contentCache,
             String parentRelativePath)
     {
@@ -164,7 +165,7 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
             }
         } else
         {
-            IDssServiceRpcGeneric service =
+            IDssService service =
                     serviceFactory.getService(dataSetLocation.getDataStoreUrl());
             String sessionToken = sessionTokenProvider.getSessionToken();
             String dataSetCode = dataSetLocation.getDataSetCode();
@@ -217,19 +218,19 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
         final InputStream stream =
                 cache.getInputStream(sessionTokenProvider.getSessionToken(), dataSetLocation, path);
         resources.add(new IReleasable()
+        {
+            @Override
+            public void release()
             {
-                @Override
-                public void release()
+                try
                 {
-                    try
-                    {
-                        stream.close();
-                    } catch (IOException e)
-                    {
-                        CheckedExceptionTunnel.wrapIfNecessary(e);
-                    }
+                    stream.close();
+                } catch (IOException e)
+                {
+                    CheckedExceptionTunnel.wrapIfNecessary(e);
                 }
-            });
+            }
+        });
         return stream;
     }
 

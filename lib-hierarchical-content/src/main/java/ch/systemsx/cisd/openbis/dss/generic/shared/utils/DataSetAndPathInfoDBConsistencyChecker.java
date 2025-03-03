@@ -41,8 +41,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.PathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
@@ -70,8 +68,6 @@ public class DataSetAndPathInfoDBConsistencyChecker
     private IHierarchicalContentProvider fileProvider;
 
     private IHierarchicalContentProvider pathInfoProvider;
-
-    private IDssServiceRpcGenericFactory serviceFactory;
 
     private Map<String, List<Difference>> differences = new HashMap<String, List<Difference>>();
 
@@ -697,7 +693,8 @@ public class DataSetAndPathInfoDBConsistencyChecker
                     new HierarchicalContentProvider(ServiceProviderFactory.getInstance().getOpenBISService(),
                             ServiceProviderFactory.getInstance().getShareIdManager(),
                             ServiceProviderFactory.getInstance().getConfigProvider(), ServiceProviderFactory.getInstance().getContentCache(),
-                            new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders), ServiceProviderFactory.getInstance().getServiceFactory(),
+                            new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders),
+                            ServiceProviderFactory.getInstance().getDssServiceFactory(),
                             null, null);
         }
         return fileProvider;
@@ -720,7 +717,7 @@ public class DataSetAndPathInfoDBConsistencyChecker
                                 ServiceProviderFactory.getInstance().getShareIdManager(),
                                 ServiceProviderFactory.getInstance().getConfigProvider(),
                                 ServiceProviderFactory.getInstance().getContentCache(), pathInfoDBFactory,
-                                getServiceFactory(), null, null);
+                                ServiceProviderFactory.getInstance().getDssServiceFactory(), null, null);
             }
         }
         return pathInfoProvider;

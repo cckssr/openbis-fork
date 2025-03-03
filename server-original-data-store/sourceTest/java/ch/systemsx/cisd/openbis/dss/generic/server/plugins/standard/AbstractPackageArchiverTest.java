@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.SHARE_FINDER_KEY;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -36,6 +34,7 @@ import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.ZipBasedHierarchicalContentTest;
 import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.SHARE_FINDER_KEY;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -52,7 +51,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFactory;
-import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
+import ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator;
 
 /**
  * @author Franz-Josef Elmer
@@ -137,7 +136,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .registrationDate(new Date(12345))
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -207,7 +206,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).sample(sample).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -302,7 +301,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).sample(sample).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetStoreRoot();
         prepareGetShareId();
@@ -357,7 +356,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION).size(28)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        final DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        final DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareGetDataSetDirectory(dsd1);
@@ -448,7 +447,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -466,7 +465,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         assertEquals("[]", processingStatus1.getErrorStatuses().toString());
         ds1.setExperiment(
                 new ExperimentBuilder().identifier("/S/P/E2").type("MY-E").getExperiment());
-        dsd1 = DataSetTranslator.translateToDescription(ds1);
+        dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareUpdateShareIdAndSize(537669);
         prepareGetDataSetDirectory(dsd1);
@@ -530,7 +529,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -548,7 +547,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         assertEquals("[]", processingStatus1.getErrorStatuses().toString());
         ds1.setExperiment(
                 new ExperimentBuilder().identifier("/S/P/E2").type("MY-E").getExperiment());
-        dsd1 = DataSetTranslator.translateToDescription(ds1);
+        dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareUpdateShareIdAndSize(537669);
         prepareGetDataSetDirectory(dsd1);
@@ -610,7 +609,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -652,7 +651,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -700,7 +699,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -756,7 +755,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -807,7 +806,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .property("ANSWER", "42")
                         .experiment(experiment).getDataSet();
-        DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareUpdateShareIdAndSize(537669);
@@ -878,7 +877,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
                 new DataSetBuilder().code(DATA_SET_CODE).type("MY-TYPE").location(LOCATION).size(28)
                         .store(new DataStoreBuilder(DATA_STORE_CODE).getStore()).fileFormat("ABC")
                         .experiment(experiment).getDataSet();
-        final DatasetDescription dsd1 = DataSetTranslator.translateToDescription(ds1);
+        final DatasetDescription dsd1 = ExternalDataTranslator.translateToDescription(ds1);
         dsd1.setH5Folders(true);
         prepareGetShareId();
         prepareGetDataSetDirectory(dsd1);
