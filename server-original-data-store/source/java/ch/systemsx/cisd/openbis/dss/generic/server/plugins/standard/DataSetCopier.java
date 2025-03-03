@@ -16,9 +16,11 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 
 import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
@@ -27,6 +29,7 @@ import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPostRegistrationDatasetHandler;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 /**
@@ -78,8 +81,21 @@ public class DataSetCopier extends AbstractDropboxProcessingPlugin
             ISshCommandExecutorFactory sshCommandExecutorFactory,
             IImmutableCopierFactory immutableCopierFactory, ITimeProvider timeProvider)
     {
-        super(properties, storeRoot, new Copier(properties, pathCopierFactory,
-                sshCommandExecutorFactory, immutableCopierFactory), timeProvider);
+        super(properties, storeRoot, new IPostRegistrationDatasetHandler()
+        {
+            private final Copier copier = new Copier(properties, pathCopierFactory, sshCommandExecutorFactory, immutableCopierFactory);
+
+            @Override public Status handle(final File originalData, final DataSetInformation dataSetInformation,
+                    final Map<String, String> parameterBindings)
+            {
+                return copier.handle(originalData, dataSetInformation.getDataSetCode(), parameterBindings);
+            }
+
+            @Override public void undoLastOperation()
+            {
+                copier.undoLastOperation();
+            }
+        }, timeProvider);
     }
 
     public DataSetCopier(Properties properties, File storeRoot,

@@ -757,14 +757,14 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
                 ExternalDataPE externalData = dataSet.tryAsExternalData();
                 if (externalData.getStatus().isAvailable())
                 {
-                    result.add(translateToDescription(externalData));
+                    result.add(DataSetTranslator.translateToDescription(externalData));
                 } else
                 {
                     notAvailableDatasets.add(dataSet.getCode());
                 }
             } else
             {
-                result.add(translateToDescription(dataSet));
+                result.add(DataSetTranslator.translateToDescription(dataSet));
             }
         }
         throwUnavailableOperationExceptionIfNecessary(notAvailableDatasets);

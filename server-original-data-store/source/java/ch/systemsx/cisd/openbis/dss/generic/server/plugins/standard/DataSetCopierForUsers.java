@@ -15,12 +15,11 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
-import static ch.systemsx.cisd.openbis.generic.shared.Constants.USER_PARAMETER;
-
 import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
+import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncCopierFactory;
@@ -29,6 +28,9 @@ import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPostRegistrationDatasetHandler;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
+import static ch.systemsx.cisd.openbis.generic.shared.Constants.USER_PARAMETER;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 /**
@@ -51,8 +53,10 @@ public class DataSetCopierForUsers extends DataSetCopier
             ISshCommandExecutorFactory sshCommandExecutorFactory,
             IImmutableCopierFactory immutableCopierFactory, ITimeProvider timeProvider)
     {
-        super(properties, storeRoot, new Copier(properties, pathCopierFactory,
-                sshCommandExecutorFactory, immutableCopierFactory)
+        super(properties, storeRoot, new IPostRegistrationDatasetHandler()
+        {
+            private final Copier copier = new Copier(properties, pathCopierFactory,
+                    sshCommandExecutorFactory, immutableCopierFactory)
             {
                 private static final long serialVersionUID = 1L;
 
@@ -62,7 +66,19 @@ public class DataSetCopierForUsers extends DataSetCopier
                 {
                     return createDestinationFileName(originalHostFile, parameterBindings);
                 }
-            }, timeProvider);
+            };
+
+            @Override public Status handle(final File originalData, final DataSetInformation dataSetInformation,
+                    final Map<String, String> parameterBindings)
+            {
+                return copier.handle(originalData, dataSetInformation.getDataSetCode(), parameterBindings);
+            }
+
+            @Override public void undoLastOperation()
+            {
+                copier.undoLastOperation();
+            }
+        }, timeProvider);
     }
 
     private static String createDestinationFileName(String originalHostFile,
@@ -82,7 +98,7 @@ public class DataSetCopierForUsers extends DataSetCopier
                     originalHostFile.substring(0, indexOfParameter)
                             + user
                             + originalHostFile.substring(indexOfParameter
-                                    + USER_PARAMETER_STRING.length());
+                            + USER_PARAMETER_STRING.length());
         }
         return hostFile;
     }
@@ -93,7 +109,7 @@ public class DataSetCopierForUsers extends DataSetCopier
     {
         return "Copy to "
                 + createDestinationFileName(properties.getProperty(DESTINATION_KEY),
-                        context.getParameterBindings());
+                context.getParameterBindings());
     }
 
 }

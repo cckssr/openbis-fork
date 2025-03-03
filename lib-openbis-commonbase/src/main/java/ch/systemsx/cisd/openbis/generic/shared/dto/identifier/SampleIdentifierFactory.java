@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto.identifier;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.NewSample;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier.CONTAINED_SAMPLE_CODE_SEPARARTOR_STRING;
 
 import java.util.ArrayList;
@@ -38,6 +39,30 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
  */
 public final class SampleIdentifierFactory extends AbstractIdentifierFactory
 {
+    public static final SampleIdentifier parse(final NewSample sample) throws UserFailureException
+    {
+        SampleIdentifierFactory factory = new SampleIdentifierFactory(sample.getIdentifier());
+        String defaultSpace = sample.getDefaultSpaceIdentifier();
+        SampleIdentifier identifier = factory.createIdentifier(defaultSpace);
+        String currentContainer = sample.getCurrentContainerIdentifier();
+
+        // if current container is defined and identifier includes container code, throw an
+        // exception
+        if (false == StringUtils.isEmpty(currentContainer)
+                && false == StringUtils.isBlank(identifier.tryGetContainerCode()))
+        {
+            throw new UserFailureException("Current container is specified, but the identifier '"
+                    + sample.getIdentifier() + "' includes the container code.");
+        }
+        if (identifier.tryGetContainerCode() == null
+                && StringUtils.isEmpty(currentContainer) == false)
+        {
+            SampleIdentifier defaultContainerIdentifier = parse(currentContainer, defaultSpace);
+            identifier.addContainerCode(defaultContainerIdentifier.getSampleSubCode());
+        }
+        return identifier;
+    }
+
     public static final SampleIdentifier parse(final String textToParse)
             throws UserFailureException
     {

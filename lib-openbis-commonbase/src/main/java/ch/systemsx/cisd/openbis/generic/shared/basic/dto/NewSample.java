@@ -214,7 +214,7 @@ public class NewSample extends Identifier<NewSample> implements Comparable<NewSa
     @BeanProperty(label = CONTAINER, optional = true)
     public final void setContainerIdentifier(final String container)
     {
-        this.containerIdentifier = toUpperCase(StringUtils.trimToNull(container));
+        this.containerIdentifier = Identifier.toUpperCase(StringUtils.trimToNull(container));
     }
 
     public final String getCurrentContainerIdentifier()
@@ -226,7 +226,7 @@ public class NewSample extends Identifier<NewSample> implements Comparable<NewSa
     public final void setCurrentContainerIdentifier(final String currentContainerIdentifier)
     {
         this.currentContainerIdentifier =
-                toUpperCase(StringUtils.trimToNull(currentContainerIdentifier));
+                Identifier.toUpperCase(StringUtils.trimToNull(currentContainerIdentifier));
     }
 
     public String getExperimentIdentifier()
@@ -237,7 +237,7 @@ public class NewSample extends Identifier<NewSample> implements Comparable<NewSa
     @BeanProperty(label = EXPERIMENT, optional = true)
     public void setExperimentIdentifier(String experimentIdentifier)
     {
-        this.experimentIdentifier = toUpperCase(experimentIdentifier);
+        this.experimentIdentifier = Identifier.toUpperCase(experimentIdentifier);
     }
 
     public String getProjectIdentifier()
@@ -247,7 +247,7 @@ public class NewSample extends Identifier<NewSample> implements Comparable<NewSa
 
     public void setProjectIdentifier(String projectIdentifier)
     {
-        this.projectIdentifier = toUpperCase(projectIdentifier);
+        this.projectIdentifier = Identifier.toUpperCase(projectIdentifier);
     }
 
     public String getDefaultSpaceIdentifier()
@@ -260,10 +260,10 @@ public class NewSample extends Identifier<NewSample> implements Comparable<NewSa
     {
         if (StringUtils.isBlank(defaultSpaceIdentifier) || defaultSpaceIdentifier.contains("/"))
         {
-            this.defaultSpaceIdentifier = toUpperCase(defaultSpaceIdentifier);
+            this.defaultSpaceIdentifier = Identifier.toUpperCase(defaultSpaceIdentifier);
         } else
         {
-            this.defaultSpaceIdentifier = "/" + toUpperCase(defaultSpaceIdentifier);
+            this.defaultSpaceIdentifier = "/" + Identifier.toUpperCase(defaultSpaceIdentifier);
         }
     }
 

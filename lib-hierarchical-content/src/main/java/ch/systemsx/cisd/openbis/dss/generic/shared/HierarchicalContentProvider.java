@@ -41,6 +41,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBAwareHierar
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.RemoteHierarchicalContent;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSetLocation;
@@ -158,6 +160,18 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
         }
 
         return asContent(locationNode, shouldUPdateAccessTimestamp);
+    }
+
+    @Override
+    public IHierarchicalContent asContent(AbstractExternalData dataSet)
+    {
+        return asContent(new ExternalDataLocationNode(dataSet), true);
+    }
+
+    @Override
+    public IHierarchicalContent asContentWithoutModifyingAccessTimestamp(AbstractExternalData dataSet)
+    {
+        return asContent(new ExternalDataLocationNode(dataSet), false);
     }
 
     private IHierarchicalContent asContent(final IDatasetLocationNode locationNode, final boolean shouldUpdateAccessTimestamp)

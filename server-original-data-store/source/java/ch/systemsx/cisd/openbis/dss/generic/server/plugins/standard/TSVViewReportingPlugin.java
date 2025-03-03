@@ -25,6 +25,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.AutoResolveUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DatasetFileLines;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModel;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
@@ -102,5 +103,11 @@ public class TSVViewReportingPlugin extends AbstractFileTableReportingPlugin
                     "Chosen plugin works with exactly one data set. %s data sets selected.",
                     datasets.size());
         }
+    }
+
+    protected IHierarchicalContent getDatasetDir(IHierarchicalContentProvider provider,
+            DatasetDescription dataset)
+    {
+        return provider.asContent(dataset.getDataSetCode());
     }
 }

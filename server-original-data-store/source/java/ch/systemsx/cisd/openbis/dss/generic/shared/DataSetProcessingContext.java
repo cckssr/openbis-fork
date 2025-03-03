@@ -169,7 +169,7 @@ public class DataSetProcessingContext
                 public IHierarchicalContent asContent(AbstractExternalData dataSet)
                 {
                     assertAuthorization(dataSet.getCode());
-                    return contentProvider.asContent(dataSet);
+                    return contentProvider.asContent(dataSet.getCode());
                 }
 
                 @Override
