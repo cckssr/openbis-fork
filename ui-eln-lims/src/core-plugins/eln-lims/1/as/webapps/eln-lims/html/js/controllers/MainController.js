@@ -766,6 +766,14 @@ function MainController(profile) {
 						//window.scrollTo(0,0);
 					});
 					break;
+				case "showCreateSamplePage":
+				    var sampleTypeCode = arg["sampleTypeCode"];
+				    var spaceCode = arg["spaceCode"];
+				    var projectCode = arg["projectCode"];
+				    var experimentIdentifier = arg["experimentIdentifier"];
+				    document.title = "Create " + Util.getDisplayNameFromCode(sampleTypeCode);
+				    this._showCreateSamplePage(sampleTypeCode, spaceCode, projectCode, experimentIdentifier);
+                    break;
 				case "showCreateSubExperimentPage":
 					var sampleTypeCode = arg["sampleTypeCode"];
 					var experimentIdentifier = arg["experimentIdentifier"];
@@ -1451,6 +1459,33 @@ function MainController(profile) {
 			localInstance.currentView = hierarchyTableController;
 		});
 	}
+
+	this.openHelpPage = function() {
+        var src = "https://openbis.readthedocs.io/en/20.10.x/user-documentation/general-users";
+        var win = window.open(src, '_blank');
+        win.focus();
+	}
+
+	this._showCreateSamplePage = function(sampleTypeCode, spaceCode, projectCode, experimentIdentifier) {
+	    //Update menu
+        var sampleTypeDisplayName = this.profile.getSampleTypeForSampleTypeCode(sampleTypeCode).description;
+        if(sampleTypeDisplayName === null) {
+            sampleTypeDisplayName = sampleTypeCode;
+        }
+
+        var sample = {
+            sampleTypeCode : sampleTypeCode,
+            spaceCode: spaceCode,
+            projectCode: projectCode,
+            experimentIdentifierOrNull: experimentIdentifier,
+            properties : {}
+        };
+
+        var sampleFormController = new SampleFormController(this, FormMode.CREATE, sample);
+        this.currentView = sampleFormController;
+        var views = this._getNewViewModel(true, true, false);
+        sampleFormController.init(views);
+	}
 	
 	this._showCreateSubExperimentPage = function(sampleTypeCode, experimentIdentifier) {
 		//Update menu
@@ -1506,10 +1541,40 @@ function MainController(profile) {
         spaceFormController.init(views);
         this.currentView = spaceFormController;
     }
+
+    this._isInventorySpace = function(spaceCode) {
+        var showInventory = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showInventory
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        var isHiddenSpace = profile.isHiddenSpace(spaceCode)
+        return (
+            showInventory &&
+            isInventorySpace &&
+            !isHiddenSpace &&
+            !spaceCode.endsWith("STOCK_CATALOG") &&
+            !spaceCode.endsWith("STOCK_ORDERS")
+        )
+    }
+
+    this._isStockSpace = function(spaceCode) {
+        var showStock = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showStock
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        return (
+            showStock &&
+            isInventorySpace &&
+            (spaceCode.endsWith("STOCK_CATALOG") || spaceCode.endsWith("STOCK_ORDERS"))
+        )
+    }
     
 	this._showSpacePage = function(space) {
+	    var isRegularSpace = (this._isInventorySpace(space) || this._isStockSpace(space));
 		//Show Form
-		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, false, space);
+		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, isRegularSpace, space);
 		var views = this._getNewViewModel(true, true, false);
 		spaceFormController.init(views);
 		this.currentView = spaceFormController;
