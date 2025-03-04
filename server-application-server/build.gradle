@@ -69,6 +69,7 @@ dependencies {
             project(path: ':lib-authentication', configuration: 'tests'),
             project(path: ':api-openbis-java', configuration: 'tests'),
             project(path: ':lib-openbis-common', configuration: 'tests'),
+            project(path: ':lib-openbis-commonbase', configuration: 'tests'),
             project(path: ':lib-two-phase-transaction', configuration: 'tests'),
             project(path: ':api-data-store-server-javascript', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
