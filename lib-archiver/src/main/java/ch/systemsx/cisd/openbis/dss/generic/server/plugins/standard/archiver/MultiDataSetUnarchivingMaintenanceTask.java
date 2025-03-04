@@ -61,8 +61,8 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
     {
         IMultiDataSetArchiverReadonlyQueryDAO dao = getReadonlyQuery();
         List<MultiDataSetArchiverContainerDTO> containersForUnarchiving = dao.listContainersForUnarchiving();
-        IArchiverPlugin archiverPlugin = ArchiverServiceProviderFactory.getInstance().getArchiverPlugin();
-        IDataSetDirectoryProvider directoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
+        IArchiverPlugin archiverPlugin = getArchiverPlugin();
+        IDataSetDirectoryProvider directoryProvider = getDirectoryProvider();
         IHierarchicalContentProvider hierarchicalContentProvider = getHierarchicalContentProvider();
         ArchiverTaskContext context = new ArchiverTaskContext(directoryProvider, hierarchicalContentProvider);
         context.setForceUnarchiving(true);
@@ -129,6 +129,16 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
     IHierarchicalContentProvider getHierarchicalContentProvider()
     {
         return ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
+    }
+
+    IArchiverPlugin getArchiverPlugin()
+    {
+        return ArchiverServiceProviderFactory.getInstance().getArchiverPlugin();
+    }
+
+    IDataSetDirectoryProvider getDirectoryProvider()
+    {
+        return ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
     }
 
     IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()

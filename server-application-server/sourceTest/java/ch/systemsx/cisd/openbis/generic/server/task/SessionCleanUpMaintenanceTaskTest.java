@@ -15,11 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.task;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
@@ -29,14 +26,12 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author pkupczyk

@@ -53,7 +53,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataStoreBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

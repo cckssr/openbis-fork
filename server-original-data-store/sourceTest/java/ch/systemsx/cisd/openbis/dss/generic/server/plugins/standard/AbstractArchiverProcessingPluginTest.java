@@ -34,6 +34,7 @@ import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
+import ch.systemsx.cisd.common.exceptions.IStatusChecker;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.filesystem.BooleanStatus;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -56,7 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.builders.DatasetDescriptionBuilder;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Kaloyan Enimanev

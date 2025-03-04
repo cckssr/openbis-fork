@@ -21,6 +21,7 @@ dependencies {
             project(':lib-openbis-common'),
             project(':lib-authentication'),
             project(':lib-mail'),
+            project(':lib-maintenance'),
             project(':lib-dbmigration'),
             project(':lib-two-phase-transaction'),
             project(':api-data-store-server-javascript'),

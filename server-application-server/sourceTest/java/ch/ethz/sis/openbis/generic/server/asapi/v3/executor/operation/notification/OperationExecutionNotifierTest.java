@@ -31,7 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecutionEmai
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 import junit.framework.Assert;
 

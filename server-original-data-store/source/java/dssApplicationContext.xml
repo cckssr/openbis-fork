@@ -222,7 +222,7 @@
     <bean id="config-provider" class="ch.systemsx.cisd.etlserver.ConfigProvider"/>
     
     <bean id="content-cache" class="ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache" 
-          factory-method="create">
+          factory-method="create" init-method="init">
         <constructor-arg ref="configProperties" />
     </bean>
 

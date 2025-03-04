@@ -6,4 +6,6 @@ public interface IDssService
 {
     public FileInfoDssDTO[] listFilesForDataSet(String sessionToken,
             String dataSetCode, String path, boolean isRecursive) throws IOExceptionUnchecked, IllegalArgumentException;
+
+    String getDownloadUrlForFileForDataSet(String sessionToken, String dataSetCode, String relativePath);
 }

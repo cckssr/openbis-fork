@@ -14,8 +14,23 @@ repositories {
     }
 }
 
+configurations {
+    tests.extendsFrom testImplementation
+    tests.canBeResolved true
+}
+
 dependencies {
     implementation project(':lib-openbis-commonbase'),
+            project(':lib-maintenance'),
             project(':api-openbis-java'),
             'shriop:javacsv:2.0'
+}
+
+task testJar(type: Jar, dependsOn: testClasses) {
+    baseName = "test-${project.name}"
+    from sourceSets.test.output
+}
+
+artifacts {
+    tests testJar
 }

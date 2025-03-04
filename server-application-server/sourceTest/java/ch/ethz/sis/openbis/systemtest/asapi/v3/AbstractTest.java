@@ -177,7 +177,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.MetaprojectPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import junit.framework.Assert;
 
 /**

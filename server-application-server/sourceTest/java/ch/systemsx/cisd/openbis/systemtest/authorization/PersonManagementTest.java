@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.plugin.generic.server.GenericServer;
 import ch.systemsx.cisd.openbis.plugin.query.server.QueryServer;
 import ch.systemsx.cisd.openbis.systemtest.base.BaseTest;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * This test tests registering and deactivating a person. It also tests authorization of {@link CommonServer}, {@link ServiceForDataStoreServer},

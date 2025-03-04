@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityKind;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityValidationEvaluationInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
 import ch.systemsx.cisd.openbis.systemtest.SystemTestCase;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author pkupczyk

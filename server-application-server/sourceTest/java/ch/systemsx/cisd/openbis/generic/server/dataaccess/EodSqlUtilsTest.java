@@ -22,7 +22,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOTest;
 import ch.systemsx.cisd.openbis.generic.shared.util.EodSqlUtils;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

@@ -138,7 +138,7 @@ public class MultiDataSetDeletionMaintenanceTask
         super.setUp(pluginName, properties);
         this.properties = properties;
 
-        dataSetDirectoryProvider = ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
+        dataSetDirectoryProvider = getDirectoryProvider();
         cleaner = MultiDataSetArchivingUtils.createCleaner(
                 PropertyParametersUtil.extractSingleSectionProperties(
                         properties, ARCHIVER_PREFIX + MultiDataSetArchiver.CLEANER_PROPS, false).getProperties());
@@ -231,6 +231,16 @@ public class MultiDataSetDeletionMaintenanceTask
             configProvider = ArchiverServiceProviderFactory.getInstance().getConfigProvider();
         }
         return configProvider;
+    }
+
+    protected Properties getArchiverProperties()
+    {
+        return ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
+    }
+
+    protected IDataSetDirectoryProvider getDirectoryProvider()
+    {
+        return ArchiverServiceProviderFactory.getInstance().getDataSetDirectoryProvider();
     }
 
     protected MultiDataSetFileOperationsManager getMultiDataSetFileOperationsManager()
@@ -331,7 +341,7 @@ public class MultiDataSetDeletionMaintenanceTask
         List<DatasetDescription> dataSets = convertToDataSetDescription(notDeletedDataSets);
         IHierarchicalContent archivedContent = getMultiDataSetFileOperationsManager().getContainerAsHierarchicalContent(containerPath, dataSets);
         ArchiverTaskContext context = new ArchiverTaskContext(dataSetDirectoryProvider, getHierarchicalContentProvider());
-        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
+        Properties archiverProperties = getArchiverProperties();
         boolean verifyChecksums =
                 PropertyUtils.getBoolean(archiverProperties, MultiDataSetArchiver.SANITY_CHECK_VERIFY_CHECKSUMS_KEY,
                         MultiDataSetArchiver.DEFAULT_SANITY_CHECK_VERIFY_CHECKSUMS);

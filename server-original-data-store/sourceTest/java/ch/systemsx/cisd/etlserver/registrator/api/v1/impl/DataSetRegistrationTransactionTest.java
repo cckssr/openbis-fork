@@ -69,7 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.StorageFormat;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Chandrasekhar Ramakrishnan

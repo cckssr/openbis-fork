@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
+import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
+import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
 import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.DataSetCopier.DESTINATION_KEY;
 import static ch.systemsx.cisd.openbis.dss.generic.shared.Constants.DEFAULT_SHARE_ID;
 

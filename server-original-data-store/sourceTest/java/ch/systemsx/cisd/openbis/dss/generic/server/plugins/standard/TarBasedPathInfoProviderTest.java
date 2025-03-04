@@ -30,6 +30,7 @@ import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.MockLogger;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.H5FolderFlags;
+import ch.systemsx.cisd.openbis.dss.generic.shared.TarBasedPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 
 /**

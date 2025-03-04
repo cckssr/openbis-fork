@@ -76,7 +76,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.RelationshipTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.translator.ExperimentTranslator;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

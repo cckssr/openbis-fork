@@ -65,7 +65,7 @@ import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

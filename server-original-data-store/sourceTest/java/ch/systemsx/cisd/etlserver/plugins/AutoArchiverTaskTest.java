@@ -46,7 +46,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

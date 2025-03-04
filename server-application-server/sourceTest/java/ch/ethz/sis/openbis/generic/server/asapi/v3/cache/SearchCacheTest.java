@@ -36,7 +36,7 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.util.RuntimeCache;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 import net.sf.ehcache.CacheManager;
 

@@ -37,7 +37,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.builders.DatasetDescriptionBuilder;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

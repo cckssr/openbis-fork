@@ -24,7 +24,7 @@ import java.util.Properties;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;

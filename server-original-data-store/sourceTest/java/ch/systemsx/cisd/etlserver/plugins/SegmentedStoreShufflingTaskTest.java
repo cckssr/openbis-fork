@@ -47,7 +47,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUt
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
