@@ -103,7 +103,6 @@
 	
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				// New
-//				if(_this._allowedToCreateChild() && this._sampleFormModel.isELNSample && toolbarConfig.CREATE) {
 				if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
 					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                          _this._sampleFormController.createObject("ENTRY");
@@ -235,7 +234,7 @@
 					});
 				}
 	
-				if(_this._allowedToRegisterDataSet() && !isInventorySample) {
+				if(_this._allowedToRegisterDataSet() && !isInventorySample && sampleTypeCode !== "FOLDER") {
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
@@ -403,7 +402,7 @@
 							});
 						});
 					}, "Templates", null);
-					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
+					continuedToolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
 				}
 			}
 	
@@ -834,9 +833,12 @@
 				} else if(propertyType.dinamic && this._sampleFormModel.mode === FormMode.CREATE) { //Skip
 					continue;
 				}
-	
+
+
 				if(sampleTypeCode === "ENTRY" && (propertyType.code === "NAME" || propertyType.code === "DOCUMENT" || propertyType.code === "ANNOTATIONS_STATE")) {
 					continue;
+				} else if(sampleTypeCode === "FOLDER" && propertyType.code !== "NAME") {
+				    continue;
 				} else if(propertyType.code === "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === "ORDER.ORDER_STATE" || propertyType.code === "BARCODE" ) {
 					continue;
 				} else if(propertyType.code === "XMLCOMMENTS") {
