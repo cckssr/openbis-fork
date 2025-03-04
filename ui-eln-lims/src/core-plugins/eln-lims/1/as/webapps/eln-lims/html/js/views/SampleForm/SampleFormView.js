@@ -97,6 +97,7 @@
 			//
 			var toolbarModel = [];
 			var rightToolbarModel = [];
+			var continuedToolbarModel = [];
 			var dropdownOptionsModel = [];
 			var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 	
@@ -135,7 +136,7 @@
 							}, 100);
 						}, "Edit", "Edit object", "edit-btn");
 						if(toolbarConfig.EDIT) {
-							rightToolbarModel.push({ component : $editButton, tooltip: null });
+							continuedToolbarModel.push({ component : $editButton, tooltip: null });
 						}
 					}
 				}
@@ -238,7 +239,7 @@
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-					}, "Data", "Upload data", "upload-btn");
+					}, "Dataset", "Upload dataset", "upload-btn");
 					if(toolbarConfig.UPLOAD_DATASET) {
 						toolbarModel.push({ component : $uploadBtn, tooltip: null });
 					}
@@ -304,7 +305,7 @@
 					if(toolbarConfig.FREEZE) {
 						if(isEntityFrozen) {
 							var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-							rightToolbarModel.push({ component : $freezeButton, tooltip: null });
+							continuedToolbarModel.push({ component : $freezeButton, tooltip: null });
 						} else {
 							dropdownOptionsModel.push({
 								label : "Freeze Entity (Disable further modifications)",
@@ -331,7 +332,7 @@
 				}, "Save", "Save changes", "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
-				toolbarModel.push({ component : $saveBtn });
+				continuedToolbarModel.push({ component : $saveBtn });
 	
 				// Templates
 				if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
@@ -619,13 +620,13 @@
 				dropdownOptionsModel = dropdownOptionsModel.concat(profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 			}
 	
-			FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+			FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, true);
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                                 mainController.openHelpPage();
                                             }, null, "Help", "help-btn");
-            rightToolbarModel.push({ component : $helpBtn });
+            continuedToolbarModel.push({ component : $helpBtn });
 
 
             //
@@ -707,7 +708,14 @@
             }
         }
 
-			
+			if(toolbarModel.length>0) {
+            	toolbarModel.push({ component : FormUtil.getToolbarSeparator() })
+                toolbarModel.push(...continuedToolbarModel)
+            } else {
+                toolbarModel = continuedToolbarModel;
+            }
+
+
 			if(this._sampleFormModel.mode === FormMode.CREATE || this._sampleFormModel.mode === FormMode.EDIT){
 				$header.append(FormUtil.getToolbar(toolbarModel));
 				$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));

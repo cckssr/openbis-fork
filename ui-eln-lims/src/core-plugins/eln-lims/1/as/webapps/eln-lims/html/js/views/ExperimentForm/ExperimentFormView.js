@@ -65,7 +65,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
-		var rightToolbarModel = [];
+		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
 		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
@@ -96,7 +96,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                    var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
                    mainController.changeView("showEditExperimentPageFromIdentifier", args);
               }, "Edit", "Edit collection", "edit-btn");
-              rightToolbarModel.push({ component : $editBtn });
+              continuedToolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove() && toolbarConfig.MOVE) {
 				//Move
@@ -238,7 +238,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			        var $uploadBtn = FormUtil.getToolbarButton("DATA", function() {
                           Util.blockUI();
                           mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-                     }, "Data", "Upload data", "upload-btn");
+                     }, "Dataset", "Upload dataset", "upload-btn");
                      toolbarModel.push({ component : $uploadBtn});
 	            }
 
@@ -445,16 +445,22 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		    dropdownOptionsModel = dropdownOptionsModel.concat(profile.experimentTypeDefinitionsExtension[experimentTypeCode].extraToolbarDropdown(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
 		}
 
-		FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+		FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, true);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                             mainController.openHelpPage();
                                         }, null, "Help", "help-btn");
-        rightToolbarModel.push({ component : $helpBtn });
+        continuedToolbarModel.push({ component : $helpBtn });
 
-		$header.append(FormUtil.getToolbar(toolbarModel));
-		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+        if(toolbarModel.length>0) {
+            toolbarModel.push({ component : FormUtil.getToolbarSeparator() })
+            toolbarModel.push(...continuedToolbarModel)
+        } else {
+            toolbarModel = continuedToolbarModel;
+        }
+
+        $header.append(FormUtil.getToolbar(toolbarModel))
 		$container.append($form);
 
         mainController.profile.afterViewPaint(ViewType.EXPERIMENT_FORM, this._experimentFormModel, $container);

@@ -54,7 +54,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
-		var rightToolbarModel = [];
+		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._projectFormModel.mode === FormMode.VIEW) {
 
@@ -93,7 +93,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				    Util.blockUI();
 					_this._projectFormController.enableEditing();
 				}, "Edit", "Edit project", "edit-btn");
-				rightToolbarModel.push({ component : $editBtn });
+				continuedToolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {
 				//Delete
@@ -176,7 +176,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
-			toolbarModel.push({ component : $saveBtn });
+			continuedToolbarModel.push({ component : $saveBtn });
 		}
 		
 		var $header = views.header;
@@ -197,15 +197,21 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			$formColumn.append(this._createExperimentsSection(projectIdentifier, hideShowOptionsModel));
 		}
 
-		FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, true);
+		FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "PROJECT-VIEW", null, true);
 
 		var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                     mainController.openHelpPage();
                                 }, null, "Help", "help-btn");
-        rightToolbarModel.push({ component : $helpBtn });
+        continuedToolbarModel.push({ component : $helpBtn });
+
+        if(toolbarModel.length>0) {
+            toolbarModel.push({ component : FormUtil.getToolbarSeparator() })
+            toolbarModel.push(...continuedToolbarModel)
+        } else {
+            toolbarModel = continuedToolbarModel;
+        }
 
 		$header.append(FormUtil.getToolbar(toolbarModel));
-		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 
 		$container.append($form);
         mainController.profile.afterViewPaint(ViewType.PROJECT_FORM, this._projectFormModel, $container);

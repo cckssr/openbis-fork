@@ -42,9 +42,9 @@ function LabNotebookView(labNotebookController, labNotebookView) {
 	       	}
 	            
             if (profile.isAdmin) {
-                var $createSpace = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-                    _this.labNotebookController.createSpace();
-                }, "New Space", null, "create-btn");
+                var $createSpace = FormUtil.getToolbarButton("SPACE", function() {
+                                     _this.labNotebookController.createSpace();
+                                 }, null, "New Space", "create-btn");
                 toolbarModel.push({component : $createSpace});
             }
 	        //Export

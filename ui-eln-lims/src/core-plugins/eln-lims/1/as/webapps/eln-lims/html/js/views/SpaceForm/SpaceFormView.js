@@ -42,7 +42,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
-		var rightToolbarModel = [];
+		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
         if (this._spaceFormModel.mode === FormMode.VIEW) {
 
@@ -74,7 +74,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
                     _this._spaceFormController.enableEditing();
                 }, "Edit", "Edit space", "edit-btn");
-                rightToolbarModel.push({ component : $editBtn });
+                continuedToolbarModel.push({ component : $editBtn });
             }
             
             if (this._allowedToDeleteSpace()) {
@@ -152,7 +152,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             }, "Save", "Save changes", "save-btn");
             $saveBtn.removeClass("btn-default");
             $saveBtn.addClass("btn-primary");
-            toolbarModel.push({ component : $saveBtn });
+            continuedToolbarModel.push({ component : $saveBtn });
         }
 
 		var $header = views.header;
@@ -161,16 +161,21 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         var hideShowOptionsModel = [];
         $formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
         $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
-        FormUtil.addOptionsToToolbar(rightToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, true);
+        FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, true);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();
                         }, null, "Help", "help-btn");
-        rightToolbarModel.push({ component : $helpBtn });
+        continuedToolbarModel.push({ component : $helpBtn });
 
+        if(toolbarModel.length>0) {
+            toolbarModel.push({ component : FormUtil.getToolbarSeparator() })
+            toolbarModel.push(...continuedToolbarModel)
+        } else {
+            toolbarModel = continuedToolbarModel;
+        }
 
 		$header.append(FormUtil.getToolbar(toolbarModel));
-		$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
 
 		$container.append($form);
         mainController.profile.afterViewPaint(ViewType.SPACE_FORM, this._spaceFormModel, $container);

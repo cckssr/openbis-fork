@@ -1652,6 +1652,13 @@ var FormUtil = new function() {
 		return $toolbarContainer;
 	}
 
+	this.getToolbarSeparator = function() {
+	    var separator = $("<p>", {id : "toolbar-separator"})
+        		                    .css("display", "inline-block")
+        separator.html("&nbsp&nbsp&nbsp&nbsp&nbsp");
+	    return separator;
+	}
+
 	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel, alternateToolbar) {		
 		
 		var $normalToolbar = this.getToolbar(toolbarModel);

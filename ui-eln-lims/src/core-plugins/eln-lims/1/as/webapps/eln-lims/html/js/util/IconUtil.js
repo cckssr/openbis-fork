@@ -30,14 +30,27 @@ var IconUtil = new function() {
             $icon = $("<span/>")
         }
 
-        if (icon.class) {
-            $icon.addClass(icon.class)
+        if(Array.isArray(icon.class)) {
+            for (let i = 0; i < icon.class.length; i++) {
+              var tempIcon = $("<span/>").css("vertical-align", "middle");
+              tempIcon.addClass(icon.class[i]);
+               if(icon.text[i]) {
+                  tempIcon.text(icon.text[i]);
+                  tempIcon.css("font-size", "18px");
+              }
+              $icon.append(tempIcon);
+            }
+        } else {
+            if (icon.class) {
+                $icon.addClass(icon.class)
+            }
+
+            if(icon.text) {
+                $icon.text(icon.text);
+                $icon.css("font-size", "18px");
+            }
         }
 
-        if(icon.text) {
-            $icon.text(icon.text);
-            $icon.css("font-size", "18px");
-        }
         $icon.css("vertical-align", "text-bottom");
 
         return $icon;
@@ -70,13 +83,10 @@ var IconUtil = new function() {
             icon.class = "material-icons";
             icon.text = materialPlusIcon;
         } else if(type === "DATA") {
-//            icon.class = "glyphicon glyphicon-upload";
-            icon.class = "material-icons";
-            icon.text = "upload_file";
+            icon.class = ["material-icons", "fa fa-database"];
+            icon.text = [materialPlusIcon, null];
         } else if(type === "EDIT") {
             icon.class = "glyphicon glyphicon-edit";
-//            icon.class = "material-icons";
-//            icon.text = "mode_edit";
         }  else if(type === "SAVE") {
 //            icon.class = "glyphicon glyphicon-floppy-disk";
             icon.class = "material-icons";
@@ -86,16 +96,35 @@ var IconUtil = new function() {
             icon.text = "help";
         } else if(type === "PAGINATION_LEFT") {
             icon.class = "material-icons";
-//            icon.text = "chevron_left";
             icon.text = "navigate_before";
         } else if(type === "PAGINATION_RIGHT") {
             icon.class = "material-icons";
-//            icon.text = "chevron_right";
             icon.text = "navigate_next";
         } else if(type === "TEMPLATES") {
 //            icon.class = "glyphicon glyphicon-list-alt";
             icon.class = "material-icons";
             icon.text = "list_alt";
+        } else if(type === "SPACE") {
+            icon.class = "material-icons";
+            icon.text = materialPlusIcon + "key";
+        } else if(type === "HIDE") {
+            icon.class = "material-icons";
+            icon.text = "keyboard_double_arrow_left";
+        } else if(type === "SHOW") {
+            icon.class = "material-icons";
+            icon.text = "keyboard_double_arrow_right";
+        } else if(type === "LOGIN") {
+            icon.class = "glyphicon glyphicon-log-in";
+        } else if(type === "LOGOUT") {
+            icon.class = "glyphicon glyphicon-off";
+        } else if(type === "BARCODE") {
+            icon.class = "glyphicon glyphicon-barcode";
+        } else if(type === "COLLAPSE_DOWN") {
+            icon.class = "material-icons";
+            icon.text = "keyboard_double_arrow_down";
+        } else if(type === "COLLAPSE_UP") {
+            icon.class = "material-icons";
+            icon.text = "keyboard_double_arrow_up";
         }
         return icon;
     }
