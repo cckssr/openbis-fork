@@ -22,24 +22,33 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
-import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.beans.factory.BeanFactory;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.concurrent.MessageChannelBuilder;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
-import ch.systemsx.cisd.common.mail.IMailClient;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
-import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
+import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 
 /**
  * @author Franz-Josef Elmer
@@ -49,8 +58,6 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
     private BufferedAppender logRecorder;
 
     private Mockery context;
-
-    private IDssService dssService;
 
     private Properties properties;
 
@@ -68,22 +75,82 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
 
     private MessageChannel testrunnerChannel;
 
+    private IArchiverServiceProvider originalServiceProvider;
+
     @BeforeMethod
     public void setUpTestEnvironment()
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO, "OPERATION.*");
         context = new Mockery();
         mailClient = context.mock(IMailClient.class);
-        BeanFactory beanFactory = context.mock(BeanFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-        dssService = ServiceProviderTestWrapper.mock(context, IDssService.class);
-        context.checking(new Expectations()
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        {
+            @Override public IConfigProvider getConfigProvider()
             {
-                {
-                    allowing(dssService).createEMailClient();
-                    will(returnValue(mailClient));
-                }
-            });
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IMailClient createEMailClient()
+            {
+                return mailClient;
+            }
+
+            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSourceProvider getDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSetDeleter getDataSetDeleter()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IShareIdManager getShareIdManager()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IArchiverPlugin getArchiverPlugin()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public Properties getArchiverProperties()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IOpenBISService getOpenBISService()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IApplicationServerApi getV3ApplicationService()
+            {
+                throw new UnsupportedOperationException();
+            }
+        });
         properties = new Properties();
         deleterChannel = new MessageChannelBuilder().name("deleter").getChannel();
         testrunnerChannel = new MessageChannelBuilder().name("testrunner").getChannel();
@@ -102,7 +169,7 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
     @AfterMethod
     public void checkMockExpectations(ITestResult result)
     {
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         if (result.getStatus() == ITestResult.FAILURE)
         {
             fail(result.getName() + " failed. Log content:\n" + logRecorder.getLogContent());
@@ -224,9 +291,9 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
         testrunnerChannel.send(TimeProviderWithMessageChannelInteraction.CONTINUE_MESSAGE);
 
         assertEquals("INFO  OPERATION.FileDeleter - Schedule for deletion: " + file + "\n"
-                + "INFO  OPERATION.FileDeleter - Deletion request file for '" + file
-                + "': " + deletionRequestDir + "/19700101-01?000_1.deletionrequest\n"
-                + "INFO  OPERATION.FileDeleter - Successfully deleted: " + file.getAbsolutePath(),
+                        + "INFO  OPERATION.FileDeleter - Deletion request file for '" + file
+                        + "': " + deletionRequestDir + "/19700101-01?000_1.deletionrequest\n"
+                        + "INFO  OPERATION.FileDeleter - Successfully deleted: " + file.getAbsolutePath(),
                 logRecorder.getLogContent().replaceAll("01.000", "01?000"));
         assertEquals(false, file.exists());
         assertEquals("[]", Arrays.asList(deletionRequestDir.list()).toString());

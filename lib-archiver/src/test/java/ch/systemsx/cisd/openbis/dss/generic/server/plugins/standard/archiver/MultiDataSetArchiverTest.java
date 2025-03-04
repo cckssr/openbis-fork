@@ -15,17 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MAXIMUM_CONTAINER_SIZE_IN_BYTES;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MAXIMUM_UNARCHIVING_CAPACITY_IN_MEGABYTES;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MINIMUM_CONTAINER_SIZE_IN_BYTES;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.HDF5_FILES_IN_DATA_SET;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY;
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.STAGING_DESTINATION_KEY;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.SHARE_PROPS_FILE;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.UNARCHIVING_SCRATCH_SHARE_PROP;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -46,13 +35,13 @@ import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.Sequence;
-import org.springframework.beans.factory.BeanFactory;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
@@ -62,6 +51,8 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.utilities.ITimeAndWaitingProvider;
@@ -73,19 +64,34 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.MockContent;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.MockDataSetDirectoryProvider;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MAXIMUM_CONTAINER_SIZE_IN_BYTES;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MAXIMUM_UNARCHIVING_CAPACITY_IN_MEGABYTES;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver.MINIMUM_CONTAINER_SIZE_IN_BYTES;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.HDF5_FILES_IN_DATA_SET;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY;
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager.STAGING_DESTINATION_KEY;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetAndPathInfoDBConsistencyChecker;
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.SHARE_PROPS_FILE;
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.UNARCHIVING_SCRATCH_SHARE_PROP;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SimpleFileContentProvider;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -100,7 +106,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuil
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -270,8 +275,6 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
     private File archive;
 
-    private IDataStoreServiceInternal dssService;
-
     private Experiment experiment;
 
     private IMultiDataSetFileOperationsManager fileOperations;
@@ -292,6 +295,10 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
     private IHierarchicalContentProvider pathinfoContentProvider;
 
+    private IArchiverTaskScheduler archiverTaskScheduler;
+
+    private IArchiverServiceProvider originalServiceProvider;
+
     @BeforeMethod
     public void setUpTestEnvironment()
     {
@@ -302,23 +309,89 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         share.mkdirs();
         FileUtilities.writeToFile(new File(share, SHARE_PROPS_FILE), UNARCHIVING_SCRATCH_SHARE_PROP + " = true");
         context = new Mockery();
-        BeanFactory beanFactory = context.mock(BeanFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-        shareIdManager = ServiceProviderTestWrapper.mock(context, IShareIdManager.class);
-        openBISService = ServiceProviderTestWrapper.mock(context, IEncapsulatedOpenBISService.class);
-        dssService = ServiceProviderTestWrapper.mock(context, IDataStoreServiceInternal.class);
-        configProvider = ServiceProviderTestWrapper.mock(context, IConfigProvider.class);
+        shareIdManager = context.mock(IShareIdManager.class);
+        openBISService = context.mock(IOpenBISService.class);
+        configProvider = context.mock(IConfigProvider.class);
         hierarchicalContentProvider = new SimpleFileContentProvider(share);
-        ServiceProviderTestWrapper.addMock(context, IHierarchicalContentProvider.class,
-                hierarchicalContentProvider);
         fileContentProvider = context.mock(IHierarchicalContentProvider.class, "fileContentProvider");
         pathinfoContentProvider = context.mock(IHierarchicalContentProvider.class, "pathinfoContentProvider");
+        archiverTaskScheduler = context.mock(IArchiverTaskScheduler.class);
         fileOperations = context.mock(IMultiDataSetFileOperationsManager.class);
         freeSpaceProvider = context.mock(IFreeSpaceProvider.class);
         timeProvider = new MockTimeProvider();
         dataSetDeleter = new MockDataSetDeleter(share);
         cleaner = new MockCleaner();
         statusUpdater = new RecordingStatusUpdater();
+
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        {
+            @Override public IConfigProvider getConfigProvider()
+            {
+                return configProvider;
+            }
+
+            @Override public IMailClient createEMailClient()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
+            {
+                return hierarchicalContentProvider;
+            }
+
+            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
+            {
+                return directoryProvider;
+            }
+
+            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSourceProvider getDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSetDeleter getDataSetDeleter()
+            {
+                return dataSetDeleter;
+            }
+
+            @Override public IShareIdManager getShareIdManager()
+            {
+                return shareIdManager;
+            }
+
+            @Override public IArchiverPlugin getArchiverPlugin()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
+            {
+                return archiverTaskScheduler;
+            }
+
+            @Override public Properties getArchiverProperties()
+            {
+                return properties;
+            }
+
+            @Override public IOpenBISService getOpenBISService()
+            {
+                return openBISService;
+            }
+
+            @Override public IApplicationServerApi getV3ApplicationService()
+            {
+                throw new UnsupportedOperationException();
+            }
+        });
+
         staging = new File(workingDirectory, "staging");
         staging.mkdirs();
         archive = new File(workingDirectory, "archive");
@@ -339,12 +412,6 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
         {
             {
-                allowing(dssService).getDataSetDirectoryProvider();
-                will(returnValue(directoryProvider));
-
-                allowing(dssService).getDataSetDeleter();
-                will(returnValue(dataSetDeleter));
-
                 allowing(openBISService).tryGetExperiment(ExperimentIdentifierFactory.parse(EXPERIMENT_IDENTIFIER));
                 will(returnValue(experiment));
 
@@ -357,7 +424,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     @AfterMethod
     public void checkMockExpectations(ITestResult result)
     {
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         if (result.getStatus() == ITestResult.FAILURE)
         {
             String logContent = getLogContent();
@@ -493,7 +560,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
         {
             {
-                one(dssService).scheduleTask(with(MultiDataSetArchiver.ARCHIVING_FINALIZER),
+                one(archiverTaskScheduler).scheduleTask(with(MultiDataSetArchiver.ARCHIVING_FINALIZER),
                         with(any(MultiDataSetArchivingFinalizer.class)), with(parametersRecorder),
                         with(Arrays.asList(ds2)), with((String) null), with((String) null), with((String) null));
             }
@@ -580,7 +647,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
         {
             {
-                one(dssService).scheduleTask(with(MultiDataSetArchiver.ARCHIVING_FINALIZER),
+                one(archiverTaskScheduler).scheduleTask(with(MultiDataSetArchiver.ARCHIVING_FINALIZER),
                         with(any(MultiDataSetArchivingFinalizer.class)), with(parametersRecorder),
                         with(Arrays.asList(ds2)), with((String) null), with((String) null), with((String) null));
             }

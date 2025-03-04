@@ -410,7 +410,7 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
     private File copyContainerToArchive(File parent, String folderName)
     {
         File dataSetFile = new File(
-                "../server-original-data-store/sourceTest/java/ch/systemsx/cisd/openbis/dss/generic/server/plugins/standard/archiver/resource/container.tar");
+                "../lib-archiver/src/test/java/ch/systemsx/cisd/openbis/dss/generic/server/plugins/standard/archiver/resource/container.tar");
 
         File container = new File(parent, folderName);
         FileOperations.getInstance().copy(dataSetFile, container);
