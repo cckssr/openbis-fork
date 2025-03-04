@@ -36,7 +36,6 @@ import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.io.IOUtilities;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
-import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
@@ -44,9 +43,9 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetExistenceChecker;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ContainerDataSet;
@@ -73,11 +72,13 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
 
     private Mockery context;
 
-    private IEncapsulatedOpenBISService openbisService;
+    private IOpenBISService openbisService;
 
     private IShareIdManager shareIdManager;
 
     private IConfigProvider configProvider;
+
+    private IDssServiceFactory serviceFactory;
 
     private HierarchicalContentProvider contentProvider;
 
@@ -91,26 +92,26 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
     public void prepareTestFixture()
     {
         context = new Mockery();
-        openbisService = context.mock(IEncapsulatedOpenBISService.class);
+        openbisService = context.mock(IOpenBISService.class);
         shareIdManager = context.mock(IShareIdManager.class);
         configProvider = context.mock(IConfigProvider.class);
+        serviceFactory = context.mock(IDssServiceFactory.class);
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(configProvider).getStoreRoot();
-                    will(returnValue(workingDirectory));
+                allowing(configProvider).getStoreRoot();
+                will(returnValue(workingDirectory));
 
-                    allowing(configProvider).getDataStoreCode();
-                    will(returnValue(DSS_CODE));
-                }
-            });
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DSS_CODE));
+            }
+        });
         IContentCache contentCache = null;
         ISessionTokenProvider sessionTokenProvider = null;
-        ExposablePropertyPlaceholderConfigurer infoProvider = null;
         IDataSetDirectoryProvider dataSetDirectoryProvider = new DataSetDirectoryProvider(workingDirectory, shareIdManager);
         contentProviderFactory = new DefaultFileBasedHierarchicalContentFactory();
         contentProvider = new HierarchicalContentProvider(openbisService, dataSetDirectoryProvider, contentProviderFactory,
-                new DssServiceRpcGenericFactory(), contentCache, sessionTokenProvider, DSS_CODE, infoProvider);
+                serviceFactory, contentCache, sessionTokenProvider, DSS_CODE, null);
         existenceChecker = new DataSetExistenceChecker(dataSetDirectoryProvider, TimingParameters.getDefaultParameters());
         File share = new File(workingDirectory, SHARE_ID);
         share.mkdirs();
@@ -327,27 +328,27 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
     private void prepareGetDataSetLocation(final PhysicalDataSet dataSet)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(openbisService).tryGetDataSetLocation(dataSet.getCode());
-                    will(returnValue(new DatasetLocationNode(dataSet)));
-                }
-            });
+                one(openbisService).tryGetDataSetLocation(dataSet.getCode());
+                will(returnValue(new DatasetLocationNode(dataSet)));
+            }
+        });
     }
 
     private void prepareShareIdManager(final String dataSetCode)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    exactly(2).of(shareIdManager).getShareId(dataSetCode);
-                    will(returnValue(SHARE_ID));
+                exactly(2).of(shareIdManager).getShareId(dataSetCode);
+                will(returnValue(SHARE_ID));
 
-                    one(shareIdManager).lock(dataSetCode);
+                one(shareIdManager).lock(dataSetCode);
 
-                    one(shareIdManager).releaseLock(dataSetCode);
-                }
-            });
+                one(shareIdManager).releaseLock(dataSetCode);
+            }
+        });
     }
 
 }

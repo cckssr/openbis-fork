@@ -33,6 +33,7 @@ import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.logging.LogUtils;
 import ch.systemsx.cisd.common.test.InvocationRecordingWrapper;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
@@ -46,14 +47,13 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
-import ch.systemsx.cisd.openbis.dss.generic.shared.content.IDssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ExternalDataLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataStoreBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -115,8 +115,8 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
         shareIdManager = context.mock(IShareIdManager.class);
         configProvider = context.mock(IConfigProvider.class);
         contentCache = context.mock(IContentCache.class);
-        IDssServiceRpcGenericFactory dssServiceFactory =
-                context.mock(IDssServiceRpcGenericFactory.class);
+        IDssServiceFactory dssServiceFactory =
+                context.mock(IDssServiceFactory.class);
         store = new File(workingDirectory, "store");
         final IDataSetDirectoryProvider dirProvider =
                 new DataSetDirectoryProvider(store, shareIdManager);
