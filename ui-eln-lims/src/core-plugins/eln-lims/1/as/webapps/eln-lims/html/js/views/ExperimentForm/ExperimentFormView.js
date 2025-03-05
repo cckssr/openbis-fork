@@ -446,7 +446,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 
 		FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
-				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, true);
+				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                             mainController.openHelpPage();

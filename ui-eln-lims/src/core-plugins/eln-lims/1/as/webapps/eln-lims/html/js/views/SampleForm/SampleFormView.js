@@ -620,7 +620,7 @@
 			}
 	
 			FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
-					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, true);
+					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, false);
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                                 mainController.openHelpPage();

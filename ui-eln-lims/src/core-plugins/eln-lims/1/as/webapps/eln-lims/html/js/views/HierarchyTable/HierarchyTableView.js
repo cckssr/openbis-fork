@@ -32,7 +32,7 @@ function HierarchyTableView(controller, model) {
 		$containerColumn.append(this._container);
 		views.content.append($containerColumn);
 		
-		views.header.append($("<h1>").append("Dataset Hierarchy Table: " + Util.getDisplayNameForEntity(this._model.entity)));
+		views.header.append($("<h1>").append("Hierarchy Table: " + Util.getDisplayNameForEntity(this._model.entity)));
 		
 		this._hierarchyFilterController = new HierarchyFilterController(this._model.entity, function() { _this._dataGrid.refresh(); });
 		this._hierarchyFilterController.init(views.header);
