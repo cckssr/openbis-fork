@@ -27,7 +27,6 @@ import java.util.Properties;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.systemsx.cisd.common.filesystem.highwatermark.HostAwareFileWithHighwaterMark;
 
 /**
  * Test cases for the {@link HostAwareFileWithHighwaterMark}.

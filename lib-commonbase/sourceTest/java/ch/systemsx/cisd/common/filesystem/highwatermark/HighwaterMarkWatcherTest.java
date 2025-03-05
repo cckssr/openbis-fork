@@ -34,8 +34,6 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
-import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher;
-import ch.systemsx.cisd.common.filesystem.highwatermark.HostAwareFileWithHighwaterMark;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher.HighwaterMarkState;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 
