@@ -24,31 +24,35 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.BeanFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProviderTestWrapper;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -107,15 +111,13 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
 
     protected IConfigProvider configProvider;
 
-    protected IEncapsulatedOpenBISService service;
+    protected IOpenBISService service;
 
     protected IShareIdManager shareIdManager;
 
     protected File store;
 
     protected File share1;
-
-    private IDataStoreServiceInternal dataStoreService;
 
     protected IDataSetDeleter deleter;
 
@@ -126,6 +128,8 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
     protected IDataSetFileOperationsManagerFactory fileOperationsManagerFactory;
 
     protected IUnarchivingPreparation unarchivingPreparation;
+
+    private IArchiverServiceProvider originalServiceProvider;
 
     public AbstractArchiverTestCase()
     {
@@ -149,63 +153,94 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         unarchivingPreparation = context.mock(IUnarchivingPreparation.class);
         statusUpdater = context.mock(IDataSetStatusUpdater.class);
         configProvider = context.mock(IConfigProvider.class);
-        service = context.mock(IEncapsulatedOpenBISService.class);
+        service = context.mock(IOpenBISService.class);
         shareIdManager = context.mock(IShareIdManager.class);
         deleter = context.mock(IDataSetDeleter.class);
-        final Advised adviced = context.mock(Advised.class);
-        final TargetSource targetSource = context.mock(TargetSource.class);
-        dataStoreService = context.mock(IDataStoreServiceInternal.class);
-        beanFactory = context.mock(BeanFactory.class);
         fileOperationsManagerFactory = context.mock(IDataSetFileOperationsManagerFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-        context.checking(new Expectations()
+
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        {
+            @Override public IConfigProvider getConfigProvider()
             {
-                {
-                    allowing(beanFactory).getBean("config-provider");
-                    will(returnValue(configProvider));
+                return configProvider;
+            }
 
-                    allowing(beanFactory).getBean("hierarchical-content-provider");
-                    will(returnValue(contentProvider));
+            @Override public IMailClient createEMailClient()
+            {
+                return null;
+            }
 
-                    allowing(beanFactory).getBean("openBIS-service");
-                    will(returnValue(service));
+            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
+            {
+                return contentProvider;
+            }
 
-                    allowing(beanFactory).getBean("share-id-manager");
-                    will(returnValue(shareIdManager));
+            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
+            {
+                return dataSetDirectoryProvider;
+            }
 
-                    allowing(beanFactory).getBean("data-store-service");
-                    will(returnValue(adviced));
+            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
+            {
+                return null;
+            }
 
-                    allowing(adviced).getTargetSource();
-                    will(returnValue(targetSource));
+            @Override public IDataSourceProvider getDataSourceProvider()
+            {
+                return null;
+            }
 
-                    try
-                    {
-                        allowing(targetSource).getTarget();
-                        will(returnValue(dataStoreService));
-                    } catch (Exception ex)
-                    {
-                        // ignored
-                    }
+            @Override public IDataSetDeleter getDataSetDeleter()
+            {
+                return deleter;
+            }
 
-                    allowing(dataSetDirectoryProvider).getStoreRoot();
-                    will(returnValue(store));
+            @Override public IShareIdManager getShareIdManager()
+            {
+                return shareIdManager;
+            }
 
-                    allowing(dataStoreService).getDataSetDeleter();
-                    will(returnValue(deleter));
+            @Override public IArchiverPlugin getArchiverPlugin()
+            {
+                return null;
+            }
 
-                    allowing(dataStoreService).getDataSetDirectoryProvider();
-                    will(returnValue(dataSetDirectoryProvider));
+            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
+            {
+                return null;
+            }
 
-                    allowing(dataSetDirectoryProvider).getShareIdManager();
-                    will(returnValue(shareIdManager));
+            @Override public Properties getArchiverProperties()
+            {
+                return null;
+            }
 
-                    allowing(fileOperationsManagerFactory).create();
-                    will(returnValue(fileOperationsManager));
+            @Override public IOpenBISService getOpenBISService()
+            {
+                return service;
+            }
 
-                    allowing(shareIdManager).cleanupLocks();
-                }
-            });
+            @Override public IApplicationServerApi getV3ApplicationService()
+            {
+                return null;
+            }
+        });
+        context.checking(new Expectations()
+        {
+            {
+                allowing(dataSetDirectoryProvider).getStoreRoot();
+                will(returnValue(store));
+
+                allowing(dataSetDirectoryProvider).getShareIdManager();
+                will(returnValue(shareIdManager));
+
+                allowing(fileOperationsManagerFactory).create();
+                will(returnValue(fileOperationsManager));
+
+                allowing(shareIdManager).cleanupLocks();
+            }
+        });
 
         IncomingShareIdProviderTestWrapper.setShareIds(Arrays.asList("1"));
         store = new File(workingDirectory, "store");
@@ -223,7 +258,7 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         System.out.println(logRecorder.getLogContent());
         System.out.println("======================");
         logRecorder.reset();
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         IncomingShareIdProviderTestWrapper.restoreOriginalShareIds();
         try
         {

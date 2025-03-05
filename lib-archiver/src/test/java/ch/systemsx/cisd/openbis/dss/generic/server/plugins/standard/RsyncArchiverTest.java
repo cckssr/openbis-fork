@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.jmock.Expectations;
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -65,7 +66,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     public void testSuccessfulArchivingIfDataSetPresentInArchive()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").location(LOCATION).store(DATA_STORE_CODE).getDatasetDescription();
+                new DatasetDescriptionBuilder("ds1").location(LOCATION).store(AbstractArchiverTestCase.DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
@@ -95,14 +96,14 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                 + "Archiving of the following datasets has been requested: [Dataset 'ds1']",
                 logRecorder.getLogContent());
-        assertEquals("[]", status.getErrorStatuses().toString());
+        AssertJUnit.assertEquals("[]", status.getErrorStatuses().toString());
     }
 
     @Test
     public void testSuccessfulArchiving()
     {
         final DatasetDescription ds1 =
-                new DatasetDescriptionBuilder("ds1").location(LOCATION).size(42L).store(DATA_STORE_CODE)
+                new DatasetDescriptionBuilder("ds1").location(LOCATION).size(42L).store(AbstractArchiverTestCase.DATA_STORE_CODE)
                         .getDatasetDescription();
         final File retrievedDataSet = new File(store, RsyncArchiver.STAGING_FOLDER + "/ds1");
         retrievedDataSet.mkdirs();
@@ -139,8 +140,8 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                 + "Archiving of the following datasets has been requested: [Dataset 'ds1']",
                 logRecorder.getLogContent());
-        assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(false, retrievedDataSet.exists());
+        AssertJUnit.assertEquals("[]", status.getErrorStatuses().toString());
+        AssertJUnit.assertEquals(false, retrievedDataSet.exists());
     }
 
     @Test
@@ -152,12 +153,12 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         final DatasetDescription ds1 =
                 new DatasetDescriptionBuilder("ds1").experiment("exp1")
                         .location("loc1").project("p1").sample("s1").space("space").size(11l)
-                        .type("my-type").store(DATA_STORE_CODE).getDatasetDescription();
+                        .type("my-type").store(AbstractArchiverTestCase.DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
                     one(configProvider).getDataStoreCode();
-                    will(returnValue(DATA_STORE_CODE));
+                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
 
                     one(shareIdManager).getShareId("ds1");
                     will(returnValue("2"));
@@ -181,21 +182,21 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                 + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']", logRecorder.getLogContent());
-        assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(ShareFinder.class.getName(), ShareFinder.properties.getProperty("class"));
-        assertEquals("property 1", ShareFinder.properties.getProperty("p1"));
-        assertEquals("ds1", ShareFinder.recordedDataSet.getDataSetCode());
-        assertEquals("loc1", ShareFinder.recordedDataSet.getDataSetLocation());
-        assertEquals(null, ShareFinder.recordedDataSet.getDataSetShareId());
-        assertEquals("my-type", ShareFinder.recordedDataSet.getDataSetType());
-        assertEquals("exp1", ShareFinder.recordedDataSet.getExperimentCode());
-        assertEquals("space", ShareFinder.recordedDataSet.getSpaceCode());
-        assertEquals("p1", ShareFinder.recordedDataSet.getProjectCode());
-        assertEquals("s1", ShareFinder.recordedDataSet.getSampleCode());
-        assertEquals(Long.valueOf(11L), ShareFinder.recordedDataSet.getDataSetSize());
-        assertEquals(share1, ShareFinder.recordedShares.get(0).getShare());
-        assertEquals(share2, ShareFinder.recordedShares.get(1).getShare());
-        assertEquals(2, ShareFinder.recordedShares.size());
+        AssertJUnit.assertEquals("[]", status.getErrorStatuses().toString());
+        AssertJUnit.assertEquals(ShareFinder.class.getName(), ShareFinder.properties.getProperty("class"));
+        AssertJUnit.assertEquals("property 1", ShareFinder.properties.getProperty("p1"));
+        AssertJUnit.assertEquals("ds1", ShareFinder.recordedDataSet.getDataSetCode());
+        AssertJUnit.assertEquals("loc1", ShareFinder.recordedDataSet.getDataSetLocation());
+        AssertJUnit.assertEquals(null, ShareFinder.recordedDataSet.getDataSetShareId());
+        AssertJUnit.assertEquals("my-type", ShareFinder.recordedDataSet.getDataSetType());
+        AssertJUnit.assertEquals("exp1", ShareFinder.recordedDataSet.getExperimentCode());
+        AssertJUnit.assertEquals("space", ShareFinder.recordedDataSet.getSpaceCode());
+        AssertJUnit.assertEquals("p1", ShareFinder.recordedDataSet.getProjectCode());
+        AssertJUnit.assertEquals("s1", ShareFinder.recordedDataSet.getSampleCode());
+        AssertJUnit.assertEquals(Long.valueOf(11L), ShareFinder.recordedDataSet.getDataSetSize());
+        AssertJUnit.assertEquals(share1, ShareFinder.recordedShares.get(0).getShare());
+        AssertJUnit.assertEquals(share2, ShareFinder.recordedShares.get(1).getShare());
+        AssertJUnit.assertEquals(2, ShareFinder.recordedShares.size());
     }
 
     @Test
@@ -207,12 +208,12 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         final DatasetDescription ds1 =
                 new DatasetDescriptionBuilder("ds1").experiment("exp1")
                         .location("loc1").project("p1").sample("s1").space("space")
-                        .type("my-type").store(DATA_STORE_CODE).getDatasetDescription();
+                        .type("my-type").store(AbstractArchiverTestCase.DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
                     one(configProvider).getDataStoreCode();
-                    will(returnValue(DATA_STORE_CODE));
+                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
 
                     one(statusUpdater).update(Arrays.asList("ds1"),
                             DataSetArchivingStatus.ARCHIVED, true);
@@ -221,9 +222,9 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
 
         ProcessingStatus status = archiver.unarchive(Arrays.asList(ds1), archiverTaskContext);
 
-        assertEquals(1, status.getErrorStatuses().size());
+        AssertJUnit.assertEquals(1, status.getErrorStatuses().size());
         Status errorStatus = status.getErrorStatuses().get(0);
-        assertEquals("Unarchiving failed: Unarchiving of data set 'ds1' has failed, because no "
+        AssertJUnit.assertEquals("Unarchiving failed: Unarchiving of data set 'ds1' has failed, because no "
                 + "appropriate destination share was found. Most probably there is not enough "
                 + "free space in the data store.", errorStatus.tryGetErrorMessage());
     }
@@ -231,13 +232,13 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     @Test
     public void testUnarchivingWithDefaultShareFinder()
     {
-        final DatasetDescription ds1 = new DatasetDescriptionBuilder("ds1").store(DATA_STORE_CODE).getDatasetDescription();
-        final DatasetDescription ds2 = new DatasetDescriptionBuilder("ds2").store(DATA_STORE_CODE).getDatasetDescription();
+        final DatasetDescription ds1 = new DatasetDescriptionBuilder("ds1").store(AbstractArchiverTestCase.DATA_STORE_CODE).getDatasetDescription();
+        final DatasetDescription ds2 = new DatasetDescriptionBuilder("ds2").store(AbstractArchiverTestCase.DATA_STORE_CODE).getDatasetDescription();
         context.checking(new Expectations()
             {
                 {
                     one(configProvider).getDataStoreCode();
-                    will(returnValue(DATA_STORE_CODE));
+                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
 
                     one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
                             DataSetArchivingStatus.ARCHIVED, true);
@@ -245,7 +246,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
             });
 
         ProcessingStatus status = archiver.unarchive(Arrays.asList(ds1, ds2), archiverTaskContext);
-        assertEquals("[ERROR: \"Unarchiving failed: null\"]", status.getErrorStatuses().toString());
+        AssertJUnit.assertEquals("[ERROR: \"Unarchiving failed: null\"]", status.getErrorStatuses().toString());
     }
 
     @Test
@@ -254,7 +255,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         properties.setProperty(RsyncArchiver.ONLY_MARK_AS_DELETED_KEY, "false");
         final DatasetLocation datasetLocation = new DatasetLocation();
         datasetLocation.setDataSetLocation("my-location");
-        datasetLocation.setDataStoreCode(DATA_STORE_CODE);
+        datasetLocation.setDataStoreCode(AbstractArchiverTestCase.DATA_STORE_CODE);
         context.checking(new Expectations()
             {
                 {
@@ -272,7 +273,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         final DatasetLocation datasetLocation = new DatasetLocation();
         datasetLocation.setDataSetLocation("my-location");
-        datasetLocation.setDataStoreCode(DATA_STORE_CODE);
+        datasetLocation.setDataStoreCode(AbstractArchiverTestCase.DATA_STORE_CODE);
         context.checking(new Expectations()
             {
                 {
@@ -294,7 +295,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         IHierarchicalContentNode root2 =
                 new MockContent(":0:0", "a/:0:0", "a/f2.txt:15:13", "a/f1.txt:5:-3", "r.txt:7:17")
                         .getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "OK",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
                         RsyncArchiver.ChecksumVerificationCondition.YES).toString());
@@ -309,7 +310,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         IHierarchicalContentNode root2 =
                 new MockContent(":0:0", "a/:0:0", "a/f1.txt:5:-3", "a/f2.txt:15:13", "r.txt:7:17")
                         .getRootNode().getChildNodes().get(0);
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "OK",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "a", root2,
                         RsyncArchiver.ChecksumVerificationCondition.YES).toString());
@@ -322,7 +323,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
                 new MockContent(":0:0", "a/:0:0", "a/f1.txt:5:-3").getRootNode();
         IHierarchicalContentNode root2 =
                 new MockContent(":0:0", "a/:0:0", "a/f3.txt:15:13").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "ERROR: \"Different paths: Path in the store is 'a/f1.txt' "
                         + "and in the archive 'a/f3.txt'.\"",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
@@ -334,7 +335,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         IHierarchicalContentNode root1 = new MockContent(":0:0", "a/:0:0").getRootNode();
         IHierarchicalContentNode root2 = new MockContent(":0:0", "a:1:2").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "ERROR: \"The path 'a' should be in store and archive either "
                         + "both directories or files but not mixed: In the store it is a directory "
                         + "but in the archive it is a file.\"",
@@ -349,7 +350,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
                 new MockContent(":0:0", "a/:0:0", "a/f1.txt:5:-3", "a/f2.txt:15:13").getRootNode();
         IHierarchicalContentNode root2 =
                 new MockContent(":0:0", "a/:0:0", "a/f2.txt:15:13").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "ERROR: \"The directory 'a' has in the store 2 files but 1 in the archive.\"",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
                         RsyncArchiver.ChecksumVerificationCondition.YES).toString());
@@ -360,7 +361,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         IHierarchicalContentNode root1 = new MockContent(":0:0", "r.txt:7:17").getRootNode();
         IHierarchicalContentNode root2 = new MockContent(":0:0", "r.txt:9:17").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "ERROR: \"The file 'r.txt' has in the store 7 bytes but 9 in the archive.\"",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
                         RsyncArchiver.ChecksumVerificationCondition.YES).toString());
@@ -371,7 +372,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         IHierarchicalContentNode root1 = new MockContent(":0:0", "r.txt:7:17").getRootNode();
         IHierarchicalContentNode root2 = new MockContent(":0:0", "r.txt:7:18").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "ERROR: \"The file 'r.txt' has in the store the checksum 00000017 "
                         + "but 00000018 in the archive.\"",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
@@ -382,7 +383,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
     {
         IHierarchicalContentNode root1 = new MockContent(":0:0", "r.txt:7:17").getRootNode();
         IHierarchicalContentNode root2 = new MockContent(":0:0", "r.txt:7:18").getRootNode();
-        assertEquals(
+        AssertJUnit.assertEquals(
                 "OK",
                 RsyncArchiver.checkHierarchySizeAndChecksums(root1, "", root2,
                         RsyncArchiver.ChecksumVerificationCondition.NO).toString());

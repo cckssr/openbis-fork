@@ -27,11 +27,11 @@ import java.util.Set;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.beans.factory.BeanFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.IStatusChecker;
@@ -40,24 +40,32 @@ import ch.systemsx.cisd.common.filesystem.BooleanStatus;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.logging.LogUtils;
+import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.DatasetProcessingStatuses;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.Operation;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.builders.DatasetDescriptionBuilder;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Kaloyan Enimanev
@@ -302,15 +310,13 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
 
     private IDataSetStatusUpdater statusUpdater;
 
-    private IEncapsulatedOpenBISService service;
+    private IOpenBISService service;
 
     private IConfigProvider configProvider;
 
     private BufferedAppender logRecorder;
 
     private Mockery context;
-
-    private IDataStoreServiceInternal dataStoreService;
 
     private IDataSetDeleter dataSetDeleter;
 
@@ -319,6 +325,8 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
     private IStatusChecker statusChecker;
 
     private File pauseFile;
+
+    private IArchiverServiceProvider originalServiceProvider;
 
     @BeforeMethod
     public void beforeMethod()
@@ -330,15 +338,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         statusChecker = context.mock(IStatusChecker.class);
         statusUpdater = context.mock(IDataSetStatusUpdater.class);
         dataSetDeleter = context.mock(IDataSetDeleter.class);
-
-        final BeanFactory beanFactory = context.mock(BeanFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-
-        service = ServiceProviderTestWrapper.mock(context, IEncapsulatedOpenBISService.class);
-        configProvider = ServiceProviderTestWrapper.mock(context, IConfigProvider.class);
-        dataStoreService =
-                ServiceProviderTestWrapper.mock(context, IDataStoreServiceInternal.class);
-        shareIdManager = ServiceProviderTestWrapper.mock(context, IShareIdManager.class);
+        service = context.mock(IOpenBISService.class);
+        configProvider = context.mock(IConfigProvider.class);
+        shareIdManager = context.mock(IShareIdManager.class);
 
         pauseFile = new File(workingDirectory, "pause-file");
 
@@ -347,22 +349,87 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         FileUtilities.writeToFile(new File(dataSet1, "hello.txt"), "hello world");
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(configProvider).getDataStoreCode();
-                    will(returnValue(DATA_STORE_CODE));
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DATA_STORE_CODE));
+            }
+        });
 
-                    allowing(dataStoreService).getDataSetDeleter();
-                    will(returnValue(dataSetDeleter));
-                }
-            });
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        {
+            @Override public IConfigProvider getConfigProvider()
+            {
+                return configProvider;
+            }
 
+            @Override public IMailClient createEMailClient()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSourceProvider getDataSourceProvider()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IDataSetDeleter getDataSetDeleter()
+            {
+                return dataSetDeleter;
+            }
+
+            @Override public IShareIdManager getShareIdManager()
+            {
+                return shareIdManager;
+            }
+
+            @Override public IArchiverPlugin getArchiverPlugin()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public Properties getArchiverProperties()
+            {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override public IOpenBISService getOpenBISService()
+            {
+                return service;
+            }
+
+            @Override public IApplicationServerApi getV3ApplicationService()
+            {
+                throw new UnsupportedOperationException();
+            }
+        });
     }
 
     @AfterMethod
     public void afterMethod()
     {
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         logRecorder.reset();
         context.assertIsSatisfied();
     }
@@ -376,18 +443,18 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusChecker).check(2);
-                    will(returnValue(Status.OK));
+                one(statusChecker).check(2);
+                will(returnValue(Status.OK));
 
-                    one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1, ds2),
-                            TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
-                            TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                }
-            });
+                one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1, ds2),
+                        TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
+                        TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsSynchronizedWithArchive("ds2");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, statusChecker,
@@ -400,7 +467,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1]", simpleArchiver.getSortedDataSetsToBeArchived().toString());
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']",
                 logRecorder.getLogContent());
@@ -416,12 +483,12 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.AVAILABLE, false);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.AVAILABLE, false);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsThrowException("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -459,15 +526,15 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusChecker).check(2);
-                    will(returnValue(Status.createError()));
+                one(statusChecker).check(2);
+                will(returnValue(Status.createError()));
 
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.AVAILABLE, false);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.AVAILABLE, false);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsSynchronizedWithArchive("ds2");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, statusChecker,
@@ -499,20 +566,20 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds1").location("ds1").store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(shareIdManager).getShareId(ds1.getDataSetCode());
-                    will(returnValue("1"));
+                one(shareIdManager).getShareId(ds1.getDataSetCode());
+                will(returnValue("1"));
 
-                    one(service).updateShareIdAndSize(ds1.getDataSetCode(), "1", 11L);
+                one(service).updateShareIdAndSize(ds1.getDataSetCode(), "1", 11L);
 
-                    one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1),
-                            TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
-                            TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                }
-            });
+                one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1),
+                        TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
+                        TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver();
         Properties properties = new Properties();
         properties.setProperty(AbstractArchiverProcessingPlugin.PAUSE_FILE_KEY, pauseFile.getAbsolutePath());
@@ -528,11 +595,11 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("[]", status.getDatasetsByStatus(Status.createError()).toString());
-        assertEquals("INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - Presence of pause file '"
-                + pauseFile.getAbsolutePath()
-                + "' prevents starting archiving the following data sets: [Dataset 'ds1']",
+        AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Presence of pause file '"
+                        + pauseFile.getAbsolutePath()
+                        + "' prevents starting archiving the following data sets: [Dataset 'ds1']",
                 logRecorder.getLogContent());
         assertEquals(180000, mockArchiver.pollingTime);
         context.assertIsSatisfied();
@@ -547,12 +614,12 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.AVAILABLE, true);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.AVAILABLE, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsSynchronizedWithArchive("ds2");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -564,7 +631,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1]", simpleArchiver.getSortedDataSetsToBeArchived().toString());
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']",
                 logRecorder.getLogContent());
@@ -580,15 +647,15 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1, ds2),
-                            TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
-                            TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                }
-            });
+                one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1, ds2),
+                        TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
+                        TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsInArchive("ds2");
         Properties properties = new Properties();
         properties.setProperty(AbstractArchiverProcessingPlugin.SYNCHRONIZE_ARCHIVE, "false");
@@ -602,7 +669,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1]", simpleArchiver.getSortedDataSetsToBeArchived().toString());
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']",
                 logRecorder.getLogContent());
@@ -618,17 +685,17 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1),
-                            TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
-                            TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                    one(statusUpdater).update(Arrays.asList("ds2"),
-                            DataSetArchivingStatus.AVAILABLE, false);
-                }
-            });
+                one(dataSetDeleter).scheduleDeletionOfDataSets(Arrays.asList(ds1),
+                        TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
+                        TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+                one(statusUpdater).update(Arrays.asList("ds2"),
+                        DataSetArchivingStatus.AVAILABLE, false);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsToFailToArchive("ds2");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -642,7 +709,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ERROR]", status.getErrorStatuses().toString());
         assertEquals("[ds1]", status.getDatasetsByStatus(Status.OK).toString());
         assertEquals("[ds2]", status.getDatasetsByStatus(Status.createError()).toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
                         + "ERROR NOTIFY.AbstractDatastorePlugin - "
@@ -658,12 +725,12 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.AVAILABLE, false);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.AVAILABLE, false);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsToFailToArchive("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -675,9 +742,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[ERROR]", status.getErrorStatuses().toString());
         assertEquals("INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
-                + "ERROR NOTIFY.AbstractDatastorePlugin - "
-                + "Archiving for dataset ds1 finished with the status: ERROR.",
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "ERROR NOTIFY.AbstractDatastorePlugin - "
+                        + "Archiving for dataset ds1 finished with the status: ERROR.",
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
@@ -689,16 +756,16 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dataSetDeleter).scheduleDeletionOfDataSets(
-                            Arrays.<DatasetDescription> asList(),
-                            TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
-                            TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.AVAILABLE, false);
-                }
-            });
+                one(dataSetDeleter).scheduleDeletionOfDataSets(
+                        Arrays.<DatasetDescription>asList(),
+                        TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
+                        TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.AVAILABLE, false);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsToFailToArchive("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -711,9 +778,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ERROR]", status.getErrorStatuses().toString());
         assertEquals("[ds1]", status.getDatasetsByStatus(Status.createError()).toString());
         assertEquals("INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
-                + "ERROR NOTIFY.AbstractDatastorePlugin - "
-                + "Archiving for dataset ds1 finished with the status: ERROR.",
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "ERROR NOTIFY.AbstractDatastorePlugin - "
+                        + "Archiving for dataset ds1 finished with the status: ERROR.",
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
@@ -727,12 +794,12 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
-                            DataSetArchivingStatus.AVAILABLE, true);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                        DataSetArchivingStatus.AVAILABLE, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsInArchive("ds2");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null, null);
@@ -744,7 +811,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1, ds2]", simpleArchiver.getSortedDataSetsToBeUnarchived().toString());
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[]", status.getErrorStatuses().toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Unarchiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - "
@@ -760,15 +827,15 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusChecker).check(1);
-                    will(returnValue(Status.createError()));
+                one(statusChecker).check(1);
+                will(returnValue(Status.createError()));
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsThrowException("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null,
@@ -782,9 +849,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[ERROR]", status.getErrorStatuses().toString());
         assertEquals("INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']\n"
-                + "ERROR NOTIFY.AbstractDatastorePlugin - "
-                + "Unarchiving for dataset ds1 finished with the status: ERROR.",
+                        + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "ERROR NOTIFY.AbstractDatastorePlugin - "
+                        + "Unarchiving for dataset ds1 finished with the status: ERROR.",
                 replaceTimeInfo(LogUtils.removeEmbeddedStackTrace(logRecorder.getLogContent())));
         context.assertIsSatisfied();
     }
@@ -798,17 +865,17 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds2").size(43).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusChecker).check(2);
-                    will(returnValue(Status.OK));
+                one(statusChecker).check(2);
+                will(returnValue(Status.OK));
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                    one(statusUpdater).update(Arrays.asList("ds2"),
-                            DataSetArchivingStatus.AVAILABLE, true);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+                one(statusUpdater).update(Arrays.asList("ds2"),
+                        DataSetArchivingStatus.AVAILABLE, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsToFailToUnarchive("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null,
@@ -821,7 +888,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ds1, ds2]", simpleArchiver.getSortedDataSetsToBeUnarchived().toString());
         assertEquals("[]", simpleArchiver.getSortedDataSetsToBeDeletedFromArchive().toString());
         assertEquals("[ERROR]", status.getErrorStatuses().toString());
-        assertEquals(
+        AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Unarchiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2']\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - "
@@ -839,15 +906,15 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 new DatasetDescriptionBuilder("ds1").size(42).store(DATA_STORE_CODE).getDatasetDescription();
         final ArchiverTaskContext archiverContext = new ArchiverTaskContext(null, null);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(statusChecker).check(1);
-                    will(returnValue(Status.OK));
+                one(statusChecker).check(1);
+                will(returnValue(Status.OK));
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
-                            DataSetArchivingStatus.ARCHIVED, true);
-                }
-            });
+                one(statusUpdater).update(Arrays.asList("ds1"),
+                        DataSetArchivingStatus.ARCHIVED, true);
+            }
+        });
         SimpleArchiver simpleArchiver = new SimpleArchiver().dataSetsThrowException("ds1");
         MockArchiver mockArchiver =
                 new MockArchiver(new Properties(), workingDirectory, simpleArchiver, null,
@@ -862,15 +929,15 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         assertEquals("[ERROR: \"Unarchiving failed: Data set ds1 throws exception.\"]", status
                 .getErrorStatuses().toString());
         assertEquals("INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - "
-                + "Obtained the list of all datasets in all shares in ?.?? s.\n"
-                + "ERROR OPERATION.AbstractDatastorePlugin - "
-                + "Unarchiving failed: Data set ds1 throws exception.\n"
-                + "java.lang.RuntimeException: Data set ds1 throws exception.\n"
-                + "ERROR NOTIFY.AbstractDatastorePlugin - "
-                + "Unarchiving for dataset ds1 finished with the status: "
-                + "ERROR: \"Unarchiving failed: Data set ds1 throws exception.\".",
+                        + "Unarchiving of the following datasets has been requested: [Dataset 'ds1']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - "
+                        + "Obtained the list of all datasets in all shares in ?.?? s.\n"
+                        + "ERROR OPERATION.AbstractDatastorePlugin - "
+                        + "Unarchiving failed: Data set ds1 throws exception.\n"
+                        + "java.lang.RuntimeException: Data set ds1 throws exception.\n"
+                        + "ERROR NOTIFY.AbstractDatastorePlugin - "
+                        + "Unarchiving for dataset ds1 finished with the status: "
+                        + "ERROR: \"Unarchiving failed: Data set ds1 throws exception.\".",
                 replaceTimeInfo(LogUtils.removeEmbeddedStackTrace(logRecorder.getLogContent())));
         context.assertIsSatisfied();
     }

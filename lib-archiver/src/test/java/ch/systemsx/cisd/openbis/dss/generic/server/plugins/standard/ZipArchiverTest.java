@@ -21,6 +21,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
+import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
@@ -63,13 +64,13 @@ public class ZipArchiverTest extends AbstractPackageArchiverTest
         {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry entry = zipFile.getEntry(path);
-            assertNotNull("No entry for " + path, entry);
+            AssertJUnit.assertNotNull("No entry for " + path, entry);
             if (entry.isDirectory())
             {
-                fail("Directory path: " + path);
+                AssertJUnit.fail("Directory path: " + path);
             }
-            assertEquals(compressed ? ZipEntry.DEFLATED : ZipEntry.STORED, entry.getMethod());
-            assertEquals(IOUtils.toByteArray(new FileInputStream(expectedContent)),
+            AssertJUnit.assertEquals(compressed ? ZipEntry.DEFLATED : ZipEntry.STORED, entry.getMethod());
+            AssertJUnit.assertEquals(IOUtils.toByteArray(new FileInputStream(expectedContent)),
                     IOUtils.toByteArray(zipFile.getInputStream(entry)));
         } catch (Exception ex)
         {
@@ -84,13 +85,13 @@ public class ZipArchiverTest extends AbstractPackageArchiverTest
         {
             ZipFile zipFile = new ZipFile(packageFile);
             ZipEntry entry = zipFile.getEntry(path);
-            assertNotNull("No entry for " + path, entry);
+            AssertJUnit.assertNotNull("No entry for " + path, entry);
             if (entry.isDirectory())
             {
-                fail("Directory path: " + path);
+                AssertJUnit.fail("Directory path: " + path);
             }
-            assertEquals(compressed ? ZipEntry.DEFLATED : ZipEntry.STORED, entry.getMethod());
-            assertEquals(expectedContent, IOUtils.toString(zipFile.getInputStream(entry)));
+            AssertJUnit.assertEquals(compressed ? ZipEntry.DEFLATED : ZipEntry.STORED, entry.getMethod());
+            AssertJUnit.assertEquals(expectedContent, IOUtils.toString(zipFile.getInputStream(entry)));
         } catch (Exception ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);
@@ -104,8 +105,8 @@ public class ZipArchiverTest extends AbstractPackageArchiverTest
         {
             ZipFile zipFile = new ZipFile(file);
             ZipEntry entry = zipFile.getEntry(path);
-            assertNotNull("No entry for " + path, entry);
-            assertTrue("Not a directory entry: " + path, entry.isDirectory());
+            AssertJUnit.assertNotNull("No entry for " + path, entry);
+            AssertJUnit.assertTrue("Not a directory entry: " + path, entry.isDirectory());
         } catch (Exception ex)
         {
             throw CheckedExceptionTunnel.wrapIfNecessary(ex);

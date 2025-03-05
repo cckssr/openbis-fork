@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
@@ -71,12 +72,12 @@ public class TarArchiverTest extends AbstractPackageArchiverTest
                 @Override
                 public void assertFileFromPackage(File fileFromPackage) throws Exception
                 {
-                    assertTrue(fileFromPackage.exists());
+                    AssertJUnit.assertTrue(fileFromPackage.exists());
                     if (fileFromPackage.isDirectory())
                     {
-                        fail("Directory path: " + path);
+                        AssertJUnit.fail("Directory path: " + path);
                     }
-                    assertEquals(expectedContent, FileUtils.readFileToString(fileFromPackage));
+                    AssertJUnit.assertEquals(expectedContent, FileUtils.readFileToString(fileFromPackage));
                 }
             });
     }
@@ -89,7 +90,7 @@ public class TarArchiverTest extends AbstractPackageArchiverTest
                 @Override
                 public void assertFileFromPackage(File fileFromPackage)
                 {
-                    assertTrue("Not a directory entry: " + path, fileFromPackage.isDirectory());
+                    AssertJUnit.assertTrue("Not a directory entry: " + path, fileFromPackage.isDirectory());
                 }
             });
     }
