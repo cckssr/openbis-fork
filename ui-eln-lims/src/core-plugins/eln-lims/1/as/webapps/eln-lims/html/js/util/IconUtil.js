@@ -24,23 +24,21 @@ var IconUtil = new function() {
     this.getIcon = function(icon) {
         var $icon = null
 
-        if (icon.url) {
-            $icon = $("<img/>").attr("src", icon.url)
-        } else {
-            $icon = $("<span/>")
+        switch(icon.type) {
+            case "img":
+            case "img_with_class":
+                $icon = $("<img/>").attr("src", icon.url);
+                $icon.css("width", "18px");
+                $icon.css("height", "18px");
+                break;
+            default:
+                $icon = $("<span/>");
+                break;
         }
 
-        if(Array.isArray(icon.class)) {
-            for (let i = 0; i < icon.class.length; i++) {
-              var tempIcon = $("<span/>").css("vertical-align", "middle");
-              tempIcon.addClass(icon.class[i]);
-               if(icon.text[i]) {
-                  tempIcon.text(icon.text[i]);
-                  tempIcon.css("font-size", "18px");
-              }
-              $icon.append(tempIcon);
-            }
-        } else {
+        if(icon.type === "img_with_class") {
+            $icon.addClass(icon.class)
+        } else if(icon.type === "font") {
             if (icon.class) {
                 $icon.addClass(icon.class)
             }
@@ -48,6 +46,24 @@ var IconUtil = new function() {
             if(icon.text) {
                 $icon.text(icon.text);
                 $icon.css("font-size", "18px");
+            }
+        } else if(Array.isArray(icon.type)) {
+            for (let i = 0; i < icon.type.length; i++) {
+                var type = icon.type[i];
+                var tempIcon;
+                if(type === "font") {
+                    tempIcon = $("<span/>").css("vertical-align", "middle");
+                    if(icon.class[i]) {
+                        tempIcon.addClass(icon.class[i]);
+                    }
+                    if(icon.text[i]) {
+                        tempIcon.text(icon.text[i]);
+                        tempIcon.css("font-size", "18px");
+                    }
+                } else if(type === "img") {
+                    tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "middle");
+                }
+                $icon.append(tempIcon);
             }
         }
 
@@ -63,6 +79,7 @@ var IconUtil = new function() {
 
     this.getToolbarIconType = function(type, optionalParameters) {
         var icon = {
+            type: "font",
             url: null,
             class: null,
             text: null
@@ -77,18 +94,20 @@ var IconUtil = new function() {
             icon.class = "material-icons";
             icon.text = materialPlusIcon + "folder";
         } else if(type === "PROJECT") {
-            icon.class = "material-icons";
-            icon.text = materialPlusIcon + "rule_folder";
+            icon.type = ["font", "img"];
+            icon.url = [null, "./img/folder-with-key-outlined.svg"];
+            icon.class = ["material-icons", null];
+            icon.text = [materialPlusIcon, null];
         } else if(type === "OTHER") {
             icon.class = "material-icons";
             icon.text = materialPlusIcon;
         } else if(type === "DATA") {
+            icon.type = ["font", "font"]
             icon.class = ["material-icons", "fa fa-database"];
             icon.text = [materialPlusIcon, null];
         } else if(type === "EDIT") {
             icon.class = "glyphicon glyphicon-edit";
         }  else if(type === "SAVE") {
-//            icon.class = "glyphicon glyphicon-floppy-disk";
             icon.class = "material-icons";
             icon.text = "save";
         } else if(type === "?") {
@@ -101,12 +120,13 @@ var IconUtil = new function() {
             icon.class = "material-icons";
             icon.text = "navigate_next";
         } else if(type === "TEMPLATES") {
-//            icon.class = "glyphicon glyphicon-list-alt";
             icon.class = "material-icons";
             icon.text = "list_alt";
         } else if(type === "SPACE") {
-            icon.class = "material-icons";
-            icon.text = materialPlusIcon + "key";
+            icon.type = ["font", "img"];
+            icon.url = [null, "./img/folder-with-key.svg"];
+            icon.class = ["material-icons", null];
+            icon.text = [materialPlusIcon, null];
         } else if(type === "HIDE") {
             icon.class = "material-icons";
             icon.text = "keyboard_double_arrow_left";
@@ -131,6 +151,7 @@ var IconUtil = new function() {
 
     this.getNavigationIcon = function(type, optionalParameters) {
         var icon = {
+            type: "font",
             url: null,
             class: null,
             text: null
@@ -168,6 +189,7 @@ var IconUtil = new function() {
         } else if(type === "DROPBOX_MONITOR") {
             icon.class = "glyphicon glyphicon-info-sign";
         } else if(type === "ARCHIVING_HELPER") {
+            icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-not-requested-icon.png";
         } else if(type === "UNARCHIVING_HELPER") {
@@ -187,6 +209,7 @@ var IconUtil = new function() {
         } else if(type === "EXPORT_TO_ZIP") {
             icon.class = "glyphicon glyphicon-export";
         } else if(type === "EXPORT_TO_RESEARCH_COLLECTION") {
+            icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/research-collection-icon.png";
         } else if(type === "EXPORT_TO_ZENODO") {
@@ -201,8 +224,9 @@ var IconUtil = new function() {
                 icon.text = "folder_shared";
             }
             else {
-                icon.class = "material-icons";
-                icon.text = "key";
+                icon.type = "img";
+                icon.url = "./img/folder-with-key.svg";
+
             }
         } else if(type === "SAMPLE") {
             if(optionalParameters && optionalParameters.sampleTypeCode) {
@@ -223,8 +247,9 @@ var IconUtil = new function() {
                     }
                     if(hasData) {
                         if(hasMetadata) {
-                            icon.class = "material-icons";
-                            icon.text = "description";
+                            icon.type = "img";
+                            icon.url = "./img/subject-with-attach_file.svg";
+
                         } else {
                             icon.class = "material-icons";
                             icon.text = "attach_file";
@@ -256,8 +281,8 @@ var IconUtil = new function() {
                     }
                     if(hasData) {
                         if(hasMetadata) {
-                            icon.class = "material-icons";
-                            icon.text = "description";
+                            icon.type = "img";
+                            icon.url = "./img/subject-with-attach_file.svg";
                         } else {
                             icon.class = "material-icons";
                             icon.text = "attach_file";
@@ -269,8 +294,8 @@ var IconUtil = new function() {
                 }
             }
         } else if(type === "PROJECT") {
-            icon.class = "material-icons";
-            icon.text = "rule_folder";
+            icon.type = "img";
+            icon.url = "./img/folder-with-key-outlined.svg";
         }
 
         return icon;

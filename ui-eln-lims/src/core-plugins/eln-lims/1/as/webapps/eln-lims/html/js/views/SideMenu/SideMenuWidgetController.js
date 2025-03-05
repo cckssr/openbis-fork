@@ -27,6 +27,7 @@ function SideMenuWidgetController(mainController) {
     this._sideMenuWidgetModel = new SideMenuWidgetModel()
     this._sideMenuWidgetView = new SideMenuWidgetView(this, this._sideMenuWidgetModel)
     this._browserController = new SideMenuWidgetBrowserController()
+    this.isCollapsed = false;
 
     //
     // External API for real time updates
@@ -163,6 +164,16 @@ function SideMenuWidgetController(mainController) {
         })
     }
 
+    this.collapseSideMenu = function() {
+        this.isCollapsed = true;
+        this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
+    }
+
+    this.expandSideMenu = function() {
+        this.isCollapsed = false;
+        this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, false);
+    }
+
     this.resizeElement = function ($elementBody, percentageOfUsage) {
         var $elementHead = $("#sideMenuHeader")
         var sideMenuHeaderHeight = $elementHead.outerHeight()
@@ -190,7 +201,11 @@ function SideMenuWidgetController(mainController) {
         subSideMenu.css("margin-left", "3px")
         this._sideMenuWidgetModel.subSideMenu = subSideMenu
         this._sideMenuWidgetModel.percentageOfUsage = 0.5
+        $("#sideMenuFooter").remove()
         $("#sideMenuTopContainer").append(subSideMenu)
+        if(!LayoutManager.isMobile()) {
+            $("#sideMenuTopContainer").append(this._sideMenuWidgetView._expandedFooter())
+        }
         this.resizeElement($("#sideMenuBody"), 0.5)
         this.resizeElement(subSideMenu, 0.5)
     }

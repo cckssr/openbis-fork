@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  -  Copyright ETH 2025 Zürich, Scientific IT Services
+  -
+  -  Licensed under the Apache License, Version 2.0 (the "License");
+  -  you may not use this file except in compliance with the License.
+  -  You may obtain a copy of the License at
+  -
+  -       http://www.apache.org/licenses/LICENSE-2.0
+  -
+  -  Unless required by applicable law or agreed to in writing, software
+  -  distributed under the License is distributed on an "AS IS" BASIS,
+  -  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  -  See the License for the specific language governing permissions and
+  -  limitations under the License.
+  -
+  -->
+
+<svg
+   height="24px"
+   viewBox="0 0 24 24"
+   width="24px"
+   fill="#e8eaed"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="subject-with-attach_file.svg"
+   inkscape:version="1.4.1-rc (832c77b156, 2025-02-28)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="33.458333"
+     inkscape:cx="12.014944"
+     inkscape:cy="12.179328"
+     inkscape:window-width="1854"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <path
+     d="M0 0h24v24H0z"
+     fill="none"
+     id="path1" />
+  <path
+     d="M 7.9034869,17 H 0.5 v 2 H 7.9034869 Z M 12.345579,9 H 0.5 v 2 H 12.345579 Z M 0.5,15 H 12.345579 V 13 H 0.5 Z M 0.5,5 V 7 H 12.345579 V 5 Z"
+     id="path2"
+     style="stroke-width:0.860435;fill:#333333;fill-opacity:1" />
+  <path
+     d="m 22.022926,6 v 11.5 c 0,2.21 -1.648955,4 -3.68482,4 -2.035861,0 -3.684819,-1.79 -3.684819,-4 V 5 c 0,-1.38 1.031752,-2.5 2.303014,-2.5 1.271262,0 2.303012,1.12 2.303012,2.5 v 10.5 c 0,0.55 -0.414544,1 -0.921207,1 -0.506663,0 -0.921204,-0.45 -0.921204,-1 V 6 h -1.381806 v 9.5 c 0,1.38 1.031749,2.5 2.30301,2.5 1.271263,0 2.303012,-1.12 2.303012,-2.5 V 5 c 0,-2.21 -1.648956,-4 -3.684817,-4 -2.035863,0 -3.684818,1.79 -3.684818,4 v 12.5 c 0,3.04 2.266162,5.5 5.066623,5.5 2.800463,0 5.066626,-2.46 5.066626,-5.5 V 6 Z"
+     id="path2-2"
+     style="stroke-width:0.959793;fill:#333333;fill-opacity:1" />
+</svg>
