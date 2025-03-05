@@ -31,7 +31,6 @@ import ch.ethz.sis.afsserver.server.common.IConfigProvider;
 import ch.ethz.sis.afsserver.server.common.IEncapsulatedOpenBISService;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.common.SimpleDataSetInformationDTO;
-import ch.ethz.sis.afsserver.server.maintenance.IDataStoreLockingMaintenanceTask;
 import ch.ethz.sis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.log.LogManager;
@@ -45,6 +44,7 @@ import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.maintenance.IDataStoreLockingMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 

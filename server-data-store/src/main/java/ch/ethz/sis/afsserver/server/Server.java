@@ -27,9 +27,6 @@ import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
-import ch.ethz.sis.afsserver.server.maintenance.MaintenancePlugin;
-import ch.ethz.sis.afsserver.server.maintenance.MaintenanceTaskParameters;
-import ch.ethz.sis.afsserver.server.maintenance.MaintenanceTaskUtils;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
@@ -42,6 +39,9 @@ import ch.ethz.sis.shared.log.Logger;
 import ch.ethz.sis.shared.pool.Factory;
 import ch.ethz.sis.shared.pool.Pool;
 import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
+import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
+import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 
 public final class Server<CONNECTION, API>
