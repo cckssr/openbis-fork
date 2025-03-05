@@ -58,6 +58,19 @@ function LabNotebookView(labNotebookController, labNotebookView) {
 		});
 		
 		views.header.append($formTitle);
-		views.content.append($formColumn);
+//		views.content.append($formColumn);
+
+		$.ajax({ cache: false,
+                 url: "./etc/quickGuide.html",
+                 success: function (data) {
+                    views.content.html(data);
+                 },
+                 settings: { suppressErrors: true },
+                 error: function (xhr, ajaxOptions, thrownError){
+                        console.log("AJAX Error status: " + xhr.status + " - Status text: " + xhr.statusText + " - Using default text.");
+                        views.content.html('<h3>Welcome to openBIS Laboratory Notebook</h3>');
+                 }
+        });
+
 	}
 }
