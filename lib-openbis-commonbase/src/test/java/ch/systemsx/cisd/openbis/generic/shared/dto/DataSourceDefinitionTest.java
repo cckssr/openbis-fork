@@ -15,12 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
-import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
+import java.util.List;
 
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 /**
  * @author Franz-Josef Elmer
