@@ -48,7 +48,7 @@ public class HierarchicalContentProviderTest extends AssertJUnit
 
     private IHierarchicalContentFactory hierarchicalContentFactory;
 
-    private IEncapsulatedOpenBISService openbisService;
+    private IOpenBISService openbisService;
 
     private IShareIdManager shareIdManager;
 
@@ -70,7 +70,7 @@ public class HierarchicalContentProviderTest extends AssertJUnit
                     will(returnValue(shareIdManager));
                 }
             });
-        openbisService = context.mock(IEncapsulatedOpenBISService.class);
+        openbisService = context.mock(IOpenBISService.class);
         hierarchicalContentProvider =
                 new HierarchicalContentProvider(openbisService, directoryProvider,
                         hierarchicalContentFactory, null, null, null, "STANDARD", null);
@@ -150,7 +150,6 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         final String containerCode = "CONTAINER_CODE";
         final DatasetLocation containerLocation =
                 new DatasetLocation(containerCode, null, "STANDARD", null);
-        containerLocation.setDataStoreCode("STANDARD");
         final DatasetLocationNode container = new DatasetLocationNode(containerLocation);
         container.addContained(dataSet1);
         container.addContained(dataSet2);

@@ -20,10 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.etlserver.postregistration.SimpleShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
@@ -57,11 +57,11 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
 
         void verify(SimpleDataSetInformationDTO expectedDataSet, Share... expectedShares)
         {
-            assertEquals(index, checkingResults.length);
-            assertSame(expectedDataSet, recordedDataSet);
+            AssertJUnit.assertEquals(index, checkingResults.length);
+            AssertJUnit.assertSame(expectedDataSet, recordedDataSet);
             for (int i = 0; i < expectedShares.length; i++)
             {
-                assertSame(expectedShares[i], recordedShares.get(i));
+                AssertJUnit.assertSame(expectedShares[i], recordedShares.get(i));
             }
         }
     }
@@ -88,7 +88,7 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
         MockSpeedChecker speedChecker = new MockSpeedChecker(true, true, true, true);
         Share share = shareFinder.tryToFindShare(dataSet, Arrays.asList(s1, s2, s3, s4), speedChecker);
 
-        assertSame(s4, share);
+        AssertJUnit.assertSame(s4, share);
         speedChecker.verify(dataSet, s1, s2, s3, s4);
     }
 
@@ -106,7 +106,7 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
         MockSpeedChecker speedChecker = new MockSpeedChecker(true, true, true, false);
         Share share = shareFinder.tryToFindShare(dataSet, Arrays.asList(s1, s2, s3, s4), speedChecker);
 
-        assertSame(s2, share);
+        AssertJUnit.assertSame(s2, share);
         speedChecker.verify(dataSet, s1, s2, s3, s4);
     }
 
@@ -122,7 +122,7 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
 
         Share share = shareFinder.tryToFindShare(dataSet, Arrays.asList(s1, s2, s3));
 
-        assertSame(null, share);
+        AssertJUnit.assertSame(null, share);
     }
 
     @Test
@@ -137,7 +137,7 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
 
         Share share = shareFinder.tryToFindShare(dataSet, Arrays.asList(s1, s2, s3));
 
-        assertSame(null, share);
+        AssertJUnit.assertSame(null, share);
     }
 
     @Test
@@ -151,6 +151,6 @@ public class SimpleShareFinderTest extends AbstractIShareFinderTestCase
 
         Share share = shareFinder.tryToFindShare(dataSet, Arrays.asList(s1, s2));
 
-        assertSame(null, share);
+        AssertJUnit.assertSame(null, share);
     }
 }

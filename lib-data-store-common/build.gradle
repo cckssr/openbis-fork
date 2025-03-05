@@ -24,6 +24,8 @@ dependencies {
             project(':lib-maintenance'),
             project(':api-openbis-java'),
             'shriop:javacsv:2.0'
+    testImplementation project(path: ':lib-openbis-commonbase', configuration: 'tests'),
+            'jmock:jmock:2.5.1'
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {

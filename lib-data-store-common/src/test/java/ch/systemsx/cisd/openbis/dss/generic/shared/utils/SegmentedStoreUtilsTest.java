@@ -47,7 +47,7 @@ import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProxyShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
@@ -75,7 +75,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
 
     private Mockery context;
 
-    private IEncapsulatedOpenBISService service;
+    private IOpenBISService service;
 
     private IShareIdManager shareIdManager;
 
@@ -101,7 +101,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
     public void beforeMethod()
     {
         context = new Mockery();
-        service = context.mock(IEncapsulatedOpenBISService.class);
+        service = context.mock(IOpenBISService.class);
         shareIdManager = context.mock(IShareIdManager.class);
         freeSpaceProvider = context.mock(IFreeSpaceProvider.class);
         timeProvider = context.mock(ITimeProvider.class);
