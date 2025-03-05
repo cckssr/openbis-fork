@@ -15,15 +15,13 @@
  */
 package ch.systemsx.cisd.openbis.dss.archiveverifier.batch;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -33,21 +31,21 @@ public class DataSetArchiveVerifierTest
     public void successfulVerificationCausesSuccessResult() throws Exception
     {
         DataSetArchiveVerificationResult result = verifier.run(CODE_OF_DATASET_WITH_GOOD_ARCHIVE);
-        assertThat(result.getType(), is(ResultType.OK));
+        Assert.assertEquals(result.getType(), ResultType.OK);
     }
 
     @Test
     public void failingVerificationCausesFailedResult() throws Exception
     {
         DataSetArchiveVerificationResult result = verifier.run(CODE_OF_DATASET_WITH_BAD_ARCHIVE);
-        assertThat(result.getType(), is(ResultType.ERROR));
+        Assert.assertEquals(result.getType(), ResultType.ERROR);
     }
 
     @Test
     public void failureToLocateArchiveFileCausesFailedResult() throws Exception
     {
         DataSetArchiveVerificationResult result = verifier.run(CODE_OF_DATASET_WITHOUT_AN_ARCHIVE_FILE);
-        assertThat(result.getType(), is(ResultType.ERROR));
+        Assert.assertEquals(result.getType(), ResultType.ERROR);
     }
 
     @BeforeMethod
@@ -59,25 +57,25 @@ public class DataSetArchiveVerifierTest
         verifier = new DataSetArchiveVerifier(fileRepository, fileVerifier);
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITH_GOOD_ARCHIVE);
-                    will(returnValue(GOOD_ARCHIVE_FILE));
+                allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITH_GOOD_ARCHIVE);
+                will(returnValue(GOOD_ARCHIVE_FILE));
 
-                    allowing(fileVerifier).verify(GOOD_ARCHIVE_FILE);
-                    will(returnValue(new ArrayList<VerificationError>()));
+                allowing(fileVerifier).verify(GOOD_ARCHIVE_FILE);
+                will(returnValue(new ArrayList<VerificationError>()));
 
-                    allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITH_BAD_ARCHIVE);
-                    will(returnValue(BAD_ARCHIVE_FILE));
+                allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITH_BAD_ARCHIVE);
+                will(returnValue(BAD_ARCHIVE_FILE));
 
-                    allowing(fileVerifier).verify(BAD_ARCHIVE_FILE);
-                    will(returnValue(Collections.singletonList(new VerificationError(VerificationErrorType.ERROR, "error"))));
+                allowing(fileVerifier).verify(BAD_ARCHIVE_FILE);
+                will(returnValue(Collections.singletonList(new VerificationError(VerificationErrorType.ERROR, "error"))));
 
-                    allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITHOUT_AN_ARCHIVE_FILE);
-                    will(returnValue(NONEXISTING_FILE));
+                allowing(fileRepository).getArchiveFileOf(CODE_OF_DATASET_WITHOUT_AN_ARCHIVE_FILE);
+                will(returnValue(NONEXISTING_FILE));
 
-                }
-            });
+            }
+        });
     }
 
     private DataSetArchiveVerifier verifier;

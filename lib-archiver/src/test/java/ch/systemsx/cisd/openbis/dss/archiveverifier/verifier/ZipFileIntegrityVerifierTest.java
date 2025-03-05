@@ -15,12 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.dss.archiveverifier.verifier;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import java.io.File;
 import java.util.Collection;
 
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -33,28 +31,28 @@ public class ZipFileIntegrityVerifierTest
     public void verificationOfZipFileWithCRCErrorFails() throws Exception
     {
         Collection<VerificationError> errors = verifier.verify(FILE_WITH_CRC_ERROR);
-        assertThat(errors.isEmpty(), is(false));
+        Assert.assertFalse(errors.isEmpty());
     }
 
     @Test
     public void verificationOfInvalidZipFileFails() throws Exception
     {
         Collection<VerificationError> errors = verifier.verify(INVALID_ZIP_FILE);
-        assertThat(errors.isEmpty(), is(false));
+        Assert.assertFalse(errors.isEmpty());
     }
 
     @Test
     public void verificationOfNonExistingFileFails() throws Exception
     {
         Collection<VerificationError> errors = verifier.verify(NONEXISTING_FILE);
-        assertThat(errors.isEmpty(), is(false));
+        Assert.assertFalse(errors.isEmpty());
     }
 
     @Test
     public void verificationOfValidZipFileSucceeds() throws Exception
     {
         Collection<VerificationError> errors = verifier.verify(VALID_ZIP_FILE);
-        assertThat(errors.isEmpty(), is(true));
+        Assert.assertTrue(errors.isEmpty());
     }
 
     @BeforeMethod
@@ -66,7 +64,7 @@ public class ZipFileIntegrityVerifierTest
     private IArchiveFileVerifier verifier;
 
     private static final File PWD = new File(
-            "../server-original-data-store/sourceTest/java/ch/systemsx/cisd/openbis/dss/archiveverifier/verifier/");
+            "../lib-archiver/src/test/java/ch/systemsx/cisd/openbis/dss/archiveverifier/verifier/");
 
     private static final File VALID_ZIP_FILE = new File(PWD, "VALID.zip");
 
