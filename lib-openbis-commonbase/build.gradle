@@ -21,6 +21,7 @@ configurations {
 
 dependencies {
     implementation project(':lib-commonbase'), project(':api-openbis-java')
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests')
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {
