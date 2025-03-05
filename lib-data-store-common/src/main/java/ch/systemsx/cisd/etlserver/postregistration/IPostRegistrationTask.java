@@ -17,11 +17,11 @@ package ch.systemsx.cisd.etlserver.postregistration;
 
 import java.util.Properties;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 
 /**
  * Interface of a task executed after registration of a data set. Implementing class should have a public constructor with two parameters: First is of
- * type {@link Properties} and second is of type {@link IEncapsulatedOpenBISService}.
+ * type {@link Properties} and second is of type {@link IOpenBISService}.
  * 
  * @author Franz-Josef Elmer
  */

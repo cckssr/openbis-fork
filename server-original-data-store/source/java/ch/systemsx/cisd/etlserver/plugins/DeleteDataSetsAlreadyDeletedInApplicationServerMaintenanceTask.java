@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
+import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
@@ -43,7 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
  * @author pkupczyk
  */
 public class DeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTask extends
-        AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent
+        AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent implements IMaintenanceTask
 {
     public static final String DEFAULT_NAME = "injected-delete-datasets-already-deleted-from-application-server-task";
 

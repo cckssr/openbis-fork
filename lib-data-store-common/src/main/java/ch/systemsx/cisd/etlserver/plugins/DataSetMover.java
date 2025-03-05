@@ -19,7 +19,7 @@ import java.io.File;
 
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 
@@ -30,11 +30,11 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
  */
 public class DataSetMover implements IDataSetMover
 {
-    private final IEncapsulatedOpenBISService service;
+    private final IOpenBISService service;
 
     private final IShareIdManager manager;
 
-    public DataSetMover(IEncapsulatedOpenBISService service, IShareIdManager shareIdManager)
+    public DataSetMover(IOpenBISService service, IShareIdManager shareIdManager)
     {
         this.service = service;
         manager = shareIdManager;

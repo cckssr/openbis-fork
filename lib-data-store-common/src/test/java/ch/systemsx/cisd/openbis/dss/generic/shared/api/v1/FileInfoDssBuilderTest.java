@@ -31,14 +31,14 @@ public class FileInfoDssBuilderTest extends AssertJUnit
     public void testFileInfoBuilderOnDir() throws IOException
     {
         String root =
-                "../server-original-data-store/sourceTest/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1";
+                "../lib-data-store-common/src/test/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1";
         FileInfoDssBuilder builder = new FileInfoDssBuilder(root, root);
         ArrayList<FileInfoDssDTO> list = new ArrayList<FileInfoDssDTO>();
         File requestedFile = new File(root);
         builder.appendFileInfosForFile(requestedFile, list, false);
         removeSvnFoldersFromList(list);
-        // The 3 test files + 1 sub dir
-        assertEquals(4, list.size());
+        // The 3 test files
+        assertEquals(3, list.size());
     }
 
     private void removeSvnFoldersFromList(ArrayList<FileInfoDssDTO> list)
@@ -57,20 +57,20 @@ public class FileInfoDssBuilderTest extends AssertJUnit
     public void testFileInfoBuilderOnDirWithTrailingSlash() throws IOException
     {
         String root =
-                "../server-original-data-store/sourceTest/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1/";
+                "../lib-data-store-common/src/test/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1/";
         FileInfoDssBuilder builder = new FileInfoDssBuilder(root, root);
         ArrayList<FileInfoDssDTO> list = new ArrayList<FileInfoDssDTO>();
         File requestedFile = new File(root);
         builder.appendFileInfosForFile(requestedFile, list, false);
         removeSvnFoldersFromList(list);
-        // The 3 test files + 1 sub dir
-        assertEquals(4, list.size());
+        // The 3 test files
+        assertEquals(3, list.size());
     }
 
     @Test
     public void testFileInfoBuilderOnSingleFile() throws IOException
     {
-        String root = "sourceTest/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1/";
+        String root = "../lib-data-store-common/src/test/java/ch/systemsx/cisd/openbis/dss/generic/shared/api/v1/";
         FileInfoDssBuilder builder = new FileInfoDssBuilder(root, root);
         ArrayList<FileInfoDssDTO> list = new ArrayList<FileInfoDssDTO>();
         File requestedFile = new File(new File(root), "FileInfoDssBuilderTest.java");

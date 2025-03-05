@@ -48,7 +48,7 @@ import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginsUtils;
 
 /**
  * Utility class to load properties.
- * 
+ *
  * @author Tomasz Pylak
  */
 public class DssPropertyParametersUtil
@@ -65,9 +65,9 @@ public class DssPropertyParametersUtil
     /** Prefix of system properties which may override service.properties. */
     public static final String OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX = "openbis.dss.";
 
-    public static final String DSS_CODE_KEY = "data-store-server-code";
+    public static final String DSS_CODE_KEY = DssPropertyParameters.DSS_CODE_KEY;
 
-    public static final String STOREROOT_DIR_KEY = "storeroot-dir";
+    public static final String STOREROOT_DIR_KEY = DssPropertyParameters.STOREROOT_DIR_KEY;
 
     public static final String DOWNLOAD_URL_KEY = "download-url";
 

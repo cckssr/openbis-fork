@@ -18,7 +18,7 @@ package ch.systemsx.cisd.etlserver.plugins;
 import java.util.List;
 
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 
 /**
@@ -37,5 +37,5 @@ public interface ISegmentedStoreShuffling
      * Moves data sets from source shares to some target shares if necessary.
      */
     public void shuffleDataSets(List<Share> sourceShares, List<Share> targetShares,
-            IEncapsulatedOpenBISService service, IDataSetMover dataSetMover, ISimpleLogger logger);
+            IOpenBISService service, IDataSetMover dataSetMover, ISimpleLogger logger);
 }

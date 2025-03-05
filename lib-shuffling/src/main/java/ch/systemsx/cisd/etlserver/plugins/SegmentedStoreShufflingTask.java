@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
-import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,14 +37,15 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
 import ch.systemsx.cisd.common.maintenance.IDataStoreLockingMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
+import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
@@ -55,60 +54,60 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 /**
  * Maintenance task which shuffles data sets between shares of a segmented store. This task is supposed to prevent incoming shares from having not
  * enough space.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenanceTask
 {
     private static final ISegmentedStoreShuffling DUMMY_SHUFFLING = new ISegmentedStoreShuffling()
+    {
+        private static final int N = 3;
+
+        @Override
+        public void init(ISimpleLogger logger)
         {
-            private static final int N = 3;
+        }
 
-            @Override
-            public void init(ISimpleLogger logger)
+        @Override
+        public void shuffleDataSets(List<Share> sourceShares, List<Share> targetShares,
+                IOpenBISService service, IDataSetMover dataSetMover,
+                ISimpleLogger logger)
+        {
+            logger.log(INFO, "Data Store Shares:");
+            for (Share share : targetShares)
             {
-            }
-
-            @Override
-            public void shuffleDataSets(List<Share> sourceShares, List<Share> targetShares,
-                    IEncapsulatedOpenBISService service, IDataSetMover dataSetMover,
-                    ISimpleLogger logger)
-            {
-                logger.log(INFO, "Data Store Shares:");
-                for (Share share : targetShares)
+                List<SimpleDataSetInformationDTO> dataSets = share.getDataSetsOrderedBySize();
+                logger.log(
+                        INFO,
+                        "   "
+                                + (share.isIncoming() ? "Incoming" : "External")
+                                + " share "
+                                + share.getShareId()
+                                + " (free space: "
+                                + FileUtils.byteCountToDisplaySize(share.calculateFreeSpace())
+                                + ") has "
+                                + dataSets.size()
+                                + " data sets occupying "
+                                + FileUtilities.byteCountToDisplaySize(share
+                                .getTotalSizeOfDataSets()) + ".");
+                for (int i = 0, n = Math.min(N, dataSets.size()); i < n; i++)
                 {
-                    List<SimpleDataSetInformationDTO> dataSets = share.getDataSetsOrderedBySize();
+                    SimpleDataSetInformationDTO dataSet = dataSets.get(i);
                     logger.log(
                             INFO,
-                            "   "
-                                    + (share.isIncoming() ? "Incoming" : "External")
-                                    + " share "
-                                    + share.getShareId()
-                                    + " (free space: "
-                                    + FileUtils.byteCountToDisplaySize(share.calculateFreeSpace())
-                                    + ") has "
-                                    + dataSets.size()
-                                    + " data sets occupying "
-                                    + FileUtilities.byteCountToDisplaySize(share
-                                            .getTotalSizeOfDataSets()) + ".");
-                    for (int i = 0, n = Math.min(N, dataSets.size()); i < n; i++)
-                    {
-                        SimpleDataSetInformationDTO dataSet = dataSets.get(i);
-                        logger.log(
-                                INFO,
-                                "      "
-                                        + dataSet.getDataSetCode()
-                                        + " "
-                                        + FileUtilities.byteCountToDisplaySize(dataSet
-                                                .getDataSetSize()));
-                    }
-                    if (dataSets.size() > N)
-                    {
-                        logger.log(INFO, "      ...");
-                    }
+                            "      "
+                                    + dataSet.getDataSetCode()
+                                    + " "
+                                    + FileUtilities.byteCountToDisplaySize(dataSet
+                                    .getDataSetSize()));
+                }
+                if (dataSets.size() > N)
+                {
+                    logger.log(INFO, "      ...");
                 }
             }
-        };
+        }
+    };
 
     @Private
     static final String SHUFFLING_SECTION_NAME = "shuffling";
@@ -124,7 +123,7 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
 
     private final Set<String> incomingShares;
 
-    private final IEncapsulatedOpenBISService service;
+    private final IOpenBISService service;
 
     private final IDataSetMover dataSetMover;
 
@@ -141,13 +140,14 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
 
     public SegmentedStoreShufflingTask()
     {
-        this(IncomingShareIdProvider.getIdsOfIncomingShares(), ServiceProvider.getOpenBISService(),
+        this(IncomingShareIdProvider.getIdsOfIncomingShares(), ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
                 new SimpleFreeSpaceProvider(), new DataSetMover(
-                        ServiceProvider.getOpenBISService(), ServiceProvider.getShareIdManager()),
+                        ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
+                        ShufflingServiceProviderFactory.getInstance().getShareIdManager()),
                 new Log4jSimpleLogger(operationLog));
     }
 
-    SegmentedStoreShufflingTask(Set<String> incomingShares, IEncapsulatedOpenBISService service,
+    SegmentedStoreShufflingTask(Set<String> incomingShares, IOpenBISService service,
             IFreeSpaceProvider freeSpaceProvider, IDataSetMover dataSetMover, ISimpleLogger logger)
     {
         this.incomingShares = incomingShares;
@@ -163,10 +163,10 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
     {
         dataStoreCode =
                 PropertyUtils.getMandatoryProperty(properties,
-                        DssPropertyParametersUtil.DSS_CODE_KEY).toUpperCase();
+                        DssPropertyParameters.DSS_CODE_KEY).toUpperCase();
         storeRoot =
                 new File(PropertyUtils.getMandatoryProperty(properties,
-                        DssPropertyParametersUtil.STOREROOT_DIR_KEY));
+                        DssPropertyParameters.STOREROOT_DIR_KEY));
         if (storeRoot.isDirectory() == false)
         {
             throw new ConfigurationFailureException(
@@ -242,7 +242,7 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
     private List<Share> listShares()
     {
         return SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode, FilterOptions.AVAILABLE_FOR_SHUFFLING,
-                Collections.<String> emptySet(), freeSpaceProvider, service, operationLogger);
+                Collections.<String>emptySet(), freeSpaceProvider, service, operationLogger);
     }
 
     /**

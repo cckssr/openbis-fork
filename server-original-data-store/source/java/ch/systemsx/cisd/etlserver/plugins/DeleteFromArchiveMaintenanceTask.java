@@ -20,9 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
+import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
@@ -35,7 +34,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
  * @author Kaloyan Enimanev
  */
 public class DeleteFromArchiveMaintenanceTask extends
-        AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent
+        AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent implements IMaintenanceTask
 {
 
     // a file name to store the last seen event id

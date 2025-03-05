@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 
+import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import static org.apache.commons.io.FileUtils.ONE_KB;
 import static org.apache.commons.io.FileUtils.ONE_MB;
 
@@ -69,7 +70,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 public class MultiDataSetDeletionMaintenanceTask
-        extends AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent
+        extends AbstractDataSetDeletionPostProcessingMaintenanceTaskWhichHandlesLastSeenEvent implements IMaintenanceTask
 {
     private static class FirstSuitableShareFinder implements IShareFinder
     {

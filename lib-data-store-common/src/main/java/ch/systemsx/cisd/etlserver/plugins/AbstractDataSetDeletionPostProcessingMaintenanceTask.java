@@ -27,7 +27,6 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
-import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -40,8 +39,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
  *
  * @author Kaloyan Enimanev
  */
-public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask implements
-        IMaintenanceTask
+public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask
 {
 
     protected static final Logger operationLog =
@@ -84,7 +82,6 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask imple
         return new Log4jSimpleLogger(operationLog);
     }
 
-    @Override
     public void setUp(String pluginName, Properties properties)
     {
         int delayInMinutes = PropertyUtils.getInt(properties, DELAY_AFTER_DELETION, 0);
@@ -92,7 +89,6 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask imple
         chunkSize = PropertyUtils.getInt(properties, CHUNK_SIZE, Integer.MAX_VALUE);
     }
 
-    @Override
     public void execute()
     {
         if (operationLog.isDebugEnabled())

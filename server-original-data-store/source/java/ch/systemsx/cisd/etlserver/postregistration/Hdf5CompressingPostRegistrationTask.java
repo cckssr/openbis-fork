@@ -60,19 +60,16 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifierFa
 
 /**
  * A post-registration task replacing uncompressed datasets with new datasets which are HDF5 compressed.
- * 
  * <pre>
- * In order for a data set to be compressed the following prerequisites must be met 
- * 
- * 1) The data set is part of a container. This is required, because the contents of the new data set will 
+ * In order for a data set to be compressed the following prerequisites must be met
+ * 1) The data set is part of a container. This is required, because the contents of the new data set will
  * overshadow the existing data set in the container.
  * 2) The data set type must match a configuration property
- * 3) The data set must contain a folder of a specified name which ends with ".h5ar" i.e. instead of 
- * "original" the root directory with contents must be named "original.h5ar". This is requirement 
+ * 3) The data set must contain a folder of a specified name which ends with ".h5ar" i.e. instead of
+ * "original" the root directory with contents must be named "original.h5ar". This is requirement
  * enforces that no links in the UI are broken when the non-compressed data set gets deleted.
- * 
  * </pre>
- * 
+ *
  * @author Kaloyan Enimanev
  */
 public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistrationTaskForPhysicalDataSets
@@ -125,7 +122,7 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
         public void execute()
         {
 
-            AbstractExternalData externalData = tryGetDataSet(dataSetCode, service);
+            AbstractExternalData externalData = tryGetDataSet(dataSetCode, (IEncapsulatedOpenBISService) service);
             if (false == shouldCompressToHdf5(externalData))
             {
                 return;
@@ -154,7 +151,7 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
                     }
                     return;
                 }
-                String hdf5DataSetCode = service.createPermId();
+                String hdf5DataSetCode = ((IEncapsulatedOpenBISService) service).createPermId();
                 operationLog.info(String.format(
                         "The contents of data set '%s' will be hdf5-compressed "
                                 + "into a new data set '%s'.", dataSetCode, hdf5DataSetCode));
@@ -209,7 +206,7 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
 
         private void removeOldDataSet(String dataSetToDelete, String reason)
         {
-            service.removeDataSetsPermanently(Collections.singletonList(dataSetToDelete), reason);
+            ((IEncapsulatedOpenBISService) service).removeDataSetsPermanently(Collections.singletonList(dataSetToDelete), reason);
         }
 
         private void createCompressedDuplicate(File stagingDir,
@@ -337,10 +334,10 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
             DataSetInformation dataSetInformation = createDataSetInformation(protoDataSet);
             NewExternalData twinExternalData = createTwin(hdf5DataSetCode, protoDataSet);
 
-            service.registerDataSet(dataSetInformation, twinExternalData);
+            ((IEncapsulatedOpenBISService) service).registerDataSet(dataSetInformation, twinExternalData);
             ContainerDataSet container = protoDataSet.tryGetContainer();
             DataSetUpdatesDTO containerUpdate = addNewContainedDataSet(container, hdf5DataSetCode);
-            service.updateDataSet(containerUpdate);
+            ((IEncapsulatedOpenBISService) service).updateDataSet(containerUpdate);
         }
 
         private DataSetInformation createDataSetInformation(PhysicalDataSet protoDataSet)
@@ -506,7 +503,7 @@ public class Hdf5CompressingPostRegistrationTask extends AbstractPostRegistratio
                     operationLog
                             .error(String
                                     .format("Unexpected set of contents '%s' in dangling directory '%s'. "
-                                            + "Only files with the following names '%s' are expected. Deletion of '%s' will be skipped.",
+                                                    + "Only files with the following names '%s' are expected. Deletion of '%s' will be skipped.",
                                             danglingHdf5DirName, danglingDirContents,
                                             dataSetContents, danglingHdf5DirName));
                 }

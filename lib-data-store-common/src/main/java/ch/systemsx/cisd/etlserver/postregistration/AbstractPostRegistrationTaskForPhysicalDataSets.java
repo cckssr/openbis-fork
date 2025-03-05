@@ -17,7 +17,7 @@ package ch.systemsx.cisd.etlserver.postregistration;
 
 import java.util.Properties;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 
 /**
  * Abstract super class for post registration of physical data sets.
@@ -28,7 +28,7 @@ public abstract class AbstractPostRegistrationTaskForPhysicalDataSets extends Ab
 {
 
     public AbstractPostRegistrationTaskForPhysicalDataSets(Properties properties,
-            IEncapsulatedOpenBISService service)
+            IOpenBISService service)
     {
         super(properties, service);
     }

@@ -16,7 +16,7 @@
 package ch.systemsx.cisd.etlserver.postregistration;
 
 /**
- * Executor of a post registration task. {@link PostRegistrationMaintenanceTask} calls first {@link #createCleanupTask()} before {@link #execute()} is
+ * Executor of a post registration task. PostRegistrationMaintenanceTask calls first {@link #createCleanupTask()} before {@link #execute()} is
  * invoked.
  * 
  * @author Franz-Josef Elmer

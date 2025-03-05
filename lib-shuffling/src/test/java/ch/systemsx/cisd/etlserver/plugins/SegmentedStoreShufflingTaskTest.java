@@ -15,11 +15,6 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
-import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.CLASS_PROPERTY_NAME;
-import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.SHUFFLING_SECTION_NAME;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.SHARE_PROPS_FILE;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.WITHDRAW_SHARE_PROP;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -42,12 +37,16 @@ import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.CLASS_PROPERTY_NAME;
+import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.SHUFFLING_SECTION_NAME;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory;
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.SHARE_PROPS_FILE;
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.WITHDRAW_SHARE_PROP;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -74,7 +73,7 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
 
         private List<Share> targetShares;
 
-        private IEncapsulatedOpenBISService service;
+        private IOpenBISService service;
 
         private IDataSetMover dataSetMover;
 
@@ -93,7 +92,7 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
 
         @Override
         public void shuffleDataSets(List<Share> sources, List<Share> targets,
-                IEncapsulatedOpenBISService openBisService, IDataSetMover mover,
+                IOpenBISService openBisService, IDataSetMover mover,
                 ISimpleLogger simpleLogger)
         {
             sourceShares = sources;
@@ -108,7 +107,7 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
 
     private Mockery context;
 
-    private IEncapsulatedOpenBISService service;
+    private IOpenBISService service;
 
     private IFreeSpaceProvider spaceProvider;
 
@@ -125,7 +124,7 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         context = new Mockery();
-        service = context.mock(IEncapsulatedOpenBISService.class);
+        service = context.mock(IOpenBISService.class);
         spaceProvider = context.mock(IFreeSpaceProvider.class);
         dataSetMover = context.mock(IDataSetMover.class);
         logger = context.mock(ISimpleLogger.class);
@@ -150,8 +149,8 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
     public void testExecute()
     {
         Properties properties = new Properties();
-        properties.setProperty(DssPropertyParametersUtil.DSS_CODE_KEY, DATA_STORE_CODE);
-        properties.setProperty(DssPropertyParametersUtil.STOREROOT_DIR_KEY, storeRoot.getPath());
+        properties.setProperty(DssPropertyParameters.DSS_CODE_KEY, DATA_STORE_CODE);
+        properties.setProperty(DssPropertyParameters.STOREROOT_DIR_KEY, storeRoot.getPath());
         properties.setProperty(SHUFFLING_SECTION_NAME + "." + CLASS_PROPERTY_NAME,
                 SegmentedStoreShufflingTaskTest.MockShuffling.class.getName());
         File share1 = new File(storeRoot, "1");
@@ -233,8 +232,8 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
     public void testDefaultBalancer()
     {
         Properties properties = new Properties();
-        properties.setProperty(DssPropertyParametersUtil.DSS_CODE_KEY, DATA_STORE_CODE);
-        properties.setProperty(DssPropertyParametersUtil.STOREROOT_DIR_KEY, storeRoot.getPath());
+        properties.setProperty(DssPropertyParameters.DSS_CODE_KEY, DATA_STORE_CODE);
+        properties.setProperty(DssPropertyParameters.STOREROOT_DIR_KEY, storeRoot.getPath());
         balancerTask.setUp("mock-balancer", properties);
         context.checking(new Expectations()
             {

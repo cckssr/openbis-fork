@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
-import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,18 +28,19 @@ import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogLevel;
+import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
+import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.postregistration.EagerShufflingTask;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTask;
 import ch.systemsx.cisd.etlserver.postregistration.TaskExecutor;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
  * Simple shuffling which moves data sets from full shares to the share with initial most free space until it is full.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class SimpleShuffling implements ISegmentedStoreShuffling
@@ -80,7 +79,7 @@ public class SimpleShuffling implements ISegmentedStoreShuffling
 
     public SimpleShuffling(Properties properties)
     {
-        this(properties, new EagerShufflingTask(properties, ServiceProvider.getOpenBISService()));
+        this(properties, new EagerShufflingTask(properties, ShufflingServiceProviderFactory.getInstance().getOpenBISService()));
     }
 
     SimpleShuffling(Properties properties, IPostRegistrationTask shufflingTask)
@@ -101,7 +100,7 @@ public class SimpleShuffling implements ISegmentedStoreShuffling
 
     @Override
     public void shuffleDataSets(List<Share> sourceShares, List<Share> targetShares,
-            IEncapsulatedOpenBISService service, IDataSetMover dataSetMover, ISimpleLogger logger)
+            IOpenBISService service, IDataSetMover dataSetMover, ISimpleLogger logger)
     {
         List<ShareAndFreeSpace> fullShares = getFullShares(sourceShares);
         for (ShareAndFreeSpace fullShare : fullShares)
@@ -116,8 +115,7 @@ public class SimpleShuffling implements ISegmentedStoreShuffling
                 numberOfDataSetsToMove = dataSets.size();
                 logger.log(INFO, "All " + numberOfDataSetsToMove
                         + " data sets should be moved for share " + share.getShareId());
-            }
-            else
+            } else
             {
                 logger.log(INFO,
                         "BEGIN Computing number of data sets to be moved for share " + share.getShareId());
@@ -192,15 +190,15 @@ public class SimpleShuffling implements ISegmentedStoreShuffling
             shareStates.add(new ShareAndFreeSpace(share));
         }
         Collections.sort(shareStates, new Comparator<ShareAndFreeSpace>()
+        {
+            @Override
+            public int compare(ShareAndFreeSpace o1, ShareAndFreeSpace o2)
             {
-                @Override
-                public int compare(ShareAndFreeSpace o1, ShareAndFreeSpace o2)
-                {
-                    long s1 = o1.getFreeSpace();
-                    long s2 = o2.getFreeSpace();
-                    return s1 < s2 ? -1 : (s1 > s2 ? 1 : 0);
-                }
-            });
+                long s1 = o1.getFreeSpace();
+                long s2 = o2.getFreeSpace();
+                return s1 < s2 ? -1 : (s1 > s2 ? 1 : 0);
+            }
+        });
         return shareStates;
     }
 

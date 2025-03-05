@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
+import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 
@@ -37,7 +38,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
  * @author Izabela Adamczyk
  */
 public class DeleteFromExternalDBMaintenanceTask extends
-        AbstractDataSetDeletionPostProcessingMaintenanceTask
+        AbstractDataSetDeletionPostProcessingMaintenanceTask implements IMaintenanceTask
 {
 
     private static final String DEFAULT_DATA_SET_PERM_ID = "PERM_ID";

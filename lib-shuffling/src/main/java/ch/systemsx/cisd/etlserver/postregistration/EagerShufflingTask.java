@@ -38,16 +38,16 @@ import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
+import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.plugins.DataSetMover;
 import ch.systemsx.cisd.etlserver.plugins.IDataSetMover;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
@@ -55,7 +55,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
  * Post registration task which move the data set to share which has enough space.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalDataSets
@@ -123,19 +123,19 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
 
     private boolean verifyChecksum;
 
-    public EagerShufflingTask(Properties properties, IEncapsulatedOpenBISService service)
+    public EagerShufflingTask(Properties properties, IOpenBISService service)
     {
-        this(properties, IncomingShareIdProvider.getIdsOfIncomingShares(), service, ServiceProvider
-                .getShareIdManager(), new SimpleFreeSpaceProvider(), new DataSetMover(service,
-                ServiceProvider.getShareIdManager()), ServiceProvider.getConfigProvider(),
+        this(properties, IncomingShareIdProvider.getIdsOfIncomingShares(), service, ShufflingServiceProviderFactory.getInstance()
+                        .getShareIdManager(), new SimpleFreeSpaceProvider(), new DataSetMover(service,
+                        ShufflingServiceProviderFactory.getInstance().getShareIdManager()), ShufflingServiceProviderFactory.getInstance().getConfigProvider(),
                 new HierarchicalContentChecksumProvider(
-                        ServiceProvider.getHierarchicalContentProvider()), new Log4jSimpleLogger(
+                        ShufflingServiceProviderFactory.getInstance().getHierarchicalContentProvider()), new Log4jSimpleLogger(
                         operationLog), new Log4jSimpleLogger(notificationLog));
     }
 
     @Private
     public EagerShufflingTask(Properties properties, Set<String> incomingShares,
-            IEncapsulatedOpenBISService service, IShareIdManager shareIdManager,
+            IOpenBISService service, IShareIdManager shareIdManager,
             IFreeSpaceProvider freeSpaceProvider, IDataSetMover dataSetMover,
             IConfigProvider configProvider, IChecksumProvider checksumProvider,
             ISimpleLogger logger, ISimpleLogger notifyer)
@@ -314,7 +314,7 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
         @Override
         public void cleanup(ISimpleLogger logger)
         {
-            IShareIdManager shareIdManager = ServiceProvider.getShareIdManager();
+            IShareIdManager shareIdManager = ShufflingServiceProviderFactory.getInstance().getShareIdManager();
             SegmentedStoreUtils.cleanUp(dataSet, storeRoot, newShareId, shareIdManager, logger);
         }
     }
