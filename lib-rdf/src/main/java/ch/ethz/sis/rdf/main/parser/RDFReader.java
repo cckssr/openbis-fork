@@ -287,7 +287,7 @@ public class RDFReader
 
                     } else if (objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId) != null && !samplePropertyType.dataType.equals("VARCHAR") )
                     {
-                        samplePropertyType.dataType = "SAMPLE"+ ":" + objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId).get(0);
+                        samplePropertyType.dataType = "SAMPLE";
                         //System.out.println(" OBJECT_PROP: "+ samplePropertyType.dataType + " -> " + samplePropertyType.ontologyAnnotationId + " -> " + objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId).get(0));
                     }
                     //System.out.println("  VACAB_TYPE: "+ samplePropertyType.dataType + " -> " + samplePropertyType.code + " -> " + vocabularyTypeListGroupedByTypeMap.get(samplePropertyType.code));
