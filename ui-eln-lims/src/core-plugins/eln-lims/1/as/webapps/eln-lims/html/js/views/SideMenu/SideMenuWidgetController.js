@@ -27,7 +27,6 @@ function SideMenuWidgetController(mainController) {
     this._sideMenuWidgetModel = new SideMenuWidgetModel()
     this._sideMenuWidgetView = new SideMenuWidgetView(this, this._sideMenuWidgetModel)
     this._browserController = new SideMenuWidgetBrowserController()
-    this.isCollapsed = false;
 
     //
     // External API for real time updates

@@ -132,7 +132,6 @@
 										paginationInfo : _this._sampleFormModel.paginationInfo
 								};
 								mainController.changeView('showEditSamplePageFromPermId', args);
-//								mainController.sideMenu.collapseSideMenu();
 							}, 100);
 						}, "Edit", "Edit object", "edit-btn");
 						if(toolbarConfig.EDIT) {
@@ -329,7 +328,6 @@
 			} else { //Create and Edit
 				var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 					_this._sampleFormController.createUpdateCopySample();
-//					mainController.sideMenu.expandSideMenu();
 				}, "Save", "Save changes", "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");

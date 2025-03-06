@@ -27,16 +27,16 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this._resizeObserver = new ResizeObserver((entries) => {
                    var width = entries[0].contentRect.width;
                    if(width < 55) {
-
                            var firstColumn = LayoutManager.firstColumn;
                            var secondColumn = LayoutManager.secondColumn;
-                           var thirdColumn = LayoutManager.thirdColumn;
                            var totalWidth = $( window ).width();
                            firstColumn.css("width", "55px");
                            secondColumn.css("width", totalWidth-55);
                         if(!mainController.sideMenu.isCollapsed) {
                             mainController.sideMenu.collapseSideMenu();
                        }
+                   } else if(width > 55 && mainController.sideMenu.isCollapsed) {
+                        mainController.sideMenu.expandSideMenu();
                    }
        //          for (const entry of entries) {
        //            entry.target.style.width = entry.contentBoxSize[0].inlineSize + 10 + "px";
@@ -50,6 +50,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         this._resizeObserver.disconnect();
 
         if(isCollapsed) {
+            mainController.sideMenu.isCollapsed = true;
             var width = $( window ).width();
             var firstColumn = LayoutManager.firstColumn;
             var secondColumn = LayoutManager.secondColumn;
@@ -58,6 +59,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this._collapsedSideMenu($container);
 
         } else {
+            mainController.sideMenu.isCollapsed = false;
             //
             // Fix Header
             //
@@ -66,6 +68,14 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             $widget.css("height", "100%")
             $widget.css("display", "flex")
             $widget.css("flex-direction", "column")
+
+            var firstColumn = LayoutManager.firstColumn;
+            if(firstColumn && firstColumn.width() <= 55) {
+                var width = $( window ).width();
+                var firstColumnWidth = width * 0.25;
+                firstColumn.css("width", firstColumnWidth + "px");
+                LayoutManager.secondColumn.css("width", (width - firstColumnWidth - 1)+"px")
+            }
 
 
 
@@ -257,6 +267,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 firstColumn.css("width", "55px");
                 _this._resizeObserver.disconnect();
                 secondColumn.css("width", width-55);
+                mainController.sideMenu.isCollapsed = true;
                 _this._collapsedSideMenu(_this._$container)
         });
 
@@ -313,6 +324,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $btn.click(function() {
                 _this._resizeObserver.disconnect();
                 LayoutManager.restoreStandardSize();
+                mainController.sideMenu.isCollapsed = false;
                 _this.repaint(_this._$container, false);
         });
 
