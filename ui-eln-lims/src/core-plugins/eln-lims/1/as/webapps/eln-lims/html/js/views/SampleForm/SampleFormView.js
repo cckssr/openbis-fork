@@ -597,13 +597,13 @@
 	
 				//Preview image
 				this._reloadPreviewImage();
-	
 				// Dataset Viewer
+
 				var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
-				mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
-				this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade, 
-						profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true, this._sampleFormModel.mode);
-				this._sampleFormModel.dataSetViewer.init();
+				this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade,
+				        profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true, this._sampleFormModel.mode);
+				mainController.sideMenu.addSubSideMenu($dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
+                this._sampleFormModel.dataSetViewer.init();
 			}
 	
 			//

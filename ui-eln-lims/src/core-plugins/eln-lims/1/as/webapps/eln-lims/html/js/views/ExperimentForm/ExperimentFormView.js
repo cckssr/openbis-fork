@@ -421,15 +421,16 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 
 	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
+//	        this._experimentFormModel.experimentDataSetCount > 0 && !mainController.sideMenu.isCollapsed) {
 	        this._experimentFormModel.experimentDataSetCount > 0) {
                 //Preview image
                 this._reloadPreviewImage();
 
                 // Dataset Viewer
                 var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
-                mainController.sideMenu.addSubSideMenu($dataSetViewerContainer);
-                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade, 
+                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade,
                         profile.getDefaultDataStoreURL(), null, false, true, this._experimentFormModel.mode);
+                mainController.sideMenu.addSubSideMenu($dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
                 this._experimentFormModel.dataSetViewer.init();
         }
 

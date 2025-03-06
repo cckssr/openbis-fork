@@ -206,11 +206,13 @@ var LayoutManager = {
             _this.firstColumn.append(view.menu);
         }
 
-        _this.firstColumn.css({
-                "display" : "block",
-                "height" : height,
-                "width" : firstColumnWidth
-        });
+        if(!mainController.sideMenu.isCollapsed) {
+            _this.firstColumn.css({
+                    "display" : "block",
+                    "height" : height,
+                    "width" : firstColumnWidth
+            });
+        }
 
         mainController.serverFacade.getSetting("eln-layout-first-column-width", function (widthStr) {
             _this.firstColumn
@@ -302,11 +304,13 @@ var LayoutManager = {
             _this.firstColumn.append(view.menu);
         }
 
-        _this.firstColumn.css({
-                display : "block",
-                height : height,
-                "width" : firstColumnWidth
-        });
+        if(!mainController.sideMenu.isCollapsed) {
+            _this.firstColumn.css({
+                    display : "block",
+                    height : height,
+                    "width" : firstColumnWidth
+            });
+        }
 
         _this.secondColumn.css({
             display : "block",

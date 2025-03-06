@@ -28,8 +28,8 @@ var IconUtil = new function() {
             case "img":
             case "img_with_class":
                 $icon = $("<img/>").attr("src", icon.url);
-                $icon.css("width", "18px");
-                $icon.css("height", "18px");
+                $icon.css("width", "25px");
+//                $icon.css("height", "18px");
                 break;
             default:
                 $icon = $("<span/>");
@@ -45,7 +45,8 @@ var IconUtil = new function() {
 
             if(icon.text) {
                 $icon.text(icon.text);
-                $icon.css("font-size", "18px");
+//                $icon.css("font-size", "18px");
+                $icon.css("font-size", "25px");
             }
         } else if(Array.isArray(icon.type)) {
             for (let i = 0; i < icon.type.length; i++) {
@@ -58,7 +59,7 @@ var IconUtil = new function() {
                     }
                     if(icon.text[i]) {
                         tempIcon.text(icon.text[i]);
-                        tempIcon.css("font-size", "18px");
+                        tempIcon.css("font-size", "25px");
                     }
                 } else if(type === "img") {
                     tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "middle");
@@ -95,7 +96,8 @@ var IconUtil = new function() {
             icon.text = materialPlusIcon + "folder";
         } else if(type === "PROJECT") {
             icon.type = ["font", "img"];
-            icon.url = [null, "./img/folder-with-key-outlined.svg"];
+            icon.url = [null, "./img/folder-with-settings.svg"];
+//            icon.url = [null, "./img/folder-with-key.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
         } else if(type === "OTHER") {
@@ -125,6 +127,7 @@ var IconUtil = new function() {
         } else if(type === "SPACE") {
             icon.type = ["font", "img"];
             icon.url = [null, "./img/folder-with-key.svg"];
+//            icon.url = [null, "./img/folder-with-key.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
         } else if(type === "HIDE") {
@@ -220,11 +223,15 @@ var IconUtil = new function() {
             icon.class = "fa fa-database";
         } else if(type === "SPACE") {
             if(optionalParameters && optionalParameters.isHomeSpace) {
-                icon.class = "material-icons";
-                icon.text = "folder_shared";
+//                icon.class = "material-icons";
+//                icon.class = "material-icons-outlined";
+//                icon.text = "folder_shared";
+                icon.type = "img";
+                icon.url = "./img/folder-with-home.svg";
             }
             else {
                 icon.type = "img";
+//                icon.url = "./img/folder-with-key-outlined.svg";
                 icon.url = "./img/folder-with-key.svg";
 
             }
@@ -232,6 +239,7 @@ var IconUtil = new function() {
             if(optionalParameters && optionalParameters.sampleTypeCode) {
                 var sampleTypeCode = optionalParameters.sampleTypeCode;
                 if(sampleTypeCode === 'FOLDER') {
+//                    icon.class = "material-icons-outlined";
                     icon.class = "material-icons";
                     icon.text = "folder";
                 } else if(sampleTypeCode === 'ENTRY') {
@@ -295,7 +303,10 @@ var IconUtil = new function() {
             }
         } else if(type === "PROJECT") {
             icon.type = "img";
-            icon.url = "./img/folder-with-key-outlined.svg";
+//            icon.url = "./img/folder-with-key.svg";
+//            icon.url = "./img/folder-with-key-inverted.svg";
+            icon.url = "./img/folder-with-settings.svg";
+//            icon.class = "fa fa-flask";
         }
 
         return icon;

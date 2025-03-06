@@ -24,6 +24,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this._sideMenuWidgetController = sideMenuWidgetController
     this._sideMenuWidgetModel = sideMenuWidgetModel
     this.__this = this;
+    this.subSideMenuViewer = null;
     this._resizeObserver = new ResizeObserver((entries) => {
                    var width = entries[0].contentRect.width;
                    if(width < 55) {
@@ -215,7 +216,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 }
             })
 
+
+
             $widget.append($header).append($body)
+
+            if(this._sideMenuWidgetModel.subSideMenu) {
+                var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+                subSideMenu.css("margin-left", "3px")
+                this._sideMenuWidgetModel.percentageOfUsage = 0.5
+                $widget.append(subSideMenu)
+                this._sideMenuWidgetController.resizeElement($body, 0.5)
+                this._sideMenuWidgetController.resizeElement(subSideMenu, 0.5)
+                if(this.subSideMenuViewer && this.subSideMenuViewer.init) {
+                    this.subSideMenuViewer.init();
+                }
+            }
+
             if(!LayoutManager.isMobile()) {
              $widget.append(this._expandedFooter())
             }
@@ -233,6 +249,19 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             if(this._resizeObserver) {
                 this._resizeObserver.observe($widget[0]);
             }
+
+
+//            var queryString = Util.queryString();
+//            var menuUniqueId = queryString.menuUniqueId;
+//            var viewName = queryString.viewName;
+//            var viewData = queryString.viewData
+//
+//            if(viewName) {
+////                localReference._changeView(viewName, viewData, false, false);
+//                this._sideMenuWidgetController.moveToNodeId(decodeURIComponent(menuUniqueId))
+////                this._sideMenuWidgetController.moveToNodeId(decodeURIComponent(menuUniqueId));
+//            }
+
         }
     }
 
@@ -260,14 +289,15 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         var _this = this;
         $btn.click(function() {
+            _this._resizeObserver.disconnect();
             var firstColumn = LayoutManager.firstColumn;
             var secondColumn = LayoutManager.secondColumn;
-            var thirdColumn = LayoutManager.thirdColumn;
-             var width = $( window ).width();
-                firstColumn.css("width", "55px");
-                _this._resizeObserver.disconnect();
-                secondColumn.css("width", width-55);
-                mainController.sideMenu.isCollapsed = true;
+            var width = $( window ).width();
+            firstColumn.css("width", "55px");
+            secondColumn.css("width", width-55);
+            mainController.sideMenu.isCollapsed = true;
+
+                LayoutManager.triggerResizeEventHandlers();
                 _this._collapsedSideMenu(_this._$container)
         });
 
@@ -323,9 +353,11 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var _this = this;
         $btn.click(function() {
                 _this._resizeObserver.disconnect();
-                LayoutManager.restoreStandardSize();
                 mainController.sideMenu.isCollapsed = false;
+                LayoutManager.restoreStandardSize();
+//                mainController.sideMenu.isCollapsed = false;
                 _this.repaint(_this._$container, false);
+//                LayoutManager.triggerResizeEventHandlers();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
