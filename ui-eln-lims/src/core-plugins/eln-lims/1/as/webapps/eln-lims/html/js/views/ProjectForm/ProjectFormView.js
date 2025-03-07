@@ -17,6 +17,7 @@
 function ProjectFormView(projectFormController, projectFormModel) {
 	this._projectFormController = projectFormController;
 	this._projectFormModel = projectFormModel;
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -173,6 +174,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		} else {
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._projectFormController.updateProject();
+				if(!_this._wasSideMenuCollapsed) {
+                    mainController.sideMenu.expandSideMenu();
+                }
 			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");

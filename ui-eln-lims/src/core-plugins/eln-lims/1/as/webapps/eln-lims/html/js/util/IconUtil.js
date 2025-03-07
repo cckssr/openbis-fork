@@ -21,15 +21,18 @@
  */
 var IconUtil = new function() {
 
-    this.getIcon = function(icon) {
+    this.getIcon = function(icon, size) {
         var $icon = null
+        if(!size) {
+            size = 18;
+        }
 
         switch(icon.type) {
             case "img":
             case "img_with_class":
                 $icon = $("<img/>").attr("src", icon.url);
-                $icon.css("width", "25px");
-//                $icon.css("height", "18px");
+                $icon.css("width", size+"px");
+                $icon.css("height", size+"px");
                 break;
             default:
                 $icon = $("<span/>");
@@ -45,8 +48,7 @@ var IconUtil = new function() {
 
             if(icon.text) {
                 $icon.text(icon.text);
-//                $icon.css("font-size", "18px");
-                $icon.css("font-size", "25px");
+                $icon.css("font-size", size+"px");
             }
         } else if(Array.isArray(icon.type)) {
             for (let i = 0; i < icon.type.length; i++) {
@@ -59,7 +61,7 @@ var IconUtil = new function() {
                     }
                     if(icon.text[i]) {
                         tempIcon.text(icon.text[i]);
-                        tempIcon.css("font-size", "25px");
+                        tempIcon.css("font-size", size+"px");
                     }
                 } else if(type === "img") {
                     tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "middle");
@@ -221,6 +223,8 @@ var IconUtil = new function() {
             icon.class = "glyphicon glyphicon-info-sign";
         } else if(type === "DATASET") {
             icon.class = "fa fa-database";
+//            icon.class = "material-icons-outlined";
+//            icon.text = "dns";
         } else if(type === "SPACE") {
             if(optionalParameters && optionalParameters.isHomeSpace) {
 //                icon.class = "material-icons";
@@ -242,7 +246,7 @@ var IconUtil = new function() {
 //                    icon.class = "material-icons-outlined";
                     icon.class = "material-icons";
                     icon.text = "folder";
-                } else if(sampleTypeCode === 'ENTRY') {
+                } else {
                     var hasData = false;
                     if(optionalParameters.dataSets && optionalParameters.dataSets.length > 0) {
                         hasData = true;
@@ -307,6 +311,11 @@ var IconUtil = new function() {
 //            icon.url = "./img/folder-with-key-inverted.svg";
             icon.url = "./img/folder-with-settings.svg";
 //            icon.class = "fa fa-flask";
+
+//            icon.type = "font";
+//            icon.class = "material-icons";
+//            icon.text = "fact_check"
+
         }
 
         return icon;

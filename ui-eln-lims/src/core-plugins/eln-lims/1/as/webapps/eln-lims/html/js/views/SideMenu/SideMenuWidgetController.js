@@ -165,12 +165,28 @@ function SideMenuWidgetController(mainController) {
 
     this.collapseSideMenu = function() {
         this.isCollapsed = true;
-        this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
+        if(!LayoutManager.isMobile()) {
+            this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
+        } else {
+            if(!LayoutManager.fullScreenFlag) {
+                LayoutManager.fullScreen();
+                this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
+            }
+        }
+
     }
 
     this.expandSideMenu = function() {
         this.isCollapsed = false;
-        this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, false);
+        if(!LayoutManager.isMobile()) {
+            this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, false);
+        } else {
+            if(LayoutManager.fullScreenFlag) {
+                LayoutManager.restoreStandardSize();
+                this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
+            }
+        }
+
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {

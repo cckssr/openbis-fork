@@ -19,6 +19,7 @@
 		this._sampleFormModel = sampleFormModel;
 		this._previousGlobalEventListener = null;
 		this._sampleFormViewGlobalEventListener = null;
+		this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 	
 		this.repaint = function(views, loadFromTemplate) {
 			var $container = views.content;
@@ -328,6 +329,9 @@
 			} else { //Create and Edit
 				var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 					_this._sampleFormController.createUpdateCopySample();
+					if(!_this._wasSideMenuCollapsed) {
+                        mainController.sideMenu.expandSideMenu();
+                    }
 				}, "Save", "Save changes", "save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");

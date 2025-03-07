@@ -764,6 +764,7 @@ function MainController(profile) {
                         document.title = "" + ELNDictionary.getExperimentKindName(type) + " " + identifier;
 						_this._showExperimentPage(data.result[0], FormMode.EDIT);
 						//window.scrollTo(0,0);
+						_this.sideMenu.collapseSideMenu();
 					});
 					break;
 				case "showCreateSamplePage":
@@ -1485,6 +1486,7 @@ function MainController(profile) {
         this.currentView = sampleFormController;
         var views = this._getNewViewModel(true, true, false);
         sampleFormController.init(views);
+        this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showCreateSubExperimentPage = function(sampleTypeCode, experimentIdentifier) {
@@ -1506,6 +1508,7 @@ function MainController(profile) {
 		this.currentView = sampleFormController;
 		var views = this._getNewViewModel(true, true, false);
 		sampleFormController.init(views);
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showTrashcan = function() {
@@ -1531,6 +1534,7 @@ function MainController(profile) {
 			localInstance.currentView = sampleFormController;
 			var views = localInstance._getNewViewModel(true, true, false);
 			sampleFormController.init(views);
+			localInstance.sideMenu.collapseSideMenu();
 		});
 	}
 	
@@ -1540,6 +1544,7 @@ function MainController(profile) {
         var views = this._getNewViewModel(true, true, false);
         spaceFormController.init(views);
         this.currentView = spaceFormController;
+        this.sideMenu.collapseSideMenu();
     }
 
     this._isInventorySpace = function(spaceCode) {
@@ -1586,6 +1591,7 @@ function MainController(profile) {
         var views = this._getNewViewModel(true, true, false);
         spaceFormController.init(views);
         this.currentView = spaceFormController;
+        this.sideMenu.collapseSideMenu();
     }
     
 	this._showCreateProjectPage = function(spaceCode) {
@@ -1594,6 +1600,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		projectFormController.init(views);
 		this.currentView = projectFormController;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showProjectPage = function(project) {
@@ -1610,6 +1617,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		projectFormController.init(views);
 		this.currentView = projectFormController;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showExperimentPage = function(experiment, mode) {
@@ -1626,6 +1634,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
@@ -1642,6 +1651,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showAdvancedSearchPage = function(freeText) {

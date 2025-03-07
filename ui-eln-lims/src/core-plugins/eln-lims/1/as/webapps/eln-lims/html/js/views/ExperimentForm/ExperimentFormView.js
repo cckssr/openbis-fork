@@ -17,6 +17,7 @@
 function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -328,6 +329,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		} else { //Create and Edit
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._experimentFormController.updateExperiment();
+				if(!_this._wasSideMenuCollapsed) {
+                    mainController.sideMenu.expandSideMenu();
+                }
 			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");

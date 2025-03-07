@@ -17,6 +17,7 @@
 function SpaceFormView(spaceFormController, spaceFormModel) {
 	this._spaceFormController = spaceFormController;
 	this._spaceFormModel = spaceFormModel;
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 	
 	this.repaint = function(views) {
 		var _this = this;
@@ -149,6 +150,9 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         } else {
             var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
                 _this._spaceFormController.updateSpace();
+                if(!_this._wasSideMenuCollapsed) {
+                    mainController.sideMenu.expandSideMenu();
+                }
             }, "Save", "Save changes", "save-btn");
             $saveBtn.removeClass("btn-default");
             $saveBtn.addClass("btn-primary");

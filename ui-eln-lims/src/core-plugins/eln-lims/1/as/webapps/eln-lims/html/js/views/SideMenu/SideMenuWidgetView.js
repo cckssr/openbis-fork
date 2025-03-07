@@ -38,10 +38,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                        }
                    } else if(width > 55 && mainController.sideMenu.isCollapsed) {
                         mainController.sideMenu.expandSideMenu();
+                   } else if(width == 55 && !mainController.sideMenu.isCollapsed) {
+                        mainController.sideMenu.collapseSideMenu();
                    }
-       //          for (const entry of entries) {
-       //            entry.target.style.width = entry.contentBoxSize[0].inlineSize + 10 + "px";
-       //          }
                });
 
     var MIN_LENGTH = 3
@@ -50,7 +49,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         this._$container = $container
         this._resizeObserver.disconnect();
 
-        if(isCollapsed) {
+        if(isCollapsed && !LayoutManager.isMobile()) {
             mainController.sideMenu.isCollapsed = true;
             var width = $( window ).width();
             var firstColumn = LayoutManager.firstColumn;
@@ -246,22 +245,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this._sideMenuWidgetModel.menuDOMBody = $body
             this.repaintTreeMenuDinamic()
 
-            if(this._resizeObserver) {
+            if(this._resizeObserver && !LayoutManager.isMobile()) {
                 this._resizeObserver.observe($widget[0]);
             }
-
-
-//            var queryString = Util.queryString();
-//            var menuUniqueId = queryString.menuUniqueId;
-//            var viewName = queryString.viewName;
-//            var viewData = queryString.viewData
-//
-//            if(viewName) {
-////                localReference._changeView(viewName, viewData, false, false);
-//                this._sideMenuWidgetController.moveToNodeId(decodeURIComponent(menuUniqueId))
-////                this._sideMenuWidgetController.moveToNodeId(decodeURIComponent(menuUniqueId));
-//            }
-
         }
     }
 
@@ -297,8 +283,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             secondColumn.css("width", width-55);
             mainController.sideMenu.isCollapsed = true;
 
-                LayoutManager.triggerResizeEventHandlers();
-                _this._collapsedSideMenu(_this._$container)
+            _this._collapsedSideMenu(_this._$container)
+            LayoutManager._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
@@ -355,9 +341,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 _this._resizeObserver.disconnect();
                 mainController.sideMenu.isCollapsed = false;
                 LayoutManager.restoreStandardSize();
-//                mainController.sideMenu.isCollapsed = false;
                 _this.repaint(_this._$container, false);
-//                LayoutManager.triggerResizeEventHandlers();
+                LayoutManager._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
@@ -427,13 +412,22 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         return collapseMenuBtn;
     }
 
+    this.repaintCollapseButton = function($container) {
+        var btn = $container.find("#collapseMenuBtn");
+        if(LayoutManager.fullScreenFlag) {
+            btn[0].children[0].textContent = 'keyboard_double_arrow_down'
+        } else {
+            btn[0].children[0].textContent = 'keyboard_double_arrow_up'
+        }
+    }
+
     this._renderDOMNode = function (params) {
         var { node, container } = params
 
         var $node = $("<div>").addClass("browser-node")
 
         if (node.icon) {
-            var $icon = IconUtil.getIcon(node.icon)
+            var $icon = IconUtil.getIcon(node.icon, 22)
             $("<div/>").addClass("browser-node-icon").append($icon).appendTo($node)
         }
 
