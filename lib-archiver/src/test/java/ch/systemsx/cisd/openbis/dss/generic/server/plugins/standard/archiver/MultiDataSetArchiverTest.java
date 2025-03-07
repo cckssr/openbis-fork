@@ -41,7 +41,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
@@ -52,7 +51,6 @@ import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
-import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.utilities.ITimeAndWaitingProvider;
@@ -74,19 +72,17 @@ import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archi
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DataSetAndPathInfoDBConsistencyChecker;
@@ -324,16 +320,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         statusUpdater = new RecordingStatusUpdater();
 
         originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
-        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
         {
             @Override public IConfigProvider getConfigProvider()
             {
                 return configProvider;
-            }
-
-            @Override public IMailClient createEMailClient()
-            {
-                throw new UnsupportedOperationException();
             }
 
             @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
@@ -346,16 +337,6 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
                 return directoryProvider;
             }
 
-            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IDataSourceProvider getDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
             @Override public IDataSetDeleter getDataSetDeleter()
             {
                 return dataSetDeleter;
@@ -364,11 +345,6 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
             @Override public IShareIdManager getShareIdManager()
             {
                 return shareIdManager;
-            }
-
-            @Override public IArchiverPlugin getArchiverPlugin()
-            {
-                throw new UnsupportedOperationException();
             }
 
             @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
@@ -384,11 +360,6 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
             @Override public IOpenBISService getOpenBISService()
             {
                 return openBISService;
-            }
-
-            @Override public IApplicationServerApi getV3ApplicationService()
-            {
-                throw new UnsupportedOperationException();
             }
         });
 

@@ -22,7 +22,6 @@ import java.util.Random;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.beans.factory.BeanFactory;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -31,9 +30,11 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.etlserver.IAutoArchiverPolicy;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
@@ -49,17 +50,22 @@ public abstract class ByPoliceAbstractTest extends AbstractAutoArchiverPolicyTes
 
     private ISingleDataSetPathInfoProvider singleDsProviderMock;
 
+    private IArchiverServiceProvider originalServiceProvider;
+
     @BeforeMethod
     public void setUpTestEnvironment()
     {
         context = new Mockery();
-        final BeanFactory beanFactory = context.mock(BeanFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-        pathProviderMock = ServiceProviderTestWrapper.mock(context, IDataSetPathInfoProvider.class);
-        singleDsProviderMock = ServiceProviderTestWrapper.mock(context, ISingleDataSetPathInfoProvider.class);
-
-        ServiceProviderTestWrapper.addMock(context, IDataSetPathInfoProvider.class, pathProviderMock);
-
+        pathProviderMock = context.mock(IDataSetPathInfoProvider.class);
+        singleDsProviderMock = context.mock(ISingleDataSetPathInfoProvider.class);
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
+        {
+            @Override public IDataSetPathInfoProvider getDataSetPathInfoProvider()
+            {
+                return pathProviderMock;
+            }
+        });
     }
 
     /**
@@ -68,33 +74,32 @@ public abstract class ByPoliceAbstractTest extends AbstractAutoArchiverPolicyTes
     protected void prepareDataSetWithNoSize(final String code, final Long sizeInBytes)
     {
         context.checking(new Expectations()
+        {
             {
+                one(pathProviderMock).tryGetSingleDataSetPathInfoProvider(code);
+                if (sizeInBytes != null)
                 {
-                    one(pathProviderMock).tryGetSingleDataSetPathInfoProvider(code);
-                    if (sizeInBytes != null)
-                    {
-                        will(returnValue(singleDsProviderMock));
+                    will(returnValue(singleDsProviderMock));
 
-                        one(singleDsProviderMock).getRootPathInfo();
-                        will(returnValue(new DataSetPathInfo()
-                            {
-                                {
-                                    setSizeInBytes(42);
-                                }
-                            }));
-                    }
-                    else
+                    one(singleDsProviderMock).getRootPathInfo();
+                    will(returnValue(new DataSetPathInfo()
                     {
-                        will(returnValue(null));
-                    }
+                        {
+                            setSizeInBytes(42);
+                        }
+                    }));
+                } else
+                {
+                    will(returnValue(null));
                 }
-            });
+            }
+        });
     }
 
     @AfterMethod
     public void checkMockExpectations(ITestResult result)
     {
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         context.assertIsSatisfied();
     }
 
@@ -131,13 +136,13 @@ public abstract class ByPoliceAbstractTest extends AbstractAutoArchiverPolicyTes
         List<AbstractExternalData> result = new ArrayList<AbstractExternalData>(policy.filter(dataSets));
 
         Collections.sort(result, new SimpleComparator<AbstractExternalData, String>()
+        {
+            @Override
+            public String evaluate(AbstractExternalData item)
             {
-                @Override
-                public String evaluate(AbstractExternalData item)
-                {
-                    return item.getCode();
-                }
-            });
+                return item.getCode();
+            }
+        });
 
         return result;
     }

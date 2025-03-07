@@ -15,10 +15,7 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.testng.AssertJUnit;
@@ -26,7 +23,6 @@ import org.testng.annotations.BeforeMethod;
 
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;

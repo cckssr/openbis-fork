@@ -17,7 +17,7 @@ package ch.systemsx.cisd.etlserver;
 
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 
@@ -37,5 +37,5 @@ public interface IArchiveCandidateDiscoverer
      * @param criteria general time and type criteria to start with
      * @return list of data sets that the auto archiver can process
      */
-    List<AbstractExternalData> findDatasetsForArchiving(IEncapsulatedOpenBISService openbis, ArchiverDataSetCriteria criteria);
+    List<AbstractExternalData> findDatasetsForArchiving(IOpenBISService openbis, ArchiverDataSetCriteria criteria);
 }

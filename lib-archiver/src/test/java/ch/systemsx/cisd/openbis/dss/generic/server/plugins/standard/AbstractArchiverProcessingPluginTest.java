@@ -31,7 +31,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.IStatusChecker;
@@ -42,24 +41,18 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.logging.LogUtils;
-import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.DatasetProcessingStatuses;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.Operation;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -357,36 +350,11 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         });
 
         originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
-        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
         {
             @Override public IConfigProvider getConfigProvider()
             {
                 return configProvider;
-            }
-
-            @Override public IMailClient createEMailClient()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IDataSourceProvider getDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
             }
 
             @Override public IDataSetDeleter getDataSetDeleter()
@@ -399,29 +367,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
                 return shareIdManager;
             }
 
-            @Override public IArchiverPlugin getArchiverPlugin()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public Properties getArchiverProperties()
-            {
-                throw new UnsupportedOperationException();
-            }
-
             @Override public IOpenBISService getOpenBISService()
             {
                 return service;
-            }
-
-            @Override public IApplicationServerApi getV3ApplicationService()
-            {
-                throw new UnsupportedOperationException();
             }
         });
     }

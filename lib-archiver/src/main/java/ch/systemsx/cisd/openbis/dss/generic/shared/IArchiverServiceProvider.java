@@ -16,6 +16,8 @@ public interface IArchiverServiceProvider
 
     IDataSetDirectoryProvider getDataSetDirectoryProvider();
 
+    IDataSetPathInfoProvider getDataSetPathInfoProvider();
+
     IPathInfoDataSourceProvider getPathInfoDataSourceProvider();
 
     IDataSourceProvider getDataSourceProvider();

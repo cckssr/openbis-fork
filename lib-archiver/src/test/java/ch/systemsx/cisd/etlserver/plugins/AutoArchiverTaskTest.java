@@ -27,7 +27,6 @@ import org.apache.log4j.Level;
 import org.hamcrest.core.IsAnything;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.springframework.beans.factory.BeanFactory;
 import org.testng.AssertJUnit;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
@@ -35,18 +34,20 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.etlserver.IArchiveCandidateDiscoverer;
 import ch.systemsx.cisd.etlserver.IAutoArchiverPolicy;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderTestWrapper;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -68,7 +69,7 @@ public class AutoArchiverTaskTest extends AssertJUnit
         }
 
         @Override
-        public List<AbstractExternalData> findDatasetsForArchiving(IEncapsulatedOpenBISService openbis,
+        public List<AbstractExternalData> findDatasetsForArchiving(IOpenBISService openbis,
                 ArchiverDataSetCriteria criteria)
         {
             return dataSets;
@@ -103,22 +104,30 @@ public class AutoArchiverTaskTest extends AssertJUnit
 
     private Mockery context;
 
-    private IEncapsulatedOpenBISService service;
+    private IOpenBISService service;
+
+    private IArchiverServiceProvider originalServiceProvider;
 
     @BeforeMethod
     public void setUpTestEnvironment()
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO, "OPERATION.*");
         context = new Mockery();
-        final BeanFactory beanFactory = context.mock(BeanFactory.class);
-        ServiceProviderTestWrapper.setApplicationContext(beanFactory);
-        service = ServiceProviderTestWrapper.mock(context, IEncapsulatedOpenBISService.class);
+        service = context.mock(IOpenBISService.class);
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
+        {
+            @Override public IOpenBISService getOpenBISService()
+            {
+                return service;
+            }
+        });
     }
 
     @AfterMethod
     public void checkMockExpectations(ITestResult result)
     {
-        ServiceProviderTestWrapper.restoreApplicationContext();
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         String logContent = logRecorder.getLogContent();
         System.out.println("======= Log content for " + result.getName() + "():");
         System.out.println(logContent);

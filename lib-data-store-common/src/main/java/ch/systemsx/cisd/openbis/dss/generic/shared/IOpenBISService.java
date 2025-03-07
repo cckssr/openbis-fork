@@ -6,6 +6,7 @@ import java.util.Map;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
@@ -31,6 +32,8 @@ public interface IOpenBISService
 
     List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException;
 
+    List<AbstractExternalData> listAvailableDataSets(ArchiverDataSetCriteria criteria);
+
     List<DeletedDataSet> listDeletedDataSets(Long lastSeenDeletionEventIdOrNull, Date maxDeletionDateOrNull);
 
     void updateDataSetStatuses(List<String> dataSetCodes, DataSetArchivingStatus newStatus, boolean presentInArchive) throws UserFailureException;
@@ -42,4 +45,5 @@ public interface IOpenBISService
     void notifyDatasetAccess(String dataSetCode);
 
     boolean isDataSetOnTrashCanOrDeleted(String dataSetCode);
+
 }

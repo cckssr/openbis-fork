@@ -33,8 +33,8 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.etlserver.IArchiveCandidateDiscoverer;
 import ch.systemsx.cisd.etlserver.IAutoArchiverPolicy;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
@@ -43,7 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
  * {@link IMaintenanceTask} performing automatic archiving of data sets.
  * <p>
  * TODO KE: implement as asynchronous maintenance task
- * 
+ *
  * @author Piotr Buczek
  */
 public class AutoArchiverTask implements IMaintenanceTask
@@ -65,7 +65,7 @@ public class AutoArchiverTask implements IMaintenanceTask
 
     private static final int DEFAULT_OLDER_THAN = 30;
 
-    private IEncapsulatedOpenBISService openBISService;
+    private IOpenBISService openBISService;
 
     private IAutoArchiverPolicy policy;
 
@@ -100,7 +100,7 @@ public class AutoArchiverTask implements IMaintenanceTask
     @Override
     public void setUp(String pluginName, Properties properties)
     {
-        openBISService = ServiceProvider.getOpenBISService();
+        openBISService = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
         criteria = createCriteria(properties);
         SectionProperties policySectionProperties =
                 PropertyParametersUtil.extractSingleSectionProperties(properties,

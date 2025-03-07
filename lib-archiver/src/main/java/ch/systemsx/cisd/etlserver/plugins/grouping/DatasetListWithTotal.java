@@ -21,14 +21,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Transformer;
-
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CodeWithRegistration;
 
 /**
  * Storage for grouped archival candidates
- * 
+ *
  * @author Sascha Fedorenko
  */
 public class DatasetListWithTotal implements Iterable<AbstractExternalData>, Comparable<DatasetListWithTotal>
@@ -82,13 +80,6 @@ public class DatasetListWithTotal implements Iterable<AbstractExternalData>, Com
     @Override
     public String toString()
     {
-        return CollectionUtils.collect(list, new Transformer<AbstractExternalData, String>()
-            {
-                @Override
-                public String transform(AbstractExternalData input)
-                {
-                    return input.getCode();
-                }
-            }).toString();
+        return list.stream().map(CodeWithRegistration::getCode).toString();
     }
 }

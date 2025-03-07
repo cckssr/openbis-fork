@@ -25,14 +25,14 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.etlserver.IAutoArchiverPolicy;
 import ch.systemsx.cisd.etlserver.plugins.grouping.DatasetListWithTotal;
 import ch.systemsx.cisd.etlserver.plugins.grouping.IGroupKeyProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 
 /**
  * An base for archiving policies respecting desired target min-max size of the archive
- * 
+ *
  * @author Sascha Fedorenko
  */
 public abstract class BaseGroupingPolicy implements IAutoArchiverPolicy
@@ -110,7 +110,7 @@ public abstract class BaseGroupingPolicy implements IAutoArchiverPolicy
     {
         if (pathInfoProvider == null)
         {
-            pathInfoProvider = ServiceProvider.getDataSetPathInfoProvider();
+            pathInfoProvider = ArchiverServiceProviderFactory.getInstance().getDataSetPathInfoProvider();
         }
         return pathInfoProvider;
     }

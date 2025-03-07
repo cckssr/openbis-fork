@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
@@ -35,14 +34,12 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
-import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -52,18 +49,11 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
@@ -156,71 +146,16 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
         cleaner = new MockCleaner();
 
         originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
-        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
         {
-            @Override public IConfigProvider getConfigProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IMailClient createEMailClient()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IDataSourceProvider getDataSourceProvider()
-            {
-                throw new UnsupportedOperationException();
-            }
-
             @Override public IDataSetDeleter getDataSetDeleter()
             {
                 return dataSetDeleter;
             }
 
-            @Override public IShareIdManager getShareIdManager()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IArchiverPlugin getArchiverPlugin()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override public Properties getArchiverProperties()
-            {
-                throw new UnsupportedOperationException();
-            }
-
             @Override public IOpenBISService getOpenBISService()
             {
                 return openBISService;
-            }
-
-            @Override public IApplicationServerApi getV3ApplicationService()
-            {
-                throw new UnsupportedOperationException();
             }
         });
     }

@@ -28,25 +28,20 @@ import org.springframework.beans.factory.BeanFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
-import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
@@ -159,16 +154,11 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         fileOperationsManagerFactory = context.mock(IDataSetFileOperationsManagerFactory.class);
 
         originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
-        ArchiverServiceProviderFactory.setInstance(new IArchiverServiceProvider()
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
         {
             @Override public IConfigProvider getConfigProvider()
             {
                 return configProvider;
-            }
-
-            @Override public IMailClient createEMailClient()
-            {
-                return null;
             }
 
             @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
@@ -181,16 +171,6 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
                 return dataSetDirectoryProvider;
             }
 
-            @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
-            {
-                return null;
-            }
-
-            @Override public IDataSourceProvider getDataSourceProvider()
-            {
-                return null;
-            }
-
             @Override public IDataSetDeleter getDataSetDeleter()
             {
                 return deleter;
@@ -201,29 +181,9 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
                 return shareIdManager;
             }
 
-            @Override public IArchiverPlugin getArchiverPlugin()
-            {
-                return null;
-            }
-
-            @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
-            {
-                return null;
-            }
-
-            @Override public Properties getArchiverProperties()
-            {
-                return null;
-            }
-
             @Override public IOpenBISService getOpenBISService()
             {
                 return service;
-            }
-
-            @Override public IApplicationServerApi getV3ApplicationService()
-            {
-                return null;
             }
         });
         context.checking(new Expectations()
