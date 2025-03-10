@@ -435,6 +435,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		} else if(!this._dataSetFormModel.isMini) {
 			var $saveBtn = FormUtil.getToolbarButton("SAVE", function() {
 				_this._dataSetFormController.submitDataSet();
+				if(!_this._wasSideMenuCollapsed) {
+                    mainController.sideMenu.expandSideMenu();
+                }
 			}, "Save", "Save changes", "save-btn");
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");

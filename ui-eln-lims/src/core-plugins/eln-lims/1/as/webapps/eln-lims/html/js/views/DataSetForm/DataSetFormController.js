@@ -19,6 +19,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 	
 	this.init = function(views) {
 		var _this = this;
