@@ -15,6 +15,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.speeds = null;
 		prototype.visibility = null;
 		prototype.metadata = null;
+		prototype.semanticAnnotation = null;
 
 		prototype.getLabel = function() {
 			return this.label;
@@ -81,6 +82,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setMetadata = function(metadata) {
 			this.metadata = metadata;
+		};
+		prototype.getSemanticAnnotation = function() {
+			return this.semanticAnnotation;
+		};
+		prototype.setSemanticAnnotation = function(semanticAnnotation) {
+			this.semanticAnnotation = semanticAnnotation;
 		};
 		prototype.toString = function() {
             return "ImagingDataSetControl: " + this.label;
