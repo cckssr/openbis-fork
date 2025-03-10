@@ -195,7 +195,8 @@ const CLASS_FULL_NAMES = [
   'imaging/dto/ImagingExportContainer',
   'imaging/dto/ImagingMultiExportContainer',
   'imaging/dto/ImagingDataSetExportConfig',
-  'imaging/dto/ImagingExportIncludeOptions'
+  'imaging/dto/ImagingExportIncludeOptions',
+  'imaging/dto/ImagingSemanticAnnotation'
 ]
 
 class Dto {
