@@ -57,6 +57,9 @@ public class ImagingDataSetConfig implements Serializable
     private Map<String, List<ImagingDataSetControl>> filters;
 
     @JsonProperty
+    private Map<String, ImagingSemanticAnnotation> filterSemanticAnnotation;
+
+    @JsonProperty
     @JsonDeserialize(contentUsing = PropertiesDeserializer.class)
     private Map<String, String> metadata;
 
@@ -180,6 +183,18 @@ public class ImagingDataSetConfig implements Serializable
             Map<String, List<ImagingDataSetControl>> filters)
     {
         this.filters = filters;
+    }
+
+    @JsonIgnore
+    public Map<String, ImagingSemanticAnnotation> getFilterSemanticAnnotation()
+    {
+        return filterSemanticAnnotation;
+    }
+
+    public void setFilterSemanticAnnotation(
+            Map<String, ImagingSemanticAnnotation> filterSemanticAnnotation)
+    {
+        this.filterSemanticAnnotation = filterSemanticAnnotation;
     }
 
     @Override
