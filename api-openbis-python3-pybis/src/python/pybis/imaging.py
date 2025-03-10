@@ -65,6 +65,28 @@ class AbstractImagingRequest(AbstractImagingClass, metaclass=abc.ABCMeta):
     def _validate_data(self):
         return
 
+class ImagingSemanticAnnotation(AbstractImagingClass):
+    ontologyId: str
+    ontologyVersion: str
+    ontologyAnnotationId: str
+
+    def __init__(self, ontologyId=None, ontologyVersion=None, ontologyAnnotationId=None):
+        self.__dict__["@type"] = "imaging.dto.ImagingSemanticAnnotation"
+        self.ontologyId = ontologyId
+        self.ontologyVersion = ontologyVersion
+        self.ontologyAnnotationId = ontologyAnnotationId
+
+    @classmethod
+    def from_dict(cls, data):
+        if data is None:
+            return None
+        if "@id" in data:
+            del data["@id"]
+        semantic_annotation = cls(None, None, None)
+        for prop in cls.__annotations__.keys():
+            attribute = data.get(prop)
+            semantic_annotation.__dict__[prop] = attribute
+        return semantic_annotation
 
 class ImagingDataSetFilter(AbstractImagingClass):
     name: str
@@ -249,11 +271,12 @@ class ImagingDataSetControl(AbstractImagingClass):
     speeds: list
     visibility: list
     metadata: dict
+    semanticAnnotation: ImagingSemanticAnnotation
 
     def __init__(self, label: str, control_type: str, section: str = None, values: list = None,
                  unit: str = None, values_range: list = None, multiselect: bool = None,
                  playable: bool = False, speeds: list = None,
-                 visibility: list = None, metadata: dict = None):
+                 visibility: list = None, metadata: dict = None, semanticAnnotation: ImagingSemanticAnnotation = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetControl"
         self.label = label
         self.type = control_type
@@ -273,6 +296,7 @@ class ImagingDataSetControl(AbstractImagingClass):
             self.speeds = speeds
         self.visibility = visibility
         self.metadata = metadata
+        self.semanticAnnotation = semanticAnnotation
 
     @classmethod
     def from_dict(cls, data):
@@ -283,8 +307,11 @@ class ImagingDataSetControl(AbstractImagingClass):
         control = cls(None, "", None, None)
         for prop in cls.__annotations__.keys():
             attribute = data.get(prop)
-            if prop == 'visibility' and attribute is not None:
-                attribute = [ImagingDataSetControlVisibility.from_dict(visibility) for visibility in attribute]
+            if attribute is not None:
+                if prop == 'visibility':
+                    attribute = [ImagingDataSetControlVisibility.from_dict(visibility) for visibility in attribute]
+                elif prop == 'semanticAnnotation':
+                    attribute = ImagingSemanticAnnotation.from_dict(attribute)
             control.__dict__[prop] = attribute
         return control
 
@@ -299,10 +326,12 @@ class ImagingDataSetConfig(AbstractImagingClass):
     inputs: list
     metadata: dict
     filters: dict
+    filterSemanticAnnotation: dict
 
     def __init__(self, adaptor: str, version: float, resolutions: list, playable: bool,
                  speeds: list = None, exports: list = None,
-                 inputs: list = None, metadata: dict = None, filters: dict = None):
+                 inputs: list = None, metadata: dict = None, filters: dict = None,
+                 filterSemanticAnnotation: dict = None):
         self.__dict__["@type"] = "imaging.dto.ImagingDataSetConfig"
         self.adaptor = adaptor
         self.version = version
@@ -314,6 +343,7 @@ class ImagingDataSetConfig(AbstractImagingClass):
         self.inputs = inputs
         self.metadata = metadata if metadata is not None else dict()
         self.filters = filters if filters is not None else dict()
+        self.filterSemanticAnnotation = filterSemanticAnnotation if filterSemanticAnnotation is not None else dict()
 
     @classmethod
     def from_dict(cls, data):
@@ -332,6 +362,11 @@ class ImagingDataSetConfig(AbstractImagingClass):
                     for attr in attribute:
                         filters[attr] = [ImagingDataSetControl.from_dict(control) for control in attribute[attr]]
                     attribute = filters
+                elif prop in ['filterSemanticAnnotation']:
+                    filter_semantic_annotation = {}
+                    for attr in attribute:
+                        filter_semantic_annotation[attr] = ImagingSemanticAnnotation.from_dict(attribute[attr])
+                    attribute = filter_semantic_annotation
             config.__dict__[prop] = attribute
         return config
 

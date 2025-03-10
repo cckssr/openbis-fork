@@ -15,10 +15,11 @@
 name = "pybis"
 __author__ = "ID SIS • ETH Zürich"
 __email__ = "openbis-support@id.ethz.ch"
-__version__ = "6.6.0.0-rc4"
+__version__ = "6.6.0.0-rc5"
 
 from . import pybis
 from .pybis import DataSet
 from .pybis import Openbis
 from .pybis import ImagingControl
+from .pybis import Spreadsheet
 from .imaging import *

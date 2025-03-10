@@ -3,9 +3,13 @@
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
 
+## Changes with pybis-1.37.3
+
+- Fixes to get_children/get_parents methods
+
 ## Changes with pybis-1.37.2
 
-- Fixes to Fast Upload implementation
+- Fixes to Fast Upload 
 
 ## Changes with pybis-1.37.1
 
