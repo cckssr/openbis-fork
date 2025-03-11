@@ -488,7 +488,8 @@ public class ClassCollector {
 
         for (SampleType sampleType : sampleTypeList)
         {
-            Optional.ofNullable(modelRDF.subClassChanisMap.get(sampleType.ontologyAnnotationId))
+            Optional.ofNullable(modelRDF.subClassChanisMap)
+                    .map(x -> x.get(sampleType.ontologyAnnotationId))
                     .ifPresent(subClassChain ->
                             subClassChain.stream().map(ontologyToSampleType::get)
                                     .filter(Objects::nonNull)
