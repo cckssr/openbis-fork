@@ -275,10 +275,28 @@ public class RDFReader
                     {
                         //System.out.println("GET: "+ vocabularyTypeListGroupedByTypeMap.keySet().stream().filter(key -> samplePropertyType.code.contains(key)).findFirst().orElseGet(null));
                         samplePropertyType.dataType = "CONTROLLEDVOCABULARY";
-                        samplePropertyType.vocabularyCode = vocabularyTypeListGroupedByTypeMap.keySet().stream().filter(key -> samplePropertyType.code.contains(key)).findFirst().orElseGet(() -> {
+
+                        List<String>
+                                candidates = vocabularyTypeListGroupedByTypeMap.keySet().stream()
+                                .filter(key -> samplePropertyType.code.contains(key))
+                                .map(x -> List.of(x)).findFirst().orElseGet(() -> {
                             return restrictionCodes.stream().filter(
-                                    vocabularyTypeListGroupedByTypeMap::containsKey).findFirst().orElse("UNKNOWN");
+                                    vocabularyTypeListGroupedByTypeMap::containsKey).collect(
+                                    Collectors.toList());
                         });
+
+                        if (candidates.size() > 1)
+                        {
+                            samplePropertyType.dataType = "VARCHAR";
+                            samplePropertyType.metadata.put("VOCABULARY_UNION", "It's a union!");
+                        } else
+                        {
+                            samplePropertyType.vocabularyCode =
+                                    candidates.stream().findFirst().orElse("UNKNOWN");
+
+                        }
+
+
                         //System.out.println("  VACAB_TYPE: "+ samplePropertyType.dataType + " -> " + samplePropertyType.code + " -> " + vocabularyTypeListGroupedByTypeMap.get(samplePropertyType.code));
                     } else if (RDFtoOpenBISDataTypeMap.get(samplePropertyType.ontologyAnnotationId) != null)
                     {
