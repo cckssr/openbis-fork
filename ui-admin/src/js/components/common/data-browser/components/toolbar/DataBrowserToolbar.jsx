@@ -131,8 +131,7 @@ const styles = theme => ({
     fontSize: theme.typography.pxToRem(18),
   },
   primaryButton: {
-    display: "inline-flex",
-    lineHeight: '1',   
+    display: "inline-flex",    
   }
 })
 

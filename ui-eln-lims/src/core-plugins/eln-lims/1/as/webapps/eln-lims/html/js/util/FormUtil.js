@@ -1750,7 +1750,8 @@ var FormUtil = new function() {
 		  display: "flex",
 		  alignItems: "center",
 		  justifyContent: "space-between",
-		  width: "100%"
+		  width: "100%",
+		  minHeight: "36px",
 		});
 		$combinedContainer.append($buttonsWrapper).append($rightSideContainer);
 		
