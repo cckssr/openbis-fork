@@ -19,17 +19,18 @@ import React from 'react'
 import { Button, Popover } from '@mui/material'
 import Container from '@src/js/components/common/form/Container.jsx'
 import PublishIcon from '@mui/icons-material/Publish'
-import UploadButton from '@src/js/components/common/data-browser/UploadButton.jsx'
-import FileIcon from '@mui/icons-material/InsertDriveFileOutlined'
-import FolderIcon from '@mui/icons-material/FolderOpen'
+import UploadButton from '@src/js/components/common/data-browser/components/upload/UploadButton.jsx'
+import DriveFolderUpload from '@mui/icons-material/DriveFolderUploadSharp'
+import UploadFile from '@mui/icons-material/UploadFileSharp'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx'
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import messages from '@src/js/common/messages.js'
-import FileUploadManager from '@src/js/components/common/data-browser/FileUploadManager.js'
+import FileUploadManager from '@src/js/components/common/data-browser/components/upload/FileUploadManager.js'
+import clsx from 'clsx';
 
-const uploadButtonsColor = 'secondary'
-const color = 'default'
+const uploadButtonsColor = ''
+const color = 'secondary'
 
 class UploadSection extends React.Component {
   constructor(props) {
@@ -102,15 +103,16 @@ class UploadSection extends React.Component {
   }
 
   renderUploadButtons() {
-    const { classes, buttonSize } = this.props
+    const { classes, buttonSize, className} = this.props
     return (
       <div className={classes.uploadButtonsContainer}>
         <UploadButton
           classes={{ root: classes.button }}
-          color={uploadButtonsColor}
+          className={className}
+          color={className ? '' : uploadButtonsColor}
           size={buttonSize}
           variant="contained"
-          startIcon={<FileIcon />}
+          startIcon={<UploadFile />}
           folderSelector={false}
           onClick={this.uploadManager.handleUpload}
         >
@@ -118,10 +120,11 @@ class UploadSection extends React.Component {
         </UploadButton>
         <UploadButton
           classes={{ root: classes.button }}
-          color={uploadButtonsColor}
+          className={className}
+          color={className ? '' : uploadButtonsColor}
           size={buttonSize}
           variant="contained"
-          startIcon={<FolderIcon />}
+          startIcon={<DriveFolderUpload />}
           folderSelector={true}
           onClick={this.uploadManager.handleUpload}
         >
@@ -132,7 +135,7 @@ class UploadSection extends React.Component {
   }
 
   render() {
-    const { classes, buttonSize, editable, controller } = this.props
+    const { classes, buttonSize, editable, controller, className,primaryClassName } = this.props
     const {
       uploadButtonsPopup,
       loading,
@@ -146,16 +149,16 @@ class UploadSection extends React.Component {
       progressBarTo,
       fileName,
       loadingDialogVariant,
-      errorMessage
+      errorMessage      
     } = this.state
 
     return (
       <>
         <Button
-          classes={{ root: classes.button }}
-          color={color}
+          classes={{ root: clsx(classes.button, classes.primaryButton, primaryClassName) }}          
+          color={primaryClassName ? '' : color }
           size={buttonSize}
-          variant="outlined"
+          variant={className ?  '' : "contained"}
           disabled={!editable}
           startIcon={<PublishIcon />}
           onClick={this.uploadManager.handleUploadClick}

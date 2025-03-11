@@ -18,6 +18,24 @@ const styles = theme => ({
       marginRight: 0,
     },
   },
+  buttonLeft: {    
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    backgroundColor: '#fff',
+    color: '#555',
+    textTransform: 'none',
+    padding: '4px 8px',
+    minWidth: 0,
+    boxShadow: 'none',
+    marginRight: theme.spacing(1),
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+      boxShadow: 'none',
+    },
+  },
   toggleButton: {},
   collapsedButtonsContainer: {
     display: 'flex',
@@ -44,8 +62,7 @@ class ResponsiveLeftToolbar extends React.Component {
     }
   }
   
-  render() {
-    // Destructure classes so that we don't pass it along via ...other
+  render() {    
     const { classes, ...other } = this.props;
     return (
       <ResizeObserver onResize={this.onResize}>

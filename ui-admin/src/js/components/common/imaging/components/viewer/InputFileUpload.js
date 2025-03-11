@@ -1,7 +1,7 @@
 import * as React from 'react';
 import PublishIcon from '@mui/icons-material/Publish'
 import messages from '@src/js/common/messages.js';
-import UploadButton from '@src/js/components/common/data-browser/UploadButton.jsx'
+import UploadButton from '@src/js/components/common/data-browser/components/upload/UploadButton.jsx'
 
 export default function InputFileUpload({onInputFile}) {
 

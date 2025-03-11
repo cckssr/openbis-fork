@@ -20,7 +20,7 @@
 		this._previousGlobalEventListener = null;
 		this._sampleFormViewGlobalEventListener = null;
 		this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
-	
+
 		this.repaint = function(views, loadFromTemplate) {
 			var $container = views.content;
 				
@@ -99,6 +99,7 @@
 			var toolbarModel = [];
 			var rightToolbarModel = [];
 			var continuedToolbarModel = [];
+			var altRightToolbarModel = [];
 			var dropdownOptionsModel = [];
 			var toolbarConfig = profile.getSampleTypeToolbarConfiguration(_this._sampleFormModel.sample.sampleTypeCode);
 	
@@ -708,6 +709,11 @@
                 rightToolbarModel.push({ component : $backBtn, tooltip: null });
                 rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
                 rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+
+				altRightToolbarModel.push({ component : $backBtn.clone(true), tooltip: null });
+                altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
+                altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
+
             }
         }
 
@@ -749,9 +755,21 @@
 					tabs
 				}
 
-				const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId)
+				const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyLeftToolbar")
 
-				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(toolbarModel, tabsModel, rightToolbarModel, $afsWidgetLeftToolBar);
+				const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyRightToolbar")
+
+
+				var $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
+
+				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(
+												toolbarModel,
+												tabsModel,
+												rightToolbarModel,
+												$afsWidgetRightToolBar,
+												$afsWidgetLeftToolBar,
+												$alternateRightToolbar);
+
 				$header.append($toolbarWithTabs);
 				
 				$container.empty();
@@ -766,7 +784,10 @@
 					  // When the Files tab is selected, hide the normal toolbar and show the alternate one.
 					  $(".normal-toolbar-container").hide();
 					  $(".alternate-toolbar-container").show();
-					  
+					  $(".normal-right-toolbar-container").hide();
+					  $(".alternate-right-toolbar-container").show();
+					  $(".extra-right-toolbar-container").show();
+
 					  if (!$("#afsWidgetTab").data("dssLoaded")) {
 						_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
 						$("#afsWidgetTab").data("dssLoaded", true);
@@ -775,6 +796,9 @@
 					  // When any other tab is selected, show the normal toolbar and hide the alternate one.
 					  $(".normal-toolbar-container").show();
 					  $(".alternate-toolbar-container").hide();
+					  $(".normal-right-toolbar-container").show();
+					  $(".alternate-right-toolbar-container").hide();
+					  $(".extra-right-toolbar-container").hide();
 					}
 				  });
 				  
@@ -1878,7 +1902,7 @@
 			$container.append($element);
 		}
 
-		this._renderAFSWidgetLeftToolBar= function ($container, id) {
+		this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
 			let $element = $("<div>")
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
@@ -1888,9 +1912,10 @@
 					let props = {						
 						owner: id,	
 						buttonSize: "small",
-						toolbarType: "unifiedToolbar",
+						toolbarType: toolbarTypeIn,
 						viewType:'list',
-	
+						className :'btn btn-default',
+						primaryClassName :'btn btn-primary',
 						extOpenbis: {
 							RightsFetchOptions: RightsFetchOptions,						
 							SamplePermId:SamplePermId,

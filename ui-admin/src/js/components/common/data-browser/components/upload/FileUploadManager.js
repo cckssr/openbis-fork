@@ -120,9 +120,9 @@ export default class FileUploadManager {
         )
       }
     } finally {
-      this.resetUploadDialogStates();
-      await this.controller.gridController.load()      
-      await this.afterUpload()
+      this.resetUploadDialogStates();      
+      await this.controller?.gridController?.load()      
+      await this.afterUpload?.()
     }
   }
   
@@ -252,6 +252,7 @@ export default class FileUploadManager {
       this.prepareUpload(topLevelFolder, allFiles);
       await this.upload(allFiles)
     } catch(err){
+      console.error(err)
       if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
       } else {
@@ -261,8 +262,9 @@ export default class FileUploadManager {
       }      
     } finally {
       this.resetUploadDialogStates()
-      await this.controller.gridController.load()
-      await this.afterUpload()
+      await this.controller?.gridController?.load()
+      await this.afterUpload?.()
+      event.currentTarget?.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
     }
   }
 
@@ -405,6 +407,7 @@ export default class FileUploadManager {
     this.updateState({
       uploadButtonsPopup: event.currentTarget
     })
+    event.currentTarget?.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
 
   handlePopoverClose() {
@@ -512,10 +515,9 @@ export default class FileUploadManager {
 
       await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
     }
+        
+    await this.controller?.gridController?.load()
     
-    if (this.controller.gridController) {
-      await this.controller.gridController.load()
-    }
   }   
 
   async checkFilesAndTempExistOnServer(fileName, tmpFileName, targetFilePath) {

@@ -1659,11 +1659,18 @@ var FormUtil = new function() {
 	    return separator;
 	}
 
-	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel, alternateToolbar) {		
-		
+	this.getToolbarWithTabs = function(
+		toolbarModel,
+		tabsModel,
+		rightToolbarModel,
+		extraToolbar, 
+		alternateToolbar,
+		$alternateRightToolbar
+	  ) {		
 		var $normalToolbar = this.getToolbar(toolbarModel);
-		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
-		$rightToolbarButtons.css({ marginBottom: "0px" });		
+		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);		
+		$rightToolbarButtons.css({ marginBottom: "0px" });	
+		$alternateRightToolbar.css({ marginBottom: "0px" });	
 		
 		var containerId = tabsModel.containerId || "";
 		var tabs = tabsModel.tabs || [];
@@ -1702,18 +1709,43 @@ var FormUtil = new function() {
 
 		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" })
 		  .css({
-			width: $rightToolbarButtons.children().length > 0 ? "50%" :"100%",
+			width: $rightToolbarButtons.children().length > 0 ? "50%" : "100%",
 			display: "flex"
 		  });
 		$buttonsWrapper.append($normalToolbarContainer).append($alternateToolbarContainer);
+	  
+		var $normalRightToolbarContainer = $("<div>", { class: "normal-right-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append($rightToolbarButtons);
+				
+		var $extraRightToolbarContainer = $("<div>", { class: "extra-right-toolbar-container" })
+		  .css({
+			display: "flex",
+			alignItems: "center",
+			gap: "10px"
+		  }).append(extraToolbar);
 		
+		$extraRightToolbarContainer.hide();
+
+		var $alternateRightToolbarContainer = $("<div>", { class: "alternate-right-toolbar-container" })
+		  .css({
+			display: "flex",
+			alignItems: "center",
+			gap: "10px"
+		  }).append($alternateRightToolbar);
+		$alternateRightToolbarContainer.hide();
+	  
 		var $rightSideContainer = $("<div>", { class: "right-side-container" }).css({
 		  display: "flex",
-		  alignItems: "center",
-		  gap: "10px"
+		  alignItems: "center",		  
 		});
-		$rightSideContainer.append($rightToolbarButtons).append($tabsContainer);
-		
+	  		
+		$rightSideContainer
+		  .append($normalRightToolbarContainer)
+		  .append($extraRightToolbarContainer)
+		  .append($alternateRightToolbarContainer)
+		  .append($tabsContainer);
+	  
 		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
 		  display: "flex",
 		  alignItems: "center",
@@ -1724,6 +1756,7 @@ var FormUtil = new function() {
 		
 		return $combinedContainer;
 	  };
+
 
 		
 	

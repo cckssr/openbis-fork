@@ -3,7 +3,7 @@ import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
 import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
-import GridView from '@src/js/components/common/data-browser/GridView.jsx'
+import GridView from '@src/js/components/common/data-browser/components/gridview/GridView.jsx'
 import fileTypeConfig from '@src/js/components/common/data-browser/fileTypeConfig.js';
 
 import Grid from '@src/js/components/common/grid/Grid.jsx'
@@ -12,8 +12,8 @@ import AppController from '@src/js/components/AppController.js'
 import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import InfoPanel from '@src/js/components/common/data-browser/InfoPanel.jsx'
 import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
-import FileDownloadManager from '@src/js/components/common/data-browser/FileDownloadManager.js'
-import FileUploadManager from '@src/js/components/common/data-browser/FileUploadManager.js'
+import FileDownloadManager from '@src/js/components/common/data-browser/components/download/FileDownloadManager.js'
+import FileUploadManager from '@src/js/components/common/data-browser/components/upload/FileUploadManager.js'
 import messages from '@src/js/common/messages.js'
 import InfoBar from '@src/js/components/common/data-browser/InfoBar.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
@@ -34,6 +34,10 @@ const styles = theme => ({
   },
   boundary: {
     padding: theme.spacing(1),
+    borderColor: theme.palette.border.secondary,
+    backgroundColor: theme.palette.background.paper
+  },
+  boundaryNoPadding: {    
     borderColor: theme.palette.border.secondary,
     backgroundColor: theme.palette.background.paper
   },
@@ -251,8 +255,9 @@ class DataBrowser extends React.Component {
   }
 
   handleShowInfoChange() {
-    this.setState({ showInfo: !this.state.showInfo })
+    this.setState(prevState => ({ showInfo: !prevState.showInfo }));
   }
+  
 
   handleGridControllerRef(gridController) {
     if(this.controller.gridController){
@@ -471,12 +476,12 @@ class DataBrowser extends React.Component {
     return [
       <div
         key='data-browser-content'
-        className={[classes.boundary, classes.columnFlexContainer].join(' ')}
+        className={[(withoutToobar ? classes.boundaryNoPadding : classes.boundary), classes.columnFlexContainer].join(' ')}
       > 
         { !withoutToobar &&
           <DataBrowserToolbar                              
             owner={id}          
-            openBis={this.props.extOpenbis}
+            extOpenbis={this.props.extOpenbis}
             viewType={viewType}        
           />
         }

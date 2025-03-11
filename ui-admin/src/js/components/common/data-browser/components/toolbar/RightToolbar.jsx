@@ -20,7 +20,7 @@ import autoBind from 'auto-bind';
 import logger from '@src/js/common/logger.js';
 import InfoToggleButton from '@src/js/components/common/data-browser/components/toolbar/InfoToggleButton.jsx';
 import ViewSwitch from '@src/js/components/common/data-browser/components/toolbar/ViewSwitch.jsx';
-import UploadSection from '@src/js/components/common/data-browser/components/toolbar/UploadSection.jsx';
+import UploadSection from '@src/js/components/common/data-browser/components/upload/UploadSection.jsx';
 
 
 const color = 'default'
@@ -43,7 +43,8 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column',
     '&>button': {
-      marginBottom: theme.spacing(1)
+      marginBottom: theme.spacing(1),
+      textTransform: 'none',
     },
     '&>button:nth-last-child(1)': {
       marginBottom: 0

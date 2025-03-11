@@ -20,7 +20,7 @@ import autoBind from 'auto-bind';
 import logger from '@src/js/common/logger.js';
 import InfoToggleButton from '@src/js/components/common/data-browser/components/toolbar/InfoToggleButton.jsx';
 import ViewSwitch from '@src/js/components/common/data-browser/components/toolbar/ViewSwitch.jsx';
-import UploadSection from '@src/js/components/common/data-browser/components/toolbar/UploadSection.jsx';
+import UploadSection from '@src/js/components/common/data-browser/components/upload/UploadSection.jsx';
 import LeftToolbarButtons from '@src/js/components/common/data-browser/components/toolbar/LeftToolbarButtons.jsx'
 import ResizeObserver from 'rc-resize-observer';
 import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
@@ -35,37 +35,89 @@ const buttonSize = 'small'
 const color = 'default'
 const iconButtonSize = 'medium'
 
-const styles = theme => ({
+const styles = theme => ({  
   buttons: {
     flex: '0 0 auto',
     display: 'flex',
     alignItems: 'center',
     whiteSpace: 'nowrap',
-    '&>button': {
-      marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1.5),
+    
+    '&>button': {      
+      marginRight: theme.spacing(1.5),
+      textTransform: 'none',
+    },
+    '&:focus': {
+      outline: 'none',
     },
     '&>button:nth-last-child(1)': {
       marginRight: 0
-    }
+    }  
+  },
+  buttonLefts: {              
+    flex: '0 0 auto',
+    display: 'flex',  
+    lineHeight: '1',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',    
+    '&>button': {
+      marginRight: theme.spacing(1.5),
+      textTransform: 'none',
+      lineHeight: '1',
+      justifyContent: 'flex-start',
+    },
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  buttonLeft: {                      
+    lineHeight: '1',    
+    alignItems: 'center',
+    justifyContent: 'center',
+    textTransform: 'none',
+    justifyContent: 'flex-start',
+    '&:focus': {
+      outline: 'none',
+    },
+    '&:not(:first-child)': {
+      marginLeft: theme.spacing(1.5),
+    },
+  },
+  ellipsisButton: {    
+    lineHeight: '1',    
+    alignItems: 'center',
+    justifyContent: 'center',
+    textTransform: 'none',    
+    justifyContent: 'center',
+    marginLeft: theme.spacing(1.5),
+    '&:focus': {
+      outline: 'none',
+    },
   },
   uploadButtonsContainer: {
     display: 'flex',
     flexDirection: 'column',
     '&>button': {
-      marginBottom: theme.spacing(1)
+      marginBottom: theme.spacing(1.5),
+      justifyContent: 'flex-start'
     },
     '&>button:nth-last-child(1)': {
       marginBottom: 0
-    }
+    }   
+
   },
   toggleButton: {
-    border: 'none',
-    borderRadius: '50%',
-    display: 'inline-flex',
-    padding: theme.spacing(1.5),
+    border: 'none',        
+    outline: 'none',
     '& *': {
-      color: theme.palette[color].main
-    }
+      color: theme.palette[color].main,
+      outline: 'none',      
+      boxShadow: 'none',
+    },
+    '&:focus': {
+      outline: 'none',
+      boxShadow: 'none',
+    },
   },
   splitToolbar: {
     flex: '1 1 auto',
@@ -75,6 +127,13 @@ const styles = theme => ({
     marginRight: theme.spacing(1),
     justifyContent: 'flex-start'
   },
+  buttonicon: {
+    fontSize: theme.typography.pxToRem(18),
+  },
+  primaryButton: {
+    display: "inline-flex",
+    lineHeight: '1',   
+  }
 })
 
 class DataBrowserToolbar extends React.Component {
@@ -90,13 +149,14 @@ class DataBrowserToolbar extends React.Component {
 
     this.state = { 
       width: 0,
+      path: '/',
       multiselectedFiles:[],
       viewType: this.props.viewType,
     };
     this.onResize = debounce(this.onResize, 1)
   }
 
-  onResize({ width }) {
+  onResize({ width }) {    
     if (width !== this.state.width) {
       this.setState({ width :width - 200});
     }
@@ -153,8 +213,9 @@ class DataBrowserToolbar extends React.Component {
     eventBus.emit('viewTypeChanged', {viewType});
   }
 
-  handleShowInfoChange(showInfo){
-    eventBus.emit('showInfoChanged', {showInfo});
+  handleShowInfoChange(){
+    this.setState(prevState => ({ showInfo: !prevState.showInfo }));
+    eventBus.emit('showInfoChanged', {});    
   } 
 
 
@@ -187,9 +248,10 @@ class DataBrowserToolbar extends React.Component {
           onGridActionComplete={this.onGridActionComplete}
           spaceStatusChanged={this.fetchSpaceStatus}
           onDownload={this.handleDownload}
+          controller={this.controller}
         />
         
-        <RightToolbar
+        <RightToolbar 
           buttonSize={buttonSize}
           selected={showInfo}
           onChange={this.handleShowInfoChange}
@@ -197,7 +259,11 @@ class DataBrowserToolbar extends React.Component {
           editable={editable}
           onViewTypeChange={this.handleViewTypeChange}
           controller={this.controller}
-          afterUpload={this.fetchSpaceStatus}
+          afterUpload={ () => {
+                          this.fetchSpaceStatus()
+                          this.onGridActionComplete()
+                        }
+                      }
         />
       </div>
     )
@@ -208,7 +274,9 @@ class DataBrowserToolbar extends React.Component {
       classes,            
       buttonSize,                
       owner,
-      extOpenbis
+      extOpenbis,
+      className,
+      primaryClassName
     } = this.props
 
     const {
@@ -217,7 +285,7 @@ class DataBrowserToolbar extends React.Component {
       editable,
       showInfo,
       width,
-      viewType, 
+      viewType      
     } = this.state 
 
     return (
@@ -228,10 +296,18 @@ class DataBrowserToolbar extends React.Component {
             classes={classes}
             buttonSize={buttonSize}
             editable={editable}
+            className={className}
+            primaryClassName={primaryClassName}
+            controller={this.controller}
+            afterUpload={ () => {
+              this.fetchSpaceStatus()
+              this.onGridActionComplete()
+            }
+          }
             />
 
           <LeftToolbarButtons
-            buttonSize={buttonSize}                        
+            buttonSize={buttonSize}                                    
             owner={owner} 
             path={path}
             multiselectedFiles={multiselectedFiles}
@@ -241,6 +317,8 @@ class DataBrowserToolbar extends React.Component {
             onGridActionComplete={this.onGridActionComplete}
             spaceStatusChanged={this.fetchSpaceStatus}
             onDownload={this.handleDownload}
+            classes={classes}
+            className={className}
             />
           
           <ViewSwitch
@@ -248,6 +326,7 @@ class DataBrowserToolbar extends React.Component {
             onViewTypeChange={this.handleViewTypeChange}
             buttonSize={buttonSize}
             classes={classes}
+            className={className}
             />
 
           <InfoToggleButton
@@ -255,6 +334,7 @@ class DataBrowserToolbar extends React.Component {
             onChange={this.handleShowInfoChange}
             buttonSize={buttonSize}
             classes={classes}
+            className={className}
             />
             
         </div>
@@ -262,12 +342,118 @@ class DataBrowserToolbar extends React.Component {
     )
   }
 
+
+  renderOnlyLeftToolbar() {
+    const {
+      classes,            
+      buttonSize,                
+      owner,
+      extOpenbis,
+      className,
+      primaryClassName
+    } = this.props
+
+    const {
+      path,
+      multiselectedFiles,
+      editable,
+      showInfo,
+      width,
+      viewType      
+    } = this.state 
+
+    return (
+      <ResizeObserver onResize={this.onResize}>
+        <div className={classes.buttons}>
+
+          <UploadSection
+            classes={classes}
+            buttonSize={buttonSize}
+            editable={editable}
+            className={className}
+            primaryClassName={primaryClassName}
+            controller={this.controller}
+            afterUpload={ () => {
+              this.fetchSpaceStatus()
+              this.onGridActionComplete()
+            }
+          }
+            />
+
+          <LeftToolbarButtons
+            buttonSize={buttonSize}                                    
+            owner={owner} 
+            path={path}
+            multiselectedFiles={multiselectedFiles}
+            editable={editable}         
+            extOpenbis={extOpenbis}
+            width={width}
+            onGridActionComplete={this.onGridActionComplete}
+            spaceStatusChanged={this.fetchSpaceStatus}
+            onDownload={this.handleDownload}
+            classes={classes}
+            className={className}
+            />
+        </div>
+      </ResizeObserver>
+    )
+  }
+
+
+  renderOnlyRightToolbar() {
+    const {
+      classes,            
+      buttonSize,              
+      
+      className,
+      
+    } = this.props
+
+    const {
+     
+      showInfo,
+    
+      viewType      
+    } = this.state 
+
+    return (     
+        <div className={classes.buttons}>         
+          <ViewSwitch
+            viewType={viewType}
+            onViewTypeChange={this.handleViewTypeChange}
+            buttonSize={buttonSize}
+            classes={classes}
+            className={className}
+            />
+
+          <InfoToggleButton
+            selected={showInfo}            
+            onChange={this.handleShowInfoChange}
+            buttonSize={buttonSize}
+            classes={classes}
+            className={className}
+            />             
+        </div>      
+    )
+  }
     
   render() {
-    return this.props.toolbarType === "unifiedToolbar"
-      ? this.renderUnifiedToolbar()
-      : this.renderSplitToolbar();
+    const { toolbarType } = this.props;
+    
+    switch (toolbarType) {
+      case "unifiedToolbar":
+        return this.renderUnifiedToolbar();
+      case "splitToolbar":
+        return this.renderSplitToolbar();
+      case "onlyLeftToolbar":
+        return this.renderOnlyLeftToolbar();
+      case "onlyRightToolbar":
+        return this.renderOnlyRightToolbar();
+      default:        
+        return this.renderSplitToolbar();
+    }
   }
+  
   
 }
 

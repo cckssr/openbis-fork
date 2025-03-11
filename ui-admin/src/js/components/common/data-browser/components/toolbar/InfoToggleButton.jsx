@@ -20,13 +20,15 @@ import { ToggleButton } from '@mui/material'
 import InfoIcon from '@mui/icons-material/InfoOutlined'
 import messages from '@src/js/common/messages.js'
 
-const InfoToggleButton = ({ classes, buttonSize, selected, onChange }) => (
+const InfoToggleButton = ({ classes, buttonSize, selected, onChange, className }) => (
   <ToggleButton
     classes={{ root: classes.toggleButton }}
+    className={className} 
     color="default"
     size={buttonSize}
     selected={selected}
     onChange={onChange}
+    onClick={(event) => event.currentTarget.blur()} // somehow adding the external bootstrap classes, messed up with mui default behaviour
     value={messages.get(messages.INFO)}
     aria-label={messages.get(messages.INFO)}
   >

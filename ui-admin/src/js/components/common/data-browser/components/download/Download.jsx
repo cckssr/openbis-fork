@@ -42,15 +42,17 @@ class Download extends React.Component {
             classes,
             buttonSize,
             onDownload,
-            multiselectedFiles
+            multiselectedFiles,
+            className
         } = this.props       
 
         return (<Button
             key='download-button'            
             classes={classes}
+            className={className}
             color={color}
             size={buttonSize}
-            variant='outlined'
+            variant={className ? '' : 'outlined'}
             disabled={multiselectedFiles.size === 0}
             startIcon={<DownloadIcon />}
             onClick={onDownload}

@@ -51,7 +51,7 @@ class LocationDialog extends React.Component {
     this.controller.attach(this)
 
     this.state = {
-      path,
+      path: path,
       fileNames: []
     }
     this.controller.setPath(path)

@@ -4,7 +4,7 @@ import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolderOutlined';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RenameIcon from '@mui/icons-material/Create';
 import CopyIcon from '@mui/icons-material/FileCopy';
@@ -16,10 +16,11 @@ import InputDialog from '@src/js/components/common/dialog/InputDialog.jsx';
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx';
 import LocationDialog from '@src/js/components/common/data-browser/LocationDialog.jsx';
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx';
-import Download from '@src/js/components/common/data-browser/Download.jsx';
+import Download from '@src/js/components/common/data-browser/components/download/Download.jsx';
 import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js';
 import messages from '@src/js/common/messages.js';
 import logger from '@src/js/common/logger.js';
+import { Add, FolderSharp } from '@mui/icons-material';
 
 const color = 'inherit';
 const iconButtonSize = 'medium';
@@ -28,29 +29,24 @@ const copyLocationMode = 'copy';
 const VALID_FILENAME_PATTERN = /^[0-9A-Za-z $!#%'()+,\-.;=@[\]^_{}~]+$/;
 
 const styles = theme => ({
-//   root: {
-//     flex: '1 1 auto',
-//     display: 'flex',
-//     alignItems: 'center',
-//     whiteSpace: 'nowrap',
-//     overflow: 'hidden',
-//     '&>button': {
-//       marginRight: theme.spacing(1)
-//     },
-//     '&>button:nth-last-child(1)': {
-//       marginRight: 0
-//     }
-//   },
   collapsedButtonsContainer: {
     display: 'flex',
     flexDirection: 'column',
-    '&>button': {
-      marginBottom: theme.spacing(1)
+   '& > button:not(:last-child)': {
+      marginBottom: theme.spacing(1),
+      marginLeft: 0,
+      marginRight: 0,
     },
     '&>button:nth-last-child(1)': {
-      marginBottom: 0
+      marginBottom: 0,
+      marginLeft:0
     }
+  },
+
+  iconSpacing: {
+    marginRight: '4px',
   }
+
 });
 
 class LeftToolbarButtons extends React.Component {
@@ -79,8 +75,9 @@ class LeftToolbarButtons extends React.Component {
   }
 
   // --- Methods for new folder ---
-  openNewFolderDialog = () => {
+  openNewFolderDialog = (event) => {
     this.setState({ newFolderDialogOpen: true });
+    event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
   closeNewFolderDialog = () => {
     this.setState({ newFolderDialogOpen: false });
@@ -97,8 +94,9 @@ class LeftToolbarButtons extends React.Component {
   }
 
   // --- Methods for delete ---
-  openDeleteDialog = () => {
+  openDeleteDialog = (event) => {
     this.setState({ deleteDialogOpen: true });
+    event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
   closeDeleteDialog = () => {
     this.setState({ deleteDialogOpen: false });
@@ -114,8 +112,9 @@ class LeftToolbarButtons extends React.Component {
   }
 
   // --- Methods for rename ---
-  openRenameDialog = () => {
+  openRenameDialog = (event) => {
     this.setState({ renameError: false, renameDialogOpen: true });
+    event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
   closeRenameDialog = () => {
     this.setState({ renameDialogOpen: false });
@@ -150,11 +149,13 @@ class LeftToolbarButtons extends React.Component {
   }
 
   // --- Methods for move/copy (location) ---
-  openMoveLocationDialog = () => {
+  openMoveLocationDialog = (event) => {
     this.setState({ locationDialogMode: moveLocationMode });
+    event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
-  openCopyLocationDialog = () => {
+  openCopyLocationDialog = (event) => {
     this.setState({ locationDialogMode: copyLocationMode });
+    event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
   closeLocationDialog = () => {
     this.setState({ locationDialogMode: null });
@@ -182,25 +183,27 @@ class LeftToolbarButtons extends React.Component {
 
   // --- Rendering methods ---
   renderNoSelectionContextToolbar() {
-    const { classes, buttonSize } = this.props;
+    const { classes, buttonSize ,className} = this.props;
     return ([
       <Button
         key='new-folder'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className}
         color={color}
         size={buttonSize}
         variant='outlined'
-        disabled={!this.props.editable}
-        startIcon={<CreateNewFolderIcon />}
+        disabled={!this.props.editable}        
+        title={messages.get(messages.NEW_DIRECTORY)}
         onClick={this.openNewFolderDialog}
-      >
-        {messages.get(messages.NEW_FOLDER)}
+      >        
+        <Add className={classes.buttonicon} />
+        <FolderSharp className={classes.buttonicon} />
       </Button>,
       <InputDialog
         key='new-folder-dialog'
         open={this.state.newFolderDialogOpen}
-        title={messages.get(messages.NEW_FOLDER)}
-        inputLabel={messages.get(messages.FOLDER_NAME)}
+        title={messages.get(messages.NEW_DIRECTORY)}
+        inputLabel={messages.get(messages.DIRECTORY_NAME)}
         onCancel={this.handleNewFolderCancel}
         onConfirm={this.handleNewFolderCreate.bind(this)}
       />
@@ -212,7 +215,7 @@ class LeftToolbarButtons extends React.Component {
         classes,
         buttonSize,
         owner,
-        buttonsClass,
+        className,
         path,
         multiselectedFiles,
         editable,
@@ -245,23 +248,26 @@ class LeftToolbarButtons extends React.Component {
         buttonSize={buttonSize}
         multiselectedFiles={multiselectedFiles.size === 0}
         onDownload={onDownload}
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className} 
       />,
       <Button
         key='delete'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className} 
         color={color}
         size={buttonSize}
         variant='text'
         disabled={!editable}
         startIcon={<DeleteIcon />}
-        onClick={this.openDeleteDialog}
+        onClick={this.openDeleteDialog}        
       >
         {messages.get(messages.DELETE)}
       </Button>,
       <Button
         key='rename'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className} 
         color={color}
         size={buttonSize}
         variant='text'
@@ -273,7 +279,8 @@ class LeftToolbarButtons extends React.Component {
       </Button>,
       <Button
         key='copy'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className} 
         color={color}
         size={buttonSize}
         variant='text'
@@ -285,7 +292,8 @@ class LeftToolbarButtons extends React.Component {
       </Button>,
       <Button
         key='move'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.buttonLeft }}
+        className={className} 
         color={color}
         size={buttonSize}
         variant='text'
@@ -300,7 +308,8 @@ class LeftToolbarButtons extends React.Component {
     const ellipsisButton = (
       <IconButton
         key='ellipsis'
-        classes={{ root: classes.button }}
+        classes={{ root: classes.ellipsisButton }}
+        className={className} 
         color={color}
         size={iconButtonSize}
         variant='outlined'
@@ -397,7 +406,7 @@ class LeftToolbarButtons extends React.Component {
 
     const { containerClassName, classes, multiselectedFiles} = this.props;
     return (
-      <div className={containerClassName || classes.buttons}>
+      <div className={containerClassName || classes.buttonLefts}>
         {multiselectedFiles && multiselectedFiles.size > 0
           ? this.renderSelectionContextToolbar()
           : this.renderNoSelectionContextToolbar()}

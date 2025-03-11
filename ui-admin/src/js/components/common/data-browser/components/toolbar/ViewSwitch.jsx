@@ -24,24 +24,32 @@ import messages from '@src/js/common/messages.js'
 const iconButtonSize = 'medium'
 const color = 'default'
 
-const ViewSwitch = ({ viewType, onViewTypeChange, classes }) => {
+const ViewSwitch = ({ viewType, onViewTypeChange, classes,className }) => {
   return viewType === 'list' ? (
     <IconButton
       classes={{ root: classes.button }}
+      className={className}
       color={color}
       size={iconButtonSize}
       variant="outlined"
-      onClick={() => onViewTypeChange('grid')}
+      onClick={(event) => { 
+        onViewTypeChange('grid')
+        event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
+      }}
     >
       <ViewComfyIcon />
     </IconButton>
   ) : (
     <IconButton
       classes={{ root: classes.button }}
+      className={className}
       color={color}
       size={iconButtonSize}
       variant="outlined"
-      onClick={() => onViewTypeChange('list')}
+      onClick={(event) => {
+        onViewTypeChange('list')
+        event.currentTarget.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
+      }}
     >
       <ViewListIcon />
     </IconButton>
