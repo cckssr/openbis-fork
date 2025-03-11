@@ -1,6 +1,7 @@
 
 import numpy
 from PIL import Image, ImageDraw
+import skimage
 import io
 import base64
 import json
@@ -21,12 +22,35 @@ filter_config = json.loads(sys.argv[7])
 folder_dir = os.path.join(file, 'original')
 file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 
-def generate_random_image(height, width):
-    imarray = numpy.random.rand(int(height/64),int(width/64),3) * 255
+def get_upper_case_dict(params):
+    output = {}
+    for k,v in params.items():
+        output[k.upper()] = v
+    return output
+
+def generate_random_image(height, width, filter_config):
+    imarray = (numpy.random.rand(int(height/64),int(width/64),3) * 255)
     im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
     im = im.resize((height,width), resample=Image.BOX)
+
+    if filter_config is not None and len(filter_config) > 0:
+        im2 = Image.fromarray(imarray.astype('uint8')).convert('RGB')
+        im2 = im2.resize((height,width), resample=Image.BOX)
+        array = numpy.asarray(im2)
+        for f in filter_config:
+            filter_name = list(f.keys())[0]
+            filter_parameters = get_upper_case_dict(f[filter_name])
+            if filter_name.upper() == "GAUSSIAN":
+                sigma = int(filter_parameters['SIGMA'])
+                truncate = float(filter_parameters['TRUNCATE'])
+                array = skimage.filters.gaussian(array, sigma=sigma, truncate=truncate, preserve_range=True, channel_axis=2)
+
+        im = Image.fromarray(array.astype('uint8')).convert('RGBA')
+        im = im.resize((height,width), resample=Image.BOX)
+
+
     draw = ImageDraw.Draw(im)
-    draw.text((5,5), sys.version, fill='white')
+    draw.text((5,5), sys.version, fill='black')
     draw.text((5, 20), sys.executable, fill='white')
     img_byte_arr = io.BytesIO()
     im.save(img_byte_arr, format=format)
@@ -49,4 +73,4 @@ if x < 64 or x > 640:
     x = 640
 if y < 64 or y > 640:
     y = 640
-generate_random_image(int(x), int(y))
+generate_random_image(int(x), int(y), filter_config)
