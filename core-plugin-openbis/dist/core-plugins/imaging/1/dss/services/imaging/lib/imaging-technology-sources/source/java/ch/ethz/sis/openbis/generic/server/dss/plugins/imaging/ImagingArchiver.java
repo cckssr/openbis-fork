@@ -30,6 +30,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 
@@ -40,7 +42,6 @@ class ImagingArchiver
     private final String exportArchiveName;
     private final Function<InputStream, Long> checksumFunction;
     private final AbstractDataSetPackager packager;
-    private final File archiveFile;
     private boolean isFinished;
     private final long archiveDate;
 
@@ -52,6 +53,7 @@ class ImagingArchiver
 
         archiveDate = System.currentTimeMillis();
         exportDirName = "imaging_export_" + String.valueOf(archiveDate);
+        LocalDateTime now = LocalDateTime.now();
 
         ISessionWorkspaceProvider sessionWorkspaceProvider = getSessionWorkspaceProvider(sessionToken);
         File rootDirectory = sessionWorkspaceProvider.getSessionWorkspace();
@@ -59,19 +61,24 @@ class ImagingArchiver
         Path tempDir = Files.createDirectory(
                 Path.of(rootDirectory.getAbsolutePath(), exportDirName));
 
+        // Define the format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss");
+
+        // Format the current date and time
+        String formattedNow = now.format(formatter);
 
         if (archiveFormat.equalsIgnoreCase("zip"))
         {
-            exportArchiveName = "export.zip";
-            archiveFile =
+            exportArchiveName = String.format("export-%s.zip", formattedNow);
+            File archiveFile =
                     Files.createFile(Path.of(tempDir.toAbsolutePath().toString(), exportArchiveName))
                             .toFile();
             packager = new ZipDataSetPackager(archiveFile, true, null, null);
             checksumFunction = Util::getCRC32Checksum;
         } else if (archiveFormat.equalsIgnoreCase("tar"))
         {
-            exportArchiveName = "export.tar.gz";
-            archiveFile =
+            exportArchiveName = String.format("export-%s.tar.gz", formattedNow);
+            File archiveFile =
                     Files.createFile(Path.of(tempDir.toAbsolutePath().toString(), exportArchiveName))
                             .toFile();
             packager = new TarDataSetPackager(archiveFile, null, null, DEFAULT_BUFFER_SIZE,

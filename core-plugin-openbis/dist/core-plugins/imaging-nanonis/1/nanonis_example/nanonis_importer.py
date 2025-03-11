@@ -35,7 +35,7 @@ DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
-def get_instance(url=None):
+def get_instance(url=None, token=None):
     if url is None:
         url = DEFAULT_URL
     openbis_instance = Openbis(
@@ -43,7 +43,10 @@ def get_instance(url=None):
         verify_certificates=False,
         allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
     )
-    token = openbis_instance.login('admin', 'changeit')
+    if token is None:
+        token = openbis_instance.login('admin', 'changeit')
+    else:
+        openbis_instance.token = token
     print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
@@ -642,7 +645,9 @@ def demo_dat_flow(openbis, folder_path, permId=None):
         dataset_dat = create_dat_dataset(
             openbis=openbis,
             experiment='/IMAGING/NANONIS/SXM_COLLECTION',
-            sample='/IMAGING/NANONIS/TEMPLATE-DAT',
+            # sample='/IMAGING/NANONIS/TEMPLATE-DAT',
+            # sample='/IMAGING/NANONIS/IMG27',
+            sample = '/IMAGING/NANONIS/TEMPLATE-SXM',
             folder_path=folder_path,
             file_prefix='didv_')
         perm_id = dataset_dat.permId
@@ -846,17 +851,20 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
 openbis_url = None
 data_folder = 'data'
+token = None
 
-if len(sys.argv) > 2:
+if len(sys.argv) >= 3:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
+    if len(sys.argv) > 3:
+        token = sys.argv[3]
 else:
     print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER>')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
 
-o = get_instance(openbis_url)
+o = get_instance(openbis_url, token)
 
 measurement_files = [f for f in os.listdir(data_folder)]
 measurement_datetimes = []
@@ -996,3 +1004,4 @@ else:
 #                     '/home/alaskowski/PREMISE/test2')
 
 o.logout()
+print("OK")
