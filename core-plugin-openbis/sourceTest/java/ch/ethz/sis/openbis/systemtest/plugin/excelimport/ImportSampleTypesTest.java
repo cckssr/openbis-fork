@@ -360,18 +360,18 @@ public class ImportSampleTypesTest extends AbstractImportTest
         List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
 
         // THEN
-        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyId()
-                .equals("https://en.wikipedia.org/"));
-        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyVersion()
-                .equals("https://en.wikipedia.org/wiki/Wikipedia:About"));
-        assertTrue(semanticAnnotations.get(0).getDescriptorAccessionId()
-                .equals("https://en.wikipedia.org/wiki/Antibody"));
-        assertTrue(semanticAnnotations.get(1).getDescriptorOntologyId()
-                .equals("https://en.wikipedia.org/"));
-        assertTrue(semanticAnnotations.get(1).getDescriptorOntologyVersion()
-                .equals("https://en.wikipedia.org/wiki/Wikipedia:About"));
-        assertTrue(semanticAnnotations.get(1).getDescriptorAccessionId()
-                .equals("https://en.wikipedia.org/wiki/Antibody2"));
+        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyId(),
+                "https://en.wikipedia.org/");
+        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyVersion(),
+                "https://en.wikipedia.org/wiki/Wikipedia:About");
+        assertEquals(semanticAnnotations.get(0).getDescriptorAccessionId(),
+                "https://en.wikipedia.org/wiki/Antibody");
+        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyId(),
+                "https://en.wikipedia.org/");
+        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyVersion(),
+                "https://en.wikipedia.org/wiki/Wikipedia:About");
+        assertEquals(semanticAnnotations.get(1).getDescriptorAccessionId(),
+                "https://en.wikipedia.org/wiki/Antibody2");
 
     }
 
