@@ -1,5 +1,6 @@
 package ch.ethz.sis.rdf.main.mappers;
 
+import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;

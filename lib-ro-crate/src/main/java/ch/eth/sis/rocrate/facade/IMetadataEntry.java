@@ -15,6 +15,9 @@ public interface IMetadataEntry
     /* Returns the type ID of this entry */
     String getClassId();
 
+    /* Returns the type of the entry */
+    String getType();
+
     /* These are key-value pairs for serialization. These are single-valued.
      * Serializable classes are: String, Number and Boolean */
     Map<String, Serializable> getValues();

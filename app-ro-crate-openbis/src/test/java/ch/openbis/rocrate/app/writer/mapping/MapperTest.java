@@ -2,7 +2,7 @@ package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.MetadataEntry;
 import ch.eth.sis.rocrate.facade.TypeProperty;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntity;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -13,18 +13,19 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.openbis.rocrate.app.parser.helper.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import junit.framework.TestCase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.junit.Test;
-import ch.openbis.rocrate.app.parser.results.ParseResult;
-import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,14 +39,14 @@ public class MapperTest extends TestCase
     {
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
-        Map<String, Space> spaces = new HashMap<>();
+        Map<SpacePermId, Space> spaces = new HashMap<>();
 
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
         assertTrue(result.getSchema().getClasses().isEmpty());
         assertTrue(result.getSchema().getProperties().isEmpty());
         assertTrue(result.getMetaDataEntries().isEmpty());
@@ -86,16 +87,15 @@ public class MapperTest extends TestCase
         });
         schema.put(entityTypePermId, entryType);
 
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
-        Map<String, Space> spaces = new HashMap<>();
+        Map<SpacePermId, Space> spaces = new HashMap<>();
 
 
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
-
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
 
         assertEquals(1, result.getSchema().getClasses().size());
         assertEquals(0, result.getSchema().getProperties().size());
@@ -118,11 +118,15 @@ public class MapperTest extends TestCase
         propertyAssignment.setEntityType(entryType);
         PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
         fetchOptions.withPropertyType();
+        fetchOptions.withSemanticAnnotations();
         PropertyType propertyType = new PropertyType();
         propertyType.setCode("NAME");
         propertyAssignment.setFetchOptions(fetchOptions);
         propertyAssignment.setPropertyType(propertyType);
         propertyType.setDataType(DataType.VARCHAR);
+        PropertyTypeFetchOptions propertyTypeFetchOptions = new PropertyTypeFetchOptions();
+        propertyTypeFetchOptions.withSemanticAnnotations();
+        propertyType.setFetchOptions(propertyTypeFetchOptions);
 
         context.checking(new Expectations()
         {
@@ -138,14 +142,14 @@ public class MapperTest extends TestCase
 
         schema.put(entityTypePermId, entryType);
 
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
-        Map<String, Space> spaces = new HashMap<>();
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+        Map<SpacePermId, Space> spaces = new HashMap<>();
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
 
         assertEquals(result.getSchema().getClasses().size(), 1);
         TypeProperty res1 = result.getSchema().getProperties().get(0);
@@ -169,11 +173,16 @@ public class MapperTest extends TestCase
         propertyAssignment.setEntityType(entryType);
         PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
         fetchOptions.withPropertyType();
+        fetchOptions.withSemanticAnnotations();
         PropertyType propertyType = new PropertyType();
         propertyType.setCode("NAME");
         propertyAssignment.setFetchOptions(fetchOptions);
         propertyAssignment.setPropertyType(propertyType);
         propertyType.setDataType(DataType.VARCHAR);
+        PropertyTypeFetchOptions propertyTypeFetchOptions = new PropertyTypeFetchOptions();
+        propertyTypeFetchOptions.withSemanticAnnotations();
+        propertyType.setFetchOptions(propertyTypeFetchOptions);
+
 
         context.checking(new Expectations()
         {
@@ -189,7 +198,7 @@ public class MapperTest extends TestCase
 
         schema.put(entityTypePermId, entryType);
 
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
         SampleIdentifier objectIdentifier = new SampleIdentifier("JOHN", "JOHN", "ENTRY1");
         Sample object = new Sample();
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
@@ -208,12 +217,12 @@ public class MapperTest extends TestCase
         metadata.put(objectIdentifier, object);
 
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
-        Map<String, Space> spaces = new HashMap<>();
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+        Map<SpacePermId, Space> spaces = new HashMap<>();
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
 
         assertEquals(result.getSchema().getClasses().size(), 1);
         assertEquals("hasNAME", result.getSchema().getProperties().get(0).getId());
@@ -229,19 +238,19 @@ public class MapperTest extends TestCase
     {
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
 
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
 
         Space space = new Space();
         space.setCode("SPACE");
         Map<ProjectIdentifier, Project> projects = Map.of();
 
-        Map<String, Space> spaces = Map.of("SPACE", space);
+        Map<SpacePermId, Space> spaces = Map.of(new SpacePermId("SPACE"), space);
 
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
         assertEquals("SPACE", entry.getId());
 
@@ -253,7 +262,7 @@ public class MapperTest extends TestCase
 
         Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
 
-        Map<ObjectIdentifier, AbstractEntity> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
 
         Project project = new Project();
         Space space = new Space();
@@ -263,12 +272,12 @@ public class MapperTest extends TestCase
 
         Map<ProjectIdentifier, Project> projects =
                 Map.of(new ProjectIdentifier("SPACE", "PROJECT"), project);
-        Map<String, Space> spaces = new HashMap<>();
-        SemanticAnnotationHelper.SemanticAnnotationByKind semanticAnnotationByKind = new SemanticAnnotationHelper.SemanticAnnotationByKind(Map.of(), Map.of(), Map.of());
+        Map<SpacePermId, Space> spaces = new HashMap<>();
 
-        ParseResult parseResult = new ParseResult(schema, metadata, projects, spaces, semanticAnnotationByKind);
+        OpenBisModel openBisModel =
+                new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
-        MapResult result = mapper.transform(parseResult);
+        MapResult result = mapper.transform(openBisModel);
         MetadataEntry entry = result.getMetaDataEntries().get(0);
         assertEquals("/SPACE/PROJECT", entry.getId());
 

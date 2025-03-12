@@ -1,6 +1,6 @@
 package ch.ethz.sis.rdf.main;
 
-import ch.ethz.sis.rdf.main.mappers.DatatypeMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.DatatypeMapper;
 import ch.ethz.sis.rdf.main.model.rdf.AdditionalProperty;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;

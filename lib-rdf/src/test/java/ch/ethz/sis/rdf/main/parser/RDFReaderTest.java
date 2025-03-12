@@ -1,7 +1,7 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.rdf.main.ClassCollector;
-import ch.ethz.sis.rdf.main.mappers.NamedIndividualMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.xlsx.SamplePropertyType;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleType;

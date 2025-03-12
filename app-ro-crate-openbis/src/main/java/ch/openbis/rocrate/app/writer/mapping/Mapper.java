@@ -13,7 +13,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
-import ch.openbis.rocrate.app.parser.results.ParseResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.Writer;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 public class Mapper
 {
 
-    public MapResult transform(ParseResult parseResult)
+    public MapResult transform(OpenBisModel openBisModel)
     {
         Map<String, List<Pair<PropertyAssignment, RdfsClass>>> classesUsingProperty =
                 new HashMap<>();
@@ -42,7 +44,7 @@ public class Mapper
         Map<String, List<IEntityType>> reverseMapping = new HashMap<String, List<IEntityType>>();
         Map<String, List<IEntityType>> rdfsPropertiesUsedIn =
                 new HashMap<String, List<IEntityType>>();
-        for (Map.Entry<EntityTypePermId, IEntityType> schemaEntry : parseResult.getSchema()
+        for (Map.Entry<EntityTypePermId, IEntityType> schemaEntry : openBisModel.getEntityTypes()
                 .entrySet())
         {
             RdfsClass myClass = new RdfsClass();
@@ -57,6 +59,14 @@ public class Mapper
 
             if (value instanceof SampleType)
             {
+                SampleType sampleType = (SampleType) value;
+                List<String> ontologicalAnnotations =
+                        ((SampleType) value).getSemanticAnnotations().stream()
+                                .map(x -> x.getDescriptorAccessionId()).collect(
+                                        Collectors.toList());
+                myClass.setOntologicalAnnotations(ontologicalAnnotations);
+
+
                 myClass.setSubClassOf(List.of(Writer.SYSTEM_OBJECT));
             }
             if (value instanceof DataSetType)
@@ -89,16 +99,6 @@ public class Mapper
                 classesUsingProperty.put(propertyName, classes1);
             }
 
-            List<String> semanticAnnotations = Optional.ofNullable(
-                            parseResult.getSemanticAnnotationByKind().getEntityTypeAnnotations()
-                                    .get(rdfsID))
-                    .map(x -> x.stream().map(y -> y.getDescriptorAccessionId())
-                            .distinct()
-                            .toList())
-                    .orElse(List.of());
-
-            myClass.setOntologicalAnnotations(
-                    semanticAnnotations);
 
             classes.add(myClass);
 
@@ -121,25 +121,26 @@ public class Mapper
                             .toList();
             rdfsProperty.setRangeIncludes(range);
 
-            List<String> semanticAnnotations = Optional.ofNullable(
-                            parseResult.getSemanticAnnotationByKind().getEntityPropertyTypeAnnotations()
-                                    .get(deRdfsName(a.getKey())))
-                    .map(x -> x.stream().map(y -> y.getDescriptorAccessionId()).distinct().toList())
-                    .orElse(List.of());
-
+            List<String> semanticAnnotations = a.getValue().stream().map(x -> x.getLeft())
+                    .map(x -> x.getPropertyType())
+                    .filter(x -> x.getSemanticAnnotations() != null)
+                    .map(x -> x.getSemanticAnnotations())
+                    .flatMap(Collection::stream)
+                    .map(x -> x.getPredicateAccessionId())
+                    .collect(Collectors.toList());
             rdfsProperty.setOntologicalAnnotations(semanticAnnotations);
 
             properties.add(rdfsProperty);
         }
 
         List<MetadataEntry> metaDataEntries = new ArrayList<MetadataEntry>();
-        for (var space : parseResult.getSpaceResult().entrySet())
+        for (Map.Entry<SpacePermId, Space> space : openBisModel.getSpaces().entrySet())
         {
             metaDataEntries.add(
-                    new MetadataEntry(space.getKey(), Writer.SYSTEM_SPACE, Map.of(), Map.of()))
+                    new MetadataEntry(space.getKey().getPermId(), Writer.SYSTEM_SPACE, Map.of(), Map.of()))
             ;
         }
-        for (var project : parseResult.getProjects().entrySet())
+        for (var project : openBisModel.getProjects().entrySet())
         {
             Map<String, Serializable> props = new HashMap<>();
             if (project.getValue().getDescription() != null)
@@ -147,11 +148,11 @@ public class Mapper
                 props.put("description", project.getValue().getDescription());
             }
             metaDataEntries.add(
-                    new MetadataEntry(project.getKey().toString(), Writer.SYSTEM_SPACE, props,
+                    new MetadataEntry(project.getKey().toString(), Writer.SYSTEM_PROJECT, props,
                             Map.of()));
         }
 
-        for (var metaData : parseResult.getMetadata().entrySet())
+        for (var metaData : openBisModel.getEntities().entrySet())
         {
             var val = metaData.getValue();
             Map<String, Serializable> props = new HashMap<String, Serializable>();
@@ -160,7 +161,7 @@ public class Mapper
 
                 Map<String, List<String>> references = new LinkedHashMap<>();
 
-                Set<String> referenceTypeNames = parseResult.getSchema().values().stream()
+                Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
                         .flatMap(Collection::stream).map(x -> x.getPropertyType())
                         .filter(x -> x.getDataType().name().startsWith("SAMPLE"))

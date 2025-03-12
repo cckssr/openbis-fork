@@ -1,5 +1,6 @@
 package ch.ethz.sis.rdf.main.mappers;
 
+import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
 import ch.ethz.sis.rdf.main.model.xlsx.VocabularyType;
 import ch.ethz.sis.rdf.main.model.xlsx.VocabularyTypeOption;
 import ch.ethz.sis.rdf.main.parser.LoaderRDF;
@@ -10,7 +11,8 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class NamedIndividualMapperTest
 {

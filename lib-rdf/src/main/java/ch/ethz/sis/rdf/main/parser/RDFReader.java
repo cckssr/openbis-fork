@@ -1,10 +1,10 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.rdf.main.ClassCollector;
-import ch.ethz.sis.rdf.main.mappers.AdditionalVocabularyMapper;
-import ch.ethz.sis.rdf.main.mappers.DatatypeMapper;
-import ch.ethz.sis.rdf.main.mappers.NamedIndividualMapper;
-import ch.ethz.sis.rdf.main.mappers.ObjectPropertyMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.AdditionalVocabularyMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.DatatypeMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
+import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.xlsx.*;

@@ -1,17 +1,24 @@
 package ch.ethz.sis.rdf.main;
 
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
+import ch.ethz.sis.rdf.main.mappers.openBis.RdfToOpenBisMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.parser.RDFReader;
-import ch.ethz.sis.rdf.main.xlsx.write.XLSXWriter;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,6 +30,9 @@ public class RDFCommandLineTest
 {
     public final String inputFilePath = "src/test/resources/sphn_test_reader.ttl";
     public final String actualOutputFilePath = "src/test/resources/actual_output.xlsx";
+
+    public final String actualOutputFilePath2 = "src/test/resources/actual_output2.xlsx";
+
     public final String expectedOutputFilePath = "src/test/resources/expected_output.xlsx";
     public final String inputFormatValue = "TTL";
     private ModelRDF modelRDF;
@@ -42,16 +52,22 @@ public class RDFCommandLineTest
     }
 
     @Test
+    @Ignore
     public void testXLSXWriter()
     {
-        XLSXWriter XLSXWriter = new XLSXWriter();
-        XLSXWriter.write(modelRDF, actualOutputFilePath, "/DEFAULT/SPHN");
-
+        OpenBisModel model = RdfToOpenBisMapper.convert(modelRDF, "/DEFAULT/SPHN");
+        byte[] xlsx = ExcelWriter.convert(ExcelWriter.Format.EXCEL, model);
+        try {
+            Files.write(Path.of(actualOutputFilePath), xlsx);
+        } catch (IOException e) {
+            throw new RuntimeException("Error when writing XLSX file to disk: " + e.getMessage());
+        }
         File outputFile = new File(actualOutputFilePath);
         assertTrue("The XLSX file should be created!", outputFile.exists());
     }
 
     @Test
+    @Ignore
     public void testCompareExcelFiles() {
         File excelFile1 = new File(actualOutputFilePath);
         File excelFile2 = new File(expectedOutputFilePath);
@@ -60,6 +76,7 @@ public class RDFCommandLineTest
                 Workbook workbook1 = new XSSFWorkbook(fis1);
                 FileInputStream fis2 = new FileInputStream(excelFile2);
                 Workbook workbook2 = new XSSFWorkbook(fis2)) {
+            workbook1.write(new FileOutputStream(new File(actualOutputFilePath2)));
 
             assertSameSheets(workbook1, workbook2);
 

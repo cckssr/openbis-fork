@@ -5,7 +5,7 @@ import ch.eth.sis.rocrate.facade.ISchemaFacade;
 import ch.eth.sis.rocrate.facade.MetadataEntry;
 import ch.eth.sis.rocrate.facade.RdfsClass;
 import ch.eth.sis.rocrate.facade.TypeProperty;
-import ch.openbis.rocrate.app.parser.results.ParseResult;
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.mapping.Mapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,7 +36,7 @@ public class Writer
     public static final String SYSTEM_VOCABULARY =
             NAMESPACE_SEPARATOR + "Vocabulary";
 
-    public void write(ParseResult parseResult, Path outPath) throws JsonProcessingException
+    public void write(OpenBisModel openBisModel, Path outPath) throws JsonProcessingException
     {
         RoCrate.RoCrateBuilder builder =
                 new RoCrate.RoCrateBuilder("name", "description", "2024-12-04T07:53:11Z",
@@ -52,7 +52,7 @@ public class Writer
         addSystemSchema(schemaFacade);
         Mapper mapper = new Mapper();
         MapResult rdfsRepresentation =
-                mapper.transform(parseResult);
+                mapper.transform(openBisModel);
         addSchema(schemaFacade, rdfsRepresentation);
         addMetaData(schemaFacade, rdfsRepresentation);
         RoCrate roCrate = builder.build();
@@ -61,7 +61,7 @@ public class Writer
 
     }
 
-    private void addContextEntities(ParseResult parseResult)
+    private void addContextEntities(OpenBisModel openBisModel)
     {
         ContextualEntity.ContextualEntityBuilder rdfsProperty =
                 new ContextualEntity.ContextualEntityBuilder();

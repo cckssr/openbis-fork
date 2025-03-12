@@ -60,6 +60,7 @@ public class MetadataEntry implements IMetadataEntry
         this.id = id;
     }
 
+    @Override
     public String getType()
     {
         return type;

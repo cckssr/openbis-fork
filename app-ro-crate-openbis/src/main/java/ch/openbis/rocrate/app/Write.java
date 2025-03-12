@@ -1,13 +1,11 @@
 package ch.openbis.rocrate.app;
 
-import ch.openbis.rocrate.app.parser.ExcelConversionParser;
-import ch.openbis.rocrate.app.parser.results.ParseResult;
+import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.Writer;
 import org.apache.commons.cli.*;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Write
@@ -24,17 +22,10 @@ public class Write
         if (TEST_MODE)
         {
             Path excelInputFile = Path.of(TEST_FILE);
-
-            InputStream inputStream = Files.newInputStream(excelInputFile);
-            String[] files = new String[] { TEST_FILE };
-            ExcelConversionParser
-                    excelConversionParser =
-                    new ExcelConversionParser(
-                            files);
-            ParseResult parseResult = excelConversionParser.start();
+            OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, excelInputFile);
 
             Writer writer = new Writer();
-            writer.write(parseResult, Path.of("ro_out"));
+            writer.write(openBisModel, Path.of("ro_out"));
             System.exit(0);
         }
 
@@ -44,14 +35,12 @@ public class Write
         CommandLine cmd = null;
         cmd = parser.parse(options, args);
 
-        ExcelConversionParser
-                excelConversionParser =
-                new ExcelConversionParser(
-                        cmd.getOptionValues('i'));
-        ParseResult parseResult = excelConversionParser.start();
+        Path path = Path.of(cmd.getOptionValues('i')[0]);
+        OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, path);
+
 
         Writer writer = new Writer();
-        writer.write(parseResult, Path.of(cmd.getOptionValue('o')));
+        writer.write(openBisModel, Path.of(cmd.getOptionValue('o')));
 
     }
 

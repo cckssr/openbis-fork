@@ -1,5 +1,6 @@
 package ch.ethz.sis.rdf.main.mappers;
 
+import ch.ethz.sis.rdf.main.mappers.rdf.DatatypeMapper;
 import ch.ethz.sis.rdf.main.parser.LoaderRDF;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.ModelFactory;

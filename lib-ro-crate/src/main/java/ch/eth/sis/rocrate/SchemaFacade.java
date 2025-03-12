@@ -183,7 +183,7 @@ public class SchemaFacade implements ISchemaFacade
                     TypeProperty rdfsProperty = new TypeProperty();
                     rdfsProperty.setId(id);
                     rdfsProperty.setOntologicalAnnotations(
-                            parseMultiValued(entity, EQUIVALENT_CLASS));
+                            parseMultiValued(entity, EQUIVALENT_CONCEPT));
                     rdfsProperty.setRangeIncludes(
                             parseMultiValued(entity, "schema:rangeIncludes"));
                     rdfsProperty.setDomainIncludes(
@@ -227,6 +227,7 @@ public class SchemaFacade implements ISchemaFacade
                 }
             }
             entry.setProps(entryProperties);
+            entry.setReferences(new HashMap<>());
             entries.put(id, entry);
         }
         System.out.println("Done");
