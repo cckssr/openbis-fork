@@ -255,15 +255,16 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         // Footer
         var $footer = $("<div>", { id: "sideMenuFooter"})
         $footer.css("background-color", "rgb(248, 248, 248)");
-        $footer.css("height", "30px");
+        $footer.css("height", "40px");
         $footer.css("align-content", "center");
 
         var footerToolbar = [];
 
         var $btn = null;
         $btn = $("<a>", { 'class' : 'btn btn-showhide' });
-        $btn.css("height", "25px");
+        $btn.css("height", "40px");
         $btn.css("padding-right", "20px");
+        $btn.css("align-content", "end");
 
         var tooltip = "Hide menu"
         var id = "show-hide-menu-id"
@@ -320,14 +321,15 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         var $footer = $("<div>", { id: "sideMenuFooter"})
         $footer.css("background-color", "rgb(248, 248, 248)");
-        $footer.css("height", "30px");
+        $footer.css("height", "40px");
         $footer.css("align-content", "center");
 
 
         var $btn = null;
         $btn = $("<a>", { 'class' : 'btn btn-showhide' });
-        $btn.css("height", "25px");
+        $btn.css("height", "40px");
         $btn.css("padding-right", "20px");
+        $btn.css("align-content", "end");
 
         var tooltip = "Show menu"
         var iconType = IconUtil.getToolbarIconType("SHOW");

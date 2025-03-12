@@ -162,8 +162,17 @@
 								FormUtil.showDeleteSamples([_this._sampleFormModel.sample.permId],
 										_this._sampleFormModel.isELNSample,
 										function() {
-										mainController.changeView('showSamplesPage',  encodeURIComponent('["' +
-																		_this._sampleFormModel.sample.experimentIdentifierOrNull + '",false]'));
+										    if(_this._sampleFormModel.sample.experimentIdentifierOrNull) {
+										        mainController.changeView('showSamplesPage',  encodeURIComponent('["' +
+                                                        _this._sampleFormModel.sample.experimentIdentifierOrNull + '",false]'));
+										    } else if(_this._sampleFormModel.sample.projectCode) {
+										        var projectIdentifier = IdentifierUtil.getProjectIdentifier(_this._sampleFormModel.sample.spaceCode, _this._sampleFormModel.sample.projectCode);
+										         mainController.changeView('showProjectPageFromIdentifier', projectIdentifier);
+										    } else {
+										         mainController.changeView('showSpacePage', _this._sampleFormModel.sample.spaceCode);
+										    }
+
+										    mainController.sideMenu.deleteNodeByEntityPermId("SAMPLE", _this._sampleFormModel.sample.permId, true);
 										});
 							}
 						});
@@ -1295,6 +1304,11 @@
 				});
 			}
 			$sampleParentsWidget.hide();
+
+			// If parents need to be available for setup but hidden from users
+			if(sampleTypeDefinitionsExtension !== undefined && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HIDDEN"] !== undefined && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HIDDEN"]) {
+			    return $("<div>", { "id" : sampleParentsWidgetId })
+			}
 			return $sampleParentsWidget;
 		}
 	
@@ -1364,7 +1378,7 @@
 	
 			var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
 			if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate Children");
+				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate " + childrenTitle);
 				$generateChildrenBtn.click(function(event) {
 					_this._generateChildren();
 				});

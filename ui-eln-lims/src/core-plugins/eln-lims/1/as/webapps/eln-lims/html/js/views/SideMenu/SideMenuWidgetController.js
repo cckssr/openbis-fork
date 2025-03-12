@@ -82,6 +82,7 @@ function SideMenuWidgetController(mainController) {
                     parentIds.push(parent.parentId)
                 }
             }
+            this.moveToNodeId(JSON.stringify(parent.object));
         }
     }
 
@@ -165,6 +166,7 @@ function SideMenuWidgetController(mainController) {
 
     this.collapseSideMenu = function() {
         this.isCollapsed = true;
+        LayoutManager._saveSettings();
         if(!LayoutManager.isMobile()) {
             this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
         } else {
@@ -186,7 +188,6 @@ function SideMenuWidgetController(mainController) {
                 this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
             }
         }
-
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {

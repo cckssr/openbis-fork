@@ -289,7 +289,6 @@ function MainController(profile) {
                                                                             }
                                                                             localReference.sideMenu._browserController.load().then(x => {
                                                                                     localReference.sideMenu.moveToNodeId(homeSpace).then(function(){
-                                                                                        localReference.changeView("showSpacePage", homeSpaceCode);
                                                                                         localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
                                                                                     })
                                                                             });
@@ -297,7 +296,7 @@ function MainController(profile) {
                                                                     });
                                                                 }
                                                             });
-                                                            localReference.changeView(profile.defaultStartView.page, profile.defaultStartView.args);
+                                                            localReference.changeView("showLabNotebookPage", null);
                                                         }
                                                         
                                                         Util.unblockUI();
