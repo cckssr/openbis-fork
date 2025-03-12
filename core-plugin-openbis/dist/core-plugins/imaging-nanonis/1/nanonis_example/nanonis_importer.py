@@ -520,9 +520,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         files=[d.path for d in data])
 
 
-def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[]):
+def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):
     imaging_control = ImagingControl(openbis)
-    preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig)
+    preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig, tags=tags)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
@@ -606,7 +606,7 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
     }
     config_preview = config_sxm_preview.copy()
 
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=['SXM'])
 
     preview.index = 0
     update_image_with_preview(openbis, perm_id, 0, preview)
@@ -620,7 +620,7 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
         imaging.ImagingDataSetFilter("Laplace", {"Size":"3"})
     ]
 
-    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config, tags=['SXM'])
     preview.index = 1
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -632,7 +632,7 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
         imaging.ImagingDataSetFilter("Zero background", {}),
     ]
 
-    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config, tags=['SXM'])
     preview.index = 2
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -645,8 +645,6 @@ def demo_dat_flow(openbis, folder_path, permId=None):
         dataset_dat = create_dat_dataset(
             openbis=openbis,
             experiment='/IMAGING/NANONIS/SXM_COLLECTION',
-            # sample='/IMAGING/NANONIS/TEMPLATE-DAT',
-            # sample='/IMAGING/NANONIS/IMG27',
             sample = '/IMAGING/NANONIS/TEMPLATE-SXM',
             folder_path=folder_path,
             file_prefix='didv_')
@@ -696,14 +694,14 @@ def demo_dat_flow(openbis, folder_path, permId=None):
 
     config_preview = config_dat_preview.copy()
 
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=["DAT"])
 
     preview.index = 0
     update_image_with_preview(openbis, perm_id, 0, preview)
 
     config_preview = config_dat_preview.copy()
     config_preview["Scaling"] = 'log-log'
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=['DAT'])
     preview.index = 1
     update_image_with_preview(openbis, perm_id, 0, preview)
 
