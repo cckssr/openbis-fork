@@ -1,19 +1,28 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -81,8 +90,14 @@ public class OpenBISService implements IOpenBISService
         dataSetFetchOptions.withComponentsUsing(dataSetFetchOptions);
         dataSetFetchOptions.withDataStore();
         dataSetFetchOptions.withProperties();
-        dataSetFetchOptions.withPhysicalData();
-        dataSetFetchOptions.withLinkedData();
+
+        PhysicalDataFetchOptions physicalDataFetchOptions = dataSetFetchOptions.withPhysicalData();
+        physicalDataFetchOptions.withLocatorType();
+        physicalDataFetchOptions.withStorageFormat();
+
+        LinkedDataFetchOptions linkedDataFetchOptions = dataSetFetchOptions.withLinkedData();
+        linkedDataFetchOptions.withExternalDms();
+
         dataSetFetchOptions.withTags();
         dataSetFetchOptions.withRegistrator();
         dataSetFetchOptions.withModifier();
@@ -105,11 +120,12 @@ public class OpenBISService implements IOpenBISService
         DataSetFetchOptions childrenFetchOptions = dataSetFetchOptions.withChildren();
         childrenFetchOptions.withType();
 
-        SearchResult<DataSet> searchResult = openBISFacade.searchDataSets(criteria, dataSetFetchOptions);
+        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet> searchResult =
+                openBISFacade.searchDataSets(criteria, dataSetFetchOptions);
 
         if (!searchResult.getObjects().isEmpty())
         {
-            DataSet dataSet = searchResult.getObjects().get(0);
+            ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet dataSet = searchResult.getObjects().get(0);
             return DTOTranslator.translate(dataSet);
         } else
         {
@@ -124,22 +140,85 @@ public class OpenBISService implements IOpenBISService
 
     @Override public Experiment tryGetExperiment(final ExperimentIdentifier experimentIdentifier) throws UserFailureException
     {
-        return null;
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        criteria.withIdentifier().thatEquals(experimentIdentifier.toString());
+
+        SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
+        spaceFetchOptions.withRegistrator();
+
+        ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
+        projectFetchOptions.withSpaceUsing(spaceFetchOptions);
+        projectFetchOptions.withLeader();
+        projectFetchOptions.withRegistrator();
+        projectFetchOptions.withModifier();
+
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withType().withPropertyAssignments().withPropertyType();
+        experimentFetchOptions.withProjectUsing(projectFetchOptions);
+        experimentFetchOptions.withProperties();
+        experimentFetchOptions.withRegistrator();
+        experimentFetchOptions.withModifier();
+
+        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment> searchResult =
+                openBISFacade.searchExperiments(criteria, experimentFetchOptions);
+
+        if (!searchResult.getObjects().isEmpty())
+        {
+            ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment experiment = searchResult.getObjects().get(0);
+            return DTOTranslator.translate(experiment);
+        } else
+        {
+            return null;
+        }
     }
 
     @Override public Sample tryGetSampleWithExperiment(final SampleIdentifier sampleIdentifier) throws UserFailureException
     {
-        return null;
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withIdentifier().thatEquals(sampleIdentifier.toString());
+
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+
+        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> searchResult =
+                openBISFacade.searchSamples(criteria, fetchOptions);
+
+        if (!searchResult.getObjects().isEmpty())
+        {
+            ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample = searchResult.getObjects().get(0);
+            return DTOTranslator.translate(sample);
+        } else
+        {
+            return null;
+        }
     }
 
     @Override public Metaproject tryGetMetaproject(final String metaprojectName, final String metaprojectOwner)
     {
-        return null;
+        TagSearchCriteria criteria = new TagSearchCriteria();
+        criteria.withId().thatEquals(new TagPermId(metaprojectOwner, metaprojectName));
+
+        TagFetchOptions fetchOptions = new TagFetchOptions();
+
+        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag> searchResult =
+                openBISFacade.searchTags(criteria, fetchOptions);
+
+        if (!searchResult.getObjects().isEmpty())
+        {
+            ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag tag = searchResult.getObjects().get(0);
+            return DTOTranslator.translate(tag);
+        } else
+        {
+            return null;
+        }
     }
 
     @Override public List<AbstractExternalData> listDataSetsByCode(final List<String> dataSetCodes)
     {
-        return List.of();
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withCodes().thatIn(dataSetCodes);
+        return listDataSets(criteria);
     }
 
     @Override public List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException
@@ -147,9 +226,24 @@ public class OpenBISService implements IOpenBISService
         return List.of();
     }
 
-    @Override public List<AbstractExternalData> listAvailableDataSets(final ArchiverDataSetCriteria criteria)
+    @Override public List<AbstractExternalData> listAvailableDataSets(final ArchiverDataSetCriteria archiverCriteria)
     {
-        return List.of();
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withPhysicalData().withStatus().thatEquals(ArchivingStatus.AVAILABLE);
+        criteria.withPhysicalData().withPresentInArchive().thatEquals(archiverCriteria.isPresentInArchive());
+
+        Calendar accessDate = Calendar.getInstance();
+        accessDate.setTime(new Date());
+        accessDate.add(Calendar.DAY_OF_MONTH, -archiverCriteria.getOlderThan());
+        criteria.withAccessDate().thatIsEarlierThan(accessDate.getTime());
+
+        if (archiverCriteria.tryGetDataSetTypeCode() != null)
+        {
+            criteria.withType().withCode().thatEquals(archiverCriteria.tryGetDataSetTypeCode());
+        }
+
+        return listDataSets(criteria);
     }
 
     @Override public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(final MetaprojectIdentifierId metaprojectId)
@@ -188,6 +282,57 @@ public class OpenBISService implements IOpenBISService
     @Override public boolean isDataSetOnTrashCanOrDeleted(final String dataSetCode)
     {
         return false;
+    }
+
+    private List<AbstractExternalData> listDataSets(DataSetSearchCriteria criteria)
+    {
+        SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
+
+        ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
+        projectFetchOptions.withSpaceUsing(spaceFetchOptions);
+
+        ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();
+        experimentFetchOptions.withType();
+        experimentFetchOptions.withProjectUsing(projectFetchOptions);
+
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        sampleFetchOptions.withType();
+        sampleFetchOptions.withSpaceUsing(spaceFetchOptions);
+        sampleFetchOptions.withProjectUsing(projectFetchOptions);
+        sampleFetchOptions.withExperimentUsing(experimentFetchOptions);
+
+        PhysicalDataFetchOptions physicalDataFetchOptions = new PhysicalDataFetchOptions();
+        physicalDataFetchOptions.withStorageFormat();
+        physicalDataFetchOptions.withLocatorType();
+
+        LinkedDataFetchOptions linkedDataFetchOptions = new LinkedDataFetchOptions();
+        linkedDataFetchOptions.withExternalDms();
+
+        DataSetFetchOptions simpleDataSetsFetchOptions = new DataSetFetchOptions();
+        simpleDataSetsFetchOptions.withType();
+        simpleDataSetsFetchOptions.withDataStore();
+        simpleDataSetsFetchOptions.withRegistrator();
+        simpleDataSetsFetchOptions.withModifier();
+        simpleDataSetsFetchOptions.withSample();
+        simpleDataSetsFetchOptions.withExperiment();
+        simpleDataSetsFetchOptions.withPhysicalDataUsing(physicalDataFetchOptions);
+        simpleDataSetsFetchOptions.withLinkedDataUsing(linkedDataFetchOptions);
+
+        DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withType().withPropertyAssignments().withPropertyType();
+        dataSetFetchOptions.withProperties();
+        dataSetFetchOptions.withTags();
+        dataSetFetchOptions.withExperimentUsing(experimentFetchOptions);
+        dataSetFetchOptions.withSampleUsing(sampleFetchOptions);
+        dataSetFetchOptions.withContainersUsing(dataSetFetchOptions);
+        dataSetFetchOptions.withComponentsUsing(simpleDataSetsFetchOptions);
+        dataSetFetchOptions.withParentsUsing(simpleDataSetsFetchOptions);
+        dataSetFetchOptions.withChildrenUsing(simpleDataSetsFetchOptions);
+
+        SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet> searchResult =
+                openBISFacade.searchDataSets(criteria, dataSetFetchOptions);
+
+        return searchResult.getObjects().stream().map(DTOTranslator::translate).collect(Collectors.toList());
     }
 
 }

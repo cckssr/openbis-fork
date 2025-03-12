@@ -81,11 +81,17 @@ public class DTOTranslator
             physicalData.setPresentInArchive(dataSet.getPhysicalData().isPresentInArchive());
             physicalData.setStorageConfirmation(dataSet.getPhysicalData().isStorageConfirmation());
             physicalData.setSpeedHint(dataSet.getPhysicalData().getSpeedHint());
-            physicalData.setFileFormatType(translate(dataSet.getPhysicalData().getFileFormatType()));
             physicalData.setLocation(dataSet.getPhysicalData().getLocation());
             physicalData.setShareId(dataSet.getPhysicalData().getShareId());
-            physicalData.setLocatorType(translate(dataSet.getPhysicalData().getLocatorType()));
             physicalData.setArchivingRequested(dataSet.getPhysicalData().isArchivingRequested());
+            if (dataSet.getPhysicalData().getFetchOptions().hasFileFormatType())
+            {
+                physicalData.setFileFormatType(translate(dataSet.getPhysicalData().getFileFormatType()));
+            }
+            if (dataSet.getPhysicalData().getFetchOptions().hasLocatorType())
+            {
+                physicalData.setLocatorType(translate(dataSet.getPhysicalData().getLocatorType()));
+            }
             // TODO H5Folders - add to V3 API
             // TODO H5ARFolders - add to V3 API
             externalData = physicalData;

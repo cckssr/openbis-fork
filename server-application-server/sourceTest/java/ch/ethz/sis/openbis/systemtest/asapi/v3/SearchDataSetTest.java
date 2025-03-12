@@ -15,10 +15,6 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.junit.Assert.fail;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +52,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
+import static org.junit.Assert.fail;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author pkupczyk
@@ -166,6 +165,15 @@ public class SearchDataSetTest extends AbstractDataSetTest
         criteria.withModificationDate().thatIsLaterThanOrEqualTo("2011-05-01");
         criteria.withContainer().withCode().thatContains("2");
         testSearch(TEST_USER, criteria, "20110509092359990-11", "COMPONENT_2A", "20110509092359990-12");
+    }
+
+    @Test
+    public void testSearchWithAccessDateIsEarlierThan()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withAccessDate().thatIsLaterThan("2025-03-12 12:00:00");
+        criteria.withAccessDate().thatIsEarlierThan("2025-03-12 17:00:00");
+        testSearch(TEST_USER, criteria, "20110509092359990-10");
     }
 
     @Test

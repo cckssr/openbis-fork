@@ -4,7 +4,8 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/dataset/search/DataSetSearchRelation",
 		"as/dto/experiment/search/ExperimentSearchCriteria", "as/dto/experiment/search/NoExperimentSearchCriteria", "as/dto/sample/search/SampleSearchCriteria",
 		"as/dto/sample/search/NoSampleSearchCriteria", "as/dto/dataset/search/DataSetTypeSearchCriteria", "as/dto/dataset/search/PhysicalDataSearchCriteria",
-		"as/dto/dataset/search/LinkedDataSearchCriteria", "as/dto/common/search/TextAttributeSearchCriteria", "as/dto/datastore/search/DataStoreSearchCriteria" ],
+		"as/dto/dataset/search/LinkedDataSearchCriteria", "as/dto/common/search/TextAttributeSearchCriteria", "as/dto/datastore/search/DataStoreSearchCriteria",
+		"as/dto/common/search/AccessDateSearchCriteria" ],
 	function(require, stjs, AbstractEntitySearchCriteria, SearchOperator, DataSetSearchRelation) {
 	var AbstractDataSetSearchCriteria = function(relation) {
 		AbstractEntitySearchCriteria.call(this);
@@ -43,6 +44,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractEntitySearchCriteria",
 			var NoSampleSearchCriteria = require("as/dto/sample/search/NoSampleSearchCriteria");
 			this.addCriteria(new NoSampleSearchCriteria());
 			return this;
+		};
+		prototype.withAccessDate = function() {
+			var AccessDateSearchCriteria = require("as/dto/common/search/AccessDateSearchCriteria");
+			return this.addCriteria(new AccessDateSearchCriteria());
 		};
 		prototype.withOrOperator = function() {
 			return this.withOperator(SearchOperator.OR);

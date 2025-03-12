@@ -17,6 +17,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 
 public class OpenBISFacade
@@ -58,6 +61,11 @@ public class OpenBISFacade
     public SearchResult<DataSet> searchDataSets(DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchDataSets(criteria, fetchOptions));
+    }
+
+    public SearchResult<Tag> searchTags(TagSearchCriteria criteria, TagFetchOptions fetchOptions)
+    {
+        return executeOperation(openBIS -> openBIS.searchTags(criteria, fetchOptions));
     }
 
     public void updateDataSets(final List<DataSetUpdate> updates)

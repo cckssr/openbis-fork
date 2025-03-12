@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AccessDateSearchCriteria;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_STORE_COLUMN;
@@ -295,6 +296,8 @@ public class CriteriaMapper
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(PresentInArchiveSearchCriteria.class,
                 booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(RegistrationDateSearchCriteria.class,
+                dateFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AccessDateSearchCriteria.class,
                 dateFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ImmutableDataDateSearchCriteria.class,
                 dateFieldSearchConditionTranslator);
