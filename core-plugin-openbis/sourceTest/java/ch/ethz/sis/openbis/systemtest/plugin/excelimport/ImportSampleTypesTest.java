@@ -74,7 +74,7 @@ public class ImportSampleTypesTest extends AbstractImportTest
             "sample_types/normal_samples_semantic_multiple_annotations.xls";
 
     private static final String SAMPLE_TYPES_WITH_NO_SEMANTIC_ANNOTATIONS =
-            "sample_types/normal_samples_no_semantic_annotation.xls";
+            "sample_types/normal_samples_no_semantic_annotations.xls";
 
     private static final String SAMPLE_TYPES_WITH_PROPERTY_SEMANTIC_ANNOATIONS =
             "sample_types/normal_samples_semantic_annotation_property_type.xls";
