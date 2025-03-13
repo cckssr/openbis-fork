@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
@@ -413,6 +414,8 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         PhysicalDataUpdate pdupt = new PhysicalDataUpdate();
         pdupt.setFileFormatTypeId(new FileFormatTypePermId("PLKPROPRIETARY"));
         pdupt.setArchivingRequested(true);
+        pdupt.setPresentInArchive(true);
+        pdupt.setStatus(ArchivingStatus.BACKUP_PENDING);
         update.setPhysicalData(pdupt);
 
         v3api.updateDataSets(sessionToken, Collections.singletonList(update));
@@ -425,6 +428,8 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         PhysicalData physicalData = result.getPhysicalData();
         assertEquals(physicalData.getFileFormatType().getCode(), "PLKPROPRIETARY");
         assertEquals(physicalData.isArchivingRequested(), Boolean.TRUE);
+        assertEquals(physicalData.isPresentInArchive(), Boolean.TRUE);
+        assertEquals(physicalData.getStatus(), ArchivingStatus.BACKUP_PENDING);
     }
 
     @Test

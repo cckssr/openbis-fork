@@ -21,10 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 
@@ -71,6 +73,18 @@ public class UpdateDataSetPhysicalDataExecutor implements IUpdateDataSetPhysical
                     if (archivingRequested != null && archivingRequested.isModified())
                     {
                         externalDataPE.setArchivingRequested(archivingRequested.getValue());
+                    }
+
+                    FieldUpdateValue<Boolean> presentInArchive = physicalData.getValue().isPresentInArchive();
+                    if (presentInArchive != null && presentInArchive.isModified())
+                    {
+                        externalDataPE.setPresentInArchive(presentInArchive.getValue());
+                    }
+
+                    FieldUpdateValue<ArchivingStatus> status = physicalData.getValue().getStatus();
+                    if (status != null && status.isModified())
+                    {
+                        externalDataPE.setStatus(DataSetArchivingStatus.valueOf(status.getValue().name()));
                     }
 
                     FieldUpdateValue<String> shareId = physicalData.getValue().getShareId();

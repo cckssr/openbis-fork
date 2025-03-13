@@ -13,7 +13,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
@@ -294,12 +297,33 @@ public class OpenBISService implements IOpenBISService
             final boolean presentInArchive)
             throws UserFailureException
     {
+        List<DataSetUpdate> updates = dataSetCodes.stream().map(dataSetCode ->
+        {
+            PhysicalDataUpdate physicalDataUpdate = new PhysicalDataUpdate();
+            physicalDataUpdate.setStatus(ArchivingStatus.valueOf(newStatus.name()));
+            physicalDataUpdate.setPresentInArchive(presentInArchive);
 
+            DataSetUpdate update = new DataSetUpdate();
+            update.setDataSetId(new DataSetPermId(dataSetCode));
+            update.setPhysicalData(physicalDataUpdate);
+
+            return update;
+        }).collect(Collectors.toList());
+
+        openBISFacade.updateDataSets(updates);
     }
 
     @Override public void updateShareIdAndSize(final String dataSetCode, final String shareId, final long size)
     {
+        PhysicalDataUpdate physicalDataUpdate = new PhysicalDataUpdate();
+        physicalDataUpdate.setShareId(shareId);
+        physicalDataUpdate.setSize(size);
 
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(new DataSetPermId(dataSetCode));
+        update.setPhysicalData(physicalDataUpdate);
+
+        openBISFacade.updateDataSets(List.of(update));
     }
 
     @Override public void archiveDataSets(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
