@@ -671,7 +671,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
                         grantRoleAtFirstLogin(persons, person, RoleCode.ETL_SERVER);
                     } else if(person.getExpiryDate() != null && person.getExpiryDate().before(new Date(System.currentTimeMillis())))
                     {
-                        throw createException(person, "no valid assigned rights");
+                        throw createException(person, "has no valid assigned rights");
                     } else
                     {
                         throw createException(person, "has no role assignments");
@@ -692,7 +692,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
 
     private UserFailureException createException(PersonPE person, String reason)
     {
-        String message = String.format("User '%s' has %s and thus is not permitted to login.", person.getUserId(), reason);
+        String message = String.format("User '%s' %s and thus is not permitted to login.", person.getUserId(), reason);
         authenticationLog.info(message);
         UserFailureException failureException = new UserFailureException(message);
         return failureException;
