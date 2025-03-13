@@ -1307,7 +1307,7 @@
 			$sampleParentsWidget.hide();
 
 			// If parents need to be available for setup but hidden from users
-			if(sampleTypeDefinitionsExtension !== undefined && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HIDDEN"] !== undefined && sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HIDDEN"]) {
+			if(sampleTypeCode === "FOLDER") {
 			    return $("<div>", { "id" : sampleParentsWidgetId })
 			}
 			return $sampleParentsWidget;

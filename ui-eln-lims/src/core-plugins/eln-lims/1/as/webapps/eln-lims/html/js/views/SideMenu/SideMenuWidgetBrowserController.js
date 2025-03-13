@@ -2512,34 +2512,47 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 sampleFetchOptions,
                 (searchResult) => {
-                    var promises = [];
-                    var samples = searchResult.objects
-                        .filter(sample => this._isChildSample(sample));
-                    samples.forEach(sample =>
-                        {
-                            promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
-                        })
 
-                    resolve(
-                        Promise.all(promises.map(p => p.catch(e => e))).then(afsResult => {
-                            var files = afsResult.filter(output => !(output instanceof Error));
-                            var results = { nodes: [], totalCount: 0 }
-
-                            samples.forEach((sample) => {
-                                var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
-                                results.nodes.push(this._createSampleNode(sample, hasAfsFile));
+                    if(searchResult.totalCount > 0 && profile.isAFSAvailable()) {
+                        var promises = [];
+                        var samples = searchResult.objects
+                            .filter(sample => this._isChildSample(sample));
+                        samples.forEach(sample =>
+                            {
+                                promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
                             })
 
-                            if (params.offset === 0 && params.limit >= searchResult.totalCount) {
-                            // all available results have been loaded from the server, as the total count let's use the number of results that passed the client-side filtering (that's more accurate)
-                                results.totalCount = results.nodes.length
+                        resolve(
+                            Promise.all(promises.map(p => p.catch(e => e))).then(afsResult => {
+                                var files = afsResult.filter(output => !(output instanceof Error));
+                                var results = { nodes: [], totalCount: 0 }
+
+                                samples.forEach((sample) => {
+                                    var hasAfsFile = files.some(file => file.length > 0 && file[0].owner === sample.permId.permId);
+                                    results.nodes.push(this._createSampleNode(sample, hasAfsFile));
+                                })
+
+                                if (params.offset === 0 && params.limit >= searchResult.totalCount) {
+                                // all available results have been loaded from the server, as the total count let's use the number of results that passed the client-side filtering (that's more accurate)
+                                    results.totalCount = results.nodes.length
+                                } else {
+                                // otherwise we have to use the total count from the server as we cannot tell how much of them would pass the client-side filtering without loading them all
+                                    results.totalCount = searchResult.totalCount
+                                }
+                                return results;
+                            })
+                        )
+                    } else {
+                        var results = this._filterResultsByFunction(params, searchResult, (sample) => {
+                            if (this._isChildSample(sample)) {
+                                return this._createSampleNode(sample, false)
                             } else {
-                            // otherwise we have to use the total count from the server as we cannot tell how much of them would pass the client-side filtering without loading them all
-                                results.totalCount = searchResult.totalCount
+                                return null
                             }
-                            return results;
                         })
-                    )
+
+                        resolve(results)
+                    }
                 }
             )
         })

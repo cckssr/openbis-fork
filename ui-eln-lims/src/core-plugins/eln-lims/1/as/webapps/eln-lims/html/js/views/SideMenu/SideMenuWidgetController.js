@@ -118,6 +118,7 @@ function SideMenuWidgetController(mainController) {
             var node = nodes[i]
             if (node.object && entityType === node.object.type && entityPermId === node.object.id) {
                 await _this._browserController.reloadNode(node.parentId)
+                break;
             }
         }
     }
@@ -167,6 +168,7 @@ function SideMenuWidgetController(mainController) {
     this.collapseSideMenu = function() {
         this.isCollapsed = true;
         LayoutManager._saveSettings();
+        this._browserController._saveSettings()
         if(!LayoutManager.isMobile()) {
             this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
         } else {

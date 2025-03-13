@@ -288,11 +288,19 @@ function MainController(profile) {
                                                                                 id: homeSpaceCode
                                                                             }
                                                                             localReference.sideMenu._browserController.load().then(x => {
-                                                                                    localReference.sideMenu.moveToNodeId(homeSpace).then(function(){
+                                                                                    localReference.sideMenu.moveToNodeId(JSON.stringify(homeSpace)).then(function(){
                                                                                         localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
                                                                                     })
                                                                             });
                                                                         }
+                                                                    });
+                                                                } else {
+                                                                    localReference.sideMenu._browserController.load().then(x => {
+                                                                        labNotebookNode = {
+                                                                            type: "LAB_NOTEBOOK",
+                                                                            id: "LAB_NOTEBOOK"
+                                                                        }
+                                                                        localReference.sideMenu.moveToNodeId(JSON.stringify(labNotebookNode));
                                                                     });
                                                                 }
                                                             });

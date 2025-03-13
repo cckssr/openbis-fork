@@ -510,7 +510,7 @@ export default class BrowserController extends ComponentController {
       common: {
         autoShowSelectedObject: state.autoShowSelectedObject
       },
-      fullTree: this.settings.fullTree || {},
+      fullTree: state.fullTree || this.settings.fullTree || {},
       filteredTree: this.settings.filteredTree || {},
       nodeSetAsRoot: state.nodeSetAsRoot || null
     }

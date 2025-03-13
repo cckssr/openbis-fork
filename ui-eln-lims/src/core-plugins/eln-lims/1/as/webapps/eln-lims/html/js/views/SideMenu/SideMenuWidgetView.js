@@ -283,7 +283,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             firstColumn.css("width", "55px");
             secondColumn.css("width", width-55);
             mainController.sideMenu.isCollapsed = true;
-
+            _this._sideMenuWidgetController._browserController._saveSettings();
             _this._collapsedSideMenu(_this._$container)
             LayoutManager._saveSettings();
         });
@@ -341,6 +341,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var _this = this;
         $btn.click(function() {
                 _this._resizeObserver.disconnect();
+                _this._sideMenuWidgetController._browserController._saveSettings();
                 mainController.sideMenu.isCollapsed = false;
                 LayoutManager.restoreStandardSize();
                 _this.repaint(_this._$container, false);

@@ -8,6 +8,19 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
     forcedDisableRTF: [],
     forceMonospaceFont: [],
+    sampleTypeDefinitionsExtension: {
+        "IMAGING_SAMPLE" : {
+            "SHOW" : false,
+            "SHOW_ON_NAV" : true,
+            "ENABLE_STORAGE" : false,
+        }
+    },
+    dataSetTypeDefinitionsExtension : {
+        "IMAGING_DATA" : {
+            "SHOW" : false,
+            "SHOW_ON_NAV" : false
+        }
+    },
     _getDataListDynamic: function(dataSets) {
         return function(callback, pagOptions) {
             require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
