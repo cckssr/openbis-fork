@@ -766,8 +766,9 @@
 
 				const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyLeftToolbar")
 
-				const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyRightToolbar")
-
+				// disabled for release 6.7
+				//const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyRightToolbar")
+				const $afsWidgetRightToolBar = "<div/>"
 
 				var $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
 
@@ -1840,7 +1841,7 @@
 						objId: id,
 						objKind: "object",	
 						viewType:'list',					
-						withoutToobar: true,												
+						withoutToolbar: true,												
 
 						extOpenbis: {
 							RightsFetchOptions: RightsFetchOptions,						

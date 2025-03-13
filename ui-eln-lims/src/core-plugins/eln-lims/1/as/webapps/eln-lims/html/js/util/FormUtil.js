@@ -1751,7 +1751,7 @@ var FormUtil = new function() {
 		  alignItems: "center",
 		  justifyContent: "space-between",
 		  width: "100%",
-		  minHeight: "36px",
+		  minHeight: "37px",
 		});
 		$combinedContainer.append($buttonsWrapper).append($rightSideContainer);
 		

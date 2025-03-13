@@ -64,6 +64,15 @@ const styles = theme => ({
     paddingTop: 0,
     paddingBottom: 0
   },
+  gridWithoutToolbar: {
+    flexGrow: 1,
+    flex: 1,
+    height: 'auto',
+    overflowY: 'auto',
+    paddingTop: 0,
+    paddingBottom: 0,
+    maxHeight: 'calc(100vh - (' + theme.spacing(26) + ' ))',
+  },
   content: {
     flex: '1 1 100%',
     height: 0,
@@ -441,7 +450,7 @@ class DataBrowser extends React.Component {
   };
 
   render() {
-    const { classes, id, withoutToobar } = this.props
+    const { classes, id, withoutToolbar } = this.props
     const {
       viewType,
       files,
@@ -476,9 +485,9 @@ class DataBrowser extends React.Component {
     return [
       <div
         key='data-browser-content'
-        className={[(withoutToobar ? classes.boundaryNoPadding : classes.boundary), classes.columnFlexContainer].join(' ')}
+        className={[(withoutToolbar ? classes.boundaryNoPadding : classes.boundary), classes.columnFlexContainer].join(' ')}
       > 
-        { !withoutToobar &&
+        { !withoutToolbar &&
           <DataBrowserToolbar                              
             owner={id}          
             extOpenbis={this.props.extOpenbis}
@@ -512,7 +521,7 @@ class DataBrowser extends React.Component {
               controller={this.controller.gridController}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
-              classes={{container: classes.grid}}
+              classes={{container: withoutToolbar ?  classes.gridWithoutToolbar: classes.grid}}
               isDragging={this.state.isDragging}              
               columns={this.getDataBrowserColumns(classes)}
               loadRows={this.controller.load}
