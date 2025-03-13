@@ -188,6 +188,7 @@ function SideMenuWidgetController(mainController) {
                 this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
             }
         }
+        mainController.sideMenu.moveToNodeId(mainController.sideMenu.getCurrentNodeId());
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {

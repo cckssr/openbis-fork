@@ -425,7 +425,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		//
 
 	    if(this._experimentFormModel.mode !== FormMode.CREATE &&
-//	        this._experimentFormModel.experimentDataSetCount > 0 && !mainController.sideMenu.isCollapsed) {
 	        this._experimentFormModel.experimentDataSetCount > 0) {
                 //Preview image
                 this._reloadPreviewImage();

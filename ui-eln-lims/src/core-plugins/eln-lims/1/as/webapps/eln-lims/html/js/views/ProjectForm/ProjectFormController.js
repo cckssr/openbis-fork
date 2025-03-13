@@ -223,14 +223,31 @@ function ProjectFormController(mainController, mode, project) {
 					var message = "";
 					if(_this._projectFormModel.mode === FormMode.CREATE) {
 						message = "Project Created.";
-						_this._mainController.sideMenu.refreshCurrentNode(); //Space Node
 					} else if(_this._projectFormModel.mode === FormMode.EDIT) {
 						message = "Project Updated.";
 					}
 					
 					var callbackOk = function() {
+					    var refreshNode = _this._projectFormModel.mode === FormMode.CREATE;
 						_this._projectFormModel.isFormDirty = false;
 						_this._mainController.changeView("showProjectPageFromIdentifier", parameters["projectIdentifier"]);
+						if(refreshNode) {
+                            _this._mainController.sideMenu.refreshCurrentNode();
+						}
+
+						require(["as/dto/project/id/ProjectIdentifier", "as/dto/project/fetchoptions/ProjectFetchOptions"],
+                                function(ProjectIdentifier, ProjectFetchOptions) {
+                                    var id = new ProjectIdentifier( parameters["projectIdentifier"]);
+                                    var fetchOptions = new ProjectFetchOptions();
+                                    mainController.openbisV3.getProjects([ id ], fetchOptions).done(function(map) {
+                                        var project = map[id];
+                                        _this._mainController.sideMenu.refreshCurrentNode().then(x => {
+                                            var nodeId = {type: 'PROJECT', id: project.permId.permId}
+                                            _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
+                                        });
+                                    });
+                                });
+
 						Util.unblockUI();
 					}
 					

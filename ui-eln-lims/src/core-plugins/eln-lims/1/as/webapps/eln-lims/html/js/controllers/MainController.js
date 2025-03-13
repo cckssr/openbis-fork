@@ -1114,6 +1114,9 @@ function MainController(profile) {
 					var views = _this._getNewViewModel(true, true, false);
 					newView.init(views);
 					_this.currentView = newView;
+					if(mode === FormMode.EDIT) {
+					    _this.sideMenu.collapseSideMenu();
+					}
 				}
 			});
 		}
@@ -1625,6 +1628,9 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, mode === FormMode.VIEW);
 		experimentFormController.init(views);
 		this.currentView = experimentFormController;
+		if(mode !== FormMode.VIEW) {
+		    this.sideMenu.collapseSideMenu();
+		}
 	}
 	
 	this._showCreateDataSetPage = function(entity) {

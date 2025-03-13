@@ -194,6 +194,21 @@ function ExperimentFormController(mainController, mode, experiment) {
 							_this._mainController.changeView("showExperimentPageFromIdentifier",
 									encodeURIComponent('["' + experimentIdentifier + '",false]'));
 						}
+
+						require([ 'as/dto/experiment/id/ExperimentIdentifier', "as/dto/experiment/fetchoptions/ExperimentFetchOptions" ],
+                                function(ExperimentIdentifier, ExperimentFetchOptions) {
+                                    var id1 = new ExperimentIdentifier(experimentIdentifier);
+                                    var fetchOptions = new ExperimentFetchOptions();
+                                    mainController.openbisV3.getExperiments([ id1 ], fetchOptions).done(function(map) {
+                                        var exp = map[experimentIdentifier];
+                                        _this._mainController.sideMenu.refreshCurrentNode().then(x => {
+                                            var nodeId = {type: 'EXPERIMENT', id: exp.permId.permId}
+                                            _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
+                                        });
+                                    });
+                        });
+
+
 						Util.unblockUI();
 					}
 					
