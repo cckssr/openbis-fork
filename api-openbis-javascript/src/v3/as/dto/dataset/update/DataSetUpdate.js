@@ -17,6 +17,7 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 		this.parentIds = new IdListUpdateValue();
 		this.childIds = new IdListUpdateValue();
 		this.metaData = new ListUpdateMapValues();
+		this.accessDate = new FieldUpdateValue();
 	};
 	stjs.extend(DataSetUpdate, AbstractEntityUpdate, [AbstractEntityUpdate], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.dataset.update.DataSetUpdate';
@@ -37,6 +38,7 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 		prototype.parentIds = null;
 		prototype.childIds = null;
 		prototype.metaData = null;
+		prototype.accessDate = null;
 
 		prototype.getObjectId = function() {
 			return this.getDataSetId();
@@ -141,6 +143,12 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
         prototype.setMetaDataActions = function(actions) {
             this.metaData.setActions(actions);
         };
+		prototype.getAccessDate = function() {
+			return this.accessDate;
+		};
+		prototype.setAccessDate = function(accessDate) {
+			this.accessDate.setValue(accessDate);
+		};
 	}, {
 		dataSetId : "IDataSetId",
 		experimentId : {
@@ -179,7 +187,11 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 			name : "IdListUpdateValue",
 			arguments : [ "IDataSetId" ]
 		},
-        metaData : "ListUpdateMapValues"
+        metaData : "ListUpdateMapValues",
+		accessDate : {
+			name : "FieldUpdateValue",
+			arguments : [ "Date" ]
+		}
 	});
 	return DataSetUpdate;
 })

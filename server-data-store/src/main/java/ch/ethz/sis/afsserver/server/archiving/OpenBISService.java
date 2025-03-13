@@ -10,10 +10,12 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
@@ -329,12 +331,27 @@ public class OpenBISService implements IOpenBISService
     @Override public void archiveDataSets(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
             throws UserFailureException
     {
+        List<? extends IDataSetId> dataSetIds = dataSetCodes.stream().map(DataSetPermId::new).collect(Collectors.toList());
+        DataSetArchiveOptions archiveOptions = new DataSetArchiveOptions();
+        archiveOptions.setRemoveFromDataStore(removeFromDataStore);
+        if (options != null)
+        {
+            for (String key : options.keySet())
+            {
+                archiveOptions.withOption(key, options.get(key));
+            }
+        }
 
+        openBISFacade.archiveDataSets(dataSetIds, archiveOptions);
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)
     {
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(new DataSetPermId(dataSetCode));
+        update.setAccessDate(new Date());
 
+        openBISFacade.updateDataSets(List.of(update));
     }
 
     @Override public boolean isDataSetOnTrashCanOrDeleted(final String dataSetCode)

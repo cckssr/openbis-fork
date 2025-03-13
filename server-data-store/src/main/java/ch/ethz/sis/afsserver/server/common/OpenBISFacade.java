@@ -5,7 +5,9 @@ import java.util.List;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
@@ -73,6 +75,15 @@ public class OpenBISFacade
         executeOperation(openBIS ->
         {
             openBIS.updateDataSets(updates);
+            return null;
+        });
+    }
+
+    public void archiveDataSets(final List<? extends IDataSetId> dataSetIds, final DataSetArchiveOptions options)
+    {
+        executeOperation(openBIS ->
+        {
+            openBIS.archiveDataSets(dataSetIds, options);
             return null;
         });
     }

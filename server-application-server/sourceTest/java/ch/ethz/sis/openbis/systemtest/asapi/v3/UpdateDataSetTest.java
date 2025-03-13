@@ -22,6 +22,7 @@ import static org.testng.Assert.assertNull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -430,6 +431,24 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         assertEquals(physicalData.isArchivingRequested(), Boolean.TRUE);
         assertEquals(physicalData.isPresentInArchive(), Boolean.TRUE);
         assertEquals(physicalData.getStatus(), ArchivingStatus.BACKUP_PENDING);
+    }
+
+    @Test
+    public void testUpdateWithAccessDate()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetPermId dataSetId = new DataSetPermId("20081105092259000-18");
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetId);
+        update.setAccessDate(new Date());
+
+        v3api.updateDataSets(sessionToken, Collections.singletonList(update));
+
+        DataSet result = v3api.getDataSets(sessionToken, Collections.singletonList(dataSetId), new DataSetFetchOptions()).get(dataSetId);
+
+        assertEquals(result.getAccessDate(), update.getAccessDate().getValue());
     }
 
     @Test

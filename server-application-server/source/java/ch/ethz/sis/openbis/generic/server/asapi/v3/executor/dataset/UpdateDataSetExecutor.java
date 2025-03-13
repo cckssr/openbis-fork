@@ -191,6 +191,10 @@ public class UpdateDataSetExecutor extends AbstractUpdateEntityExecutor<DataSetU
                 entity.setFrozenForContainers(true);
                 freezingFlags.freezeForContainers();
             }
+            if (update.getAccessDate() != null && update.getAccessDate().isModified())
+            {
+                entity.setAccessDate(update.getAccessDate().getValue());
+            }
             if (freezingFlags.noFlags() == false)
             {
                 freezingEvents.add(new FreezingEvent(entity.getIdentifier(), EventPE.EntityType.DATASET, freezingFlags));
