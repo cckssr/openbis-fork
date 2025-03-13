@@ -166,21 +166,12 @@ public final class AfsClient implements PublicAPI, ClientAPI
     public @NonNull Chunk[] read(@NonNull final Chunk[] chunks) throws Exception
     {
         validateSessionToken();
-//        byte[] chunksAsBytes = request(
-//                "GET",
-//                "read",
-//                byte[].class,
-//                Map.of("chunks", ChunkEncoderDecoder.encodeChunks(chunks))
-//        );
-
-        Chunk[] read = request("POST",
+        return request("POST",
                 "read",
                 Chunk[].class,
                 Map.of() ,
                 ChunkEncoderDecoder.encodeChunksAsBytes(chunks),
                 false );
-
-        return read;
     }
 
 
@@ -188,8 +179,8 @@ public final class AfsClient implements PublicAPI, ClientAPI
     public @NonNull Boolean write(@NonNull final String owner, @NonNull final String source,
                                   @NonNull final Long offset, @NonNull final byte[] data) throws Exception
     {
-        return request("POST", "write", Boolean.class, Map.of("owner",
-                owner, "source", source,"offset", offset.toString()) , data, false );
+        Chunk[] chunks = new Chunk[] {new Chunk(owner, source, offset, data.length, data) } ;
+        return write(chunks);
     }
 
     @Override

@@ -52,14 +52,14 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
     public Chunk[] read(@NonNull Chunk[] chunks) throws Exception
     {
         Map<String, Object> args = Map.of();
-        return process(Chunk[].class,"read", args, ChunkEncoderDecoder.encodeChunks(chunks).getBytes(StandardCharsets.UTF_8));
+        return process(Chunk[].class,"read", args, ChunkEncoderDecoder.encodeChunksAsBytes(chunks));
     }
 
     @Override
     public Boolean write(@NonNull Chunk[] chunks) throws Exception
     {
         Map<String, Object> args = Map.of();
-        return process(Boolean.class, "write", args, ChunkEncoderDecoder.encodeChunks(chunks).getBytes(StandardCharsets.UTF_8));
+        return process(Boolean.class, "write", args, ChunkEncoderDecoder.encodeChunksAsBytes(chunks));
     }
 
     @Override

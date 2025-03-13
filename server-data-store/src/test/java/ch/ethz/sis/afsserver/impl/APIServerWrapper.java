@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.impl;
 
 
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import ch.ethz.sis.afsserver.core.AbstractPublicAPIWrapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.Response;
@@ -71,7 +72,7 @@ public class APIServerWrapper extends AbstractPublicAPIWrapper
             return params;
         }
         Map<String, Object> updatedParams = new HashMap<>(params);
-        updatedParams.put("data", data);
+        updatedParams.put("chunks", ChunkEncoderDecoder.decodeChunks(data));
         return Collections.unmodifiableMap(updatedParams);
     }
 

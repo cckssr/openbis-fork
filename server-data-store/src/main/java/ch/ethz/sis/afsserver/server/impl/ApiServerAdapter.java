@@ -72,11 +72,11 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
         switch (apiMethod)
         {
             case "list":
-            case "read":
             case "free":
             case "isSessionValid":
                 return GET; // all parameters from GET methods come on the query string
             case "create":
+            case "read":
             case "write":
             case "move":
             case "copy":

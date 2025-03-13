@@ -94,7 +94,7 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             String transactionManagerKey = null;
             Map<String, Object> parsedParameters = new HashMap<>();
 
-            if(requestBody != null  && !GET.equals(httpMethod) && !isWriteMethod(httpMethod, parameters)) {
+            if(requestBody != null  && !GET.equals(httpMethod) && !isReadOrWriteMethod(httpMethod, parameters)) {
                 parameters = NettyHttpHandler.getBodyParameters(requestBody);
                 requestBody = null;
             }
@@ -181,9 +181,13 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
         return null; // This should never happen, it would mean an error writing the Unknown error happened.
     }
 
-    private boolean isWriteMethod(HttpMethod requestMethod, Map<String, List<String>> parameters) {
-        return POST.equals(requestMethod) &&  parameters != null && parameters.get("method") != null &&
-                !parameters.get("method").isEmpty() && "write".equals(parameters.get("method").get(0));
+    private boolean isReadOrWriteMethod(HttpMethod requestMethod, Map<String, List<String>> parameters) {
+        return POST.equals(requestMethod) &&
+                parameters != null
+                && parameters.get("method") != null &&
+                !parameters.get("method").isEmpty()
+                &&
+                ("write".equals(parameters.get("method").get(0)) || "read".equals(parameters.get("method").get(0)));
     }
 
     protected String getParameter(Map<String, List<String>> parameters, String name) {
