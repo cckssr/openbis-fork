@@ -12,6 +12,7 @@ public interface ClientAPI
     byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset,
                 @NonNull Integer limit) throws Exception;
 
+    @NonNull
     Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset,
                   @NonNull byte[] data) throws Exception;
 

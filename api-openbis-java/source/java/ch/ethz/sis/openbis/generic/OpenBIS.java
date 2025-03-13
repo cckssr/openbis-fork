@@ -35,6 +35,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -315,6 +317,8 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
+import static ch.ethz.sis.afsclient.client.ChunkEncoderDecoder.EMPTY_ARRAY;
+
 public class OpenBIS
 {
 
@@ -332,7 +336,7 @@ public class OpenBIS
 
     private final AfsClient afsClientNoTransactions;
 
-    private final AfsClient afsClientWithTransactions;
+    private final OperationsAPI afsClientWithTransactions;
 
     private String interactiveSessionKey;
 
@@ -377,7 +381,7 @@ public class OpenBIS
         if (afsURL != null)
         {
             this.afsClientNoTransactions = new AfsClient(URI.create(afsURL), timeout);
-            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, AfsClient.class,
+            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
                     afsClientNoTransactions);
         } else
         {
@@ -1555,7 +1559,9 @@ public class OpenBIS
         {
             try
             {
-                return afsClientWithTransactions.read(owner, source, offset, limit);
+                Chunk[] chunksRequest = new Chunk[] { new Chunk(owner, source, offset, limit, EMPTY_ARRAY) };
+                Chunk[] chunksResponse = afsClientWithTransactions.read(chunksRequest);
+                return chunksResponse[0].getData();
             } catch (RuntimeException e)
             {
                 throw e;
@@ -1569,7 +1575,8 @@ public class OpenBIS
         {
             try
             {
-                return afsClientWithTransactions.write(owner, source, offset, data);
+                Chunk[] chunksRequest = new Chunk[] { new Chunk(owner, source, offset, data.length, data) };
+                return afsClientWithTransactions.write(chunksRequest);
             } catch (RuntimeException e)
             {
                 throw e;
