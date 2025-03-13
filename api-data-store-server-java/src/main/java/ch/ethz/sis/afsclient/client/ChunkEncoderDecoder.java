@@ -2,6 +2,7 @@ package ch.ethz.sis.afsclient.client;
 
 import ch.ethz.sis.afsapi.dto.Chunk;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 public class ChunkEncoderDecoder {
@@ -30,13 +31,26 @@ public class ChunkEncoderDecoder {
         return builder.toString();
     }
 
+    public static byte[] encodeChunksAsBytes(Chunk[] chunks) {
+        String chunksAsString = encodeChunks(chunks);
+        return chunksAsString.getBytes(StandardCharsets.UTF_8);
+    }
+
     public static Chunk decodeChunk(String chunkAsString) {
         String[] chunkParameters = chunkAsString.split(CHUNK_SEPARATOR);
+
+        byte[] data = null;
+        if (chunkParameters.length == 5) {
+            data = Base64.getDecoder().decode(chunkParameters[4]);
+        } else {
+            data = EMPTY_ARRAY;
+        }
+
         return new Chunk(chunkParameters[0],
                 chunkParameters[1],
                 Long.parseLong(chunkParameters[2]),
                 Integer.parseInt(chunkParameters[3]),
-                Base64.getDecoder().decode(chunkParameters[4]));
+                data);
     }
 
     public static Chunk[] decodeChunks(String chunksAsString) {
@@ -46,5 +60,10 @@ public class ChunkEncoderDecoder {
             chunks[i] = decodeChunk(chunksParameters[i]);
         }
         return chunks;
+    }
+
+    public static Chunk[] decodeChunks(byte[] chunksAsBytes) {
+        String chunksAsString = new String(chunksAsBytes, StandardCharsets.UTF_8);
+        return decodeChunks(chunksAsString);
     }
 }

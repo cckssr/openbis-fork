@@ -100,7 +100,7 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             }
 
             if(requestBody != null && requestBody.length > 0){
-                parsedParameters.put("data", requestBody);
+                parsedParameters.put("chunks", ChunkEncoderDecoder.decodeChunks(requestBody));
             }
 
             for (Map.Entry<String, List<String>> entry : parameters.entrySet())
@@ -129,10 +129,6 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
                         case "transactionId":
                             parsedParameters.put(entry.getKey(), UUID.fromString(getParameter(parameters, entry.getKey())));
                             break;
-                        case "chunks":
-                            String chunksAsString = getParameter(parameters, entry. getKey());
-                            Chunk[] chunks = ChunkEncoderDecoder.decodeChunks(chunksAsString);
-                            parsedParameters.put(entry.getKey(), chunks);
                         default:
                             parseParameters(entry.getKey(), entry.getValue(), parsedParameters);
                             break;
@@ -224,9 +220,9 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             if (result instanceof List || result instanceof DTO) {
                 contentType = HttpResponse.CONTENT_TYPE_JSON;
                 body = jsonObjectMapper.writeValue(response);
-            } else if (result instanceof byte[]) {
+            } else if (result instanceof Chunk[]) {
                 contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
-                body = (byte[]) result;
+                body = ChunkEncoderDecoder.encodeChunksAsBytes((Chunk[]) result);
             } else {
                 contentType = HttpResponse.CONTENT_TYPE_TEXT;
                 body = String.valueOf(result).getBytes(StandardCharsets.UTF_8);

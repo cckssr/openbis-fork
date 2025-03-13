@@ -25,7 +25,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.server.APIServer;
@@ -135,32 +137,6 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
     public String getPath()
     {
         return "api";
-    }
-
-    public HttpResponse getHTTPResponse(Response response) throws Exception
-    {
-        boolean error = response.getError() != null;
-        String contentType = null;
-        byte[] body = null;
-        if (error) {
-            contentType = HttpResponse.CONTENT_TYPE_JSON;
-            body = jsonObjectMapper.writeValue(response);
-        } else
-        {
-            final Object result = response.getResult();
-            if (result instanceof List || result instanceof DTO) {
-                contentType = HttpResponse.CONTENT_TYPE_JSON;
-                body = jsonObjectMapper.writeValue(response);
-            } else if (result instanceof byte[]) {
-                contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
-                body = (byte[]) result;
-            } else {
-                contentType = HttpResponse.CONTENT_TYPE_TEXT;
-                body = String.valueOf(result).getBytes(StandardCharsets.UTF_8);
-            }
-        }
-        return new HttpResponse((error)? HttpResponse.BAD_REQUEST :HttpResponse.OK, Map.of(HttpResponse.CONTENT_TYPE_HEADER ,contentType),
-                new ByteArrayInputStream(body));
     }
 
 }

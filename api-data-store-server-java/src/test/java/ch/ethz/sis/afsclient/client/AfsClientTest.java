@@ -135,11 +135,11 @@ public class AfsClientTest
         String dataAsString = "ABCD";
         byte[] dataAsBytes = dataAsString.getBytes();
         Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, dataAsBytes.length,  dataAsBytes) };
-        byte[] data = ChunkEncoderDecoder.encodeChunks(chunks).getBytes();
+        byte[] data = ChunkEncoderDecoder.encodeChunksAsBytes(chunks);
         httpServer.setNextResponse(data);
 
         Chunk[] chunksResult = afsClient.read(chunks);
-        byte[] result = ChunkEncoderDecoder.encodeChunks(chunksResult).getBytes();
+        byte[] result = ChunkEncoderDecoder.encodeChunksAsBytes(chunksResult);
 
         assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
         assertArrayEquals(data, result);
@@ -169,7 +169,7 @@ public class AfsClientTest
         Files.write(sourceFilePath, fileData);
 
         Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, fileData.length,  fileData) };
-        byte[] encodedChunks = ChunkEncoderDecoder.encodeChunks(chunks).getBytes();
+        byte[] encodedChunks = ChunkEncoderDecoder.encodeChunksAsBytes(chunks);
 
         httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), encodedChunks}, new String[] {"application/json", "application/octet-stream"});
 

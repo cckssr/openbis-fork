@@ -173,15 +173,14 @@ public final class AfsClient implements PublicAPI, ClientAPI
 //                Map.of("chunks", ChunkEncoderDecoder.encodeChunks(chunks))
 //        );
 
-        byte[] chunksAsBytes = request("POST",
+        Chunk[] read = request("POST",
                 "read",
-                byte[].class,
+                Chunk[].class,
                 Map.of() ,
-                ChunkEncoderDecoder.encodeChunks(chunks).getBytes(StandardCharsets.UTF_8),
+                ChunkEncoderDecoder.encodeChunksAsBytes(chunks),
                 false );
-        
-        String chunksAsString = new String(chunksAsBytes, StandardCharsets.UTF_8);
-        return ChunkEncoderDecoder.decodeChunks(chunksAsString);
+
+        return read;
     }
 
 
@@ -200,7 +199,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
                 "write",
                 Boolean.class,
                 Map.of() ,
-                ChunkEncoderDecoder.encodeChunks(chunks).getBytes(StandardCharsets.UTF_8),
+                ChunkEncoderDecoder.encodeChunksAsBytes(chunks),
                 false );
     }
 
@@ -511,7 +510,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
             case "application/json":
                 return parseJsonResponse(responseBody);
             case "application/octet-stream":
-                return (T) responseBody;
+                return responseType.cast(ChunkEncoderDecoder.decodeChunks(responseBody));
             default:
                 throw new IllegalArgumentException(
                         "Client error HTTP response. Unsupported content-type received.");
