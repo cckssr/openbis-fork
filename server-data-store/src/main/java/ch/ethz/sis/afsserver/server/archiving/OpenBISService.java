@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataF
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
@@ -29,9 +34,11 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
@@ -248,12 +255,39 @@ public class OpenBISService implements IOpenBISService
 
     @Override public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(final MetaprojectIdentifierId metaprojectId)
     {
-        return List.of();
+        MetaprojectIdentifier metaprojectIdentifier = MetaprojectIdentifier.parse(metaprojectId.getIdentifier());
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withPhysicalData().withPresentInArchive().thatEquals(false);
+        criteria.withTag().withId()
+                .thatEquals(new TagPermId(metaprojectIdentifier.getMetaprojectOwnerId(), metaprojectIdentifier.getMetaprojectName()));
+
+        return listDataSets(criteria);
     }
 
     @Override public List<DeletedDataSet> listDeletedDataSets(final Long lastSeenDeletionEventIdOrNull, final Date maxDeletionDateOrNull)
     {
-        return List.of();
+        EventSearchCriteria criteria = new EventSearchCriteria();
+
+        if (lastSeenDeletionEventIdOrNull != null)
+        {
+            criteria.withEventTechId().thatIsGreaterThan(lastSeenDeletionEventIdOrNull);
+        }
+        if (maxDeletionDateOrNull != null)
+        {
+            criteria.withRegistrationDate().thatIsEarlierThan(maxDeletionDateOrNull);
+        }
+
+        List<Event> events = openBISFacade.searchEvents(criteria, new EventFetchOptions()).getObjects();
+
+        return events.stream().map(event ->
+        {
+            List<DeletedDataSetLocation> deletedLocations = DeletedDataSetLocation.parse(event.getDescription());
+            DeletedDataSet deletedDataSet = new DeletedDataSet(((EventTechId) event.getId()).getTechId(), event.getIdentifier());
+            deletedDataSet.setLocationObjectOrNull(deletedLocations.get(0));
+            return deletedDataSet;
+        }).collect(Collectors.toList());
     }
 
     @Override public void updateDataSetStatuses(final List<String> dataSetCodes, final DataSetArchivingStatus newStatus,

@@ -15,11 +15,6 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -51,6 +46,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
@@ -85,6 +81,10 @@ import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.DataSource;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.EventsSearchMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.Statistics;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * @author pkupczyk
@@ -131,84 +131,84 @@ public class SearchEventTest extends AbstractTest
         ConcurrencyUtilities.sleep(1000);
 
         executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction(final TransactionStatus status)
             {
-                @Override
-                public Void doInTransaction(final TransactionStatus status)
-                {
-                    // process all existing events
-                    EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask();
-                    task.execute(new TestDataSource());
+                // process all existing events
+                EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask();
+                task.execute(new TestDataSource());
 
-                    // create test data
-                    initSpaces();
-                    initProjects();
-                    initExperimentTypes();
-                    initExperiments();
-                    initTags();
+                // create test data
+                initSpaces();
+                initProjects();
+                initExperimentTypes();
+                initExperiments();
+                initTags();
 
-                    String sessionToken = v3api.login(TEST_USER, PASSWORD);
+                String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-                    // generate new events (they will be created in a different transaction than the events
-                    // created in beforeMethod and therefore will have a different registration date)
+                // generate new events (they will be created in a different transaction than the events
+                // created in beforeMethod and therefore will have a different registration date)
 
-                    deleteSpaces(sessionToken, Collections.singletonList(spaceD.getPermId()), "delete spaces");
+                deleteSpaces(sessionToken, Collections.singletonList(spaceD.getPermId()), "delete spaces");
 
-                    return null;
-                }
-            }, TransactionDefinition.PROPAGATION_REQUIRED);
+                return null;
+            }
+        }, TransactionDefinition.PROPAGATION_REQUIRED);
     }
 
     @AfterClass
     public void afterClass()
     {
         executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction(final TransactionStatus status)
             {
-                @Override
-                public Void doInTransaction(final TransactionStatus status)
-                {
-                    String sessionToken = v3api.login(TEST_USER, PASSWORD);
+                String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
-                    // clean up test data
-                    deleteExperiments(sessionToken, Arrays.asList(experimentAAA.getPermId(), experimentBBB.getPermId(), experimentBBC.getPermId()),
-                            "clean up experiments");
-                    deleteExperimentTypes(sessionToken, Collections.singletonList(experimentTypeId), "clean up experiment types");
-                    deleteProjects(sessionToken, Arrays.asList(projectAA.getPermId(), projectBB.getPermId(), projectCC.getPermId()),
-                            "clean up projects");
-                    deleteSpaces(sessionToken, Arrays.asList(spaceA.getPermId(), spaceB.getPermId(), spaceC.getPermId()), "clean up spaces");
-                    deleteTags(sessionToken, Arrays.asList(tagA.getPermId(), tagB.getPermId()), "clean up tags");
+                // clean up test data
+                deleteExperiments(sessionToken, Arrays.asList(experimentAAA.getPermId(), experimentBBB.getPermId(), experimentBBC.getPermId()),
+                        "clean up experiments");
+                deleteExperimentTypes(sessionToken, Collections.singletonList(experimentTypeId), "clean up experiment types");
+                deleteProjects(sessionToken, Arrays.asList(projectAA.getPermId(), projectBB.getPermId(), projectCC.getPermId()),
+                        "clean up projects");
+                deleteSpaces(sessionToken, Arrays.asList(spaceA.getPermId(), spaceB.getPermId(), spaceC.getPermId()), "clean up spaces");
+                deleteTags(sessionToken, Arrays.asList(tagA.getPermId(), tagB.getPermId()), "clean up tags");
 
-                    return null;
-                }
-            }, TransactionDefinition.PROPAGATION_REQUIRED);
+                return null;
+            }
+        }, TransactionDefinition.PROPAGATION_REQUIRED);
     }
 
     @BeforeMethod
     public void beforeMethod()
     {
         executeInTransaction(new TransactionCallback<Void>()
+        {
+            @Override
+            public Void doInTransaction(final TransactionStatus status)
             {
-                @Override
-                public Void doInTransaction(final TransactionStatus status)
-                {
-                    String sessionToken = v3api.login(TEST_USER, PASSWORD);
-                    String systemSessionToken = v3api.loginAsSystem();
+                String sessionToken = v3api.login(TEST_USER, PASSWORD);
+                String systemSessionToken = v3api.loginAsSystem();
 
-                    // generate new events (they will be created in a different transaction than the events
-                    // created in beforeClass and therefore will have a different registration date)
+                // generate new events (they will be created in a different transaction than the events
+                // created in beforeClass and therefore will have a different registration date)
 
-                    freezeExperiment(systemSessionToken, experimentAAA.getPermId());
-                    deleteExperiments(sessionToken, Arrays.asList(experimentBBB.getPermId(), experimentBBC.getPermId()), "delete experiments");
-                    deleteProjects(sessionToken, Arrays.asList(projectBB.getPermId(), projectCC.getPermId()), "delete projects");
-                    deleteSpaces(sessionToken, Collections.singletonList(spaceB.getPermId()), "delete spaces");
-                    deleteTags(sessionToken, Arrays.asList(tagA.getPermId(), tagB.getPermId()), "delete tags");
+                freezeExperiment(systemSessionToken, experimentAAA.getPermId());
+                deleteExperiments(sessionToken, Arrays.asList(experimentBBB.getPermId(), experimentBBC.getPermId()), "delete experiments");
+                deleteProjects(sessionToken, Arrays.asList(projectBB.getPermId(), projectCC.getPermId()), "delete projects");
+                deleteSpaces(sessionToken, Collections.singletonList(spaceB.getPermId()), "delete spaces");
+                deleteTags(sessionToken, Arrays.asList(tagA.getPermId(), tagB.getPermId()), "delete tags");
 
-                    // process new events
-                    EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask();
-                    task.execute(new TestDataSource());
+                // process new events
+                EventsSearchMaintenanceTask task = new EventsSearchMaintenanceTask();
+                task.execute(new TestDataSource());
 
-                    return null;
-                }
-            }, TransactionDefinition.PROPAGATION_REQUIRED);
+                return null;
+            }
+        }, TransactionDefinition.PROPAGATION_REQUIRED);
     }
 
     private void initSpaces()
@@ -334,6 +334,35 @@ public class SearchEventTest extends AbstractTest
         List<Event> events = getEventsAfterDate(result, startDate);
 
         assertEquals(events.size(), 9);
+    }
+
+    @Test
+    public void testSearchWithTechId()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        EventFetchOptions fetchOptionsSortedById = new EventFetchOptions();
+        fetchOptionsSortedById.sortBy().id().asc();
+
+        SearchResult<Event> result = v3api.searchEvents(sessionToken, new EventSearchCriteria(), fetchOptionsSortedById);
+        List<Event> events = getEventsAfterDate(result, startDate);
+
+        assertEquals(events.size(), 9);
+
+        Event firstEvent = events.get(0);
+        Event secondEvent = events.get(1);
+        Event thirdEvent = events.get(2);
+
+        EventSearchCriteria criteriaByTechIds = new EventSearchCriteria();
+        criteriaByTechIds.withEventTechId().thatIsGreaterThanOrEqualTo(((EventTechId) firstEvent.getId()).getTechId());
+        criteriaByTechIds.withEventTechId().thatIsLessThan(((EventTechId) thirdEvent.getId()).getTechId());
+
+        SearchResult<Event> resultByTechIds = v3api.searchEvents(sessionToken, criteriaByTechIds, fetchOptionsSortedById);
+        List<Event> eventsByTechIds = getEventsAfterDate(resultByTechIds, startDate);
+
+        assertEquals(eventsByTechIds.size(), 2);
+        assertEquals(eventsByTechIds.get(0).getId(), firstEvent.getId());
+        assertEquals(eventsByTechIds.get(1).getId(), secondEvent.getId());
     }
 
     @Test
@@ -707,13 +736,13 @@ public class SearchEventTest extends AbstractTest
         EventFetchOptions fo = new EventFetchOptions();
 
         assertAuthorizationFailureException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    v3api.searchEvents(sessionToken, criteria, fo);
-                }
-            });
+                v3api.searchEvents(sessionToken, criteria, fo);
+            }
+        });
     }
 
     private static class TestDataSource extends DataSource
@@ -949,21 +978,21 @@ public class SearchEventTest extends AbstractTest
     private static String toString(Object object)
     {
         ToStringStyle stringStyle = new MultilineRecursiveToStringStyle()
-            {
-                private static final long serialVersionUID = 1L;
+        {
+            private static final long serialVersionUID = 1L;
 
-                @Override
-                public void append(StringBuffer buffer, String fieldName, Object value, Boolean fullDetail)
+            @Override
+            public void append(StringBuffer buffer, String fieldName, Object value, Boolean fullDetail)
+            {
+                if (value != null && value.getClass().getName().startsWith("ch."))
                 {
-                    if (value != null && value.getClass().getName().startsWith("ch."))
-                    {
-                        super.append(buffer, fieldName, value, fullDetail);
-                    } else
-                    {
-                        super.append(buffer, fieldName, String.valueOf(value), true);
-                    }
+                    super.append(buffer, fieldName, value, fullDetail);
+                } else
+                {
+                    super.append(buffer, fieldName, String.valueOf(value), true);
                 }
-            };
+            }
+        };
         return new ReflectionToStringBuilder(object, stringStyle).toString();
     }
 

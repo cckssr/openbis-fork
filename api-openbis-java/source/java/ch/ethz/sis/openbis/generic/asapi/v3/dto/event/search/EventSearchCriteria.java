@@ -32,6 +32,11 @@ public class EventSearchCriteria extends AbstractObjectSearchCriteria<IEventId>
 
     private static final long serialVersionUID = 1L;
 
+    public EventTechIdSearchCriteria withEventTechId()
+    {
+        return with(new EventTechIdSearchCriteria());
+    }
+
     public EventTypeSearchCriteria withEventType()
     {
         return with(new EventTypeSearchCriteria());

@@ -80,6 +80,7 @@ public class AttributesMapper
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("gitCommitHash", ColumnNames.GIT_COMMIT_HASH_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("gitRepositoryId", ColumnNames.GIT_REPOSITORY_ID_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("event_id", ColumnNames.ID_COLUMN);
+        ATTRIBUTE_ID_TO_COLUMN_NAME.put("event_tech_id", ColumnNames.ID_COLUMN);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("event_type", ColumnNames.EVENT_TYPE);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("event_entity_type", ColumnNames.ENTITY_TYPE);
         ATTRIBUTE_ID_TO_COLUMN_NAME.put("event_entity_space", ColumnNames.ENTITY_SPACE);
