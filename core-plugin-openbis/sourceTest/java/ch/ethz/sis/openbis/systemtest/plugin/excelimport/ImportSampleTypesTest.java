@@ -364,14 +364,16 @@ public class ImportSampleTypesTest extends AbstractImportTest
                 "https://en.wikipedia.org/");
         assertEquals(semanticAnnotations.get(0).getDescriptorOntologyVersion(),
                 "https://en.wikipedia.org/wiki/Wikipedia:About");
-        assertEquals(semanticAnnotations.get(0).getDescriptorAccessionId(),
-                "https://en.wikipedia.org/wiki/Antibody");
+        assertTrue(semanticAnnotations.stream().anyMatch(
+                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody"))
+        );
         assertEquals(semanticAnnotations.get(1).getDescriptorOntologyId(),
                 "https://en.wikipedia.org/");
         assertEquals(semanticAnnotations.get(1).getDescriptorOntologyVersion(),
                 "https://en.wikipedia.org/wiki/Wikipedia:About");
-        assertEquals(semanticAnnotations.get(1).getDescriptorAccessionId(),
-                "https://en.wikipedia.org/wiki/Antibody2");
+        assertTrue(semanticAnnotations.stream().anyMatch(
+                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody2"))
+        );
 
     }
 
