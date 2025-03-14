@@ -29,6 +29,8 @@ import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.delete.DataSetDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.DeletedObject;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
@@ -96,13 +98,13 @@ public class SearchDeletionTest extends AbstractDeletionTest
 
         // Then
         Collections.sort(objects, new SimpleComparator<Deletion, Long>()
+        {
+            @Override
+            public Long evaluate(Deletion item)
             {
-                @Override
-                public Long evaluate(Deletion item)
-                {
-                    return ((ObjectTechId) item.getId()).getTechId();
-                }
-            });
+                return ((ObjectTechId) item.getId()).getTechId();
+            }
+        });
         assertDeletions(objects, deletionId1, deletionId2);
         assertAttributes(objects.get(0).getDeletedObjects(), DeletedObject::getIdentifier, "/CISD/DEFAULT/SAMPLE_TO_DELETE_1");
         assertAttributes(objects.get(0).getDeletedObjects(), DeletedObject::getEntityTypeCode, "CELL_PLATE");
@@ -112,8 +114,8 @@ public class SearchDeletionTest extends AbstractDeletionTest
         assertAttributes(objects.get(1).getDeletedObjects(), DeletedObject::getEntityKind, EntityKind.SAMPLE);
     }
 
-    private <T> void assertAttributes(List<DeletedObject> deletedObjects, Function<DeletedObject, T> mapper, 
-            Object...expectedAttributes)
+    private <T> void assertAttributes(List<DeletedObject> deletedObjects, Function<DeletedObject, T> mapper,
+            Object... expectedAttributes)
     {
         List<T> attributes = deletedObjects.stream().map(mapper).collect(Collectors.toList());
         assertEquals(attributes.toString(), Arrays.asList(expectedAttributes).toString());
@@ -149,6 +151,38 @@ public class SearchDeletionTest extends AbstractDeletionTest
 
         SearchResult<Deletion> result = v3api.searchDeletions(sessionToken, criteria, fetchOptions);
         assertDeletions(result.getObjects());
+    }
+
+    @Test
+    public void testSearchDeletionsWithDeletedObjectIdWithOrOperator()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DeletionFetchOptions fetchOptions = new DeletionFetchOptions();
+
+        ExperimentPermId experimentId = createCisdExperiment();
+        DataSetPermId dataSetId1 = createDataSet(experimentId, "DATASET_TO_DELETE_1");
+        DataSetPermId dataSetId2 = createDataSet(experimentId, "DATASET_TO_DELETE_2");
+        DataSetPermId dataSetId3 = createDataSet(experimentId, "DATASET_TO_DELETE_3");
+
+        DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+        deletionOptions.setReason("It is just a test");
+
+        IDeletionId deletionId1 = v3api.deleteDataSets(sessionToken, Collections.singletonList(dataSetId1), deletionOptions);
+        IDeletionId deletionId2 = v3api.deleteDataSets(sessionToken, Collections.singletonList(dataSetId2), deletionOptions);
+        v3api.deleteDataSets(sessionToken, Collections.singletonList(dataSetId3), deletionOptions);
+
+        assertDataSetDoesNotExist(dataSetId1);
+        assertDataSetDoesNotExist(dataSetId2);
+        assertDataSetDoesNotExist(dataSetId3);
+
+        DeletionSearchCriteria criteria = new DeletionSearchCriteria();
+        criteria.withOrOperator();
+        criteria.withDeletedObjectId().thatEquals(dataSetId1);
+        criteria.withDeletedObjectId().thatEquals(dataSetId2);
+
+        SearchResult<Deletion> result = v3api.searchDeletions(sessionToken, criteria, fetchOptions);
+        assertDeletions(result.getObjects(), deletionId1, deletionId2);
     }
 
     @Test

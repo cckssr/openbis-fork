@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
@@ -20,7 +21,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EventType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.id.EventTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
@@ -356,7 +362,35 @@ public class OpenBISService implements IOpenBISService
 
     @Override public boolean isDataSetOnTrashCanOrDeleted(final String dataSetCode)
     {
-        return false;
+        DataSetSearchCriteria dataSetCriteria = new DataSetSearchCriteria();
+        dataSetCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        dataSetCriteria.withId().thatEquals(new DataSetPermId(dataSetCode));
+
+        List<DataSet> dataSets = openBISFacade.searchDataSets(dataSetCriteria, new DataSetFetchOptions()).getObjects();
+
+        if (!dataSets.isEmpty())
+        {
+            return false;
+        }
+
+        DeletionSearchCriteria deletionCriteria = new DeletionSearchCriteria();
+        deletionCriteria.withDeletedObjectId().thatEquals(new DataSetPermId(dataSetCode));
+
+        List<Deletion> deletions = openBISFacade.searchDeletions(deletionCriteria, new DeletionFetchOptions()).getObjects();
+
+        if (!deletions.isEmpty())
+        {
+            return true;
+        }
+
+        EventSearchCriteria eventCriteria = new EventSearchCriteria();
+        eventCriteria.withEntityType().thatEquals(EntityType.DATA_SET);
+        eventCriteria.withEventType().thatEquals(EventType.DELETION);
+        eventCriteria.withIdentifier().thatEquals(dataSetCode);
+
+        List<Event> events = openBISFacade.searchEvents(eventCriteria, new EventFetchOptions()).getObjects();
+
+        return !events.isEmpty();
     }
 
     private List<AbstractExternalData> listDataSets(DataSetSearchCriteria criteria)

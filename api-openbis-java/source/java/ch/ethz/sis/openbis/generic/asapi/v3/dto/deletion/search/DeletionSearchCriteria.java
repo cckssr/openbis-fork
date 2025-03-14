@@ -15,7 +15,9 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractObjectSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
@@ -38,6 +40,11 @@ public class DeletionSearchCriteria extends AbstractObjectSearchCriteria<IDeleti
     public DeletionSearchCriteria withAndOperator()
     {
         return (DeletionSearchCriteria) withOperator(SearchOperator.AND);
+    }
+
+    public DeletedObjectIdSearchCriteria withDeletedObjectId()
+    {
+        return with(new DeletedObjectIdSearchCriteria());
     }
 
     @Override

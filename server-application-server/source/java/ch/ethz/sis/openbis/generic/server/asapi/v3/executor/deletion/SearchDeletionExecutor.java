@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.deletion;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -24,19 +25,25 @@ import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.DeletionTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletedObjectIdSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDeletionTable;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractRegistrationHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Deletion;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DeletedDataPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DeletionPE;
 
 /**
  * @author pkupczyk
@@ -47,6 +54,9 @@ public class SearchDeletionExecutor implements ISearchDeletionExecutor
 
     @Resource(name = ComponentNames.COMMON_BUSINESS_OBJECT_FACTORY)
     private ICommonBusinessObjectFactory businessObjectFactory;
+
+    @Autowired
+    private IDAOFactory daoFactory;
 
     @Autowired
     private IDeletionAuthorizationExecutor authorizationExecutor;
@@ -67,70 +77,45 @@ public class SearchDeletionExecutor implements ISearchDeletionExecutor
 
         List<Deletion> deletions = null;
 
-        if (fetchOptions.hasDeletedObjects())
+        if (criteria.getCriteria() == null || criteria.getCriteria().isEmpty())
         {
-            deletions = listWithDeletedObjects(context);
+            IDeletionTable deletionTable = businessObjectFactory.createDeletionTable(context.getSession());
+            deletionTable.load(fetchOptions.hasDeletedObjects());
+            deletions = deletionTable.getDeletions();
         } else
         {
-            deletions = listWithoutDeletedObjects(context);
+            deletions = new SearchDeletions(daoFactory, fetchOptions).search(context, criteria);
         }
 
-        if (criteria.getCriteria() != null && false == criteria.getCriteria().isEmpty())
-        {
-            deletions = new SearchDeletions(deletions).search(context, criteria);
-        }
+        deletions.sort(Comparator.comparing(AbstractRegistrationHolder::getRegistrationDate));
 
-        if (deletions == null)
-        {
-            return Collections.emptyList();
-        } else
-        {
-            Collections.sort(deletions, new Comparator<Deletion>()
-                {
-                    @Override
-                    public int compare(Deletion d1, Deletion d2)
-                    {
-                        return d1.getRegistrationDate().compareTo(d2.getRegistrationDate());
-                    }
-                });
-            return deletions;
-        }
-    }
-
-    private List<Deletion> listWithDeletedObjects(IOperationContext context)
-    {
-        IDeletionTable deletionTable = businessObjectFactory.createDeletionTable(context.getSession());
-        deletionTable.load(true);
-        return deletionTable.getDeletions();
-    }
-
-    private List<Deletion> listWithoutDeletedObjects(IOperationContext context)
-    {
-        IDeletionTable deletionTable = businessObjectFactory.createDeletionTable(context.getSession());
-        deletionTable.load(false);
-        return deletionTable.getDeletions();
+        return deletions;
     }
 
     private class SearchDeletions extends AbstractSearchObjectManuallyExecutor<DeletionSearchCriteria, Deletion>
     {
 
-        private List<Deletion> allDeletions;
+        private final DeletionFetchOptions fetchOptions;
 
-        public SearchDeletions(List<Deletion> allDeletions)
+        public SearchDeletions(final IDAOFactory daoFactory, final DeletionFetchOptions fetchOptions)
         {
-            this.allDeletions = allDeletions;
+            this.daoFactory = daoFactory;
+            this.fetchOptions = fetchOptions;
         }
 
         @Override
         protected List<Deletion> listAll()
         {
-            return allDeletions;
+            return new ArrayList<>();
         }
 
         @Override
         protected Matcher<Deletion> getMatcher(ISearchCriteria criteria)
         {
-            if (criteria instanceof IdSearchCriteria<?>)
+            if (criteria instanceof DeletedObjectIdSearchCriteria)
+            {
+                return new DeletedObjectIdMatcher();
+            } else if (criteria instanceof IdSearchCriteria<?>)
             {
                 return new IdMatcher();
             } else
@@ -139,27 +124,60 @@ public class SearchDeletionExecutor implements ISearchDeletionExecutor
             }
         }
 
-        private class IdMatcher extends SimpleFieldMatcher<Deletion>
+        private class IdMatcher extends Matcher<Deletion>
         {
 
-            @Override
-            protected boolean isMatching(IOperationContext context, Deletion object, ISearchCriteria criteria)
+            @Override public List<Deletion> getMatching(final IOperationContext context, final List<Deletion> deletions,
+                    final ISearchCriteria criteria)
             {
                 Object id = ((IdSearchCriteria<?>) criteria).getId();
 
                 if (id == null)
                 {
-                    return true;
+                    throw new IllegalArgumentException("Id cannot be null");
                 } else if (id instanceof DeletionTechId)
                 {
                     DeletionTechId techId = (DeletionTechId) id;
-                    return object.getId().equals(techId.getTechId());
+                    IDeletionTable deletionTable = businessObjectFactory.createDeletionTable(context.getSession());
+                    deletionTable.load(List.of(techId.getTechId()), fetchOptions.hasDeletedObjects());
+                    return deletionTable.getDeletions();
                 } else
                 {
                     throw new IllegalArgumentException("Unknown id: " + id.getClass());
                 }
             }
+        }
 
+        private class DeletedObjectIdMatcher extends Matcher<Deletion>
+        {
+
+            @Override public List<Deletion> getMatching(final IOperationContext context, final List<Deletion> deletions,
+                    final ISearchCriteria criteria)
+            {
+                IObjectId id = ((DeletedObjectIdSearchCriteria) criteria).getId();
+
+                if (id == null)
+                {
+                    throw new IllegalArgumentException("Deleted object id cannot be null");
+                } else if (id instanceof DataSetPermId)
+                {
+                    List<DeletedDataPE> deletedDataPEs =
+                            daoFactory.getDataDAO().tryToFindDeletedDataSetsByCodes(List.of(((DataSetPermId) id).getPermId()));
+
+                    if (deletedDataPEs.isEmpty())
+                    {
+                        return Collections.emptyList();
+                    }
+
+                    DeletionPE deletion = deletedDataPEs.get(0).getDeletion();
+                    IDeletionTable deletionTable = businessObjectFactory.createDeletionTable(context.getSession());
+                    deletionTable.load(List.of(deletion.getId()), fetchOptions.hasDeletedObjects());
+                    return deletionTable.getDeletions();
+                } else
+                {
+                    throw new IllegalArgumentException("Unsupported id: " + id.getClass());
+                }
+            }
         }
 
     }
