@@ -22,16 +22,9 @@ import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.FileFormatTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.ProprietaryStorageFormatPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocatorTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
@@ -57,6 +50,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+
 import junit.framework.Assert;
 
 /**
@@ -131,27 +125,6 @@ public class AbstractDeletionTest extends AbstractTest
         Assert.assertEquals(sampleCode, samples.get(0).getCode());
 
         return permIds.get(0);
-    }
-
-    protected DataSetPermId createDataSet(IExperimentId experimentId, String dataSetCode)
-    {
-        String sessionToken = v3api.login(TEST_USER, PASSWORD);
-
-        PhysicalDataCreation physicalCreation = new PhysicalDataCreation();
-        physicalCreation.setLocation("test/location/" + dataSetCode);
-        physicalCreation.setFileFormatTypeId(new FileFormatTypePermId("TIFF"));
-        physicalCreation.setLocatorTypeId(new RelativeLocationLocatorTypePermId());
-        physicalCreation.setStorageFormatId(new ProprietaryStorageFormatPermId());
-
-        DataSetCreation creation = new DataSetCreation();
-        creation.setCode(dataSetCode);
-        creation.setDataSetKind(DataSetKind.PHYSICAL);
-        creation.setTypeId(new EntityTypePermId("UNKNOWN"));
-        creation.setExperimentId(experimentId);
-        creation.setDataStoreId(new DataStorePermId("STANDARD"));
-        creation.setPhysicalData(physicalCreation);
-
-        return v3api.createDataSets(sessionToken, List.of(creation)).get(0);
     }
 
     protected void assertProjectExists(IProjectId projectId)

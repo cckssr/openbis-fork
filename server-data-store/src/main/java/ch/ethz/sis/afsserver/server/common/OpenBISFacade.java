@@ -10,9 +10,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.Deletion;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.fetchoptions.DeletionFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.search.DeletionSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
@@ -71,11 +68,6 @@ public class OpenBISFacade
     public SearchResult<Tag> searchTags(TagSearchCriteria criteria, TagFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchTags(criteria, fetchOptions));
-    }
-
-    public SearchResult<Deletion> searchDeletions(DeletionSearchCriteria criteria, DeletionFetchOptions fetchOptions)
-    {
-        return executeOperation(openBIS -> openBIS.searchDeletions(criteria, fetchOptions));
     }
 
     public void updateDataSets(final List<DataSetUpdate> updates)
