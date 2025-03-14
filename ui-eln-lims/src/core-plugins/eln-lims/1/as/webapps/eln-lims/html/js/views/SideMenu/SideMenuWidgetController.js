@@ -191,6 +191,7 @@ function SideMenuWidgetController(mainController) {
             }
         }
         mainController.sideMenu.moveToNodeId(mainController.sideMenu.getCurrentNodeId());
+        LayoutManager._saveSettings();
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {

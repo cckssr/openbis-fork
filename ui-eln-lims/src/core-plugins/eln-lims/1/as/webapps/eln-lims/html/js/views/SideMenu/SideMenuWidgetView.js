@@ -285,7 +285,6 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             mainController.sideMenu.isCollapsed = true;
             _this._sideMenuWidgetController._browserController._saveSettings();
             _this._collapsedSideMenu(_this._$container)
-            LayoutManager._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
@@ -345,7 +344,6 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                 mainController.sideMenu.isCollapsed = false;
                 LayoutManager.restoreStandardSize();
                 _this.repaint(_this._$container, false);
-                LayoutManager._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
