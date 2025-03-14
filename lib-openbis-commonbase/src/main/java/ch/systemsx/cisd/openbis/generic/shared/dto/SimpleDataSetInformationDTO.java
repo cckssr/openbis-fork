@@ -26,7 +26,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ServiceVersionHolder;
 
 /**
  * DTO containing information about data set in a simple form.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocation
@@ -74,6 +74,8 @@ public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocati
     private boolean isH5Folders;
 
     private boolean isH5ArFolders;
+
+    private Date immutableDataDate;
 
     public void setDataStoreCode(String dataStoreCode)
     {
@@ -198,7 +200,9 @@ public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocati
         this.speedHint = speedHint;
     }
 
-    /** NOTE: may be NULL! */
+    /**
+     * NOTE: may be NULL!
+     */
     public String getSampleCode()
     {
         return sampleCode;
@@ -294,5 +298,15 @@ public class SimpleDataSetInformationDTO implements Serializable, IDatasetLocati
     public void setH5arFolders(boolean isH5ArFolders)
     {
         this.isH5ArFolders = isH5ArFolders;
+    }
+
+    public void setImmutableDataTimestamp(final Date immutableDataDate)
+    {
+        this.immutableDataDate = immutableDataDate;
+    }
+
+    public Date getImmutableDataDate()
+    {
+        return immutableDataDate;
     }
 }

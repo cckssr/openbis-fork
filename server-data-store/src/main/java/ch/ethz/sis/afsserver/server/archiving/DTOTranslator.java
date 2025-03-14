@@ -13,6 +13,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ContentCopy;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDms;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.ExternalDmsAddressType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
@@ -53,6 +54,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UrlContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 
 public class DTOTranslator
@@ -178,6 +180,46 @@ public class DTOTranslator
         }
 
         return externalData;
+    }
+
+    public static SimpleDataSetInformationDTO translateToSimpleDataSet(DataSet dataSet)
+    {
+        SimpleDataSetInformationDTO simpleDTO = new SimpleDataSetInformationDTO();
+        simpleDTO.setDataSetCode(dataSet.getCode());
+        simpleDTO.setDataSetType(dataSet.getType().getCode());
+        simpleDTO.setDataStoreCode(dataSet.getDataStore().getCode());
+        simpleDTO.setDataSetShareId(dataSet.getPhysicalData().getShareId());
+        simpleDTO.setDataSetLocation(dataSet.getPhysicalData().getLocation());
+        simpleDTO.setDataSetSize(dataSet.getPhysicalData().getSize());
+        simpleDTO.setStatus(DataSetArchivingStatus.valueOf(dataSet.getPhysicalData().getStatus().name()));
+        simpleDTO.setPresentInArchive(dataSet.getPhysicalData().isPresentInArchive());
+        simpleDTO.setSpeedHint(dataSet.getPhysicalData().getSpeedHint());
+        simpleDTO.setStorageConfirmed(dataSet.getPhysicalData().isStorageConfirmation());
+        simpleDTO.setRegistrationTimestamp(dataSet.getRegistrationDate());
+        simpleDTO.setModificationTimestamp(dataSet.getModificationDate());
+        simpleDTO.setAccessTimestamp(dataSet.getAccessDate());
+
+        if (dataSet.getExperiment() != null)
+        {
+            simpleDTO.setExperimentCode(dataSet.getExperiment().getCode());
+            simpleDTO.setProjectCode(dataSet.getExperiment().getProject().getCode());
+            simpleDTO.setSpaceCode(dataSet.getExperiment().getProject().getSpace().getCode());
+            if (dataSet.getExperiment().getImmutableDataDate() != null)
+            {
+                simpleDTO.setImmutableDataTimestamp(dataSet.getExperiment().getImmutableDataDate());
+            }
+        }
+
+        if (dataSet.getSample() != null)
+        {
+            simpleDTO.setSampleCode(dataSet.getSample().getCode());
+            if (dataSet.getSample().getImmutableDataDate() != null)
+            {
+                simpleDTO.setImmutableDataTimestamp(dataSet.getSample().getImmutableDataDate());
+            }
+        }
+
+        return simpleDTO;
     }
 
     public static Sample translate(final ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample)

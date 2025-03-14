@@ -1,6 +1,5 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
@@ -235,7 +235,19 @@ public class OpenBISService implements IOpenBISService
 
     @Override public List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException
     {
-        return List.of();
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withPhysicalData();
+        fetchOptions.withDataStore();
+        fetchOptions.withExperiment().withProject().withSpace();
+        fetchOptions.withSample();
+
+        List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, fetchOptions).getObjects();
+
+        return dataSets.stream().map(DTOTranslator::translateToSimpleDataSet).collect(Collectors.toList());
     }
 
     @Override public List<AbstractExternalData> listAvailableDataSets(final ArchiverDataSetCriteria archiverCriteria)
@@ -352,11 +364,6 @@ public class OpenBISService implements IOpenBISService
         update.setAccessDate(new Date());
 
         openBISFacade.updateDataSets(List.of(update));
-    }
-
-    @Override public boolean isDataSetOnTrashCanOrDeleted(final String dataSetCode)
-    {
-        return false;
     }
 
     private List<AbstractExternalData> listDataSets(DataSetSearchCriteria criteria)

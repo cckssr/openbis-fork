@@ -50,6 +50,4 @@ public interface IOpenBISService
 
     void notifyDatasetAccess(String dataSetCode);
 
-    boolean isDataSetOnTrashCanOrDeleted(String dataSetCode);
-
 }

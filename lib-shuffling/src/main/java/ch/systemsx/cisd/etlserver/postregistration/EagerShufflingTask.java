@@ -51,6 +51,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
@@ -255,7 +256,9 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
                 String shareId = shareWithMostFreeOrNull.getShareId();
                 try
                 {
-                    if (service.isDataSetOnTrashCanOrDeleted(dataSetCode))
+                    AbstractExternalData loadedDataSet = service.tryGetDataSet(dataSetCode);
+
+                    if (loadedDataSet == null)
                     {
                         logger.log(LogLevel.WARN, "Data set " + dataSetCode + " will not be moved from share "
                                 + dataSet.getDataSetShareId() + " to " + shareId
