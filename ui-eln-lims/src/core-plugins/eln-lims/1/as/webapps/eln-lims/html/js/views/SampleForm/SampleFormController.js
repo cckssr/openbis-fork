@@ -847,11 +847,12 @@ function SampleFormController(mainController, mode, sample, paginationInfo) {
                 searchUntilFound = function() {
                 mainController.serverFacade.searchWithUniqueId(permId, function(data) {
                     if(data && data.length > 0) {
-
-                        _this._mainController.sideMenu.refreshCurrentNode().then(x => {
-                            var nodeId = {type: 'SAMPLE', id: data[0].permId}
-                            _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
-                        });
+                        if(_this._sampleFormModel.mode === FormMode.CREATE) {
+                            _this._mainController.sideMenu.refreshCurrentNode().then(x => {
+                                var nodeId = {type: 'SAMPLE', id: data[0].permId}
+                                _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
+                            });
+                        }
                         mainController.changeView('showViewSamplePageFromPermId',data[0].permId);
                         Util.unblockUI();
                     } else { // Recursive call, only if not found yet due to reindexing
