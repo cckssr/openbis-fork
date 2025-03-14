@@ -53,13 +53,10 @@ class LeftToolbarButtons extends React.Component {
   constructor(props, context) {
     super(props, context);
     // Initialize the controller with owner and extOpenbis from props
-    this.controller = new DataBrowserController(this.props.owner, this.props.extOpenbis);
-    this.controller.attach(this);
-    this.controller.setPath("/");
+    this.controller = this.props.controller
 
     // All the state related to dialogs, selection, etc.
-    this.state = {
-      path: '/',
+    this.state = {      
       hiddenButtonsPopup: null,
       newFolderDialogOpen: false,
       deleteDialogOpen: false,

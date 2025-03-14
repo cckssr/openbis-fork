@@ -318,6 +318,7 @@ class DataBrowserToolbar extends React.Component {
             onDownload={this.handleDownload}
             classes={classes}
             className={className}
+            controller={this.controller}
             />
           
           <ViewSwitch
@@ -392,6 +393,7 @@ class DataBrowserToolbar extends React.Component {
             onDownload={this.handleDownload}
             classes={classes}
             className={className}
+            controller={this.controller}
             />
         </div>
       </ResizeObserver>
