@@ -38,10 +38,13 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocationNode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocationNode;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.LinkDataSetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -147,7 +150,62 @@ public class OpenBISService implements IOpenBISService
 
     @Override public IDatasetLocationNode tryGetDataSetLocation(final String dataSetCode)
     {
-        return null;
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withCode().thatEquals(dataSetCode);
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withDataStore();
+        fetchOptions.withPhysicalData();
+        fetchOptions.withLinkedData();
+        fetchOptions.withComponentsUsing(fetchOptions);
+
+        List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, fetchOptions).getObjects();
+
+        if (dataSets.isEmpty())
+        {
+            return null;
+        }
+
+        return tryGetDataSetLocation(dataSets.get(0), null);
+    }
+
+    public IDatasetLocationNode tryGetDataSetLocation(final DataSet dataSet, final Integer orderInContainer)
+    {
+        DatasetLocation location;
+
+        if (dataSet.getPhysicalData() != null)
+        {
+            location = new DatasetLocation();
+            location.setDataSetLocation(dataSet.getPhysicalData().getLocation());
+            location.setDataSetShareId(dataSet.getPhysicalData().getShareId());
+        } else if (dataSet.getLinkedData() != null)
+        {
+            location = new LinkDataSetLocation();
+        } else
+        {
+            location = new DatasetLocation();
+        }
+
+        location.setDatasetCode(dataSet.getCode());
+        location.setDataStoreCode(dataSet.getDataStore().getCode());
+        location.setDataStoreUrl(dataSet.getDataStore().getRemoteUrl());
+        location.setOrderInContainer(orderInContainer);
+
+        DatasetLocationNode node = new DatasetLocationNode(location);
+
+        if (dataSet.getComponents() != null)
+        {
+            int index = 0;
+            for (DataSet component : dataSet.getComponents())
+            {
+                IDatasetLocationNode componentNode = tryGetDataSetLocation(component, index);
+                node.addContained(componentNode);
+                index++;
+            }
+        }
+
+        return node;
     }
 
     @Override public Experiment tryGetExperiment(final ExperimentIdentifier experimentIdentifier) throws UserFailureException
