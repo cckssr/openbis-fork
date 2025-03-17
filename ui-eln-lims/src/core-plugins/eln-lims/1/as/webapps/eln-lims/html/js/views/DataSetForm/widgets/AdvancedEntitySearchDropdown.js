@@ -185,7 +185,11 @@ function AdvancedEntitySearchDropdown(isMultiple,
                             "UUIDv4-2": { type: "Property/Attribute",   name: "ATTR.IDENTIFIER", operator : "thatContains", value: storedParams.data.q }
 						}
 					};
-		mainController.serverFacade.searchForExperimentsAdvanced(criteria, null, function(results) { results.type = "Experiments"; action(results) });
+		mainController.serverFacade.searchForExperimentsAdvanced(criteria, { only: true,
+                                                                                withType: true,
+                                                                                withProperties: true,
+                                                                                withProject: true,
+                                                                                withProjectSpace: true }, function(results) { results.type = "Experiments"; action(results) });
 	}
 	
 	var searchSample = function(action) {

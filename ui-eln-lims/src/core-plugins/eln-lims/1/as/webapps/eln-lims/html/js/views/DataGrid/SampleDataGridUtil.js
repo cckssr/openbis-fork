@@ -791,10 +791,10 @@ var SampleDataGridUtil = new function() {
 				var $move = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Move'}).append("Move"));
 				$move.click(function(event) {
 					stopEventsBuble(event);
-					var moveSampleController = new MoveSampleController(data.permId, function() {
-						mainController.refreshView();
-					});
-					moveSampleController.init();
+                    var moveSampleController = new MoveEntityController("SAMPLE", data.permId, function() {
+                        mainController.refreshView();
+                    });
+                    moveSampleController.init();
 				});
 				$list.append($move);
 
