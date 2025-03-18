@@ -255,7 +255,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 						if(_this._dataSetFormModel.mode === FormMode.CREATE) {
 							Util.showSuccess("DataSet Created.", callbackOk);
 							if(!isInventory) {
-								mainController.sideMenu.refreshCurrentNode();
+                                var currentNode = mainController.sideMenu.getCurrentNodeId();
+                                if(currentNode) {
+                                    var node = JSON.parse(currentNode);
+                                    mainController.sideMenu.refreshNodeParentByPermId(node.type, node.id);
+                                }
 							}
 						} else if(_this._dataSetFormModel.mode === FormMode.EDIT) {
 							Util.showSuccess("DataSet Updated.", callbackOk);
