@@ -1634,6 +1634,10 @@ function ServerFacade(openbisServer) {
                         fetchOptions.withPhysicalData();
                     }
 				} else if(advancedFetchOptions.only) {
+				    if(advancedFetchOptions.withSamples) {
+				        fetchOptions.withSamples();
+				    }
+
 					if(advancedFetchOptions.withSample) {
 						fetchOptions.withSample();
 						if(advancedFetchOptions.withSampleType) {
@@ -2130,7 +2134,8 @@ function ServerFacade(openbisServer) {
                                         case "thatContains":
                                                 criteria.withType().withCode().thatContains(attributeValue);
                                                 break;
-                                    }                                    break;
+                                    }
+                                    break;
                                 //Only Sample
                                 case "SPACE":
                                     if(!comparisonOperator) {
@@ -2161,13 +2166,13 @@ function ServerFacade(openbisServer) {
                                                 break;
                                     }
                                     break;
-																case "SAMPLE_CODE":
-																	  switch (comparisonOperator) {
-																		    case 'thatContains':
-																			      criteria.withSample().withCode().thatContains(attributeValue)
-																				    break
-																	  }
-																	  break
+                                case "SAMPLE_CODE":
+                                      switch (comparisonOperator) {
+                                            case 'thatContains':
+                                                  criteria.withSample().withCode().thatContains(attributeValue)
+                                                    break
+                                      }
+                                      break
                                 case "EXPERIMENT_IDENTIFIER":
                                     if(!comparisonOperator) {
                                         comparisonOperator = "thatEquals";

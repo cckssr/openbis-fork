@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014-2025 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Deprecated
 function MoveSampleView(moveSampleController, moveSampleModel) {
 	this._moveSampleController = moveSampleController;
 	this._moveSampleModel = moveSampleModel;

@@ -7,7 +7,13 @@ var ELNDictionary = {
 	ExperimentELN : "Experiment",
 	ExperimentCollection : "Collection",
 	ExperimentsELN : "Experiments",
-	ExperimentsCollection : "Collections"
+	ExperimentsCollection : "Collections",
+	Project : "Project",
+	Projects : "Projects",
+	Dataset : "Dataset",
+	Datasets : "Datasets",
+	Space : "Space",
+	Spaces : "Spaces"
 }
 
 ELNDictionary.getSampleDualName = function() {
