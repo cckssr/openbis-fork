@@ -18,8 +18,6 @@ import pandas as pd
 import base64
 import json
 
-from exceptiongroup import catch
-
 from .spreadsheet import Spreadsheet
 
 
