@@ -23,7 +23,7 @@ The Java V3 API consists of three interfaces:
 
 -   ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerAPI
 -   ch.ethz.sis.openbis.generic.dssapi.v3.IDatastoreServerAPI
--   ch.ethz.sis.afs.api.OperationsAPI
+-   ch.ethz.sis.afsapi.api.PublicAPI
 
 Javadoc available at: <https://openbis.ch/javadoc/20.10.x/javadoc-api-v3/index.html>
 
@@ -145,7 +145,7 @@ property [javax.net](http://javax.net).ssl.trustStore. Example:
 
 In order to connect to openBIS V3 API in Java you can:
 
-- Use IApplicationServerApi (AS), IDataStoreServerApi (DSS) and OperationsAPI interfaces directly.
+- Use IApplicationServerApi (AS), IDataStoreServerApi (DSS) and PublicAPI (AFS) interfaces directly.
 - Use OpenBIS facade (that talks to all interfaces internally, this is the current recommendation).
 
 Using the OpenBIS facade has some advantages over using the AS and DSS interfaces directly:
@@ -3346,7 +3346,7 @@ There are some important differences between these two approaches with respect t
 
     - "executeOperations" method : can only execute operations from IApplicationServerApi (AS)
 
-    - "two-phase commit" transactions : can execute operations from both IApplicationServerApi (AS) and OperationsAPI (AFS); within a single transaction you can mix operations from both APIs
+    - "two-phase commit" transactions : can execute operations from both IApplicationServerApi (AS) and PublicAPI (AFS); within a single transaction you can mix operations from both APIs
 
 * Flexibility:
 
@@ -4618,7 +4618,7 @@ It is possible that the actual number of streams is zero if the server
 is currently too busy with downloading (that is, there is no free
 dowload stream available). The FastDownloader will retry it later.
 
-#### Customizing Fast Dowloading
+#### Customizing Fast Downloading
 
 There are three ways to customizing the FastDownloader:
 
@@ -4795,4 +4795,26 @@ web application will do nothing.
                 });
             });
     </script>
+```
+
+## VII. AFS Methods
+
+### Operations API Reference
+
+```java
+    List<File> list(@NonNull String source, boolean recursively) throws Exception;
+
+    byte[] read(@NonNull String source, @NonNull long offset, @NonNull int limit) throws Exception;
+
+    boolean write(@NonNull String source, @NonNull long offset, @NonNull byte[] data) throws Exception;
+
+    boolean delete(@NonNull String source) throws Exception;
+
+    boolean copy(@NonNull String source, @NonNull String target) throws Exception;
+
+    boolean move(@NonNull String source, @NonNull String target) throws Exception;
+
+    boolean create(@NonNull String source, boolean directory) throws Exception;
+
+    FreeSpace free(@NonNull String source) throws Exception;
 ```
