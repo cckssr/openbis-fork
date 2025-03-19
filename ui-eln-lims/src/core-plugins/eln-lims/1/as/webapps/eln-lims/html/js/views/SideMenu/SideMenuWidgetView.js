@@ -23,7 +23,6 @@
 function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this._sideMenuWidgetController = sideMenuWidgetController
     this._sideMenuWidgetModel = sideMenuWidgetModel
-    this.__this = this;
     this.subSideMenuViewer = null;
     this._resizeObserver = new ResizeObserver((entries) => {
                    var width = entries[0].contentRect.width;
@@ -48,9 +47,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         if(isCollapsed && !LayoutManager.isMobile()) {
             mainController.sideMenu.isCollapsed = true;
             var width = $(window).width();
-            LayoutManager.firstColumnResize = 55;
-            LayoutManager.secondColumnResize = width - 55;
             this._collapsedSideMenu($container);
+            LayoutManager.setColumnSize(55, $(window).width() - 55, null);
+
         } else {
             mainController.sideMenu.isCollapsed = false;
             //
@@ -64,9 +63,8 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
             if(LayoutManager.firstColumn && LayoutManager.firstColumn.width() <= 55) {
                 var width = $(window).width();
-                var firstColumnWidth = width * 0.25;
-                LayoutManager.firstColumnResize = firstColumnWidth;
-                LayoutManager.secondColumnResize = (width - firstColumnWidth - 1);
+                var firstColumnWidth = Math.floor(width * 0.25);
+                LayoutManager.setColumnSize(firstColumnWidth, width - firstColumnWidth, null);
             }
 
 
@@ -238,7 +236,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this.repaintTreeMenuDinamic()
 
             if(this._resizeObserver && !LayoutManager.isMobile()) {
-                this._resizeObserver.observe($widget[0]);
+                this._resizeObserver.observe($body[0]);
             }
         }
     }
@@ -344,7 +342,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $container.css("height", "100%")
         $container.append($widget)
 
-        if(this._resizeObserver) {
+        if(this._resizeObserver && !LayoutManager.isMobile()) {
             this._resizeObserver.observe($widget[0]);
         }
 
