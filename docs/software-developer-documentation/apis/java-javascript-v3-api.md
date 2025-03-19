@@ -97,21 +97,22 @@ features:
 -   Queries: create/update/get/search/delete/execute queries
 -   Generating codes/permids
 
-### Current Features - DSS
+### Main DSS Features
 
--   Search data set files
--   Download data set files
+- Search for dataset files.
+- Create immutable datasets.
+- Download dataset files.
 
-### Missing/Planned Features
+### Main AFS Features
 
-The current implementation of the V3 openBIS API does not yet include
-the following features:
+- Transactionally safe access to the file system.
+- Perform random reads and writes on individual chunks of files.
+- Copy, move, and delete files.
+- Create files and directories.
 
--   Management features: Managing data stores
--   Search features: Searching experiments having samples/datasets,
-    searching datasets (oldest, deleted, for archiving etc.)
--   Update features: Updating datasets share id, size, status, storage
-    confirmation, post registration status
+### Transactions
+
+- It is possible to combine AS and AFS operations within a single transaction, both implement a two phase transaction interface.
 
 ## III. Accessing the API 
 
@@ -144,13 +145,13 @@ property [javax.net](http://javax.net).ssl.trustStore. Example:
 
 In order to connect to openBIS V3 API in Java you can:
 
-- use IApplicationServerApi (AS) and IDataStoreServerApi (DSS) interfaces directly
-- use OpenBIS facade (that talks to IApplicationServerApi and IDataStoreServerApi interfaces internally)
+- Use IApplicationServerApi (AS), IDataStoreServerApi (DSS) and OperationsAPI interfaces directly.
+- Use OpenBIS facade (that talks to all interfaces internally, this is the current recommendation).
 
 Using the OpenBIS facade has some advantages over using the AS and DSS interfaces directly:
 
 - it hides the details of the protocol and the data serialization format used between the client and the server
-- it does not require you to know V3 API endpoints for both AS and DSS and their URLs
+- it does not require you to know V3 API endpoints for individual system service components.
 - it provides additional utility methods (e.g. getManagedPersonalAccessToken)
 
 Because of these reasons, OpenBIS facade is the recommended way of connecting to V3 API in Java.
