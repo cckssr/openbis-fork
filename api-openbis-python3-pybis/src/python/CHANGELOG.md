@@ -1,7 +1,11 @@
-## Changes with pybis-6.6.0.0
+## Changes with pybis-6.7.0.0
 
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
+
+## Changes with pybis-1.37.4
+
+- Handling UnicodeDecodeError in spreadsheet property
 
 ## Changes with pybis-1.37.3
 
