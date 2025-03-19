@@ -18,33 +18,63 @@ function ExportTreeController(parentController) {
 	var parentController = parentController;
 	var exportTreeModel = new ExportTreeModel();
 	var exportTreeView = new ExportTreeView(this, exportTreeModel);
-	
-	this.init = function(views) {
+
+	this.init = function (views) {
 		exportTreeView.repaint(views);
 	};
-	
-	this.exportSelected = function() {
+
+	this.exportSelected = function () {
 		var selectedNodes = $(exportTreeModel.tree).fancytree('getTree').getSelectedNodes();
-		
+
 		var toExport = [];
-		for(var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
+		var nodeExportList = [];
+
+		for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
 			var node = selectedNodes[eIdx];
-			toExport.push({ type: node.data.entityType, permId : node.key, expand : !node.expanded });
+			toExport.push({ type: node.data.entityType, permId: node.key, expand: !node.expanded });
+			nodeExportList.push({
+				kind: node.data.entityType,
+				permId: node.key,
+				withLevelsAbove: true,
+				withLevelsBelow: !node.expanded,
+				withObjectsAndDataSetsParents: true,
+				withObjectsAndDataSetsOtherSpaces: true,
+			})
 		}
-		
-		if(toExport.length === 0) {
+
+		var exportModel = {
+			nodeExportList: nodeExportList,
+			withEmail: false,
+			withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+			formats: {
+				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
+				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
+				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+			}
+		}
+
+		if (toExport.length === 0) {
 			Util.showInfo("First select something to export.");
 		} else {
 			Util.blockUI();
-			mainController.serverFacade.exportAll(toExport, true, false, function(error, result) {
-				if(error) {
+			/* mainController.serverFacade.exportAll(toExport, true, false, function (error, result) {
+				if (error) {
 					Util.showError(error);
 				} else {
-					Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop.", function() { Util.unblockUI(); });
+					Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop.", function () { Util.unblockUI(); });
 					mainController.refreshView();
 				}
-			});
+			}); */
+
+			mainController.serverFacade.customELNASAPI({
+				"method": "getExport",
+				"export-model": exportModel
+			}, function (result) {
+				window.open(result.result, "_blank");
+				Util.showSuccess("Downloading File");
+				Util.unblockUI();
+			}, true);
 		}
-		
+
 	}
 }

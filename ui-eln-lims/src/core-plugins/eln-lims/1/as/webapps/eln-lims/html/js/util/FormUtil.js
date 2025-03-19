@@ -3270,7 +3270,7 @@ var FormUtil = new function() {
 
         this.getExportButtonModel = function(entityKind, entityPermId) {
             var exportButtonModel = {
-                                    label : "Export",
+                                    label : "Export", 
                                     action : function() {
                                         var $window = $('<form>', { 'action' : 'javascript:void(0);' });
                                         $window.append($('<legend>').append('Export'));
@@ -3307,20 +3307,21 @@ var FormUtil = new function() {
                                         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' , 'id' : 'accept-btn'});
                                         $btnAccept.click(function() {
                                             var exportModel = {
-                                                entity : {
+                                                nodeExportList: [{
                                                     kind : entityKind,
-                                                    permId : entityPermId
-                                                },
+                                                    permId : entityPermId,
+                                                    withLevelsAbove: true,
+                                                    withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
+                                                    withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
+                                                    withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
+                                                }],
                                                 withEmail : $("#EXPORT-EMAIL").is(":checked"),
                                                 withImportCompatibility : $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
                                                 formats : {
                                                     pdf : $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
                                                     xlsx : $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
                                                     data : $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
-                                                },
-                                                withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
-                                                withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
-                                                withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
+                                                }
                                             }
                                             var numberOfFormats = 0;
                                             if(exportModel.formats.pdf) {
