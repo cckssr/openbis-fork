@@ -64,10 +64,11 @@ class PropertyReformatter:
                     properties[key] = ["[" + ",".join(map(str, x)) + "]" for x in value]
             elif (property_type.dataType == 'XML' and 'custom_widget' in property_type.metaData
                     and property_type.metaData['custom_widget'].upper() == 'SPREADSHEET'):
-                    json_str = value.to_json().encode('utf-8')
-                    b64 = base64.b64encode(json_str).decode('utf-8')
-                    result = f'<DATA>{b64}</DATA>'
-                    properties[key] = result
+                    if isinstance(value, Spreadsheet):
+                        json_str = value.to_json().encode('utf-8')
+                        b64 = base64.b64encode(json_str).decode('utf-8')
+                        result = f'<DATA>{b64}</DATA>'
+                        properties[key] = result
         return properties
 
     def _format_timestamp(self, value):
@@ -98,7 +99,17 @@ class PropertyReformatter:
         return result
 
     def to_spreadsheet(self, rawValue):
-        b64 = rawValue[len("<DATA>"):-len("</DATA>")]
-        json_str = base64.b64decode(b64).decode('utf-8')
-        result = json.loads(json_str)
-        return Spreadsheet.from_dict(result)
+        try:
+            b64 = rawValue[len("<DATA>"):-len("</DATA>")]
+            jsonb = base64.b64decode(b64)
+            try:
+                json_str = jsonb.decode('utf-8')
+            except UnicodeDecodeError as decode_error:
+                json_str = jsonb.decode('latin1')
+            result = json.loads(json_str)
+            return Spreadsheet.from_dict(result)
+        except ValueError as e:
+            print(f"Could not decode spreadsheet property: {e}")
+            return rawValue
+
+

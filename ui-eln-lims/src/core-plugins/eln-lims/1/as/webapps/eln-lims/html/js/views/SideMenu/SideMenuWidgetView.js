@@ -23,20 +23,15 @@
 function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
     this._sideMenuWidgetController = sideMenuWidgetController
     this._sideMenuWidgetModel = sideMenuWidgetModel
-    this.__this = this;
     this.subSideMenuViewer = null;
     this._resizeObserver = new ResizeObserver((entries) => {
                    var width = entries[0].contentRect.width;
                    if(width < 55) {
-                           var firstColumn = LayoutManager.firstColumn;
-                           var secondColumn = LayoutManager.secondColumn;
-                           var totalWidth = $( window ).width();
-                           firstColumn.css("width", "55px");
-                           secondColumn.css("width", totalWidth-55);
+                        LayoutManager.setColumnSize(55, $(window).width() - 55, null);
                         if(!mainController.sideMenu.isCollapsed) {
                             mainController.sideMenu.collapseSideMenu();
-                       }
-                   } else if(width > 55 && mainController.sideMenu.isCollapsed) {
+                        }
+                   } else if(width > 55 && mainController.sideMenu.isCollapsed && !LayoutManager.isMobile()) {
                         mainController.sideMenu.expandSideMenu();
                    } else if(width == 55 && !mainController.sideMenu.isCollapsed) {
                         mainController.sideMenu.collapseSideMenu();
@@ -51,12 +46,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         if(isCollapsed && !LayoutManager.isMobile()) {
             mainController.sideMenu.isCollapsed = true;
-            var width = $( window ).width();
-            var firstColumn = LayoutManager.firstColumn;
-            var secondColumn = LayoutManager.secondColumn;
-            firstColumn.css("width", "55px");
-            secondColumn.css("width", width-55);
+            var width = $(window).width();
             this._collapsedSideMenu($container);
+            LayoutManager.setColumnSize(55, $(window).width() - 55, null);
 
         } else {
             mainController.sideMenu.isCollapsed = false;
@@ -69,12 +61,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             $widget.css("display", "flex")
             $widget.css("flex-direction", "column")
 
-            var firstColumn = LayoutManager.firstColumn;
-            if(firstColumn && firstColumn.width() <= 55) {
-                var width = $( window ).width();
-                var firstColumnWidth = width * 0.25;
-                firstColumn.css("width", firstColumnWidth + "px");
-                LayoutManager.secondColumn.css("width", (width - firstColumnWidth - 1)+"px")
+            if(LayoutManager.firstColumn && LayoutManager.firstColumn.width() <= 55) {
+                var width = $(window).width();
+                var firstColumnWidth = Math.floor(width * 0.25);
+                LayoutManager.setColumnSize(firstColumnWidth, width - firstColumnWidth, null);
             }
 
 
@@ -246,7 +236,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this.repaintTreeMenuDinamic()
 
             if(this._resizeObserver && !LayoutManager.isMobile()) {
-                this._resizeObserver.observe($widget[0]);
+                this._resizeObserver.observe($body[0]);
             }
         }
     }
@@ -277,11 +267,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var _this = this;
         $btn.click(function() {
             _this._resizeObserver.disconnect();
-            var firstColumn = LayoutManager.firstColumn;
-            var secondColumn = LayoutManager.secondColumn;
-            var width = $( window ).width();
-            firstColumn.css("width", "55px");
-            secondColumn.css("width", width-55);
+            LayoutManager.setColumnSize(55, $(window).width() - 55, null);
             mainController.sideMenu.isCollapsed = true;
             _this._sideMenuWidgetController._browserController._saveSettings();
             _this._collapsedSideMenu(_this._$container)
@@ -356,7 +342,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $container.css("height", "100%")
         $container.append($widget)
 
-        if(this._resizeObserver) {
+        if(this._resizeObserver && !LayoutManager.isMobile()) {
             this._resizeObserver.observe($widget[0]);
         }
 

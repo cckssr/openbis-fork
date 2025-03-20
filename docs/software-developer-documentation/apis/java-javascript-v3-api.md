@@ -2,40 +2,64 @@
 
 ## I. Architecture
 
-Open BIS consists of two main components: an Application Server and one
-or more Data Store Servers. The Application Server manages the system’s
-meta data, while the Data Store Server(s) manage the file store(s). Each
-Data Store Server manages its own file store. Here we will refer to the
-Application Server as the "AS" and the Data Store Server as the "DSS."
+![image info](img/openbis-deployment.svg)
 
-### One AS, one or more DSS
+OpenBIS consists of three main components:  
 
-Why is there only one Application Server but multiple Data Store
-Servers? It is possible to have only one Data Store Server, but in a
-complex project there might be many labs using the same OpenBIS instance
-and therefore sharing the same meta data. Each lab might have its own
-Data Store Server to make file management easier and more efficient. The
-Data Store Servers are on different Java virtual machines, which enables
-the files to be processed faster. It is also more efficient when the
-physical location of the Data Store Server is closer to the lab that is
-using it. Another reason is that the meta data tends to be relatively
-small in size, whereas the files occupy a large amount of space in the
-system. 
+- **Application Server (AS):** Manages the system’s metadata and most API calls.  
+- **Data Store Server (DSS):** Manages the file store and Data Set API calls.  
+- **Atomic File System (AFS):** Manages the file store and File API calls.  
 
-![image info](img/139.png)
+Some readers may ask: why are there two components managing the same file storage?  
+
+- AFS can perform all the functions of DSS while also offering new features unavailable in DSS.  
+- However, AFS uses a new API for reading and writing files, meaning applications must be migrated to this new API to use it.  
+- During the transition period, both components will be available. In the next OpenBIS version, DSS will be removed.  
+- Additionally, AFS is independent of OpenBIS, so it can potentially be used with other systems.
 
 ### The Java API
 
-The Java V3 API consists of two interfaces:
+The Java V3 API consists of three interfaces:
 
 -   ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerAPI
 -   ch.ethz.sis.openbis.generic.dssapi.v3.IDatastoreServerAPI
+-   ch.ethz.sis.afsapi.api.PublicAPI
 
-Please check our JavaDoc for more
-details: <https://openbis.ch/javadoc/20.10.x/javadoc-api-v3/index.html>
+Javadoc available at: <https://openbis.ch/javadoc/20.10.x/javadoc-api-v3/index.html>
 
-All V3 API jars are packed in openBIS-API-V3-<VERSION>.zip which
+All API jars are packed in openBIS-API-V3-<VERSION>.zip which
 is part of openBIS-clients-and-APIs-<VERSION>.zip (the latest version can be downloaded at <https://unlimited.ethz.ch/display/openbis/Production+Releases>)
+
+The API jars are also distributed though the openBIS Ivy repository and can be added to a project build file.
+
+***Example build.gradle***
+```
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-parameters'
+}
+
+repositories {
+    ivy {
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+    }
+}
+
+dependencies {
+    implementation 'openbis:openbis-v3-api-batteries-included:6.6.0-EA'
+    testImplementation 'junit:junit:4.13.1'
+}
+```
 
 ### The Javascript API
 
@@ -73,21 +97,22 @@ features:
 -   Queries: create/update/get/search/delete/execute queries
 -   Generating codes/permids
 
-### Current Features - DSS
+### Main DSS Features
 
--   Search data set files
--   Download data set files
+- Search for dataset files.
+- Create immutable datasets.
+- Download dataset files.
 
-### Missing/Planned Features
+### Main AFS Features
 
-The current implementation of the V3 openBIS API does not yet include
-the following features:
+- Transactionally safe access to the file system.
+- Perform random reads and writes on individual chunks of files.
+- Copy, move, and delete files.
+- Create files and directories.
 
--   Management features: Managing data stores
--   Search features: Searching experiments having samples/datasets,
-    searching datasets (oldest, deleted, for archiving etc.)
--   Update features: Updating datasets share id, size, status, storage
-    confirmation, post registration status
+### Transactions
+
+- It is possible to combine AS and AFS operations within a single transaction, both implement a two phase transaction interface.
 
 ## III. Accessing the API 
 
@@ -120,13 +145,13 @@ property [javax.net](http://javax.net).ssl.trustStore. Example:
 
 In order to connect to openBIS V3 API in Java you can:
 
-- use IApplicationServerApi (AS) and IDataStoreServerApi (DSS) interfaces directly
-- use OpenBIS facade (that talks to IApplicationServerApi and IDataStoreServerApi interfaces internally)
+- Use IApplicationServerApi (AS), IDataStoreServerApi (DSS) and PublicAPI (AFS) interfaces directly.
+- Use OpenBIS facade (that talks to all interfaces internally, this is the current recommendation).
 
 Using the OpenBIS facade has some advantages over using the AS and DSS interfaces directly:
 
 - it hides the details of the protocol and the data serialization format used between the client and the server
-- it does not require you to know V3 API endpoints for both AS and DSS and their URLs
+- it does not require you to know V3 API endpoints for individual system service components.
 - it provides additional utility methods (e.g. getManagedPersonalAccessToken)
 
 Because of these reasons, OpenBIS facade is the recommended way of connecting to V3 API in Java.
@@ -3321,7 +3346,7 @@ There are some important differences between these two approaches with respect t
 
     - "executeOperations" method : can only execute operations from IApplicationServerApi (AS)
 
-    - "two-phase commit" transactions : can execute operations from both IApplicationServerApi (AS) and OperationsAPI (AFS); within a single transaction you can mix operations from both APIs
+    - "two-phase commit" transactions : can execute operations from both IApplicationServerApi (AS) and PublicAPI (AFS); within a single transaction you can mix operations from both APIs
 
 * Flexibility:
 
@@ -4593,7 +4618,7 @@ It is possible that the actual number of streams is zero if the server
 is currently too busy with downloading (that is, there is no free
 dowload stream available). The FastDownloader will retry it later.
 
-#### Customizing Fast Dowloading
+#### Customizing Fast Downloading
 
 There are three ways to customizing the FastDownloader:
 
@@ -4770,4 +4795,26 @@ web application will do nothing.
                 });
             });
     </script>
+```
+
+## VII. AFS Methods
+
+### Operations API Reference
+
+```java
+    List<File> list(@NonNull String source, boolean recursively) throws Exception;
+
+    byte[] read(@NonNull String source, @NonNull long offset, @NonNull int limit) throws Exception;
+
+    boolean write(@NonNull String source, @NonNull long offset, @NonNull byte[] data) throws Exception;
+
+    boolean delete(@NonNull String source) throws Exception;
+
+    boolean copy(@NonNull String source, @NonNull String target) throws Exception;
+
+    boolean move(@NonNull String source, @NonNull String target) throws Exception;
+
+    boolean create(@NonNull String source, boolean directory) throws Exception;
+
+    FreeSpace free(@NonNull String source) throws Exception;
 ```

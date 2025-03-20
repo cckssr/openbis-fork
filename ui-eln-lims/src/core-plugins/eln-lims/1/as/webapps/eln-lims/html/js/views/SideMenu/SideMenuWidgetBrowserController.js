@@ -3232,7 +3232,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                                             {
                                                 isExperimentWithoutChildren: !this._isExperimentWithChildren(experiment),
                                                 properties: experiment.properties,
-                                                dataSets: experiment.dataSets.filter(x => x.sample === null)
+                                                dataSets: experiment.dataSets ? experiment.dataSets.filter(x => x.sample === null) : []
                                                 })
         }
 
