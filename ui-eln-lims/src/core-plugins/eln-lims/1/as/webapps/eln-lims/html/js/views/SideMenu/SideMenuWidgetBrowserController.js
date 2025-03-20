@@ -1779,8 +1779,8 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             sortings: [],
         }
 
-        if (params.sortings) {
-            var sampleSorting = params.sortings.find((sorting) => sorting.id === params.sortingId)
+        if (params.node.sortings) {
+            var sampleSorting = params.node.sortings.find((sorting) => sorting.id === params.node.sortingId)
             if (sampleSorting) {
                 sampleFetchOptions.sortings = sampleSorting.server
             }
@@ -1877,7 +1877,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesSpace(params) {
         var samplesFolderNode = this._createSpaceSamplesNode()
         samplesFolderNode.space = params.node.object.id
-
+        samplesFolderNode.sortingId = params.node.sortingId
         var loadSamplesPromise = this._loadNodesSpaceSamples({
             node: samplesFolderNode,
             offset: 0,
@@ -1887,6 +1887,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         var projectsFolderNode =this._createSpaceProjectsNode();
         projectsFolderNode.space = params.node.object.id
+        projectsFolderNode.sortingId = params.node.sortingId
         var loadProjectsPromise = this._loadNodesSpaceProjects({
             node: projectsFolderNode,
             offset: 0,
@@ -2021,7 +2022,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         var samplesFolderNode = this._createProjectSamplesNode()
         samplesFolderNode.projectPermId = params.node.object.id
-
+        samplesFolderNode.sortingId = params.node.sortingId
         var loadSamplesPromise = this._loadNodesProjectSamples({
             node: samplesFolderNode,
             offset: 0,
@@ -2031,6 +2032,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         var experimentFolderNode = this._createProjectExperimentsNode()
         experimentFolderNode.projectPermId = params.node.object.id
+        experimentFolderNode.sortingId = params.node.sortingId
         var loadExperimentsPromise = this._loadNodesProjectExperiments({
             node: experimentFolderNode,
             offset: 0,
@@ -3232,7 +3234,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                                             {
                                                 isExperimentWithoutChildren: !this._isExperimentWithChildren(experiment),
                                                 properties: experiment.properties,
-                                                dataSets: experiment.dataSets.filter(x => x.sample === null)
+                                                dataSets: experiment.dataSets ? experiment.dataSets.filter(x => x.sample === null) : []
                                                 })
         }
 

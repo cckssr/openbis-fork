@@ -1319,7 +1319,7 @@ function ServerFacade(openbisServer) {
 			  "@type": obj["@type"].replace("as.dto.datastore.", ""),
 			  "@id": index + 1,
 			  code: obj.code,
-			  downloadUrl: obj.code === "STANDARD"? obj.downloadUrl + "/datastore_server" : obj.downloadUrl ,
+			  downloadUrl: obj.code !== "AFS" ? obj.downloadUrl + "/datastore_server" : obj.downloadUrl ,
 			  hostUrl: obj.downloadUrl
 			}))
 		};
