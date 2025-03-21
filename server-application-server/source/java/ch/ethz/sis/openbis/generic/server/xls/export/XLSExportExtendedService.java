@@ -29,20 +29,50 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.ICustomASServiceExecutor;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.CustomASServiceContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-public class XLSExportExtendedService
+public class XLSExportExtendedService implements ICustomASServiceExecutor
 {
 
-    public static String export(String sessionToken, Map<String, Serializable> parameters) {
+    private final String code = "xls-export-extended";
+
+    private final String label = "XLS Export Extended Service";
+
+    private final String description = "XLS export for internal and external services";
+
+    @Override
+    public Object executeService(CustomASServiceContext context, CustomASServiceExecutionOptions options)
+    {
+        return export(context.getSessionToken(), options.getParameters());
+    }
+
+    public String getCode()
+    {
+        return code;
+    }
+
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public static String export(String sessionToken, Map<String, Object> parameters) {
         System.out.println("sessionToken: " + sessionToken);
         System.out.println("parameters: " + parameters);
 
