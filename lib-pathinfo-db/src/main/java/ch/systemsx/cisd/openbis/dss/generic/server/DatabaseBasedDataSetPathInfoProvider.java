@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.sql.DataSource;
+
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.ExtendedDataSetFileRecord;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
@@ -29,7 +31,6 @@ import ch.systemsx.cisd.common.db.DBUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 import net.lemnik.eodsql.QueryTool;
 
 /**
@@ -42,14 +43,16 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         List<DataSetFileRecord> listDataSetFiles(long dataSetId);
     }
 
+    private DataSource dataSource;
+
     private IPathInfoAutoClosingDAO dao;
 
-    public DatabaseBasedDataSetPathInfoProvider()
+    public DatabaseBasedDataSetPathInfoProvider(DataSource dataSource)
     {
+        this.dataSource = dataSource;
     }
 
-    @Private
-    DatabaseBasedDataSetPathInfoProvider(IPathInfoAutoClosingDAO dao)
+    @Private DatabaseBasedDataSetPathInfoProvider(IPathInfoAutoClosingDAO dao)
     {
         this.dao = dao;
     }
@@ -97,37 +100,37 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
             final String regularExpression)
     {
         return new Loader(dataSetCode, new ILoader()
+        {
+            @Override
+            public List<DataSetFileRecord> listDataSetFiles(long dataSetId)
             {
-                @Override
-                public List<DataSetFileRecord> listDataSetFiles(long dataSetId)
-                {
-                    String likeExpressionOrNull =
-                            DBUtils.tryToTranslateRegExpToLikePattern("^" + regularExpression + "$");
+                String likeExpressionOrNull =
+                        DBUtils.tryToTranslateRegExpToLikePattern("^" + regularExpression + "$");
 
-                    if (likeExpressionOrNull == null)
-                    {
-                        return getDao().listDataSetFilesByRelativePathRegex(dataSetId,
-                                "^" + regularExpression + "$");
-                    } else
-                    {
-                        return getDao().listDataSetFilesByRelativePathLikeExpression(dataSetId,
-                                likeExpressionOrNull);
-                    }
+                if (likeExpressionOrNull == null)
+                {
+                    return getDao().listDataSetFilesByRelativePathRegex(dataSetId,
+                            "^" + regularExpression + "$");
+                } else
+                {
+                    return getDao().listDataSetFilesByRelativePathLikeExpression(dataSetId,
+                            likeExpressionOrNull);
                 }
-            }).getInfos();
+            }
+        }).getInfos();
     }
 
     @Override
     public DataSetPathInfo tryGetFullDataSetRootPathInfo(String dataSetCode)
     {
         return new Loader(dataSetCode, new ILoader()
+        {
+            @Override
+            public List<DataSetFileRecord> listDataSetFiles(long dataSetId)
             {
-                @Override
-                public List<DataSetFileRecord> listDataSetFiles(long dataSetId)
-                {
-                    return getDao().listDataSetFiles(dataSetId);
-                }
-            }).getRoot();
+                return getDao().listDataSetFiles(dataSetId);
+            }
+        }).getRoot();
     }
 
     @Override
@@ -365,8 +368,7 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         if (dao == null)
         {
             dao =
-                    QueryTool.getQuery(PathInfoDataSourceProvider.getDataSource(),
-                            IPathInfoAutoClosingDAO.class);
+                    QueryTool.getQuery(dataSource, IPathInfoAutoClosingDAO.class);
         }
         return dao;
     }

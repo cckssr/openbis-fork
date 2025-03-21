@@ -2,12 +2,16 @@ package ch.ethz.sis.afsserver.server.archiving;
 
 import java.util.Properties;
 
+import javax.sql.DataSource;
+
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
@@ -26,7 +30,7 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     private final Configuration configuration;
 
-    private OpenBISFacade openBISFacade;
+    private final OpenBISFacade openBISFacade;
 
     public ArchiverServiceProvider(Configuration configuration, OpenBISFacade openBISFacade)
     {
@@ -36,7 +40,7 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IConfigProvider getConfigProvider()
     {
-        return null;
+        return new ConfigProvider(configuration);
     }
 
     @Override public IMailClient createEMailClient()
@@ -56,7 +60,8 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IDataSetPathInfoProvider getDataSetPathInfoProvider()
     {
-        return null;
+        DataSource dataSource = PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource();
+        return new DatabaseBasedDataSetPathInfoProvider(dataSource);
     }
 
     @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
