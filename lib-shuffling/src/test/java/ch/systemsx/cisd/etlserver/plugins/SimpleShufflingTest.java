@@ -50,6 +50,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import static org.apache.commons.io.FileUtils.ONE_MB;
 
@@ -222,7 +223,10 @@ public class SimpleShufflingTest extends AbstractFileSystemTestCase
             {
                 allowing(service).listPhysicalDataSets();
                 will(returnValue(Arrays.asList(ds1, ds2, ds3, ds4)));
-                allowing(service).isDataSetOnTrashCanOrDeleted(ds3.getDataSetCode());
+
+                allowing(service).tryGetDataSet(ds3.getDataSetCode());
+                will(returnValue(new PhysicalDataSet()));
+
                 one(logger).log(LogLevel.INFO,
                         "BEGIN Computing number of data sets to be moved for share 1");
                 one(logger).log(LogLevel.INFO,
@@ -246,7 +250,9 @@ public class SimpleShufflingTest extends AbstractFileSystemTestCase
                 one(shareIdManager).getShareId(ds2.getDataSetCode());
                 will(returnValue(ds2.getDataSetShareId()));
 
-                allowing(service).isDataSetOnTrashCanOrDeleted(ds2.getDataSetCode());
+                allowing(service).tryGetDataSet(ds2.getDataSetCode());
+                will(returnValue(new PhysicalDataSet()));
+
                 one(dataSetMover).moveDataSetToAnotherShare(
                         new File(share1.getShare(), STORE_PATH + "ds2"), share4.getShare(),
                         null, logger);

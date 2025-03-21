@@ -73,6 +73,11 @@ public class OpenBISService implements IOpenBISService
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCode().thatEquals(dataSetCode);
 
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
+
         SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
         spaceFetchOptions.withRegistrator();
 
@@ -153,6 +158,11 @@ public class OpenBISService implements IOpenBISService
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCode().thatEquals(dataSetCode);
+
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withDataStore();
@@ -288,6 +298,12 @@ public class OpenBISService implements IOpenBISService
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCodes().thatIn(dataSetCodes);
+
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
+
         return listDataSets(criteria);
     }
 
@@ -295,6 +311,11 @@ public class OpenBISService implements IOpenBISService
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withType();
@@ -314,6 +335,11 @@ public class OpenBISService implements IOpenBISService
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withPhysicalData().withStatus().thatEquals(ArchivingStatus.AVAILABLE);
         criteria.withPhysicalData().withPresentInArchive().thatEquals(archiverCriteria.isPresentInArchive());
+
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
 
         Calendar accessDate = Calendar.getInstance();
         accessDate.setTime(new Date());
@@ -337,6 +363,11 @@ public class OpenBISService implements IOpenBISService
         criteria.withPhysicalData().withPresentInArchive().thatEquals(false);
         criteria.withTag().withId()
                 .thatEquals(new TagPermId(metaprojectIdentifier.getMetaprojectOwnerId(), metaprojectIdentifier.getMetaprojectName()));
+
+        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
+        ownerCriteria.withOrOperator();
+        ownerCriteria.withExperiment().withImmutableDataDate();
+        ownerCriteria.withSample().withImmutableDataDate();
 
         return listDataSets(criteria);
     }

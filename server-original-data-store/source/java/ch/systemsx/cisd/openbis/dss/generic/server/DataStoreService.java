@@ -252,7 +252,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
         {
             String datasetCode = dataSet.getDataSetCode();
             String location = dataSet.getDataSetLocation();
-            manager.lock(datasetCode);
+            manager.lock(null, datasetCode);
             try
             {
                 if (manager.isKnown(datasetCode)
@@ -263,7 +263,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                 }
             } finally
             {
-                manager.releaseLock(datasetCode);
+                manager.releaseLock(null, datasetCode);
             }
 
             listener.update("getKnownDataSets", dataSets.size(), ++index);
@@ -686,6 +686,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                 pluginTaskInfoProvider.getReportingPluginsProvider();
         IReportingPluginTask task = reportingPlugins.getPluginInstance(serviceKey);
         IShareIdManager manager = getShareIdManager();
+
         try
         {
             String dssCode = config.getDataStoreCode();
@@ -694,7 +695,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             {
                 if (dssCode.equals(dataSet.getDataStoreCode()))
                 {
-                    manager.lock(dataSet.getDataSetCode());
+                    manager.lock(null, dataSet.getDataSetCode());
                 }
             }
             IMailClient mailClient = createEMailClient();
@@ -709,7 +710,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
 
         } finally
         {
-            manager.releaseLocks();
+            manager.releaseLocks(null);
         }
     }
 
@@ -721,6 +722,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                 pluginTaskInfoProvider.getReportingPluginsProvider();
         IReportingPluginTask task = reportingPlugins.getPluginInstance(serviceKey);
         IShareIdManager manager = getShareIdManager();
+
         try
         {
             IMailClient mailClient = createEMailClient();
@@ -735,7 +737,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
 
         } finally
         {
-            manager.releaseLocks();
+            manager.releaseLocks(null);
         }
     }
 }

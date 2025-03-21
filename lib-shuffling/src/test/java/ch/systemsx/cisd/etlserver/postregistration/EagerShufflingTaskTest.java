@@ -46,6 +46,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.MockFreeSpaceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
@@ -322,7 +323,8 @@ public class EagerShufflingTaskTest extends AbstractFileSystemTestCase
                             with(LogLevel.INFO),
                             with(Matchers.startsWith("Obtained the list of all "
                                     + "datasets in all shares")));
-                    allowing(service).isDataSetOnTrashCanOrDeleted(DATA_SET_CODE1);
+                    allowing(service).tryGetDataSet(DATA_SET_CODE1);
+                    will(returnValue(new PhysicalDataSet()));
                 }
             });
     }

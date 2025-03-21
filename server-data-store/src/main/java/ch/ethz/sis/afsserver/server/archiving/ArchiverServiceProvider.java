@@ -2,9 +2,12 @@ package ch.ethz.sis.afsserver.server.archiving;
 
 import java.util.Properties;
 
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
@@ -21,11 +24,14 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 public class ArchiverServiceProvider implements IArchiverServiceProvider
 {
 
-    private OpenBISFacade facade;
+    private final Configuration configuration;
 
-    public ArchiverServiceProvider(OpenBISFacade facade)
+    private OpenBISFacade openBISFacade;
+
+    public ArchiverServiceProvider(Configuration configuration, OpenBISFacade openBISFacade)
     {
-        this.facade = facade;
+        this.configuration = configuration;
+        this.openBISFacade = openBISFacade;
     }
 
     @Override public IConfigProvider getConfigProvider()
@@ -70,7 +76,7 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IShareIdManager getShareIdManager()
     {
-        return null;
+        return new ShareIdManager(configuration, openBISFacade);
     }
 
     @Override public IArchiverPlugin getArchiverPlugin()
@@ -90,11 +96,14 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IOpenBISService getOpenBISService()
     {
-        return new OpenBISService(facade);
+        return new OpenBISService(openBISFacade);
     }
 
     @Override public IApplicationServerApi getV3ApplicationService()
     {
-        return null;
+        OpenBISConfiguration openBISConfig = OpenBISConfiguration.getInstance(configuration);
+        return HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
+                openBISConfig.getOpenBISUrl() + "/openbis/openbis" + IApplicationServerApi.SERVICE_URL,
+                openBISConfig.getOpenBISTimeout());
     }
 }

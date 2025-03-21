@@ -32,9 +32,9 @@ import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.AnnotationUtils;
+import ch.systemsx.cisd.common.reflection.AnnotationUtils.Parameter;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.common.reflection.MethodUtils;
-import ch.systemsx.cisd.common.reflection.AnnotationUtils.Parameter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.authorization.AuthorizationGuard;
@@ -60,7 +60,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v1.authorization
  * <p>
  * Though it is not necessary to subclass DefaultPointcutAdvisor for the implementation, we subclass here because to make the configuration in spring
  * a bit simpler.
- * 
+ *
  * @author Chandrasekhar Ramakrishnan
  */
 public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
@@ -88,7 +88,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
                 inputStream.close();
             } finally
             {
-                manager.releaseLocks();
+                manager.releaseLocks(null);
             }
         }
 
@@ -168,7 +168,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
 
     /**
      * Constructor for testing purposes.
-     * 
+     *
      * @param methodInterceptor
      */
     public DssServiceRpcAuthorizationAdvisor(MethodInterceptor methodInterceptor)
@@ -178,7 +178,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
 
     /**
      * Class for verifying authorization. Made public so it can be extended in tests.
-     * 
+     *
      * @author Chandrasekhar Ramakrishnan
      */
     public static class DssServiceRpcAuthorizationMethodInterceptor implements MethodInterceptor
@@ -204,6 +204,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
                             AuthorizationGuard.class);
             final IShareIdManager manager = getShareIdManager();
             final List<String> dataSetCodes = new ArrayList<String>();
+
             for (Parameter<AuthorizationGuard> param : annotatedParameters)
             {
                 Object guarded = args[param.getIndex()];
@@ -213,7 +214,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
                     shouldLocksAutomaticallyBeReleased(methodInvocation.getMethod());
             if (dataSetCodes.isEmpty() == false)
             {
-                manager.lock(dataSetCodes);
+                manager.lock(null, dataSetCodes);
             }
             try
             {
@@ -257,7 +258,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
             {
                 if (shouldLocksAutomaticallyBeReleased)
                 {
-                    manager.releaseLocks();
+                    manager.releaseLocks(null);
                 }
             }
         }
@@ -313,7 +314,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
          * way.
          */
         @SuppressWarnings(
-        { "rawtypes", "unchecked" })
+                { "rawtypes", "unchecked" })
         private List<String> getDataSetCodes(Parameter<AuthorizationGuard> param, Object guarded)
         {
             IAuthorizationGuardPredicate predicate = createPredicate(param);
@@ -325,7 +326,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
          * way.
          */
         @SuppressWarnings(
-        { "rawtypes", "unchecked" })
+                { "rawtypes", "unchecked" })
         private Status evaluateGuard(String sessionToken, Object recv,
                 Parameter<AuthorizationGuard> param, Object guarded)
         {

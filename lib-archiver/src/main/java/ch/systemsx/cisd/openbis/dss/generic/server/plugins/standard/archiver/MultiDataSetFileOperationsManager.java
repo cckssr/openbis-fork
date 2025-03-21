@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,7 @@ import ch.systemsx.cisd.common.filesystem.BooleanStatus;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
+import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
 import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -57,7 +59,6 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.dss.archiveverifier.batch.VerificationError;
 import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
 import ch.systemsx.cisd.openbis.dss.generic.server.IDataSetFileOperationsExecutor;
-import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -268,6 +269,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
     {
         File containerFile = new File(getStageArchive().getDestination(), containerPath);
         IShareIdManager shareIdManager = getDirectoryProvider().getShareIdManager();
+        UUID ownerId = UUID.randomUUID();
         Status status = Status.OK;
         try
         {
@@ -276,7 +278,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
             {
                 AbstractExternalData dataSet = getDataSetWithAllMetaData(datasetDescription);
                 dataSets.add(dataSet);
-                shareIdManager.lock(dataSet.getCode());
+                shareIdManager.lock(ownerId, dataSet.getCode());
                 operationLog.info("Archive dataset " + dataSet.getCode() + " in " + containerFile);
             }
 
@@ -315,7 +317,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
             }
             for (DatasetDescription datasetDescription : datasetDescriptions)
             {
-                shareIdManager.releaseLock(datasetDescription.getDataSetCode());
+                shareIdManager.releaseLock(ownerId, datasetDescription.getDataSetCode());
             }
         }
         return status;

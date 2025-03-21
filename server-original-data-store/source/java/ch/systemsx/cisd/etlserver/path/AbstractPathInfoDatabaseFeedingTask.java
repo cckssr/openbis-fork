@@ -69,7 +69,8 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
 
         IShareIdManager shareIdManager = directoryProvider.getShareIdManager();
         String dataSetCode = dataSet.getDataSetCode();
-        shareIdManager.lock(dataSetCode);
+
+        shareIdManager.lock(null, dataSetCode);
         Long size = null;
 
         try
@@ -79,7 +80,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
             {
                 getOperationLog().error("Root directory of data set " + dataSetCode
                         + " does not exists: " + dataSetRoot);
-                shareIdManager.releaseLocks();
+                shareIdManager.releaseLocks(null);
                 return size;
             }
             DatabaseBasedDataSetPathsInfoFeeder feeder =
@@ -100,7 +101,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
             throw ex;
         } finally
         {
-            shareIdManager.releaseLocks();
+            shareIdManager.releaseLocks(null);
         }
         return size;
     }

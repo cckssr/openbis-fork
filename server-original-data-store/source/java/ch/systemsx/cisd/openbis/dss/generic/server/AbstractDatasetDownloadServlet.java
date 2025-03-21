@@ -122,7 +122,7 @@ abstract public class AbstractDatasetDownloadServlet extends HttpServlet
             super.service(request, response);
         } finally
         {
-            applicationContext.getShareIdManager().releaseLocks();
+            applicationContext.getShareIdManager().releaseLocks(null);
         }
     }
 

@@ -121,7 +121,7 @@ class DataSetCommandExecutor implements IDataSetCommandExecutor
                             try
                             {
                                 IShareIdManager manager = getShareIdManager();
-                                manager.lock(command.getDataSetCodes());
+                                manager.lock(null, command.getDataSetCodes());
                                 command.execute(getHierarchicalContentProvider(),
                                         new DataSetDirectoryProvider(store, manager));
                             } catch (RuntimeException e)
@@ -130,7 +130,7 @@ class DataSetCommandExecutor implements IDataSetCommandExecutor
                                         + "'.", e);
                             } finally
                             {
-                                getShareIdManager().releaseLocks();
+                                getShareIdManager().releaseLocks(null);
                             }
                             if (operationLog.isInfoEnabled())
                             {

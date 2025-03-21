@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Manager of share IDs.
@@ -46,14 +47,14 @@ public interface IShareIdManager
      * 
      * @throws IllegalArgumentException if data set is unknown.
      */
-    public void lock(String dataSetCode);
+    public void lock(UUID ownerId, String dataSetCode);
 
     /**
      * Lock specified data sets. Either all data sets will be locked or none of them.
      * 
      * @throws IllegalArgumentException if one of the data sets is unknown.
      */
-    public void lock(List<String> dataSetCodes);
+    public void lock(UUID ownerId, List<String> dataSetCodes);
 
     /**
      * Awaits until specified data set is no longer locked.
@@ -63,12 +64,12 @@ public interface IShareIdManager
     /**
      * Unlocks specified data set. Does nothing if lock already released or data set hasn't been locked.
      */
-    public void releaseLock(String dataSetCode);
+    public void releaseLock(UUID ownerId, String dataSetCode);
 
     /**
      * Release all locks which have been requested in the same thread calling this method.
      */
-    public void releaseLocks();
+    public void releaseLocks(UUID ownerId);
 
     /**
      * Release all locks which are held by dead threads.
