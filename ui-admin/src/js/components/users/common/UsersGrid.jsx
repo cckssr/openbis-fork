@@ -58,13 +58,13 @@ class UsersGrid extends React.PureComponent {
             label: messages.get(messages.HOME_SPACE),
             getValue: ({ row }) => row.space.value
           },
-          {
-            name: 'active',
-            label: messages.get(messages.ACTIVE),
-            getValue: ({ row }) => row.active.value
-          },
           GridUtil.registratorColumn({ path: 'registrator.value' }),
           GridUtil.registrationDateColumn({ path: 'registrationDate.value' }),
+          {
+            name: 'userStatus',
+            label: messages.get(messages.USER_STATUS),
+            getValue: ({ row }) => this.userStatusValue(row.active.value, row.expiryDate.value)
+          },
           GridUtil.dateObjectColumn({ name: 'expiryDate',
                     label: messages.get(messages.EXPIRY_DATE),
                     path: 'expiryDate.value' }),
@@ -89,7 +89,7 @@ class UsersGrid extends React.PureComponent {
                  if(value < 0) {
                     return (
                            <Message type='error'>
-                             {messages.get(messages.INVALID)}
+                             {messages.get(messages.EXPIRED)}
                            </Message>
                          )
                  }
@@ -112,6 +112,17 @@ class UsersGrid extends React.PureComponent {
         onSelectedRowChange={onSelectedRowChange}
       />
     )
+  }
+
+  userStatusValue(active, expiryDate) {
+      if(active) {
+          if(expiryDate && expiryDate.dateObject) {
+            return messages.get(messages.ACTIVE_UNTIL_EXPIRY_DATE);
+          }
+        return messages.get(messages.ACTIVE);
+      } else {
+        return messages.get(messages.INACTIVE);
+      }
   }
 }
 
