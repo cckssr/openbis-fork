@@ -41,11 +41,31 @@ function ZenodoExportController(parentController) {
         var valueColumn = this.exportModel.tableModel.columns[1];
         var checkedGroups = groupRows.flatMap(row => row[valueColumn.label] ? [row[nameColumn.label]] : []);
 
+        var nodeExportList = [];
         var toExport = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
             toExport.push({type: node.data.entityType, permId: node.key, expand: !node.expanded});
+            nodeExportList.push({
+				kind: node.data.entityType,
+				permId: node.key,
+				withLevelsAbove: true,
+				withLevelsBelow: !node.expanded,
+				withObjectsAndDataSetsParents: true,
+				withObjectsAndDataSetsOtherSpaces: true,
+			})
         }
+
+		var exportModel = {
+			nodeExportList: nodeExportList,
+			withEmail: false,
+			withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+			formats: {
+				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
+				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
+				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+			}
+		}
 
         if (toExport.length === 0) {
             Util.showInfo('First select something to export.');
@@ -61,6 +81,7 @@ function ZenodoExportController(parentController) {
             for (var i = 0; i < checkedGroups.length; i++) {
                 var group = checkedGroups[i];
                 toExport.push({type: 'GROUP', permId: 'GROUP:' + group, expand: null});
+                exportModel.push({type: 'GROUP', permId: 'GROUP:' + group, expand: null});
             }
 
             this.getUserInformation((function(userInformation) {
