@@ -26,12 +26,10 @@ function ExportTreeController(parentController) {
 	this.exportSelected = function () {
 		var selectedNodes = $(exportTreeModel.tree).fancytree('getTree').getSelectedNodes();
 
-		var toExport = [];
 		var nodeExportList = [];
 
 		for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
 			var node = selectedNodes[eIdx];
-			toExport.push({ type: node.data.entityType, permId: node.key, expand: !node.expanded });
 			nodeExportList.push({
 				kind: node.data.entityType,
 				permId: node.key,
@@ -53,27 +51,18 @@ function ExportTreeController(parentController) {
 			}
 		}
 
-		if (toExport.length === 0) {
+		if (nodeExportList.length === 0) {
 			Util.showInfo("First select something to export.");
 		} else {
 			Util.blockUI();
-			/* mainController.serverFacade.exportAll(toExport, true, false, function (error, result) {
+			mainController.serverFacade.exportAll(exportModel, true, false, function (error, result) {
 				if (error) {
 					Util.showError(error);
 				} else {
 					Util.showSuccess("Export is being processed, you will receive an email when it is finished. If you logout the process will stop.", function () { Util.unblockUI(); });
 					mainController.refreshView();
 				}
-			}); */
-
-			mainController.serverFacade.customELNASAPI({
-				"method": "getExport",
-				"export-model": exportModel
-			}, function (result) {
-				window.open(result.result, "_blank");
-				Util.showSuccess("Downloading File");
-				Util.unblockUI();
-			}, true);
+			});
 		}
 
 	}

@@ -21,11 +21,14 @@ from java.lang import Throwable
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.common.mail import EMailAddress
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
+import ch.ethz.sis.openbis.generic.server.xls.export.XLSExportExtendedService as XLSExportExtendedService
 from java.io import File, FileOutputStream
 from java.util.zip import ZipOutputStream
 from org.apache.log4j import Logger
 
-from exportsApi import cleanUp, displayResult, findEntitiesToExport, validateDataSize, generateDownloadUrl, generateFilesInZip
+from exportsApi import cleanUp, displayResult, findEntitiesToExport, validateDataSize, generateDownloadUrl, generateFilesInZip, getDownloadUrlFromASService
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".generalExports.py")
 
@@ -37,9 +40,28 @@ def process(tr, params, tableBuilder):
 
     tr.setUserId(userId)
     if method == "exportAll":
-        isOk = expandAndExport(tr, params)
+        #isOk = expandAndExport(tr, params)
+        isOk = exportAll(tr, params)
 
     displayResult(isOk, tableBuilder)
+
+def exportAll(tr, params):
+    try:
+        sessionToken = params.get('sessionToken')
+        v3 = ServiceProvider.getV3ApplicationService()
+
+        zipFileDownloadURL = getDownloadUrlFromASService(sessionToken, params.get("entities"))
+
+        userEmail = v3.getSessionInformation(sessionToken).getPerson().getEmail()
+        mailClient = tr.getGlobalState().getMailClient()
+        #Send Email
+        sendMail(mailClient, userEmail, zipFileDownloadURL)
+
+        return True
+    except BaseException as e:
+        operationLog.error("Error occurred: %s" % traceback.format_exc())
+    except Throwable as e:
+        operationLog.error("Error occurred: %s" % e, e)
 
 def expandAndExport(tr, params):
     #Services used during the export process

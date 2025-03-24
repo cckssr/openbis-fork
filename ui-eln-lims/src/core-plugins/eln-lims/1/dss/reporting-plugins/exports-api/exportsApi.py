@@ -72,6 +72,9 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id import DataSetPermId
 from ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download import DataSetFileDownloadOptions
 from ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download import DataSetFileDownloadReader
 
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
+from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
+
 #JSON
 from com.fasterxml.jackson.databind import SerializationFeature
 
@@ -136,6 +139,22 @@ def addToExportWithoutRepeating(entitiesToExport, entityFound):
     if not found:
         entitiesToExport.append(entityFound)
 
+def getDownloadUrlFromASService(sessionToken, exportModel):
+    #sessionToken = params.get('sessionToken')
+    print('EXPORT_MODEL', exportModel)
+    v3 = ServiceProvider.getV3ApplicationService()
+    id = CustomASServiceCode('xls-export-extended')
+
+    #exportModel = params.get("entities")
+
+    options = CustomASServiceExecutionOptions()
+    options.withParameter('nodeExportList', exportModel.get('nodeExportList'))
+    options.withParameter('withEmail', exportModel.get('withEmail'))
+    options.withParameter('withImportCompatibility', exportModel.get('withImportCompatibility'))
+    options.withParameter('formats', exportModel.get('formats'))
+
+    zipFileDownloadURL = v3.executeCustomASService(sessionToken, id, options)
+    return zipFileDownloadURL
 
 def validateDataSize(entitiesToExport, tr):
     limitDataSizeInMegabytes = getConfigurationProperty(tr, 'limit-data-size-megabytes')
