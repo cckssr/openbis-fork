@@ -460,25 +460,47 @@ DataStoreServer.prototype.list = function(owner, source, recursively){
 
 /**
  * Read the contents of selected file
+ * @param {chunk} chunks of the file
+ */
+DataStoreServer.prototype._read = function(owner, chunks){
+	const data =  this.fillCommonParameters({
+		"method": "read"
+	});
+	const result = this._internal.sendHttpRequestAbortable(
+		"POST",
+		"application/octet-stream",
+		this._internal.buildGetUrl(data),
+		ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
+	);
+	return ChunkEncoderDecoder.decodeChunks(result) // Decode Chunks
+}
+
+/**
+ * Read the contents of selected file
  * @param {str} owner owner of the file 
  * @param {str} source path to file
  * @param {int} offset offset from which to start reading
  * @param {int} limit how many characters to read
  */
 DataStoreServer.prototype.read = function(owner, source, offset, limit){
+	return this._read([new Chunk(owner, source, offset, limit, [])]).getData();
+}
+
+/**
+ * Read the contents of selected file
+ * @param {chunk} chunks of the file
+ */
+DataStoreServer.prototype._write = function(owner, chunks){
 	const data =  this.fillCommonParameters({
-		"method": "read",
-		"owner" :  owner,
-		"source":  source,
-		"offset":  offset,
-		"limit":  limit
+		"method": "write"
 	});
-	return this._internal.sendHttpRequestAbortable(
-		"GET",
+	const result = this._internal.sendHttpRequestAbortable(
+		"POST",
 		"application/octet-stream",
 		this._internal.buildGetUrl(data),
-		{}
+		ChunkEncoderDecoder.encodeChunks(chunks) // Encode Chunks
 	);
+	return result;
 }
 
 /**
@@ -489,19 +511,7 @@ DataStoreServer.prototype.read = function(owner, source, offset, limit){
  * @param {str} data data to write
  */
 DataStoreServer.prototype.write = function(owner, source, offset, data){
-	const params =  this.fillCommonParameters({
-		"method": "write",
-		"owner" : owner,
-		"source": source,
-		"offset": offset
-	});
-
-	return this._internal.sendHttpRequestAbortable(
-		"POST",
-		"application/octet-stream",
-		this._internal.buildGetUrl(params),
-		data
-	);
+	return this._write([new Chunk(owner, source, offset, limit, data)]);
 }
 
 /**
@@ -677,6 +687,93 @@ DataStoreServer.prototype.recover = function(){
  * DTO
  * ==================================================================================
  */
+var ChunkEncoderDecoder = function() {
+    const CHUNK_SEPARATOR = ',';
+    const CHUNK_ARRAY_SEPARATOR = ';';
+    const EMPTY_ARRAY = [];
+
+    this.encodeChunk = function(chunk) {
+        const utf8decoder = new TextDecoder('utf-8');
+        const decodedText = utf8decoder.decode(chunk.getData());
+        return chunk.getOwner() + CHUNK_SEPARATOR + chunk.getSource() + CHUNK_SEPARATOR + chunk.getOffset() + CHUNK_SEPARATOR + chunk.getLimit() + CHUNK_SEPARATOR + decodedText;
+    }
+
+    this.encodeChunks = function(chunks) {
+        var builder = '';
+        for (var cIdx = 0; cIdx < chunks.length; cIdx++) {
+            if (cIdx > 0) {
+                builder += CHUNK_ARRAY_SEPARATOR;
+            }
+            builder += this.encodeChunk(chunks[cIdx]);
+        }
+        return builder;
+    }
+
+    this.decodeChunk = function(chunkAsString) {
+        var chunkParameters = chunkAsString.split(CHUNK_SEPARATOR);
+
+        var data = null;
+        if (chunkParameters.length == 5) {
+            const textEncoder = new TextEncoder();
+            const uint8Array = textEncoder.encode(chunkParameters[4]);
+            data = uint8Array;
+        } else {
+            data = EMPTY_ARRAY;
+        }
+
+        return new Chunk(chunkParameters[0],
+                chunkParameters[1],
+                parseInt(chunkParameters[2]),
+                parseInt(chunkParameters[3]),
+                data);
+    }
+
+    this.decodeChunks = function(chunksAsString) {
+        var chunksParameters = chunksAsString.split(CHUNK_ARRAY_SEPARATOR);
+        var chunks = [];
+        for (var cIdx = 0; cIdx < chunksParameters.length; cIdx++) {
+            chunks[cIdx] = this.decodeChunk(chunksParameters[cIdx]);
+        }
+        return chunks;
+    }
+//
+//    this.encodeChunksAsBytes = function(chunks) {
+//        var chunksAsString = this.encodeChunks(chunks);
+//        const textEncoder = new TextEncoder();
+//        const uint8Array = textEncoder.encode(chunksAsString);
+//        return uint8Array;
+//    }
+//
+//    this.decodeChunksAsString = function(chunksAsBytes) {
+//        const utf8decoder = new TextDecoder('utf-8');
+//        const decodedText = utf8decoder.decode(chunksAsBytes);
+//        return this.decodeChunks(decodedText);
+//    }
+}
+
+var Chunk = function(chunkObject) {
+    this.owner = chunkObject.owner;
+    this.source = chunkObject.source;
+    this.offset = chunkObject.offset;
+    this.limit = chunkObject.limit;
+    this.data = chunkObject.data;
+
+    this.getOwner = function(){
+        return this.owner;
+    }
+    this.getSource = function(){
+        return this.source;
+    }
+    this.getOffset = function(){
+        return this.offset;
+    }
+    this.getLimit = function(){
+        return this.limit;
+    }
+    this.getData = function(){
+        return this.data;
+    }
+}
 
 var File = function(fileObject){
     this.owner = fileObject.owner;
