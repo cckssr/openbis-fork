@@ -57,7 +57,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleAssignment;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TrackingDataSetCriteria;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetShareId;
@@ -634,7 +634,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
      * Returns list of not archived datasets marked with a tag
      */
     @ManagedAuthentication
-    public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(IMetaprojectId metaprojectId);
+    public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(MetaprojectIdentifierId metaprojectId);
 
     @ManagedAuthentication
     public Map<IPersonalAccessTokenId, PersonalAccessToken> getPersonalAccessTokens(List<? extends IPersonalAccessTokenId> personalAccessTokenIds,

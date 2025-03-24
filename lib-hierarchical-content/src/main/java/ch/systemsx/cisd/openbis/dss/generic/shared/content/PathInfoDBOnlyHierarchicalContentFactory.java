@@ -20,11 +20,11 @@ import java.io.File;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 
 /**
  * @author pkupczyk
@@ -35,10 +35,10 @@ public class PathInfoDBOnlyHierarchicalContentFactory extends
 
     public static IHierarchicalContentFactory create()
     {
-        if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
+        if (HierarchicalContentServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
         {
             return new PathInfoDBOnlyHierarchicalContentFactory(
-                    ServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
+                    HierarchicalContentServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
         } else
         {
             return null;

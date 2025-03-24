@@ -222,7 +222,7 @@ public abstract class AbstractRemoteHierarchicalContentTestCase extends Abstract
             try
             {
                 file =
-                        node == null ? cacheOrNull.getFile(sessionToken, dataSetLocation, path)
+                        node == null ? cacheOrNull.getFile(sessionToken, dataSetLocation, path.getRelativePath())
                                 : node.getFile();
                 channel.send(FINISHED_MESSAGE);
             } catch (Throwable ex)

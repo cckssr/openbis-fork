@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.UUID;
 
 import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTaskExecutor;
@@ -80,10 +81,10 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
         {
             {
-                allowing(shareIdManager).lock(with(any(String.class)));
+                allowing(shareIdManager).lock(with(any(UUID.class)), with(any(String.class)));
                 allowing(shareIdManager).getShareId(with(any(String.class)));
                 will(returnValue("1"));
-                allowing(shareIdManager).releaseLocks();
+                allowing(shareIdManager).releaseLocks(with(any(UUID.class)));
             }
         });
         directoryProvider = new DataSetDirectoryProvider(STORE_ROOT, shareIdManager);

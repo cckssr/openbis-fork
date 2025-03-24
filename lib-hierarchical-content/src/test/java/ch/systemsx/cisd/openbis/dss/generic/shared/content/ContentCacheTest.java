@@ -85,7 +85,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
 
         ContentCache cache = createCache();
-        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(file).trim());
         assertDataSetInfos(DATA_SET_CODE, FILE1_CONTENT.length(), 1000);
@@ -106,7 +106,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(2);
 
         ContentCache cache = createCache();
-        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(file).trim());
         assertDataSetInfos(DATA_SET_CODE, 1, 1, 1000);
@@ -120,7 +120,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
 
         ContentCache cache = createCache();
-        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         assertEquals(FILE1_CONTENT, readContent(inputStream, true));
         assertDataSetInfos(DATA_SET_CODE, FILE1_CONTENT.length(), 1000);
@@ -134,7 +134,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
 
         ContentCache cache = createCache();
-        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         StringBuilder builder = new StringBuilder();
         while (true)
@@ -161,14 +161,14 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
 
         ContentCache cache = createCache();
-        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         byte[] bytes = new byte[100];
         assertEquals(11, inputStream.read(bytes, 0, 11));
         assertEquals(FILE1_CONTENT.substring(0, 11), new String(bytes, 0, 11));
         inputStream.close();
 
-        inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
         assertEquals(FILE1_CONTENT, readContent(inputStream, true));
         assertDataSetInfos(DATA_SET_CODE, FILE1_CONTENT.length(), 1000);
         context.assertIsSatisfied();
@@ -188,7 +188,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(2);
 
         ContentCache cache = createCache();
-        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+        InputStream inputStream = cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
 
         assertEquals(FILE1_CONTENT, readContent(inputStream, true));
         assertDataSetInfos(DATA_SET_CODE, 1, 1, 1000);
@@ -207,10 +207,10 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         assertEquals(false, downloadingFolder.exists());
 
         InputStream inputStream1 =
-                cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+                cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
         assertEquals(1, new File(workSpace, DOWNLOADING_FOLDER).list().length);
         InputStream inputStream2 =
-                cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo2);
+                cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo2.getRelativePath());
         assertEquals(2, downloadingFolder.list().length);
 
         byte[] bytes1 = new byte[100];
@@ -233,11 +233,11 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         assertEquals(
                 FILE1_CONTENT,
                 FileUtilities.loadToString(
-                        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1)).trim());
+                        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath())).trim());
         assertEquals(
                 FILE2_CONTENT,
                 FileUtilities.loadToString(
-                        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo2)).trim());
+                        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo2.getRelativePath())).trim());
 
         context.assertIsSatisfied();
     }
@@ -266,7 +266,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                 public void run()
                 {
                     InputStream inputStream =
-                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
                     channel1.send(STARTED_MESSAGE);
                     channel2.assertNextMessage(STARTED_MESSAGE);
                     channel1.send(readContent(inputStream, true));
@@ -280,7 +280,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                     channel1.assertNextMessage(STARTED_MESSAGE);
                     channel2.send(STARTED_MESSAGE);
                     InputStream inputStream =
-                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
                     channel1.assertNextMessage(FILE1_CONTENT);
                     channel2.send(readContent(inputStream, true));
                     channel3.send(FINISHED_MESSAGE);
@@ -291,7 +291,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         channel2.assertNextMessage(FILE1_CONTENT);
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(fileInCache).trim());
-        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
         assertEquals(fileInCache.getAbsolutePath(), fileFromCache.getAbsolutePath());
         context.assertIsSatisfied();
     }
@@ -338,7 +338,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                 @Override
                 public void run()
                 {
-                    File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+                    File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
                     channel1.send(FileUtilities.loadToString(file).trim());
                 }
             }, "thread1").start();
@@ -350,7 +350,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                     channel1.assertNextMessage(STARTED_MESSAGE);
                     channel2.send(STARTED_MESSAGE);
                     InputStream inputStream =
-                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
                     channel1.assertNextMessage(FILE1_CONTENT);
                     channel2.send(readContent(inputStream, true));
                     channel3.send(FINISHED_MESSAGE);
@@ -361,7 +361,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         channel2.assertNextMessage(FILE1_CONTENT);
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(fileInCache).trim());
-        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
         assertEquals(fileInCache.getAbsolutePath(), fileFromCache.getAbsolutePath());
         context.assertIsSatisfied();
     }
@@ -408,7 +408,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                 public void run()
                 {
                     InputStream inputStream =
-                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+                            cache.getInputStream(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
                     channel1.send(readContent(inputStream, true));
                 }
             }, "thread1").start();
@@ -419,7 +419,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
                 {
                     channel1.assertNextMessage(STARTED_MESSAGE);
                     channel2.send(STARTED_MESSAGE);
-                    File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+                    File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
                     channel1.assertNextMessage(FILE1_CONTENT);
                     channel2.send(FileUtilities.loadToString(file).trim());
                     channel3.send(FINISHED_MESSAGE);
@@ -430,7 +430,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         channel2.assertNextMessage(FILE1_CONTENT);
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(fileInCache).trim());
-        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+        File fileFromCache = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
         assertEquals(fileInCache.getAbsolutePath(), fileFromCache.getAbsolutePath());
         context.assertIsSatisfied();
     }
@@ -443,7 +443,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
         ContentCache cache = createCache(19 * FileUtils.ONE_KB, 61000);
 
-        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         AssertionUtil.assertContainsLines(createFirstLogLine() + createSizeLogLine(0, 0).trim(),
                 logRecorder.getLogContent());
@@ -465,7 +465,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         ContentCache cache = createCache(19 * FileUtils.ONE_KB, 61000);
         timeProvider.getTimeInMilliseconds(); // next timestamp for the new file will be 61000
 
-        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         AssertionUtil.assertContainsLines(createFirstLogLine() + createRecreatedlogLine(DATA_SET_CODE1)
                 + createSizeLogLine(28, 1) + "Couldn't remove " + dataSetFolder1 + ".",
@@ -494,7 +494,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         ContentCache cache = createCache(19 * FileUtils.ONE_KB, 1000);
         timeProvider.getTimeInMilliseconds(); // next timestamp for the new file will be 61000
 
-        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         AssertionUtil.assertContainsLines(createFirstLogLine() + createRecreatedlogLine(DATA_SET_CODE1)
                 + createRecreatedlogLine(DATA_SET_CODE2) + createSizeLogLine(20, 2)
@@ -530,7 +530,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         ContentCache cache = createCache(19 * FileUtils.ONE_KB, 100000);
         timeProvider.getTimeInMilliseconds(); // next timestamp for the new file will be 61000
 
-        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1);
+        cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo1.getRelativePath());
 
         AssertionUtil.assertContainsLines(createFirstLogLine() + createRecreatedlogLine(DATA_SET_CODE1)
                 + createRecreatedlogLine(DATA_SET_CODE2) + createRecreatedlogLine(DATA_SET_CODE3)
@@ -550,7 +550,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         prepareRequestPersistence(1);
         ContentCache cache = createCache(0, 0);
 
-        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo);
+        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION, pathInfo.getRelativePath());
 
         assertEquals(FILE1_CONTENT, FileUtilities.loadToString(file).trim());
         context.assertIsSatisfied();
@@ -602,7 +602,7 @@ public class ContentCacheTest extends AbstractRemoteHierarchicalContentTestCase
         new Thread(runnable1, "THREAD-1").start();
         channel2.send(STARTED_MESSAGE);
         channel1.assertNextMessage(STARTED_MESSAGE);
-        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION2, pathInfo2);
+        File file = cache.getFile(SESSION_TOKEN, DATA_SET_LOCATION2, pathInfo2.getRelativePath());
         channel2.send(FINISHED_MESSAGE);
         channel1.assertNextMessage(FINISHED_MESSAGE);
 

@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
@@ -298,8 +299,8 @@ public class DssServiceRpcGenericTest extends AbstractFileSystemTestCase
                     one(shareIdManager).getShareId("ds1");
                     will(returnValue("1"));
 
-                    one(shareIdManager).lock("ds1");
-                    one(shareIdManager).releaseLock("ds1");
+                    one(shareIdManager).lock(with(any(UUID.class)), with("ds1"));
+                    one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds1"));
 
                     one(service).updateShareIdAndSize("ds1", "2", 11);
                     one(shareIdManager).setShareId("ds1", "2");
@@ -440,8 +441,8 @@ public class DssServiceRpcGenericTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(Arrays.asList(dataSetCode));
-                    allowing(shareIdManager).releaseLocks();
+                    one(shareIdManager).lock(with(any(UUID.class)), with(Arrays.asList(dataSetCode)));
+                    allowing(shareIdManager).releaseLocks(with(any(UUID.class)));
                 }
             });
     }
@@ -453,7 +454,7 @@ public class DssServiceRpcGenericTest extends AbstractFileSystemTestCase
                 {
                     one(service).checkInstanceAdminAuthorization(SESSION_TOKEN);
                     one(service).checkSession(SESSION_TOKEN);
-                    allowing(shareIdManager).releaseLocks();
+                    allowing(shareIdManager).releaseLocks(with(any(UUID.class)));
                 }
             });
     }

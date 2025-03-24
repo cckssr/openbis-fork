@@ -190,7 +190,7 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
     @Override
     public File getFile() throws UnsupportedOperationException
     {
-        return cache.getFile(sessionTokenProvider.getSessionToken(), dataSetLocation, path);
+        return cache.getFile(sessionTokenProvider.getSessionToken(), dataSetLocation, path.getRelativePath());
     }
 
     @Override
@@ -216,7 +216,7 @@ public class RemoteHierarchicalContentNode implements IHierarchicalContentNode
     public InputStream getInputStream() throws UnsupportedOperationException, IOExceptionUnchecked
     {
         final InputStream stream =
-                cache.getInputStream(sessionTokenProvider.getSessionToken(), dataSetLocation, path);
+                cache.getInputStream(sessionTokenProvider.getSessionToken(), dataSetLocation, path.getRelativePath());
         resources.add(new IReleasable()
         {
             @Override

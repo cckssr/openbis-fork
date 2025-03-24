@@ -165,7 +165,7 @@ public class MultiDataSetArchivingUtils
 
     public static DataSource getMutiDataSetArchiverDataSource()
     {
-        return ArchiverServiceProviderFactory.getInstance().getDataSourceProvider().getDataSource("multi-dataset-archiver-db");
+        return ArchiverServiceProviderFactory.getInstance().getMultiDataSetArchiverDataSourceProvider().getDataSource();
     }
 
 }

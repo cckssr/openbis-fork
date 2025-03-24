@@ -32,6 +32,7 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.HierarchicalContentProxy;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
@@ -83,7 +84,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
             Properties properties)
     {
         this(openbisService, new DataSetDirectoryProvider(configProvider.getStoreRoot(),
-                        shareIdManager), null, ServiceProviderFactory.getInstance().getDssServiceFactory(), contentCache,
+                        shareIdManager), null, HierarchicalContentServiceProviderFactory.getInstance().getDssServiceFactory(), contentCache,
                 sessionTokenProvider, configProvider.getDataStoreCode(), properties);
     }
 
@@ -252,9 +253,10 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
         {
 
             ISingleDataSetPathInfoProvider provider = null;
-            if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
+            if (HierarchicalContentServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
             {
-                IDataSetPathInfoProvider dataSetPathInfoProvider = ServiceProviderFactory.getInstance().getDataSetPathInfoProvider();
+                IDataSetPathInfoProvider dataSetPathInfoProvider =
+                        HierarchicalContentServiceProviderFactory.getInstance().getDataSetPathInfoProvider();
 
                 provider =
                         dataSetPathInfoProvider.tryGetSingleDataSetPathInfoProvider(locationNode

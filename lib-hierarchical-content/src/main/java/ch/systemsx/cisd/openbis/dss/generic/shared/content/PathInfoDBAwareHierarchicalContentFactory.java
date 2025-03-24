@@ -24,11 +24,11 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ISingleDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 
 /**
  * The implementation of {@link IHierarchicalContentFactory} that aware of Path Info DB.
@@ -48,11 +48,11 @@ public class PathInfoDBAwareHierarchicalContentFactory extends
      */
     public static IHierarchicalContentFactory create()
     {
-        if (ServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
+        if (HierarchicalContentServiceProviderFactory.getInstance().getPathInfoDataSourceProvider().isDataSourceDefined())
         {
             operationLog.debug("Path Info DB is properly configured");
             return new PathInfoDBAwareHierarchicalContentFactory(
-                    ServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
+                    HierarchicalContentServiceProviderFactory.getInstance().getDataSetPathInfoProvider());
         } else
         {
             operationLog.warn("Path Info DB was NOT configured. "

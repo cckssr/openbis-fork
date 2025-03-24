@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.Vector;
 
 import javax.imageio.ImageIO;
@@ -839,8 +840,8 @@ public class DatasetDownloadServletTest
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(EXAMPLE_DATA_SET_CODE);
-                    one(shareIdManager).releaseLock(EXAMPLE_DATA_SET_CODE);
+                    one(shareIdManager).lock(with(any(UUID.class)), with(EXAMPLE_DATA_SET_CODE));
+                    one(shareIdManager).releaseLock(with(any(UUID.class)), with(EXAMPLE_DATA_SET_CODE));
                 }
             });
     }

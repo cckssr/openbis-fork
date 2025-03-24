@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.jmock.Expectations;
@@ -461,10 +462,10 @@ public class DssComponentTest extends AbstractFileSystemTestCase
                             will(throwException(new UserFailureException("Not allowed.")));
                         }
                         exactly(lockingCount).of(shareIdManager).lock(
-                                Arrays.asList(DUMMY_DATA_SET_CODE));
+                                with(any(UUID.class)), with(Arrays.asList(DUMMY_DATA_SET_CODE)));
                         if (releaseLock)
                         {
-                            exactly(lockingCount).of(shareIdManager).releaseLocks();
+                            exactly(lockingCount).of(shareIdManager).releaseLocks(with(any(UUID.class)));
                         }
                     }
                 });

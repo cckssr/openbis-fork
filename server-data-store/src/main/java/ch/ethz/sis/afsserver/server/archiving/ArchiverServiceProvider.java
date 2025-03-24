@@ -10,8 +10,12 @@ import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiverDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
@@ -19,11 +23,12 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache;
+import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 
 public class ArchiverServiceProvider implements IArchiverServiceProvider
 {
@@ -50,12 +55,25 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
     {
-        return null;
+        // TODO properties for content cache
+        IContentCache contentCache = ContentCache.create(new Properties());
+        ISessionTokenProvider sessionTokenProvider = new ISessionTokenProvider()
+        {
+            @Override public String getSessionToken()
+            {
+                return "";
+            }
+        };
+        // TODO properties for content provider
+        Properties properties = new Properties();
+
+        return new HierarchicalContentProvider(getOpenBISService(), getShareIdManager(), getConfigProvider(), contentCache, sessionTokenProvider,
+                properties);
     }
 
     @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
     {
-        return null;
+        return new DataSetDirectoryProvider(getConfigProvider().getStoreRoot(), getShareIdManager());
     }
 
     @Override public IDataSetPathInfoProvider getDataSetPathInfoProvider()
@@ -69,7 +87,7 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
         return null;
     }
 
-    @Override public IDataSourceProvider getDataSourceProvider()
+    @Override public IMultiDataSetArchiverDataSourceProvider getMultiDataSetArchiverDataSourceProvider()
     {
         return null;
     }

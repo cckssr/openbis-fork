@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
@@ -34,7 +35,9 @@ import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.ZipBasedHierarchicalContentTest;
 import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
+
 import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.SHARE_FINDER_KEY;
+
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -1030,8 +1033,8 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).lock(dataSetCode);
-                one(shareIdManager).releaseLock(dataSetCode);
+                one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
+                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSetCode));
             }
         });
     }

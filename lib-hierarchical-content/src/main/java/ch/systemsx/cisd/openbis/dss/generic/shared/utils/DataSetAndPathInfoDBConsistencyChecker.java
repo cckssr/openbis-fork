@@ -34,13 +34,13 @@ import ch.systemsx.cisd.common.io.IOUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.Hdf5AwareHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBOnlyHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.PathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
@@ -690,11 +690,12 @@ public class DataSetAndPathInfoDBConsistencyChecker
         if (fileProvider == null)
         {
             fileProvider =
-                    new HierarchicalContentProvider(ServiceProviderFactory.getInstance().getOpenBISService(),
-                            ServiceProviderFactory.getInstance().getShareIdManager(),
-                            ServiceProviderFactory.getInstance().getConfigProvider(), ServiceProviderFactory.getInstance().getContentCache(),
+                    new HierarchicalContentProvider(HierarchicalContentServiceProviderFactory.getInstance().getOpenBISService(),
+                            HierarchicalContentServiceProviderFactory.getInstance().getShareIdManager(),
+                            HierarchicalContentServiceProviderFactory.getInstance().getConfigProvider(),
+                            HierarchicalContentServiceProviderFactory.getInstance().getContentCache(),
                             new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders),
-                            ServiceProviderFactory.getInstance().getDssServiceFactory(),
+                            HierarchicalContentServiceProviderFactory.getInstance().getDssServiceFactory(),
                             null, null);
         }
         return fileProvider;
@@ -713,11 +714,11 @@ public class DataSetAndPathInfoDBConsistencyChecker
             } else
             {
                 pathInfoProvider =
-                        new HierarchicalContentProvider(ServiceProviderFactory.getInstance().getOpenBISService(),
-                                ServiceProviderFactory.getInstance().getShareIdManager(),
-                                ServiceProviderFactory.getInstance().getConfigProvider(),
-                                ServiceProviderFactory.getInstance().getContentCache(), pathInfoDBFactory,
-                                ServiceProviderFactory.getInstance().getDssServiceFactory(), null, null);
+                        new HierarchicalContentProvider(HierarchicalContentServiceProviderFactory.getInstance().getOpenBISService(),
+                                HierarchicalContentServiceProviderFactory.getInstance().getShareIdManager(),
+                                HierarchicalContentServiceProviderFactory.getInstance().getConfigProvider(),
+                                HierarchicalContentServiceProviderFactory.getInstance().getContentCache(), pathInfoDBFactory,
+                                HierarchicalContentServiceProviderFactory.getInstance().getDssServiceFactory(), null, null);
             }
         }
         return pathInfoProvider;

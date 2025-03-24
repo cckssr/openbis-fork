@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
@@ -365,12 +366,12 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
 
                     one(dao).commit();
 
-                    one(shareIdManager).lock(dataSetCode);
+                    one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
 
                     one(directoryProvider).getDataSetDirectory(dataSet);
                     will(returnValue(file));
 
-                    one(shareIdManager).releaseLocks();
+                    one(shareIdManager).releaseLocks(with(any(UUID.class)));
                 }
             });
     }

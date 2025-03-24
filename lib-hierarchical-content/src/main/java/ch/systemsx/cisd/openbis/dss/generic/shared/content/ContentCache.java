@@ -59,10 +59,9 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 
 /**
@@ -248,7 +247,7 @@ public class ContentCache implements IContentCache
         DelayedPersistenceManager persistenceManager =
                 new DelayedPersistenceManager(new SimpleFileBasePersistenceManager(
                         dataSetInfosFile, "data set infos"));
-        return new ContentCache(ServiceProviderFactory.getInstance().getDssServiceFactory(), cacheWorkspace,
+        return new ContentCache(HierarchicalContentServiceProviderFactory.getInstance().getDssServiceFactory(), cacheWorkspace,
                 maxWorkspaceSize, minimumKeepingTimeInMillis, FileOperations.getInstance(),
                 SystemTimeProvider.SYSTEM_TIME_PROVIDER, persistenceManager);
     }
@@ -337,16 +336,16 @@ public class ContentCache implements IContentCache
     }
 
     @Override
-    public File getFile(String sessionToken, IDatasetLocation dataSetLocation, DataSetPathInfo path)
+    public File getFile(String sessionToken, IDatasetLocation dataSetLocation, String relativeFilePath)
     {
-        String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, path);
+        String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, relativeFilePath);
         fileLockManager.lock(pathInWorkspace);
         try
         {
             File file = new File(workspace, pathInWorkspace);
             if (file.exists() == false)
             {
-                downloadFile(sessionToken, dataSetLocation, path);
+                downloadFile(sessionToken, dataSetLocation, relativeFilePath);
             } else
             {
                 touchDataSetFolder(dataSetLocation.getDataSetCode());
@@ -361,16 +360,16 @@ public class ContentCache implements IContentCache
 
     @Override
     public InputStream getInputStream(String sessionToken, final IDatasetLocation dataSetLocation,
-            DataSetPathInfo path)
+            String relativeFilePath)
     {
-        final String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, path);
+        final String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, relativeFilePath);
         fileLockManager.lock(pathInWorkspace);
         final File file = new File(workspace, pathInWorkspace);
         if (file.exists())
         {
             try
             {
-                return new FileInputStream(getFile(sessionToken, dataSetLocation, path));
+                return new FileInputStream(getFile(sessionToken, dataSetLocation, relativeFilePath));
             } catch (FileNotFoundException ex)
             {
                 throw CheckedExceptionTunnel.wrapIfNecessary(ex);
@@ -382,7 +381,7 @@ public class ContentCache implements IContentCache
         try
         {
             final File tempFile = createTempFile();
-            final InputStream inputStream = createInputStream(sessionToken, dataSetLocation, path);
+            final InputStream inputStream = createInputStream(sessionToken, dataSetLocation, relativeFilePath);
             final OutputStream fileOutputStream = createFileOutputStream(tempFile);
             return new ProxyInputStream(inputStream, fileOutputStream, dataSetLocation, tempFile,
                     pathInWorkspace);
@@ -394,13 +393,13 @@ public class ContentCache implements IContentCache
     }
 
     private void downloadFile(String sessionToken, IDatasetLocation dataSetLocation,
-            DataSetPathInfo path)
+            String relativeFilePath)
     {
         InputStream input = null;
         try
         {
-            input = createInputStream(sessionToken, dataSetLocation, path);
-            String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, path);
+            input = createInputStream(sessionToken, dataSetLocation, relativeFilePath);
+            String pathInWorkspace = createPathInWorkspace(CACHE_FOLDER, dataSetLocation, relativeFilePath);
             File downloadedFile = createFileFromInputStream(input);
             moveDownloadedFileToCache(downloadedFile, pathInWorkspace,
                     dataSetLocation.getDataSetCode());
@@ -448,15 +447,14 @@ public class ContentCache implements IContentCache
     }
 
     private InputStream createInputStream(String sessionToken, IDatasetLocation dataSetLocation,
-            DataSetPathInfo path)
+            String relativeFilePath)
     {
         String dataStoreUrl = dataSetLocation.getDataStoreUrl();
         IDssService service = serviceFactory.getService(dataStoreUrl);
         String dataSetCode = dataSetLocation.getDataSetCode();
-        String relativePath = path.getRelativePath();
         URL url =
                 createURL(service.getDownloadUrlForFileForDataSet(sessionToken, dataSetCode,
-                        relativePath));
+                        relativeFilePath));
         InputStream openStream = null;
         try
         {
@@ -484,10 +482,10 @@ public class ContentCache implements IContentCache
     }
 
     private String createPathInWorkspace(String folder, IDatasetLocation dataSetLocation,
-            DataSetPathInfo path)
+            String relativeFilePath)
     {
         String dataSetCode = dataSetLocation.getDataSetCode();
-        return createDataSetPath(folder, dataSetCode + "/" + path.getRelativePath());
+        return createDataSetPath(folder, dataSetCode + "/" + relativeFilePath);
     }
 
     private static String createDataSetPath(String folder, String dataSetCode)
