@@ -87,7 +87,7 @@ export default class DataBrowserController extends ComponentController {
     return await this.handleError(async() => {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
-      return files.map(file => ({ id: file.name, ...file }))
+      return files.map(file => ({ id: file.path, ...file }))
     })
   }
 
@@ -95,7 +95,7 @@ export default class DataBrowserController extends ComponentController {
     return await this.handleError(async() => {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
-      return files.filter(file => file.directory).map(file => ({ id: file.name, ...file }))
+      return files.filter(file => file.directory).map(file => ({ id: file.path, ...file }))
     })
   }
 
@@ -128,6 +128,11 @@ export default class DataBrowserController extends ComponentController {
     if (this.gridController) {
       await this.gridController.load()
     }
+
+    if (this.component && this.component.fetchSpaceStatus) {
+      this.component.fetchSpaceStatus();
+    }
+
   }
 
 
@@ -137,6 +142,9 @@ export default class DataBrowserController extends ComponentController {
       this.openbis.delete(this.owner, file.path),
       onRetryCallback
     )
+    if (this.component && this.component.fetchSpaceStatus) {
+      this.component.fetchSpaceStatus();
+    }
   }
 
   async _delete(file, onProgressUpdate = undefined){    

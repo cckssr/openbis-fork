@@ -3,6 +3,7 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 import RoleControllerLoad from '@src/js/components/users/form/common/RoleControllerLoad.js'
 import UserFormSelectionType from '@src/js/components/users/form/user/UserFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import messages from '@src/js/common/messages.js'
 
 export default class UserFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -86,7 +87,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   _createUser(loadedUser) {
 
     const expiryDate =  _.get(loadedUser, 'expiryDate', false);
-
+    const active = _.get(loadedUser, 'active', true);
+    const roles = _.get(loadedUser, 'roleAssignments', null);
+    const hasRoles = roles && roles.length > 0;
+    const userStatus = active ? (expiryDate ? messages.ACTIVE_UNTIL_EXPIRY_DATE : messages.ACTIVE) : messages.INACTIVE
     const user = {
       id: _.get(loadedUser, 'userId', null),
       userId: FormUtil.createField({
@@ -111,13 +115,17 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         visible: loadedUser !== null,
         enabled: false
       }),
-      active: FormUtil.createField({
-        value: _.get(loadedUser, 'active', true),
-        enabled: loadedUser !== null
+      userStatus: FormUtil.createField({
+        value: userStatus,
       }),
-      expiryDate: FormUtil.createField({
-        value: expiryDate ? { dateObject: new Date(expiryDate) } : null
-      })
+      userStatusExpiryDate: FormUtil.createField({
+        value: expiryDate ? { dateObject: new Date(expiryDate) } : null,
+        visible: userStatus === messages.ACTIVE_UNTIL_EXPIRY_DATE
+      }),
+      hasRoles: FormUtil.createField({
+        value: hasRoles,
+        visible: false
+      }),
     }
     if (loadedUser) {
       user.original = _.cloneDeep(user)

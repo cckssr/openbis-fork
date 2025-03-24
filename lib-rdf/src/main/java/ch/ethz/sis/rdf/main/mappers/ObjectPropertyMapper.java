@@ -1,5 +1,6 @@
 package ch.ethz.sis.rdf.main.mappers;
 
+import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.UnionClass;
 import org.apache.jena.rdf.model.Resource;
@@ -21,7 +22,9 @@ public class ObjectPropertyMapper {
      *      https://biomedit.ch/rdf/sphn-schema/sphn#hasOriginLocation --> [https://biomedit.ch/rdf/sphn-schema/sphn#Location]
      *      https://biomedit.ch/rdf/sphn-schema/sphn#hasDrug --> [https://biomedit.ch/rdf/sphn-schema/sphn#Drug]
      */
-    public static Map<String, List<String>> getObjectPropToOntClassMap(OntModel model) {
+    public static Map<String, List<String>> getObjectPropToOntClassMap(OntModel model,
+            ModelRDF modelRDF)
+    {
         Map<String, List<String>> objectPropertyMap = new HashMap<>();
 
         model.listObjectProperties().forEachRemaining(property -> {

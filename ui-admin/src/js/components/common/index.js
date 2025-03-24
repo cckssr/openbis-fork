@@ -13,7 +13,8 @@ import DateRangeField from '@src/js/components/common/form/DateRangeField.jsx'
 import ImagingDatasetViewer from '@src/js/components/common/imaging/ImagingDatasetViewer.jsx'
 import ImagingGalleryViewer from "@src/js/components/common/imaging/ImagingGalleryViewer.jsx";
 import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx';
-
+import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
+import openbis from '@src/js/services/openbis.js'
 
 export default {
   ThemeProvider,
@@ -30,5 +31,7 @@ export default {
   DateRangeField,
   ImagingDatasetViewer,
   ImagingGalleryViewer,
-  DataBrowser
+  DataBrowser,
+  DataBrowserToolbar,
+  openbis 
 }

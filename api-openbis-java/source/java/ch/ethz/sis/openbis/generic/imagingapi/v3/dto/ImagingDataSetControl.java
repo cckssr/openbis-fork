@@ -33,6 +33,9 @@ public class ImagingDataSetControl implements Serializable
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
+    private ImagingSemanticAnnotation semanticAnnotation;
+
+    @JsonProperty
     private String label;
 
     @JsonProperty
@@ -185,6 +188,17 @@ public class ImagingDataSetControl implements Serializable
     public void setMetadata(Map<String, String> metadata)
     {
         this.metadata = metadata;
+    }
+
+    public ImagingSemanticAnnotation getSemanticAnnotation()
+    {
+        return semanticAnnotation;
+    }
+
+    public void setSemanticAnnotation(
+            ImagingSemanticAnnotation semanticAnnotation)
+    {
+        this.semanticAnnotation = semanticAnnotation;
     }
 
     @Override

@@ -35,7 +35,7 @@ DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 
 
-def get_instance(url=None):
+def get_instance(url=None, token=None):
     if url is None:
         url = DEFAULT_URL
     openbis_instance = Openbis(
@@ -43,7 +43,10 @@ def get_instance(url=None):
         verify_certificates=False,
         allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks=True
     )
-    token = openbis_instance.login('admin', 'changeit')
+    if token is None:
+        token = openbis_instance.login('admin', 'changeit')
+    else:
+        openbis_instance.token = token
     print(f'Connected to {url} -> token: {token}')
     return openbis_instance
 
@@ -145,9 +148,9 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         for channel in channels]
 
     exports = [imaging.ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
-               imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg']),
-               imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar']),
-               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])]
+               imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/encoding')),
+               imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
+               imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'], semanticAnnotation=None)]
 
     inputs = [
         imaging.ImagingDataSetControl('Channel', "Dropdown", values=channels, section="Data"),
@@ -155,24 +158,7 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         imaging.ImagingDataSetControl('Y-axis', "Range", section="Data", values_range=["0", str(img.get_param('height')[0]), "0.01"]),
         imaging.ImagingDataSetControl('Color-scale', "Range", section="Data", visibility=color_scale_visibility),
         imaging.ImagingDataSetControl('Scaling', "Dropdown", section="Data", values=['linear', 'logarithmic']),
-        imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy']),
-
-        # TODO Remove below params once filter UI is done
-        imaging.ImagingDataSetControl('Filter', "Dropdown", section="Filter", values=['None', 'Gaussian', 'Laplace', 'Zero background', 'Plane Subtraction', 'Line Subtraction']),
-        imaging.ImagingDataSetControl('Gaussian Sigma', "Slider", section="Filter", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
-            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian', 'Laplace'], ['1', '100', '1'])
-        ]),
-        imaging.ImagingDataSetControl('Gaussian Truncate', "Slider",  section="Filter", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '0.1']),
-            imaging.ImagingDataSetControlVisibility('Filter', ['Gaussian', 'Laplace'], ['0', '1', '0.1'])
-        ]),
-        imaging.ImagingDataSetControl('Laplace Size', "Slider",  section="Filter", visibility=[
-            imaging.ImagingDataSetControlVisibility('Filter', ['None', 'Gaussian', 'Zero background', 'Plane Subtraction', 'Line Subtraction'], ['1', '1', '1']),
-            imaging.ImagingDataSetControlVisibility('Filter', ['Laplace'], ['3', '30', '1']),
-        ]),
-        # TODO END of removal part
-
+        imaging.ImagingDataSetControl('Colormap', "Colormap", values=['gray', 'YlOrBr', 'viridis', 'cividis', 'inferno', 'rainbow', 'Spectral', 'RdBu', 'RdGy'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/color')),
     ]
 
     filters = {
@@ -184,6 +170,10 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         'Line Subtraction': []
     }
 
+    filterSemanticAnnotation = {
+        'Gaussian': imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/headline')
+    }
+
     imaging_config = imaging.ImagingDataSetConfig(
         adaptor=SXM_ADAPTOR,
         version=1.0,
@@ -193,7 +183,8 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
         exports=exports,
         inputs=inputs,
         metadata={},
-        filters=filters)
+        filters=filters,
+        filterSemanticAnnotation=filterSemanticAnnotation)
 
     images = [imaging.ImagingDataSetImage(imaging_config,
                                           previews=[imaging.ImagingDataSetPreview(preview_format="png")],
@@ -491,8 +482,8 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         )]
 
     exports = [imaging.ImagingDataSetControl('include', "Dropdown", values=['image', 'raw data'], multiselect=True),
-               imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg']),
-               imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar']),
+               imaging.ImagingDataSetControl('image-format', "Dropdown", values=['png', 'svg'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/encoding')),
+               imaging.ImagingDataSetControl('archive-format', "Dropdown", values=['zip', 'tar'], semanticAnnotation=imaging.ImagingSemanticAnnotation('schema.org', 'https://schema.org/version/28.1', 'https://schema.org/fileFormat')),
                imaging.ImagingDataSetControl('resolution', "Dropdown", values=['original', '150dpi', '300dpi'])]
 
     inputs = [
@@ -529,9 +520,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         files=[d.path for d in data])
 
 
-def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[]):
+def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):
     imaging_control = ImagingControl(openbis)
-    preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig)
+    preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig, tags=tags)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
@@ -612,14 +603,10 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
         "Color-scale": color_scale,  # file dependent
         "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
         "Scaling": "linear",  # ['linear', 'logarithmic']
-        "Filter": "None",
-        "Gaussian Sigma": "0",
-        "Gaussian Truncate": "0",
-        "Laplace Size": "3"
     }
     config_preview = config_sxm_preview.copy()
 
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=['SXM'])
 
     preview.index = 0
     update_image_with_preview(openbis, perm_id, 0, preview)
@@ -633,7 +620,7 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
         imaging.ImagingDataSetFilter("Laplace", {"Size":"3"})
     ]
 
-    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config, tags=['SXM'])
     preview.index = 1
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -645,7 +632,7 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
         imaging.ImagingDataSetFilter("Zero background", {}),
     ]
 
-    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config)
+    preview = create_preview(openbis, perm_id, config_preview, filterConfig=filter_config, tags=['SXM'])
     preview.index = 2
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -658,7 +645,7 @@ def demo_dat_flow(openbis, folder_path, permId=None):
         dataset_dat = create_dat_dataset(
             openbis=openbis,
             experiment='/IMAGING/NANONIS/SXM_COLLECTION',
-            sample='/IMAGING/NANONIS/TEMPLATE-DAT',
+            sample = '/IMAGING/NANONIS/TEMPLATE-SXM',
             folder_path=folder_path,
             file_prefix='didv_')
         perm_id = dataset_dat.permId
@@ -707,14 +694,14 @@ def demo_dat_flow(openbis, folder_path, permId=None):
 
     config_preview = config_dat_preview.copy()
 
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=["DAT"])
 
     preview.index = 0
     update_image_with_preview(openbis, perm_id, 0, preview)
 
     config_preview = config_dat_preview.copy()
     config_preview["Scaling"] = 'log-log'
-    preview = create_preview(openbis, perm_id, config_preview)
+    preview = create_preview(openbis, perm_id, config_preview, tags=['DAT'])
     preview.index = 1
     update_image_with_preview(openbis, perm_id, 0, preview)
 
@@ -862,17 +849,20 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
 openbis_url = None
 data_folder = 'data'
+token = None
 
-if len(sys.argv) > 2:
+if len(sys.argv) >= 3:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
+    if len(sys.argv) > 3:
+        token = sys.argv[3]
 else:
     print(f'Usage: python3 nanonis_importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER>')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
 
-o = get_instance(openbis_url)
+o = get_instance(openbis_url, token)
 
 measurement_files = [f for f in os.listdir(data_folder)]
 measurement_datetimes = []
@@ -953,7 +943,7 @@ if IMPORT:
 
 else:
 
-    perm_id_sxm = '20250213122403858-19036'
+    perm_id_sxm = '20250218142736365-19062'
     perm_id_dat = '20250217145145421-19046'
 
     config_dat_preview = {
@@ -965,11 +955,11 @@ else:
             "Y-axis": ["0", "3.0"],  # file dependent
             "Color-scale": ["-71", "-68"],  # file dependent
             "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
-            "Scaling": "linear",  # ['linear', 'logarithmic']
-            "Filter": "None",
-            "Gaussian Sigma": "0",
-            "Gaussian Truncate": "0",
-            "Laplace Size": "3"
+            "Scaling": "logarithmic",  # ['linear', 'logarithmic']
+            # "Filter": "None",
+            # "Gaussian Sigma": "0",
+            # "Gaussian Truncate": "0",
+            # "Laplace Size": "3"
         },
         "sxmPermId": perm_id_sxm,
         "sxmFilePath": "original/img_0150.sxm",
@@ -979,6 +969,9 @@ else:
             "didv_00065.dat",
             "didv_00066.dat",
             "didv_00067.dat",
+            "didv_00068.dat",
+            "didv_00069.dat",
+            # "didv_00070.dat",
         ],
 
 
@@ -1009,3 +1002,4 @@ else:
 #                     '/home/alaskowski/PREMISE/test2')
 
 o.logout()
+print("OK")

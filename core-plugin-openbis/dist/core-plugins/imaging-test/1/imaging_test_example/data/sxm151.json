@@ -16,6 +16,13 @@
             "type": "Slider",
             "unit": null,
             "@type": "imaging.dto.ImagingDataSetControl",
+            "semanticAnnotation": {
+              "@id": 28,
+              "@type": "imaging.dto.ImagingSemanticAnnotation",
+              "ontologyId": "schema.org",
+              "ontologyVersion": "https://schema.org/version/28.1",
+              "ontologyAnnotationId": "https://schema.org/width"
+            },
             "label": "X-axis",
             "range": [
               "64",
@@ -35,6 +42,13 @@
             "type": "Slider",
             "unit": null,
             "@type": "imaging.dto.ImagingDataSetControl",
+            "semanticAnnotation": {
+              "@id": 29,
+              "@type": "imaging.dto.ImagingSemanticAnnotation",
+              "ontologyId": "schema.org",
+              "ontologyVersion": "https://schema.org/version/28.1",
+              "ontologyAnnotationId": "https://schema.org/height"
+            },
             "label": "Y-axis",
             "range": [
               "64",
@@ -50,6 +64,57 @@
             "multiselect": null
           }
         ],
+        "filters": {
+          "Gaussian": [
+            {
+              "@id": 25,
+              "type": "Slider",
+              "unit": null,
+              "@type": "imaging.dto.ImagingDataSetControl",
+              "label": "Sigma",
+              "range": [
+                "1",
+                "100",
+                "1"
+              ],
+              "speeds": null,
+              "values": null,
+              "section": null,
+              "metadata": null,
+              "playable": null,
+              "visibility": null,
+              "multiselect": null
+            },
+            {
+              "@id": 26,
+              "type": "Slider",
+              "unit": null,
+              "@type": "imaging.dto.ImagingDataSetControl",
+              "label": "Truncate",
+              "range": [
+                "0.1",
+                "1",
+                "0.1"
+              ],
+              "speeds": null,
+              "values": null,
+              "section": null,
+              "metadata": null,
+              "playable": null,
+              "visibility": null,
+              "multiselect": null
+            }
+          ]
+        },
+        "filterSemanticAnnotation": {
+          "Gaussian": {
+            "@id": 27,
+            "@type": "imaging.dto.ImagingSemanticAnnotation",
+            "ontologyId": "schema.org",
+            "ontologyVersion": "https://schema.org/version/28.1",
+            "ontologyAnnotationId": "https://schema.org/headline"
+          }
+        },
         "speeds": [
           1000,
           2000,
@@ -158,6 +223,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -179,6 +245,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -200,6 +267,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -221,6 +289,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -242,6 +311,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -409,6 +479,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",
@@ -430,6 +501,7 @@
               "640"
             ]
           },
+          "filterConfig": [],
           "format": "png",
           "height": 480,
           "comment": "This preview will be randomized upon update",

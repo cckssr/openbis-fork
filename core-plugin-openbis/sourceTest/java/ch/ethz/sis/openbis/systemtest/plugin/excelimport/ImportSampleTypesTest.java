@@ -15,14 +15,16 @@
  */
 package ch.ethz.sis.openbis.systemtest.plugin.excelimport;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,12 +34,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.PluginType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.testng.Assert.*;
 
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
@@ -62,6 +63,26 @@ public class ImportSampleTypesTest extends AbstractImportTest
     private static final String SAMPLE_TYPES_WITH_AUTO_GENERATED_CODES = "sample_types/with_auto_generated_codes.xls";
 
     private static final String SAMPLE_TYPE_NO_CODE = "sample_types/no_code.xls";
+
+    private static final String SAMPLE_TYPES_WITH_SEMANTIC_ANNOTATIONS_XLS =
+            "sample_types/normal_samples_semantic_annotation.xls";
+
+    private static final String SAMPLE_TYPES_WITH_SEMANTIC_ANNOTATIONS_BROKEN_XLS =
+            "sample_types/normal_samples_semantic_annotation_broken.xls";
+
+    private static final String SAMPLE_TYPES_WITH_MULTIPLE_SEMANTIC_ANNOTATIONS_XLS =
+            "sample_types/normal_samples_semantic_multiple_annotations.xls";
+
+    private static final String SAMPLE_TYPES_WITH_NO_SEMANTIC_ANNOTATIONS =
+            "sample_types/normal_samples_no_semantic_annotations.xls";
+
+    private static final String SAMPLE_TYPES_WITH_PROPERTY_SEMANTIC_ANNOATIONS =
+            "sample_types/normal_samples_semantic_annotation_property_type.xls";
+
+    private static final String SAMPLE_TYPES_WITH_PROPERTY_AND_MULITPLE_SEMANTIC_ANNOATIONS =
+            "sample_types/normal_samples_multiple_semantic_annotations_property_type.xls";
+
+
 
     @Autowired
     private IApplicationServerInternalApi v3api;
@@ -281,5 +302,212 @@ public class ImportSampleTypesTest extends AbstractImportTest
         final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken, FilenameUtils.concat(FILES_DIR, SAMPLE_TYPE_NO_CODE));
         TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
     }
+
+    @Test
+    @DirtiesContext
+    public void testSingleSemanticAnnotationIsCreated() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR, SAMPLE_TYPES_WITH_SEMANTIC_ANNOTATIONS_XLS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        // WHEN
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY");
+        List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
+
+        // THEN
+        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyId()
+                .equals("https://en.wikipedia.org/"));
+        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyVersion()
+                .equals("https://en.wikipedia.org/wiki/Wikipedia:About"));
+        assertTrue(semanticAnnotations.get(0).getDescriptorAccessionId()
+                .equals("https://en.wikipedia.org/wiki/Antibody"));
+
+    }
+
+    @Test(expectedExceptions = { UserFailureException.class })
+    @DirtiesContext
+    public void testInconsistentNumberOfAnnotationsThrowException() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR, SAMPLE_TYPES_WITH_SEMANTIC_ANNOTATIONS_BROKEN_XLS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testMultipleSemanticAnnotationAreCreated() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR,
+                        SAMPLE_TYPES_WITH_MULTIPLE_SEMANTIC_ANNOTATIONS_XLS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        // WHEN
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY");
+        List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
+
+        // THEN
+        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyId(),
+                "https://en.wikipedia.org/");
+        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyVersion(),
+                "https://en.wikipedia.org/wiki/Wikipedia:About");
+        assertTrue(semanticAnnotations.stream().anyMatch(
+                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody"))
+        );
+        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyId(),
+                "https://en.wikipedia.org/");
+        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyVersion(),
+                "https://en.wikipedia.org/wiki/Wikipedia:About");
+        assertTrue(semanticAnnotations.stream().anyMatch(
+                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody2"))
+        );
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testNoSemanticAnnoationsMeansNoSemanticAnnotationsCreated() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR, SAMPLE_TYPES_WITH_NO_SEMANTIC_ANNOTATIONS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        // WHEN
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY");
+        List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
+        assertTrue(semanticAnnotations.isEmpty());
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSemanticAnnotationsWithProperties() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR, SAMPLE_TYPES_WITH_PROPERTY_SEMANTIC_ANNOATIONS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        // WHEN
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY");
+        var propertyType = TestUtils.getPropertyType(v3api, sessionToken, "NAME");
+        propertyType.getSampleType();
+        SemanticAnnotationFetchOptions semanticAnnotationFetchOptions =
+                new SemanticAnnotationFetchOptions();
+        semanticAnnotationFetchOptions.withPropertyAssignment();
+        semanticAnnotationFetchOptions.withPropertyType();
+        semanticAnnotationFetchOptions.withEntityType();
+
+        SemanticAnnotationSearchCriteria semanticAnnotationSearchCriteria =
+                new SemanticAnnotationSearchCriteria();
+        semanticAnnotationSearchCriteria.withPredicateOntologyId().thatEquals("Ontology Id");
+
+        SearchResult<SemanticAnnotation> semanticAnnotations =
+                v3api.searchSemanticAnnotations(sessionToken, semanticAnnotationSearchCriteria,
+                        semanticAnnotationFetchOptions);
+
+        assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyId(),
+                "Ontology Id");
+        assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyVersion(),
+                "Ontology Version");
+        assertEquals(semanticAnnotations.getObjects().get(0).getPredicateAccessionId(),
+                "Ontology Annotation Id");
+        assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                .getEntityTypeId().toString(), "ANTIBODY (SAMPLE)");
+        assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                .getPropertyTypeId().toString(), "NAME");
+
+
+    }
+
+    @Test
+    @DirtiesContext
+    public void testMultipleSemanticAnnotationsWithProperties() throws IOException
+    {
+        // the Excel contains internally managed property types which can be only manipulated by the system user
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR,
+                        SAMPLE_TYPES_WITH_PROPERTY_AND_MULITPLE_SEMANTIC_ANNOATIONS));
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        // WHEN
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY");
+        var propertyType = TestUtils.getPropertyType(v3api, sessionToken, "NAME");
+        propertyType.getSampleType();
+        SemanticAnnotationFetchOptions semanticAnnotationFetchOptions =
+                new SemanticAnnotationFetchOptions();
+        semanticAnnotationFetchOptions.withPropertyAssignment();
+        semanticAnnotationFetchOptions.withPropertyType();
+        semanticAnnotationFetchOptions.withEntityType();
+
+        {
+            SemanticAnnotationSearchCriteria semanticAnnotationSearchCriteria =
+                    new SemanticAnnotationSearchCriteria();
+
+            semanticAnnotationSearchCriteria.withPredicateOntologyId().thatEquals("Ontology Id");
+
+            SearchResult<SemanticAnnotation> semanticAnnotations =
+                    v3api.searchSemanticAnnotations(sessionToken, semanticAnnotationSearchCriteria,
+                            semanticAnnotationFetchOptions);
+
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyId(),
+                    "Ontology Id");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyVersion(),
+                    "Ontology Version");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateAccessionId(),
+                    "Ontology Annotation Id");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                    .getEntityTypeId().toString(), "ANTIBODY (SAMPLE)");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                    .getPropertyTypeId().toString(), "NAME");
+        }
+
+        {
+            SemanticAnnotationSearchCriteria semanticAnnotationSearchCriteria =
+                    new SemanticAnnotationSearchCriteria();
+            semanticAnnotationSearchCriteria.withPredicateOntologyId().thatEquals("Wikipedia");
+
+            SearchResult<SemanticAnnotation> semanticAnnotations =
+                    v3api.searchSemanticAnnotations(sessionToken, semanticAnnotationSearchCriteria,
+                            semanticAnnotationFetchOptions);
+
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyId(),
+                    "Wikipedia");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateOntologyVersion(),
+                    "Ontology Version 2");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPredicateAccessionId(),
+                    "Ontology Annotation Id 2");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                    .getEntityTypeId().toString(), "ANTIBODY (SAMPLE)");
+            assertEquals(semanticAnnotations.getObjects().get(0).getPropertyAssignment().getPermId()
+                    .getPropertyTypeId().toString(), "NAME");
+
+        }
+
+    }
+
 
 }

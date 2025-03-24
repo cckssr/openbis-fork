@@ -162,10 +162,13 @@ function DataSetViewerController(containerId, profile, entity, serverFacade, dat
 							var dataset = toShow.lastVersionOfHistory[historyId];
 							toShow.standard[dataset.permId.permId] = dataset;
 						}
-						
+
+						var currentIds = _this._datasetViewerModel.v3Datasets.map(x => x.permId.permId);
 						// V3 List
 						for(datasetId in toShow.standard) {
-							_this._datasetViewerModel.v3Datasets.push(toShow.standard[datasetId]);
+                            if(currentIds.length == 0 || currentIds.some(x => x !== datasetId)) {
+                                _this._datasetViewerModel.v3Datasets.push(toShow.standard[datasetId]);
+                            }
 						}
 						
 						// TODO : Legacy list to be removed

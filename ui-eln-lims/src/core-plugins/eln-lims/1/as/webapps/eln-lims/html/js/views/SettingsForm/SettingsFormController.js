@@ -19,6 +19,7 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	this._settingsFormModel = new SettingsFormModel(settingsSample, mode);
 	this._settingsFormView = new SettingsFormView(this, this._settingsFormModel);
 	this._settingsManager = new SettingsManager(this._mainController.serverFacade);
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 
 	this.init = function(views) {
 	    var _this = this;
@@ -90,6 +91,9 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	    var onSave = function() {
 	        _this._settingsManager.validateAndsave(_this._settingsFormModel.settingsSample, settings, (function() {
                 _this._mainController.changeView("showSettingsPage", _this._settingsFormModel.settingsSample.identifier);
+                if(!_this._wasSideMenuCollapsed) {
+                    _this._mainController.sideMenu.expandSideMenu();
+                }
                 setTimeout(reloadApplication, 1000);
             }));
 	    }

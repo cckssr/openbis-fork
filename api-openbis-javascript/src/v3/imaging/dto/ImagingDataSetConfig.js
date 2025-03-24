@@ -13,6 +13,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.inputs = null;
 		prototype.metadata = null;
 		prototype.filters = null;
+		prototype.filterSemanticAnnotation = null;
 
 		prototype.getAdaptor = function() {
 			return this.adaptor;
@@ -68,6 +69,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype.setFilters = function(filters) {
             this.filters = filters;
         };
+        prototype.getFilterSemanticAnnotation = function() {
+            return this.filterSemanticAnnotation;
+        };
+        prototype.setFilterSemanticAnnotation = function(filterSemanticAnnotation) {
+            this.filterSemanticAnnotation = filterSemanticAnnotation;
+        };
 		prototype.toString = function() {
             return "ImagingDataSetConfig: " + this.adaptor;
         };
@@ -102,6 +109,14 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
                         name : "List",
                         arguments : [ "ImagingDataSetControl" ]
                     }
+                ]
+        },
+        filterSemanticAnnotation : {
+            name : "Map",
+            arguments :
+                [
+                    "String",
+                    "ImagingSemanticAnnotation"
                 ]
         }
 	});

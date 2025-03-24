@@ -1,11 +1,19 @@
-## Changes with pybis-6.6.0.0
+## Changes with pybis-6.7.0.0
 
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
 
+## Changes with pybis-1.37.4
+
+- Handling UnicodeDecodeError in spreadsheet property
+
+## Changes with pybis-1.37.3
+
+- Fixes to get_children/get_parents methods
+
 ## Changes with pybis-1.37.2
 
-- Fixes to Fast Upload implementation
+- Fixes to Fast Upload 
 
 ## Changes with pybis-1.37.1
 

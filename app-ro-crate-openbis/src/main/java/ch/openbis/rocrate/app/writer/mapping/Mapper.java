@@ -20,8 +20,10 @@ import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Mapper
 {
@@ -122,7 +124,7 @@ public class Mapper
             List<String> semanticAnnotations = Optional.ofNullable(
                             parseResult.getSemanticAnnotationByKind().getEntityPropertyTypeAnnotations()
                                     .get(deRdfsName(a.getKey())))
-                    .map(x -> x.stream().map(y -> y.getPredicateOntologyId()).distinct().toList())
+                    .map(x -> x.stream().map(y -> y.getDescriptorAccessionId()).distinct().toList())
                     .orElse(List.of());
 
             rdfsProperty.setOntologicalAnnotations(semanticAnnotations);
@@ -155,14 +157,31 @@ public class Mapper
             Map<String, Serializable> props = new HashMap<String, Serializable>();
             if (val instanceof Sample sample)
             {
+
+                Map<String, List<String>> references = new LinkedHashMap<>();
+
+                Set<String> referenceTypeNames = parseResult.getSchema().values().stream()
+                        .map(x -> x.getPropertyAssignments())
+                        .flatMap(Collection::stream).map(x -> x.getPropertyType())
+                        .filter(x -> x.getDataType().name().startsWith("SAMPLE"))
+                        .map(x -> x.getCode())
+                        .collect(Collectors.toSet());
+
                 String type = typeToRdfsName.get(sample.getType());
                 for (Map.Entry<String, Serializable> a : sample.getProperties().entrySet())
                 {
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
-                    props.put(propName, a.getValue());
+                    if (!referenceTypeNames.contains(a.getKey()))
+                    {
+                        props.put(propName, a.getValue());
+                    } else
+                    {
+                        references.put(propName, List.of(a.getValue().toString()));
+
+                    }
+
                 }
 
-                Map<String, List<String>> references = new LinkedHashMap<>();
                 references.put("children", ((Sample) val).getChildren().stream()
                         .map(x -> x.getIdentifier().getIdentifier()).toList());
                 references.put("parents", ((Sample) val).getChildren().stream()
@@ -248,6 +267,15 @@ public class Mapper
             {
                 return "xsd:dateTime";
             }
+            case SAMPLE ->
+            {
+                return ":Object";
+            }
+            case HYPERLINK ->
+            {
+                return "xsd:string";
+            }
+
             default ->
             {
                 throw new RuntimeException("Unknown type: " + openBisType);

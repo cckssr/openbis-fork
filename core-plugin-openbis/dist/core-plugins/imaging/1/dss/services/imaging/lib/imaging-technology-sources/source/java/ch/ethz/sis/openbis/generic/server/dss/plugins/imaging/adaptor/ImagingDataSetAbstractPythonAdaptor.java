@@ -87,7 +87,7 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         }
         logOutput(fullOutput);
         String[] result = fullOutput.split("\n");
-        return convertPythonOutput(result[result.length-1]);
+        return convertJsonToMap(result[result.length-1]);
     }
 
     @Override
@@ -157,13 +157,13 @@ public abstract class ImagingDataSetAbstractPythonAdaptor implements IImagingDat
         }
     }
 
-    private Map<String, Serializable> convertPythonOutput(String line) {
+    protected Map<String, Serializable> convertJsonToMap(String line) {
         try
         {
             return Util.readConfig(line, Map.class);
         } catch (Exception e)
         {
-            return Map.of("bytes", line);
+            return Map.of("bytes", line, "error", e.toString());
         }
     }
 

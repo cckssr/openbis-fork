@@ -19,6 +19,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._dataSetFormModel = new DataSetFormModel(mode, entity, isMini, dataSetV3, paginationInfo);
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
+	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 	
 	this.init = function(views) {
 		var _this = this;
@@ -254,7 +255,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 						if(_this._dataSetFormModel.mode === FormMode.CREATE) {
 							Util.showSuccess("DataSet Created.", callbackOk);
 							if(!isInventory) {
-								mainController.sideMenu.refreshCurrentNode();
+                                var currentNode = mainController.sideMenu.getCurrentNodeId();
+                                if(currentNode) {
+                                    var node = JSON.parse(currentNode);
+                                    mainController.sideMenu.refreshNodeParentByPermId(node.type, node.id);
+                                }
 							}
 						} else if(_this._dataSetFormModel.mode === FormMode.EDIT) {
 							Util.showSuccess("DataSet Updated.", callbackOk);

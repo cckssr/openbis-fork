@@ -673,7 +673,7 @@ test("listDataSetTypes()", function() {
 test("listSampleTypes()", function() {
 	createFacadeAndLogin(function(facade) {
 		facade.listSampleTypes(function(response) {
-			assertObjectsCount(response.result, 25);
+			assertObjectsCount(response.result, 26);
 			facade.close();
 		});
 	});

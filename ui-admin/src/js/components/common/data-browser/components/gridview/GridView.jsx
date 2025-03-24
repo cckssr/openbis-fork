@@ -17,18 +17,14 @@
 
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import GridViewItem from '@src/js/components/common/data-browser/GridViewItem.jsx'
+import GridViewItem from '@src/js/components/common/data-browser/components/gridview/GridViewItem.jsx'
 import Grid from '@mui/material/Grid2'
 import autoBind from 'auto-bind'
 import logger from '@src/js/common/logger.js'
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import GridController from '@src/js/components/common/grid/GridController.js'
 import Loading from '@src/js/components/common/loading/Loading.jsx'
-import GridRowFullWidth from '@src/js/components/common/grid/GridRowFullWidth.jsx'
 import GridPaging from '@src/js/components/common/grid/GridPaging.jsx'
-import GridColumnsConfig from '@src/js/components/common/grid/GridColumnsConfig.jsx'
-import GridFiltersConfig from '@src/js/components/common/grid/GridFiltersConfig.jsx'
-import GridExports from '@src/js/components/common/grid/GridExports.jsx'
 import Header from '@src/js/components/common/form/Header.jsx'
 import SortDropdown from '@src/js/components/common/data-browser/SortDropdown.jsx'
 import { Select, MenuItem, FormControl, InputLabel, IconButton, Box} from '@mui/material';
@@ -50,17 +46,22 @@ const styles = theme => ({
     marginBottom: theme.spacing(1),
     color: theme.palette.text.primary, 
   },
+  gridWrapper: {
+    overflowX: 'auto',
+    width: '100%',
+  },
   // Grid items container using CSS grid.
   gridItems: {
     display: 'grid',
     width: '100%',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(9.5rem, 1fr))', 
+    gridTemplateColumns: 'repeat(auto-fill, minmax(9.5rem, 1fr))',
     gap: theme.spacing(3), 
     paddingBottom: theme.spacing(3),        
     overflowY: 'auto',
-    overflowX: 'hidden',
+    overflowX: 'auto',
     maxHeight: `calc(100vh - ${theme.spacing(51)})`,
     padding: theme.spacing(2),
+    minWidth: `calc(4 * 9.5rem + 2 * ${theme.spacing(3)})`,
   },
   
 
@@ -223,7 +224,8 @@ class GridView extends React.Component {
     const { classes,item, ...otherProps } = this.props;    
     const { loading, rows, selectedRow, multiselectedRows} = this.state
     const { dragging, selectionBox, selectedItems } = this.state;
-    return (    
+    return ( 
+      <div className={classes.gridWrapper}>   
       <div className={classes.container}
           ref={this.containerRef} // Added container ref
           onMouseDown={this.handleMouseDown}>
@@ -233,20 +235,23 @@ class GridView extends React.Component {
             {this.renderTitle()}
             {this.renderPagingAndConfigsAndExports()}
           </div>
-          {/* Grid Items below */}
-          <Grid container className={classes.gridItems}>
-            {rows.map(row => {
 
-              return <GridViewItem
-                key={row.id}
-                {...otherProps}
-                multiselected={multiselectedRows && multiselectedRows[row.id]}
-                row={row}                
-                onDoubleClick={this.controller.handleRowDoubleClick}
-                onSelect={this.controller.handleRowMultiselect}                
-              />
-            })}
-          </Grid>
+         
+            {/* Grid Items below */}
+            <Grid container className={classes.gridItems}>
+              {rows.map(row => {
+
+                return <GridViewItem
+                  key={row.id}
+                  {...otherProps}
+                  multiselected={multiselectedRows && multiselectedRows[row.id]}
+                  row={row}                
+                  onDoubleClick={this.controller.handleRowDoubleClick}
+                  onSelect={this.controller.handleRowMultiselect}                
+                />
+              })}
+            </Grid>
+          
           {/* New Selection Box */}
           {dragging && selectionBox && (
             <div
@@ -259,6 +264,7 @@ class GridView extends React.Component {
               }}
             />
           )}
+      </div>
       </div>
     );
   }

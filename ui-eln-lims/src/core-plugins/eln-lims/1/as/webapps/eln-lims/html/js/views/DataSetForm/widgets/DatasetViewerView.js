@@ -48,6 +48,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 		
 		// Container Content
 		var $containerContent = $("<div>", {"id" : this._dataSetViewerModel.containerIdContent });
+		$mainContainer.empty();
 		$mainContainer.append($containerTitle).append($containerContent);
 		
 		var $filesContainer = $("<div>");
@@ -84,6 +85,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
         var $dataSetsSection = $("#data-sets-section");
         var $legend = $("<legend>").append("Data Sets");
         var $dataSetContainer = $("<div>", { 'id' : 'data-set-table' });
+        $dataSetsSection.empty()
         $dataSetsSection.append($legend);
         $dataSetsSection.append($dataSetContainer);
         $legend.prepend(FormUtil.getShowHideButton($dataSetContainer, "data-set-table"));

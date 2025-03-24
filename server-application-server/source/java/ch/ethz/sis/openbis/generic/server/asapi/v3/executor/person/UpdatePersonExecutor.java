@@ -171,19 +171,7 @@ public class UpdatePersonExecutor
         {
             throw new UserFailureException("You can not deactivate yourself. Ask another instance admin to do that for you.");
         }
-        IRoleAssignmentDAO roleAssignmenDAO = daoFactory.getRoleAssignmentDAO();
         person.setActive(false);
-        person.setDisplaySettings(null);
-        person.clearAuthorizationGroups();
-        // Direct iteration over role assignments could lead to a
-        // ConcurrentModificationException because roleAssignmentDAO.deleteRoleAssignment()
-        // will remove the assignment from person.
-        List<RoleAssignmentPE> roleAssignments =
-                new ArrayList<RoleAssignmentPE>(person.getRoleAssignments());
-        for (RoleAssignmentPE roleAssignment : roleAssignments)
-        {
-            roleAssignmenDAO.deleteRoleAssignment(roleAssignment);
-        }
     }
 
     private void activate(IOperationContext context, PersonPE person)

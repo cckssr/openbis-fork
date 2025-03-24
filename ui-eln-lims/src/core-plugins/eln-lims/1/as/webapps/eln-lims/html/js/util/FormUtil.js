@@ -653,6 +653,33 @@ var FormUtil = new function() {
 	this.getFormAwesomeIcon = function(iconClass) {
 		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
+
+	this.getToolbarButton = function(toolbarButtonType, clickEvent, text, tooltip, id) {
+	    var $btn = null;
+        var buttonClass = 'btn btn-default';
+        $btn = $("<a>", { 'class' : buttonClass });
+
+        if(IconUtil.hasToolbarIconType(toolbarButtonType)) {
+            iconType = IconUtil.getToolbarIconType(toolbarButtonType);
+            $btn.append(IconUtil.getIcon(iconType));
+            if(text) {
+                $btn.append("&nbsp;");
+            }
+        }
+
+        if(text) {
+            $btn.append(text);
+        }
+        if(tooltip) {
+            $btn.attr("title", tooltip);
+//            $btn.tooltipster(); // TODO check if this works properly
+        }
+        if(id) {
+            $btn.attr("id", id);
+        }
+        $btn.click(clickEvent);
+        return $btn;
+	}
 	
     this.getButtonWithIcon = function(iconClass, clickEvent, text, tooltip, id, customClass) {
         var $btn = null;
@@ -1516,7 +1543,7 @@ var FormUtil = new function() {
 		});
 	}
 
-	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title) {
+	this.addOptionsToToolbar = function(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, namespace, title, alignLeft) {
 	    var _this = this;
 		if(!title) {
 			title = "More ... ";
@@ -1533,6 +1560,9 @@ var FormUtil = new function() {
 		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : id})
 				.append(title).append($("<b>", { class : 'caret' }));
 		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		if(alignLeft) {
+		    $dropdownOptionsMenuList.css("right", "0").css("left", "auto");
+		}
 		$dropdownOptionsMenu.append($dropdownOptionsMenuCaret);
 		$dropdownOptionsMenu.append($dropdownOptionsMenuList);
 		for (var idx = 0; idx < dropdownOptionsModel.length; idx++) {
@@ -1622,73 +1652,114 @@ var FormUtil = new function() {
 		return $toolbarContainer;
 	}
 
+	this.getToolbarSeparator = function() {
+	    var separator = $("<p>", {id : "toolbar-separator"})
+        		                    .css("display", "inline-block")
+        separator.html("&nbsp&nbsp&nbsp&nbsp&nbsp");
+	    return separator;
+	}
 
-	this.getToolbarWithTabs = function(toolbarModel, tabsModel, rightToolbarModel) {		
-		var $toolbarButtons = this.getToolbar(toolbarModel);
-		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);
-		$rightToolbarButtons.css({marginBottom : "0px"})	
+	this.getToolbarWithTabs = function(
+		toolbarModel,
+		tabsModel,
+		rightToolbarModel,
+		extraToolbar, 
+		alternateToolbar,
+		$alternateRightToolbar
+	  ) {		
+		var $normalToolbar = this.getToolbar(toolbarModel);
+		var $rightToolbarButtons = this.getToolbar(rightToolbarModel);		
+		$rightToolbarButtons.css({ marginBottom: "0px" });	
+		$alternateRightToolbar.css({ marginBottom: "0px" });	
 		
-		// Expecting tabsModel to be an object like:
-		// {
-		//    containerId: "myTabsContainer",
-		//    tabs: [
-		//       { id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true },
-		//       { id: "filesTab", label: "Files", href: "#dssWidgetTab", active: false }
-		//    ]
-		// }
 		var containerId = tabsModel.containerId || "";
 		var tabs = tabsModel.tabs || [];
-			
 		var tabsContainerOptions = { 
-			class: "nav nav-tabs toolbar-tabs", 
-			style: "border-bottom: 0; margin: 0; padding: 0; display: flex;"
+		  class: "nav nav-tabs toolbar-tabs", 
+		  style: "border-bottom: 0; margin: 0; padding: 0; display: flex;"
 		};
 		if (containerId) {
-			tabsContainerOptions.id = containerId;
+		  tabsContainerOptions.id = containerId;
 		}
 		var $tabsContainer = $("<ul>", tabsContainerOptions);
-			
 		tabs.forEach(function(tab) {
-			var liClass = tab.active ? "active" : "";
-			var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
-			var aOptions = {
-				href: tab.href,
-				"data-toggle": "tab",
-				text: tab.label
-			};
-			
-			if (tab.id) {
-				aOptions.id = tab.id;
-			}
-			var $a = $("<a>", aOptions);
-			$li.append($a);
-			$tabsContainer.append($li);
-		});	
-		
-		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "space-between",
-			width: "100%"
+		  var liClass = tab.active ? "active" : "";
+		  var $li = $("<li>", { class: liClass, style: "margin-bottom: -15px;" });
+		  var aOptions = {
+			href: tab.href,
+			"data-toggle": "tab",
+			text: tab.label
+		  };
+		  if (tab.id) {
+			aOptions.id = tab.id;
+		  }
+		  var $a = $("<a>", aOptions);
+		  $li.append($a);
+		  $tabsContainer.append($li);
 		});
-	
-		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" }).append($toolbarButtons);
-	
-		var $rightSideContainer = $("<div>", { class: "right-side-container" }).css({
+
+		var $normalToolbarContainer = $("<div>", { class: "normal-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append($normalToolbar);
+		var $alternateToolbarContainer = $("<div>", { class: "alternate-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append(alternateToolbar);
+
+		$alternateToolbarContainer.hide();
+
+		var $buttonsWrapper = $("<div>", { class: "toolbar-buttons" })
+		  .css({
+			width: $rightToolbarButtons.children().length > 0 ? "50%" : "100%",
+			display: "flex"
+		  });
+		$buttonsWrapper.append($normalToolbarContainer).append($alternateToolbarContainer);
+	  
+		var $normalRightToolbarContainer = $("<div>", { class: "normal-right-toolbar-container" })
+		  .css({ flex: "1" })
+		  .append($rightToolbarButtons);
+				
+		var $extraRightToolbarContainer = $("<div>", { class: "extra-right-toolbar-container" })
+		  .css({
 			display: "flex",
 			alignItems: "center",
 			gap: "10px"
+		  }).append(extraToolbar);
+		
+		$extraRightToolbarContainer.hide();
+
+		var $alternateRightToolbarContainer = $("<div>", { class: "alternate-right-toolbar-container" })
+		  .css({
+			display: "flex",
+			alignItems: "center",
+			gap: "10px"
+		  }).append($alternateRightToolbar);
+		$alternateRightToolbarContainer.hide();
+	  
+		var $rightSideContainer = $("<div>", { class: "right-side-container" }).css({
+		  display: "flex",
+		  alignItems: "center",		  
 		});
-		$rightSideContainer.append($rightToolbarButtons).append($tabsContainer);
-	
+	  		
+		$rightSideContainer
+		  .append($normalRightToolbarContainer)
+		  .append($extraRightToolbarContainer)
+		  .append($alternateRightToolbarContainer)
+		  .append($tabsContainer);
+	  
+		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
+		  display: "flex",
+		  alignItems: "center",
+		  justifyContent: "space-between",
+		  width: "100%",
+		  minHeight: "37px",
+		});
 		$combinedContainer.append($buttonsWrapper).append($rightSideContainer);
-	
+		
 		return $combinedContainer;
-	};
-	
-	
-	
-	
+	  };
+
+
+		
 	
 	this.getOperationsMenu = function(items) {
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });
@@ -2429,6 +2500,51 @@ var FormUtil = new function() {
         });
     }
 
+    this.createNewObject = function(spaceCode, projectCode, experimentIdentifier, optionalParentSample) {
+            var _this = this;
+
+            var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true, null, null, spaceCode);
+            Util.showDropdownAndBlockUI("sampleTypeDropdown", $dropdown);
+
+            $("#sampleTypeDropdown").on("change", function(event) {
+                var sampleTypeCode = $("#sampleTypeDropdown")[0].value;
+                Util.blockUI();
+                setTimeout(function() {
+                    var argsMap = {
+                        "sampleTypeCode" : sampleTypeCode,
+                        "spaceCode" : spaceCode,
+                        "projectCode": projectCode,
+                        "experimentIdentifier": experimentIdentifier
+                    };
+                    mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+
+                    if(optionalParentSample) {
+                        var setParent = function() {
+                            mainController.currentView._sampleFormModel.sampleLinksParents.addSample(optionalParentSample);
+                            Util.unblockUI();
+                        }
+
+                        var repeatUntilSet = function() {
+                           if(mainController.currentView.isLoaded()) {
+                               setParent();
+                           } else {
+                               setTimeout(repeatUntilSet, 100);
+                           }
+                        }
+                       repeatUntilSet();
+                    }
+
+                }, 100);
+            });
+
+            $("#sampleTypeDropdownCancel").on("click", function(event) {
+                Util.unblockUI();
+            });
+    }
+
+    /**
+        DEPRECATED - use createNewObject
+    */
 	this.createNewSample = function(experimentIdentifier, optionalParentSample) {
     		var _this = this;
     		var $dropdown = FormUtil.getSampleTypeDropdown("sampleTypeDropdown", true, null, null, IdentifierUtil.getSpaceCodeFromIdentifier(experimentIdentifier));

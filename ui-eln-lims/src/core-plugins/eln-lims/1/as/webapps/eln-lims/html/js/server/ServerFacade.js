@@ -71,7 +71,12 @@ function ServerFacade(openbisServer) {
 				Util.showError("User has no assigned rights. Please contact your group admin.", function() {
 					location.reload(true);
 				}, true, false, false, true);
-			} else if(response.error === "Request failed: ") {
+			} else if(response.error.message && response.error.message.indexOf("no valid assigned rights") !== -1) {
+                isError = true;
+                Util.showError("User has no valid assigned rights. Please contact your admin", function() {
+                    location.reload(true);
+                }, true, false, false, true);
+            } else if(response.error === "Request failed: ") {
 				Util.showError(response.error + "openBIS or DSS cannot be reached. Please try again or contact your admin.", null, true, false, true);
 			}
 		}
@@ -1283,7 +1288,41 @@ function ServerFacade(openbisServer) {
 	}
 
 	this.listDataStores = function(callbackFunction) {
-		this.openbisServer.listDataStores(callbackFunction);
+		var _this = this;
+		require(
+			[
+				"as/dto/datastore/search/DataStoreSearchCriteria",
+				"as/dto/datastore/fetchoptions/DataStoreFetchOptions",
+				"as/dto/datastore/search/DataStoreKind"
+			],
+			function(DataStoreSearchCriteria, DataStoreFetchOptions, DataStoreKind) {				
+				var criteria = new DataStoreSearchCriteria()
+				criteria.withKind().thatIn([DataStoreKind.DSS, DataStoreKind.AFS])
+	
+				mainController.openbisV3
+					.searchDataStores(criteria, new DataStoreFetchOptions())
+					.done(searchResult => {
+						const transformedResult = _this._transformSearchDataStoresResult(searchResult);
+						callbackFunction(transformedResult);
+					});
+			}
+		)
+	}
+	
+
+	this._transformSearchDataStoresResult = function(searchResult) {
+		return {
+		  jsonrpc: "2.0",
+		  id: String(searchResult['@id']),
+		  result: searchResult.objects			
+			.map((obj, index) => ({
+			  "@type": obj["@type"].replace("as.dto.datastore.", ""),
+			  "@id": index + 1,
+			  code: obj.code,
+			  downloadUrl: obj.code !== "AFS" ? obj.downloadUrl + "/datastore_server" : obj.downloadUrl ,
+			  hostUrl: obj.downloadUrl
+			}))
+		};
 	}
 
 	this.getUserDisplaySettings = function(callbackFunction) {
@@ -1595,6 +1634,10 @@ function ServerFacade(openbisServer) {
                         fetchOptions.withPhysicalData();
                     }
 				} else if(advancedFetchOptions.only) {
+				    if(advancedFetchOptions.withSamples) {
+				        fetchOptions.withSamples();
+				    }
+
 					if(advancedFetchOptions.withSample) {
 						fetchOptions.withSample();
 						if(advancedFetchOptions.withSampleType) {
@@ -1648,6 +1691,13 @@ function ServerFacade(openbisServer) {
 								}
 							}
 						}
+					}
+
+					if(advancedFetchOptions.withDataSets) {
+					    fetchOptions.withDataSets();
+					    if(advancedFetchOptions.withDataSetSample) {
+					        fetchOptions.withDataSets().withSample();
+					    }
 					}
 
 					if(advancedFetchOptions.withExperiment) {
@@ -2084,7 +2134,8 @@ function ServerFacade(openbisServer) {
                                         case "thatContains":
                                                 criteria.withType().withCode().thatContains(attributeValue);
                                                 break;
-                                    }                                    break;
+                                    }
+                                    break;
                                 //Only Sample
                                 case "SPACE":
                                     if(!comparisonOperator) {
@@ -2115,13 +2166,13 @@ function ServerFacade(openbisServer) {
                                                 break;
                                     }
                                     break;
-																case "SAMPLE_CODE":
-																	  switch (comparisonOperator) {
-																		    case 'thatContains':
-																			      criteria.withSample().withCode().thatContains(attributeValue)
-																				    break
-																	  }
-																	  break
+                                case "SAMPLE_CODE":
+                                      switch (comparisonOperator) {
+                                            case 'thatContains':
+                                                  criteria.withSample().withCode().thatContains(attributeValue)
+                                                    break
+                                      }
+                                      break
                                 case "EXPERIMENT_IDENTIFIER":
                                     if(!comparisonOperator) {
                                         comparisonOperator = "thatEquals";
@@ -2236,6 +2287,7 @@ function ServerFacade(openbisServer) {
                                         break;
                                     case "NULL":
                                         searchCriteria.withoutExperiment();
+                                        break;
                                     case "NOT_NULL":
                                         searchCriteria.withExperiment();
                                         break;

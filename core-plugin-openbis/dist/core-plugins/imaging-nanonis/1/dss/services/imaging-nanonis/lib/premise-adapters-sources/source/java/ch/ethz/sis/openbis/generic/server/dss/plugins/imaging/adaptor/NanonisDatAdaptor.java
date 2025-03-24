@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -75,28 +76,54 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
             Map<String, Serializable> previewMetadata,
             List<ImagingDataSetFilter> filterConfig)
     {
-        if(previewConfig != null && previewConfig.containsKey("spectraLocator") && previewConfig.get("spectraLocator") != null) {
-            String spectraLocator = previewConfig.get("spectraLocator").toString().trim().toUpperCase();
-            if("TRUE".equals(spectraLocator))
+        if(previewConfig != null)
+        {
+            if (previewConfig.get("spectraLocator") != null)
             {
-                String objId = previewConfig.get("objId").toString();
-                String sxmPermId = previewConfig.get("sxmPermId").toString();
-                previewConfig.get("sxmFilePath");
-
-                if (sxmPermId != null && !sxmPermId.trim().isEmpty())
+                String spectraLocator =
+                        previewConfig.get("spectraLocator").toString().trim().toUpperCase();
+                if ("TRUE".equals(spectraLocator))
                 {
-                    if (sxmPermId.equals(objId))
-                    {
-                        previewConfig.put("sxmRootPath", rootFile.getAbsolutePath());
-                    } else
-                    {
-                        File sxmFile = getRootFile(context.getSessionToken(), sxmPermId);
-                        previewConfig.put("sxmRootPath", sxmFile.getAbsolutePath());
-                    }
+                    String objId = previewConfig.get("objId").toString();
+                    String sxmPermId = previewConfig.get("sxmPermId").toString();
+                    previewConfig.get("sxmFilePath");
 
+                    if (sxmPermId != null && !sxmPermId.trim().isEmpty())
+                    {
+                        if (sxmPermId.equals(objId))
+                        {
+                            previewConfig.put("sxmRootPath", rootFile.getAbsolutePath());
+                        } else
+                        {
+                            File sxmFile = getRootFile(context.getSessionToken(), sxmPermId);
+                            previewConfig.put("sxmRootPath", sxmFile.getAbsolutePath());
+                        }
+
+                    }
+                }
+            } else if (previewMetadata != null && previewMetadata.get("spectraLocator") != null)
+            {
+                String spectraLocator =
+                        previewMetadata.get("spectraLocator").toString().trim().toUpperCase();
+                if ("TRUE".equals(spectraLocator))
+                {
+                    Map<String, Serializable> previewConfigCopy = new HashMap<>(previewConfig);
+                    previewConfigCopy.put("spectraLocator", "TRUE");
+                    String sxmPermId = previewMetadata.get("sxmPermId").toString();
+                    previewConfigCopy.put("sxmPermId", sxmPermId);
+                    previewConfigCopy.put("sxmFilePath", previewMetadata.get("sxmFilePath"));
+                    File sxmFile = getRootFile(context.getSessionToken(), sxmPermId);
+                    previewConfigCopy.put("sxmRootPath", sxmFile.getAbsolutePath());
+                    Map<String, Serializable> sxmPreviewConfig =
+                            convertJsonToMap(previewMetadata.get("sxmConfig").toString());
+                    previewConfigCopy.put("sxmPreviewConfig", (Serializable) sxmPreviewConfig);
+                    Map<String, Serializable> result =
+                            super.process(context, rootFile, format, imageConfig, imageMetadata,
+                                    previewConfigCopy, previewMetadata, filterConfig);
+
+                    return result;
                 }
             }
-
         }
         return super.process(context, rootFile, format, imageConfig, imageMetadata, previewConfig, previewMetadata, filterConfig);
     }

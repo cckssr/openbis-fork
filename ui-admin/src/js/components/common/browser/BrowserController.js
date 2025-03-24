@@ -292,6 +292,12 @@ export default class BrowserController extends ComponentController {
           _.isEqual(pathNode.id, nodeId)
         )
 
+        if(currentRoot.id === nodeId) {
+            // clicked on the leaf;
+            this.selectObject(currentRoot.object)
+            return;
+        }
+
         if (pathIndex !== -1) {
           // new root selected from the existing root path
 
@@ -504,7 +510,7 @@ export default class BrowserController extends ComponentController {
       common: {
         autoShowSelectedObject: state.autoShowSelectedObject
       },
-      fullTree: this.settings.fullTree || {},
+      fullTree: state.fullTree || this.settings.fullTree || {},
       filteredTree: this.settings.filteredTree || {},
       nodeSetAsRoot: state.nodeSetAsRoot || null
     }

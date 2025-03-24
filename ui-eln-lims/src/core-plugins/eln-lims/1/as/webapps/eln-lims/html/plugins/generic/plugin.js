@@ -88,6 +88,11 @@ $.extend(GenericTechnology.prototype, ELNLIMSPlugin.prototype, {
         			"SHOW_ON_NAV" : true,
         			"SAMPLE_PARENTS_HINT" : [],
         },
+        "FOLDER" : {
+            "SHOW" : true,
+            "SHOW_ON_NAV" : true,
+            "SAMPLE_CHILDREN_TITLE" : "Items"
+        },
 		"GENERAL_PROTOCOL" : {
 			"SHOW" : false,
 			"USE_AS_PROTOCOL" : true,

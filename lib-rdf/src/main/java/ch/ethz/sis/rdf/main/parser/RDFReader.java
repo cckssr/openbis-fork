@@ -90,14 +90,16 @@ public class RDFReader
 
         Map<String, List<String>> RDFtoOpenBISDataTypeMap = DatatypeMapper.getRDFtoOpenBISDataTypeMap(ontModel);
         //modelRDF.RDFtoOpenBISDataType = RDFtoOpenBISDataTypeMap;
-        Map<String, List<String>> objectPropToOntClassMap = ObjectPropertyMapper.getObjectPropToOntClassMap(ontModel);
+        Map<String, List<String>> objectPropToOntClassMap =
+                ObjectPropertyMapper.getObjectPropToOntClassMap(ontModel, modelRDF);
         //modelRDF.objectPropertyMap = objectPropToOntClassMap;
         Map<String, OntClassExtension> ontClass2OntClassExtensionMap = ClassCollector.getOntClass2OntClassExtensionMap(ontModel);
         modelRDF.stringOntClassExtensionMap = ontClass2OntClassExtensionMap;
         Set<String> vocabUnionTypes = handleVocabularyUnion(ontModel, "https://biomedit.ch/rdf/sphn-schema/sphn#Terminology", modelRDF);
 
-
-        List<SampleType> sampleTypeList = ClassCollector.getSampleTypeList(ontModel, ontClass2OntClassExtensionMap, vocabUnionTypes);
+        List<SampleType> sampleTypeList =
+                ClassCollector.getSampleTypeList(ontModel, ontClass2OntClassExtensionMap,
+                        vocabUnionTypes, modelRDF);
 
         sampleTypeList.removeIf(sampleType -> modelRDF.vocabularyTypeListGroupedByType.containsKey(sampleType.code));
         restrictionsToSampleMetadata(sampleTypeList, ontClass2OntClassExtensionMap);
@@ -177,10 +179,9 @@ public class RDFReader
 
         Map<String, OntClassExtension> ontClass2OntClassExtensionMap = ClassCollector.getOntClass2OntClassExtensionMap(additionalOntModel);
 
-
-
-
-        List<SampleType> sampleTypeList = ClassCollector.getSampleTypeList(additionalOntModel, ontClass2OntClassExtensionMap, List.of())
+        List<SampleType> sampleTypeList =
+                ClassCollector.getSampleTypeList(additionalOntModel, ontClass2OntClassExtensionMap,
+                                List.of(), new ModelRDF())
                 .stream().filter(sampleType ->  resourceParsingResult.getClassesImported().contains(sampleType.ontologyAnnotationId))
                 .filter(x -> vocabTypes.getVocabAnnotationIds().contains(x.ontologyAnnotationId)).toList();
         modelRDF.sampleTypeList.addAll(sampleTypeList);
@@ -274,10 +275,28 @@ public class RDFReader
                     {
                         //System.out.println("GET: "+ vocabularyTypeListGroupedByTypeMap.keySet().stream().filter(key -> samplePropertyType.code.contains(key)).findFirst().orElseGet(null));
                         samplePropertyType.dataType = "CONTROLLEDVOCABULARY";
-                        samplePropertyType.vocabularyCode = vocabularyTypeListGroupedByTypeMap.keySet().stream().filter(key -> samplePropertyType.code.contains(key)).findFirst().orElseGet(() -> {
+
+                        List<String>
+                                candidates = vocabularyTypeListGroupedByTypeMap.keySet().stream()
+                                .filter(key -> samplePropertyType.code.contains(key))
+                                .map(x -> List.of(x)).findFirst().orElseGet(() -> {
                             return restrictionCodes.stream().filter(
-                                    vocabularyTypeListGroupedByTypeMap::containsKey).findFirst().orElse("UNKNOWN");
+                                    vocabularyTypeListGroupedByTypeMap::containsKey).collect(
+                                    Collectors.toList());
                         });
+
+                        if (candidates.size() > 1)
+                        {
+                            samplePropertyType.dataType = "VARCHAR";
+                            samplePropertyType.metadata.put("VOCABULARY_UNION", "It's a union!");
+                        } else
+                        {
+                            samplePropertyType.vocabularyCode =
+                                    candidates.stream().findFirst().orElse("UNKNOWN");
+
+                        }
+
+
                         //System.out.println("  VACAB_TYPE: "+ samplePropertyType.dataType + " -> " + samplePropertyType.code + " -> " + vocabularyTypeListGroupedByTypeMap.get(samplePropertyType.code));
                     } else if (RDFtoOpenBISDataTypeMap.get(samplePropertyType.ontologyAnnotationId) != null)
                     {
@@ -286,7 +305,7 @@ public class RDFReader
 
                     } else if (objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId) != null && !samplePropertyType.dataType.equals("VARCHAR") )
                     {
-                        samplePropertyType.dataType = "SAMPLE"+ ":" + objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId).get(0);
+                        samplePropertyType.dataType = "SAMPLE";
                         //System.out.println(" OBJECT_PROP: "+ samplePropertyType.dataType + " -> " + samplePropertyType.ontologyAnnotationId + " -> " + objectPropToOntClassMap.get(samplePropertyType.ontologyAnnotationId).get(0));
                     }
                     //System.out.println("  VACAB_TYPE: "+ samplePropertyType.dataType + " -> " + samplePropertyType.code + " -> " + vocabularyTypeListGroupedByTypeMap.get(samplePropertyType.code));

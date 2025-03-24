@@ -56,6 +56,22 @@ function SpaceFormController(mainController, mode, isInventory, space) {
         }, 100);
     }
 
+    this.createObject = function(objectTypeCode) {
+        var _this = this;
+        Util.blockUI();
+        if(objectTypeCode) {
+            setTimeout(function() {
+                        var argsMap = {
+                            "sampleTypeCode" : objectTypeCode,
+                            "spaceCode":_this._spaceFormModel.space,
+                        };
+                        _this._mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+                    }, 100);
+        } else {
+            FormUtil.createNewObject(_this._spaceFormModel.space);
+        }
+    }
+
     this.enableEditing = function() {
         this._mainController.changeView('showEditSpacePage', this._spaceFormModel.space);
     }

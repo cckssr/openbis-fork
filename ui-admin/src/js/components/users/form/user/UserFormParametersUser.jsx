@@ -28,8 +28,8 @@ class UserFormParametersUser extends React.PureComponent {
       firstName: React.createRef(),
       lastName: React.createRef(),
       email: React.createRef(),
-      active: React.createRef(),
-      expiryDate: React.createRef()
+      userStatus: React.createRef(),
+      userStatusExpiryDate: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -95,16 +95,22 @@ class UserFormParametersUser extends React.PureComponent {
         {this.renderLastName(user)}
         {this.renderEmail(user)}
         {this.renderSpace(user)}
-        {this.renderExpiryDate(user)}
-        {this.renderAccessRevoked(user)}
-        {this.renderActive(user)}
+        {this.renderUserRolesManagementHeader()}
+        {this.renderAccessRevokedInformation(user)}
+        {this.renderUserStatus(user)}
+        {this.renderStatusExpiryDate(user)}
       </Container>
     )
   }
 
   renderHeader(user) {
     const message = user.original ? messages.USER : messages.NEW_USER
-    return <Header>{messages.get(message)}</Header>
+    return <Header>{messages.get(message)}
+        </Header>
+  }
+
+  renderUserRolesManagementHeader() {
+    return <Header>{messages.get(messages.USER_ROLES_MANAGEMENT)}</Header>
   }
 
   renderUserId(user) {
@@ -253,110 +259,126 @@ class UserFormParametersUser extends React.PureComponent {
     )
   }
 
-  renderActive(user) {
-    const { visible, enabled, error, value } = { ...user.active }
-    const { activeChangeDialogOpen = false } = this.state
 
-    if (!visible) {
-      return null
-    }
+  renderAccessRevokedInformation(user) {
+        const { mode, classes } = this.props
 
-    const onChange = () => {
-      this.setState({
-        activeChangeDialogOpen: true
-      })
-    }
+        if(!user.original) {
+            return null;
+        }
 
-    const onConfirm = () => {
-      this.setState({
-        activeChangeDialogOpen: false
-      })
-      this.props.onChange(UserFormSelectionType.USER, {
-        field: 'active',
-        value: !value
-      })
-    }
+        const { visible, enabled, error, value } = { ...user.userStatus }
 
-    const onCancel = () => {
-      this.setState({
-        activeChangeDialogOpen: false
-      })
-    }
+        if(value === messages.INACTIVE) {
+            return (
+              <div className={classes.field}>
+                <Message type='warning'>
+                    {messages.get(messages.USER_DEACTIVATED)}
+                  </Message>
+              </div>
+            )
+        }
 
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <CheckboxField
-          reference={this.references.active}
-          label={messages.get(messages.ACTIVE)}
-          name='active'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={onChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-        <ConfirmationDialog
-          open={activeChangeDialogOpen}
-          onConfirm={onConfirm}
-          onCancel={onCancel}
-          title={
-            value
-              ? messages.get(messages.DEACTIVATE_USER)
-              : messages.get(messages.ACTIVATE_USER)
-          }
-          content={
-            value
-              ? messages.get(messages.CONFIRMATION_DEACTIVATE_USER)
-              : messages.get(messages.CONFIRMATION_ACTIVATE_USER)
-          }
-        />
-      </div>
-    )
+        let expiryDateValue = user.userStatusExpiryDate.value;
+        if(value === messages.ACTIVE_UNTIL_EXPIRY_DATE && expiryDateValue && expiryDateValue.dateObject && expiryDateValue.dateObject.getTime() - new Date().getTime() <= 0) {
+            return (
+                      <div className={classes.field}>
+                        <Message type='warning'>
+                            {messages.get(messages.USER_ROLES_EXPIRED)}
+                          </Message>
+                      </div>
+                    )
+        }
+
+        let hasRolesValue = user.hasRoles.value;
+        if(!hasRolesValue) {
+             return (
+                  <div className={classes.field}>
+                    <Message type='warning'>
+                        {messages.get(messages.USER_HAVE_NO_ROLES)}
+                      </Message>
+                  </div>
+                )
+        }
+
+        return null;
+      }
+
+  renderUserStatus(user) {
+      const { mode, classes, controller } = this.props
+
+      const { visible, enabled, error, value } = { ...user.userStatus }
+      let options = [
+              {
+                label: messages.get(messages.ACTIVE),
+                value: messages.ACTIVE
+              },
+              {
+                label: messages.get(messages.ACTIVE_UNTIL_EXPIRY_DATE),
+                value: messages.ACTIVE_UNTIL_EXPIRY_DATE
+              },
+          ];
+
+      if(user.original) {
+          options.push({
+                       label: messages.get(messages.INACTIVE),
+                       value: messages.INACTIVE
+                     })
+      }
+
+
+      let displayValue = options.filter(x => x.value === value)[0].value;
+
+
+      return (
+            <div className={classes.field}>
+              <SelectField
+                reference={this.references.userStatus}
+                label={messages.get(messages.USER_STATUS)}
+                name='userStatus'
+                error={error}
+                disabled={!enabled}
+                value={displayValue}
+                options={options}
+                mode={mode}
+                onChange={this.handleChange}
+                onFocus={this.handleFocus}
+                onBlur={this.handleBlur}
+              />
+            </div>
+          )
   }
 
-  renderExpiryDate(user) {
-      const { visible, enabled, error, value } = { ...user.expiryDate }
-      if (!visible) {
+  renderStatusExpiryDate(user) {
+
+      const { visible, enabled, error, value } = { ...user.userStatusExpiryDate }
+
+      if (user.userStatus.value && user.userStatus.value !== messages.ACTIVE_UNTIL_EXPIRY_DATE) {
         return null
       }
-      const { mode, classes } = this.props
-      return (
-        <div className={classes.field}>
-          <DateField
-            reference={this.references.expiryDate}
-            label={messages.get(messages.EXPIRY_DATE)}
-            name='expiryDate'
-            mandatory={false}
-            error={error}
-            disabled={!enabled}
-            value={value}
-            mode={mode}
-            onChange={this.handleChange}
-            onFocus={this.handleFocus}
-            onBlur={this.handleBlur}
-            color={this.getColor(value)}
-          />
-        </div>
-      )
-    }
 
-  renderAccessRevoked(user) {
-        const { visible, enabled, error, value } = { ...user.expiryDate }
-        if (!visible || !value || !value.dateObject || value.dateObject.getTime() - new Date().getTime() > 0 ) {
-          return null
-        }
-        const { mode, classes } = this.props
+      const { mode, classes, controller } = this.props
+
+
         return (
           <div className={classes.field}>
-            <Message type='error'>
-                {messages.get(messages.USER_ROLES_EXPIRED)}
-              </Message>
+            <DateField
+              reference={this.references.userStatusExpiryDate}
+              label={messages.get(messages.EXPIRY_DATE_FIELD)}
+              name='userStatusExpiryDate'
+              mandatory={true}
+              error={error}
+              disabled={!enabled}
+              value={value}
+              mode={mode}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+    //             color={this.getColor(value)}
+            />
           </div>
         )
-      }
+    }
 
   getColor(value) {
       let date = new Date().getTime();

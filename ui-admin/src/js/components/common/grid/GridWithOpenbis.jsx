@@ -46,10 +46,6 @@ export default class GridWithOpenbis extends React.PureComponent {
       return null
     }
 
-    if(this.props.fromExternalApp === true) { 
-      AppController.getInstance().init(new ComponentContext(this))
-    }
-
     return await AppController.getInstance().getSetting(settingsId)
   }
 

@@ -683,6 +683,12 @@ $.extend(DefaultProfile.prototype, {
 			return dataStoreCode;
 		}
 
+        this.isAFSAvailable = function() {
+          return this.allDataStores.some(dataStore => dataStore.code === "AFS");
+        };
+
+
+				
 		this.getDefaultDataStoreURL = function() {
 			var dataStoreURL = null;
 			if(this.allDataStores.length > 0) {

@@ -2,8 +2,8 @@ import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind'
 import JSZip from 'jszip';
-import Toolbar from '@src/js/components/common/data-browser/Toolbar.jsx'
-import GridView from '@src/js/components/common/data-browser/GridView.jsx'
+import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
+import GridView from '@src/js/components/common/data-browser/components/gridview/GridView.jsx'
 import fileTypeConfig from '@src/js/components/common/data-browser/fileTypeConfig.js';
 
 import Grid from '@src/js/components/common/grid/Grid.jsx'
@@ -12,8 +12,8 @@ import AppController from '@src/js/components/AppController.js'
 import ItemIcon from '@src/js/components/common/data-browser/ItemIcon.jsx'
 import InfoPanel from '@src/js/components/common/data-browser/InfoPanel.jsx'
 import DataBrowserController from '@src/js/components/common/data-browser/DataBrowserController.js'
-import FileDownloadManager from '@src/js/components/common/data-browser/FileDownloadManager.js'
-import FileUploadManager from '@src/js/components/common/data-browser/FileUploadManager.js'
+import FileDownloadManager from '@src/js/components/common/data-browser/components/download/FileDownloadManager.js'
+import FileUploadManager from '@src/js/components/common/data-browser/components/upload/FileUploadManager.js'
 import messages from '@src/js/common/messages.js'
 import InfoBar from '@src/js/components/common/data-browser/InfoBar.jsx'
 import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
@@ -23,6 +23,7 @@ import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDia
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
 import {isUserAbortedError, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 import mimeTypeMap from './mimeTypes';
+import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 
 
 const styles = theme => ({
@@ -33,6 +34,10 @@ const styles = theme => ({
   },
   boundary: {
     padding: theme.spacing(1),
+    borderColor: theme.palette.border.secondary,
+    backgroundColor: theme.palette.background.paper
+  },
+  boundaryNoPadding: {    
     borderColor: theme.palette.border.secondary,
     backgroundColor: theme.palette.background.paper
   },
@@ -59,6 +64,15 @@ const styles = theme => ({
     paddingTop: 0,
     paddingBottom: 0
   },
+  gridWithoutToolbar: {
+    flexGrow: 1,
+    flex: 1,
+    height: 'auto',
+    overflowY: 'auto',
+    paddingTop: 0,
+    paddingBottom: 0,
+    maxHeight: 'calc(100vh - (' + theme.spacing(26) + ' ))',
+  },
   content: {
     flex: '1 1 100%',
     height: 0,
@@ -82,13 +96,11 @@ class DataBrowser extends React.Component {
     super(props, context)
     autoBind(this)
 
-    const { sessionToken,
+    const { 
             controller,
             id,
-            showFileExistsDialog,
-            currentFile,
             extOpenbis,
-            fromExternalApp } = this.props
+             } = this.props
 
     this.controller = controller || new DataBrowserController(id, extOpenbis)
     this.controller.attach(this)
@@ -106,7 +118,8 @@ class DataBrowser extends React.Component {
       this.controller,
       () => this.state, 
       this.updateStateCallback,
-      this.openErrorDialog      
+      this.openErrorDialog,
+      this.fetchSpaceStatus    
     )
 
     this.state = {
@@ -196,7 +209,7 @@ class DataBrowser extends React.Component {
   }
 
 
-  handleViewTypeChange(viewType) {
+  handleViewTypeChange({viewType}) {
     this.setState({ viewType })
   }
 
@@ -219,11 +232,11 @@ class DataBrowser extends React.Component {
   }
 
   handleMultiselect(selectedRow) {
-    this.setState({
-      multiselectedFiles: new Set(
-        Object.values(selectedRow).map(value => value.data)
-      )
-    })
+    const multiselectedFiles = new Set(
+      Object.values(selectedRow).map(({ data }) => data)
+    );
+    this.setState({ multiselectedFiles });    
+    eventBus.emit('selectionChanged', { multiselectedFiles });
   }
 
 
@@ -251,8 +264,9 @@ class DataBrowser extends React.Component {
   }
 
   handleShowInfoChange() {
-    this.setState({ showInfo: !this.state.showInfo })
+    this.setState(prevState => ({ showInfo: !prevState.showInfo }));
   }
+  
 
   handleGridControllerRef(gridController) {
     if(this.controller.gridController){
@@ -269,8 +283,13 @@ class DataBrowser extends React.Component {
     if (this.state.path !== path + '/') {
       this.setState({ path: path + '/' })
       this.controller.setPath(path + '/')
-      await this.controller.gridController.load()
+      await this.onGridActionComplete()      
+      eventBus.emit('pathChanged', { path });
     }
+  }
+
+  async onGridActionComplete(){
+    await this.controller.gridController.load()
   }
 
   sizeToString(bytes) {
@@ -321,6 +340,7 @@ class DataBrowser extends React.Component {
       if (right[objId] && right[objId].rights) {
         const editable = right[objId].rights.includes("UPDATE")
         this.setState({ editable: editable })
+        eventBus.emit('rightsChanged', {editable});
       } else {
         this.setState({ editable: false })
       }
@@ -330,29 +350,27 @@ class DataBrowser extends React.Component {
   async componentDidMount() {
     try {
       this.fetchSpaceStatus()
-      await this.fetchRights()    
-      if (this.state.viewType === 'grid') {
-        this.fetchFiles();
-      }
+      await this.fetchRights()   
+      eventBus.on('spaceStatusChanged', this.handleSpaceStatusChanged);      
+      eventBus.on('gridActionCompleted', this.onGridActionComplete);   
+      eventBus.on('downloadRequested', this.handleDownload); 
+      eventBus.on('viewTypeChanged', this.handleViewTypeChange);
+      eventBus.on('showInfoChanged', this.handleShowInfoChange);         
     } catch (err){
         this.openErrorDialog(err)
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.viewType !== this.state.viewType && this.state.viewType === 'grid') {
-      this.fetchFiles();
-    }
+  componentWillUnmount() {    
+    eventBus.off('spaceStatusChanged', this.handleSpaceStatusChanged);    
+    eventBus.off('gridActionCompleted', this.onGridActionComplete);
+    eventBus.off('downloadRequested', this.handleDownload);
+    eventBus.off('viewTypeChanged', this.handleViewTypeChange);
+    eventBus.off('showInfoChanged', this.handleShowInfoChange);       
   }
 
-  async fetchFiles() {
-    try {
-      const filesList = await this.controller.listFiles();
-      this.setState({ files: filesList });
-    } catch (error) {
-      console.error('Error loading files:', error);
-      this.setState({ errorMessage: 'Failed to load files.' });
-    }
+  handleSpaceStatusChanged(){
+    this.fetchSpaceStatus();
   }
 
   openErrorDialog(errorMessage) {
@@ -407,7 +425,9 @@ class DataBrowser extends React.Component {
       return;
     }
 
-    this.uploadManager.handleDragAndDropUpload(e)
+    this.uploadManager.handleDragAndDropUpload(e)   
+    this.fetchSpaceStatus();
+
   }
    
   renderFileExistsDialog(key, dialogProps) {
@@ -430,7 +450,7 @@ class DataBrowser extends React.Component {
   };
 
   render() {
-    const { classes, sessionToken, id } = this.props
+    const { classes, id, withoutToolbar } = this.props
     const {
       viewType,
       files,
@@ -465,21 +485,15 @@ class DataBrowser extends React.Component {
     return [
       <div
         key='data-browser-content'
-        className={[classes.boundary, classes.columnFlexContainer].join(' ')}
-      >
-        <Toolbar
-          controller={this.controller}
-          viewType={viewType}
-          onViewTypeChange={this.handleViewTypeChange}
-          onShowInfoChange={this.handleShowInfoChange}
-          onDownload={this.handleDownload}
-          showInfo={showInfo}
-          multiselectedFiles={multiselectedFiles}
-          sessionToken={sessionToken}
-          owner={id}
-          editable={editable}
-          path={path}
-        />
+        className={[(withoutToolbar ? classes.boundaryNoPadding : classes.boundary), classes.columnFlexContainer].join(' ')}
+      > 
+        { !withoutToolbar &&
+          <DataBrowserToolbar                              
+            owner={id}          
+            extOpenbis={this.props.extOpenbis}
+            viewType={viewType}        
+          />
+        }
         <InfoBar
           path={path}
           onPathChange={this.handlePathChange}
@@ -507,7 +521,7 @@ class DataBrowser extends React.Component {
               controller={this.controller.gridController}
               filterModes={[GridFilterOptions.COLUMN_FILTERS]}
               header='Files'
-              classes={{container: classes.grid}}
+              classes={{container: withoutToolbar ?  classes.gridWithoutToolbar: classes.grid}}
               isDragging={this.state.isDragging}              
               columns={this.getDataBrowserColumns(classes)}
               loadRows={this.controller.load}

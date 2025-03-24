@@ -57,7 +57,7 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			advancedSampleSearchCriteria = {
 					entityKind : "SAMPLE",
 					logicalOperator : "AND",
-					rules : { "1" : { type : "Experiment", name : "ATTR.PROJECT_PERM_ID", value : this._sampleTableModel.projectPermId } }
+					rules: { "1" : { type : "Attribute", name : "PROJECT_PERM_ID", value : this._sampleTableModel.projectPermId } }
 			}
 		}
 		
@@ -117,9 +117,9 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
                     Util.showUserError("Please select at least one " + ELNDictionary.sample + " to move!");
                 } else {
                     var sampleIds = selected.map(s => s.permId);
-                    var moveSampleController = new MoveSampleController(sampleIds, function() {
-                        mainController.refreshView();
-                    });
+                    var moveSampleController = new MoveEntityController("SAMPLE", sampleIds, function() {
+                         mainController.refreshView();
+                     });
                     moveSampleController.init();
                 }
             }});

@@ -2,6 +2,7 @@ package ch.ethz.sis.rdf.main;
 
 import ch.ethz.sis.rdf.main.mappers.DatatypeMapper;
 import ch.ethz.sis.rdf.main.model.rdf.AdditionalProperty;
+import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.rdf.PropertyTupleRDF;
 import ch.ethz.sis.rdf.main.model.xlsx.SamplePropertyType;
@@ -12,6 +13,7 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.event.EntityType.SAMPLE;
@@ -385,23 +387,13 @@ public class ClassCollector {
                         if (vocabTypesFromUnion)
                         {
                             propertyType.metadata.put("VOCABULARY_UNION", "It's a union!");
+                            propertyType.dataType = "VARCHAR";
 
-                            generalVocabularyTypes.stream().forEach(genVocab -> {
-                                String[] parts = genVocab.split("/");
-                                String code = parts[parts.length -1];
-                                SamplePropertyType vocabPropertyType = new SamplePropertyType(propertyType.propertyLabel+"Vocabulary" +code, propertyType.ontologyAnnotationId);
-                                vocabPropertyType.dataType = "VARCHAR";
-                                propertyTypeList.add(vocabPropertyType);
-
-                                    }
-                            );
-
+                            propertyType.metadata.put("TYPE",
+                                    "The type was a union of " + unionOperands.stream().collect(
+                                            Collectors.joining(", ")));
 
                         }
-
-                        propertyType.metadata.put("TYPE", "The type was a union of " + unionOperands.stream().collect(
-                                Collectors.joining(", ")));
-
 
                         propertyType.metadata.put("UNION_TYPE", getUnionClassOperands(range.as(UnionClass.class)).toString());
                     } else if (range.isURIResource())
@@ -451,7 +443,9 @@ public class ClassCollector {
 
     }
 
-    public static List<SampleType> getSampleTypeList(final OntModel ontModel, Map<String, OntClassExtension> ontClassExtensionMap, Collection<String> generalVocabTypes)
+    public static List<SampleType> getSampleTypeList(final OntModel ontModel,
+            Map<String, OntClassExtension> ontClassExtensionMap,
+            Collection<String> generalVocabTypes, ModelRDF modelRDF)
     {
         List<SampleType> sampleTypeList = new ArrayList<>();
 
@@ -485,7 +479,35 @@ public class ClassCollector {
 
                 });
 
+        Map<String, SampleType> ontologyToSampleType =
+                sampleTypeList.stream().filter(x -> x.ontologyAnnotationId != null)
+                        .collect(
+                                Collectors.toMap(x -> x.ontologyAnnotationId, Function.identity()));
+
+        // resolve properties per chain.
+
+        for (SampleType sampleType : sampleTypeList)
+        {
+            Optional.ofNullable(modelRDF.subClassChanisMap)
+                    .map(x -> x.get(sampleType.ontologyAnnotationId))
+                    .ifPresent(subClassChain ->
+                            subClassChain.stream().map(ontologyToSampleType::get)
+                                    .filter(Objects::nonNull)
+                                    .forEach(x -> {
+                                        for (SamplePropertyType samplePropertyType : x.properties)
+                                        {
+                                            if (!sampleType.properties.contains(samplePropertyType))
+                                            {
+                                                sampleType.properties.add(samplePropertyType);
+                                            }
+                                        }
+                                    }));
+
+        }
+
+
 
         return sampleTypeList;
     }
+
 }

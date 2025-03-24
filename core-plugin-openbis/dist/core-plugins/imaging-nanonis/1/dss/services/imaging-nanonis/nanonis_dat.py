@@ -285,6 +285,10 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
     img_byte_arr = img_byte_arr.getvalue()
     encoded = base64.b64encode(img_byte_arr)
     preview = {'bytes': encoded.decode('utf-8'), 'width': int(size[0]), 'height': int(size[1])}
+    preview['spectraLocator'] = 'true'
+    preview['sxmPermId'] = os.path.basename(root_folder_path)
+    preview['sxmFilePath'] = file_path
+    preview['sxmConfig'] = json.dumps(sxmConfig)
     print(f'{json.dumps(preview)}')
 
 else:

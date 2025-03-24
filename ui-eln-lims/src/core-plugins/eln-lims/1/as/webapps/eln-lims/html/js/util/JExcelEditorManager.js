@@ -42,7 +42,10 @@ var JExcelEditorManager = new function() {
                     width : width,
                     values : values
                 }
-                entity.properties[propertyCode] = "<DATA>" + window.btoa(window.unescape(window.encodeURIComponent(JSON.stringify(jExcelEditorValue)))) + "</DATA>";
+                var text = window.unescape(window.encodeURIComponent(JSON.stringify(jExcelEditorValue)));
+                // force utf-8 encoding using TextEncoder
+                var arr = new TextEncoder().encode(text);
+                text = new TextDecoder("utf8").decode(arr);
             }
         }
     }

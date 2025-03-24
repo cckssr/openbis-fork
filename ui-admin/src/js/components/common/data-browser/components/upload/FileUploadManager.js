@@ -16,12 +16,13 @@ const SKIP_RESOLUTIONS = new Set([Resolution.RESUME, Resolution.SKIP]);
 
 export default class FileUploadManager {
 
-  constructor(controller, getCurrentState, updateStateCallback, openErrorDialog) {
+  constructor(controller, getCurrentState, updateStateCallback, openErrorDialog, afterUpload) {
     autoBind(this)
     this.controller = controller
     this.getCurrentState = getCurrentState     
     this.updateState = updateStateCallback
     this.openErrorDialog = openErrorDialog       
+    this.afterUpload = afterUpload
     this.zip = new JSZip()
     this.resolveConflict = null // This function will be shared
   }
@@ -119,8 +120,9 @@ export default class FileUploadManager {
         )
       }
     } finally {
-      this.resetUploadDialogStates();
-      await this.controller.gridController.load()
+      this.resetUploadDialogStates();      
+      await this.controller?.gridController?.load()      
+      await this.afterUpload?.()
     }
   }
   
@@ -250,6 +252,7 @@ export default class FileUploadManager {
       this.prepareUpload(topLevelFolder, allFiles);
       await this.upload(allFiles)
     } catch(err){
+      console.error(err)
       if (isUserAbortedError(err)) {
         // no feedback needed, user aborted          
       } else {
@@ -259,7 +262,9 @@ export default class FileUploadManager {
       }      
     } finally {
       this.resetUploadDialogStates()
-      await this.controller.gridController.load()
+      await this.controller?.gridController?.load()
+      await this.afterUpload?.()
+      event.currentTarget?.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
     }
   }
 
@@ -402,6 +407,7 @@ export default class FileUploadManager {
     this.updateState({
       uploadButtonsPopup: event.currentTarget
     })
+    event.currentTarget?.blur() // somehow adding the external bootstrap classes, messed up with mui default behaviour
   }
 
   handlePopoverClose() {
@@ -509,10 +515,9 @@ export default class FileUploadManager {
 
       await this.controller.moveFileByPath(tempTargetFilePath, targetFilePath, this.updateProgress)
     }
+        
+    await this.controller?.gridController?.load()
     
-    if (this.controller.gridController) {
-      await this.controller.gridController.load()
-    }
   }   
 
   async checkFilesAndTempExistOnServer(fileName, tmpFileName, targetFilePath) {

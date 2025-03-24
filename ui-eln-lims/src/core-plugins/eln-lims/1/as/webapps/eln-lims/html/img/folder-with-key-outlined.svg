@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  -  Copyright ETH 2025 Zürich, Scientific IT Services
+  -
+  -  Licensed under the Apache License, Version 2.0 (the "License");
+  -  you may not use this file except in compliance with the License.
+  -  You may obtain a copy of the License at
+  -
+  -       http://www.apache.org/licenses/LICENSE-2.0
+  -
+  -  Unless required by applicable law or agreed to in writing, software
+  -  distributed under the License is distributed on an "AS IS" BASIS,
+  -  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  -  See the License for the specific language governing permissions and
+  -  limitations under the License.
+  -
+  -->
+
+<svg
+   height="24px"
+   viewBox="0 0 24 24"
+   width="24px"
+   fill="#e8eaed"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="folder-with-key-outlined.svg"
+   inkscape:version="1.4.1-rc (832c77b156, 2025-02-28)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="16.729167"
+     inkscape:cx="10.34122"
+     inkscape:cy="14.435865"
+     inkscape:window-width="1854"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <path
+     d="M0 0h24v24H0V0z"
+     fill="none"
+     id="path1" />
+  <path
+     d="M9.17 6l2 2H20v10H4V6h5.17M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"
+     id="path2"
+     style="fill:#333333;fill-opacity:1" />
+  <path
+     d="M 18.070884,17.01669 H 14.400007 V 14.569439 H 12.760349 C 12.062881,16.050026 10.557821,17.01669 8.8936901,17.01669 6.5320923,17.01669 4.611,15.095598 4.611,12.734 c 0,-2.361598 1.9210923,-4.28269 4.2826901,-4.28269 1.6641309,0 3.1630739,0.9666648 3.8666589,2.447252 h 6.53416 v 3.670877 h -1.223625 z m -2.447251,-1.223625 h 1.223626 v -2.447253 h 1.223625 V 12.122188 H 11.916046 L 11.77533,11.712273 C 11.347061,10.494765 10.184615,9.674937 8.8936901,9.674937 c -1.6886037,0 -3.0590647,1.370459 -3.0590647,3.059063 0,1.688604 1.370461,3.059065 3.0590647,3.059065 1.2909249,0 2.4533709,-0.819829 2.8816399,-2.037337 l 0.140716,-0.409916 h 3.707587 z M 8.8936901,14.569439 c -1.0094912,0 -1.8354382,-0.825948 -1.8354382,-1.835439 0,-1.009492 0.825947,-1.835438 1.8354382,-1.835438 1.0094918,0 1.8354389,0.825946 1.8354389,1.835438 0,1.009491 -0.8259471,1.835439 -1.8354389,1.835439 z m 0,-2.447251 c -0.336497,0 -0.6118126,0.275315 -0.6118126,0.611812 0,0.336497 0.2753156,0.611812 0.6118126,0.611812 0.3364966,0 0.6118121,-0.275315 0.6118121,-0.611812 0,-0.336497 -0.2753155,-0.611812 -0.6118121,-0.611812 z"
+     id="path2-5"
+     style="stroke-width:0.611812;fill:#333333;fill-opacity:1"
+     sodipodi:nodetypes="ccccsssccccccccccccsssccccssssssssss" />
+</svg>

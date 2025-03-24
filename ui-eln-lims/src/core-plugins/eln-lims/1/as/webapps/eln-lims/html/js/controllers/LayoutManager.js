@@ -12,7 +12,9 @@ var LayoutManager = {
 	body : null,
 	mainContainer : null,
 	firstColumn : null,
+	firstColumnResize: null,
 	secondColumn : null,
+	secondColumnResize: null,
 	secondColumnHeader : null,
 	secondColumnContent : null,
 	secondColumnContentResize : function() {
@@ -24,6 +26,7 @@ var LayoutManager = {
 		}
 	},
 	thirdColumn : null,
+	thirdColumnResize: null,
 	isResizingColumn : false,
 	isLoadingView : false,
     settings: null,
@@ -201,6 +204,9 @@ var LayoutManager = {
                 firstColumnWidth = LayoutManager.MAX_FIRST_COLUMN_WIDTH;
             }
         }
+        if(LayoutManager.firstColumnResize) {
+            firstColumnWidth = LayoutManager.firstColumnResize;
+        }
 
         if(isFirstTime) {
             _this.firstColumn.append(view.menu);
@@ -209,7 +215,7 @@ var LayoutManager = {
         _this.firstColumn.css({
                 "display" : "block",
                 "height" : height,
-                "width" : firstColumnWidth
+                "width" : Math.floor(firstColumnWidth)
         });
 
         mainController.serverFacade.getSetting("eln-layout-first-column-width", function (widthStr) {
@@ -223,6 +229,9 @@ var LayoutManager = {
                 thirdColumnWidth = LayoutManager.MAX_THIRD_COLUMN_WIDTH;
             }
         }
+        if(LayoutManager.thirdColumnResize) {
+            thirdColumnWidth = LayoutManager.thirdColumnResize;
+        }
 
         var secondColumWidth;
         if (view.auxContent) {
@@ -230,10 +239,13 @@ var LayoutManager = {
         } else {
             secondColumWidth = width - _this.firstColumn.width() - 1;
         }
+        if(LayoutManager.secondColumnResize) {
+            secondColumWidth = LayoutManager.secondColumnResize;
+        }
 
         _this.secondColumn.css({
             "display" : "block",
-            "width" : secondColumWidth
+            "width" : Math.floor(secondColumWidth)
         });
 
 
@@ -269,7 +281,7 @@ var LayoutManager = {
             _this.thirdColumn.css({
                 "display" : "block",
                 "height" : height,
-                "width" : thirdColumnWidth
+                "width" : Math.floor(thirdColumnWidth)
             });
 
             if(isFirstTime) {
@@ -297,6 +309,9 @@ var LayoutManager = {
                 firstColumnWidth = LayoutManager.MAX_FIRST_COLUMN_WIDTH;
             }
         }
+        if(LayoutManager.firstColumnResize) {
+            firstColumnWidth = LayoutManager.firstColumnResize;
+        }
 
         if($("#sideMenuTopContainer").length !== 1) {
             _this.firstColumn.append(view.menu);
@@ -305,12 +320,18 @@ var LayoutManager = {
         _this.firstColumn.css({
                 display : "block",
                 height : height,
-                "width" : firstColumnWidth
+                "width" : Math.floor(firstColumnWidth)
         });
 
+        var secondColumWidth;
+        if(LayoutManager.secondColumnResize) {
+            secondColumWidth = LayoutManager.secondColumnResize;
+        } else {
+            secondColumWidth = width - _this.firstColumn.width() - 1;
+        }
         _this.secondColumn.css({
             display : "block",
-            "width" : width - _this.firstColumn.width() - 1
+            "width" : Math.floor(secondColumWidth)
         });
 
         if (view.header) {
@@ -526,10 +547,19 @@ var LayoutManager = {
 		}
 		this.secondColumnContentResize();
 	},
+	setColumnSize : function(firstColumn, secondColumn, thirdColumn) {
+	    LayoutManager.firstColumnResize = firstColumn;
+        LayoutManager.secondColumnResize = secondColumn;
+        LayoutManager.thirdColumnResize = thirdColumn;
+        this.resize(mainController.views, false);
+	},
 	resize : function(view, forceFirstTime) {
 		if(this.canReload()) {
 			this.reloadView(view, forceFirstTime);
 		}
+        LayoutManager.firstColumnResize = null;
+        LayoutManager.secondColumnResize = null;
+        LayoutManager.thirdColumnResize = null;
 	},
     _saveSettings(){
         var _this = this

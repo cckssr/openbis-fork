@@ -1,11 +1,10 @@
 package ch.ethz.sis.rdf.main.mappers;
 
-import ch.ethz.sis.rdf.main.parser.LoaderRDF;
+import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.UnionClass;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.junit.Before;
@@ -48,7 +47,9 @@ public class ObjectPropertyMapperTest
     @Test
     public void testGetObjectPropToOntClassMap() {
         // Call the method to test
-        Map<String, List<String>> objectPropertyMap = ObjectPropertyMapper.getObjectPropToOntClassMap(model);
+        Map<String, List<String>> objectPropertyMap =
+                ObjectPropertyMapper.getObjectPropToOntClassMap(model,
+                        new ModelRDF());
 
         // Validate that the map is not null or empty
         assertNotNull(objectPropertyMap);
@@ -71,7 +72,8 @@ public class ObjectPropertyMapperTest
     @Test
     public void testGetObjectPropToOntClassMapWithUnionRange() {
         // Call the method to test
-        Map<String, List<String>> objectPropertyMap = ObjectPropertyMapper.getObjectPropToOntClassMap(model);
+        Map<String, List<String>> objectPropertyMap =
+                ObjectPropertyMapper.getObjectPropToOntClassMap(model, new ModelRDF());
 
         // Check that the property with a union range is correctly processed
         assertTrue(objectPropertyMap.containsKey("https://biomedit.ch/rdf/sphn-schema/sphn#hasCode"));
@@ -89,7 +91,8 @@ public class ObjectPropertyMapperTest
         OntModel emptyModel = ModelFactory.createOntologyModel();
 
         // Call the method with the empty model
-        Map<String, List<String>> objectPropertyMap = ObjectPropertyMapper.getObjectPropToOntClassMap(emptyModel);
+        Map<String, List<String>> objectPropertyMap =
+                ObjectPropertyMapper.getObjectPropToOntClassMap(emptyModel, new ModelRDF());
 
         // Validate that the result is an empty map
         assertNotNull(objectPropertyMap);

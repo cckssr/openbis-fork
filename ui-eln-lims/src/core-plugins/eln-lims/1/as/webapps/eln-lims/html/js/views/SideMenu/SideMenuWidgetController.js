@@ -82,6 +82,7 @@ function SideMenuWidgetController(mainController) {
                     parentIds.push(parent.parentId)
                 }
             }
+            this.moveToNodeId(JSON.stringify(parent.object));
         }
     }
 
@@ -117,6 +118,7 @@ function SideMenuWidgetController(mainController) {
             var node = nodes[i]
             if (node.object && entityType === node.object.type && entityPermId === node.object.id) {
                 await _this._browserController.reloadNode(node.parentId)
+                break;
             }
         }
     }
@@ -145,14 +147,6 @@ function SideMenuWidgetController(mainController) {
             }
         }
 
-    this.setSpaceAsRoot = function (homeSpaceCode) {
-        var nodes = this._browserController.getNodes();
-        var node = nodes.find(x => x.object.id === homeSpaceCode && x.object.type === 'SPACE');
-        if(node) {
-            this._browserController.setNodeAsRoot(node.id);
-        }
-    }
-
     //
     // Init method that builds the menu object hierarchy
     //
@@ -169,6 +163,35 @@ function SideMenuWidgetController(mainController) {
 
             initCallback()
         })
+    }
+
+    this.collapseSideMenu = function() {
+        this.isCollapsed = true;
+        LayoutManager._saveSettings();
+        this._browserController._saveSettings()
+        if(!LayoutManager.isMobile()) {
+            this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
+        } else {
+            if(!LayoutManager.fullScreenFlag) {
+                LayoutManager.fullScreen();
+                this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
+            }
+        }
+
+    }
+
+    this.expandSideMenu = function() {
+        this.isCollapsed = false;
+        if(!LayoutManager.isMobile()) {
+            this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, false);
+        } else {
+            if(LayoutManager.fullScreenFlag) {
+                LayoutManager.restoreStandardSize();
+                this._sideMenuWidgetView.repaintCollapseButton(this._sideMenuWidgetModel.$container);
+            }
+        }
+        mainController.sideMenu.moveToNodeId(mainController.sideMenu.getCurrentNodeId());
+        LayoutManager._saveSettings();
     }
 
     this.resizeElement = function ($elementBody, percentageOfUsage) {
@@ -190,17 +213,24 @@ function SideMenuWidgetController(mainController) {
         }
     }
 
-    this.addSubSideMenu = function (subSideMenu) {
+    this.addSubSideMenu = function (subSideMenu, subSideMenuViewer) {
         // Remove old from DOM if present
         var elementId = subSideMenu.attr("id")
         $("#" + elementId).remove()
         // Add new
-        subSideMenu.css("margin-left", "3px")
         this._sideMenuWidgetModel.subSideMenu = subSideMenu
-        this._sideMenuWidgetModel.percentageOfUsage = 0.5
-        $("#sideMenuTopContainer").append(subSideMenu)
-        this.resizeElement($("#sideMenuBody"), 0.5)
-        this.resizeElement(subSideMenu, 0.5)
+        this._sideMenuWidgetView.subSideMenuViewer = subSideMenuViewer;
+        if(!this.isCollapsed) {
+            subSideMenu.css("margin-left", "3px")
+            this._sideMenuWidgetModel.percentageOfUsage = 0.5
+            $("#sideMenuFooter").remove()
+            $("#sideMenuTopContainer").append(subSideMenu)
+            if(!LayoutManager.isMobile()) {
+                $("#sideMenuTopContainer").append(this._sideMenuWidgetView._expandedFooter())
+            }
+            this.resizeElement($("#sideMenuBody"), 0.5)
+            this.resizeElement(subSideMenu, 0.5)
+        }
     }
 
     this.removeSubSideMenu = function () {
@@ -208,8 +238,9 @@ function SideMenuWidgetController(mainController) {
             this._sideMenuWidgetModel.subSideMenu.remove()
             this._sideMenuWidgetModel.percentageOfUsage = 1
             this.resizeElement($("#sideMenuBody"), 1)
-            this._sideMenuWidgetModel.subSideMenu = null
         }
+        this._sideMenuWidgetModel.subSideMenu = null;
+        this._sideMenuWidgetView.subSideMenuViewer = null;
     }
 }
 

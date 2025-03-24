@@ -288,16 +288,23 @@ function MainController(profile) {
                                                                                 id: homeSpaceCode
                                                                             }
                                                                             localReference.sideMenu._browserController.load().then(x => {
-                                                                                    localReference.sideMenu.moveToNodeId(homeSpace).then(function(){
-                                                                                        localReference.changeView("showSpacePage", homeSpaceCode);
+                                                                                    localReference.sideMenu.moveToNodeId(JSON.stringify(homeSpace)).then(function(){
                                                                                         localReference.sideMenu.setAsRootById("LAB_NOTEBOOK");
                                                                                     })
                                                                             });
                                                                         }
                                                                     });
+                                                                } else {
+                                                                    localReference.sideMenu._browserController.load().then(x => {
+                                                                        labNotebookNode = {
+                                                                            type: "LAB_NOTEBOOK",
+                                                                            id: "LAB_NOTEBOOK"
+                                                                        }
+                                                                        localReference.sideMenu.moveToNodeId(JSON.stringify(labNotebookNode));
+                                                                    });
                                                                 }
                                                             });
-                                                            localReference.changeView(profile.defaultStartView.page, profile.defaultStartView.args);
+                                                            localReference.changeView("showLabNotebookPage", null);
                                                         }
                                                         
                                                         Util.unblockUI();
@@ -764,8 +771,17 @@ function MainController(profile) {
                         document.title = "" + ELNDictionary.getExperimentKindName(type) + " " + identifier;
 						_this._showExperimentPage(data.result[0], FormMode.EDIT);
 						//window.scrollTo(0,0);
+						_this.sideMenu.collapseSideMenu();
 					});
 					break;
+				case "showCreateSamplePage":
+				    var sampleTypeCode = arg["sampleTypeCode"];
+				    var spaceCode = arg["spaceCode"];
+				    var projectCode = arg["projectCode"];
+				    var experimentIdentifier = arg["experimentIdentifier"];
+				    document.title = "Create " + Util.getDisplayNameFromCode(sampleTypeCode);
+				    this._showCreateSamplePage(sampleTypeCode, spaceCode, projectCode, experimentIdentifier);
+                    break;
 				case "showCreateSubExperimentPage":
 					var sampleTypeCode = arg["sampleTypeCode"];
 					var experimentIdentifier = arg["experimentIdentifier"];
@@ -836,9 +852,11 @@ function MainController(profile) {
 					var _this = this;
 					var permId = null;
 					var paginationInfo = null;
+					var activeTab = null;
 					if((typeof arg) !== "string") {
 						permId = arg.permIdOrIdentifier;
 						paginationInfo = arg.paginationInfo;
+						activeTab = arg.activeTab;
 						arg = permId;
 					} else {
 						permId = arg;
@@ -849,7 +867,7 @@ function MainController(profile) {
 						} else {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
 							//window.scrollTo(0,0);
 						}
 					});
@@ -1106,6 +1124,9 @@ function MainController(profile) {
 					var views = _this._getNewViewModel(true, true, false);
 					newView.init(views);
 					_this.currentView = newView;
+					if(mode === FormMode.EDIT) {
+					    _this.sideMenu.collapseSideMenu();
+					}
 				}
 			});
 		}
@@ -1451,6 +1472,34 @@ function MainController(profile) {
 			localInstance.currentView = hierarchyTableController;
 		});
 	}
+
+	this.openHelpPage = function() {
+        var src = "https://openbis.readthedocs.io/en/20.10.x/user-documentation/general-users";
+        var win = window.open(src, '_blank');
+        win.focus();
+	}
+
+	this._showCreateSamplePage = function(sampleTypeCode, spaceCode, projectCode, experimentIdentifier) {
+	    //Update menu
+        var sampleTypeDisplayName = this.profile.getSampleTypeForSampleTypeCode(sampleTypeCode).description;
+        if(sampleTypeDisplayName === null) {
+            sampleTypeDisplayName = sampleTypeCode;
+        }
+
+        var sample = {
+            sampleTypeCode : sampleTypeCode,
+            spaceCode: spaceCode,
+            projectCode: projectCode,
+            experimentIdentifierOrNull: experimentIdentifier,
+            properties : {}
+        };
+
+        var sampleFormController = new SampleFormController(this, FormMode.CREATE, sample);
+        this.currentView = sampleFormController;
+        var views = this._getNewViewModel(true, true, false);
+        sampleFormController.init(views);
+        this.sideMenu.collapseSideMenu();
+	}
 	
 	this._showCreateSubExperimentPage = function(sampleTypeCode, experimentIdentifier) {
 		//Update menu
@@ -1471,6 +1520,7 @@ function MainController(profile) {
 		this.currentView = sampleFormController;
 		var views = this._getNewViewModel(true, true, false);
 		sampleFormController.init(views);
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showTrashcan = function() {
@@ -1480,9 +1530,9 @@ function MainController(profile) {
 		trashcanController.init(views);
 	}
 	
-	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo) {
+	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab) {
 		//Show Form
-		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo);
+		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab);
 		this.currentView = sampleFormController;
 		var views = this._getNewViewModel(true, true, true);
 		sampleFormController.init(views);
@@ -1496,6 +1546,7 @@ function MainController(profile) {
 			localInstance.currentView = sampleFormController;
 			var views = localInstance._getNewViewModel(true, true, false);
 			sampleFormController.init(views);
+			localInstance.sideMenu.collapseSideMenu();
 		});
 	}
 	
@@ -1505,11 +1556,42 @@ function MainController(profile) {
         var views = this._getNewViewModel(true, true, false);
         spaceFormController.init(views);
         this.currentView = spaceFormController;
+        this.sideMenu.collapseSideMenu();
+    }
+
+    this._isInventorySpace = function(spaceCode) {
+        var showInventory = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showInventory
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        var isHiddenSpace = profile.isHiddenSpace(spaceCode)
+        return (
+            showInventory &&
+            isInventorySpace &&
+            !isHiddenSpace &&
+            !spaceCode.endsWith("STOCK_CATALOG") &&
+            !spaceCode.endsWith("STOCK_ORDERS")
+        )
+    }
+
+    this._isStockSpace = function(spaceCode) {
+        var showStock = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showStock
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        return (
+            showStock &&
+            isInventorySpace &&
+            (spaceCode.endsWith("STOCK_CATALOG") || spaceCode.endsWith("STOCK_ORDERS"))
+        )
     }
     
 	this._showSpacePage = function(space) {
+	    var isRegularSpace = (this._isInventorySpace(space) || this._isStockSpace(space));
 		//Show Form
-		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, false, space);
+		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, isRegularSpace, space);
 		var views = this._getNewViewModel(true, true, false);
 		spaceFormController.init(views);
 		this.currentView = spaceFormController;
@@ -1521,6 +1603,7 @@ function MainController(profile) {
         var views = this._getNewViewModel(true, true, false);
         spaceFormController.init(views);
         this.currentView = spaceFormController;
+        this.sideMenu.collapseSideMenu();
     }
     
 	this._showCreateProjectPage = function(spaceCode) {
@@ -1529,6 +1612,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		projectFormController.init(views);
 		this.currentView = projectFormController;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showProjectPage = function(project) {
@@ -1545,6 +1629,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		projectFormController.init(views);
 		this.currentView = projectFormController;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showExperimentPage = function(experiment, mode) {
@@ -1553,6 +1638,9 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, mode === FormMode.VIEW);
 		experimentFormController.init(views);
 		this.currentView = experimentFormController;
+		if(mode !== FormMode.VIEW) {
+		    this.sideMenu.collapseSideMenu();
+		}
 	}
 	
 	this._showCreateDataSetPage = function(entity) {
@@ -1561,6 +1649,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
@@ -1577,6 +1666,7 @@ function MainController(profile) {
 		var views = this._getNewViewModel(true, true, false);
 		newView.init(views);
 		this.currentView = newView;
+		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showAdvancedSearchPage = function(freeText) {

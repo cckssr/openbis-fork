@@ -15,14 +15,6 @@
  */
 package ch.ethz.sis.openbis.systemtest.plugin.excelimport;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -66,6 +58,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.Vocabula
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TestUtils
 {
@@ -112,6 +112,7 @@ public class TestUtils
 
         SampleTypeFetchOptions fo = new SampleTypeFetchOptions();
         fo.withValidationPlugin().withScript();
+        fo.withSemanticAnnotations();
         PropertyAssignmentFetchOptions propCriteria = fo.withPropertyAssignments();
         propCriteria.withPlugin().withScript();
         propCriteria.withPropertyType().withVocabulary();
@@ -178,6 +179,8 @@ public class TestUtils
 
         PropertyTypeFetchOptions fo = new PropertyTypeFetchOptions();
         fo.withVocabulary();
+        fo.withSemanticAnnotations();
+        fo.withSampleType();
 
         SearchResult<PropertyType> result = v3api.searchPropertyTypes(sessionToken, criteria, fo);
 

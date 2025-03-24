@@ -11,7 +11,7 @@ import java.util.List;
 
 public class Importer {
 
-    private final int TIMEOUT = 300000;
+    private final int TIMEOUT = Integer.MAX_VALUE;
 
     private final OpenBIS openBIS;
     private final String username;

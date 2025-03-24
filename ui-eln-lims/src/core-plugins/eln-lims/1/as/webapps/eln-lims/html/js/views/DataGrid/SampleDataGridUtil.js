@@ -768,6 +768,8 @@ var SampleDataGridUtil = new function() {
 				var $dropDownMenu = $("<span>", { class : 'dropdown table-options-dropdown' });
 				var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default'}).append("Operations ").append($("<b>", { class : 'caret' }));
 				var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
+                //Operations column is last so it makes more sense to align rows to the right border
+                $list.css("right", "0").css("left", "auto");
 				$dropDownMenu.append($caret);
 				$dropDownMenu.append($list);
 				
@@ -789,10 +791,10 @@ var SampleDataGridUtil = new function() {
 				var $move = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Move'}).append("Move"));
 				$move.click(function(event) {
 					stopEventsBuble(event);
-					var moveSampleController = new MoveSampleController(data.permId, function() {
-						mainController.refreshView();
-					});
-					moveSampleController.init();
+                    var moveSampleController = new MoveEntityController("SAMPLE", data.permId, function() {
+                        mainController.refreshView();
+                    });
+                    moveSampleController.init();
 				});
 				$list.append($move);
 

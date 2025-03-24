@@ -16,11 +16,13 @@
  */
 
 import React from 'react'
-import withStyles from '@mui/styles/withStyles';
+import withStyles from '@mui/styles/withStyles'
 import autoBind from 'auto-bind'
+import RightToolbar from '@src/js/components/common/data-browser/components/toolbar/RightToolbar.jsx'
+import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
 import LeftToolbar from '@src/js/components/common/data-browser/LeftToolbar.jsx'
-import RightToolbar from '@src/js/components/common/data-browser/RightToolbar.jsx'
 import logger from '@src/js/common/logger.js'
+import ResponsiveLeftToolbar from './ResponsiveLeftToolbar'
 
 const buttonSize = 'small'
 
@@ -30,7 +32,11 @@ const styles = theme => ({
     display: 'flex',
     whiteSpace: 'nowrap',
     marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(1)
+    marginRight: theme.spacing(1),
+    justifyContent: 'flex-start'
+  },
+  rightOnly: {
+    justifyContent: 'flex-end'
   }
 })
 
@@ -46,30 +52,32 @@ class Toolbar extends React.Component {
     logger.log(logger.DEBUG, 'Toolbar.render')
 
     const {
+      leftToolbar,
       viewType,
       onViewTypeChange,
       classes,
       showInfo,
-      onShowInfoChange,
-      multiselectedFiles,
-      sessionToken,
-      owner,
-      path,
-      editable,
-      onDownload
+      onShowInfoChange,            
+      owner,      
+      editable,      
+      onSpaceStatusChange
     } = this.props
+    
+    const containerClass = leftToolbar
+      ? classes.toolbar
+      : `${classes.toolbar} ${classes.rightOnly}`
+
     return (
-      <div className={classes.toolbar}>
-        <LeftToolbar
-          buttonSize={buttonSize}
-          multiselectedFiles={multiselectedFiles}
-          sessionToken={sessionToken}
-          owner={owner}
-          path={path}
-          editable={editable}
-          controller={this.controller}
-          onDownload={onDownload}
-        />
+      <>
+      <div className={containerClass}>
+        {leftToolbar && (
+
+          <ResponsiveLeftToolbar
+            buttonSize={buttonSize}                        
+            owner={owner}          
+            extOpenbis={this.props.openBis}
+          />
+        )}
         <RightToolbar
           buttonSize={buttonSize}
           selected={showInfo}
@@ -78,8 +86,11 @@ class Toolbar extends React.Component {
           editable={editable}
           onViewTypeChange={onViewTypeChange}
           controller={this.controller}
+          afterUpload={onSpaceStatusChange}
         />
       </div>
+
+      </>
     )
   }
 }

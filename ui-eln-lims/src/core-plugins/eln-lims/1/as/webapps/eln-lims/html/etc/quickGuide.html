@@ -1,0 +1,57 @@
+<!--
+  ~  Copyright ETH 2025 Zürich, Scientific IT Services
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quick guide</title>
+    <style>
+        .quick-guide-li {margin: 10px 0;}
+    </style>
+</head>
+<body>
+<h3>Welcome to openBIS Laboratory Notebook</h3>
+<p>Here is a quick guide how to navigate through this page.</p>
+<br>
+<h4>You can find following entities in this notebook:</h4>
+<ul>
+    <li class="quick-guide-li"><img src="./img/folder-with-key.svg" style="vertical-align: bottom;"></img> Space: a top-level organizational directory that may contain Projects, Collections and Objects. Only Instance Admin may create new spaces.
+        <ul>
+            <li class="quick-guide-li"><img src="./img/folder-with-home.svg" style="vertical-align: bottom;"></img> Home Space: space hinted as being owned or managed by the user who see it as home. <b>(*)</b></li>
+        </ul>
+    </li>
+    <li class="quick-guide-li"><img src="./img/folder-with-settings.svg" style="vertical-align: bottom;"></img> Project: a directory under space level.</li>
+    <li class="quick-guide-li"><span class="material-icons" style="vertical-align: bottom;">folder</span> Folder: an entity with only "name" metadata property.</li>
+    <li class="quick-guide-li">Entry: a basic entity, a blank page, with no pre-defined fields. Depending on the content, a different iconography may be applied:
+        <ul>
+            <li class="quick-guide-li"><span class="material-icons" style="vertical-align: bottom;">subject</span> Metadata Entry: entry with no files (metadata only).</li>
+            <li class="quick-guide-li"><span class="material-icons" style="vertical-align: bottom;">attach_file</span> Data Entry: entry with only data.</li>
+            <li class="quick-guide-li"><img src="./img/subject-with-attach_file.svg" style="vertical-align: bottom;"></img> Metadata/Data Entry: entry with both data and metadata.</li>
+        </ul>
+    </li>
+    <li class="quick-guide-li"><span class="fa fa-database" style="vertical-align: middle;"></span> Dataset: immutable container for data files.</li>
+</ul>
+
+<br>
+You can read more <a href="https://openbis.readthedocs.io/en/20.10.x/user-documentation/general-users/lab-notebook.html">here</a>
+<br>
+<br>
+<p>(*): Designation of a home space is configuration-specific, ask your admin if needed.</p>
+
+</body>
+</html>

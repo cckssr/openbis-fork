@@ -24,6 +24,12 @@ class InputDialog extends React.Component {
     }
   }
 
+  componentDidUpdate(prevProps) {  
+    if (this.props.inputValue !== prevProps.inputValue) {
+      this.setState({ value: this.props.inputValue || '' });
+    }
+  }
+
   handleClose() {
     const { onCancel } = this.props
     if (onCancel) {

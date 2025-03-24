@@ -1,9 +1,9 @@
 package ch.openbis.rocrate.app;
 
-import org.apache.commons.cli.*;
 import ch.openbis.rocrate.app.parser.ExcelConversionParser;
 import ch.openbis.rocrate.app.parser.results.ParseResult;
 import ch.openbis.rocrate.app.writer.Writer;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,10 +13,10 @@ import java.nio.file.Path;
 public class Write
 {
 
-    private static boolean TEST_MODE = true;
+    private static boolean TEST_MODE = false;
 
     private static String TEST_FILE =
-            "/home/meiandr/Documents/sissource/openbis/app-ro-crate-openbis/resources/metadata.xlsx";
+            "/home/meiandr/Documents/sissource/ro-crate/interoperability/0.1.x/examples/reference-openbis-export/metadata.xlsx";
 
     public static void main(String[] args) throws IOException, ParseException
     {

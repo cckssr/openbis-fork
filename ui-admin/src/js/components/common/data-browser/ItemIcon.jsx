@@ -1,5 +1,5 @@
 /*
- *  Copyright ETH 2023 Zürich, Scientific IT Services
+ *  Copyright ETH 2025 Zürich, Scientific IT Services
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,52 +14,42 @@
  *  limitations under the License.
  *
  */
-
 import React from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import autoBind from 'auto-bind'
-import withStyles from '@mui/styles/withStyles';
-import { library } from '@fortawesome/fontawesome-svg-core';
-// Register FontAwesome icons with the library so they can be rendered
-// in our components. Without this registration, the icons in the exported
-// component wouldn't show up.
-import {
-  faFolder,
-  faFile,
-  faFileAudio,
-  faFileAlt,       
-  faFileVideo,
-  faFileImage,
-  faFileArchive,
-  faFileCode,
-  faFilePdf,
-  faFileWord,
-  faFileExcel,
-  faFilePowerpoint
-} from '@fortawesome/free-regular-svg-icons';
+import withStyles from '@mui/styles/withStyles'
 
-library.add(
-  faFolder,
-  faFile,
-  faFileAudio,
-  faFileAlt,       
-  faFileVideo,
-  faFileImage,
-  faFileArchive,
-  faFileCode,
-  faFilePdf,
-  faFileWord,
-  faFileExcel,
-  faFilePowerpoint
-);
-
+import FolderIcon from '@mui/icons-material/Folder'
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile'
+import AudiotrackIcon from '@mui/icons-material/Audiotrack'
+import DescriptionIcon from '@mui/icons-material/Description'
+import MovieIcon from '@mui/icons-material/Movie'
+import ImageIcon from '@mui/icons-material/Image'
+import FolderZipIcon from '@mui/icons-material/FolderZip';
+import CodeIcon from '@mui/icons-material/Code'
+import PictureAsPdfSharp from '@mui/icons-material/PictureAsPdfSharp'
+import TableChartIcon from '@mui/icons-material/TableChart'
+import SlideshowIcon from '@mui/icons-material/Slideshow'
 
 const styles = (theme) => ({
   icon: {
     verticalAlign: 'middle',
-    fontSize: '4rem'
+    fontSize: '4rem',    
   }
 })
+
+const materialIcons = {
+  'file-audio': AudiotrackIcon,
+  'file-alt': DescriptionIcon,
+  'file-video': MovieIcon,
+  'file-image': ImageIcon,
+  'file-archive': FolderZipIcon,
+  'file-code': CodeIcon,
+  'file-pdf': PictureAsPdfSharp,
+  'file-word': DescriptionIcon,
+  'file-excel': TableChartIcon,
+  'file-powerpoint': SlideshowIcon,
+  'file': InsertDriveFileIcon
+};
 
 class ItemIcon extends React.Component {
   constructor(props, context) {
@@ -67,7 +57,7 @@ class ItemIcon extends React.Component {
     autoBind(this)
 
     const configuration = this.props.configuration || []
-
+    
     this.extensionToIconType = new Map(
       configuration.flatMap(configObject =>
         configObject.extensions.map(extension => [extension, configObject.icon])
@@ -77,16 +67,14 @@ class ItemIcon extends React.Component {
 
   render() {
     const { classes, file } = this.props
-
+    
     if (file.directory) {
-      return <FontAwesomeIcon icon={['far', 'folder']} className={classes.icon} />
-    } else {
-      const iconType = this.extensionToIconType.get(
-        file.name.substring(file.name.lastIndexOf('.') + 1)
-      )
-
-      return <FontAwesomeIcon icon={['far', iconType ? iconType : 'file']}
-                              className={classes.icon} />
+      return <FolderIcon className={classes.icon} />
+    } else {      
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.') + 1)
+      const iconType = this.extensionToIconType.get(fileExtension)      
+      const IconComponent = materialIcons[iconType] || InsertDriveFileIcon
+      return <IconComponent className={classes.icon} />
     }
   }
 }

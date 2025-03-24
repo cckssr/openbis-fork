@@ -23,7 +23,7 @@ import autoBind from 'auto-bind'
 const styles = () => ({
   invisible: {
     display: 'none !important'
-  }
+  },
 })
 
 class UploadButton extends React.Component {
