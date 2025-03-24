@@ -4,7 +4,6 @@ import java.util.Properties;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
-import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiverDataSourceProvider;
 
 public class ArchiverServiceProviderAdapter implements IArchiverServiceProvider
 {
@@ -38,7 +37,7 @@ public class ArchiverServiceProviderAdapter implements IArchiverServiceProvider
         throw new UnsupportedOperationException();
     }
 
-    @Override public IMultiDataSetArchiverDataSourceProvider getMultiDataSetArchiverDataSourceProvider()
+    @Override public IArchiverDataSourceProvider getArchiverDataSourceProvider()
     {
         return null;
     }

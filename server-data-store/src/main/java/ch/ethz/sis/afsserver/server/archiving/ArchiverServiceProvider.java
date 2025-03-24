@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
@@ -13,9 +14,9 @@ import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiverDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
@@ -78,18 +79,52 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IDataSetPathInfoProvider getDataSetPathInfoProvider()
     {
-        DataSource dataSource = PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource();
-        return new DatabaseBasedDataSetPathInfoProvider(dataSource);
+        final DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+
+        if (pathInfoDatabaseConfiguration != null)
+        {
+            return new DatabaseBasedDataSetPathInfoProvider(pathInfoDatabaseConfiguration.getDataSource());
+        } else
+        {
+            throw new RuntimeException("Path info database not configured");
+        }
     }
 
     @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
     {
-        return null;
+        final DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
+
+        return new IPathInfoDataSourceProvider()
+        {
+            @Override public DataSource getDataSource()
+            {
+                return pathInfoDatabaseConfiguration.getDataSource();
+            }
+
+            @Override public boolean isDataSourceDefined()
+            {
+                return pathInfoDatabaseConfiguration != null;
+            }
+        };
     }
 
-    @Override public IMultiDataSetArchiverDataSourceProvider getMultiDataSetArchiverDataSourceProvider()
+    @Override public IArchiverDataSourceProvider getArchiverDataSourceProvider()
     {
-        return null;
+        final DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
+
+        if (archiverDatabaseConfiguration != null)
+        {
+            return new IArchiverDataSourceProvider()
+            {
+                @Override public DataSource getDataSource()
+                {
+                    return archiverDatabaseConfiguration.getDataSource();
+                }
+            };
+        } else
+        {
+            throw new RuntimeException("Archiver database not configured");
+        }
     }
 
     @Override public IDataSetDeleter getDataSetDeleter()
@@ -104,7 +139,8 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IArchiverPlugin getArchiverPlugin()
     {
-        return null;
+        ArchiverConfiguration archiverConfiguration = ArchiverConfiguration.getInstance(configuration);
+        return archiverConfiguration.getArchiverPlugin();
     }
 
     @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
@@ -114,7 +150,8 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public Properties getArchiverProperties()
     {
-        return null;
+        ArchiverConfiguration archiverConfiguration = ArchiverConfiguration.getInstance(configuration);
+        return archiverConfiguration.getProperties();
     }
 
     @Override public IOpenBISService getOpenBISService()
