@@ -160,9 +160,9 @@ public class PersonManagementTest extends BaseTest
             fail("UserFailureException expected");
         } catch (UserFailureException e)
         {
-            assertEquals("User 'system' has no role assignments and thus is not permitted to login.", e.getMessage());
+            assertEquals("User 'system' has been deactivated and thus is not permitted to login.", e.getMessage());
         }
-        assertEquals("INFO  AUTH.CommonServer - User 'system' has no role assignments "
+        assertEquals("INFO  AUTH.CommonServer - User 'system' has been deactivated "
                 + "and thus is not permitted to login.", logRecorder.getLogContent());
     }
 

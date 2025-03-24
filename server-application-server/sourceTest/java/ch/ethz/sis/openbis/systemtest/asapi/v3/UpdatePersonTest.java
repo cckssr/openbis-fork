@@ -266,7 +266,7 @@ public class UpdatePersonTest extends AbstractTest
         Person deactivatedUser = v3api.getPersons(adminSessionToken, Arrays.asList(userId), fetchOptions).get(userId);
 
         assertEquals(deactivatedUser.isActive(), Boolean.FALSE);
-        assertEquals(deactivatedUser.getRoleAssignments().size(), 0);
+        assertEquals(deactivatedUser.getRoleAssignments().size(), 1);
 
         assertUserFailureException(new IDelegatedAction()
             {
@@ -275,7 +275,7 @@ public class UpdatePersonTest extends AbstractTest
                 {
                     v3api.login(userCreation.getUserId(), PASSWORD);
                 }
-            }, "User 'USER_TO_DEACTIVATE_AND_ACTIVATE' has no role assignments and thus is not permitted to login");
+            }, "User 'USER_TO_DEACTIVATE_AND_ACTIVATE' has been deactivated and thus is not permitted to login");
 
         // assign roles to the deactivated user and try to login
 
