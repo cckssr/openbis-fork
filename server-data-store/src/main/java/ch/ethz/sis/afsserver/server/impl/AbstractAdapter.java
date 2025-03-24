@@ -17,7 +17,6 @@ package ch.ethz.sis.afsserver.server.impl;
 
 import static ch.ethz.sis.afsserver.exception.HTTPExceptions.INVALID_PARAMETERS;
 import static ch.ethz.sis.afsserver.exception.HTTPExceptions.throwInstance;
-import static io.netty.handler.codec.http.HttpMethod.DELETE;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 
@@ -28,13 +27,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.exception.HTTPExceptions;
 import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.http.impl.NettyHttpHandler;
-import ch.ethz.sis.afsserver.http.impl.NettyHttpServer;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
 import ch.ethz.sis.afsserver.server.Request;
@@ -94,13 +94,13 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             String transactionManagerKey = null;
             Map<String, Object> parsedParameters = new HashMap<>();
 
-            if(requestBody != null  && !GET.equals(httpMethod) && !isWriteMethod(httpMethod, parameters)) {
+            if(requestBody != null  && !GET.equals(httpMethod) && !isReadOrWriteMethod(httpMethod, parameters)) {
                 parameters = NettyHttpHandler.getBodyParameters(requestBody);
                 requestBody = null;
             }
 
             if(requestBody != null && requestBody.length > 0){
-                parsedParameters.put("data", requestBody);
+                parsedParameters.put("chunks", ChunkEncoderDecoder.decodeChunks(requestBody));
             }
 
             for (Map.Entry<String, List<String>> entry : parameters.entrySet())
@@ -181,9 +181,13 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
         return null; // This should never happen, it would mean an error writing the Unknown error happened.
     }
 
-    private boolean isWriteMethod(HttpMethod requestMethod, Map<String, List<String>> parameters) {
-        return POST.equals(requestMethod) &&  parameters != null && parameters.get("method") != null &&
-                !parameters.get("method").isEmpty() && "write".equals(parameters.get("method").get(0));
+    private boolean isReadOrWriteMethod(HttpMethod requestMethod, Map<String, List<String>> parameters) {
+        return POST.equals(requestMethod) &&
+                parameters != null
+                && parameters.get("method") != null &&
+                !parameters.get("method").isEmpty()
+                &&
+                ("write".equals(parameters.get("method").get(0)) || "read".equals(parameters.get("method").get(0)));
     }
 
     protected String getParameter(Map<String, List<String>> parameters, String name) {
@@ -220,9 +224,9 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             if (result instanceof List || result instanceof DTO) {
                 contentType = HttpResponse.CONTENT_TYPE_JSON;
                 body = jsonObjectMapper.writeValue(response);
-            } else if (result instanceof byte[]) {
+            } else if (result instanceof Chunk[]) {
                 contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
-                body = (byte[]) result;
+                body = ChunkEncoderDecoder.encodeChunksAsBytes((Chunk[]) result);
             } else {
                 contentType = HttpResponse.CONTENT_TYPE_TEXT;
                 body = String.valueOf(result).getBytes(StandardCharsets.UTF_8);

@@ -15,13 +15,16 @@
  */
 package ch.ethz.sis.afsserver.core;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import lombok.NonNull;
 
 public abstract class AbstractPublicAPIWrapper implements PublicAPI
@@ -46,26 +49,17 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
     }
 
     @Override
-    public byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset,
-            @NonNull Integer limit) throws Exception
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception
     {
-        Map<String, Object> args = Map.of(
-                "owner", owner,
-                "source", source,
-                "offset", offset,
-                "limit", limit);
-        return process(byte[].class,"read", args);
+        Map<String, Object> args = Map.of();
+        return process(Chunk[].class,"read", args, ChunkEncoderDecoder.encodeChunksAsBytes(chunks));
     }
 
     @Override
-    public Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset,
-            @NonNull byte[] data) throws Exception
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception
     {
-        Map<String, Object> args = Map.of(
-                "owner", owner,
-                "source", source,
-                "offset", offset);
-        return process(Boolean.class, "write", args, data);
+        Map<String, Object> args = Map.of();
+        return process(Boolean.class, "write", args, ChunkEncoderDecoder.encodeChunksAsBytes(chunks));
     }
 
     @Override

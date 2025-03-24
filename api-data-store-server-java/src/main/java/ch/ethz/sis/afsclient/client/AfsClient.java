@@ -16,7 +16,6 @@ import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +28,7 @@ import java.util.stream.Stream;
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsapi.dto.ApiResponse;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsclient.client.exception.ClientExceptions;
@@ -157,23 +157,41 @@ public final class AfsClient implements PublicAPI, ClientAPI
     }
 
     @Override
-    public @NonNull byte[] read(@NonNull final String owner, @NonNull final String source,
-            @NonNull final Long offset, @NonNull final Integer limit) throws Exception
+    public byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception {
+        Chunk[] chunks = read(new Chunk[] { new Chunk(owner, source, offset, limit, ChunkEncoderDecoder.EMPTY_ARRAY)});
+        return chunks[0].getData();
+    }
+
+    @Override
+    public @NonNull Chunk[] read(@NonNull final Chunk[] chunks) throws Exception
     {
         validateSessionToken();
-        return request("GET", "read", byte[].class,
-                Map.of("owner", owner, "source", source, "offset",
-                        offset.toString(), "limit", limit.toString()));
+        return request("POST",
+                "read",
+                Chunk[].class,
+                Map.of() ,
+                ChunkEncoderDecoder.encodeChunksAsBytes(chunks),
+                false );
     }
 
 
     @Override
     public @NonNull Boolean write(@NonNull final String owner, @NonNull final String source,
-            @NonNull final Long offset, @NonNull final byte[] data) throws Exception
+                                  @NonNull final Long offset, @NonNull final byte[] data) throws Exception
     {
+        Chunk[] chunks = new Chunk[] {new Chunk(owner, source, offset, data.length, data) } ;
+        return write(chunks);
+    }
+
+    @Override
+    public @NonNull Boolean write(@NonNull Chunk[] chunks) throws Exception {
         validateSessionToken();
-        return request("POST", "write", Boolean.class, Map.of("owner",
-                owner, "source", source,"offset", offset.toString()) , data, false );
+        return request("POST",
+                "write",
+                Boolean.class,
+                Map.of() ,
+                ChunkEncoderDecoder.encodeChunksAsBytes(chunks),
+                false );
     }
 
     @Override
@@ -483,7 +501,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
             case "application/json":
                 return parseJsonResponse(responseBody);
             case "application/octet-stream":
-                return (T) responseBody;
+                return responseType.cast(ChunkEncoderDecoder.decodeChunks(responseBody));
             default:
                 throw new IllegalArgumentException(
                         "Client error HTTP response. Unsupported content-type received.");

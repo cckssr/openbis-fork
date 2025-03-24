@@ -18,6 +18,7 @@ package ch.ethz.sis.afsserver.worker.proxy;
 import java.util.List;
 import java.util.UUID;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.server.performance.Event;
@@ -88,15 +89,15 @@ public class AuditorProxy extends AbstractProxy {
     }
 
     @Override
-    public byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception {
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
         auditBefore();
-        return auditAfter(nextProxy.read(owner, source, offset, limit));
+        return auditAfter(nextProxy.read(chunks));
     }
 
     @Override
-    public Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull byte[] data) throws Exception {
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception {
         auditBefore();
-        return auditAfter(nextProxy.write(owner, source, offset, data));
+        return auditAfter(nextProxy.write(chunks));
     }
 
     @Override

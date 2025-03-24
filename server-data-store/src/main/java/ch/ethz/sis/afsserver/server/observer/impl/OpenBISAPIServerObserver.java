@@ -2,15 +2,7 @@ package ch.ethz.sis.afsserver.server.observer.impl;
 
 import java.nio.file.NoSuchFileException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,6 +13,7 @@ import ch.ethz.sis.afs.dto.operation.MoveOperation;
 import ch.ethz.sis.afs.dto.operation.Operation;
 import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.manager.TransactionConnection;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
@@ -115,16 +108,24 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
                 }
             } else if (isTwoPhaseTransaction)
             {
-                String owner = getOwnerCreatedInRequest(request);
+                List<String> owners = getOwnerCreatedInRequest(request);
+                if (owners != null) {
+                    for (Iterator<String> it = owners.iterator(); it.hasNext() ;)
+                    {
+                        String owner = it.next();
+                        if (ownerExistsInTransaction(worker, owner) || ownerExistsInStore(worker, owner)) {
+                            it.remove();
+                        }
+                    }
 
-                if (owner != null && !ownerExistsInTransaction(worker, owner) && !ownerExistsInStore(worker, owner))
-                {
-                    OpenBIS openBIS = openBISConfiguration.getOpenBIS();
-                    openBIS.setSessionToken(worker.getSessionToken());
-                    openBIS.setTransactionId(worker.getConnection().getTransaction().getUuid());
-                    openBIS.setInteractiveSessionKey(interactiveSessionKey);
+                    if (!owners.isEmpty()) {
+                        OpenBIS openBIS = openBISConfiguration.getOpenBIS();
+                        openBIS.setSessionToken(worker.getSessionToken());
+                        openBIS.setTransactionId(worker.getConnection().getTransaction().getUuid());
+                        openBIS.setInteractiveSessionKey(interactiveSessionKey);
 
-                    createDataSets(openBIS, List.of(owner));
+                        createDataSets(openBIS, owners);
+                    }
                 }
             }
         }
@@ -209,31 +210,50 @@ public class OpenBISAPIServerObserver implements APIServerObserver<TransactionCo
     {
         if (!worker.isInteractiveSessionMode())
         {
-            String owner = getOwnerCreatedInRequest(request);
+            // We modify a mutable to avoid recreating multiple lists
+            List<String> owners = getOwnerCreatedInRequest(request);
+            if (owners != null) {
+                for (Iterator<String> it = owners.iterator(); it.hasNext() ;)
+                {
+                    if (ownerExistsInStore(worker, it.next())) {
+                        it.remove();
+                    }
+                }
 
-            if (owner != null && !ownerExistsInStore(worker, owner))
-            {
-                OpenBIS openBIS = openBISConfiguration.getOpenBIS();
-                openBIS.setSessionToken(worker.getSessionToken());
+                if (!owners.isEmpty()) {
+                    OpenBIS openBIS = openBISConfiguration.getOpenBIS();
+                    openBIS.setSessionToken(worker.getSessionToken());
 
-                createDataSets(openBIS, List.of(owner));
+                    createDataSets(openBIS, owners);
+                }
             }
         }
     }
 
-    private String getOwnerCreatedInRequest(Request request)
+    private List<String> getOwnerCreatedInRequest(Request request)
     {
+        // We return a mutable list just to avoid recreating multiple lists
+        ArrayList<String> owners = null;
         switch (request.getMethod())
         {
             case "write":
+                Chunk[] chunks = (Chunk[]) request.getParams().get("chunks");
+                owners = new ArrayList<>(chunks.length);
+                for (Chunk chunk:chunks) {
+                    owners.add(chunk.getOwner());
+                }
+                break;
             case "create":
-                return (String) request.getParams().get("owner");
+                owners = new ArrayList<>(1);
+                owners.add((String) request.getParams().get("owner"));
+                break;
             case "copy":
             case "move":
-                return (String) request.getParams().get("targetOwner");
-            default:
-                return null;
+                owners = new ArrayList<>(1);
+                owners.add((String) request.getParams().get("targetOwner"));
+                break;
         }
+        return owners;
     }
 
     private Set<String> getOwnersCreatedInTransaction(Worker<TransactionConnection> worker)

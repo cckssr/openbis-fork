@@ -15,8 +15,11 @@
  */
 package ch.ethz.sis.afsserver.core;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
+import ch.ethz.sis.afsclient.client.AfsClient;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import ch.ethz.sis.afsserver.AbstractTest;
 import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
 import ch.ethz.sis.afsapi.api.PublicAPI;
@@ -90,23 +93,23 @@ public abstract class PublicApiTest extends AbstractTest
     @Test
     public void read() throws Exception
     {
-        byte[] bytes = getPublicAPI().read(owner, FILE_A, 0L, DATA.length);
-        assertArrayEquals(DATA, bytes);
+        Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_A, 0L, DATA.length, ChunkEncoderDecoder.EMPTY_ARRAY)});
+        assertArrayEquals(DATA, chunks[0].getData());
     }
 
     @Test(expected = RuntimeException.class)
     public void read_big_failure() throws Exception
     {
-        byte[] bytes = getPublicAPI().read(owner, FILE_A, 0L, Integer.MAX_VALUE);
-        assertArrayEquals(DATA, bytes);
+        Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_A, 0L, Integer.MAX_VALUE, ChunkEncoderDecoder.EMPTY_ARRAY)});
+        assertArrayEquals(DATA, chunks[0].getData());
     }
 
     @Test
     public void write() throws Exception
     {
-        getPublicAPI().write(owner,  FILE_B, 0L, DATA);
-        byte[] bytes = getPublicAPI().read(owner, FILE_B, 0L, DATA.length);
-        assertArrayEquals(DATA, bytes);
+        getPublicAPI().write(new Chunk[]{ new Chunk(owner, FILE_B, 0L, DATA.length, DATA) });
+        Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_B, 0L, DATA.length, ChunkEncoderDecoder.EMPTY_ARRAY) });
+        assertArrayEquals(DATA, chunks[0].getData());
     }
 
     @Test
@@ -122,8 +125,8 @@ public abstract class PublicApiTest extends AbstractTest
     public void copy() throws Exception
     {
         getPublicAPI().copy(owner, FILE_A, owner, FILE_B);
-        byte[] bytes = getPublicAPI().read(owner, FILE_B, 0L, DATA.length);
-        assertArrayEquals(DATA, bytes);
+        Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_B, 0L, DATA.length, ChunkEncoderDecoder.EMPTY_ARRAY) });
+        assertArrayEquals(DATA, chunks[0].getData());
     }
 
     @Test
@@ -159,8 +162,8 @@ public abstract class PublicApiTest extends AbstractTest
         assertEquals(1, matchedFiles.size());
         assertFalse(matchedFiles.get(0).getDirectory());
 
-        byte[] bytes = getPublicAPI().read(owner, FILE_B, 0L, 0);
-        assertEquals(0, bytes.length);
+        Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_B, 0L, 0, ChunkEncoderDecoder.EMPTY_ARRAY) });
+        assertEquals(0, chunks[0].getData().length);
     }
 
     @Test

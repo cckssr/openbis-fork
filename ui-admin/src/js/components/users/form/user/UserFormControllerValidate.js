@@ -51,6 +51,11 @@ export default class UserFormControllerValidate extends PageControllerValidate {
   _validateUser(validator, user) {
     validator.validateNotEmpty(user, 'userId', messages.get(messages.USER_ID))
     validator.validateUserCode(user, 'userId', messages.get(messages.USER_ID))
+
+    if(user.userStatus.value === messages.ACTIVE_UNTIL_EXPIRY_DATE) {
+        validator.validateDateNotEmpty(user, 'userStatusExpiryDate', messages.get(messages.EXPIRY_DATE))
+    }
+
     return validator.withErrors(user)
   }
 

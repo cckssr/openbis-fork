@@ -17,6 +17,7 @@ package ch.ethz.sis.afsserver.worker.proxy;
 
 import java.util.List;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.exception.FSExceptions;
@@ -39,14 +40,16 @@ public class ValidationProxy extends AbstractProxy {
     }
 
     @Override
-    public byte[] read(String owner, String source, Long offset, Integer limit) throws Exception {
-        validateReadSize(source, limit);
-        return nextProxy.read(owner, source, offset, limit);
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
+        for (Chunk chunk: chunks){
+            validateReadSize(chunk.getSource(), chunk.getLimit());
+        }
+        return nextProxy.read(chunks);
     }
 
     @Override
-    public Boolean write(String owner, String source, Long offset, byte[] data) throws Exception {
-        return nextProxy.write(owner, source, offset, data);
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception {
+        return nextProxy.write(chunks);
     }
 
     @Override

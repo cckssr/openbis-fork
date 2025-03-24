@@ -2,6 +2,7 @@ import _ from 'lodash'
 import PageControllerSave from '@src/js/components/common/page/PageControllerSave.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import openbis from '@src/js/services/openbis.js'
+import messages from '@src/js/common/messages.js'
 
 export default class UserFormControllerSave extends PageControllerSave {
   async save() {
@@ -77,7 +78,7 @@ export default class UserFormControllerSave extends PageControllerSave {
   }
 
   _isUserUpdateNeeded(user) {
-    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'active', 'expiryDate'])
+    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'userStatus', 'userStatusExpiryDate'])
   }
 
   _isGroupAssignmentUpdateNeeded(group) {
@@ -99,9 +100,9 @@ export default class UserFormControllerSave extends PageControllerSave {
     if (user.space.value) {
       creation.setSpaceId(new openbis.SpacePermId(user.space.value))
     }
-    if(user.expiryDate.value && user.expiryDate.value.dateObject)
+    if(user.userStatusExpiryDate.value && user.userStatusExpiryDate.value.dateObject)
     {
-      creation.setExpiryDate(user.expiryDate.value.dateObject.getTime());
+      creation.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
     }
     return new openbis.CreatePersonsOperation([creation])
   }
@@ -112,22 +113,22 @@ export default class UserFormControllerSave extends PageControllerSave {
     update.setSpaceId(
       user.space.value ? new openbis.SpacePermId(user.space.value) : null
     )
-    if (user.active.value) {
-      update.activate()
+    if(user.userStatus.value === messages.ACTIVE) {
+        update.activate()
+        update.setExpiryDate(null)
+    } else if(user.userStatus.value == messages.INACTIVE) {
+        update.deactivate()
+        update.setExpiryDate(null)
     } else {
-      update.deactivate()
-    }
-    if(user.expiryDate.value)
-    {
-      if(user.expiryDate.value.dateObject == null)
-      {
-        update.setExpiryDate(user.expiryDate.value.dateObject);
-      }
-      else
-      {
-        update.setExpiryDate(user.expiryDate.value.dateObject.getTime());
-      }
-
+        update.activate()
+        if(user.userStatusExpiryDate.value.dateObject == null)
+        {
+          update.setExpiryDate(user.userStatusExpiryDate.value.dateObject);
+        }
+        else
+        {
+          update.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
+        }
     }
     return new openbis.UpdatePersonsOperation([update])
   }

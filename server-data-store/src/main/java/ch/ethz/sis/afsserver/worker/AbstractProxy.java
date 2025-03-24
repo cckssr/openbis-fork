@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.worker;
 
 import ch.ethz.sis.afs.api.TransactionalFileSystem;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.server.Worker;
@@ -151,13 +152,13 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     }
 
     @Override
-    public byte[] read(@NonNull String sourceOwner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception {
-        return nextProxy.read(sourceOwner, source, offset, limit);
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
+        return nextProxy.read(chunks);
     }
 
     @Override
-    public Boolean write(@NonNull String sourceOwner, @NonNull String source, @NonNull Long offset, @NonNull byte[] data) throws Exception {
-        return nextProxy.write(sourceOwner, source, offset, data);
+    public Boolean write(Chunk[] chunks) throws Exception {
+        return nextProxy.write(chunks);
     }
 
     @Override

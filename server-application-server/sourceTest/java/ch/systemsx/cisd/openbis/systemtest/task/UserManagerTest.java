@@ -1749,7 +1749,9 @@ public class UserManagerTest extends AbstractTest
 
         // Then
         assertEquals(report.getErrorReport(), "");
-        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [DEACTIVATE-USER] u2\n");
+        assertEquals(report.getAuditLog(), "1970-01-01 01:00:00 [DEACTIVATE-USER] u2\n" +
+                "1970-01-01 01:00:01 [REMOVE-USER-FROM-AUTHORIZATION-GROUP] group: G2, user: u2\n" +
+                "1970-01-01 01:00:02 [UNASSIGN-ROLE-FORM-USER] user: u2, role: SPACE_ADMIN for G2_U2\n");
         UserManagerExpectationsBuilder builder = createBuilder();
         builder.groups("G2").commonSpaces(commonSpaces).users(U1, U3);
         builder.space("G2_ALPHA").admin(U1).user(U3);

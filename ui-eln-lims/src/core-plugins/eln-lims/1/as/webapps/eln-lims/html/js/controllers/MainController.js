@@ -852,9 +852,11 @@ function MainController(profile) {
 					var _this = this;
 					var permId = null;
 					var paginationInfo = null;
+					var activeTab = null;
 					if((typeof arg) !== "string") {
 						permId = arg.permIdOrIdentifier;
 						paginationInfo = arg.paginationInfo;
+						activeTab = arg.activeTab;
 						arg = permId;
 					} else {
 						permId = arg;
@@ -865,7 +867,7 @@ function MainController(profile) {
 						} else {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
 							//window.scrollTo(0,0);
 						}
 					});
@@ -1528,9 +1530,9 @@ function MainController(profile) {
 		trashcanController.init(views);
 	}
 	
-	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo) {
+	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab) {
 		//Show Form
-		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo);
+		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab);
 		this.currentView = sampleFormController;
 		var views = this._getNewViewModel(true, true, true);
 		sampleFormController.init(views);
