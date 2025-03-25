@@ -12,9 +12,11 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 #
-from pandas import DataFrame
 
 import json
+import copy
+
+from pandas import DataFrame
 
 def _nonzero(num):
     if num != 0:
@@ -89,7 +91,7 @@ class Spreadsheet:
         else:
             if not column in self.headers:
                 raise ValueError(f"Column '{column}' does not exists!")
-            column = self.headers.index(column)
+            column = self.headers.index(column) + 1
 
         row = int(row)
         if len(self.data) < row or row < 1:
@@ -107,6 +109,48 @@ class Spreadsheet:
     def __getitem__(self, index):
         (row, column) = self._get_index(index)
         return self.CellBuilder(self, column, row)
+
+    def get_column_count(self):
+        return len(self.headers)
+
+    def get_row_count(self):
+        return len(self.data)
+
+    def get_version(self):
+        return self.version
+
+    def get_meta_data(self):
+        return self.meta
+
+    def get_formulas(self):
+        return copy.deepcopy(self.data)
+
+    def get_headers(self):
+        return copy.deepcopy(self.headers)
+
+    def get_values(self):
+        return copy.deepcopy(self.values)
+
+    def get_width(self):
+        return copy.deepcopy(self.width)
+
+    def get_style(self):
+        return copy.deepcopy(self.style)
+
+    def df(self, attribute):
+        options = ['headers', 'formulas', 'width', 'values']
+        if attribute not in options:
+            raise ValueError(f"Attribute '{attribute}' not found in the spreadsheet! Available attributes are: {options}")
+
+        if attribute == 'headers':
+            return DataFrame(self.headers)
+        elif attribute == 'formulas':
+            return DataFrame(self.data, columns=self.headers, index=range(1, len(self.data)+1, 1))
+        elif attribute == 'values':
+            return DataFrame(self.values, columns=self.headers, index=range(1, len(self.values) + 1, 1))
+        elif attribute == 'width':
+            return DataFrame(self.width)
+
 
     def add_column(self, column_name=None):
         if column_name is None:
@@ -132,13 +176,13 @@ class Spreadsheet:
         if len(self.data) < row or row < 1:
             raise ValueError(f"Row '{row}' does not exists!")
 
-        self.data.pop(row-1)
-        self.values.pop(row-1)
-
         for header in self.headers:
-            for i in range(row-1, len(self.data), 1):
+            for i in range(row, len(self.data), 1):
                 self.style[header + str(i)] = self.style[header + str(i+1)]
             del self.style[header + str(len(self.data))]
+
+        self.data.pop(row - 1)
+        self.values.pop(row - 1)
 
     def delete_column(self, column_identifier):
         if str(column_identifier).isdigit():
@@ -200,7 +244,7 @@ class Spreadsheet:
             elif name == "value":
                 return self.__dict__['parent'].values[row][column]
             elif name == "style":
-                return self.__dict__['parent'].style[label + str(column+1)]
+                return self.__dict__['parent'].style[label + str(row+1)]
             elif name == "column_header":
                 return label
             elif name == "column_number":
@@ -233,7 +277,7 @@ class Spreadsheet:
 
     class ColumnBuilder:
         def __init__(self, parent, column_identifier):
-            self.__dict__['__df'] = None
+            # self.__dict__['__df'] = None
             self.__dict__['parent'] = parent
             if column_identifier is None or column_identifier == "":
                 raise ValueError(f"('{column_identifier}') is not a valid column index!")
@@ -249,21 +293,6 @@ class Spreadsheet:
                     raise ValueError(f"Column '{column_identifier}' does not exists!")
                 self.__dict__['column_index'] = parent.headers.index(column_identifier)
                 self.__dict__['column_label'] = parent.headers[self.__dict__['column_index']]
-
-        # @property
-        # def df(self):
-        #     if self.__dict__['__df'] is None:
-        #         header = self.__dict__['column_label']
-        #         index = self.__dict__['column_index']
-        #         data = []
-        #         for row in self.__dict__['parent'].data:
-        #             data += [row[index]]
-        #         self.__dict__['__df'] = DataFrame({header: data})
-        #     return self.__dict__['__df']
-
-        # @df.setter # TODO
-        # def df(self, df):
-        #     _df = self.__dict__['__df']
 
         def __getattr__(self, name):
             if name == "header":
