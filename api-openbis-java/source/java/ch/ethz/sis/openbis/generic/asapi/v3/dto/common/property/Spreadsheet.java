@@ -38,6 +38,13 @@ public final class Spreadsheet implements Serializable
     }
 
 
+
+    // Python only
+//    public String[][] getFormulasDataFrame() {
+//        return data;
+//    }
+
+
     @JsonIgnore
     public Spreadsheet(int columnCount, int rowCount)
     {
@@ -91,6 +98,49 @@ public final class Spreadsheet implements Serializable
     public void setMetaData(Map<String, String> meta)
     {
         this.meta = meta;
+    }
+
+    @JsonIgnore
+    public String[][] getFormulas() {
+        String[][] formulas = new String[this.data.length][];
+        for (int i = 0; i < this.data.length; i++) {
+            formulas[i] = new String[this.data[i].length];
+            System.arraycopy(this.data[i], 0, formulas[i], 0, this.data[i].length);
+        }
+        return formulas;
+    }
+
+    @JsonIgnore
+    public String[] getHeaders()
+    {
+        String[] headers = new String[this.headers.length];
+        System.arraycopy(this.headers, 0, headers, 0, this.headers.length);
+        return headers;
+    }
+
+    @JsonIgnore
+    public String[][] getValues()
+    {
+        String[][] values = new String[this.values.length][];
+        for (int i = 0; i < this.values.length; i++) {
+            values[i] = new String[this.values[i].length];
+            System.arraycopy(this.values[i], 0, values[i], 0, this.values[i].length);
+        }
+        return values;
+    }
+
+    @JsonIgnore
+    public Integer[] getWidth()
+    {
+        Integer[] width = new Integer[this.width.length];
+        System.arraycopy(this.width, 0, width, 0, this.width.length);
+        return width;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getStyle()
+    {
+        return new HashMap<String,String>(this.style);
     }
 
     @JsonIgnore

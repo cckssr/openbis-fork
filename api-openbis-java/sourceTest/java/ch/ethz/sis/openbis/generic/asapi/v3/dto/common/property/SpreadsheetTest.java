@@ -19,7 +19,9 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property;
 
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
+import java.util.Map;
+
+import static org.testng.Assert.*;
 
 public class SpreadsheetTest
 {
@@ -168,5 +170,119 @@ public class SpreadsheetTest
             assertEquals(spreadsheet.style.get(spreadsheet.headers[i] + spreadsheet.data.length), Spreadsheet.DEFAULT_STYLE);
         }
         assertEquals(spreadsheet.data[spreadsheet.data.length-1][0], "");
+    }
+
+    @Test
+    public void spreadsheetGetFormulas() {
+        Spreadsheet spreadsheet = new Spreadsheet(5, 5);
+        for(int i=0;i<5;i++)
+        {
+            spreadsheet.data[i][0] = "" + (i+1);
+        }
+
+        String[][] formulas = spreadsheet.getFormulas();
+        assertNotSame(formulas, spreadsheet.data);
+        assertEquals(formulas.length, spreadsheet.data.length);
+        assertEquals(formulas[0].length, spreadsheet.data[0].length);
+
+        for(int i=0;i<5;i++)
+        {
+            for(int j=0;j<5;j++) {
+                assertEquals(formulas[i][j], spreadsheet.data[i][j]);
+            }
+        }
+
+        formulas[1][1] = "SOME_VALUE";
+        assertNotEquals(formulas[1][1], spreadsheet.data[1][1]);
+
+    }
+
+    @Test
+    public void spreadsheetGetValues() {
+        Spreadsheet spreadsheet = new Spreadsheet(5, 5);
+        for(int i=0;i<5;i++)
+        {
+            spreadsheet.values[i][0] = "" + (i+1);
+        }
+
+        String[][] values = spreadsheet.getValues();
+        assertNotSame(values, spreadsheet.values);
+        assertEquals(values.length, spreadsheet.values.length);
+        assertEquals(values[0].length, spreadsheet.values[0].length);
+
+        for(int i=0;i<5;i++)
+        {
+            for(int j=0;j<5;j++) {
+                assertEquals(values[i][j], spreadsheet.values[i][j]);
+            }
+        }
+
+        values[1][1] = "SOME_VALUE";
+        assertNotEquals(values[1][1], spreadsheet.values[1][1]);
+    }
+
+    @Test
+    public void spreadsheetGetHeaders() {
+        Spreadsheet spreadsheet = new Spreadsheet(5, 5);
+        for(int i=0;i<5;i++)
+        {
+            spreadsheet.headers[i] = "" + (i+1);
+        }
+
+        String[] headers = spreadsheet.getHeaders();
+        assertNotSame(headers, spreadsheet.headers);
+        assertEquals(headers.length, spreadsheet.headers.length);
+
+        for(int i=0;i<5;i++)
+        {
+            assertEquals(headers[i], spreadsheet.headers[i]);
+        }
+
+        headers[1] = "SOME_VALUE";
+        assertNotEquals(headers[1], spreadsheet.headers[1]);
+    }
+
+    @Test
+    public void spreadsheetGetWidth() {
+        Spreadsheet spreadsheet = new Spreadsheet(5, 5);
+        for(int i=0;i<5;i++)
+        {
+            spreadsheet.width[i] = (i+1);
+        }
+
+        Integer[] width = spreadsheet.getWidth();
+        assertNotSame(width, spreadsheet.width);
+        assertEquals(width.length, spreadsheet.width.length);
+
+        for(int i=0;i<5;i++)
+        {
+            assertEquals(width[i], spreadsheet.width[i]);
+        }
+
+        width[1] = 150;
+        assertNotEquals(width[1], spreadsheet.width[1]);
+    }
+
+    @Test
+    public void spreadsheetGetStyle() {
+        Spreadsheet spreadsheet = new Spreadsheet(5, 5);
+        for(int i=0;i<5;i++)
+        {
+            spreadsheet.style.put(""+(i+1), "" + (i+1)) ;
+        }
+
+        Map<String, String> style = spreadsheet.getStyle();
+        assertNotSame(style, spreadsheet.style);
+        assertEquals(style.size(), spreadsheet.style.size());
+
+        for(Map.Entry<String, String> entry : style.entrySet())
+        {
+            assertTrue(spreadsheet.style.containsKey(entry.getKey()));
+            assertEquals(entry.getValue(), spreadsheet.style.get(entry.getKey()));
+        }
+
+        style.put("test", "");
+        assertFalse(spreadsheet.style.containsKey("test"));
+        assertEquals(style.size(), spreadsheet.style.size() + 1);
     }
 }
