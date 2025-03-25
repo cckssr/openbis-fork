@@ -3,6 +3,7 @@ import React from 'react'
 import makeStyles from '@mui/styles/makeStyles';
 import InfoIcon from '@mui/icons-material/Info'
 import Tooltip from '@src/js/components/common/form/Tooltip.jsx'
+import { useImagingDataContext } from '@src/js/components/common/imaging/components/viewer/ImagingDataContext.jsx';
 
 const useStyles = makeStyles((theme) => ({
 	descriptionDefault: {
@@ -20,6 +21,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const InfoOntology = ({ semanticAnnotation }) => {
+	const { state } = useImagingDataContext();
+	const { showSemanticAnnotations } = state;
+
 	const classes = useStyles();
 	const TRUNCATE_VALUE = 30;
 
@@ -51,7 +55,7 @@ const InfoOntology = ({ semanticAnnotation }) => {
 		return truncateString(value, TRUNCATE_VALUE);
 	};
 
-	if (semanticAnnotation) {
+	if (showSemanticAnnotations && semanticAnnotation) {
 		const { ontologyId, ontologyVersion, ontologyAnnotationId } = semanticAnnotation;
 
 		return (
