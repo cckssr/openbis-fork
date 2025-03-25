@@ -1,6 +1,7 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -20,6 +21,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTask;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverTaskScheduler;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
@@ -33,6 +35,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.dss.generic.server.DeletionCommand;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 public class ArchiverServiceProvider implements IArchiverServiceProvider
 {
@@ -155,7 +158,14 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IArchiverTaskScheduler getArchiverTaskScheduler()
     {
-        return null;
+        return new IArchiverTaskScheduler()
+        {
+            @Override public void scheduleTask(final String taskKey, final IArchiverTask task, final Map<String, String> parameterBindings,
+                    final List<DatasetDescription> datasets, final String userId, final String userEmailOrNull, final String userSessionToken)
+            {
+                task.process(datasets, parameterBindings);
+            }
+        };
     }
 
     @Override public Properties getArchiverProperties()

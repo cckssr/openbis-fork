@@ -20,16 +20,20 @@ import java.util.List;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
+import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
+import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.archiving.ArchiverServiceProvider;
 import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.shuffling.IncomingShareIdProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.shared.log.LogFactory;
@@ -43,6 +47,7 @@ import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 
 public final class Server<CONNECTION, API>
 {
@@ -152,6 +157,21 @@ public final class Server<CONNECTION, API>
         // 2.8 Create objects used by the old DSS code
         ServiceProvider.configure(configuration);
         IncomingShareIdProvider.configure(configuration);
+
+        ArchiverConfiguration archiverConfiguration = ArchiverConfiguration.getInstance(configuration);
+        if (archiverConfiguration != null)
+        {
+            ArchiverServiceProviderFactory.setInstance(
+                    new ArchiverServiceProvider(configuration, OpenBISConfiguration.getInstance(configuration).getOpenBISFacade()));
+        }
+
+        DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
+        if (archiverDatabaseConfiguration != null)
+        {
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(archiverDatabaseConfiguration.getContext(),
+                    archiverDatabaseConfiguration.getVersion(), null,
+                    null);
+        }
 
         // 2.9 Create maintenance tasks
         logger.info("Starting maintenance tasks");

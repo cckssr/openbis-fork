@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
+import java.io.File;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
@@ -65,7 +66,7 @@ public class ArchiverConfiguration
         try
         {
             archiverPlugin = ClassUtils.create(IArchiverPlugin.class, className, configuration.getProperties(),
-                    storeRoot);
+                    new File(storeRoot));
         } catch (ConfigurationFailureException ex)
         {
             throw ex;

@@ -75,8 +75,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
         spaceFetchOptions.withRegistrator();
@@ -161,8 +161,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withDataStore();
@@ -301,8 +301,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         return listDataSets(criteria);
     }
@@ -314,8 +314,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withType();
@@ -338,8 +338,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         Calendar accessDate = Calendar.getInstance();
         accessDate.setTime(new Date());
@@ -366,8 +366,8 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate();
-        ownerCriteria.withSample().withImmutableDataDate();
+        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         return listDataSets(criteria);
     }

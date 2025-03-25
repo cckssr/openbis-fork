@@ -320,7 +320,7 @@ public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpc
         {
             dataSetCodes.add(dataset.getDatasetCode());
         }
-        shareIdManager.lock(dataSetCodes);
+        shareIdManager.lock(null, dataSetCodes);
         try
         {
             List<ImageDatasetMetadata> result = new ArrayList<ImageDatasetMetadata>();
@@ -339,7 +339,7 @@ public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpc
             return result;
         } finally
         {
-            shareIdManager.releaseLocks();
+            shareIdManager.releaseLocks(null);
         }
     }
 
