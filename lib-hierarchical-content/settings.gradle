@@ -1,1 +1,1 @@
-includeFlat 'lib-logging', 'lib-commonbase', 'lib-openbis-commonbase', 'lib-data-store-common', 'lib-pathinfo-db', 'lib-hdf5', 'lib-compress'
+includeFlat 'lib-logging', 'lib-commonbase', 'lib-openbis-commonbase', 'lib-data-store-commonbase', 'lib-pathinfo-db', 'lib-hdf5', 'lib-compress'

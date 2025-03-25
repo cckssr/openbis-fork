@@ -142,7 +142,15 @@ public class OpenBISFacade
 
     public String getSessionToken()
     {
-        return sessionToken;
+        OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout);
+        setSessionToken(openBIS);
+
+        if (!openBIS.isSessionActive())
+        {
+            resetSessionToken(openBIS);
+        }
+
+        return openBIS.getSessionToken();
     }
 
 }

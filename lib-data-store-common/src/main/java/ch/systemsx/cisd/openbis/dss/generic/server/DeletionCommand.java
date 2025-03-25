@@ -40,7 +40,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
  * 
  * @author Franz-Josef Elmer
  */
-class DeletionCommand extends AbstractDataSetLocationBasedCommand
+public class DeletionCommand extends AbstractDataSetLocationBasedCommand
 {
     private static final long serialVersionUID = 1L;
 
@@ -51,7 +51,7 @@ class DeletionCommand extends AbstractDataSetLocationBasedCommand
 
     private final long waitingTimeBetweenRetries;
 
-    DeletionCommand(List<? extends IDatasetLocation> dataSets, int maxNumberOfRetries,
+    public DeletionCommand(List<? extends IDatasetLocation> dataSets, int maxNumberOfRetries,
             long waitingTimeBetweenRetries)
     {
         super(dataSets);

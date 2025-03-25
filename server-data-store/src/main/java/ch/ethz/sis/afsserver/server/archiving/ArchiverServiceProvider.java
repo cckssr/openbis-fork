@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.archiving;
 
+import java.util.List;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -30,6 +31,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
+import ch.systemsx.cisd.openbis.dss.generic.server.DeletionCommand;
 
 public class ArchiverServiceProvider implements IArchiverServiceProvider
 {
@@ -56,20 +59,19 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
     {
-        // TODO properties for content cache
-        IContentCache contentCache = ContentCache.create(new Properties());
+        final ArchiverConfiguration archiverConfiguration = ArchiverConfiguration.getInstance(configuration);
+
+        IContentCache contentCache = ContentCache.create(archiverConfiguration.getProperties());
         ISessionTokenProvider sessionTokenProvider = new ISessionTokenProvider()
         {
             @Override public String getSessionToken()
             {
-                return "";
+                return getOpenBISService().getSessionToken();
             }
         };
-        // TODO properties for content provider
-        Properties properties = new Properties();
 
         return new HierarchicalContentProvider(getOpenBISService(), getShareIdManager(), getConfigProvider(), contentCache, sessionTokenProvider,
-                properties);
+                archiverConfiguration.getProperties());
     }
 
     @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
@@ -129,7 +131,15 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
 
     @Override public IDataSetDeleter getDataSetDeleter()
     {
-        return null;
+        return new IDataSetDeleter()
+        {
+            @Override public void scheduleDeletionOfDataSets(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
+                    final long waitingTimeBetweenRetries)
+            {
+                new DeletionCommand(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).execute(getHierarchicalContentProvider(),
+                        getDataSetDirectoryProvider());
+            }
+        };
     }
 
     @Override public IShareIdManager getShareIdManager()

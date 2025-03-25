@@ -76,7 +76,7 @@ public class ArchiverConfiguration
         }
 
         lockingTimeOut = AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration,
-                ArchiverParameter.lockingTimeOut, true);
+                ArchiverParameter.lockingTimeOut, false);
         properties = configuration.getProperties();
     }
 

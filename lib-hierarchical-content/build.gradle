@@ -23,7 +23,7 @@ dependencies {
     implementation project(':lib-logging'),
             project(':lib-commonbase'),
             project(':lib-openbis-commonbase'),
-            project(':lib-data-store-common'),
+            project(':lib-data-store-commonbase'),
             project(':lib-pathinfo-db'),
             project(':lib-hdf5'),
             project(':lib-compress'),
