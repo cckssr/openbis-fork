@@ -2698,7 +2698,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     _createLabNotebookOthersNode() {
         return {
-            text: "Others",
+            text: "Active Spaces",
             object: {
                 type: this.TYPE_LAB_NOTEBOOK_OTHERS,
                 id: this.TYPE_LAB_NOTEBOOK_OTHERS,
@@ -2713,7 +2713,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     _createLabNotebookOthersDisabledNode() {
         return {
-            text: "Others (disabled)",
+            text: "Inactive Spaces",
             object: {
                 type: this.TYPE_LAB_NOTEBOOK_OTHERS_DISABLED,
                 id: this.TYPE_LAB_NOTEBOOK_OTHERS_DISABLED,
@@ -3166,7 +3166,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     _createSpaceNode(space, isHomeSpace) {
         var normalizedSpaceTitle = Util.getDisplayNameFromCode(space.getCode())
         return {
-            text: isHomeSpace ? "My Space (" + normalizedSpaceTitle + ")" : normalizedSpaceTitle,
+            text: isHomeSpace ? "Home Space (" + normalizedSpaceTitle + ")" : normalizedSpaceTitle,
             object: {
                 type: this.TYPE_SPACE,
                 id: space.getCode(),
