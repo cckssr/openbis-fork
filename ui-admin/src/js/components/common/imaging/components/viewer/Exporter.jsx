@@ -33,6 +33,9 @@ const useStyles = makeStyles((theme) => ({
     },
     mt: {
         marginTop: '10px'
+    },
+    mr: {
+        marginRight: '8px'
     }
 }));
 
@@ -98,7 +101,8 @@ const Exporter = ({ config, handleExport, disabled = false, styles }) => {
                                 initValue={exportState[c.label]}
                                 values={c.values}
                                 isMulti={c.multiselect}
-                                onSelectChange={handleExportChange} />
+                                onSelectChange={handleExportChange}
+                                semanticAnnotation={c.semanticAnnotation} />
                         default:
                             return (<Typography variant='body2'>
                                 {messages.get(messages.NO_PREVIEW)}: {c.type}
@@ -106,7 +110,7 @@ const Exporter = ({ config, handleExport, disabled = false, styles }) => {
                     }
                 })}
                 <div className={classes.mt} >
-                    <Button label={messages.get(messages.EXPORT)} type='secondary' onClick={event => sendExportRequest(event)} />
+                    <Button label={messages.get(messages.EXPORT)} type='secondary' onClick={event => sendExportRequest(event)} styles={{ root: classes.risky }} />
                     <Button label={messages.get(messages.CANCEL)} type='risky' onClick={handleClose} styles={{ root: classes.risky }} />
                 </div>
             </Box>

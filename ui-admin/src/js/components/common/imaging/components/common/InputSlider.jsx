@@ -2,6 +2,7 @@ import * as React from 'react';
 import { InputAdornment, Input, Grid2, Slider, FormHelperText, InputLabel } from "@mui/material";
 import Player from "@src/js/components/common/imaging/components/common/Player.jsx";
 import { makeStyles } from '@mui/styles';
+import InfoOntology from '@src/js/components/common/imaging/components/viewer/InfoOntology.js';
 
 const useStyles = makeStyles(theme => ({
     showText: {
@@ -11,7 +12,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const InputSlider = ({ label, range, initValue, playable, speeds, disabled = false, onChange, unit = null }) => {
+const InputSlider = ({ label, range, initValue, playable, speeds, disabled = false, onChange, unit = null, semanticAnnotation}) => {
     const classes = useStyles();
 
     const min = Number(range[0])
@@ -82,6 +83,9 @@ const InputSlider = ({ label, range, initValue, playable, speeds, disabled = fal
                     step={step}
                     disabled={disabled}
                 />
+            </Grid2>
+            <Grid2 size={'auto'}>
+                <InfoOntology semanticAnnotation={semanticAnnotation} />
             </Grid2>
             {playable &&
                 (<Grid2 size='grow'>
