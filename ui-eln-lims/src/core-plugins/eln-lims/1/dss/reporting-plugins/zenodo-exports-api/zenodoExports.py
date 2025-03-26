@@ -54,7 +54,6 @@ def exportAll(tr, params):
     exportModel = params.get("entities")
     downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel)
 
-    downloadResultMap.get('downloadURL')
     resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get("nodeExportList"))
     return resultUrl
 

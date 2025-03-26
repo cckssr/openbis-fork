@@ -36,8 +36,7 @@ from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
-from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, generateZipFile, \
-    checkResponseStatus, cleanUp
+from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, generateZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -49,9 +48,42 @@ def process(tr, params, tableBuilder):
     tr.setUserId(userId)
 
     if method == 'exportAll':
-        resultUrl = expandAndExport(tr, params)
+        resultUrl = exportAll(tr, params)
+        #resultUrl = expandAndExport(tr, params)
         displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None,
                       errorMessage=None if resultUrl is not None else 'Archives are not allowed if indefinite retention period is selected.')
+
+def exportAll(tr, params):
+    if params.get('retentionPeriod') == 'indefinite': # ?? and containsArchives(entitiesToExport) :
+        return None
+
+    sessionToken = params.get('sessionToken')
+    exportModel = params.get("entities")
+
+    downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel)
+
+    canonicalPath = downloadResultMap.get('canonicalPath')
+
+    userInformation = {
+        'firstName': params.get('userFirstName'),
+        'lastName': params.get('userLastName'),
+        'email': params.get('userEmail'),
+    }
+
+    timeNow = time.time()
+
+    exportDirName = 'export_' + str(timeNow)
+
+    exportDirPath, contentZipFileName = os.path.split(canonicalPath)
+    exportZipFilePath = exportDirPath + '.zip'
+    exportZipFileName = exportDirName + '.zip'
+
+    generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=canonicalPath, contentZipFileName=contentZipFileName,
+                            exportZipFileName=exportZipFilePath, userInformation=userInformation, entities=exportModel.get("nodeExportList"))
+    
+    resultUrl = sendToDSpace(params=params, tr=tr, tempZipFileName=exportZipFileName, tempZipFilePath=exportZipFilePath)
+
+    return resultUrl
 
 
 def getBaseUrl(url):
