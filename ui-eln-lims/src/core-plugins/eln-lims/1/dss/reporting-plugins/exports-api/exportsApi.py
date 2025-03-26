@@ -140,12 +140,8 @@ def addToExportWithoutRepeating(entitiesToExport, entityFound):
         entitiesToExport.append(entityFound)
 
 def getDownloadUrlFromASService(sessionToken, exportModel):
-    #sessionToken = params.get('sessionToken')
-    print('EXPORT_MODEL', exportModel)
     v3 = ServiceProvider.getV3ApplicationService()
     id = CustomASServiceCode('xls-export-extended')
-
-    #exportModel = params.get("entities")
 
     options = CustomASServiceExecutionOptions()
     options.withParameter('nodeExportList', exportModel.get('nodeExportList'))
@@ -153,8 +149,8 @@ def getDownloadUrlFromASService(sessionToken, exportModel):
     options.withParameter('withImportCompatibility', exportModel.get('withImportCompatibility'))
     options.withParameter('formats', exportModel.get('formats'))
 
-    zipFileDownloadURL = v3.executeCustomASService(sessionToken, id, options)
-    return zipFileDownloadURL
+    downloadResultMap = v3.executeCustomASService(sessionToken, id, options)
+    return downloadResultMap
 
 def validateDataSize(entitiesToExport, tr):
     limitDataSizeInMegabytes = getConfigurationProperty(tr, 'limit-data-size-megabytes')

@@ -1,7 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -72,7 +72,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         return description;
     }
 
-    public static String export(String sessionToken, Map<String, Object> parameters) {
+    public static Map<String, String> export(String sessionToken, Map<String, Object> parameters) {
         System.out.println("sessionToken: " + sessionToken);
         System.out.println("parameters: " + parameters);
 
@@ -126,16 +126,33 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         exportOptions.setZipSingleFiles(Boolean.TRUE);
 
         ExportThread exportThread = new ExportThread(api, sessionToken, exportData, exportOptions, withEmail);
+
+        Map<String, String> downloadResultMap = new HashMap<>();
         if (withEmail) {
             Thread thread = new Thread(exportThread);
             thread.start();
-            return Boolean.TRUE.toString();
+            downloadResultMap.put("canonicalPath", Boolean.TRUE.toString());
+            downloadResultMap.put("downloadURL", Boolean.TRUE.toString());
+            return downloadResultMap;
         } else {
             exportThread.run();
             if (exportThread.getExportException() != null) {
                 throw new RuntimeException(exportThread.getExportException());
             } else {
-                return exportThread.getExportResult().getDownloadURL();
+                String downloadURL = exportThread.getExportResult().getDownloadURL();
+                String canonicalPath;
+                try {
+                    String filePath = downloadURL.substring(downloadURL.indexOf("filePath=") + "filePath=".length());
+                    canonicalPath = CommonServiceProvider.getSessionWorkspaceProvider()
+                            .getCanonicalFile(sessionToken, filePath)
+                            .getCanonicalPath();
+                } catch (IOException e)
+                {
+                    throw new RuntimeException("Can't get canonical path from session workspace. ", e);
+                }
+                downloadResultMap.put("canonicalPath", canonicalPath);
+                downloadResultMap.put("downloadURL", downloadURL);
+                return downloadResultMap;
             }
         }
     }

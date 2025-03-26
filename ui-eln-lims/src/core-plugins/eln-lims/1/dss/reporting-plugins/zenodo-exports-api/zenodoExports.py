@@ -19,15 +19,12 @@ from __future__ import print_function
 import json
 import traceback
 
-import time
 from ch.ethz.sis import JobScheduler
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
-from java.io import File
 from java.nio.file import Paths
-from org.apache.commons.io import FileUtils
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client.util import MultiPartContentProvider
@@ -37,7 +34,7 @@ from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 from org.json import JSONObject
 
-from exportsApi import findEntitiesToExport, validateDataSize, getConfigurationProperty, generateZipFile, checkResponseStatus, displayResult
+from exportsApi import getConfigurationProperty, checkResponseStatus, displayResult, getDownloadUrlFromASService
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.zenodoExports.py')
 
@@ -47,46 +44,18 @@ def process(tr, params, tableBuilder):
 
     # Set user using the service
     tr.setUserId(userId)
-
     if method == 'exportAll':
-        resultUrl = expandAndExport(tr, params)
+        resultUrl = exportAll(tr, params)
         displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None)
 
+def exportAll(tr, params):
+    sessionToken = params.get('sessionToken')
 
-def expandAndExport(tr, params):
-    entitiesToExport = findEntitiesToExport(params)
-    validateDataSize(entitiesToExport, tr)
+    exportModel = params.get("entities")
+    downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel)
 
-    operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
-    exportUrl = export(entities=entitiesToExport, tr=tr, params=params)
-
-    return exportUrl
-
-
-def export(entities, tr, params):
-    #Create temporal folder
-    timeNow = time.time()
-
-    exportDirName = 'export_' + str(timeNow)
-    exportDir = File.createTempFile(exportDirName, None)
-    exportDirPath = exportDir.getCanonicalPath()
-    exportDir.delete()
-    exportDir.mkdir()
-
-    contentZipFileName = 'content.zip'
-    contentDirName = 'content_' + str(timeNow)
-    contentDir = File.createTempFile(contentDirName, None, exportDir)
-    contentDirPath = contentDir.getCanonicalPath()
-    contentDir.delete()
-    contentDir.mkdir()
-
-    contentZipFilePath = exportDirPath + '/' + contentZipFileName
-
-    generateZipFile(entities, params, contentDirPath, contentZipFilePath, deflated=False)
-    FileUtils.forceDelete(File(contentDirPath))
-
-    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=contentZipFilePath, entities=entities)
-    FileUtils.forceDelete(File(exportDirPath))
+    downloadResultMap.get('downloadURL')
+    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get("nodeExportList"))
     return resultUrl
 
 

@@ -98,7 +98,8 @@ def process(context, parameters):
 def getExport(context, parameters):
     sessionToken = context.getSessionToken()
     exportModel = parameters.get("export-model")
-    return XLSExportExtendedService.export(sessionToken, exportModel)
+    downloadResultMap = XLSExportExtendedService.export(sessionToken, exportModel)
+    return downloadResultMap.get('downloadURL')
 
 def getCustomImportDefinitions(context, parameters):
     from ch.systemsx.cisd.common.spring import ExposablePropertyPlaceholderConfigurer
