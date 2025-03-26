@@ -5,6 +5,7 @@
 
 ## Changes with pybis-1.37.4
 
+- Improvements to Spreadsheet API
 - Handling UnicodeDecodeError in spreadsheet property
 
 ## Changes with pybis-1.37.3

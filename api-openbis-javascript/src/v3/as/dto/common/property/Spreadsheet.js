@@ -82,7 +82,33 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         prototype.getRowCount = function() {
             return this.data ? this.data.length : 0;
         };
-
+        prototype.getFormulas = function() {
+            let formulas = [];
+            for(let row of this.data) {
+                formulas.push(row.slice());
+            }
+            return formulas;
+        };
+        prototype.getHeaders = function() {
+            return this.headers.slice();
+        };
+        prototype.getValues = function() {
+            let values = [];
+            for(let row of this.values) {
+                values.push(row.slice());
+            }
+            return values;
+        };
+        prototype.getWidth = function() {
+            return this.width.slice();
+        };
+        prototype.getStyle = function() {
+            var style = {};
+            for (var i in this.style) {
+                style[i] = this.style[i];
+            }
+            return style;
+        };
         prototype.addRow = function() {
             this.data.push(new Array(this.headers.length).fill(''));
             this.values.push(new Array(this.headers.length).fill(''));

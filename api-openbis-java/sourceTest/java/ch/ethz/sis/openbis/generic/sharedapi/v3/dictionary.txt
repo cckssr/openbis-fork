@@ -909,6 +909,7 @@ getFinishDate
 getFirstName
 getFormat
 getFormats
+getFormulas
 getFrom
 getGeneratedCodePrefix
 getGitCommitHash
