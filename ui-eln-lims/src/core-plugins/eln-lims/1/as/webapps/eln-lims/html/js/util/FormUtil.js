@@ -2421,7 +2421,7 @@ var FormUtil = new function() {
         return function() {
             Util.blockUI();
             var facade = mainController.serverFacade;
-            facade.exportAll(exportConfig, (includeRoot)?true:false, metadataOnly, function(error, result) {
+            facade.exportAll(exportConfig, function(error, result) {
                 if(error) {
                     Util.showError(error);
                 } else {
