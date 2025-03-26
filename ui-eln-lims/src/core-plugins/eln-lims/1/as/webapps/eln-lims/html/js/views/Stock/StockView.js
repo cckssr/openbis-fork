@@ -44,7 +44,7 @@ function StockView(stockController, stockView) {
 	                }
 	            }
 	            
-				facade.exportAll(stockSpaces, true, false, function(error, result) {
+				facade.exportAll(stockSpaces, function(error, result) {
 					if(error) {
 						Util.showError(error);
 					} else {

@@ -497,24 +497,20 @@ function ServerFacade(openbisServer) {
 	//
 	//
 	//
-	this.exportAll = function(entities, includeRoot, metadataOnly, callbackFunction) {
+	this.exportAll = function(entities, callbackFunction) {
 		this.customELNApi({
 			"method" : "exportAll",
-			"includeRoot" : includeRoot,
 			"entities" : entities,
-			"metadataOnly" : metadataOnly,
 		}, callbackFunction, "exports-api");
 	};
 
 	//
 	// Research collection export
 	//
-	this.exportRc = function(entities, includeRoot, metadataOnly, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
+	this.exportRc = function(entities, submissionUrl, submissionType, retentionPeriod, userInformation, callbackFunction) {
 		this.asyncExportRc({
 			"method": "exportAll",
-			"includeRoot": includeRoot,
 			"entities": entities,
-			"metadataOnly": metadataOnly,
 			"submissionUrl": submissionUrl,
 			"submissionType": submissionType,
 			"retentionPeriod": retentionPeriod,
@@ -539,8 +535,6 @@ function ServerFacade(openbisServer) {
 				options.withParameter("sessionToken", parameters["sessionToken"]);
 
 				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("includeRoot", parameters["includeRoot"]);
-				options.withParameter("metadataOnly", parameters["metadataOnly"]);
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
 				options.withParameter("pathNameUrl", parameters["pathNameUrl"]);
@@ -560,12 +554,10 @@ function ServerFacade(openbisServer) {
 			});
 	};
 
-    this.exportZenodo = function(entities, includeRoot, metadataOnly, userInformation, title, accessToken, callbackFunction) {
+    this.exportZenodo = function(entities, userInformation, title, accessToken, callbackFunction) {
         this.asyncExportZenodo({
             "method": "exportAll",
-            "includeRoot": includeRoot,
             "entities": entities,
-            "metadataOnly": metadataOnly,
             "userInformation": userInformation,
             "originUrl": window.location.origin,
             "sessionToken": this.openbisServer.getSession(),
@@ -587,8 +579,6 @@ function ServerFacade(openbisServer) {
 
 				options.withParameter("sessionToken", parameters["sessionToken"]);
 				options.withParameter("entities", parameters["entities"]);
-				options.withParameter("includeRoot", parameters["includeRoot"]);
-				options.withParameter("metadataOnly", parameters["metadataOnly"]);
 				options.withParameter("method", parameters["method"]);
 				options.withParameter("originUrl", parameters["originUrl"]);
 				options.withParameter("submissionType", parameters["submissionType"]);

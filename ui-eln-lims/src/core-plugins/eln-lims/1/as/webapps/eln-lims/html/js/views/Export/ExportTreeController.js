@@ -55,7 +55,7 @@ function ExportTreeController(parentController) {
 			Util.showInfo("First select something to export.");
 		} else {
 			Util.blockUI();
-			mainController.serverFacade.exportAll(exportModel, true, false, function (error, result) {
+			mainController.serverFacade.exportAll(exportModel, function (error, result) {
 				if (error) {
 					Util.showError(error);
 				} else {
