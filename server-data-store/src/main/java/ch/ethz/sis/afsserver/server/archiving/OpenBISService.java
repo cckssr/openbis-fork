@@ -73,11 +73,6 @@ public class OpenBISService implements IOpenBISService
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCode().thatEquals(dataSetCode);
 
-        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
-        ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-
         SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
         spaceFetchOptions.withRegistrator();
 
@@ -99,6 +94,7 @@ public class OpenBISService implements IOpenBISService
         sampleFetchOptions.withSpaceUsing(spaceFetchOptions);
         sampleFetchOptions.withProjectUsing(projectFetchOptions);
         sampleFetchOptions.withExperimentUsing(experimentFetchOptions);
+        sampleFetchOptions.withContainer();
         sampleFetchOptions.withProperties();
         sampleFetchOptions.withRegistrator();
         sampleFetchOptions.withModifier();
@@ -158,11 +154,6 @@ public class OpenBISService implements IOpenBISService
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCode().thatEquals(dataSetCode);
-
-        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
-        ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withDataStore();
@@ -259,6 +250,7 @@ public class OpenBISService implements IOpenBISService
 
         SampleFetchOptions fetchOptions = new SampleFetchOptions();
         fetchOptions.withType();
+        fetchOptions.withContainer();
 
         SearchResult<ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample> searchResult =
                 openBISFacade.searchSamples(criteria, fetchOptions);
@@ -299,11 +291,6 @@ public class OpenBISService implements IOpenBISService
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCodes().thatIn(dataSetCodes);
 
-        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
-        ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-
         return listDataSets(criteria);
     }
 
@@ -311,11 +298,7 @@ public class OpenBISService implements IOpenBISService
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
-
-        DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
-        ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        criteria.withPhysicalData();
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withType();
@@ -338,8 +321,14 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+
+        DataSetSearchCriteria experimentOwnerCriteria = ownerCriteria.withSubcriteria();
+        experimentOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        experimentOwnerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+
+        DataSetSearchCriteria sampleOwnerCriteria = ownerCriteria.withSubcriteria();
+        sampleOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        sampleOwnerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         Calendar accessDate = Calendar.getInstance();
         accessDate.setTime(new Date());
@@ -366,8 +355,14 @@ public class OpenBISService implements IOpenBISService
 
         DataSetSearchCriteria ownerCriteria = criteria.withSubcriteria();
         ownerCriteria.withOrOperator();
-        ownerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
-        ownerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+
+        DataSetSearchCriteria experimentOwnerCriteria = ownerCriteria.withSubcriteria();
+        experimentOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        experimentOwnerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+
+        DataSetSearchCriteria sampleOwnerCriteria = ownerCriteria.withSubcriteria();
+        sampleOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        sampleOwnerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
 
         return listDataSets(criteria);
     }
@@ -468,6 +463,7 @@ public class OpenBISService implements IOpenBISService
 
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
         sampleFetchOptions.withType();
+        sampleFetchOptions.withContainer();
         sampleFetchOptions.withSpaceUsing(spaceFetchOptions);
         sampleFetchOptions.withProjectUsing(projectFetchOptions);
         sampleFetchOptions.withExperimentUsing(experimentFetchOptions);
@@ -493,6 +489,8 @@ public class OpenBISService implements IOpenBISService
         dataSetFetchOptions.withType().withPropertyAssignments().withPropertyType();
         dataSetFetchOptions.withProperties();
         dataSetFetchOptions.withTags();
+        dataSetFetchOptions.withPhysicalDataUsing(physicalDataFetchOptions);
+        dataSetFetchOptions.withLinkedDataUsing(linkedDataFetchOptions);
         dataSetFetchOptions.withExperimentUsing(experimentFetchOptions);
         dataSetFetchOptions.withSampleUsing(sampleFetchOptions);
         dataSetFetchOptions.withContainersUsing(dataSetFetchOptions);
