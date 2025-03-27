@@ -41,19 +41,10 @@ public class Writer
         RoCrate.RoCrateBuilder builder =
                 new RoCrate.RoCrateBuilder("name", "description", "2024-12-04T07:53:11Z",
                         "licenseIdentifier");
-        builder.addValuePairToContext("rdfs:Class", "https://www.w3.org/TR/rdf-schema/#ch_class");
-        builder.addValuePairToContext("rdfs:Property",
-                "https://www.w3.org/TR/rdf-schema/#ch_properties");
-        builder.addValuePairToContext("rdfs:subClassOf",
-                "https://www.w3.org/TR/rdf-schema/#ch_subclassof");
-        builder.addValuePairToContext("schema:rangeIncludes",
-                "https://www.w3.org/TR/rdf-schema/#ch_range");
-        builder.addValuePairToContext("schema:domainIncludes",
-                "https://www.w3.org/TR/rdf-schema/#ch_domain");
-        builder.addValuePairToContext("owl:equivalentClass",
-                "https://www.w3.org/TR/owl-ref/#equivalentClass-def");
-        builder.addValuePairToContext("owl:equivalentProperty",
-                "https://www.w3.org/TR/owl-ref/#equivalentProperty-def");
+        builder.addValuePairToContext("schema",
+                "https://www.w3.org/TR/rdf-schema");
+        builder.addValuePairToContext("owl",
+                "https://www.w3.org/TR/owl-ref");
 
         RoCrate crate = builder.build();
         ISchemaFacade schemaFacade = new SchemaFacade(crate);
