@@ -23,7 +23,10 @@
 
 		this.repaint = function(views, loadFromTemplate) {
 			var $container = views.content;
-				
+
+			this.extOpenbis = window.NgComponents.default.openbis
+			this.extOpenbis.init(mainController.openbisV3)
+
 			mainController.profile.beforeViewPaint(ViewType.SAMPLE_FORM, this._sampleFormModel, $container);
 			var _this = this;
 			var spaceSettings = SettingsManagerUtils.getSpaceSettings(_this._sampleFormModel.sample.spaceCode);
@@ -657,7 +660,8 @@
                         paginationInfo.currentIndex = index;
                         var arg = {
                                 permIdOrIdentifier : result.objects[0].permId,
-                                paginationInfo : paginationInfo
+								activeTab: _this._sampleFormModel.activeTab,
+                                paginationInfo : paginationInfo,								
                         }
                         mainController.changeView('showViewSamplePageFromPermId', arg, true);
                     } else {
@@ -741,78 +745,7 @@
 				$container.append($form);
 
 			} else {
-				var $tabsContainer = $('<div class="tabs-container">');
-	
-				const tabs = [
-					{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true }
-				]
-
-				var $tabsContent = $('<div class="tab-content">');
-				var $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
-				var $afsWidgetTab = $('<div id="afsWidgetTab" class="tab-pane fade"></div>');
-				
-				$tabsContent.append($sampleFormTab);
-				
-				if(profile.isAFSAvailable()) {
-					$tabsContent.append($afsWidgetTab);
-					tabs.push({ id: "filesTab", label: "Files", href: "#afsWidgetTab", active: false });
-				}
-				$tabsContainer.append($tabsContent);
-
-				const tabsModel = {
-					containerId: "tabsContainer",
-					tabs
-				}
-
-				const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyLeftToolbar")
-
-				// disabled for release 6.7
-				//const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, _this._sampleFormModel.sample.permId, "onlyRightToolbar")
-				const $afsWidgetRightToolBar = "<div/>"
-
-				var $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
-
-				var $toolbarWithTabs = FormUtil.getToolbarWithTabs(
-												toolbarModel,
-												tabsModel,
-												rightToolbarModel,
-												$afsWidgetRightToolBar,
-												$afsWidgetLeftToolBar,
-												$alternateRightToolbar);
-
-				$header.append($toolbarWithTabs);
-				
-				$container.empty();
-				$container.append($tabsContainer);
-				$sampleFormTab.append($form);
-
-				// new dss widget display
-				$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-					var target = $(e.target).attr("href");
-					
-					if (target === "#afsWidgetTab") {
-					  // When the Files tab is selected, hide the normal toolbar and show the alternate one.
-					  $(".normal-toolbar-container").hide();
-					  $(".alternate-toolbar-container").show();
-					  $(".normal-right-toolbar-container").hide();
-					  $(".alternate-right-toolbar-container").show();
-					  $(".extra-right-toolbar-container").show();
-
-					  if (!$("#afsWidgetTab").data("dssLoaded")) {
-						_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
-						$("#afsWidgetTab").data("dssLoaded", true);
-					  }
-					} else {
-					  // When any other tab is selected, show the normal toolbar and hide the alternate one.
-					  $(".normal-toolbar-container").show();
-					  $(".alternate-toolbar-container").hide();
-					  $(".normal-right-toolbar-container").show();
-					  $(".alternate-right-toolbar-container").hide();
-					  $(".extra-right-toolbar-container").hide();
-					}
-				  });
-				  
-				
+				this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel);
 			}
 
 			if(documentEditorEditableToolbar) {
@@ -1828,8 +1761,113 @@
 			return sample.frozenForDataSets == false && (!sample.experiment || sample.experiment.frozenForDataSets == false)
 					&& this._sampleFormModel.dataSetRights.rights.indexOf("CREATE") >= 0;
 		}
-	
+
+		this._initTabHandling = function($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel) {
+			const _this = this;
+			
+			const $tabsContainer = $('<div class="tabs-container">');
+			const tabs = [
+				{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true }
+			];
+			const $tabsContent = $('<div class="tab-content">');
+			const $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
+			const $afsWidgetTab = $('<div id="afsWidgetTab" class="tab-pane fade"></div>');
+			
+			$tabsContent.append($sampleFormTab);
+			if (profile.isAFSAvailable()) {
+				$tabsContent.append($afsWidgetTab);
+				tabs.push({ id: "filesTab", label: "Files", href: "#afsWidgetTab", active: false });
+			}
+			$tabsContainer.append($tabsContent);
+			
+			const tabsModel = {
+				containerId: "tabsContainer",
+				tabs
+			};
+			
+			const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyLeftToolbar");
+			const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyRightToolbar");
+			const $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
+			
+			const $toolbarWithTabs = FormUtil.getToolbarWithTabs(
+				toolbarModel,
+				tabsModel,
+				rightToolbarModel,
+				$afsWidgetRightToolBar,
+				$afsWidgetLeftToolBar,
+				$alternateRightToolbar
+			)
+			$header.append($toolbarWithTabs);
+			
+			$container.empty().append($tabsContainer);
+			$sampleFormTab.append($form);
+			
+			if (this._sampleFormModel.activeTab) {
+				let $activeTabLink = $('a[data-toggle="tab"][href="' + this._sampleFormModel.activeTab + '"]');
+				if ($activeTabLink.length) {
+					$activeTabLink.tab('show');
+				}
+			} else {
+				let $initialActive = $('a[data-toggle="tab"].active');
+				if ($initialActive.length) {
+					this._sampleFormModel.activeTab = $initialActive.attr('href');
+				}
+			}
+			
+			this._updateToolbarForTab(this._sampleFormModel.activeTab);
+
+			$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+				const target = $(e.target).attr("href");
+				_this._sampleFormModel.activeTab = target;
+				_this._updateToolbarForTab(target);
+				if (target === "#afsWidgetTab") {
+					if (!$("#afsWidgetTab").data("dssLoaded")) {
+						_this._waitForExtOpenbisInitialization().then(()=> {
+							_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
+						})
+						$("#afsWidgetTab").data("dssLoaded", true);
+					}
+				}
+			});
+		};
+
+		this._updateToolbarForTab = function(activeTab) {
+			if (activeTab === "#afsWidgetTab") {
+				$(".normal-toolbar-container").hide();
+				$(".alternate-toolbar-container").show();
+				$(".normal-right-toolbar-container").hide();
+				$(".alternate-right-toolbar-container").show();
+				$(".extra-right-toolbar-container").show();
+			} else {
+				$(".normal-toolbar-container").show();
+				$(".alternate-toolbar-container").hide();
+				$(".normal-right-toolbar-container").show();
+				$(".alternate-right-toolbar-container").hide();
+				$(".extra-right-toolbar-container").hide();
+			}
+		};
+
+		this._waitForExtOpenbisInitialization = function() {	
+			Util.blockUI();
+			return new Promise((resolve) => {
+				if (this.extOpenbis.initialized === true) {
+					Util.unblockUI();		
+					resolve();
+				} else {
+					const interval = setInterval(() => {
+						if (this.extOpenbis.initialized === true) {
+							clearInterval(interval);
+							Util.unblockUI();							
+							resolve();
+						}
+					}, 100); // check every 100ms
+				}
+			});
+		}
+		
+
 		this._displayAFSWidget= function ($container, id) {
+			const _this = this
 			let $element = $("<div>")
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
@@ -1841,22 +1879,8 @@
 						objId: id,
 						objKind: "object",	
 						viewType:'list',					
-						withoutToolbar: true,												
-
-						extOpenbis: {
-							RightsFetchOptions: RightsFetchOptions,						
-							SamplePermId:SamplePermId,
-							ExperimentPermId:ExperimentPermId,
-							getRightsByIds: mainController.openbisV3.getRights.bind(mainController.openbisV3),								
-							free: mainController.openbisV3.getAfsServerFacade().free.bind(mainController.openbisV3),
-							create: mainController.openbisV3.getAfsServerFacade().create.bind(mainController.openbisV3),
-							read: mainController.openbisV3.getAfsServerFacade().read.bind(mainController.openbisV3),
-							write: mainController.openbisV3.getAfsServerFacade().write.bind(mainController.openbisV3),
-							delete: mainController.openbisV3.getAfsServerFacade().delete.bind(mainController.openbisV3),
-							copy: mainController.openbisV3.getAfsServerFacade().copy.bind(mainController.openbisV3),
-							move: mainController.openbisV3.getAfsServerFacade().move.bind(mainController.openbisV3),
-							list: mainController.openbisV3.getAfsServerFacade().list.bind(mainController.openbisV3),
-						}
+						withoutToolbar: true,
+						extOpenbis: _this.extOpenbis
 					}
 					let configKey = "AFS-WIDGET-KEY";
 										
@@ -1919,6 +1943,7 @@
 
 		this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
 			let $element = $("<div>")
+			const _this = this
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
 				"as/dto/experiment/id/ExperimentPermId",
@@ -1931,20 +1956,7 @@
 						viewType:'list',
 						className :'btn btn-default',
 						primaryClassName :'btn btn-primary',
-						extOpenbis: {
-							RightsFetchOptions: RightsFetchOptions,						
-							SamplePermId:SamplePermId,
-							ExperimentPermId:ExperimentPermId,
-							getRightsByIds: mainController.openbisV3.getRights.bind(mainController.openbisV3),								
-							free: mainController.openbisV3.getAfsServerFacade().free.bind(mainController.openbisV3),
-							create: mainController.openbisV3.getAfsServerFacade().create.bind(mainController.openbisV3),
-							read: mainController.openbisV3.getAfsServerFacade().read.bind(mainController.openbisV3),
-							write: mainController.openbisV3.getAfsServerFacade().write.bind(mainController.openbisV3),
-							delete: mainController.openbisV3.getAfsServerFacade().delete.bind(mainController.openbisV3),
-							copy: mainController.openbisV3.getAfsServerFacade().copy.bind(mainController.openbisV3),
-							move: mainController.openbisV3.getAfsServerFacade().move.bind(mainController.openbisV3),
-							list: mainController.openbisV3.getAfsServerFacade().list.bind(mainController.openbisV3),
-						}
+						extOpenbis: _this.extOpenbis
 					}
 
 

@@ -24,6 +24,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.exception.FSExceptions;
@@ -135,15 +137,15 @@ public class AuthenticationProxy extends AbstractProxy {
     }
 
     @Override
-    public byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception {
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
         validateSessionAvailable();
-        return nextProxy.read(owner, source, offset, limit);
+        return nextProxy.read(chunks);
     }
 
     @Override
-    public Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull byte[] data) throws Exception {
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception {
         validateSessionAvailable();
-        return nextProxy.write(owner, source, offset, data);
+        return nextProxy.write(chunks);
     }
 
     @Override

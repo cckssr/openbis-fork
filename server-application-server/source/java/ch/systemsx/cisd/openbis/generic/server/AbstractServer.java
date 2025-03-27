@@ -483,19 +483,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
             PersonPE person = getDAOFactory().getPersonDAO().tryFindPersonByUserId(personCode);
             if (person != null)
             {
-                IRoleAssignmentDAO roleAssignmenDAO = getDAOFactory().getRoleAssignmentDAO();
                 person.setActive(false);
-                person.setDisplaySettings(null);
-                person.clearAuthorizationGroups();
-                // Direct iteration over role assignments could lead to a
-                // ConcurrentModificationException because roleAssignmentDAO.deleteRoleAssignment()
-                // will remove the assignment from person.
-                List<RoleAssignmentPE> roleAssignments =
-                        new ArrayList<RoleAssignmentPE>(person.getRoleAssignments());
-                for (RoleAssignmentPE roleAssignment : roleAssignments)
-                {
-                    roleAssignmenDAO.deleteRoleAssignment(roleAssignment);
-                }
                 getDAOFactory().getPersonDAO().updatePerson(person);
             }
         }

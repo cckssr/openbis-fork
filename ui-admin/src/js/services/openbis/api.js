@@ -6,25 +6,31 @@ class Facade {
     autoBind(this)
   }
 
-  _init() {
+  _init(v3) {
     let _this = this
     return new Promise((resolve, reject) => {
       /* eslint-disable-next-line no-undef */
       requirejs(
         ['openbis', 'util/Json'],
         (openbis, stjs) => {
-          new openbis().getServerPublicInformation().then(
-            result => {
-              const afsServerUrlKey = 'server-public-information.afs-server.url'
-              const afsServerUrl = result[afsServerUrlKey]
-              _this.v3 = new openbis(null, afsServerUrl)
-              _this.stjs = stjs
-              resolve()
-            },
-            error => {
-              reject(error)
-            }
-          )
+          _this.stjs = stjs
+          if(!v3){
+              new openbis().getServerPublicInformation().then(
+                result => {
+                  const afsServerUrlKey = 'server-public-information.afs-server.url'
+                  const afsServerUrl = result[afsServerUrlKey]
+                  _this.v3 = new openbis(null, afsServerUrl)
+                
+                  resolve()
+                },             
+              error => {
+                reject(error)
+              }
+            )
+          } else {
+            _this.v3 = v3
+            resolve()
+          }
         },
         error => {
           reject(error)

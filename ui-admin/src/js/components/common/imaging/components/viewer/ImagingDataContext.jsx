@@ -10,7 +10,7 @@ const ImagingDataContext = createContext();
 // Custom hook for accessing the context
 export const useImagingDataContext = () => useContext(ImagingDataContext);
 
-export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenbis, children }) => {
+export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenbis, children, showSemanticAnnotations}) => {
     const [state, setState] = useState({
         error: { open: false, error: null },
         isSaved: true,
@@ -24,6 +24,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
         imagingTags: [],
         datasetType: '',
         datasetFilePaths: [],
+        showSemanticAnnotations: showSemanticAnnotations
     });
 
     const loadImagingDataset = useCallback(async () => {

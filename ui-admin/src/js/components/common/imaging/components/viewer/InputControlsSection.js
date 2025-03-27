@@ -31,7 +31,8 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					isMulti={imageDatasetControl.multiselect}
 					disabled={isUploadedPreview}
 					onSelectChange={(event) => onChangeActConf(event.target.name, event.target.value)}
-					mappingItemsCallback={imageDatasetControl.type === constants.DROPDOWN ? null : renderColorMapItems} />;
+					mappingItemsCallback={imageDatasetControl.type === constants.DROPDOWN ? null : renderColorMapItems} 
+					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 			case constants.SLIDER:
 				return <InputSlider key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
@@ -41,7 +42,8 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					playable={imageDatasetControl.playable && !isUploadedPreview}
 					speeds={imageDatasetControl.speeds}
 					disabled={isUploadedPreview}
-					onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
+					onChange={(name, value, update) => onChangeActConf(name, value, update)} 
+					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 			case constants.RANGE:
 				return <InputRangeSlider key={`InputsPanel-${imageDatasetControl.type}-${idx}`}
 					label={imageDatasetControl.label}
@@ -51,7 +53,8 @@ const InputControlsSection = ({ sectionKey, imageDatasetControlList, inputValues
 					unit={imageDatasetControl.unit}
 					playable={imageDatasetControl.playable && !isUploadedPreview}
 					speeds={imageDatasetControl.speeds}
-					onChange={(name, value, update) => onChangeActConf(name, value, update)} />;
+					onChange={(name, value, update) => onChangeActConf(name, value, update)} 
+					semanticAnnotation={imageDatasetControl.semanticAnnotation}/>;
 		}
 	}
 

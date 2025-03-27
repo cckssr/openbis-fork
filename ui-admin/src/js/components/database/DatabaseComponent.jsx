@@ -127,7 +127,8 @@ class DatabaseComponent extends React.PureComponent {
     return <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
         objId={object.id}
         objType={object.type}
-        extOpenbis={openbis} />
+        extOpenbis={openbis} 
+        showSemanticAnnotations={true}/>
   }
 
   getGridSettingsId() {

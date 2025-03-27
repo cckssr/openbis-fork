@@ -18,6 +18,7 @@ package ch.ethz.sis.afsserver.worker.proxy;
 import java.util.List;
 import java.util.UUID;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.worker.AbstractProxy;
@@ -73,17 +74,17 @@ public class LogProxy extends AbstractProxy {
     }
 
     @Override
-    public byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull Integer limit) throws Exception {
-        logger.traceAccess(null, owner, source, offset, limit);
-        byte[] read = nextProxy.read(owner, source, offset, limit);
-        logger.traceExit(read.length);
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
+        logger.traceAccess(null, chunks[0].getOwner(), chunks[0].getSource(), chunks[0].getOffset(), chunks[0].getLimit());
+        Chunk[] read = nextProxy.read(chunks);
+        logger.traceExit(chunks[0].getData().length);
         return read;
     }
 
     @Override
-    public Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset, @NonNull byte[] data) throws Exception {
-        logger.traceAccess(null, owner, source, offset, data.length);
-        return logger.traceExit(nextProxy.write(owner, source, offset, data));
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception {
+        logger.traceAccess(null, chunks[0].getOwner(), chunks[0].getSource(), chunks[0].getOffset(), chunks[0].getLimit());
+        return logger.traceExit(nextProxy.write(chunks));
     }
 
     @Override

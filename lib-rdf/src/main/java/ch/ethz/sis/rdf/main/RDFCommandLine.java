@@ -222,7 +222,7 @@ public class RDFCommandLine {
 
     public static boolean validateProjectIdentifier(String projectIdentifier)
     {
-        String PROJECT_IDENTIFIER_PATTERN = "^/[a-zA-Z]+/[a-zA-Z]+$";
+        String PROJECT_IDENTIFIER_PATTERN = "^/[A-Z0-9_\\-.]+/[A-Z0-9_\\-.]+$";
         Pattern pattern = Pattern.compile(PROJECT_IDENTIFIER_PATTERN);
         Matcher matcher = pattern.matcher(projectIdentifier);
 

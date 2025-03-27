@@ -87,7 +87,7 @@ export default class DataBrowserController extends ComponentController {
     return await this.handleError(async() => {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
-      return files.map(file => ({ id: file.name, ...file }))
+      return files.map(file => ({ id: file.path, ...file }))
     })
   }
 
@@ -95,7 +95,7 @@ export default class DataBrowserController extends ComponentController {
     return await this.handleError(async() => {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
-      return files.filter(file => file.directory).map(file => ({ id: file.name, ...file }))
+      return files.filter(file => file.directory).map(file => ({ id: file.path, ...file }))
     })
   }
 

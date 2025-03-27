@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
@@ -127,15 +128,24 @@ public class ExecutorProxy extends AbstractProxy
     }
 
     @Override
-    public byte[] read(String owner, String source, Long offset, Integer limit) throws Exception
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception
     {
-        return workerContext.getConnection().read(getSourcePath(owner, source), offset, limit);
+        Chunk[] reads = new Chunk[chunks.length];
+        for (int i = 0; i < chunks.length; i++) {
+            byte[] read = workerContext.getConnection().read(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getLimit());
+            reads[i] = chunks[i].toBuilder().data(read).build();
+        }
+        return reads;
     }
 
     @Override
-    public Boolean write(String owner, String source, Long offset, byte[] data) throws Exception
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception
     {
-        return workerContext.getConnection().write(getSourcePath(owner, source), offset, data);
+        boolean write = true;
+        for (int i = 0; i < chunks.length; i++) {
+            write = write && workerContext.getConnection().write(getSourcePath(chunks[i].getOwner(), chunks[i].getSource()), chunks[i].getOffset(), chunks[i].getData());
+        }
+        return write;
     }
 
     @Override

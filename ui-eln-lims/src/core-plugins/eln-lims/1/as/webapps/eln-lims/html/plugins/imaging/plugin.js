@@ -118,8 +118,9 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 }
                 let reactImagingComponent = null;
                 if (isDataset) {
-                    props['onUnsavedChanges'] = onActionCallback
-                    reactImagingComponent = React.createElement(window.NgComponents.default.ImagingDatasetViewer, props)
+                    props['onUnsavedChanges'] = onActionCallback;
+                    props['showSemanticAnnotations'] = mainController.profile.showSemanticAnnotations;
+                    reactImagingComponent = React.createElement(window.NgComponents.default.ImagingDatasetViewer, props);
                 } else {
                     let configKey = "IMAGING_GALLERY_VIEW-" + objTypeCode;
                     let loadDisplaySettings = function (callback) {

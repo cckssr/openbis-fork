@@ -19,6 +19,7 @@ package ch.ethz.sis.afsapi.api;
 
 import java.util.List;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import lombok.NonNull;
@@ -31,12 +32,10 @@ public interface OperationsAPI
             throws Exception;
 
     @NonNull
-    byte[] read(@NonNull String owner, @NonNull String source, @NonNull Long offset,
-            @NonNull Integer limit) throws Exception;
+    Chunk[] read(@NonNull Chunk[] chunks) throws Exception;
 
     @NonNull
-    Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset,
-            @NonNull byte[] data) throws Exception;
+    Boolean write(@NonNull Chunk[] chunks) throws Exception;
 
     @NonNull
     Boolean delete(@NonNull String owner, @NonNull String source) throws Exception;

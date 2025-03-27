@@ -22,6 +22,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import ch.ethz.sis.afs.dto.operation.OperationName;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsapi.dto.FreeSpace;
 import ch.ethz.sis.afsserver.exception.FSExceptions;
@@ -71,15 +72,19 @@ public class AuthorizationProxy extends AbstractProxy {
     }
 
     @Override
-    public byte[] read(String owner, String source, Long offset, Integer limit) throws Exception {
-        validateUserRights(owner, source, IOUtils.readPermissions, OperationName.Read);
-        return nextProxy.read(owner, source, offset, limit);
+    public Chunk[] read(@NonNull Chunk[] chunks) throws Exception {
+        for (Chunk chunk:chunks) {
+            validateUserRights(chunk.getOwner(), chunk.getSource(), IOUtils.readPermissions, OperationName.Read);
+        }
+        return nextProxy.read(chunks);
     }
 
     @Override
-    public Boolean write(String owner, String source, Long offset, byte[] data) throws Exception {
-        validateUserRights(owner, source, IOUtils.writePermissions, OperationName.Write);
-        return nextProxy.write(owner, source, offset, data);
+    public Boolean write(@NonNull Chunk[] chunks) throws Exception {
+        for (Chunk chunk:chunks) {
+            validateUserRights(chunk.getOwner(), chunk.getSource(), IOUtils.writePermissions, OperationName.Write);
+        }
+        return nextProxy.write(chunks);
     }
 
     @Override

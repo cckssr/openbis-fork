@@ -389,7 +389,14 @@ To create a **richtext property**, use `MULTILINE_VARCHAR` as `dataType` and set
 
 To create a **tabular, spreadsheet-like property**, use `XML` as `dataType` and set `metaData` to `{'custom_widget' : 'Spreadhseet'}`as shown in the example above.
 
-**Note**: PropertyTypes that start with a \$ are by definition `managedInternally` and therefore this attribute must be set to True.
+#### Spreadsheet widget
+
+`XML` property type with custom widget `Spreadhseet` configured, is displayed as a tabular, spreadsheet-like table in the ELN UI. Pybis supports extracting such property for further analysis in python.
+
+**⚠️ Important** pybis does **not** contain spreadsheet engine, so all changes to formulas will not be recomputed unless user re-saves object/collection/dataset in the ELN UI.
+
+[More about Spreadsheet API can be found here](#spreadsheet-api)
+
 
 #### Multi-value properties
 
@@ -843,7 +850,7 @@ experiment.p                              # in Jupyter: show all properties in a
 experiment.p()                            # get all properties as a dict
 experiment.props.all()                    # get all properties as a dict
 experiment.p('prop1','prop2')             # get some properties as a dict
-experiment.p.get('$name')                 # get the value of a property
+experiment.p.get('name')                 # get the value of a property
 experiment.p['property']                  # get the value of a property
 ```
 
@@ -1021,7 +1028,7 @@ sample.p                              # in Jupyter: show all properties in a nic
 sample.p()                            # get all properties as a dict
 sample.props.all()                    # get all properties as a dict
 sample.p('prop1','prop2')             # get some properties as a dict
-sample.p.get('$name')                 # get the value of a property
+sample.p.get('name')                 # get the value of a property
 sample.p['property']                  # get the value of a property
 ```
 
@@ -1464,7 +1471,7 @@ ds.p                              # in Jupyter: show all properties in a nice ta
 ds.p()                            # get all properties as a dict
 ds.props.all()                    # get all properties as a dict
 ds.p('prop1','prop2')             # get some properties as a dict
-ds.p.get('$name')                 # get the value of a property
+ds.p.get('name')                 # get the value of a property
 ds.p['property']                  # get the value of a property
 ```
 
@@ -1511,7 +1518,7 @@ datasets = o.get_datasets(
         'registrator.email',
         'type.generatedCodePrefix'
     ],
-    props=['$NAME', 'MATING_TYPE']    # show these properties in the result
+    props=['NAME', 'MATING_TYPE']    # show these properties in the result
 )
 datasets = o.get_datasets(props="*")  # retrieve all properties of all dataSets
 dataset = datasets[0]                 # get the first dataset in the search result
@@ -1827,12 +1834,12 @@ term.delete()
 
 #### Main Menu
 
-The ELN settings are stored as a **JSON string** in the `$eln_settings` property of the `GENERAL_ELN_SETTINGS` sample. You can show the **Main Menu settings** like this:
+The ELN settings are stored as a **JSON string** in the `eln_settings` property of the `GENERAL_ELN_SETTINGS` sample. You can show the **Main Menu settings** like this:
 
 ```python
 import json
 settings_sample = o.get_sample("/ELN_SETTINGS/GENERAL_ELN_SETTINGS")
-settings = json.loads(settings_sample.props["$eln_settings"])
+settings = json.loads(settings_sample.props["eln_settings"])
 print(settings["mainMenu"])
 {'showLabNotebook': True,
  'showInventory': True,
@@ -1855,7 +1862,7 @@ To modify the **Main Menu settings**, you have to change the settings dictionary
 
 ```python
 settings['mainMenu']['showTrashcan'] = False
-settings_sample.props['$eln_settings'] = json.dumps(settings)
+settings_sample.props['eln_settings'] = json.dumps(settings)
 settings_sample.save()
 ```
 
@@ -1872,16 +1879,16 @@ To change the settings, just change the sample's properties and save the sample:
 ```python
 sto = o.get_sample('/ELN_SETTINGS/STORAGES/BENCH')
 sto.props()
-{'$name': 'Bench',
- '$storage.row_num': '1',
- '$storage.column_num': '1',
- '$storage.box_num': '9999',
- '$storage.storage_space_warning': '80',
- '$storage.box_space_warning': '80',
- '$storage.storage_validation_level': 'BOX_POSITION',
- '$xmlcomments': None,
- '$annotations_state': None}
- sto.props['$storage.box_space_warning']= '80'
+{'name': 'Bench',
+ 'storage.row_num': '1',
+ 'storage.column_num': '1',
+ 'storage.box_num': '9999',
+ 'storage.storage_space_warning': '80',
+ 'storage.box_space_warning': '80',
+ 'storage.storage_validation_level': 'BOX_POSITION',
+ 'xmlcomments': None,
+ 'annotations_state': None}
+ sto.props['storage.box_space_warning']= '80'
  sto.save()
 ```
 
@@ -1909,6 +1916,107 @@ Currently, the value of the `custom_widget` key can be set to either
 
 - `Spreadsheet` (for tabular, Excel-like data)
 - `Word Processor` (for rich text data)
+
+
+[More about Spreadsheet API can be found here](#spreadsheet-api)
+
+### Spreadsheet API
+
+`XML` property type with custom widget `Spreadhseet` configured, is displayed as a tabular, spreadsheet-like table in the ELN UI. Pybis supports extracting such property for further analysis in python.
+
+**⚠️ Important** pybis does **not** contain spreadsheet engine, so all changes to formulas will not be recomputed unless user re-saves object/collection/dataset in the ELN UI.
+
+Spreadsheet widget saves data in a base64 encoded text string. Pybis decodes it and includes a set of helper methods to read and manipulate values of it.
+
+Spreadsheet is a table component with indexed columns and rows. Columns are index with either integer (greater than 0) or text, and rows are indexed with integer (greater than 0). 
+
+#### Basic operations:
+```python
+spreadsheet = o.new_spreadsheet(columns=10, rows=10) # creates new spreadsheet 10x10 
+
+spreadsheet.add_row() # Add new row to the end of spreadsheet
+spreadsheet.add_row()
+
+spreadsheet.delete_row(row_number=1) # remove first row
+
+spreadsheet.add_column() # add column to the end, default alphabetic naming will be used
+spreadsheet.add_column("OPENBIS") # add column named "OPENBIS" to the end of spreadsheet
+
+spreadsheet.delete_column("G") # delete column with name 'G'
+spreadsheet.delete_column(1) # delete first column (named 'A')
+
+sample = o.new_sample('EXPERIMENTAL_STEP', collection='/DEFAULT/DEFAULT/DEFAULT') # create new sample, EXPERIMENTAL_STEP should have spreadsheet property configured with 'Spreadsheet' custom_widget
+sample.props['experimental_step.spreadsheet'] = spreadsheet # assign spreadsheet object to a property
+sample.save() # during save spreadsheet object will be serialized into openbis-supported text string
+
+```
+
+#### Cells
+Spreadsheet Cell have 3 attributes:
+- formula - it is either spreadsheet formula (e.g `=SUM(A1:A3)`) or value
+- value - value that is calculated by spreadsheet engine (in ELN UI)
+- style - styling of particular cell
+
+Accessing cells:
+```python
+# Cells can be accessed with helper method 'cell'
+spreadsheet.cell('B', 1) # column 'B', row 1
+
+
+value = spreadsheet.cell('B', 1).value
+spreadsheet.cell('C', 2).formula = 123
+spreadsheet.cell('D', 5).style = 'text-align: center;'
+
+# Cell can be accessed with index:
+spreadsheet['B', 5].formula = 'B5 Cell'
+
+
+```
+**Note** `value` attribute will be overwritten by spreadsheet engine in ELN UI, so it is discouraged to modify it 
+
+#### Columns
+Spreadsheet Column contain 2 attributes:
+- header - the label of the column
+- width - display width of the column
+
+Modifying column information:
+```python
+
+spreadsheet.column('F').header = 'MY_COLUMN' # headers can be renamed but duplicate names may cause issues
+spreadsheet.column('MY_COLUMN').width = 150 # to make column wider, initial value is 50
+
+```
+
+#### DataFrame
+
+Spreadsheet can be exported (import not supported) to pandas DataFrame object:
+```python
+spreadsheet.df('formulas') # supported values: ['headers', 'formulas', 'width', 'values'] 
+
+```
+
+
+#### Raw data
+There are some helper methods that allow to access read-only raw data behind Spreadsheet object:
+
+```python
+spreadsheet.get_formulas() # Returns deep copy of formulas in a form of 2-D list 
+spreadsheet.get_values() # Returns deep copy of values in a form of 2-D list 
+spreadsheet.get_headers() # Returns deep copy of headers in a form of a list
+spreadsheet.get_width() # Returns deep copy of column widths in a form of a list
+spreadsheet.get_style() # Returns deep copy of cell styles in a form of a dictionary
+spreadsheet.get_column_count() # number of columns in spreadsheet
+spreadsheet.get_row_count() # number of cells in spreadsheet
+
+```
+
+#### Metadata
+
+`get_meta_data()` returns dictionary for storing simple metadata information. This metadata is not used by ELN spreadsheet engine.
+
+```python
+spreadsheet.get_meta_data() # returns {} that can be used for storing simple information
+```
 
 ## Things object
 
@@ -1957,11 +2065,11 @@ for experiment in experiments.response['objects']:
 Would produce following output:
 ```python
 {}
-{'$NAME': 'Storages Collection'}
-{'$NAME': 'Template Collection'}
-{'$NAME': 'Storage Positions Collection'}
-{'$NAME': 'General Protocols', '$DEFAULT_OBJECT_TYPE': 'GENERAL_PROTOCOL'}
-{'$NAME': 'Product Collection', '$DEFAULT_OBJECT_TYPE': 'PRODUCT'}
+{'NAME': 'Storages Collection'}
+{'NAME': 'Template Collection'}
+{'NAME': 'Storage Positions Collection'}
+{'NAME': 'General Protocols', 'DEFAULT_OBJECT_TYPE': 'GENERAL_PROTOCOL'}
+{'NAME': 'Product Collection', 'DEFAULT_OBJECT_TYPE': 'PRODUCT'}
 ```
 
 ### DataFrame
@@ -2008,7 +2116,7 @@ pybis.entity_type.PropertyAssignment
 
 attribute                        value
 -------------------------------  -------------------
-propertyType                     $NAME
+propertyType                     NAME
 dataType                         VARCHAR
 section                          General info
 ordinal                          1
