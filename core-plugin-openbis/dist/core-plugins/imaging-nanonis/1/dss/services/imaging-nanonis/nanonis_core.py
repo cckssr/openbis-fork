@@ -22,10 +22,12 @@ import skimage
 
 from spmpy import Spm as spm
 
-# from spmpy import Spm as spm # <---new library does not work well with dat
+# from spmpy import Spm as spmpy # <---new library does not work well with dat
 
-from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
+# from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
 import spmpy_terry as spmpy   # <--- spmpy has other methods
+
+
 from datetime import datetime
 
 import spiepy
@@ -212,7 +214,7 @@ def get_sxm_image(sxm_file_path, format, channel_name, x_axis, y_axis, scaling, 
 
     img.plot(show=False, show_params=False, channel=channel_name, log=log, cmap=colormap,
              color_scale=color_scale, colormap_scaling=colormap_scaling, data=(chData,chUnit),
-             clim=clim, axis=False)
+             clim=clim,  x_axis=x_axis, y_axis=y_axis, axis=False)
 
     if print_out:
         plt.savefig(img_byte_arr, format=format, dpi=resolution)

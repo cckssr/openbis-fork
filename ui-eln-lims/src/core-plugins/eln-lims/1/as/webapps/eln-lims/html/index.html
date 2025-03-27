@@ -373,15 +373,17 @@
 
 			var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
 			reactRoot.render(reactComponentWithProviders)
-
-			this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer })
+			var url = window.location.href;
+			this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer, url: url })
 		}
 		
 		this.cleanupComponents = function(){
 			var stillConnectedComponents = []
-
+			var backStack = mainController.backStack;
 			this.components.forEach(function(component){
 				if (component.domContainer.isConnected) {
+					stillConnectedComponents.push(component)
+				} else if(backStack.some(x => decodeURI(x.url) === decodeURI(component.url))) {
 					stillConnectedComponents.push(component)
 				} else {
 					component.reactRoot.unmount()

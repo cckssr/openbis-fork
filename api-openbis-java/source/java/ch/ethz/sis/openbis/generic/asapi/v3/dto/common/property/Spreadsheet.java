@@ -37,14 +37,6 @@ public final class Spreadsheet implements Serializable
         this(10, 10);
     }
 
-
-
-    // Python only
-//    public String[][] getFormulasDataFrame() {
-//        return data;
-//    }
-
-
     @JsonIgnore
     public Spreadsheet(int columnCount, int rowCount)
     {
