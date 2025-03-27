@@ -10,12 +10,10 @@ import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.LinkedDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
@@ -34,6 +32,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
@@ -49,6 +49,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
@@ -57,9 +58,17 @@ public class OpenBISService implements IOpenBISService
 {
     private final OpenBISFacade openBISFacade;
 
-    public OpenBISService(OpenBISFacade openBISFacade)
+    private final IArchiverPlugin archiverPlugin;
+
+    private final IArchiverContextFactory archiverContextFactory;
+
+    public OpenBISService(final OpenBISFacade openBISFacade, final IArchiverPlugin archiverPlugin,
+            final IArchiverContextFactory archiverContextFactory)
     {
+
         this.openBISFacade = openBISFacade;
+        this.archiverPlugin = archiverPlugin;
+        this.archiverContextFactory = archiverContextFactory;
     }
 
     @Override public String getSessionToken()
@@ -427,18 +436,38 @@ public class OpenBISService implements IOpenBISService
     @Override public void archiveDataSets(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
             throws UserFailureException
     {
-        List<? extends IDataSetId> dataSetIds = dataSetCodes.stream().map(DataSetPermId::new).collect(Collectors.toList());
-        DataSetArchiveOptions archiveOptions = new DataSetArchiveOptions();
-        archiveOptions.setRemoveFromDataStore(removeFromDataStore);
-        if (options != null)
-        {
-            for (String key : options.keySet())
-            {
-                archiveOptions.withOption(key, options.get(key));
-            }
-        }
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withPhysicalData();
+        criteria.withCodes().thatIn(dataSetCodes);
 
-        openBISFacade.archiveDataSets(dataSetIds, archiveOptions);
+        DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withType();
+        dataSetFetchOptions.withDataStore();
+        dataSetFetchOptions.withPhysicalData().withFileFormatType();
+        dataSetFetchOptions.withContainers();
+
+        SampleFetchOptions sampleFetchOptions = dataSetFetchOptions.withSample();
+        sampleFetchOptions.withType();
+        sampleFetchOptions.withSpace();
+        sampleFetchOptions.withProject();
+
+        ExperimentFetchOptions experimentFetchOptions = dataSetFetchOptions.withExperiment();
+        experimentFetchOptions.withType();
+        experimentFetchOptions.withProject().withSpace();
+
+        List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, dataSetFetchOptions).getObjects();
+        List<DatasetDescription> dataSetDescriptions = dataSets.stream().map(DTOTranslator::translateToDescription).collect(Collectors.toList());
+
+        ArchiverTaskContext archiverTaskContext = archiverContextFactory.createContext();
+        archiverTaskContext.setOptions(options);
+
+        // TODO
+        // archiverTaskContext.setUserId();
+        // archiverTaskContext.setUserEmail();
+        // archiverTaskContext.setUserSessionToken();
+
+        archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)

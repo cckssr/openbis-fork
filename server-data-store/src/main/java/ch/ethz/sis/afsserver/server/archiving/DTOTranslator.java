@@ -54,6 +54,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.UrlContentCopy;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTermEntityProperty;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SpaceIdentifier;
 
@@ -220,6 +221,59 @@ public class DTOTranslator
         }
 
         return simpleDTO;
+    }
+
+    public static DatasetDescription translateToDescription(DataSet dataSet)
+    {
+        DatasetDescription description = new DatasetDescription();
+        description.setDataSetCode(dataSet.getCode());
+        description.setMainDataSetPath(dataSet.getType().getMainDataSetPath());
+        description.setMainDataSetPattern(dataSet.getType().getMainDataSetPattern());
+        description.setDatasetTypeCode(dataSet.getType().getCode());
+        description.setDataStoreCode(dataSet.getDataStore().getCode());
+        description.setRegistrationTimestamp(dataSet.getRegistrationDate());
+
+        if (dataSet.getPhysicalData() != null)
+        {
+            description.setDataSetLocation(dataSet.getPhysicalData().getLocation());
+            description.setDataSetShareId(dataSet.getPhysicalData().getShareId());
+            description.setDataSetSize(dataSet.getPhysicalData().getSize());
+            description.setSpeedHint(dataSet.getPhysicalData().getSpeedHint());
+            description.setFileFormatType(dataSet.getPhysicalData().getFileFormatType().getCode());
+            description.setStorageConfirmed(dataSet.getPhysicalData().isStorageConfirmation());
+            // TODO
+            // description.setH5Folders(physicalData.isH5Folders());
+            // description.setH5arFolders(physicalData.isH5arFolders());
+        }
+
+        if (dataSet.getSample() != null)
+        {
+            description.setSampleCode(dataSet.getSample().getCode());
+            description.setSampleIdentifier(dataSet.getSample().getIdentifier().getIdentifier());
+            description.setSampleTypeCode(dataSet.getSample().getType().getCode());
+            if (dataSet.getSample().getProject() != null)
+            {
+                description.setProjectCode(dataSet.getSample().getProject().getCode());
+            }
+            description.setSpaceCode(dataSet.getSample().getSpace().getCode());
+        }
+
+        if (dataSet.getExperiment() != null)
+        {
+            description.setExperimentIdentifier(dataSet.getExperiment().getIdentifier().getIdentifier());
+            description.setExperimentTypeCode(dataSet.getExperiment().getType().getCode());
+            description.setExperimentCode(dataSet.getExperiment().getCode());
+            description.setProjectCode(dataSet.getExperiment().getProject().getCode());
+            description.setSpaceCode(dataSet.getExperiment().getProject().getSpace().getCode());
+        }
+
+        int ordinal = 0;
+        for (DataSet container : dataSet.getContainers())
+        {
+            description.addOrderInContainer(container.getCode(), ordinal++);
+        }
+
+        return description;
     }
 
     public static Sample translate(final ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample sample)

@@ -29,15 +29,16 @@ public class ShareIdManager implements IShareIdManager
 
     private final String storageRoot;
 
-    private final int timeoutInSeconds;
+    private final int lockingTimeoutInSeconds;
 
-    private final int waitingIntervalInMillis = 100;
+    private final int lockingWaitingIntervalInMillis;
 
     public ShareIdManager(Configuration configuration, OpenBISFacade openBISFacade)
     {
         this.openBISFacade = openBISFacade;
         this.storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-        this.timeoutInSeconds = ArchiverConfiguration.getInstance(configuration).getLockingTimeOut();
+        this.lockingTimeoutInSeconds = ArchiverConfiguration.getInstance(configuration).getLockingTimeOutInSeconds();
+        this.lockingWaitingIntervalInMillis = ArchiverConfiguration.getInstance(configuration).getLockingTimeOutInSeconds();
 
         Object connectionFactoryObject;
 
@@ -133,7 +134,7 @@ public class ShareIdManager implements IShareIdManager
 
         long startMillis = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() < startMillis + timeoutInSeconds * 1000L)
+        while (System.currentTimeMillis() < startMillis + lockingTimeoutInSeconds * 1000L)
         {
             List<Lock<UUID, String>> locks = filterLocksByDataSet(transactionManager.getLocks(), dataSet);
 
@@ -144,7 +145,7 @@ public class ShareIdManager implements IShareIdManager
 
                 try
                 {
-                    Thread.sleep(waitingIntervalInMillis);
+                    Thread.sleep(lockingWaitingIntervalInMillis);
                 } catch (InterruptedException e)
                 {
                     Thread.currentThread().interrupt();

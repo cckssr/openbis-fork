@@ -20,13 +20,12 @@ import java.util.List;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
-import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverServiceProvider;
+import ch.ethz.sis.afsserver.server.archiving.HierarchicalContentServiceProvider;
 import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
@@ -47,6 +46,7 @@ import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 
 public final class Server<CONNECTION, API>
@@ -92,12 +92,20 @@ public final class Server<CONNECTION, API>
         logger.info("=== Server Bootstrap ===");
         logger.info("Running with java.version: " + System.getProperty("java.version"));
 
-        // 2 Create pathinfo DB
+        // 2 Create pathinfo DB and archiving DB
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
         if (pathInfoDatabaseConfiguration != null)
         {
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseConfiguration.getContext(),
                     pathInfoDatabaseConfiguration.getVersion(), null,
+                    null);
+        }
+
+        DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
+        if (archiverDatabaseConfiguration != null)
+        {
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(archiverDatabaseConfiguration.getContext(),
+                    archiverDatabaseConfiguration.getVersion(), null,
                     null);
         }
 
@@ -158,20 +166,11 @@ public final class Server<CONNECTION, API>
         ServiceProvider.configure(configuration);
         IncomingShareIdProvider.configure(configuration);
 
-        ArchiverConfiguration archiverConfiguration = ArchiverConfiguration.getInstance(configuration);
-        if (archiverConfiguration != null)
-        {
-            ArchiverServiceProviderFactory.setInstance(
-                    new ArchiverServiceProvider(configuration, OpenBISConfiguration.getInstance(configuration).getOpenBISFacade()));
-        }
-
-        DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
-        if (archiverDatabaseConfiguration != null)
-        {
-            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(archiverDatabaseConfiguration.getContext(),
-                    archiverDatabaseConfiguration.getVersion(), null,
-                    null);
-        }
+        ch.ethz.sis.afsserver.server.archiving.ServiceProvider.configure(configuration);
+        ArchiverServiceProviderFactory.setInstance(
+                new ArchiverServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
+        HierarchicalContentServiceProviderFactory.setInstance(
+                new HierarchicalContentServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
 
         // 2.9 Create maintenance tasks
         logger.info("Starting maintenance tasks");
