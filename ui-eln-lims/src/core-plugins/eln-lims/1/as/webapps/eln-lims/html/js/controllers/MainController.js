@@ -106,6 +106,8 @@ function MainController(profile) {
 	
 	//Functionality to keep state
 	this.backStack = [];
+    this._stateCounter = 0;
+    this._backStackLimit = 30;
 	this.loggedInAnonymously = false;
 
 	this.zenodoApiTokenKey = "personal-zenodo-api-token";
@@ -179,9 +181,47 @@ function MainController(profile) {
 				this.currentView.finalize) {
 				this.currentView.finalize(true);
 			}
+			var back = true;
+			if(e.state && e.state.id) {
+			    if(e.state.id > this._stateCounter) {
+			        // forward logic
+			        back = false;
+			        var toPush = null;
+                    toPush = {
+                            header : null,
+                            content : null,
+                            auxContent : null
+                    }
+
+                    if(this.views.header) {
+                        toPush.header = this.views.header;
+                        toPush.header.detach();
+                    }
+
+                    if(this.views.content) {
+                        toPush.content = this.views.content;
+                        toPush.content.detach();
+                    }
+
+                    if(this.views.auxContent) {
+                        toPush.auxContent = this.views.auxContent;
+                        toPush.auxContent.detach();
+                    }
+
+                    this.backStack.push({
+                        view : toPush,
+                        url : window.location.href,
+                        controller: this.currentView,
+                    });
+                    if(this.backStack.length > this._backStackLimit) {
+                        this.backStack.shift();
+                    }
+			    }
+                this._stateCounter = e.state.id;
+			}
 			
 			var toPop = null;
-			if(this.backStack.length > 0) {
+			if(back && this.backStack.length > 0) {
 				toPop = this.backStack.pop();
 			}
 
@@ -486,7 +526,7 @@ function MainController(profile) {
 		if (shouldURLBePushToHistory) {
 			var menuUniqueId = this.sideMenu.getCurrentNodeId();
 			var url = Util.getURLFor(menuUniqueId, newViewChange, arg);
-			history.pushState(null, "", url); //History Push State
+			history.pushState({id: ++this._stateCounter}, "", url); //History Push State
 
 			var toPush = null;
 			if(shouldStateBePushToHistory) {
@@ -517,6 +557,9 @@ function MainController(profile) {
 				url : url,
 				controller: this.currentView,
 			});
+			if(this.backStack.length > this._backStackLimit) {
+                this.backStack.shift();
+            }
 		}
 
 		//
@@ -1773,7 +1816,7 @@ function MainController(profile) {
 								localReference.currentView = dataGrid;
 								var content = localReference._getBackwardsCompatibleMainContainer();
 								dataGrid.init(content);
-								history.pushState(null, "", ""); //History Push State
+								history.pushState({id: ++this._stateCounter}, "", ""); //History Push State
 							}
 						});
 					} else {
@@ -1904,7 +1947,7 @@ function MainController(profile) {
 									localReference.currentView = dataGrid;
 									var content = localReference._getBackwardsCompatibleMainContainer();
 									dataGrid.init(content);
-									history.pushState(null, "", ""); //History Push State
+									history.pushState({id: ++this._stateCounter}, "", ""); //History Push State
 								} else {
 									//Discard old response, was triggered but a new one was started
 								}
@@ -2080,7 +2123,7 @@ function MainController(profile) {
 			localReference.currentView = dataGrid;
 			var content = localReference._getBackwardsCompatibleMainContainer();
 			dataGrid.init(content);
-			history.pushState(null, "", ""); //History Push State
+			history.pushState({id: ++this._stateCounter}, "", ""); //History Push State
 		});
 	}
 	
