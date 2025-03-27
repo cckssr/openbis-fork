@@ -114,7 +114,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifi
 @Friend(toClasses = MultiDataSetArchiver.class)
 public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 {
-    private static final String DSS_CODE = "DSS";
+    private static final String DSS_CODE = "DSS1";
 
     private static final class RecordingStatusUpdater implements IDataSetStatusUpdater
     {
@@ -466,7 +466,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -547,7 +547,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -634,7 +634,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds2 in "
                         + staging.getAbsolutePath() + "/ds2-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 407 bytes in 2 chunks took < 1sec.\n"
@@ -730,7 +730,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Condition fulfilled after 1sec, condition: "
                         + "Free space: 20.00 GB, needed space: 1.00 GB\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
@@ -810,7 +810,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n",
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n",
                 getLogContent());
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("[]", Arrays.asList(staging.list()).toString());
@@ -841,7 +841,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
                         + staging.getAbsolutePath() + "/ds1-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 397 bytes in 2 chunks took < 1sec.\n"
@@ -1028,7 +1028,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         ProcessingStatus status = archiver.archive(Arrays.asList(ds1, ds2, afsDataSet), archiverContext, true);
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - Starts consistency check between data store and pathinfo database for [Dataset 'ds1', Dataset 'ds2']\n"
                         + "INFO  OPERATION.AbstractDatastorePlugin - Consistency check finished.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
@@ -1064,7 +1064,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
                 + "has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Free space on unarchiving scratch share '1': "
                 + "34.00 GB, requested space for unarchiving 2 data sets: 30.00 GB\n", getFilteredLogContent());
         assertEquals("[ds1, ds2]: ARCHIVED true\n[ds1, ds2]: AVAILABLE true\n", statusUpdater.toString());
@@ -1092,7 +1092,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
                 + "has been requested: [Dataset 'ds1', Dataset 'ds2', Dataset 'afsDataSet']\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Unarchiving delayed\n", getFilteredLogContent());
         assertEquals("", statusUpdater.toString());
         assertEquals("[]", status.getErrorStatuses().toString());
@@ -1114,7 +1114,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         ProcessingStatus status = archiver.archive(Arrays.asList(ds1, afsDataSet), archiverContext, true);
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds1', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                         + "INFO  OPERATION.MultiDataSetFileOperationsManager - Archive dataset ds1 in "
                         + staging.getAbsolutePath() + "/ds1-yyyyMMdd-HHmmss.tar\n"
                         + "INFO  OPERATION.TarDataSetPackager - Reading statistics for input stream: 397 bytes in 2 chunks took < 1sec.\n"
@@ -1145,7 +1145,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - Unarchiving of the following datasets "
                 + "has been requested: [Dataset 'ds1', Dataset 'afsDataSet']\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n"
+                + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n"
                 + "INFO  OPERATION.AbstractDatastorePlugin - Free space on unarchiving scratch share '1': "
                 + "34.00 GB, requested space for unarchiving 1 data sets: 10.00 GB\n", getFilteredLogContent());
         assertEquals("[ds1]: ARCHIVED true\n[ds1]: AVAILABLE true\n", statusUpdater.toString());

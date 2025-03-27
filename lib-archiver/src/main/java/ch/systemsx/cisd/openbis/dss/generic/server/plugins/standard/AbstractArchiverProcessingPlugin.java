@@ -15,6 +15,9 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.ARCHIVED;
+import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +52,7 @@ import ch.systemsx.cisd.common.time.TimingParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -63,10 +67,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
-import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.ARCHIVED;
-import static ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus.AVAILABLE;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
@@ -210,8 +211,8 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
         try
         {
-            datasets = filterDSSDataOnly(datasets);
-        } catch (FilterDSSDataOnlyException e)
+            datasets = filterCurrentDataStoreDataOnly(datasets);
+        } catch (FilterCurrentDataStoreDataOnlyException e)
         {
             return e.getStatus();
         }
@@ -428,8 +429,8 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
         try
         {
-            datasets = filterDSSDataOnly(datasets);
-        } catch (FilterDSSDataOnlyException e)
+            datasets = filterCurrentDataStoreDataOnly(datasets);
+        } catch (FilterCurrentDataStoreDataOnlyException e)
         {
             return e.getStatus();
         }
@@ -506,8 +507,8 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
         try
         {
-            datasets = filterDSSDataOnly(datasets);
-        } catch (FilterDSSDataOnlyException e)
+            datasets = filterCurrentDataStoreDataOnly(datasets);
+        } catch (FilterCurrentDataStoreDataOnlyException e)
         {
             return e.getStatus();
         }
@@ -543,16 +544,18 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         }
     }
 
-    private <T extends IDatasetLocation> List<T> filterDSSDataOnly(final List<T> datasets) throws FilterDSSDataOnlyException
+    private <T extends IDatasetLocation> List<T> filterCurrentDataStoreDataOnly(final List<T> datasets) throws FilterCurrentDataStoreDataOnlyException
     {
         if (datasets == null || datasets.isEmpty())
         {
             return datasets;
         }
 
+        List<T> currentDataStoreDatasets = new ArrayList<>();
+        List<String> otherDataStoreDatasets = new ArrayList<>();
         List<String> datasetsWithoutDataStore = new ArrayList<>();
-        List<String> datasetsWithAFSDataStore = new ArrayList<>();
-        List<T> dssOnlyDatasets = new ArrayList<>();
+
+        IConfigProvider configProvider = ArchiverServiceProviderFactory.getInstance().getConfigProvider();
 
         for (T dataset : datasets)
         {
@@ -561,12 +564,12 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
                 if (dataset.getDataStoreCode() == null || dataset.getDataStoreCode().isBlank())
                 {
                     datasetsWithoutDataStore.add(dataset.getDataSetCode());
-                } else if (dataset.getDataStoreCode().equals(Constants.AFS_DATA_STORE_CODE))
+                } else if (dataset.getDataStoreCode().equals(configProvider.getDataStoreCode()))
                 {
-                    datasetsWithAFSDataStore.add(dataset.getDataSetCode());
+                    currentDataStoreDatasets.add(dataset);
                 } else
                 {
-                    dssOnlyDatasets.add(dataset);
+                    otherDataStoreDatasets.add(dataset.getDataSetCode());
                 }
             }
         }
@@ -584,25 +587,25 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
             AbstractDatastorePlugin.operationLog.error("Data sets " + CollectionUtils.abbreviate(datasetsWithoutDataStore, 10)
                     + " have data store code null or empty.");
 
-            throw new FilterDSSDataOnlyException(processingStatus);
+            throw new FilterCurrentDataStoreDataOnlyException(processingStatus);
         }
 
-        if (!datasetsWithAFSDataStore.isEmpty())
+        if (!otherDataStoreDatasets.isEmpty())
         {
-            AbstractDatastorePlugin.operationLog.info("Data sets " + CollectionUtils.abbreviate(datasetsWithAFSDataStore, 10)
-                    + " were created by " + Constants.AFS_DATA_STORE_CODE
-                    + " data store. They will be ignored by the archiver.");
+            AbstractDatastorePlugin.operationLog.info("Data sets " + CollectionUtils.abbreviate(otherDataStoreDatasets, 10)
+                    + " were created by a different data store (not by " + configProvider.getDataStoreCode()
+                    + " data store). They will be ignored by the archiver.");
         }
 
-        return dssOnlyDatasets;
+        return currentDataStoreDatasets;
     }
 
-    private static class FilterDSSDataOnlyException extends Exception
+    private static class FilterCurrentDataStoreDataOnlyException extends Exception
     {
 
         private final ProcessingStatus status;
 
-        public FilterDSSDataOnlyException(ProcessingStatus status)
+        public FilterCurrentDataStoreDataOnlyException(ProcessingStatus status)
         {
             this.status = status;
         }
