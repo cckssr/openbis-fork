@@ -67,50 +67,6 @@ file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 # print(file_path)
 
 
-# def get_dat_image(channel_x, channel_y, x_axis, y_axis, colormap, scaling, grouping, print_legend, resolution, include_param_info):
-#     specs = spmpy.importall(folder_dir, '', 'spec')
-#
-#     for spec in specs:
-#         date_time = spec.get_param('Saved Date')
-#         spec.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S") if date_time is not None else datetime.now()
-#         # spec.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S")
-#
-#     # sort measurements according to date
-#     specs.sort(key=lambda d: d.date_time)
-#     specs_sub = list(filter(lambda spec:spec.name in grouping, specs))
-#
-#     print_legend = print_legend
-#     show = False
-#     fig = spmpy.specs_plot(specs_sub, channelx=channel_x, channely=channel_y, direction='forward',
-#                            print_legend=print_legend, show=show, colormap=colormap, scaling=scaling,
-#                            x_axis=x_axis, y_axis=y_axis)
-#     img_byte_arr = io.BytesIO()
-#     plt.savefig(img_byte_arr, format=format, dpi=resolution)
-#
-#     fig = plt.figure()
-#     size = fig.get_size_inches()*fig.dpi
-#
-#     img_byte_arr = img_byte_arr.getvalue()
-#     encoded = base64.b64encode(img_byte_arr)
-#     preview = {'bytes': encoded.decode('utf-8'), 'width': int(size[0]), 'height': int(size[1])}
-#
-#     # if include_param_info:
-#     #     # print_params = img.print_params_dict(show=False)
-#     #     # #     header = json.dumps(img.header, cls=NumpyEncoder)
-#     #     # #     preview['header'] = header
-#     #     #
-#     #     # # for x in img.header.keys():
-#     #     # #     preview[x] = json.dumps(img.header[x], cls=NumpyEncoder)
-#     #     #
-#     #     # for x in print_params.keys():
-#     #     #     key = x
-#     #     #     if key in ['bytes', 'width', 'height']:
-#     #     #         key = 'meta_' + key
-#     #     #     preview[key] = print_params[x]
-#
-#     return preview
-
-
 def dat_mode(parameters):
 
     colormap_scaling = False
