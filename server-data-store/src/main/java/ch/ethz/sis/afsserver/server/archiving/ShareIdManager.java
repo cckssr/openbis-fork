@@ -17,6 +17,7 @@ import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 
@@ -198,6 +199,7 @@ public class ShareIdManager implements IShareIdManager
     private List<DataSet> getDataSets(List<String> dataSetCodes)
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withCodes().thatIn(dataSetCodes);
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();

@@ -48,6 +48,7 @@ import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 
 public final class Server<CONNECTION, API>
 {
@@ -171,6 +172,7 @@ public final class Server<CONNECTION, API>
                 new ArchiverServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
         HierarchicalContentServiceProviderFactory.setInstance(
                 new HierarchicalContentServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
+        ServiceProviderFactory.setInstance(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance());
 
         // 2.9 Create maintenance tasks
         logger.info("Starting maintenance tasks");

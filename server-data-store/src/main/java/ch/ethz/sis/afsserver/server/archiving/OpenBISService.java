@@ -119,6 +119,7 @@ public class OpenBISService implements IOpenBISService
         PhysicalDataFetchOptions physicalDataFetchOptions = dataSetFetchOptions.withPhysicalData();
         physicalDataFetchOptions.withLocatorType();
         physicalDataFetchOptions.withStorageFormat();
+        physicalDataFetchOptions.withFileFormatType();
 
         LinkedDataFetchOptions linkedDataFetchOptions = dataSetFetchOptions.withLinkedData();
         linkedDataFetchOptions.withExternalDms();
@@ -498,8 +499,9 @@ public class OpenBISService implements IOpenBISService
         sampleFetchOptions.withExperimentUsing(experimentFetchOptions);
 
         PhysicalDataFetchOptions physicalDataFetchOptions = new PhysicalDataFetchOptions();
-        physicalDataFetchOptions.withStorageFormat();
         physicalDataFetchOptions.withLocatorType();
+        physicalDataFetchOptions.withStorageFormat();
+        physicalDataFetchOptions.withFileFormatType();
 
         LinkedDataFetchOptions linkedDataFetchOptions = new LinkedDataFetchOptions();
         linkedDataFetchOptions.withExternalDms();
