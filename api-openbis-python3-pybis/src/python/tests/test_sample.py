@@ -72,6 +72,61 @@ def test_create_delete_sample(space):
 
     sample.delete("sample creation test on " + timestamp)
 
+    with pytest.raises(ValueError):
+        o.get_sample(sample.permId)
+        assert "This should fail" is None
+
+
+def test_revert_deletion_sample(space):
+    o = space.openbis
+
+    sample_type = "UNKNOWN"
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    sample_code = "test_sample_" + timestamp + "_" + str(random.randint(0, 1000))
+    sample = o.new_sample(code=sample_code, type=sample_type, space=space)
+    assert sample is not None
+    assert sample.space.code == space.code
+    assert sample.code == sample_code
+    assert sample.permId == ""
+    sample.save()
+
+    # now there should appear a permId
+    assert sample.permId is not None
+
+    # get it by permId
+    sample_by_permId = o.get_sample(sample.permId)
+    assert sample_by_permId is not None
+
+    sample_by_permId = space.get_sample(sample.permId)
+    assert sample_by_permId is not None
+
+    assert sample_by_permId.registrator is not None
+    assert sample_by_permId.registrationDate is not None
+    # check date format: 2019-03-22 11:36:40
+    assert (
+            re.search(
+                r"^\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d{2}$",
+                sample_by_permId.registrationDate,
+            )
+            is not None
+    )
+
+    sample.delete("sample creation test on " + timestamp)
+
+    with pytest.raises(ValueError):
+        o.get_sample(sample.permId)
+        assert "This should fail" is None
+
+    df = o.get_deletions()
+    assert df[df['permId'] == sample.permId].empty is False
+    deletionId = df[df['permId'] == sample.permId]['deletionId'].iloc[0]
+    o.revert_deletions([deletionId])
+
+    sample = o.get_sample(sample.permId)
+    assert sample is not None
+    df = o.get_deletions()
+    assert df[df['permId'] == sample.permId].empty is True
+
 
 def test_create_delete_space_sample(space):
     o = space.openbis

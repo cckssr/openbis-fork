@@ -7,6 +7,7 @@
 
 - Improvements to Spreadsheet API
 - Handling UnicodeDecodeError in spreadsheet property
+- Added revert_deletions method
 
 ## Changes with pybis-1.37.3
 

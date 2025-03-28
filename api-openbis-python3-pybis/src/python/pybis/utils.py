@@ -239,6 +239,7 @@ def extract_deletion(obj):
                 "reason": obj["reason"],
                 "permId": deleted_object["id"]["permId"],
                 "type": deleted_object["id"]["@type"],
+                "deletionId": obj["id"]["id"]
             }
         )
     return del_objs
