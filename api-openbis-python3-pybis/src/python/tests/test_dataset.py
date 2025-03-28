@@ -204,6 +204,8 @@ def test_revert_deletion_dataset(space):
     dataset = o.get_dataset(permId)
     assert dataset is not None
     df = o.get_deletions()
+    print(f"Columns:{df.columns}")
+    print(f"DF:{df}")
     assert df[df['permId'] == permId].empty is True
 
 
