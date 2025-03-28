@@ -22,7 +22,7 @@ import pytest
 
 def test_create_delete_experiment(space):
     o = space.openbis
-    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
+    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper() + "_" + str(uuid.uuid4())
     new_code = 'test_experiment_' + timestamp
 
     with pytest.raises(TypeError):
@@ -59,7 +59,7 @@ def test_create_delete_experiment(space):
 
 def test_revert_deletion_experiment(space):
     o = space.openbis
-    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
+    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper() + "_" + str(uuid.uuid4())
     new_code = 'test_experiment_' + timestamp
 
     project = o.get_projects()[0]

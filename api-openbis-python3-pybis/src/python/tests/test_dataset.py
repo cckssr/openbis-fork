@@ -157,7 +157,7 @@ def test_create_delete_dataset(space):
 
 
 def test_revert_deletion_dataset(space):
-    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper() + "_" + str(uuid.uuid4())
     o = space.openbis
     testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
 
@@ -673,6 +673,8 @@ def test_create_new_dataset_in_chunks(space):
     assert dataset.file_list == ["original/testfile_big"]
 
     with tempfile.TemporaryDirectory() as tmpdirname:
+        print(f"Temp dir: {tmpdirname}")
         dataset.download(destination=tmpdirname, create_default_folders=False)
+        print(f"files: {os.listdir(tmpdirname)}")
         assert filecmp.cmp(testfile_path, os.path.join(tmpdirname, "testfile_big"))
 
