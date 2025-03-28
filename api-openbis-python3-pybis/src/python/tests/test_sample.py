@@ -125,7 +125,8 @@ def test_revert_deletion_sample(space):
     sample = o.get_sample(sample.permId)
     assert sample is not None
     df = o.get_deletions()
-    assert df[df['permId'] == sample.permId].empty is True
+    if df.empty is False:
+        assert df[df['permId'] == sample.permId].empty is True
 
 
 def test_create_delete_space_sample(space):

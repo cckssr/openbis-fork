@@ -94,7 +94,8 @@ def test_revert_deletion_experiment(space):
     e_exists = o.get_experiment(e_exists.permId)
     assert e_exists is not None
     df = o.get_deletions()
-    assert df[df['permId'] == e_exists.permId].empty is True
+    if df.empty is False:
+        assert df[df['permId'] == e_exists.permId].empty is True
 
 
 def test_get_experiments(space):

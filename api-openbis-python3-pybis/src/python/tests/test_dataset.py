@@ -204,9 +204,8 @@ def test_revert_deletion_dataset(space):
     dataset = o.get_dataset(permId)
     assert dataset is not None
     df = o.get_deletions()
-    print(f"Columns:{df.columns}")
-    print(f"DF:{df}")
-    assert df[df['permId'] == permId].empty is True
+    if df.empty is False:
+        assert df[df['permId'] == permId].empty is True
 
 
 def test_create_dataset_with_code(space):
@@ -675,8 +674,6 @@ def test_create_new_dataset_in_chunks(space):
     assert dataset.file_list == ["original/testfile_big"]
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        print(f"Temp dir: {tmpdirname}")
         dataset.download(destination=tmpdirname, create_default_folders=False)
-        print(f"files: {os.listdir(tmpdirname)}")
         assert filecmp.cmp(testfile_path, os.path.join(tmpdirname, "testfile_big"))
 
