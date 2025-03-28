@@ -1,7 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
+import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.*;
 
@@ -29,26 +29,58 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.ICustomASServiceExecutor;
+import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.CustomASServiceContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 
-public class XLSExportExtendedService
+public class XLSExportExtendedService implements ICustomASServiceExecutor
 {
 
-    public static String export(String sessionToken, Map<String, Serializable> parameters) {
+    private final String code = "xls-export-extended";
+
+    private final String label = "XLS Export Extended Service";
+
+    private final String description = "XLS export for internal and external services";
+
+    @Override
+    public Object executeService(CustomASServiceContext context, CustomASServiceExecutionOptions options)
+    {
+        return export(context.getSessionToken(), options.getParameters());
+    }
+
+    public String getCode()
+    {
+        return code;
+    }
+
+    public String getLabel()
+    {
+        return label;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public static Map<String, String> export(String sessionToken, Map<String, Object> parameters) {
         System.out.println("sessionToken: " + sessionToken);
         System.out.println("parameters: " + parameters);
 
-        // Root
-        String kind = ((Map<String, String>) parameters.get("entity")).get("kind");
-        String permId = ((Map<String, String>) parameters.get("entity")).get("permId");
+        List<Map<String, Object>> nodeExportMaps = (List<Map<String, Object>>) parameters.get("nodeExportList");
+        if (nodeExportMaps == null || nodeExportMaps.isEmpty()) {
+            throw new IllegalArgumentException("The parameter nodeExportList cannot be null or empty.");
+        }
+
         // Options
         boolean withEmail = (boolean) parameters.get("withEmail");
         boolean withImportCompatibility = (boolean) parameters.get("withImportCompatibility");
@@ -56,18 +88,25 @@ public class XLSExportExtendedService
         boolean pdf = ((Map<String, Boolean>) parameters.get("formats")).get("pdf");
         boolean xlsx = ((Map<String, Boolean>) parameters.get("formats")).get("xlsx");
         boolean data = ((Map<String, Boolean>) parameters.get("formats")).get("data");
-        // Inclusions
-        boolean withLevelsAbove = true;
-        boolean withLevelsBelow = (boolean) parameters.get("withLevelsBelow");
-        boolean withObjectsAndDataSetsParents = (boolean) parameters.get("withObjectsAndDataSetsParents");
-        boolean withObjectsAndDataSetsOtherSpaces = (boolean) parameters.get("withObjectsAndDataSetsOtherSpaces");
 
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         ExportData exportData = new ExportData();
-        ExportableKind rootKind = ExportableKind.valueOf(kind);
-        ExportablePermId root = new ExportablePermId(rootKind, permId);
-        Set<ExportablePermId> collection = collectEntities(api, sessionToken, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces);
-        exportData.setPermIds(new ArrayList<ExportablePermId>(collection));
+        Set<ExportablePermId> allPermIds = new HashSet<>();
+
+        for (Map<String, Object> nodeExportMap : nodeExportMaps) {
+            String kind = (String) nodeExportMap.get("kind");
+            String permId = (String) nodeExportMap.get("permId");
+            boolean withLevelsAbove = (boolean) nodeExportMap.get("withLevelsAbove");
+            boolean withLevelsBelow = (boolean) nodeExportMap.get("withLevelsBelow");
+            boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.get("withObjectsAndDataSetsParents");
+            boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.get("withObjectsAndDataSetsOtherSpaces");
+
+            ExportableKind rootKind = ExportableKind.valueOf(kind);
+            ExportablePermId root = new ExportablePermId(rootKind, permId);
+            collectEntities(api, sessionToken, allPermIds, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces);
+        }
+
+        exportData.setPermIds(new ArrayList<>(allPermIds));
         exportData.setFields(new AllFields());
         ExportOptions exportOptions = new ExportOptions();
         Set<ExportFormat> formats = new HashSet<>();
@@ -87,16 +126,33 @@ public class XLSExportExtendedService
         exportOptions.setZipSingleFiles(Boolean.TRUE);
 
         ExportThread exportThread = new ExportThread(api, sessionToken, exportData, exportOptions, withEmail);
+
+        Map<String, String> downloadResultMap = new HashMap<>();
         if (withEmail) {
             Thread thread = new Thread(exportThread);
             thread.start();
-            return Boolean.TRUE.toString();
+            downloadResultMap.put("canonicalPath", Boolean.TRUE.toString());
+            downloadResultMap.put("downloadURL", Boolean.TRUE.toString());
+            return downloadResultMap;
         } else {
             exportThread.run();
             if (exportThread.getExportException() != null) {
                 throw new RuntimeException(exportThread.getExportException());
             } else {
-                return exportThread.getExportResult().getDownloadURL();
+                String downloadURL = exportThread.getExportResult().getDownloadURL();
+                String canonicalPath;
+                try {
+                    String filePath = downloadURL.substring(downloadURL.indexOf("filePath=") + "filePath=".length());
+                    canonicalPath = CommonServiceProvider.getSessionWorkspaceProvider()
+                            .getCanonicalFile(sessionToken, filePath)
+                            .getCanonicalPath();
+                } catch (IOException e)
+                {
+                    throw new RuntimeException("Can't get canonical path from session workspace. ", e);
+                }
+                downloadResultMap.put("canonicalPath", canonicalPath);
+                downloadResultMap.put("downloadURL", downloadURL);
+                return downloadResultMap;
             }
         }
     }
@@ -168,9 +224,10 @@ public class XLSExportExtendedService
         }
     }
 
-    private static  Set<ExportablePermId> collectEntities(
+    private static void collectEntities(
             IApplicationServerInternalApi api,
             String sessionToken,
+            Set<ExportablePermId> collection,
             ExportablePermId root,
             boolean withLevelsAbove,
             boolean withLevelsBelow,
@@ -178,7 +235,6 @@ public class XLSExportExtendedService
             boolean withObjectsAndDataSetsOtherSpaces)
     {
         Set<ExportablePermId> collectedLevelsAbove = new HashSet<>(); // Stores nodes who levels above have been collected to avoid repeating paths
-        Set<ExportablePermId> collection = new HashSet<>();
         Deque<ExportablePermId> todo = new LinkedList<>();
         todo.add(root);
 
@@ -451,7 +507,6 @@ public class XLSExportExtendedService
                 }
             }
         }
-        return collection;
     }
 
     private static void collectLevelsAboveDataSet(Map<IDataSetId, DataSet> dataSets, Set<ExportablePermId> collection, Set<ExportablePermId> collectedLevelsAbove) {

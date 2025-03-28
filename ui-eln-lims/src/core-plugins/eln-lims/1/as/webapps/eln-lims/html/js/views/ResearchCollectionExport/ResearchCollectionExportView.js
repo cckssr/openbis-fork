@@ -28,12 +28,28 @@ function ResearchCollectionExportView(researchCollectionExportController, resear
         });
         $form.append($formColumn);
 
-        var $infoBox = FormUtil.getInfoBox('You can select any parts of the accessible openBIS structure to export:', [
-            'If you select a tree node and do not expand it, everything below this node will be exported by default.',
-            'To export selectively only parts of a tree, open the nodes and select what to export.'
-        ]);
-        $infoBox.css('border', 'none');
-        $container.append($infoBox);
+        var $compatible = $("<span class='checkbox'><label><input type='checkbox' checked id='COMPATIBLE-IMPORT'>Make import compatible</label></span>");
+        $container.append($compatible);
+
+        var $info_formats = $("<span>").append($("<b>").append("File formats"));
+        $container.append($info_formats);
+        var $pdf = $("<span class='checkbox'><label><input type='checkbox' checked id='PDF-EXPORT'>Export metadata as PDF</label></span>");
+        $container.append($pdf);
+        var $xlsx = $("<span class='checkbox'><label><input type='checkbox' checked id='XLSX-EXPORT'>Export metadata as XLSX</label></span>");
+        $container.append($xlsx);
+        var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='DATA-EXPORT'>Export data</label></span>");
+        $container.append($data);
+
+        var $hierarchyInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions"));
+
+        $container.append($hierarchyInclusions);
+
+        var $infoBox1 = FormUtil.getInfoBox("You can select any parts of the accessible openBIS structure to export:", [
+            "If you select a tree node and do not expand it, everything below this node will be exported by default.",
+            "To export selectively only parts of a tree, open the nodes and select what to export.",
+            "Under any case dependencies of the selected nodes will be exported too."]);
+        $infoBox1.css("border", "none");
+        $container.append($infoBox1);
 
         var $tree = $('<div>', { 'id' : 'exportsTree' });
         $formColumn.append($('<br>'));

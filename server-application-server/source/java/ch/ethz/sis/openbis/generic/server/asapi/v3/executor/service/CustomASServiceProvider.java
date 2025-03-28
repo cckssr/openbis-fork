@@ -16,7 +16,6 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
+import ch.ethz.sis.openbis.generic.server.xls.export.XLSExportExtendedService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
@@ -77,8 +77,12 @@ public class CustomASServiceProvider implements InitializingBean, ICustomASServi
             ICustomASServiceExecutor serviceExecutor = ClassUtils.create(ICustomASServiceExecutor.class, className, properties);
             list.add(service);
             executors.put(code, serviceExecutor);
+            //addCustomASService(code, properties.getProperty(LABEL_KEY, code), properties.getProperty(DESCRIPTION_KEY, ""), serviceExecutor);
         }
-        services = Collections.unmodifiableList(list);
+        services = list;
+        // Official system services
+        XLSExportExtendedService XLSExportExtendedService = new XLSExportExtendedService();
+        addCustomASService(XLSExportExtendedService.getCode(), XLSExportExtendedService.getLabel(), XLSExportExtendedService.getDescription(), XLSExportExtendedService);
     }
 
     @Override
@@ -93,4 +97,12 @@ public class CustomASServiceProvider implements InitializingBean, ICustomASServi
         return executors.get(code);
     }
 
+    public void addCustomASService(String code, String label, String description, ICustomASServiceExecutor customASServiceExecutor) {
+        CustomASService service = new CustomASService();
+        service.setCode(new CustomASServiceCode(code));
+        service.setLabel(label);
+        service.setDescription(description);
+        services.add(service);
+        executors.put(code, customASServiceExecutor);
+    }
 }

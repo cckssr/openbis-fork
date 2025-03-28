@@ -29,15 +29,13 @@ from java.nio.file import Paths
 from java.text import SimpleDateFormat
 from java.util import UUID
 from java.util.zip import ZipOutputStream, Deflater
-from org.apache.commons.io import FileUtils
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
 
-from exportsApi import displayResult, findEntitiesToExport, validateDataSize, getConfigurationProperty, addToZipFile, generateZipFile, \
-    checkResponseStatus, cleanUp
+from exportsApi import displayResult, getConfigurationProperty, addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -49,22 +47,21 @@ def process(tr, params, tableBuilder):
     tr.setUserId(userId)
 
     if method == 'exportAll':
-        resultUrl = expandAndExport(tr, params)
+        resultUrl = exportAll(tr, params)
+        #resultUrl = expandAndExport(tr, params)
         displayResult(resultUrl is not None, tableBuilder, '{"url": "' + resultUrl + '"}' if resultUrl is not None else None,
                       errorMessage=None if resultUrl is not None else 'Archives are not allowed if indefinite retention period is selected.')
 
-
-def getBaseUrl(url):
-    splitUrl = urlsplit(url)
-    return splitUrl.scheme + '://' + splitUrl.netloc
-
-
-def expandAndExport(tr, params):
-    entitiesToExport = findEntitiesToExport(params)
-    validateDataSize(entitiesToExport, tr)
-
-    if params.get('retentionPeriod') == 'indefinite' and containsArchives(entitiesToExport):
+def exportAll(tr, params):
+    if params.get('retentionPeriod') == 'indefinite': # ?? and containsArchives(entitiesToExport) :
         return None
+
+    sessionToken = params.get('sessionToken')
+    exportModel = params.get("entities")
+
+    downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel)
+
+    canonicalPath = downloadResultMap.get('canonicalPath')
 
     userInformation = {
         'firstName': params.get('userFirstName'),
@@ -72,8 +69,27 @@ def expandAndExport(tr, params):
         'email': params.get('userEmail'),
     }
 
-    operationLog.info('Found ' + str(len(entitiesToExport)) + ' entities to export')
-    return export(entities=entitiesToExport, tr=tr, params=params, userInformation=userInformation)
+    timeNow = time.time()
+
+    exportDirName = 'export_' + str(timeNow)
+
+    exportDirPath, contentZipFileName = os.path.split(canonicalPath)
+    exportZipFilePath = exportDirPath + '.zip'
+    exportZipFileName = exportDirName + '.zip'
+
+    generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=canonicalPath, contentZipFileName=contentZipFileName,
+                            exportZipFileName=exportZipFilePath, userInformation=userInformation, entities=exportModel.get("nodeExportList"))
+    
+    resultUrl = sendToDSpace(params=params, tr=tr, tempZipFileName=exportZipFileName, tempZipFilePath=exportZipFilePath)
+    
+    cleanUp(exportZipFilePath, canonicalPath)
+    
+    return resultUrl
+
+
+def getBaseUrl(url):
+    splitUrl = urlsplit(url)
+    return splitUrl.scheme + '://' + splitUrl.netloc
 
 
 def containsArchives(entitiesToExport):
@@ -103,38 +119,6 @@ def isArchive(path):
     extension = splitPath[splitItemsCount - 1].upper()
     print('Checking isArchive(). path=%s, splitItemsCount=%i, extension=%s' % (path, splitItemsCount, extension))
     return splitItemsCount > 1 and extension in archiveExtensions
-
-
-def export(entities, tr, params, userInformation):
-    #Create temporal folder
-    timeNow = time.time()
-
-    exportDirName = 'export_' + str(timeNow)
-    exportDir = File.createTempFile(exportDirName, None)
-    exportDirPath = exportDir.getCanonicalPath()
-    exportDir.delete()
-    exportDir.mkdir()
-
-    contentZipFileName = 'content.zip'
-    contentDirName = 'content_' + str(timeNow)
-    contentDir = File.createTempFile(contentDirName, None, exportDir)
-    contentDirPath = contentDir.getCanonicalPath()
-    contentDir.delete()
-    contentDir.mkdir()
-
-    contentZipFilePath = exportDirPath + '/' + contentZipFileName
-
-    exportZipFilePath = exportDirPath + '.zip'
-    exportZipFileName = exportDirName + '.zip'
-
-    generateZipFile(entities, params, contentDirPath, contentZipFilePath, deflated=False)
-    FileUtils.forceDelete(File(contentDirPath))
-
-    generateExternalZipFile(params=params, exportDirPath=exportDirPath, contentZipFilePath=contentZipFilePath, contentZipFileName=contentZipFileName,
-                            exportZipFileName=exportZipFilePath, userInformation=userInformation, entities=entities)
-    resultUrl = sendToDSpace(params=params, tr=tr, tempZipFileName=exportZipFileName, tempZipFilePath=exportZipFilePath)
-    cleanUp(exportDirPath, exportZipFilePath)
-    return resultUrl
 
 
 def sendToDSpace(params, tr, tempZipFileName, tempZipFilePath):
@@ -192,23 +176,6 @@ def authenticateUserJava(url, tr):
     auth = httpClient.getAuthenticationStore()
     auth.addAuthentication(BasicAuthentication(uri, realm, user, password))
     return httpClient
-
-
-def fetchServiceDocument(url, httpClient):
-    response = httpClient.newRequest(url).method(HttpMethod.GET).send()
-    checkResponseStatus(response)
-
-    xmlText = response.getContentAsString().encode('utf-8')
-    xmlRoot = ET.fromstring(xmlText)
-    collections = xmlRoot.findall('./xmlns:workspace/xmlns:collection[@href]', namespaces=dict(xmlns='http://www.w3.org/2007/app'))
-
-    def collectionToDictionaryMapper(collection):
-        return {
-            'title': collection.find('./atom:title', namespaces=dict(atom='http://www.w3.org/2005/Atom')).text,
-            'url': collection.attrib['href'],
-        }
-
-    return json.dumps(map(collectionToDictionaryMapper, collections))
 
 
 def generateExternalZipFile(params, exportDirPath, contentZipFilePath, contentZipFileName, exportZipFileName, userInformation, entities,

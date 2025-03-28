@@ -20,9 +20,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportData
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportOptions
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data import ImportFormat
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options import ImportMode
-from java.lang import ProcessBuilder
 from java.lang import String
-from java.nio.charset import StandardCharsets
 import sys
 import inspect
 import os
@@ -43,8 +41,6 @@ print(importResult.getObjectIds())
 
 
 ImagingFixes.registerExamples(sys.path[-1], "imaging-test")
-
-# raise ValueError("test break point")
 
 
 api.logout(sessionToken)

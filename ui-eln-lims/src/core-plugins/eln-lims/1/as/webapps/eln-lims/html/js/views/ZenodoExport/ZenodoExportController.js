@@ -41,17 +41,35 @@ function ZenodoExportController(parentController) {
         var valueColumn = this.exportModel.tableModel.columns[1];
         var checkedGroups = groupRows.flatMap(row => row[valueColumn.label] ? [row[nameColumn.label]] : []);
 
-        var toExport = [];
+        var nodeExportList = [];
         for (var eIdx = 0; eIdx < selectedNodes.length; eIdx++) {
             var node = selectedNodes[eIdx];
-            toExport.push({type: node.data.entityType, permId: node.key, expand: !node.expanded});
+            nodeExportList.push({
+				kind: node.data.entityType,
+				permId: node.key,
+				withLevelsAbove: true,
+				withLevelsBelow: !node.expanded,
+				withObjectsAndDataSetsParents: true,
+				withObjectsAndDataSetsOtherSpaces: true,
+			})
         }
 
-        if (toExport.length === 0) {
+		var toExportModel = {
+			nodeExportList: nodeExportList,
+			withEmail: false,
+			withImportCompatibility: $("#COMPATIBLE-IMPORT").is(":checked"), //COMPATIBLE-IMPORT
+			formats: {
+				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
+				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
+				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+			}
+		}
+
+        if (toExportModel.nodeExportList.length === 0) {
             Util.showInfo('First select something to export.');
         } else if (title === "") {
             Util.showInfo('Please enter a title.');
-        } else if (!this.isValid(toExport)) {
+        } else if (!this.isValid(toExportModel.nodeExportList)) {
             Util.showInfo('Not only spaces and the root should be selected. It will result in an empty export file.');
         } else if (groupRows.length > 0 && checkedGroups.length === 0) {
             Util.showInfo('At least one group should be selected.');
@@ -60,11 +78,11 @@ function ZenodoExportController(parentController) {
 
             for (var i = 0; i < checkedGroups.length; i++) {
                 var group = checkedGroups[i];
-                toExport.push({type: 'GROUP', permId: 'GROUP:' + group, expand: null});
+                toExportModel.nodeExportList.push({type: 'GROUP', permId: 'GROUP:' + group, expand: null});
             }
 
             this.getUserInformation((function(userInformation) {
-                mainController.serverFacade.exportZenodo(toExport, true, false, userInformation, title, this.exportModel.accessToken,
+                mainController.serverFacade.exportZenodo(toExportModel, userInformation, title, this.exportModel.accessToken,
                         function(operationExecutionPermId) {
                             _this.waitForOpExecutionResponse(operationExecutionPermId, function(error, result) {
                                 Util.unblockUI();
@@ -85,10 +103,10 @@ function ZenodoExportController(parentController) {
         }
     };
 
-    this.isValid = function(toExport) {
-        for (var i = 0; i < toExport.length; i++) {
-            var value = toExport[i];
-            if (value.type !== 'ROOT' && value.type !== 'SPACE' || value.expand) {
+    this.isValid = function(nodeExportList) {
+        for (var i = 0; i < nodeExportList.length; i++) {
+            var value = nodeExportList[i];
+            if (value.kind !== 'ROOT' && value.kind !== 'SPACE' || value.withLevelsBelow) {
                 return true;
             }
         }

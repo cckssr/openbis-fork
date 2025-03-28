@@ -75,6 +75,7 @@ public class ImagingFixes
     private static final int TIMEOUT_COUNT = 60 * 60; //60 minutes
     private static final String PYTHON_PATH = Paths.get("..", "..", "..", "imaging", "1", "dss", "services", "imaging", "Python-3.10.16-linux-x64", "bin", "python3.10").toString();
 
+    private static final String PYTHON_PATH_PROPERTY = "imaging.imaging-fixes-python3-path";
     private static final String PERSON_ID = "admin";
 
     public static void registerExamples(String pathToDir, String pluginName) {
@@ -125,7 +126,16 @@ public class ImagingFixes
         String openbisUrl = String.format("%s/openbis", downloadUrl);
 
         operationLog.info("Configured url: " + openbisUrl);
-        String pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+
+        String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
+        String pythonPath = null;
+        if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
+            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+        } else {
+            pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+        }
+        operationLog.info("Configured python path: " + pythonPath);
+
         String examplePath =
                 Paths.get(pathToDir, "..", "nanonis_example").toAbsolutePath().toString();
         String scriptPath =
@@ -184,7 +194,15 @@ public class ImagingFixes
         String downloadUrl = CommonServiceProvider.tryToGetProperty("download-url");
         String openbisUrl = String.format("%s/openbis", downloadUrl);
 
-        String pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+        String pythonPathProperty = CommonServiceProvider.tryToGetProperty(PYTHON_PATH_PROPERTY);
+        String pythonPath = null;
+        if(pythonPathProperty != null && !pythonPathProperty.trim().isEmpty()) {
+            pythonPath = Paths.get(pathToDir, pythonPathProperty).toAbsolutePath().toString();
+        } else {
+            pythonPath = Paths.get(pathToDir, PYTHON_PATH).toAbsolutePath().toString();
+        }
+        operationLog.info("Configured python path: " + pythonPath);
+
         String examplePath = Paths.get(pathToDir, "..", "imaging_test_example").toAbsolutePath().toString();
         String scriptPath = Paths.get(examplePath, "importer.py").toAbsolutePath().toString();
         String dataPath = Paths.get(examplePath, "data").toAbsolutePath().toString();
