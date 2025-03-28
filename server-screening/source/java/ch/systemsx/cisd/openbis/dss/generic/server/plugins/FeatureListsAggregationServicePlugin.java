@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.commons.io.IOUtils;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
+import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AggregationService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -66,8 +67,15 @@ public class FeatureListsAggregationServicePlugin extends AggregationService
 
         try
         {
-            IHierarchicalContentNode subDirNode =
-                    getDataSubDir(context.getHierarchicalContentProvider(), datasetDescription);
+            IHierarchicalContentNode subDirNode = null;
+
+            if (StringUtils.isBlank(subDirectory))
+            {
+                subDirNode = context.getHierarchicalContentProvider().asContent(datasetDescription.getDataSetCode()).getRootNode();
+            } else
+            {
+                subDirNode = context.getHierarchicalContentProvider().asContent(datasetDescription.getDataSetCode()).getNode(subDirectory);
+            }
 
             IRowBuilder row = null;
             if (subDirNode.exists() && subDirNode.isDirectory())

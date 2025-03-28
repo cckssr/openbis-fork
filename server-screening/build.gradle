@@ -27,6 +27,7 @@ dependencies {
             project(path: ':lib-dbmigration', configuration: 'tests'),
             project(path: ':lib-authentication', configuration: 'tests'),
             project(path: ':api-openbis-java', configuration: 'tests'),
+            project(path: ':lib-openbis-commonbase', configuration: 'tests'),
             project(path: ':lib-openbis-common', configuration: 'tests'),
             project(path: ':server-original-data-store', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',

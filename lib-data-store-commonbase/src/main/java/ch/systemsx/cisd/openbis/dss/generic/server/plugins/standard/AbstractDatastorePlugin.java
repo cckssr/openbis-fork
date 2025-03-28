@@ -48,7 +48,7 @@ public abstract class AbstractDatastorePlugin implements Serializable
 
     protected final File storeRoot;
 
-    private final String subDirectory;
+    protected final String subDirectory;
 
     protected final Properties properties;
 

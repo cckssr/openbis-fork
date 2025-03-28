@@ -405,11 +405,20 @@ public class OpenBISService implements IOpenBISService
             final boolean presentInArchive)
             throws UserFailureException
     {
+        updateDataSetStatuses(dataSetCodes, newStatus, Boolean.valueOf(presentInArchive));
+    }
+
+    public void updateDataSetStatuses(final List<String> dataSetCodes, final DataSetArchivingStatus newStatus,
+            final Boolean presentInArchive) throws UserFailureException
+    {
         List<DataSetUpdate> updates = dataSetCodes.stream().map(dataSetCode ->
         {
             PhysicalDataUpdate physicalDataUpdate = new PhysicalDataUpdate();
             physicalDataUpdate.setStatus(ArchivingStatus.valueOf(newStatus.name()));
-            physicalDataUpdate.setPresentInArchive(presentInArchive);
+            if (presentInArchive != null)
+            {
+                physicalDataUpdate.setPresentInArchive(presentInArchive);
+            }
 
             DataSetUpdate update = new DataSetUpdate();
             update.setDataSetId(new DataSetPermId(dataSetCode));
@@ -458,17 +467,33 @@ public class OpenBISService implements IOpenBISService
         experimentFetchOptions.withProject().withSpace();
 
         List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, dataSetFetchOptions).getObjects();
-        List<DatasetDescription> dataSetDescriptions = dataSets.stream().map(DTOTranslator::translateToDescription).collect(Collectors.toList());
 
-        ArchiverTaskContext archiverTaskContext = archiverContextFactory.createContext();
-        archiverTaskContext.setOptions(options);
+        List<String> notAvailableDataSets =
+                dataSets.stream().filter(dataSet -> !ArchivingStatus.AVAILABLE.equals(dataSet.getPhysicalData().getStatus())).map(DataSet::getCode)
+                        .collect(Collectors.toList());
 
-        // TODO
-        // archiverTaskContext.setUserId();
-        // archiverTaskContext.setUserEmail();
-        // archiverTaskContext.setUserSessionToken();
+        if (!notAvailableDataSets.isEmpty())
+        {
+            throw new RuntimeException(
+                    "Data sets: " + notAvailableDataSets + " cannot be archived as their archiving status is not " + ArchivingStatus.AVAILABLE);
+        }
 
-        archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
+        updateDataSetStatuses(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()),
+                removeFromDataStore ? DataSetArchivingStatus.ARCHIVE_PENDING : DataSetArchivingStatus.BACKUP_PENDING,
+                null);
+
+        try
+        {
+            List<DatasetDescription> dataSetDescriptions = dataSets.stream().map(DTOTranslator::translateToDescription).collect(Collectors.toList());
+
+            ArchiverTaskContext archiverTaskContext = archiverContextFactory.createContext();
+            archiverTaskContext.setOptions(options);
+
+            archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
+        } catch (Exception e)
+        {
+            updateDataSetStatuses(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()), DataSetArchivingStatus.AVAILABLE, null);
+        }
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)

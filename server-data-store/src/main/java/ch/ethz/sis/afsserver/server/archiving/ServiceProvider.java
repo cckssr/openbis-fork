@@ -11,8 +11,9 @@ import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.exceptions.NotImplementedException;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.common.mail.MailClient;
+import ch.systemsx.cisd.common.mail.MailClientParameters;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
@@ -49,6 +50,8 @@ public class ServiceProvider implements IServiceProvider
     private final Configuration configuration;
 
     private IConfigProvider configProvider;
+
+    private IMailClient mailClient;
 
     private IHierarchicalContentProvider hierarchicalContentProvider;
 
@@ -102,7 +105,19 @@ public class ServiceProvider implements IServiceProvider
 
     public synchronized IMailClient createEMailClient()
     {
-        throw new NotImplementedException();
+        if (mailClient == null)
+        {
+            MailConfiguration mailConfiguration = MailConfiguration.getInstance(configuration);
+
+            MailClientParameters parameters = new MailClientParameters();
+            parameters.setFrom(mailConfiguration.getFrom());
+            parameters.setSmtpHost(mailConfiguration.getSmtpHost());
+            parameters.setSmtpUser(mailConfiguration.getSmtpUser());
+            parameters.setSmtpPassword(mailConfiguration.getSmtpPassword());
+            mailClient = new MailClient(parameters);
+        }
+
+        return mailClient;
     }
 
     public synchronized IHierarchicalContentProvider getHierarchicalContentProvider()
