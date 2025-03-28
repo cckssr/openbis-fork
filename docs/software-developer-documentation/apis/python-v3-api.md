@@ -933,8 +933,30 @@ sample.get_attachments()              # deprecated, as attachments are not compa
 sample.download_attachments(<path or cwd>)  # deprecated, see above
 sample.add_attachment('testfile.xls') # deprecated, see above
 
-sample.delete('deleted for some reason')
+sample.delete('deleted for some reason') # move sample to trashcan
 ```
+
+#### Deletion handling
+Samples can be deleted programmatically. 
+
+```python
+
+sample = o.get_sample('/MY_SPACE/MY_TEST_SAMPLE')
+
+sample.delete('required reason') # sample will be moved to trashcan, it will not be searchable anymore
+
+deletions = o.get_deletions() # will return all entries from trashcan in the form of DataFrame
+
+deletionId = df[df['permId'] == sample.permId]['deletionId'].iloc[0] # will return deletionId of our sample
+
+o.revert_deletions([deletionId]) # In case sample deletion needs to be reverted
+o.confirm_deletions([deletionId]) # In case sample needs to be purged permanently
+
+# Alternative way to purge sample is to delete it with permanently=True flag
+sample.delete('required reason', permanently=True) # this can not be reverted!
+```
+
+Once sample is deleted permanently, it can not be reverted!
 
 ### create/update/delete many samples in a transaction
 

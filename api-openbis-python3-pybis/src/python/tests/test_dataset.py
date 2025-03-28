@@ -156,6 +156,58 @@ def test_create_delete_dataset(space):
         deleted_ds = o.get_dataset(permId)
 
 
+def test_revert_deletion_dataset(space):
+    timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper() + "_" + str(uuid.uuid4())
+    o = space.openbis
+    testfile_path = os.path.join(os.path.dirname(__file__), "testdir/testfile")
+
+    dataset = o.new_dataset(
+        type="RAW_DATA",
+        sample="/DEFAULT/DEFAULT/DEFAULT",
+        files=[testfile_path],
+        props={"name": "some good name", "notes": "my notes"},
+    )
+
+    assert dataset is not None
+    assert not dataset.permId
+    assert dataset.p is not None
+    assert dataset.p["name"] == "some good name"
+    assert dataset.p.notes == "my notes"
+
+    dataset.save()
+
+    # now there should appear a permId in our object
+    assert dataset.permId is not None
+    permId = dataset.permId
+
+    # get it by permId
+    dataset_by_permId = o.get_dataset(dataset.permId)
+    assert dataset_by_permId is not None
+    assert dataset_by_permId.permId == permId
+
+    # delete datasets
+    dataset.delete("dataset creation test on " + timestamp)
+
+    # Give openbis some time to process it
+    time.sleep(2)
+
+    # get by permId should now throw an error
+    with pytest.raises(Exception):
+        deleted_ds = o.get_dataset(permId)
+        assert "This should fail" is None
+
+    df = o.get_deletions()
+    assert df[df['permId'] == permId].empty is False
+    deletionId = df[df['permId'] == permId]['deletionId'].iloc[0]
+    o.revert_deletions([deletionId])
+
+    dataset = o.get_dataset(permId)
+    assert dataset is not None
+    df = o.get_deletions()
+    if df.empty is False:
+        assert df[df['permId'] == permId].empty is True
+
+
 def test_create_dataset_with_code(space):
     timestamp = time.strftime("%a_%y%m%d_%H%M%S").upper()
     o = space.openbis

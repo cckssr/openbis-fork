@@ -22,7 +22,7 @@ import pytest
 
 def test_create_delete_experiment(space):
     o = space.openbis
-    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper()
+    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper() + "_" + str(uuid.uuid4())
     new_code = 'test_experiment_' + timestamp
 
     with pytest.raises(TypeError):
@@ -54,6 +54,48 @@ def test_create_delete_experiment(space):
 
     with pytest.raises(ValueError):
         e_no_longer_exists = o.get_experiment(e_exists.permId)
+        assert "This should fail" is None
+
+
+def test_revert_deletion_experiment(space):
+    o = space.openbis
+    timestamp = time.strftime('%a_%y%m%d_%H%M%S').upper() + "_" + str(uuid.uuid4())
+    new_code = 'test_experiment_' + timestamp
+
+    project = o.get_projects()[0]
+
+    e_new = o.new_experiment(
+        code=new_code,
+        project=project,
+        type='UNKNOWN',
+    )
+    assert e_new.project is not None
+    assert e_new.permId == ''
+
+    e_new.save()
+
+    assert e_new.permId is not None
+    assert e_new.code == new_code.upper()
+
+    e_exists = o.get_experiment(e_new.permId)
+    assert e_exists is not None
+
+    e_new.delete('delete test experiment ' + new_code.upper())
+
+    with pytest.raises(ValueError):
+        e_no_longer_exists = o.get_experiment(e_exists.permId)
+        assert "This should fail" is None
+
+    df = o.get_deletions()
+    assert df[df['permId'] == e_exists.permId].empty is False
+    deletionId = df[df['permId'] == e_exists.permId]['deletionId'].iloc[0]
+    o.revert_deletions([deletionId])
+
+    e_exists = o.get_experiment(e_exists.permId)
+    assert e_exists is not None
+    df = o.get_deletions()
+    if df.empty is False:
+        assert df[df['permId'] == e_exists.permId].empty is True
 
 
 def test_get_experiments(space):

@@ -474,6 +474,9 @@ DataStoreServer.prototype._read = function(chunks){
 	);
 
     original.promise = original.promise.then(function(result) {
+        if (!(result instanceof Blob)) {
+            throw new TypeError('_read result is not a valid value of type Blob');
+        }
         return result.text();
     }).then(function(text) {
         var chunks = ChunkEncoderDecoder.decodeChunks(text); // Decode Chunks
@@ -763,6 +766,21 @@ var ChunkEncoderDecoder = (function(){
 })();
 
 var Chunk = function(owner, source, offset, limit, data) {
+    if (!(typeof owner === "string") && !(owner instanceof String)) {
+        throw new TypeError('owner is not a valid value of type string');
+    }
+    if (!(typeof source === "string") && !(source instanceof String)) {
+        throw new TypeError('source is not a valid value of type string');
+    }
+    if (!Number.isInteger(offset)) {
+        throw new TypeError('offset is not a valid value of type Integer');
+    }
+    if (!Number.isInteger(limit)) {
+        throw new TypeError('limit is not a valid value of type Integer');
+    }
+    if (!(data instanceof Uint8Array) || data === undefined || data === null) {
+        throw new TypeError('data is not a valid value of type Uint8Array');
+    }
     this.owner = owner;
     this.source = source;
     this.offset = offset;

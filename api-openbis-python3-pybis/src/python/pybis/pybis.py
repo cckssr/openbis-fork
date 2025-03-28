@@ -3142,11 +3142,26 @@ class Openbis:
 
     def confirm_deletions(self, deletion_ids):
         """Confirms performed deletions"""
+        deletions = [x if '@type' in x else { "@type": "as.dto.deletion.id.DeletionTechId", "id": x } for x in deletion_ids]
         request = {
             "method": "confirmDeletions",
             "params": [
                 self.token,
-                deletion_ids,
+                deletions,
+            ],
+        }
+        self._post_request(self.as_v3, request)
+
+    def revert_deletions(self, deletion_ids):
+        """Confirms performed deletions"""
+        request = {
+            "method": "revertDeletions",
+            "params": [
+                self.token,
+                [{
+                    "@type": 'as.dto.deletion.id.DeletionTechId',
+                    "id": x
+                } for x in deletion_ids],
             ],
         }
         self._post_request(self.as_v3, request)
