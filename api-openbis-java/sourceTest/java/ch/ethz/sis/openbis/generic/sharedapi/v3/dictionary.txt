@@ -2956,3 +2956,7 @@ set Immutable Data Date
 with Immutable Data Date
 IMMUTABLE_DATA_DATE
 immutable Data Date
+AccessDateSearchCriteria
+EventTechIdSearchCriteria
+withAccessDate
+withEventTechId
