@@ -9,11 +9,8 @@ check sets [parser]
 [monitoring] = ${package}.monitoring.*
 check sets [monitoring]
 
-[mail] = ${package}.mail.*
-check sets [mail]
-
 layer layer0 = [converter]
-layer layer3 = [mail] [monitoring]
+layer layer3 = [monitoring]
 layer layer5 = [parser]
 
 check layeringOf layer0 layer3 layer5
