@@ -304,11 +304,32 @@ public class OpenBISService implements IOpenBISService
         return listDataSets(criteria);
     }
 
+    @Override public List<String> listDataSetCodesFromCommandQueue()
+    {
+        return List.of();
+    }
+
     @Override public List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException
+    {
+        return listPhysicalDataSetsByArchivingStatus(null, null);
+    }
+
+    @Override public List<SimpleDataSetInformationDTO> listPhysicalDataSetsByArchivingStatus(final DataSetArchivingStatus archivingStatus,
+            final Boolean presentInArchive)
     {
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
         criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         criteria.withPhysicalData();
+
+        if (archivingStatus != null)
+        {
+            criteria.withPhysicalData().withStatus().thatEquals(ArchivingStatus.valueOf(archivingStatus.name()));
+        }
+
+        if (presentInArchive != null)
+        {
+            criteria.withPhysicalData().withPresentInArchive().thatEquals(presentInArchive);
+        }
 
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withType();

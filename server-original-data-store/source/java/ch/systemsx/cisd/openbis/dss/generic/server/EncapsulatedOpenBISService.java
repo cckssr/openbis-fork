@@ -17,10 +17,13 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
@@ -115,7 +118,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.IQueryApiServer;
 
 /**
  * A class that encapsulates the {@link IServiceForDataStoreServer}.
- * 
+ *
  * @author Bernd Rinn
  */
 public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService, FactoryBean
@@ -146,25 +149,25 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
         RetryingOpenBisCreator(String openBISURL, String timeout, AbstractOpenBisServiceFactory<T> openBisServiceFactory)
         {
             super(new RetryConfiguration()
+            {
+                @Override
+                public float getWaitingTimeBetweenRetriesIncreasingFactor()
                 {
-                    @Override
-                    public float getWaitingTimeBetweenRetriesIncreasingFactor()
-                    {
-                        return 2;
-                    }
+                    return 2;
+                }
 
-                    @Override
-                    public int getWaitingTimeBetweenRetries()
-                    {
-                        return 5000;
-                    }
+                @Override
+                public int getWaitingTimeBetweenRetries()
+                {
+                    return 5000;
+                }
 
-                    @Override
-                    public int getMaximumNumberOfRetries()
-                    {
-                        return 5;
-                    }
-                }, new Log4jSimpleLogger(operationLog));
+                @Override
+                public int getMaximumNumberOfRetries()
+                {
+                    return 5;
+                }
+            }, new Log4jSimpleLogger(operationLog));
             this.timeout = timeout;
             this.openBisServiceFactory = openBisServiceFactory;
         }
@@ -211,7 +214,7 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
     {
         return getGenericRetryingOpenBisV3Creator(openBISURL, timeout).callWithRetry();
     }
-    
+
     public static IDataStoreServerApi createDataStoreV3Service(String dataStoreServerUrl, String timeout)
     {
         return new RetryingOpenBisCreator<>(dataStoreServerUrl, timeout, new DataStoreServerV3Factory(dataStoreServerUrl)).callWithRetry();
@@ -412,6 +415,22 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
             throws UserFailureException
     {
         return service.listDataSetsByCode(session.getSessionToken(), dataSetCodes);
+    }
+
+    @Override public List<String> listDataSetCodesFromCommandQueue()
+    {
+        final String COMMAND_EXECUTOR_BEAN = "data-set-command-executor-provider";
+        IDataSetCommandExecutorProvider commandExecutorProvider =
+                (IDataSetCommandExecutorProvider) ServiceProvider
+                        .getApplicationContext()
+                        .getBean(COMMAND_EXECUTOR_BEAN);
+        List<IDataSetCommandExecutor> executors = commandExecutorProvider.getAllExecutors();
+        Set<String> inQueue = new HashSet<>();
+        for (IDataSetCommandExecutor executor : executors)
+        {
+            inQueue.addAll(executor.getDataSetCodesFromCommandQueue());
+        }
+        return new ArrayList<>(inQueue);
     }
 
     @Override

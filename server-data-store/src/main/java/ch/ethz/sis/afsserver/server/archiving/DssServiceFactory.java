@@ -8,6 +8,7 @@ public class DssServiceFactory implements IDssServiceFactory
 {
     @Override public IDssService getService(final String baseURL)
     {
+        // used only by RemoteHierarchicalContentNode which is not needed at AFS
         throw new NotImplementedException();
     }
 }

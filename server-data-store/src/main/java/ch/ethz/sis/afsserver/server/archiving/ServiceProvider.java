@@ -160,7 +160,7 @@ public class ServiceProvider implements IServiceProvider
 
             if (pathInfoDatabaseConfiguration != null)
             {
-                dataSetPathInfoProvider = new DatabaseBasedDataSetPathInfoProvider(pathInfoDatabaseConfiguration.getDataSource());
+                dataSetPathInfoProvider = new DatabaseBasedDataSetPathInfoProvider(pathInfoDatabaseConfiguration::getDataSource);
             } else
             {
                 throw new RuntimeException("Path info database not configured");

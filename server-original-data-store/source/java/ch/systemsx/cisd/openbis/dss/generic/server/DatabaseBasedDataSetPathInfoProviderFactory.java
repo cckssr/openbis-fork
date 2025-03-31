@@ -5,8 +5,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvi
 public class DatabaseBasedDataSetPathInfoProviderFactory
 {
 
-    public static DatabaseBasedDataSetPathInfoProvider createProvider()
+    public DatabaseBasedDataSetPathInfoProvider createProvider()
     {
-        return new DatabaseBasedDataSetPathInfoProvider(PathInfoDataSourceProvider.getDataSource());
+        return new DatabaseBasedDataSetPathInfoProvider(PathInfoDataSourceProvider::getDataSource);
     }
 }

@@ -33,6 +33,7 @@ dependencies {
             project(':lib-pathinfo-db'),
             project(':lib-archiver-db'),
             project(':lib-archiver'),
+            project(':lib-shuffling'),
             project(':lib-compress'),
             project(':lib-maintenance'),
             project(':lib-hierarchical-content'),

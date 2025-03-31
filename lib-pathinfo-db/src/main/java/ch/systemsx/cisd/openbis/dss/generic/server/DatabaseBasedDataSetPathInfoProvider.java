@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -43,11 +44,11 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         List<DataSetFileRecord> listDataSetFiles(long dataSetId);
     }
 
-    private DataSource dataSource;
+    private Supplier<DataSource> dataSource;
 
     private IPathInfoAutoClosingDAO dao;
 
-    public DatabaseBasedDataSetPathInfoProvider(DataSource dataSource)
+    public DatabaseBasedDataSetPathInfoProvider(Supplier<DataSource> dataSource)
     {
         this.dataSource = dataSource;
     }
@@ -368,7 +369,7 @@ public class DatabaseBasedDataSetPathInfoProvider implements IDataSetPathInfoPro
         if (dao == null)
         {
             dao =
-                    QueryTool.getQuery(dataSource, IPathInfoAutoClosingDAO.class);
+                    QueryTool.getQuery(dataSource.get(), IPathInfoAutoClosingDAO.class);
         }
         return dao;
     }

@@ -1,5 +1,6 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,11 @@ public interface IOpenBISService
 
     List<AbstractExternalData> listDataSetsByCode(List<String> dataSetCodes);
 
+    List<String> listDataSetCodesFromCommandQueue();
+
     List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException;
+
+    List<SimpleDataSetInformationDTO> listPhysicalDataSetsByArchivingStatus(DataSetArchivingStatus archivingStatus, Boolean presentInArchive);
 
     List<AbstractExternalData> listAvailableDataSets(ArchiverDataSetCriteria criteria);
 

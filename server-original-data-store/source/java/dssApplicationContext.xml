@@ -238,7 +238,7 @@
         <constructor-arg ref="config-provider" />
         <constructor-arg ref="content-cache" />
         <constructor-arg ref="sessionHolder" />
-        <constructor-arg ref="propertyConfigurer" />
+        <constructor-arg ref="configProperties" />
     </bean>
 
     <bean id="objectMapper-v1" class="ch.systemsx.cisd.openbis.generic.shared.api.v1.json.GenericObjectMapper" />

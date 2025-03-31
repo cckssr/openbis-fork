@@ -23,14 +23,14 @@ import java.util.Properties;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DeletedDataSet;
 
 /**
  * Maintenance task that removes data sets from the data store archive after they have been deleted in openBIS.
- * 
+ *
  * @author Kaloyan Enimanev
  */
 public class DeleteFromArchiveMaintenanceTask extends
@@ -57,7 +57,7 @@ public class DeleteFromArchiveMaintenanceTask extends
             datasets = filterOldStyleHistoryEvents(list);
         }
 
-        IArchiverPlugin archiverPlugin = ServiceProvider.getDataStoreService().getArchiverPlugin();
+        IArchiverPlugin archiverPlugin = ArchiverServiceProviderFactory.getInstance().getArchiverPlugin();
         List<DatasetLocation> datasetLocations = toDataSetLocations(datasets);
         archiverPlugin.deleteFromArchive(datasetLocations);
 

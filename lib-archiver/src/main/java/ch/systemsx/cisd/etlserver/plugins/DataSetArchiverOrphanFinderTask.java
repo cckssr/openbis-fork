@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
-import org.springframework.transaction.annotation.Transactional;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
@@ -36,12 +35,11 @@ import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
@@ -61,8 +59,8 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
 
     public DataSetArchiverOrphanFinderTask()
     {
-        this(ServiceProvider.getDataStoreService().createEMailClient(),
-                ServiceProvider.getDataStoreService().getArchiverPlugin() instanceof MultiDataSetArchiver);
+        this(ArchiverServiceProviderFactory.getInstance().createEMailClient(),
+                ArchiverServiceProviderFactory.getInstance().getArchiverPlugin() instanceof MultiDataSetArchiver);
     }
 
     DataSetArchiverOrphanFinderTask(IMailClient mailClient, boolean isMultiDatasetArchiver)
@@ -78,7 +76,7 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         emailAddresses = getEMailAddresses(properties);
     }
 
-    @Transactional
+    // @Transactional
     @Override
     public void execute()
     {
@@ -89,10 +87,10 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         String destination = null;
         if (isMultiDatasetArchiver)
         {
-            destination = DataStoreServer.getConfigParameter("archiver.final-destination", null);
+            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("archiver.final-destination", null);
         } else
         {
-            destination = DataStoreServer.getConfigParameter("archiver.destination", null);
+            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("archiver.destination", null);
         }
 
         if (destination == null)
@@ -125,7 +123,7 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         }
 
         operationLog.info("2.2 Database, obtain a list of the archived datasets on the database.");
-        IEncapsulatedOpenBISService service = ServiceProvider.getOpenBISService();
+        IOpenBISService service = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
         List<SimpleDataSetInformationDTO> presentDTOs = service.listPhysicalDataSetsByArchivingStatus(null, Boolean.TRUE);
         Set<String> presentInArchiveOnDB = new HashSet<String>();
         if (presentDTOs != null)
