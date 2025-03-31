@@ -887,7 +887,7 @@ var BarcodeUtil = new function() {
         if (altx) {
             opts.alttext = altx;
             opts.includetext = true;
-//            opts.textyoffset = 1;
+            opts.textyoffset = 5;
 
             if(barcodeType === "qrcode") {
                 if(width >= 30) {
