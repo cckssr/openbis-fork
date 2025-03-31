@@ -3,7 +3,7 @@ package ch.openbis.rocrate.app.reader;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityCreation;
+import ch.eth.sis.rocrate.facade.LiteralType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -12,21 +12,27 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyAssignmentPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.openbis.rocrate.app.Constants;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
 import java.util.*;
@@ -34,49 +40,43 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ch.openbis.rocrate.app.Constants.*;
+
 public class RdfToModel
 {
+
     public static OpenBisModel convert(List<IType> types, List<IPropertyType> typeProperties,
-            List<IMetadataEntry> entries)
+            List<IMetadataEntry> entries, String fallbackSpaceCode, String fallbackProjectCode)
     {
 
         Map<String, IType> IdsToTypes =
                 types.stream().collect(Collectors.toMap(IType::getId, Function.identity()));
 
-        Map<String, List<String>> typeToInheritanceChain = new HashMap<>();
+        Map<String, List<String>> typeToInheritanceChain = new LinkedHashMap<>();
 
-        Map<String, PropertyType> idsToPropertyTypes = typeProperties.stream()
-                .collect(Collectors.toMap(x -> deRdfIdentifier(x.getId()),
-                        RdfToModel::getPropertyType));
-        Map<PropertyType, List<SampleType>> propertiesToObjects;
+        Map<SpacePermId, Space> spaces = new LinkedHashMap<>();
 
-        Map<SampleType, List<SemanticAnnotation>> typesToSemanticAnnotations;
-        Map<PropertyType, List<SemanticAnnotation>> propertyTypesToSemanticAnnotations;
+        Map<ProjectIdentifier, Project> projects = new LinkedHashMap<>();
 
-        Map<SpacePermId, Space> spaces = new HashMap<>();
+        Map<String, SampleType> codeToSampleType = new LinkedHashMap<>();
 
-        Map<ProjectIdentifier, Project> projects = new HashMap<>();
+        List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes = new ArrayList<>();
 
-        Map<String, SampleType> codeToSampleType = new HashMap<>();
-        Map<String, ExperimentType> codeToExperimentType = new HashMap<>();
-
-        Map<EntityTypePermId, IEntityType> schema = new HashMap<>();
-        for (IType typerooni : types)
+        Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
+        for (IType type : types)
         {
-            if (isProject(typerooni) || isSpace(typerooni))
+            if (isProject(type) || isSpace(type))
             {
-                System.out.println("Type " + typerooni.getId() + " is space or project, skipping");
+                System.out.println("Type " + type.getId() + " is space or project, skipping");
                 continue;
             }
 
-            // match type
-            List<IType> inheritanceChain = getInheritanceChain(typerooni, IdsToTypes);
-            typeToInheritanceChain.put(typerooni.getId(),
-                    inheritanceChain.stream().map(x -> x.getId()).collect(
+            List<IType> inheritanceChain = getInheritanceChain(type, IdsToTypes);
+            typeToInheritanceChain.put(type.getId(),
+                    inheritanceChain.stream().map(IType::getId).collect(
                             Collectors.toList()));
 
-            var subclassIdentifiers = typerooni.getSubClassOf();
-            var kind = matchKind(inheritanceChain);
+            EntityKind kind = matchKind(inheritanceChain);
             if (kind == EntityKind.SAMPLE)
             {
 
@@ -85,18 +85,21 @@ public class RdfToModel
                 sampleTypeFetchOptions.withPropertyAssignments();
 
                 SampleType sampleType = new SampleType();
-                sampleType.setCode(typerooni.getId());
+                sampleType.setCode(removePrefix(type.getId()));
                 sampleType.setFetchOptions(sampleTypeFetchOptions);
-                sampleType.setPermId(new EntityTypePermId(typerooni.getId(), EntityKind.SAMPLE));
+                sampleType.setPermId(new EntityTypePermId(type.getId(), EntityKind.SAMPLE));
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
 
-                if (!isOpenBisBaseType(typerooni))
+                if (isOpenBisDerivedType(type))
                 {
                     schema.put(sampleType.getPermId(), sampleType);
                 }
-                typerooni.getOntologicalAnnotations().forEach(x -> {
+                type.getOntologicalAnnotations().forEach(x -> {
                     SemanticAnnotation semanticAnnotation = new SemanticAnnotation();
+                    semanticAnnotation.setDescriptorAccessionId(x);
+                    semanticAnnotation.setDescriptorOntologyId(x);
+                    semanticAnnotation.setDescriptorOntologyVersion(x);
 
                     List<SemanticAnnotation> existingAnnotations =
                             sampleType.getSemanticAnnotations();
@@ -118,12 +121,10 @@ public class RdfToModel
                 fetchOptions.withPropertyAssignments();
 
                 ExperimentType experimentType = new ExperimentType();
-                experimentType.setCode(typerooni.getId());
-                experimentType.setPermId(new EntityTypePermId(typerooni.getId(), kind));
+                experimentType.setCode(type.getId());
+                experimentType.setPermId(new EntityTypePermId(type.getId(), kind));
 
-                codeToExperimentType.put(typerooni.getId(), experimentType);
-
-                if (!isOpenBisBaseType(typerooni))
+                if (isOpenBisDerivedType(type))
                 {
                     schema.put(experimentType.getPermId(), experimentType);
                 }
@@ -131,12 +132,33 @@ public class RdfToModel
 
         }
 
+        Map<String, List<String>> typesToProperties = new LinkedHashMap<>();
+        for (IPropertyType typeProperty : typeProperties)
+        {
+            for (String domain : typeProperty.getDomain())
+            {
+                List<String> typeToDomain =
+                        typesToProperties.getOrDefault(domain, new ArrayList<>());
+                typeToDomain.add(typeProperty.getId());
+                typesToProperties.put(domain, typeToDomain);
+            }
+        }
+
         for (IPropertyType a : typeProperties)
         {
             PropertyType propertyType = new PropertyType();
-            PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-            fetchOptions.withSemanticAnnotations();
-            propertyType.setFetchOptions(fetchOptions);
+            {
+                PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+                fetchOptions.withSemanticAnnotations();
+                fetchOptions.withVocabulary();
+
+                propertyType.setFetchOptions(fetchOptions);
+            }
+            propertyType.setSemanticAnnotations(new ArrayList<>());
+            propertyType.setMultiValue(false);
+            propertyType.setCode(deRdfIdentifier(a.getId()));
+            propertyType.setDescription(propertyType.getCode());
+            propertyType.setLabel(propertyType.getCode());
 
 
             String code = deRdfIdentifier(a.getId());
@@ -145,35 +167,38 @@ public class RdfToModel
             DataType dataType = matchDataType(a);
             propertyType.setDataType(dataType);
 
-            for (var domainThingy : a.getDomain())
+            for (String domain : a.getDomain())
             {
-                SampleType sampleType = codeToSampleType.get(domainThingy);
+                if (requiresSpecialHandling(a))
+                {
+                    continue;
+                }
+
+                SampleType sampleType = codeToSampleType.get(domain);
                 if (sampleType != null)
                 {
                     List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
-                    List<PropertyAssignment> newAssignments = new ArrayList();
-                    PropertyAssignment curProperty = new PropertyAssignment();
-                    curProperty.setPermId(new PropertyAssignmentPermId(sampleType.getPermId(),
-                            propertyType.getPermId()));
-
-                    PropertyAssignment propertyAssignment = new PropertyAssignment();
-                    propertyAssignment.setEntityType(sampleType);
-                    propertyAssignment.setPropertyType(propertyType);
+                    List<PropertyAssignment> newAssignments = new ArrayList<>();
+                    PropertyAssignment curProperty =
+                            getPropertyAssignment(propertyType, sampleType);
 
                     newAssignments.add(curProperty);
                     if (assignments != null)
                     {
                         newAssignments.addAll(assignments);
                     }
-                    newAssignments.add(propertyAssignment);
                     sampleType.setPropertyAssignments(newAssignments);
                     a.getOntologicalAnnotations().forEach(x -> {
                         SemanticAnnotation annotation = new SemanticAnnotation();
                         annotation.setPredicateAccessionId(x);
                         annotation.setEntityType(sampleType);
                         annotation.setPropertyType(propertyType);
+                        annotation.setPredicateAccessionId(x);
+                        annotation.setPredicateOntologyId(x);
+                        annotation.setPredicateOntologyVersion(x);
 
-                        var existingAnnotations = propertyType.getSemanticAnnotations();
+                        List<SemanticAnnotation> existingAnnotations =
+                                propertyType.getSemanticAnnotations();
                         List<SemanticAnnotation> annotations = new ArrayList<>();
                         if (existingAnnotations != null)
                         {
@@ -181,6 +206,7 @@ public class RdfToModel
                         }
                         annotations.add(annotation);
                         propertyType.setSemanticAnnotations(annotations);
+                        curProperty.setSemanticAnnotations(annotations);
                     });
                 }
 
@@ -188,85 +214,192 @@ public class RdfToModel
 
         }
 
-        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
         for (IMetadataEntry entry : entries)
         {
-            AbstractEntityPropertyHolder entity = new Sample();
-            ObjectIdentifier objectIdentifier = new SampleIdentifier("lol");
+            AbstractEntityPropertyHolder entity;
+            ObjectIdentifier objectIdentifier;
 
             Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, codeToSampleType, typeToInheritanceChain);
+                    matchEntityKind(entry, typeToInheritanceChain);
 
             if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
             {
                 Sample sample = new Sample();
+                {
+                    SampleFetchOptions fetchOptions = new SampleFetchOptions();
+                    fetchOptions.withType();
+                    fetchOptions.withProject();
+                    fetchOptions.withSpace();
+                    fetchOptions.withProperties();
+                    sample.setFetchOptions(fetchOptions);
+                }
+                sample.setCode(entry.getId());
+
+
                 objectIdentifier = new SampleIdentifier(entry.getId());
-                Map<String, Serializable> properties = new HashMap<>();
+
                 sample.setType(codeToSampleType.get(entry.getType()));
                 entity = sample;
-                properties.putAll(entry.getValues());
-                for (var a : entry.getValues().entrySet())
+                Map<String, Serializable> properties = new LinkedHashMap<>(entry.getValues());
+                for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
                 {
-                    properties.put(deRdfIdentifier(a.getKey()), a.getValue());
+                    properties.put(deRdfIdentifier(property.getKey()), property.getValue());
 
                 }
 
-                for (var a : entry.getReferences().entrySet())
+                for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
                 {
-                    properties.put(deRdfIdentifier(a.getKey()),
-                            a.getValue().stream().collect(Collectors.joining("\n")));
+                    properties.put(deRdfIdentifier(reference.getKey()),
+                            String.join("\n", reference.getValue()));
                 }
-                EntityTypePermId entityTypePermId =
-                        new EntityTypePermId(entry.getId(), entityKind.get());
                 metadata.put(objectIdentifier, entity);
-            }
-            if (entry.getType().equals(":Space"))
+                sample.setProperties(properties);
+                properties.get("SPACE");
+                ReferencesToResolve referencesToResolve =
+                        buildEntryWithSpaceAndProjectToResolve(properties, fallbackSpaceCode,
+                                fallbackProjectCode, sample.getType().getCode() + "_COLLECTION");
+                samplesWithSpaceAndProjectCodes.add(
+                        new ImmutablePair<>(sample, referencesToResolve));
+
+            } else if (entry.getType().equals(GRAPH_ID_SPACE))
             {
                 Space space = new Space();
                 space.setCode(entry.getId());
                 spaces.put(new SpacePermId(space.getCode()), space);
-            }
-            if (entry.getType().equals(":Project"))
+            } else if (entry.getType().equals(GRAPH_ID_PROJECT))
             {
                 Project project = new Project();
-                project.setCode(entry.getId());
-                String spaceCode = null;
-                if (entry.getValues().containsKey("hasPROJECT"))
                 {
-                    spaceCode = entry.getValues().get("hasPROJECT").toString();
+                    ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
+                    fetchOptions.withSpace();
+
+                    project.setFetchOptions(fetchOptions);
+
                 }
 
-                projects.put(new ProjectIdentifier(spaceCode, entry.getId()), project);
+                String projectCode = entry.getId().split("/")[2];
+                String spaceCode = entry.getId().split("/")[1];
+                project.setCode(projectCode);
+                project.setSpace(spaces.get(new SpacePermId(entry.getId().split("/")[1])));
+                ProjectIdentifier identifier = new ProjectIdentifier(spaceCode, projectCode);
+                project.setIdentifier(identifier);
+
+                projects.put(identifier, project);
+
+            } else if (typeToInheritanceChain.get(entry.getType()).stream().filter(Objects::nonNull)
+                    .anyMatch(x -> x.equals(Constants.GRAPH_ID_Collection)))
+            {
+                ExperimentType experiment = new ExperimentType();
+                experiment.setCode(entry.getId());
+                experiment.setPermId(new EntityTypePermId(entry.getId(), EntityKind.EXPERIMENT));
+
+                schema.put(experiment.getPermId(), experiment);
 
             }
 
         }
+        {
+            SpacePermId spacePermId = new SpacePermId(fallbackSpaceCode);
 
-        //resolve stuff
+            if (!spaces.containsKey(new SpacePermId(fallbackSpaceCode)))
+            {
+                Space space = new Space();
+                space.setPermId(spacePermId);
+                space.setCode(spacePermId.getPermId());
+                spaces.put(spacePermId, space);
+            }
+            ProjectIdentifier projectIdentifier =
+                    new ProjectIdentifier(fallbackSpaceCode, fallbackProjectCode);
+            if (!projects.containsKey(projectIdentifier))
+            {
+                Project project = new Project();
 
-        List<IEntityType> entityTypes = new ArrayList<>();
+                ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
+                fetchOptions.withSpace();
+                project.setFetchOptions(fetchOptions);
 
-        List<AbstractEntityCreation> entities = new ArrayList<>();
+                project.setSpace(spaces.get(new SpacePermId(fallbackSpaceCode)));
+                project.setIdentifier(projectIdentifier);
+                project.setCode(fallbackProjectCode);
+                projects.put(projectIdentifier, project);
+
+            }
+
+        }
+        //resolve stuff all references and stuff. This should help. Or something.
+        for (Project project : projects.values())
+        {
+            SpacePermId identifier =
+                    new SpacePermId(project.getIdentifier().getIdentifier().split("/")[1]);
+            project.setSpace(spaces.get(identifier));
+        }
+        for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
+        {
+            Space space = spaces.get(new SpacePermId(sampleToResolve.getRight().getSpaceCode()));
+            Project project = projects.get(
+                    new ProjectIdentifier(space.getCode(),
+                            sampleToResolve.getRight().getProjectCode()));
+            sampleToResolve.getLeft().setSpace(space);
+            sampleToResolve.getLeft().setProject(project);
+
+        }
+
 
         return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
     }
 
-    private static SampleType getSampleType(IType type)
+    private static PropertyAssignment getPropertyAssignment(PropertyType propertyType,
+            SampleType sampleType)
     {
-        SampleType sampleType = new SampleType();
-        sampleType.setCode(type.getId());
-        return sampleType;
+        PropertyAssignment curProperty = new PropertyAssignment();
+        curProperty.setPropertyType(propertyType);
+
+        {
+            PropertyAssignmentFetchOptions fetchOptions1 =
+                    new PropertyAssignmentFetchOptions();
+            fetchOptions1.withPropertyType();
+            fetchOptions1.withEntityType();
+            fetchOptions1.withSemanticAnnotations();
+
+            curProperty.setFetchOptions(fetchOptions1);
+
+        }
+        curProperty.setSemanticAnnotations(new ArrayList<>());
+
+        curProperty.setMandatory(false);
+
+        curProperty.setPermId(new PropertyAssignmentPermId(sampleType.getPermId(),
+                propertyType.getPermId()));
+        return curProperty;
     }
 
-    private static PropertyType getPropertyType(IPropertyType typeProperty)
+    private static ReferencesToResolve buildEntryWithSpaceAndProjectToResolve(
+            Map<String, Serializable> properties, String spaceCode, String projectCode,
+            String defaultExperimentCode)
     {
-        PropertyType propertyType = new PropertyType();
-        propertyType.setCode(typeProperty.getId());
-        return propertyType;
+        String mySpace = properties.getOrDefault(Constants.PROPERTY_SPACE, spaceCode).toString();
+        String myProject =
+                properties.getOrDefault(Constants.PROPERTY_PROJECT, projectCode).toString();
+        String myExperiment =
+                Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
+                                Object::toString)
+                        .map(x -> x.split("/"))
+                        .map(x -> x[3])
+                        .orElse(defaultExperimentCode);
+
+        myProject = Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION))
+                .map(Object::toString)
+                .map(x -> x.split("/"))
+                .map(x -> x[2])
+                .orElse(myProject);
+
+        return new ReferencesToResolve(mySpace, myProject, myExperiment);
     }
+
+
 
     private static Optional<EntityKind> matchEntityKind(IMetadataEntry metfadataEntry,
-            Map<String, SampleType> codeToSampleType,
             Map<String, List<String>> typeToInheritanceChain)
     {
         List<String> a =
@@ -276,7 +409,7 @@ public class RdfToModel
             return Optional.empty();
         }
 
-        if (a.stream().anyMatch(":Collection"::equals))
+        if (a.stream().anyMatch(GRAPH_ID_Collection::equals))
         {
             return Optional.of(EntityKind.EXPERIMENT);
         }
@@ -287,6 +420,16 @@ public class RdfToModel
     {
         Pattern patternBool = Pattern.compile("^is");
         Pattern patternRest = Pattern.compile("^has");
+
+        if (a.startsWith("_"))
+        {
+            a = a.replaceFirst("_", "");
+        }
+        if (a.startsWith(":"))
+        {
+            a = a.replaceFirst(":", "");
+        }
+
 
         if (patternBool.matcher(a).find())
         {
@@ -304,7 +447,38 @@ public class RdfToModel
     private static DataType matchDataType(IPropertyType propertyType)
     {
 
-        return DataType.VARCHAR;
+        if (propertyType.getRange().stream()
+                .anyMatch(x -> x.equals(LiteralType.STRING.getTypeName())))
+        {
+            return DataType.VARCHAR;
+        }
+        if (propertyType.getRange().stream()
+                .anyMatch(x -> x.equals(LiteralType.BOOLEAN.getTypeName())))
+        {
+            return DataType.BOOLEAN;
+        }
+        if (propertyType.getRange().stream()
+                .anyMatch(x -> x.equals(LiteralType.DECIMAL.getTypeName())))
+        {
+            return DataType.REAL;
+        }
+        if (propertyType.getRange().stream()
+                .anyMatch(x -> x.equals(LiteralType.INTEGER.getTypeName())))
+        {
+            return DataType.INTEGER;
+        }
+        if (propertyType.getRange().stream()
+                .anyMatch(x -> x.equals(LiteralType.DATETIME.getTypeName())))
+        {
+            return DataType.DATE;
+        }
+        if (propertyType.getRange().stream().anyMatch(x -> x.equals(LiteralType.XML_LITERAL)))
+        {
+            return DataType.XML;
+        }
+
+        return DataType.SAMPLE;
+
     }
 
     private static List<IType> getInheritanceChain(IType type, Map<String, IType> idsToType)
@@ -332,7 +506,8 @@ public class RdfToModel
 
     private static EntityKind matchKind(List<IType> inheritanceChain)
     {
-        if (inheritanceChain.stream().anyMatch(x -> x.getId().equals(":Collection")))
+        if (inheritanceChain.stream()
+                .anyMatch(x -> x.getId().equals(Constants.GRAPH_ID_Collection)))
         {
             return EntityKind.EXPERIMENT;
         }
@@ -342,42 +517,97 @@ public class RdfToModel
 
     private static boolean isSpace(IType type)
     {
-        return type.getId().equals(":Space");
+        return type.getId().equals(GRAPH_ID_SPACE);
     }
 
     private static boolean isProject(IType type)
     {
-        return type.getId().equals(":Project");
+        return type.getId().equals(GRAPH_ID_PROJECT);
     }
 
-    private static boolean isOpenBisBaseType(IType type)
+    private static boolean isOpenBisDerivedType(IType type)
     {
         if (isSpace(type))
         {
-            return true;
+            return false;
         }
         if (isProject(type))
         {
-            return true;
+            return false;
         }
         if (type.getId().equals(":Dataset"))
         {
-            return true;
+            return false;
         }
-        if (type.getId().equals(":Collection"))
+        if (type.getId().equals(GRAPH_ID_Collection))
         {
-            return true;
+            return false;
         }
         if (type.getId().equals(":Object"))
         {
-            return true;
+            return false;
         }
         if (type.getId().equals(":Vocabulary"))
+        {
+            return false;
+        }
+        return true;
+
+    }
+
+    private static boolean requiresSpecialHandling(IPropertyType typeProperty)
+    {
+        if (deRdfIdentifier(typeProperty.getId()).toUpperCase(Locale.ROOT).equals("NAME"))
+        {
+            return true;
+        }
+        if (deRdfIdentifier(typeProperty.getId()).toUpperCase(Locale.ROOT).equals("SPACE"))
+        {
+            return true;
+        }
+        if (deRdfIdentifier(typeProperty.getId()).toUpperCase(Locale.ROOT).equals("PROJECT"))
+        {
+            return true;
+        }
+        if (deRdfIdentifier(typeProperty.getId()).toUpperCase(Locale.ROOT).equals("COLLECTION"))
         {
             return true;
         }
         return false;
 
     }
+
+    private static String removePrefix(String a)
+    {
+        return a.replaceFirst("^_:", "");
+    }
+
+    private static class ReferencesToResolve
+    {
+        String spaceCode;
+
+        String projectCode;
+
+        String collectionCode;
+
+        public ReferencesToResolve(String spaceCode, String projectCode, String collectionCode)
+        {
+            this.spaceCode = spaceCode;
+            this.projectCode = projectCode;
+            this.collectionCode = collectionCode;
+        }
+
+        public String getSpaceCode()
+        {
+            return spaceCode;
+        }
+
+        public String getProjectCode()
+        {
+            return projectCode;
+        }
+
+    }
+
 
 }

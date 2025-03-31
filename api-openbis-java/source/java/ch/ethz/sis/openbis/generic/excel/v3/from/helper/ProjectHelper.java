@@ -86,6 +86,7 @@ public class ProjectHelper extends BasicImportHelper
         project.setCode(code);
         project.setDescription(description);
         project.setSpace(space1);
+        project.setIdentifier(new ProjectIdentifier(space, code));
         acumulator.put("/" + space + "/" + code, project);
 
     }

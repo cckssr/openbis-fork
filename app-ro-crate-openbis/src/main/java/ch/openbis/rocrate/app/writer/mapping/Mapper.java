@@ -16,6 +16,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.Writer;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
@@ -44,6 +45,12 @@ public class Mapper
         Map<String, List<IEntityType>> reverseMapping = new HashMap<String, List<IEntityType>>();
         Map<String, List<IEntityType>> rdfsPropertiesUsedIn =
                 new HashMap<String, List<IEntityType>>();
+        List<String> typesWithSpace = new ArrayList<>();
+        List<String> typesWithProject = new ArrayList<>();
+        List<String> typesWithCollection
+                = new ArrayList<>();
+
+
         for (Map.Entry<EntityTypePermId, IEntityType> schemaEntry : openBisModel.getEntityTypes()
                 .entrySet())
         {
@@ -56,6 +63,10 @@ public class Mapper
             types.add(value);
             reverseMapping.put(rdfsID, types);
             typeToRdfsName.put(value, rdfsID);
+            typesWithCollection
+                    .add(rdfsID);
+            typesWithProject.add(rdfsID);
+            typesWithSpace.add(rdfsID);
 
             if (value instanceof SampleType)
             {
@@ -118,7 +129,7 @@ public class Mapper
                             .map(Enum::name)
                             .distinct()
                             .map(this::mapOpenBisToXsdDataTypes)
-                            .toList();
+                            .collect(Collectors.toList());
             rdfsProperty.setRangeIncludes(range);
 
             List<String> semanticAnnotations = a.getValue().stream().map(x -> x.getLeft())
@@ -155,11 +166,16 @@ public class Mapper
         for (var metaData : openBisModel.getEntities().entrySet())
         {
             var val = metaData.getValue();
-            Map<String, Serializable> props = new HashMap<String, Serializable>();
+            Map<String, Serializable> props = new LinkedHashMap<>();
+            Map<String, List<String>> references = new LinkedHashMap<>();
+
             if (val instanceof Sample sample)
             {
-
-                Map<String, List<String>> references = new LinkedHashMap<>();
+                references.put(Constants.PROPERTY_SPACE, List.of(sample.getSpace().getCode()));
+                references.put(Constants.PROPERTY_PROJECT,
+                        List.of(sample.getProject().getIdentifier().getIdentifier()));
+                references.put(Constants.PROPERTY_COLLECTION,
+                        List.of(sample.getExperiment().getIdentifier().getIdentifier()));
 
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())
@@ -184,9 +200,9 @@ public class Mapper
                 }
 
                 references.put("children", ((Sample) val).getChildren().stream()
-                        .map(x -> x.getIdentifier().getIdentifier()).toList());
+                        .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
                 references.put("parents", ((Sample) val).getChildren().stream()
-                        .map(x -> x.getIdentifier().getIdentifier()).toList());
+                        .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
                 MetadataEntry
                         entry =
                         new MetadataEntry(sample.getIdentifier().toString(), type, props,
@@ -223,6 +239,29 @@ public class Mapper
             }
 
         }
+        {
+            TypeProperty typeProperty = new TypeProperty();
+            typeProperty.setId(Constants.PROPERTY_SPACE);
+            typeProperty.setDomainIncludes(typesWithSpace);
+            typeProperty.setRangeIncludes(List.of(Constants.GRAPH_ID_SPACE));
+            properties.add(typeProperty);
+        }
+        {
+            TypeProperty typeProperty = new TypeProperty();
+            typeProperty.setId(Constants.PROPERTY_PROJECT);
+            typeProperty.setDomainIncludes(typesWithProject);
+            typeProperty.setRangeIncludes(List.of(Constants.GRAPH_ID_PROJECT));
+        }
+        {
+            TypeProperty typeProperty = new TypeProperty();
+            typeProperty.setId(Constants.PROPERTY_COLLECTION);
+            typeProperty.setDomainIncludes(typesWithCollection
+            );
+            typeProperty.setRangeIncludes(List.of(":COLLECTION"));
+            properties.add(typeProperty);
+
+        }
+
 
         return new MapResult(
                 new RdfsSchema(classes, properties),

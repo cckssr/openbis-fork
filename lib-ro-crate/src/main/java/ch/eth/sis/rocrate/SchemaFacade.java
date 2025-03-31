@@ -149,7 +149,8 @@ public class SchemaFacade implements ISchemaFacade
     @Override
     public List<IMetadataEntry> getEntries(String rdfsClassId)
     {
-        return metadataEntries.values().stream().toList();
+        return metadataEntries.values().stream().filter(x -> x.getType().equals(rdfsClassId))
+                .toList();
     }
 
     private void parseEntities() throws JsonProcessingException
@@ -212,6 +213,7 @@ public class SchemaFacade implements ISchemaFacade
             MetadataEntry entry = new MetadataEntry();
             entry.setId(id);
             entry.setType(type);
+            Map<String, List<String>> references = new LinkedHashMap<>();
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Serializable> keyVals =
                     objectMapper.readValue(entity.getProperties().toString(), HashMap.class);
@@ -220,14 +222,18 @@ public class SchemaFacade implements ISchemaFacade
                 if (properties.containsKey(a.getKey()))
                 {
                     IPropertyType property = properties.get(a.getKey());
-                    if (property.getRange().stream().anyMatch(x -> x.equals("xsd:string")))
+                    if (property.getRange().stream().anyMatch(x -> x.startsWith("xsd:")))
                     {
                         entryProperties.put(a.getKey(), a.getValue().toString());
+                    } else
+                    {
+                        List<String> refs = parseMultiValued(entity, a.getKey());
+                        references.put(a.getKey(), refs);
                     }
                 }
             }
             entry.setProps(entryProperties);
-            entry.setReferences(new HashMap<>());
+            entry.setReferences(references);
             entries.put(id, entry);
         }
         System.out.println("Done");
