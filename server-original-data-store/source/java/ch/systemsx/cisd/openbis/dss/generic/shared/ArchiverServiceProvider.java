@@ -88,16 +88,9 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
             @Override public void scheduleTask(final String taskKey, final IArchiverTask task, final Map<String, String> parameterBindings,
                     final List<DatasetDescription> datasets, final String userId, final String userEmailOrNull, final String userSessionToken)
             {
-                IProcessingPluginTask processingPluginTask = new IProcessingPluginTask()
-                {
-                    @Override public ProcessingStatus process(final List<DatasetDescription> datasets, final DataSetProcessingContext context)
-                    {
-                        return task.process(datasets, context.getParameterBindings());
-                    }
-                };
-
                 ServiceProvider.getDataStoreService()
-                        .scheduleTask(taskKey, processingPluginTask, parameterBindings, datasets, userId, userEmailOrNull, userSessionToken);
+                        .scheduleTask(taskKey, new ArchiverProcessingPluginTask(task), parameterBindings, datasets, userId, userEmailOrNull,
+                                userSessionToken);
             }
         };
     }
