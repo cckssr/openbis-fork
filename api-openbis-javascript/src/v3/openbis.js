@@ -531,42 +531,44 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 		    }
 		}
 
-		this.read = function(owner, source, offset, limit){
+        this.read = function(owner, source, offset, limit) {
+            return this._read([new AfsServer.prototype.Private.Chunk(owner, source, offset, limit, AfsServer.prototype.Private.ChunkEncoderDecoder.EMPTY_ARRAY)]);
+        }
+
+		this._read = function(chunks) {
 		    if(asFacade._private.transactionId){
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "read",
-                        "params" : [ owner, source, offset, limit ]
+                        "params" : [ AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks) ]
                     }
                 }).then(function(response){
                     return new Blob([atob(response)])
                 });
             }else{
                 afsServer.useSession(asFacade._private.sessionToken)               
-				const {promise} =  afsServer.read(owner, source, offset, limit);
+				const {promise} =  afsServer._read(chunks);
 				return promise; 
             }
 		}
 
-		this.write = function(owner, source, offset, data){
+        this.write = function(owner, source, offset, data){
+            return this._write([new AfsServer.prototype.Private.Chunk(owner, source, offset, data.length, data)]);
+        }
+
+		this._write = function(chunks){
 		    if(asFacade._private.transactionId){
-
-                var dataString = data
-                if(data && data instanceof Uint8Array) {
-                    dataString = unit8ArrayToString(data)
-                }
-
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "write",
 		                // use base64 url version of encoding that produces url safe characters only (default version of base64 produces "+" and "/" which need to be further converted by encodeURIComponent to "%2B" and "%2F" and therefore they unnecessarily increase the request size)
 
-                        "params" : [ owner, source, offset, base64URLEncode(dataString)]
+                        "params" : [ AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks) ]
                     }
                 })
             }else{
                 afsServer.useSession(asFacade._private.sessionToken)
-                const {promise} = afsServer.write(owner, source, offset, data);
+                const {promise} = afsServer._write(chunks);
 				return promise;
             }
 		}
