@@ -382,16 +382,32 @@ var BarcodeUtil = new function() {
             views.content.empty();
             $layoutForPrinter = $('<div>', { 'id' : 'layout-for-printer' });
             views.content.append($layoutForPrinter);
-
+            var margin = 5;
+            var lineWidth = 0.3;
             if(width && height) {
+                var pageSize = null;
+                var orientation = null;
+                if(layout === 'split') {
+                    pageSize = [width+margin*2, height+margin*2];
+                    orientation = 'l';
+                } else {
+                    pageSize = [width+margin*2, (height) * (barcodes.length) + (barcodes.length) * margin*2 + (barcodes.length)*lineWidth ];
+                    orientation = barcodes.length <= 2 ? 'l' : 'p';
+                }
                 format = {
-                    orientation: ((layout === 'split')?'l':'p'),
+                    orientation: orientation,
                     unit: 'mm',
-                    format: [width, height * ((layout === 'split')?1:barcodes.length) + ((layout === 'split')?0:2*barcodes.length)],
+                    format: pageSize,
                     putOnlyUsedFonts:true
                 };
 
                 pdf = new jsPDF(format);
+            }
+
+            if(pdf !== null && layout !== 'split') {
+                pdf.setDrawColor(150, 150, 150);
+                pdf.setLineWidth(lineWidth)
+                pdf.setLineDash([2, 2], 0);
             }
 
             for(var idx = 0; idx < barcodes.length; idx++) {
@@ -405,9 +421,13 @@ var BarcodeUtil = new function() {
                         if(idx > 0) {
                             pdf.addPage(format.format, 'l');
                         }
-                        pdf.addImage(imgData, 'png', 0, 0, width, height);
+                        pdf.addImage(imgData, 'png', margin, margin, width, height);
                      } else {
-                        pdf.addImage(imgData, 'png', 0, (height * idx + 2*idx), width, height);
+                        var yCoordinate = (height * idx + margin + (idx * (margin*2+lineWidth)));
+                        pdf.addImage(imgData, 'png', margin, yCoordinate, width, height);
+                        if(idx !== barcodes.length-1) {
+                            pdf.line(0, yCoordinate + height + margin, width + margin*2, yCoordinate + height + margin, 'S');
+                        }
                     }
                 }
             }
@@ -448,7 +468,7 @@ var BarcodeUtil = new function() {
             }
             content.append($br);
         }
-        var imageSRC = this.generateBarcode(type, text, text, null, width, height);
+        var imageSRC = this.generateBarcode(type, text, text, null, width, height, 10, 10);
         var imagePNG = $('<img>', { src : imageSRC });
         content.append(imagePNG);
         if(width && height) {
@@ -848,7 +868,7 @@ var BarcodeUtil = new function() {
             ];
     }
 
-    this.generateBarcode = function(barcodeType, text, altx, action, width, height) {
+    this.generateBarcode = function(barcodeType, text, altx, action, width, height, padWidth, padHeight) {
         var elt  = symdesc[barcodeType];
         var opts = {};
         var rot  = "N";
@@ -867,6 +887,22 @@ var BarcodeUtil = new function() {
         if (altx) {
             opts.alttext = altx;
             opts.includetext = true;
+//            opts.textyoffset = 1;
+
+            if(barcodeType === "qrcode") {
+                if(width >= 30) {
+                    opts.textxoffset = width * 1.1;
+                } else {
+                    opts.textxoffset = width * 0.5;
+                }
+
+            } else if(barcodeType === "microqrcode") {
+                if(width <= 40) {
+                    opts.textxoffset = width * 1.1;
+                } else {
+                    opts.textxoffset = width * 1.25;
+                }
+            }
         }
         // We use mm rather than inches for height - except pharmacode2 height
         // which is expected to be in mm
@@ -890,6 +926,13 @@ var BarcodeUtil = new function() {
             delete opts.backgroundcolor;
         } else {
             bw.bitmap(new Bitmap(canvas, rot));
+        }
+
+        if(+padWidth) {
+            opts.paddingwidth = padWidth || 0;
+        }
+        if(+padHeight) {
+            opts.paddingheight = padHeight || 0;
         }
 
         // Set the scaling factors
