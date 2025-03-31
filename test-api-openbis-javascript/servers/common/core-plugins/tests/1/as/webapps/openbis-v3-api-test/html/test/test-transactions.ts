@@ -159,7 +159,7 @@ exports.default = new Promise((resolve) => {
             QUnit.test("begin() and rollback() with AS and AFS methods", async function (assert) {
                 const testInteractiveSessionKey = "test-interactive-session-key"
                 const testFile = "test-file"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -215,7 +215,7 @@ exports.default = new Promise((resolve) => {
             QUnit.test("begin() and commit() with AS and AFS methods", async function (assert) {
                 const testInteractiveSessionKey = "test-interactive-session-key"
                 const testFile = "test-file"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -267,12 +267,12 @@ exports.default = new Promise((resolve) => {
                         path: "/" + testFile,
                         owner: ownerPermId,
                         name: testFile,
-                        size: testContent.length,
+                        size: "test-content".length,
                         directory: false,
                     })
 
-                    var fileContentAfterCommit = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, testContent.length)
-                    c.assertEqual(await fileContentAfterCommit.text(), testContent)
+                    var fileContentAfterCommit = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, "test-content".length)
+                    c.assertEqual(await fileContentAfterCommit.text(), "test-content")
 
                     c.finish()
                 } catch (error) {
