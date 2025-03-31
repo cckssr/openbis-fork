@@ -86,9 +86,9 @@ File -> New -> Project From Existing Sources
 Select the build folder to load the gradle model
 After the model is loaded execute the tasks:
 
-openBISDevelopementEnvironmentASPrepare
-openBISDevelopementEnvironmentASStart
-openBISDevelopementEnvironmentDSSStart
+openBISDevelopmentEnvironmentASPrepare
+openBISDevelopmentEnvironmentASStart
+openBISDevelopmentEnvironmentDSSStart
 ```
 
 ## Source Code Auto Formatting
