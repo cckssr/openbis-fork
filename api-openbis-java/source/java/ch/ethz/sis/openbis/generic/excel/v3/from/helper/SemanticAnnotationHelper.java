@@ -9,6 +9,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.from.utils.IAttribute;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SemanticAnnotationHelper extends BasicImportHelper
@@ -106,7 +107,7 @@ public class SemanticAnnotationHelper extends BasicImportHelper
                     annotation.setPredicateAccessionId(accessionIds[i]);
                     return annotation;
 
-                }).toList();
+                }).collect(Collectors.toList());
 
         SemanticAnnotation annotation = null;
 
