@@ -33,6 +33,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
 import org.eclipse.jetty.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -163,21 +165,23 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
                     for (Parameter methodParameter : method.getParameters())
                     {
                         Object operationArgument = operationArguments[index];
-
-                        if (methodParameter.getType().isArray() && methodParameter.getType().getComponentType().equals(byte.class)
-                                && operationArgument instanceof String)
+                        if (methodParameter.getName().equals("chunks"))
                         {
-                            // for byte[] operation arguments accept also String values
-                            convertedOperationArguments[index] = Base64.getUrlDecoder().decode((String) operationArgument);
-                        } else if (methodParameter.getType().equals(Long.class) && operationArgument instanceof Number)
-                        {
-                            // for Long operation arguments accept also other Number values
-                            convertedOperationArguments[index] = ((Number) operationArgument).longValue();
+                            convertedOperationArguments[index] = ChunkEncoderDecoder.decodeChunks((String) operationArgument);
                         } else
                         {
-                            convertedOperationArguments[index] = operationArgument;
-                        }
 
+                            if (methodParameter.getType().isArray() && methodParameter.getType().getComponentType().equals(byte.class)
+                                    && operationArgument instanceof String) {
+                                // for byte[] operation arguments accept also String values
+                                convertedOperationArguments[index] = Base64.getUrlDecoder().decode((String) operationArgument);
+                            } else if (methodParameter.getType().equals(Long.class) && operationArgument instanceof Number) {
+                                // for Long operation arguments accept also other Number values
+                                convertedOperationArguments[index] = ((Number) operationArgument).longValue();
+                            } else {
+                                convertedOperationArguments[index] = operationArgument;
+                            }
+                        }
                         index++;
                     }
                 }
@@ -208,8 +212,26 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
                         convertedResultList.add(convertedFile);
                     }
                 }
-
                 return convertedResultList;
+            } else if (operationResult.getClass().isArray()) {
+//                Object[] resultArray= (Object[]) operationResult;
+//                Object[] convertedResultArray = new Object[resultArray.length];
+//                int idx = 0;
+//                for (Object item : resultArray) {
+//                    if (item instanceof ch.ethz.sis.afsapi.dto.Chunk) {
+//                        ch.ethz.sis.afsapi.dto.Chunk chunk = (Chunk) item;
+//                        Map<String, Object> convertedChunk = new HashMap<>();
+//                        convertedChunk.put("owner", chunk.getOwner());
+//                        convertedChunk.put("source", chunk.getSource());
+//                        convertedChunk.put("offset", chunk.getOffset());
+//                        convertedChunk.put("limit", chunk.getLimit());
+//                        convertedChunk.put("data", chunk.getData());
+//                        convertedResultArray[idx] = convertedChunk;
+//                        idx++;
+//                    }
+//                }
+//                return convertedResultArray;
+                return ChunkEncoderDecoder.encodeChunks((Chunk[]) operationResult);
             }
 
             return operationResult;

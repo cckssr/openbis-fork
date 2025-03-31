@@ -542,8 +542,10 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                         "method" : "read",
                         "params" : [ AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks) ]
                     }
-                }).then(function(response){
-                    return new Blob([atob(response)])
+                }).then(function(chunksAsString){
+                    var chunks = AfsServer.prototype.Private.ChunkEncoderDecoder.decodeChunks(chunksAsString); // Decode Chunks
+                    var data = chunks[0].getData();
+                    return new Blob([data]);
                 });
             }else{
                 afsServer.useSession(asFacade._private.sessionToken)               

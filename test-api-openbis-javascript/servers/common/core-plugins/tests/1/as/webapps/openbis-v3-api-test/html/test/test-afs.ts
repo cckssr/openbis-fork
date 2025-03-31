@@ -17,10 +17,10 @@ exports.default = new Promise((resolve) => {
             var testInteractiveSessionKey = "test-interactive-session-key"
 
             var testList = async function (assert, useTransaction) {
-                const testContent1 = "test-content-1-abc"
-                const testContent2 = "test-content-2-abcd"
-                const testContent3 = "test-content-3-abcde"
-                const testContent4 = "test-content-4-abcdef"
+                const testContent1 = new TextEncoder().encode("test-content-1-abc")
+                const testContent2 = new TextEncoder().encode("test-content-2-abcd")
+                const testContent3 = new TextEncoder().encode("test-content-3-abcde")
+                const testContent4 = new TextEncoder().encode("test-content-4-abcdef")
 
                 try {
                     var startDate = new Date()
@@ -157,7 +157,7 @@ exports.default = new Promise((resolve) => {
 
             var testRead = async function (assert, useTransaction) {
                 const testFile = "test-file"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -176,7 +176,7 @@ exports.default = new Promise((resolve) => {
                     }
 
                     var content = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, testContent.length)
-                    c.assertEqual(await content.text(), testContent)
+                    c.assertEqual(await content.text(), "test-content")
 
                     if (useTransaction) {
                         await facade.commitTransaction()
@@ -282,7 +282,7 @@ exports.default = new Promise((resolve) => {
 
             var testDelete = async function (assert, useTransaction) {
                 const testFile = "test-file"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -296,7 +296,7 @@ exports.default = new Promise((resolve) => {
                     await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
 
                     var content = await facade.getAfsServerFacade().read(ownerPermId, testFile, 0, testContent.length)
-                    c.assertEqual(await content.text(), testContent)
+                    c.assertEqual(await content.text(), "test-content")
 
                     if (useTransaction) {
                         facade.setInteractiveSessionKey(testInteractiveSessionKey)
@@ -321,7 +321,7 @@ exports.default = new Promise((resolve) => {
             var testCopy = async function (assert, useTransaction) {
                 const testFileToCopy = "test-file-to-copy"
                 const testFileCopied = "test-file-copied"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -346,10 +346,10 @@ exports.default = new Promise((resolve) => {
                     }
 
                     var contentToCopy = await facade.getAfsServerFacade().read(ownerPermId, testFileToCopy, 0, testContent.length)
-                    c.assertEqual(await contentToCopy.text(), testContent)
+                    c.assertEqual(await contentToCopy.text(), "test-content")
 
                     var contentCopied = await facade.getAfsServerFacade().read(ownerPermId, testFileCopied, 0, testContent.length)
-                    c.assertEqual(await contentCopied.text(), testContent)
+                    c.assertEqual(await contentCopied.text(), "test-content")
 
                     c.finish()
                 } catch (error) {
@@ -361,7 +361,7 @@ exports.default = new Promise((resolve) => {
             var testMove = async function (assert, useTransaction) {
                 const testFileToMove = "test-file-to-move"
                 const testFileMoved = "test-file-moved"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
@@ -388,7 +388,7 @@ exports.default = new Promise((resolve) => {
                     await c.assertFileDoesNotExist(facade, ownerPermId, testFileToMove)
 
                     var content = await facade.getAfsServerFacade().read(ownerPermId, testFileMoved, 0, testContent.length)
-                    c.assertEqual(await content.text(), testContent)
+                    c.assertEqual(await content.text(), "test-content")
 
                     c.finish()
                 } catch (error) {
@@ -432,7 +432,7 @@ exports.default = new Promise((resolve) => {
 
             var testFree = async function (assert, useTransaction) {
                 const testFile = "test-file"
-                const testContent = "test-content"
+                const testContent = new TextEncoder().encode("test-content")
 
                 try {
                     var c = new common(assert, dtos)
