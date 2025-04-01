@@ -18,7 +18,5 @@ dependencies {
             project(path: ':lib-common', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
-            'reflections:reflections:0.9.10',
-            project(':api-openbis-java')
-
+            'reflections:reflections:0.9.10'
 }
