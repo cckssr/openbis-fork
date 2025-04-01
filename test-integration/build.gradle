@@ -15,6 +15,7 @@ dependencies {
     implementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-two-phase-transaction', configuration: 'tests'),
             project(':lib-transactional-file-system'),
+            project(':lib-maintenance'),
             project(':server-application-server'),
             project(path: ':server-application-server', configuration: 'tests'),
             project(':server-original-data-store'),
