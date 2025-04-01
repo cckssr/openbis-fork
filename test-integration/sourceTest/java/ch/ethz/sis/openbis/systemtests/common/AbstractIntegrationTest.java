@@ -124,7 +124,15 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.filesystem.SoftLinkMaker;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
+import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 /**
@@ -412,6 +420,10 @@ public abstract class AbstractIntegrationTest
     {
         log("Starting data store server.");
         Properties configuration = getDataStoreServerConfiguration();
+        ServiceProviderFactory.setInstance(new ServiceProviderImpl());
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
+        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
         QueueingPathRemoverService.start(new File(configuration.getProperty("root-dir")), ETLDaemon.shredderQueueFile);
         DataStoreServer.main(new String[0]);
         log("Started data store server.");
