@@ -25,12 +25,12 @@ The new imaging extension follows the current eln-lims data model.
 
 This structure could initially seem to have a couple of additional levels that not everybody will actively use, but in practice is the most flexible since allows to use all openBIS linking features between Experiments, Experimental Steps and other Objects.
 
-Space (Space): Used for rights management\
-&nbsp;  Project (Project): Used for rights management\
-&nbsp;&nbsp;  Collection (Collection): Allows Object Aggregation\
-&nbsp;&nbsp;&nbsp;  Experiment (Object): Allows Objects linking\
-&nbsp;&nbsp;&nbsp;&nbsp;  Exp. Step (Object): Allows Objects linking and DataSets\
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  DataSet (DataSet): Allows to attach data
+* Space (Space): Used for rights management\
+    * Project (Project): Used for rights management\
+        * Collection (Collection): Allows Object Aggregation\
+            * Experiment (Object): Allows Objects linking\
+                * Exp. Step (Object): Allows Objects linking and DataSets\
+                    * DataSet (DataSet): Allows to attach data
 
 Different DataSet Types can have different properties and metadata sections. A default template type called IMAGING_DATA is provided. Additionally, each lab can create their own types with different metadata - a core requirement for dataset type is to contain an internal property called $IMAGING_DATA_CONFIG.
 
