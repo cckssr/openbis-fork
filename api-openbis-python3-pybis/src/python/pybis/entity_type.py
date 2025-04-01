@@ -479,7 +479,16 @@ class ExperimentType(
 class PropertyType(
     OpenBisObject, entity="propertyType", single_item_method_name="get_property_type"
 ):
-    pass
+    def save(self):
+        if self.is_new:
+            get_single_item = self._get_single_item_method()
+            try:
+                new_entity_data = get_single_item(self.code)
+                raise ValueError(f"propertyType '{self.code}' already exists!")
+            except ValueError as e:
+                if not "no such propertyType" in str(e):
+                    raise e
+        super().save()
 
 
 class PropertyAssignment:
