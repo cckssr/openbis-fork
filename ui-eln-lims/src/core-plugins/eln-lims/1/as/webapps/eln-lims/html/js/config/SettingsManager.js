@@ -14,9 +14,7 @@ var SettingsManagerUtils = new function() {
         var endOf = spaceCode.indexOf("_");
         var prefix = null;
 
-        if(endOf === -1) {
-            prefix = "GENERAL";
-        } else {
+        if(endOf !== -1) {
             prefix = spaceCode.substring(0, endOf);
         }
 
@@ -53,10 +51,10 @@ var SettingsManagerUtils = new function() {
         showOnNav : 1,
     }
 
-    this.getVisibleObjectTypesForSpaces = function(spaceCodes, showInSpaceSetting) {
+    this.getVisibleObjectTypesForGroups = function(groupCodes, showInSpaceSetting) {
         var objectTypeCodes = [];
-        for(var iSpaceCodes = 0; iSpaceCodes < spaceCodes.length; iSpaceCodes++) {
-            var objectTypeCodesAux = this.getVisibleObjectTypesForSpace(spaceCodes[iSpaceCodes], showInSpaceSetting);
+        for(var iGroupCodes = 0; iGroupCodes < groupCodes.length; iGroupCodes++) {
+            var objectTypeCodesAux = this.getVisibleObjectTypesForSpace(groupCodes[iGroupCodes] + "_", showInSpaceSetting);
             for(var iObjectTypeCodesAux = 0; iObjectTypeCodesAux < objectTypeCodesAux.length; iObjectTypeCodesAux++) {
                 var objectType = objectTypeCodesAux[iObjectTypeCodesAux];
                 if($.inArray(objectType, objectTypeCodes) === -1) {
@@ -70,7 +68,7 @@ var SettingsManagerUtils = new function() {
 
     this.getVisibleObjectTypesForSpace = function(spaceCode, showInSpaceSetting) {
         if(spaceCode === "*") {
-            return this.getVisibleObjectTypesForSpaces(this.getGroups(), showInSpaceSetting);
+            return this.getVisibleObjectTypesForGroups(this.getGroups(), showInSpaceSetting);
         }
         var spaceSettings = this.getSpaceSettings(spaceCode);
 
