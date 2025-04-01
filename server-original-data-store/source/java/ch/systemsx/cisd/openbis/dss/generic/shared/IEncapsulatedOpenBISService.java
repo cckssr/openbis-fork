@@ -197,6 +197,9 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
     public List<AbstractExternalData> listDataSetsByCode(List<String> dataSetCodes)
             throws UserFailureException;
 
+    @ManagedAuthentication
+    List<String> listDataSetCodesFromCommandQueue() throws UserFailureException;
+
     /**
      * Registers the specified experiment.
      *
