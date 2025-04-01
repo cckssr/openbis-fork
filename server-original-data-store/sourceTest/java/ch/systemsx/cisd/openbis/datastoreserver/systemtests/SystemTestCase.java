@@ -58,8 +58,16 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
+import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
@@ -224,6 +232,11 @@ public abstract class SystemTestCase extends AssertJUnit
         System.setProperty(DOWNLOAD_URL_KEY, TestInstanceHostUtils.getDSSUrl());
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "archiver.destination",
                 archive.getAbsolutePath());
+
+        ServiceProviderFactory.setInstance(new ServiceProviderImpl());
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
+        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
 
         QueueingPathRemoverService.start(rootDir, ETLDaemon.shredderQueueFile);
         DataStoreServer.main(new String[0]);
