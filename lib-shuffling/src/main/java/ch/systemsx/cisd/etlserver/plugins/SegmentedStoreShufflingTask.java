@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
+import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,14 +39,13 @@ import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
-import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
 import ch.systemsx.cisd.common.maintenance.IDataStoreLockingMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
-import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;

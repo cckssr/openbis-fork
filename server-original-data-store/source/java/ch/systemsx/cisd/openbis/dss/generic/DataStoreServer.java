@@ -27,7 +27,6 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
-import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.spring.SpringEoDSQLExceptionTranslator;
 import ch.systemsx.cisd.openbis.dss.BuildAndEnvironmentInfo;
@@ -39,6 +38,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterS
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.RSyncConfig;
 

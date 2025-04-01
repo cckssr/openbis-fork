@@ -55,10 +55,10 @@ import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
-import ch.systemsx.cisd.etlserver.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
@@ -68,12 +68,12 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServicePro
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

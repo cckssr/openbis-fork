@@ -1,4 +1,4 @@
-package ch.systemsx.cisd.etlserver;
+package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 public class ShufflingServiceProviderFactory
 {

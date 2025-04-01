@@ -40,8 +40,10 @@ import ch.systemsx.cisd.common.test.InvocationRecordingWrapper;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataStoreServiceInternal;
@@ -96,48 +98,56 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
 
     private InvocationRecordingWrapper<IHierarchicalContentProvider> contentProviderRecordingWrapper;
 
+    private IArchiverServiceProvider originalServiceProvider;
+
+    private IArchiverServiceProvider serviceProvider;
+
     @BeforeMethod
     public void beforeMethod()
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO,
                 ".*(SecondCopyPostRegistrationTask|AbstractDatastorePlugin|DataSetFileOperationsManager)");
         logRecorder.addFilter(new Filter()
+        {
+            @Override
+            public int decide(LoggingEvent event)
             {
-                @Override
-                public int decide(LoggingEvent event)
-                {
-                    String loggerName = event.getLoggerName();
-                    return loggerName.contains("RsyncCopier") ? Filter.DENY : Filter.ACCEPT;
-                }
-            });
+                String loggerName = event.getLoggerName();
+                return loggerName.contains("RsyncCopier") ? Filter.DENY : Filter.ACCEPT;
+            }
+        });
         context = new Mockery();
         service = context.mock(IEncapsulatedOpenBISService.class);
         dataStoreService = context.mock(IDataStoreServiceInternal.class);
         shareIdManager = context.mock(IShareIdManager.class);
         configProvider = context.mock(IConfigProvider.class);
         contentCache = context.mock(IContentCache.class);
+        serviceProvider = context.mock(IArchiverServiceProvider.class);
         IDssServiceFactory dssServiceFactory =
                 context.mock(IDssServiceFactory.class);
         store = new File(workingDirectory, "store");
         final IDataSetDirectoryProvider dirProvider =
                 new DataSetDirectoryProvider(store, shareIdManager);
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(dataStoreService).getDataSetDirectoryProvider();
-                    will(returnValue(dirProvider));
+                allowing(dataStoreService).getDataSetDirectoryProvider();
+                will(returnValue(dirProvider));
 
-                    allowing(configProvider).getStoreRoot();
-                    will(returnValue(store));
+                allowing(configProvider).getStoreRoot();
+                will(returnValue(store));
 
-                    allowing(configProvider).getDataStoreCode();
-                    will(returnValue(DATA_STORE_CODE));
-                }
-            });
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DATA_STORE_CODE));
+
+                allowing(serviceProvider).getConfigProvider();
+                will(returnValue(configProvider));
+            }
+        });
         OpenBISSessionHolder sessionHolder = new OpenBISSessionHolder();
         sessionHolder.setDataStoreCode(DATA_STORE_CODE);
         contentProviderRecordingWrapper =
-                InvocationRecordingWrapper.<IHierarchicalContentProvider> wrap(
+                InvocationRecordingWrapper.<IHierarchicalContentProvider>wrap(
                         new HierarchicalContentProvider(service, shareIdManager, configProvider,
                                 contentCache, new DefaultFileBasedHierarchicalContentFactory(),
                                 dssServiceFactory, sessionHolder, null), IHierarchicalContentProvider.class, IHierarchicalContent.class,
@@ -148,6 +158,8 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
         destination = new File(workingDirectory, "second-copy-destination");
         Properties properties = new Properties();
         properties.setProperty("destination", destination.getAbsolutePath());
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(serviceProvider);
         task =
                 new SecondCopyPostRegistrationTask(properties, service, dataStoreService,
                         contentProviderRecordingWrapper.getProxy());
@@ -156,6 +168,8 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
     @AfterMethod(alwaysRun = true)
     public void afterMethod()
     {
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
+
         if (logRecorder != null)
         {
             logRecorder.reset();
@@ -172,28 +186,28 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
     public void testHappyCase()
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).listDataSetsByCode(Arrays.asList(DATA_SET1));
-                    PhysicalDataSet ds1 =
-                            new DataSetBuilder(42).code(DATA_SET1)
-                                    .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
-                                    .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
-                    will(returnValue(Arrays.asList(ds1)));
+                one(service).listDataSetsByCode(Arrays.asList(DATA_SET1));
+                PhysicalDataSet ds1 =
+                        new DataSetBuilder(42).code(DATA_SET1)
+                                .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
+                                .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
+                will(returnValue(Arrays.asList(ds1)));
 
-                    one(service).tryGetDataSetLocation(DATA_SET1);
-                    will(returnValue(new ExternalDataLocationNode(ds1)));
+                one(service).tryGetDataSetLocation(DATA_SET1);
+                will(returnValue(new ExternalDataLocationNode(ds1)));
 
-                    allowing(shareIdManager).getShareId(DATA_SET1);
-                    will(returnValue(SHARE_ID));
+                allowing(shareIdManager).getShareId(DATA_SET1);
+                will(returnValue(SHARE_ID));
 
-                    one(shareIdManager).lock(with(any(UUID.class)), with(DATA_SET1));
-                    one(shareIdManager).releaseLock(with(any(UUID.class)), with(DATA_SET1));
+                one(shareIdManager).lock(with(any(UUID.class)), with(DATA_SET1));
+                one(shareIdManager).releaseLock(with(any(UUID.class)), with(DATA_SET1));
 
-                    one(service)
-                            .updateShareIdAndSize(DATA_SET1, SHARE_ID, EXAMPLE_CONTENT.length());
-                }
-            });
+                one(service)
+                        .updateShareIdAndSize(DATA_SET1, SHARE_ID, EXAMPLE_CONTENT.length());
+            }
+        });
 
         IPostRegistrationTaskExecutor executor = task.createExecutor(DATA_SET1, false);
         executor.execute();
@@ -234,22 +248,22 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
     public void testDestinationIsNotADirectory() throws IOException
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).listDataSetsByCode(Arrays.asList(DATA_SET1));
-                    PhysicalDataSet ds1 =
-                            new DataSetBuilder(42).code(DATA_SET1)
-                                    .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
-                                    .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
-                    will(returnValue(Arrays.asList(ds1)));
+                one(service).listDataSetsByCode(Arrays.asList(DATA_SET1));
+                PhysicalDataSet ds1 =
+                        new DataSetBuilder(42).code(DATA_SET1)
+                                .store(new DataStoreBuilder(DATA_STORE_CODE).getStore())
+                                .fileFormat("TXT").location(DATA_SET1_LOCATION).getDataSet();
+                will(returnValue(Arrays.asList(ds1)));
 
-                    allowing(shareIdManager).getShareId(DATA_SET1);
-                    will(returnValue(SHARE_ID));
+                allowing(shareIdManager).getShareId(DATA_SET1);
+                will(returnValue(SHARE_ID));
 
-                    one(service)
-                            .updateShareIdAndSize(DATA_SET1, SHARE_ID, EXAMPLE_CONTENT.length());
-                }
-            });
+                one(service)
+                        .updateShareIdAndSize(DATA_SET1, SHARE_ID, EXAMPLE_CONTENT.length());
+            }
+        });
 
         destination.createNewFile();
         IPostRegistrationTaskExecutor executor = task.createExecutor(DATA_SET1, false);
@@ -259,25 +273,25 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
             fail("EnvironmentFailureException expected");
         } catch (EnvironmentFailureException e)
         {
-            assertEquals("Archiving of data set ds1 failed.",e.getMessage());
+            assertEquals("Archiving of data set ds1 failed.", e.getMessage());
         }
 
         assertEquals("INFO  OPERATION.SecondCopyPostRegistrationTask - "
-                + "Archiving data set 'ds1' without updating archiving status.\n"
-                + "INFO  OPERATION.AbstractDatastorePlugin - Archiving of the "
-                + "following datasets has been requested: [Dataset 'ds1']\n"
-                + "INFO  OPERATION.DataSetFileOperationsManager - Copy dataset 'ds1' from '"
-                + store.getPath() + "/1/a/b/c/ds1' to '" + destination.getAbsolutePath()
-                + "/a/b/c\n" + "ERROR OPERATION.AbstractDatastorePlugin - Archiving failed :path '"
-                + destination.getAbsolutePath() + "/a/b/c' does not exist\n"
-                + "java.io.IOException: path '" + destination.getAbsolutePath()
-                + "/a/b/c' does not exist\n" + "ERROR NOTIFY.AbstractDatastorePlugin - "
-                + "Archiving for dataset ds1 finished with the status: "
-                + "ERROR: \"Archiving failed :path '" + destination.getAbsolutePath()
-                + "/a/b/c' does not exist\".\n" + "ERROR NOTIFY.SecondCopyPostRegistrationTask - "
-                + "Creating a second copy of dataset 'ds1' has failed.\n"
-                + "Error encountered : Archiving failed :path '" + destination.getAbsolutePath()
-                + "/a/b/c' does not exist",
+                        + "Archiving data set 'ds1' without updating archiving status.\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Archiving of the "
+                        + "following datasets has been requested: [Dataset 'ds1']\n"
+                        + "INFO  OPERATION.DataSetFileOperationsManager - Copy dataset 'ds1' from '"
+                        + store.getPath() + "/1/a/b/c/ds1' to '" + destination.getAbsolutePath()
+                        + "/a/b/c\n" + "ERROR OPERATION.AbstractDatastorePlugin - Archiving failed :path '"
+                        + destination.getAbsolutePath() + "/a/b/c' does not exist\n"
+                        + "java.io.IOException: path '" + destination.getAbsolutePath()
+                        + "/a/b/c' does not exist\n" + "ERROR NOTIFY.AbstractDatastorePlugin - "
+                        + "Archiving for dataset ds1 finished with the status: "
+                        + "ERROR: \"Archiving failed :path '" + destination.getAbsolutePath()
+                        + "/a/b/c' does not exist\".\n" + "ERROR NOTIFY.SecondCopyPostRegistrationTask - "
+                        + "Creating a second copy of dataset 'ds1' has failed.\n"
+                        + "Error encountered : Archiving failed :path '" + destination.getAbsolutePath()
+                        + "/a/b/c' does not exist",
                 LogUtils.removeEmbeddedStackTrace(logRecorder.getLogContent()));
         assertEquals(
                 EXAMPLE_CONTENT,

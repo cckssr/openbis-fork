@@ -1,7 +1,5 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
-import ch.systemsx.cisd.etlserver.IShufflingServiceProvider;
-
 public class ShufflingServiceProvider implements IShufflingServiceProvider
 {
     @Override public IOpenBISService getOpenBISService()

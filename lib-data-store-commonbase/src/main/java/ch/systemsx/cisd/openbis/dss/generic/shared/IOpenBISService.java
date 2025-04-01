@@ -1,6 +1,5 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
