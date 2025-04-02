@@ -47,42 +47,45 @@ function HierarchyFilterModel(entity) {
 	}
 	
 	this.getMaxChildrenDepth = function() {
-		var getMaxChildrenDepthWithQueueRecurion = function(entity, max) {
-			if (entity.children) {
-				var posibleNextMax = [];
+	    var visited = {} // This is to avoid loops
+		var getMaxChildrenDepthWithQueueRecursion = function(entity, max) {
+			if (entity.children && !visited[entity.permId]) {
+			    visited[entity.permId] = true;
+				var possibleNextMax = [];
 				for (var i = 0; i < entity.children.length; i++) {
-					var nextMax = getMaxChildrenDepthWithQueueRecurion(entity.children[i], (max + 1));
-					posibleNextMax.push(nextMax);
+					var nextMax = getMaxChildrenDepthWithQueueRecursion(entity.children[i], (max + 1));
+					possibleNextMax.push(nextMax);
 				}
-				for (var i = 0; i < posibleNextMax.length; i++) {
-					if (posibleNextMax[i] > max) {
-						max = posibleNextMax[i];
+				for (var i = 0; i < possibleNextMax.length; i++) {
+					if (possibleNextMax[i] > max) {
+						max = possibleNextMax[i];
 					}
 				}
 			}
 			return max;
 		}
-		return getMaxChildrenDepthWithQueueRecurion(this._entity, 0);
+		return getMaxChildrenDepthWithQueueRecursion(this._entity, 0);
 	}
 	
 	this.getMaxParentsDepth = function(sample) {
-		var getMaxParentsDepthWithQueueRecurion = function(entity, max) {
-			if (entity.parents) {
-				var posibleNextMax = [];
+	    var visited = {} // This is to avoid loops
+		var getMaxParentsDepthWithQueueRecursion = function(entity, max) {
+			if (entity.parents && !visited[entity.permId]) {
+			    visited[entity.permId] = true;
+				var possibleNextMax = [];
 				for (var i = 0; i < entity.parents.length; i++) {
-					var nextMax = getMaxParentsDepthWithQueueRecurion(entity.parents[i], (max + 1));
-					posibleNextMax.push(nextMax);
+				    var permId = entity.parents[i].permId;
+                    var nextMax = getMaxParentsDepthWithQueueRecursion(entity.parents[i], (max + 1));
+                    possibleNextMax.push(nextMax);
 				}
-				for (var i = 0; i < posibleNextMax.length; i++) {
-					if (posibleNextMax[i] > max) {
-						max = posibleNextMax[i];
+				for (var i = 0; i < possibleNextMax.length; i++) {
+					if (possibleNextMax[i] > max) {
+						max = possibleNextMax[i];
 					}
 				}
 			}
 			return max;
 		}
-		return getMaxParentsDepthWithQueueRecurion(this._entity, 0);
+		return getMaxParentsDepthWithQueueRecursion(this._entity, 0);
 	}
-	
-
 }
