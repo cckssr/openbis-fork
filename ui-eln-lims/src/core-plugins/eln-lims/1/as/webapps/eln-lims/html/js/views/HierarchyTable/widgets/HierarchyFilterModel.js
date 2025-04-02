@@ -19,7 +19,7 @@ function HierarchyFilterModel(entity) {
 	this.getTypes = function() {
 		var types = {};
 		var visited = {};
-		var getTypesWithQueueRecursion = function(entity, types, visited) {
+		var getTypesWithRecursion = function(entity, types, visited) {
 			var permId = FormUtil.getPermId(entity);
 			var type = FormUtil.getType(entity);
 			
@@ -33,16 +33,16 @@ function HierarchyFilterModel(entity) {
 			}
 			if(entity.parents) {
 				for (var i = 0; i < entity.parents.length; i++) {
-					getTypesWithQueueRecursion(entity.parents[i], types, visited);
+					getTypesWithRecursion(entity.parents[i], types, visited);
 				}
 			}
 			if (entity.children) {
 				for (var i = 0; i < entity.children.length; i++) {
-					getTypesWithQueueRecursion(entity.children[i], types, visited);
+					getTypesWithRecursion(entity.children[i], types, visited);
 				}
 			}
 		}
-		getTypesWithQueueRecursion(this._entity, types, visited);
+		getTypesWithRecursion(this._entity, types, visited);
 		return types;
 	}
 	
