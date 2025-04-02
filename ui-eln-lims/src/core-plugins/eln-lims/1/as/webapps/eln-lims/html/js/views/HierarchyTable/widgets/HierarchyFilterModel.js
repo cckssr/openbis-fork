@@ -48,12 +48,12 @@ function HierarchyFilterModel(entity) {
 	
 	this.getMaxChildrenDepth = function() {
 	    var visited = {} // This is to avoid loops
-		var getMaxChildrenDepthWithQueueRecursion = function(entity, max) {
+		var getMaxChildrenDepthRecursion = function(entity, max) {
 			if (entity.children && !visited[entity.permId]) {
 			    visited[entity.permId] = true;
 				var possibleNextMax = [];
 				for (var i = 0; i < entity.children.length; i++) {
-					var nextMax = getMaxChildrenDepthWithQueueRecursion(entity.children[i], (max + 1));
+					var nextMax = getMaxChildrenDepthRecursion(entity.children[i], (max + 1));
 					possibleNextMax.push(nextMax);
 				}
 				for (var i = 0; i < possibleNextMax.length; i++) {
@@ -64,18 +64,18 @@ function HierarchyFilterModel(entity) {
 			}
 			return max;
 		}
-		return getMaxChildrenDepthWithQueueRecursion(this._entity, 0);
+		return getMaxChildrenDepthRecursion(this._entity, 0);
 	}
 	
 	this.getMaxParentsDepth = function(sample) {
 	    var visited = {} // This is to avoid loops
-		var getMaxParentsDepthWithQueueRecursion = function(entity, max) {
+		var getMaxParentsDepthRecursion = function(entity, max) {
 			if (entity.parents && !visited[entity.permId]) {
 			    visited[entity.permId] = true;
 				var possibleNextMax = [];
 				for (var i = 0; i < entity.parents.length; i++) {
 				    var permId = entity.parents[i].permId;
-                    var nextMax = getMaxParentsDepthWithQueueRecursion(entity.parents[i], (max + 1));
+                    var nextMax = getMaxParentsDepthRecursion(entity.parents[i], (max + 1));
                     possibleNextMax.push(nextMax);
 				}
 				for (var i = 0; i < possibleNextMax.length; i++) {
@@ -86,6 +86,6 @@ function HierarchyFilterModel(entity) {
 			}
 			return max;
 		}
-		return getMaxParentsDepthWithQueueRecursion(this._entity, 0);
+		return getMaxParentsDepthRecursion(this._entity, 0);
 	}
 }
