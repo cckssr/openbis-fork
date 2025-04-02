@@ -157,9 +157,6 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(configProvider).getDataStoreCode();
-                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
-
                     one(shareIdManager).getShareId("ds1");
                     will(returnValue("2"));
 
@@ -212,9 +209,6 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(configProvider).getDataStoreCode();
-                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
-
                     one(statusUpdater).update(Arrays.asList("ds1"),
                             DataSetArchivingStatus.ARCHIVED, true);
                 }
@@ -237,9 +231,6 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(configProvider).getDataStoreCode();
-                    will(returnValue(AbstractArchiverTestCase.DATA_STORE_CODE));
-
                     one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
                             DataSetArchivingStatus.ARCHIVED, true);
                 }

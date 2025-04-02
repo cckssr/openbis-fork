@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
+import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.SHARE_FINDER_KEY;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -35,9 +37,6 @@ import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.ZipBasedHierarchicalContentTest;
 import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
-
-import static ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AbstractArchiverProcessingPlugin.SHARE_FINDER_KEY;
-
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
@@ -383,13 +382,6 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         assertEquals("[]", processingStatus.getErrorStatuses().toString());
         FileUtilities.deleteRecursively(ds1InStore); // delete in store
         prepareUpdateStatus(DataSetArchivingStatus.AVAILABLE, true);
-        context.checking(new Expectations()
-        {
-            {
-                one(configProvider).getDataStoreCode();
-                will(returnValue(DATA_STORE_CODE));
-            }
-        });
 
         processingStatus = archiver.unarchive(Arrays.asList(dsd1), archiverTaskContext);
 
@@ -904,13 +896,6 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         assertEquals("[]", processingStatus.getErrorStatuses().toString());
         FileUtilities.deleteRecursively(ds1InStore); // delete in store
         prepareUpdateStatus(DataSetArchivingStatus.AVAILABLE, true);
-        context.checking(new Expectations()
-        {
-            {
-                one(configProvider).getDataStoreCode();
-                will(returnValue(DATA_STORE_CODE));
-            }
-        });
 
         processingStatus = archiver.unarchive(Arrays.asList(dsd1), archiverTaskContext);
 

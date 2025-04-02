@@ -189,6 +189,9 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         context.checking(new Expectations()
         {
             {
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DATA_STORE_CODE));
+
                 allowing(dataSetDirectoryProvider).getStoreRoot();
                 will(returnValue(store));
 
