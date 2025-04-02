@@ -5,18 +5,22 @@ import javax.sql.DataSource;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 
 public class HierarchicalContentServiceProvider implements IHierarchicalContentServiceProvider
 {
+
+    private final DssServiceRpcGenericFactory dssServiceRpcGenericFactory = new DssServiceRpcGenericFactory();
+
     @Override public IDssServiceFactory getDssServiceFactory()
     {
         return new IDssServiceFactory()
         {
             @Override public IDssService getService(final String baseURL)
             {
-                return (IDssService) ServiceProvider.getDssServiceRpcGeneric().getService();
+                return dssServiceRpcGenericFactory.getService(baseURL);
             }
         };
     }
