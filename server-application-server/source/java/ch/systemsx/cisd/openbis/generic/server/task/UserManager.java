@@ -260,6 +260,13 @@ public class UserManager
         {
             sessionToken = service.loginAsSystem();
 
+            // Person cache used to check the existence of a home space
+            PersonFetchOptions personFetchOptions = new PersonFetchOptions();
+            personFetchOptions.withSpace();
+            Map<IPersonId, Person> persons = service.getPersons(sessionToken,
+                    knownUsers.stream().map(PersonPermId::new).collect(Collectors.toList()), null);
+            //
+
             List<AuthorizationGroup> groupsToBeRemoved = getGroupsToBeRemoved(sessionToken);
             updateMappingFile();
             manageGlobalSpaces(sessionToken, report);
@@ -276,7 +283,7 @@ public class UserManager
                 Map<String, Principal> users = entry.getValue();
                 manageGroup(sessionToken, groupCode, users, usersToBeIgnored, currentState, report);
             }
-            updateHomeSpaces(sessionToken, currentState, report);
+            updateHomeSpaces(sessionToken, currentState, report, persons);
             removeUsersFromGlobalGroup(sessionToken, currentState, report);
         } catch (Throwable e)
         {
@@ -412,17 +419,21 @@ public class UserManager
         }
     }
 
-    private void updateHomeSpaces(String sessionToken, CurrentState currentState, UserManagerReport report)
+    private void updateHomeSpaces(String sessionToken, CurrentState currentState, UserManagerReport report, Map<IPersonId, Person> existingPersons)
     {
         List<PersonUpdate> updates = new ArrayList<>();
         for (Entry<String, HomeSpaceRequest> entry : requestedHomeSpaceByUserId.entrySet())
         {
             String userId = entry.getKey();
+            PersonPermId permId = new PersonPermId(userId);
+            Person person = existingPersons.get(permId);
             HomeSpaceRequest request = entry.getValue();
             SpacePermId requestedHomeSpace = request.getHomeSpace();
-            if (requestedHomeSpace != null)
+            if (requestedHomeSpace != null && (person == null || person.getSpace() == null)) // We only assign a new home space if it has not been assigned already
             {
                 updates.add(createPersonUpdate(userId, requestedHomeSpace, report));
+            } else { // Keep current home space
+                updates.add(createPersonUpdate(userId, person.getSpace().getPermId(), report));
             }
         }
         if (updates.isEmpty() == false)
