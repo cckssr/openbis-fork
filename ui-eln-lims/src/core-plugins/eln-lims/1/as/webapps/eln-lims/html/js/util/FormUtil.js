@@ -2416,26 +2416,6 @@ var FormUtil = new function() {
 			}
 		});
 	}
-
-    this.getExportAction = function(exportConfig, metadataOnly, includeRoot) {
-        return function() {
-            Util.blockUI();
-            var facade = mainController.serverFacade;
-            facade.exportAll(exportConfig, function(error, result) {
-                if(error) {
-                    Util.showError(error);
-                } else {
-               	    Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-                }
-            });
-        };
-    }
-
-	this.getExportButton = function(exportConfig, metadataOnly, includeRoot) {
-			return FormUtil.getButtonWithIcon("glyphicon-export", 
-					this.getExportAction(exportConfig, metadataOnly, includeRoot),
-					metadataOnly ? "Export Metadata only" : "Export Metadata & Data");
-	};
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
 		var _this = this;

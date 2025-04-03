@@ -282,24 +282,9 @@
 						});
 					}
 				}
-	
+
+	            //Export
 				dropdownOptionsModel.push(FormUtil.getExportButtonModel("SAMPLE",_this._sampleFormModel.sample.permId));
-	
-				if(profile.legacyExports.enable) {
-					if(toolbarConfig.EXPORT_METADATA) {
-						dropdownOptionsModel.push({
-							label : "Export Metadata",
-							action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], true)
-						});
-					}
-	
-					if(toolbarConfig.EXPORT_ALL) {
-						dropdownOptionsModel.push({
-							label : "Export Metadata & Data",
-							action : FormUtil.getExportAction([{ type: "SAMPLE", permId : _this._sampleFormModel.sample.permId, expand : true }], false)
-						});
-					}
-				}
 	
 				//Jupyter Button
 				if(profile.jupyterIntegrationServerEndpoint) {

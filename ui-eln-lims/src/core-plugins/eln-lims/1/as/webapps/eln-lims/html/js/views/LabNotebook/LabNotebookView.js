@@ -47,12 +47,6 @@ function LabNotebookView(labNotebookController, labNotebookView) {
                                  }, null, "New Space", "create-btn");
                 toolbarModel.push({component : $createSpace});
             }
-	        //Export
-			var $exportAll = FormUtil.getExportButton(labSpaces, false, true);
-			toolbarModel.push({ component : $exportAll });
-		
-			var $exportOnlyMetadata = FormUtil.getExportButton(labSpaces, true, true);
-			toolbarModel.push({ component : $exportOnlyMetadata });
 			
 			views.header.append(FormUtil.getToolbar(toolbarModel));
 		});
