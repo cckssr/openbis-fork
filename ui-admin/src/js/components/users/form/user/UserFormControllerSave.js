@@ -113,21 +113,25 @@ export default class UserFormControllerSave extends PageControllerSave {
     update.setSpaceId(
       user.space.value ? new openbis.SpacePermId(user.space.value) : null
     )
-    if(user.userStatus.value === messages.ACTIVE) {
-        update.activate()
-        update.setExpiryDate(null)
-    } else if(user.userStatus.value == messages.INACTIVE) {
-        update.deactivate()
-        update.setExpiryDate(null)
-    } else {
-        update.activate()
-        if(user.userStatusExpiryDate.value.dateObject == null)
-        {
-          update.setExpiryDate(user.userStatusExpiryDate.value.dateObject);
-        }
-        else
-        {
-          update.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
+    if(user.userStatus.value !== user.original.userStatus.value ||
+            (user.userStatus.value === messages.ACTIVE_UNTIL_EXPIRY_DATE &&
+            +user.userStatusExpiryDate.value.dateObject !== +user.original.userStatusExpiryDate.value.dateObject)) {
+        if(user.userStatus.value === messages.ACTIVE) {
+            update.activate()
+            update.setExpiryDate(null)
+        } else if(user.userStatus.value == messages.INACTIVE) {
+            update.deactivate()
+            update.setExpiryDate(null)
+        } else {
+            update.activate()
+            if(user.userStatusExpiryDate.value.dateObject == null)
+            {
+              update.setExpiryDate(user.userStatusExpiryDate.value.dateObject);
+            }
+            else
+            {
+              update.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
+            }
         }
     }
     return new openbis.UpdatePersonsOperation([update])
