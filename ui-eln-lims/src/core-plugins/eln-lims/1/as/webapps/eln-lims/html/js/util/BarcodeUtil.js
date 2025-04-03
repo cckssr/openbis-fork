@@ -321,8 +321,7 @@ var BarcodeUtil = new function() {
                                             { label: '50 mm', value: 50, selected: true }
         ]);
 
-        var $height = FormUtil.getDropdown([ { label: ' 5 mm', value:  5 },
-                                             { label: '10 mm', value: 10 },
+        var $height = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                              { label: '15 mm', value: 15, selected: true },
                                              { label: '20 mm', value: 20 },
                                              { label: '25 mm', value: 25 },
@@ -780,8 +779,7 @@ var BarcodeUtil = new function() {
                                             { label: '50 mm', value: 50, selected: true }
         ]);
 
-        var $height = FormUtil.getDropdown([{ label: ' 5 mm', value:  5 },
-                                            { label: '10 mm', value: 10 },
+        var $height = FormUtil.getDropdown([{ label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15, selected: true },
                                             { label: '20 mm', value: 20 },
                                             { label: '25 mm', value: 25 },
@@ -795,21 +793,22 @@ var BarcodeUtil = new function() {
         // The interaction with the library to generate barcodes is buggy so a double call is needed, this should probably be wrapped on the generateBarcode method instead of here
         var updateBarcode = function() {
             _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode, function() {
-                var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode,  null, parseInt($width.val()), parseInt($height.val()));
+                var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode,  null, parseInt($width.val()), parseInt($height.val()), 10, 10);
                 $canvas.attr('src', imageData);
             }, parseInt($width.val()), parseInt($height.val()));
         };
 
         var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Download' });
         $btnAccept.click(function(event) {
+            var margin = 5;
             var pdf = new jsPDF({
                 orientation: 'l',
                 unit: 'mm',
-                format: [parseInt($width.val()), parseInt($height.val())],
+                format: [parseInt($width.val())+margin*2, parseInt($height.val())+margin*2],
                 putOnlyUsedFonts:true
             });
             var imageData = _this.generateBarcode($barcodeTypesDropdown.val(), barcode, barcode,  null, parseInt($width.val()), parseInt($height.val()));
-            pdf.addImage(imageData, 'png', 0, 0, parseInt($width.val()), parseInt($height.val()));
+            pdf.addImage(imageData, 'png', margin, margin, parseInt($width.val()), parseInt($height.val()));
             pdf.save("barcodes.pdf");
         });
 
