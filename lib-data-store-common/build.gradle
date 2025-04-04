@@ -23,3 +23,7 @@ dependencies {
     testImplementation project(path: ':lib-openbis-commonbase', configuration: 'tests'),
             'jmock:jmock:2.5.1'
 }
+
+test {
+    useTestNG()
+}

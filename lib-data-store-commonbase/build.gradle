@@ -35,3 +35,7 @@ task testJar(type: Jar, dependsOn: testClasses) {
 artifacts {
     tests testJar
 }
+
+test {
+    useTestNG()
+}
