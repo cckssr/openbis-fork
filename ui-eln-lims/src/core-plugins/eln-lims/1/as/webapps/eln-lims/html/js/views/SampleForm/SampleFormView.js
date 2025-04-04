@@ -501,6 +501,8 @@
 				var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 				if(this._sampleFormModel.mode === FormMode.CREATE && !value) {
 					value = "<h2>New Title</h2><br><p>new content</p>";
+				} else if(this._sampleFormModel.mode === FormMode.EDIT && value === "") {
+				    value = "<h2></h2><br><p></p>";
 				}
 				var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 	
