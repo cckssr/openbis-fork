@@ -138,10 +138,10 @@ public class ImagingService implements ICustomDSSServiceExecutor
 
     private void processUserDefinedImagingData(String sessionToken, DataSet dataSet)
     {
-        final List<String> supportedFormats = Arrays.asList(".png", ".jpg");
+        final List<String> supportedFormats = Arrays.asList(ImageIO.getWriterFormatNames());
         File rootFile = getRootFile(sessionToken, dataSet);
         LinkedList<File> filesToProces = new LinkedList<>();
-        List<File> imageFiles = new ArrayList<>();
+        List<Map.Entry<File, String>> imageFiles = new ArrayList<>();
         filesToProces.add(rootFile);
         while (!filesToProces.isEmpty())
         {
@@ -163,45 +163,47 @@ public class ImagingService implements ICustomDSSServiceExecutor
                 {
                     if (fileName.endsWith(supportedFormat))
                     {
-                        imageFiles.add(top);
+                        imageFiles.add(Map.entry(top, suffix));
                         break;
                     }
                 }
             }
         }
-        if (!imageFiles.isEmpty())
+        List<ImagingDataSetPreview> previews = new ArrayList<>();
+        for (int i = 0; i < imageFiles.size(); i++)
         {
-            List<ImagingDataSetPreview> previews = new ArrayList<>();
-            for (int i = 0; i < imageFiles.size(); i++)
-            {
-                ImagingDataSetPreview preview = new ImagingDataSetPreview();
-                preview.setIndex(i);
-                File imageFile = imageFiles.get(i);
-                preview.setFormat("PNG");
-                encodeImageToPreview(imageFile, preview);
-                preview.setMetadata(Map.of());
-                preview.setConfig(Map.of());
-                preview.setComment("");
-                preview.setTags(new String[0]);
-                previews.add(preview);
-            }
-
-            ImagingDataSetPropertyConfig config =
-                    Util.readConfig(dataSet.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME),
-                            ImagingDataSetPropertyConfig.class);
-
-            config.getImages().get(0).setPreviews(previews);
-            config.getMetadata().put("GENERATE", "false");
-
-            DataSetUpdate update = new DataSetUpdate();
-            update.setDataSetId(dataSet.getPermId());
-            update.setProperty(IMAGING_CONFIG_PROPERTY_NAME, Util.convertConfigToJson(config));
-            update.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(previews.size()));
-            getApplicationServerApi().updateDataSets(sessionToken, Arrays.asList(update));
+            ImagingDataSetPreview preview = new ImagingDataSetPreview();
+            preview.setIndex(i);
+            Map.Entry<File, String> imageFile = imageFiles.get(i);
+            preview.setFormat(imageFile.getValue());
+            encodeImageToPreview(imageFile.getKey(), imageFile.getValue(), preview);
+            preview.setMetadata(Map.of());
+            preview.setConfig(Map.of());
+            preview.setComment("");
+            preview.setTags(new String[0]);
+            previews.add(preview);
         }
+
+        ImagingDataSetPropertyConfig config =
+                Util.readConfig(dataSet.getJsonProperty(IMAGING_CONFIG_PROPERTY_NAME),
+                        ImagingDataSetPropertyConfig.class);
+
+        config.getImages().get(0).setPreviews(previews);
+        if (imageFiles.isEmpty()) {
+            config.getMetadata().put("GENERATE", "UNKNOWN_FORMAT");
+        } else
+        {
+            config.getMetadata().put("GENERATE", "false");
+        }
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSet.getPermId());
+        update.setProperty(IMAGING_CONFIG_PROPERTY_NAME, Util.convertConfigToJson(config));
+        update.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(previews.size()));
+        getApplicationServerApi().updateDataSets(sessionToken, Arrays.asList(update));
     }
 
-    private void encodeImageToPreview(File file, ImagingDataSetPreview preview)
+    private void encodeImageToPreview(File file, String imageFormat, ImagingDataSetPreview preview)
     {
         try
         {
@@ -215,7 +217,7 @@ public class ImagingService implements ICustomDSSServiceExecutor
                 BufferedImage image = ImageIO.read(is);
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(image, "png", baos);
+                ImageIO.write(image, imageFormat, baos);
                 preview.setBytes(Base64.getEncoder().encodeToString(baos.toByteArray()));
                 preview.setWidth(image.getWidth());
                 preview.setHeight(image.getHeight());
@@ -290,7 +292,10 @@ public class ImagingService implements ICustomDSSServiceExecutor
         final ImagingDataSetImage image = config.getImages().get(index);
 
         ImagingDataSetExportConfig exportConfig = data.getExport().getConfig();
-        Validator.validateExportConfig(exportConfig);
+        if(!dataSet.getType().getCode().equals(USER_DEFINED_IMAGING_DATA_TYPE))
+        {
+            Validator.validateExportConfig(exportConfig);
+        }
 
         ImagingArchiver archiver;
         // Prepare archiver

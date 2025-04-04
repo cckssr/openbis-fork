@@ -47,7 +47,6 @@ public class ImagingDataSetInterceptor implements IOperationListener
     static final String DEFAULT_DATASET_VIEWER_VALUE = "IMAGING_DATASET_VIEWER";
     static final String IMAGING_TYPE = "IMAGING_DATA";
     static final String USER_DEFINED_IMAGING_DATA = "USER_DEFINED_IMAGING_DATA";
-    static final List<String> IMAGING_TYPES = Arrays.asList(IMAGING_TYPE, USER_DEFINED_IMAGING_DATA);
     static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
 
     static final String PREVIEW_TOTAL_COUNT = "preview-total-count";
@@ -56,8 +55,14 @@ public class ImagingDataSetInterceptor implements IOperationListener
         if(typePermId == null || typePermId.trim().isEmpty()) {
             return false;
         }
-        return IMAGING_TYPES.contains(typePermId);
+        return typePermId.endsWith(IMAGING_TYPE);
     }
+
+    private boolean hasImagingConfig(IPropertiesHolder holder) {
+        String property = getPropertyConfig(holder);
+        return property != null && !property.trim().isEmpty();
+    }
+
 
     private DataSet getDataSetToUpdate(DataSetUpdate update, IApplicationServerApi api, String sessionToken) {
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
@@ -104,7 +109,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
         return propertyValue;
     }
 
-    private ImagingDataSetImage getDefaultImage()
+    private ImagingDataSetImage getUserDefinedDefaultImage()
     {
         ImagingDataSetImage image = new ImagingDataSetImage();
         ImagingDataSetConfig config = new ImagingDataSetConfig();
@@ -115,8 +120,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
         ImagingDataSetControl include = new ImagingDataSetControl();
         include.setLabel("include");
         include.setType("Dropdown");
-        include.setMultiselect(true);
-        include.setValues(Arrays.asList("image", "raw data"));
+        include.setMultiselect(false);
+        include.setValues(Arrays.asList("raw data"));
 
         ImagingDataSetControl archiveFormat = new ImagingDataSetControl();
         archiveFormat.setLabel("archive-format");
@@ -153,7 +158,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
                 EntityTypePermId typeId = (EntityTypePermId) creation.getTypeId();
                 String objectTypeCode = typeId.getPermId();
-                if(isImagingDataSet(objectTypeCode)) {
+                if(isImagingDataSet(objectTypeCode) || hasImagingConfig(creation)) {
                     String propertyConfig = getPropertyConfig(creation);
                     if(propertyConfig == null || propertyConfig.trim().isEmpty() || "{}".equals(propertyConfig.trim())) {
                         if(USER_DEFINED_IMAGING_DATA.equals(objectTypeCode))
@@ -161,10 +166,11 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "true"));
-                            config.setImages(Arrays.asList(getDefaultImage()));
+                            config.setImages(Arrays.asList(getUserDefinedDefaultImage()));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
                             creation.setMetaData(metaData);
+                            creation.setProperty("DEFAULT_DATASET_VIEW", "IMAGING_DATASET_VIEWER");
 
                             String property = convertConfigToJson(config);
                             creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
@@ -213,7 +219,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
                 if (dataSet != null)
                 {
                     EntityTypePermId typeId = dataSet.getType().getPermId();
-                    if(isImagingDataSet(typeId.getPermId())) {
+                    if(isImagingDataSet(typeId.getPermId()) || hasImagingConfig(update)) {
 
                         String propertyConfig = getPropertyConfig(update);
                         if(propertyConfig == null) {
