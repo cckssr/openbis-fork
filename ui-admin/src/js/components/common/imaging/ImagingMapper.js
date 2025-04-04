@@ -53,7 +53,11 @@ export default class ImagingMapper{
         imagingDataSetExportConfig.imageFormat = exportConfig['image-format'];
         imagingDataSetExportConfig.archiveFormat = exportConfig['archive-format'];
         imagingDataSetExportConfig.resolution = exportConfig['resolution'];
-        imagingDataSetExportConfig.include = exportConfig['include'].map(c => c.toUpperCase().replace(' ', '_'));
+        if (Array.isArray(exportConfig['include'])) {
+            imagingDataSetExportConfig.include = exportConfig['include'].map(c => c.toUpperCase().replace(' ', '_'));
+        } else if (typeof exportConfig['include'] === 'string') {
+            imagingDataSetExportConfig.include = [exportConfig['include'].toUpperCase().replace(' ', '_')];
+        }
         return imagingDataSetExportConfig;
     }
 
