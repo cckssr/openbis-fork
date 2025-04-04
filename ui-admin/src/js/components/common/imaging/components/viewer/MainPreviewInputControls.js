@@ -163,10 +163,8 @@ const MainPreviewInputControls = ({ activePreview, configInputs, configFilters, 
   const currentMetadata = activePreview.metadata;
   const isUploadedPreview = datasetType === constants.USER_DEFINED_IMAGING_DATA ? true : isObjectEmpty(currentMetadata) ? false : ('file' in currentMetadata);
 
-  const datasetFilePathsMenu = datasetFilePaths?.map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
+  const datasetFilePathsMenu = datasetFilePaths?.sort().reverse().map(datasetFilePath => datasetFilePath[0] + ' - ' + datasetFilePath[1])
   datasetFilePathsMenu?.splice(0, 0, constants.NONE);
-
-  //console.log('datasetFilePathsMenu', imagingDataset);
 
   return (
     <Grid2 container direction='row' size={{ sm: 12, md: 4 }} sx={{ px: '8px', display: 'block' }}>
