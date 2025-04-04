@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 compileJava {
     options.compilerArgs << '-parameters'
@@ -23,4 +23,8 @@ dependencies {
             project(':lib-maintenance'),
             'apache:commons-io:2.6'
     testImplementation project(path: ':lib-data-store-commonbase', configuration: 'tests')
+}
+
+test {
+    useTestNG()
 }

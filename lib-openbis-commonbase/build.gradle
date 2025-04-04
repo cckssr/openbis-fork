@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 compileJava {
     options.compilerArgs << '-parameters'
@@ -32,4 +32,8 @@ task testJar(type: Jar, dependsOn: testClasses) {
 
 artifacts {
     tests testJar
+}
+
+test {
+    useTestNG()
 }
