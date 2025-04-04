@@ -227,7 +227,6 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             // Potentially any DataSet Type can be an Imaging DataSet Type. The system will know what DataSet Types
             // are an Imaging DataSet by convention, those Types SHOULD end with IMAGING_DATA on their Type Code.
             let isImagingDatasetView = model.dataSetV3 &&
-                model.dataSetV3.type.code.endsWith("IMAGING_DATA") &&
                 model.dataSetV3.properties["DEFAULT_DATASET_VIEW"] &&
                 model.dataSetV3.properties["DEFAULT_DATASET_VIEW"] === "IMAGING_DATASET_VIEWER";
             if (isImagingDatasetView) {
