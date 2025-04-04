@@ -59,7 +59,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
-import ch.ethz.sis.transaction.TransactionOperationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class OpenBisAuthApiClientTest extends BaseApiClientTest
