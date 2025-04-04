@@ -1,4 +1,4 @@
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 compileJava {
     options.compilerArgs << '-parameters'
@@ -20,4 +20,8 @@ dependencies {
             'springframework:spring-context:5.0.1.RELEASE'
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             'testng:testng:6.8-CISD'
+}
+
+test {
+    useTestNG()
 }
