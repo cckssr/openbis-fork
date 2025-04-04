@@ -1,23 +1,4 @@
-apply plugin: 'java-library'
-
-compileJava {
-    options.compilerArgs << '-parameters'
-}
-
-sourceCompatibility = '11'
-targetCompatibility = '11'
-
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-}
-
-configurations {
-    tests.extendsFrom testImplementation
-    tests.canBeResolved true
-}
+apply from: '../build/javalibrary.gradle'
 
 dependencies {
     implementation project(':lib-openbis-commonbase'),
@@ -25,17 +6,4 @@ dependencies {
             'shriop:javacsv:2.0'
     testImplementation project(path: ':lib-openbis-commonbase', configuration: 'tests'),
             'jmock:jmock:2.5.1'
-}
-
-task testJar(type: Jar, dependsOn: testClasses) {
-    baseName = "test-${project.name}"
-    from sourceSets.test.output
-}
-
-artifacts {
-    tests testJar
-}
-
-test {
-    useTestNG()
 }

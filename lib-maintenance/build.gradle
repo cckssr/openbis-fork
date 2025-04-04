@@ -1,18 +1,4 @@
-apply plugin: 'java-library'
-
-compileJava {
-    options.compilerArgs << '-parameters'
-}
-
-sourceCompatibility = '11'
-targetCompatibility = '11'
-
-repositories {
-    ivy {
-        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
-        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
-    }
-}
+apply from: '../build/javalibrary.gradle'
 
 dependencies {
     implementation project(':lib-logging'),
@@ -20,8 +6,4 @@ dependencies {
             'springframework:spring-context:5.0.1.RELEASE'
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             'testng:testng:6.8-CISD'
-}
-
-test {
-    useTestNG()
 }
