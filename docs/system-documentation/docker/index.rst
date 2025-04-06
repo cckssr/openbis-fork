@@ -10,6 +10,10 @@ Docker
    release-cycle
    source-repositories
    usage
-   configuration
    verification
+   configuration
+   operation
+   backup
+   restore
+   troubleshooting
    references
