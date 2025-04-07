@@ -62,7 +62,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
  */
 @Entity
 @Table(name = TableNames.PROPERTY_TYPES_TABLE, uniqueConstraints = {
-        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN, ColumnNames.IS_MANAGED_INTERNALLY }) })
+        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PropertyTypePE extends HibernateAbstractRegistrationHolder implements
         Comparable<PropertyTypePE>, IIdAndCodeHolder, IIdentityHolder
