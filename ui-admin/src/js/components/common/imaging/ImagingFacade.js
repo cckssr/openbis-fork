@@ -116,7 +116,7 @@ export default class ImagingFacade {
 
         if (withType) {
             var filesPath = [];
-            if (imagingDataConfig.images[0].config.adaptor.includes('NanonisDatAdaptor')) {
+            if (imagingDataConfig.images[0].config.adaptor?.includes('NanonisDatAdaptor')) {
                 filesPath = withDatasetsHierarchy ? await this.getDatasetFilesPath(dataset) : [];
             }
             return [filesPath, dataset.type.code, imagingDataConfig];

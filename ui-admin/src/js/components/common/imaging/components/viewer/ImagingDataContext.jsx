@@ -128,7 +128,7 @@ export const ImagingDataProvider = ({ onUnsavedChanges, objId, objType, extOpenb
 
     const deleteSerializationIds = (imagingDataset) => {
         delete imagingDataset.preview['@id']; //@id are duplicated across different previews on update, need to be deleted
-        imagingDataset.preview.filterConfig.forEach(element => {
+        imagingDataset.preview.filterConfig?.forEach(element => {
             delete element['@id']
         });
     }

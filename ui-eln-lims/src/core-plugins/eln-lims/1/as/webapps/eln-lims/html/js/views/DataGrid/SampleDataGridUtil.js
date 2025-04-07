@@ -1018,7 +1018,7 @@ var SampleDataGridUtil = new function() {
                             } else {
                                var displayValue = params.displayValues.get(params.value) ?? params.value
                                return FormUtil.getFormLink(displayValue, "Sample", params.value);
-}
+                            }
                           }
                       })(propertyType)
                 }
@@ -1038,10 +1038,6 @@ var SampleDataGridUtil = new function() {
                 });
             }
         }
-        if(samplePermIdsToIdentify.size > 0) {
-
-        }
-
         return propertyColumnsToSort;
     }
 
