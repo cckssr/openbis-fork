@@ -1,0 +1,11 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-logging'), project(':lib-commonbase'), project(':lib-maintenance'),
+            project(':lib-pathinfo-db'), project(':lib-hierarchical-content'), project(':lib-data-store-commonbase'),
+            project(':lib-openbis-commonbase'), project(':api-openbis-java')
+    testImplementation project(path: ':lib-hierarchical-content', configuration: 'tests'),
+            project(path: ':lib-openbis-commonbase', configuration: 'tests'),
+            'jmock:jmock:2.5.1',
+            'hamcrest:hamcrest-library:1.3'
+}

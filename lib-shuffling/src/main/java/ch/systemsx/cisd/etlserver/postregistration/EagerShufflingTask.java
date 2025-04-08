@@ -40,7 +40,6 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.etlserver.plugins.DataSetMover;
 import ch.systemsx.cisd.etlserver.plugins.IDataSetMover;
-import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -129,8 +128,7 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
         this(properties, IncomingShareIdProvider.getIdsOfIncomingShares(), service, ShufflingServiceProviderFactory.getInstance()
                         .getShareIdManager(), new SimpleFreeSpaceProvider(), new DataSetMover(service,
                         ShufflingServiceProviderFactory.getInstance().getShareIdManager()), ShufflingServiceProviderFactory.getInstance().getConfigProvider(),
-                new HierarchicalContentChecksumProvider(
-                        ShufflingServiceProviderFactory.getInstance().getHierarchicalContentProvider()), new Log4jSimpleLogger(
+                ShufflingServiceProviderFactory.getInstance().getChecksumProvider(), new Log4jSimpleLogger(
                         operationLog), new Log4jSimpleLogger(notificationLog));
     }
 

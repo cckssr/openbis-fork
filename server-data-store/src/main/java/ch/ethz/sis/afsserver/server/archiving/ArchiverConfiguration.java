@@ -17,10 +17,6 @@ import lombok.Getter;
 public class ArchiverConfiguration
 {
 
-    private static final int DEFAULT_LOCKING_TIMEOUT_IN_SECONDS = 5;
-
-    private static final int DEFAULT_LOCKING_WAITING_INTERVAL_IN_MILLIS = 100;
-
     public enum ArchiverParameter
     {
         lockingTimeOutInSeconds,
@@ -32,10 +28,6 @@ public class ArchiverConfiguration
     private static volatile Configuration configuration;
 
     private final IArchiverPlugin archiverPlugin;
-
-    private final Integer lockingTimeOutInSeconds;
-
-    private final Integer lockingWaitingIntervalInMillis;
 
     private final Properties properties;
 
@@ -83,24 +75,6 @@ public class ArchiverConfiguration
                     + "'", CheckedExceptionTunnel.unwrapIfNecessary(ex));
         }
 
-        Integer lockingTimeOutInSeconds = AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration,
-                ArchiverParameter.lockingTimeOutInSeconds, false);
-
-        if (lockingTimeOutInSeconds == null)
-        {
-            lockingTimeOutInSeconds = DEFAULT_LOCKING_TIMEOUT_IN_SECONDS;
-        }
-
-        Integer lockingWaitingIntervalInMillis =
-                AtomicFileSystemServerParameterUtil.getIntegerParameter(configuration, ArchiverParameter.lockingWaitingIntervalInMillis, false);
-
-        if (lockingWaitingIntervalInMillis == null)
-        {
-            lockingWaitingIntervalInMillis = DEFAULT_LOCKING_WAITING_INTERVAL_IN_MILLIS;
-        }
-
-        this.lockingTimeOutInSeconds = lockingTimeOutInSeconds;
-        this.lockingWaitingIntervalInMillis = lockingWaitingIntervalInMillis;
         this.properties = configuration.getProperties();
     }
 

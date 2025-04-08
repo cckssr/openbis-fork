@@ -17,16 +17,17 @@ package ch.ethz.sis.afsserver.server;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverServiceProvider;
-import ch.ethz.sis.afsserver.server.archiving.HierarchicalContentServiceProvider;
 import ch.ethz.sis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.afsserver.server.common.ApacheLog4j1Configuration;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.HierarchicalContentServiceProvider;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
@@ -34,8 +35,10 @@ import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.shuffling.IncomingShareIdProvider;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoServiceProvider;
+import ch.ethz.sis.afsserver.server.shuffling.ShufflingServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.log.LogFactory;
 import ch.ethz.sis.shared.log.LogFactoryFactory;
 import ch.ethz.sis.shared.log.LogManager;
@@ -47,10 +50,13 @@ import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
+import ch.systemsx.cisd.etlserver.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 
 public final class Server<CONNECTION, API>
 {
@@ -166,15 +172,14 @@ public final class Server<CONNECTION, API>
         httpServer.start(httpServerPort, maxContentLength, httpServerUri, new HttpServerHandler[] { apiServerAdapter });
 
         // 2.8 Create objects used by the old DSS code
-        ServiceProvider.configure(configuration);
-        IncomingShareIdProvider.configure(configuration);
+        IncomingShareIdProvider.add(Set.of(AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration).toString()));
 
-        ch.ethz.sis.afsserver.server.archiving.ServiceProvider.configure(configuration);
-        ArchiverServiceProviderFactory.setInstance(
-                new ArchiverServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
-        HierarchicalContentServiceProviderFactory.setInstance(
-                new HierarchicalContentServiceProvider(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance()));
-        ServiceProviderFactory.setInstance(ch.ethz.sis.afsserver.server.archiving.ServiceProvider.getInstance());
+        ServiceProvider.configure(configuration);
+        ServiceProviderFactory.setInstance(ServiceProvider.getInstance());
+        PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider(ServiceProvider.getInstance()));
+        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider(ServiceProvider.getInstance()));
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider(ServiceProvider.getInstance()));
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider(ServiceProvider.getInstance()));
         QueueingDataSetStatusUpdaterService.start(new File(".updater"));
 
         // 2.9 Create maintenance tasks

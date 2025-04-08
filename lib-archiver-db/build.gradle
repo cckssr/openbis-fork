@@ -1,6 +1,6 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    implementation project(':lib-db'),
+    api project(':lib-db'),
             'lemnik:eodsql:2.2-CISD'
 }

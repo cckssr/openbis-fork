@@ -17,6 +17,8 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.io.File;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+
 /**
  * A provider for DSS configuration infos which can be used at runtime.
  * 
@@ -34,6 +36,11 @@ public interface IConfigProvider
      * Return the data store code.
      */
     String getDataStoreCode();
+
+    /**
+     * Return the data store kind.
+     */
+    DataStoreKind getDataStoreKind();
 
     /**
      * Return the url of the openBIS server.

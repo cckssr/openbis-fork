@@ -44,7 +44,6 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.test.ToStringMatcher;
-import ch.systemsx.cisd.common.utilities.ICredentials;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AggregationService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -474,24 +473,6 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
             return service;
         }
 
-        @Override
-        protected ICredentials getEtlServerCredentials()
-        {
-            return new ICredentials()
-                {
-                    @Override
-                    public String getUserId()
-                    {
-                        return USER_ID;
-                    }
-
-                    @Override
-                    public String getPassword()
-                    {
-                        return PASSWORD;
-                    }
-                };
-        }
     }
 
     private static final class DummyAggregationService extends AggregationService

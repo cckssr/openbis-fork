@@ -9,4 +9,6 @@ public interface IShufflingServiceProvider
     IConfigProvider getConfigProvider();
 
     IHierarchicalContentProvider getHierarchicalContentProvider();
+
+    IChecksumProvider getChecksumProvider();
 }

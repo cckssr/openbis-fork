@@ -15,17 +15,14 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.Complete;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.FileFormatType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.LocatorType;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.StorageFormat;
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.PhysicalDataFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 
 /*
  * Class automatically generated with DtoGenerator
@@ -74,6 +71,12 @@ public class PhysicalData implements Serializable
 
     @JsonProperty
     private Boolean archivingRequested;
+
+    @JsonProperty
+    private Boolean h5Folders;
+
+    @JsonProperty
+    private Boolean h5arFolders;
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
@@ -265,6 +268,32 @@ public class PhysicalData implements Serializable
     public void setArchivingRequested(Boolean archivingRequested)
     {
         this.archivingRequested = archivingRequested;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
+    public Boolean isH5Folders()
+    {
+        return h5Folders;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setH5Folders(Boolean h5Folders)
+    {
+        this.h5Folders = h5Folders;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
+    public Boolean isH5arFolders()
+    {
+        return h5arFolders;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setH5arFolders(Boolean h5arFolders)
+    {
+        this.h5arFolders = h5arFolders;
     }
 
     // Method automatically generated with DtoGenerator

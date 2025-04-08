@@ -14,8 +14,10 @@ sourceSets {
 dependencies {
     implementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-two-phase-transaction', configuration: 'tests'),
+            project(':lib-data-store-commonbase'),
             project(':lib-transactional-file-system'),
             project(':lib-maintenance'),
+            project(':lib-pathinfo'),
             project(':server-application-server'),
             project(path: ':server-application-server', configuration: 'tests'),
             project(':server-original-data-store'),

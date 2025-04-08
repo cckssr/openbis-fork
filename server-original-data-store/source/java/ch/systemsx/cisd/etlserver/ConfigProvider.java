@@ -18,6 +18,7 @@ package ch.systemsx.cisd.etlserver;
 import java.io.File;
 import java.util.Properties;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 
@@ -55,6 +56,11 @@ public class ConfigProvider implements IConfigProvider
     public String getDataStoreCode()
     {
         return DssPropertyParametersUtil.getDataStoreCode(properties);
+    }
+
+    @Override public DataStoreKind getDataStoreKind()
+    {
+        return DataStoreKind.DSS;
     }
 
     @Override

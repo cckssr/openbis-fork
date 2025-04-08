@@ -53,7 +53,7 @@ public interface DataSetQuery extends ObjectQuery
     public List<ObjectRelationRecord> getPhysicalDataIds(LongSet dataSetIds);
 
     @Select(sql =
-            "select ed.id as id, ed.share_id as shareId, ed.location, ed.size, ed.status, ed.is_complete as isComplete, ed.present_in_archive as isPresentInArchive, ed.storage_confirmation as isStorageConfirmed, ed.speed_hint as speedHint, ed.archiving_requested as isArchivingRequested "
+            "select ed.id as id, ed.share_id as shareId, ed.location, ed.size, ed.status, ed.is_complete as isComplete, ed.present_in_archive as isPresentInArchive, ed.storage_confirmation as isStorageConfirmed, ed.speed_hint as speedHint, ed.archiving_requested as isArchivingRequested, ed.h5_folders as isH5Folders, ed.h5ar_folders as isH5arFolders "
                     + "from external_data ed where ed.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<PhysicalDataBaseRecord> getPhysicalDatas(LongSet dataSetIds);
 

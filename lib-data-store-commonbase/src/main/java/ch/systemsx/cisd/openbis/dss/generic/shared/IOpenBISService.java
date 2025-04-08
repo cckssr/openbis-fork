@@ -40,6 +40,10 @@ public interface IOpenBISService
 
     List<SimpleDataSetInformationDTO> listPhysicalDataSetsByArchivingStatus(DataSetArchivingStatus archivingStatus, Boolean presentInArchive);
 
+    List<SimpleDataSetInformationDTO> listOldestPhysicalDataSets(Date youngerThan, int chunkSize);
+
+    List<SimpleDataSetInformationDTO> listOldestPhysicalDataSets(int chunkSize);
+
     List<AbstractExternalData> listAvailableDataSets(ArchiverDataSetCriteria criteria);
 
     List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(MetaprojectIdentifierId metaprojectId);
@@ -49,6 +53,8 @@ public interface IOpenBISService
     void updateDataSetStatuses(List<String> dataSetCodes, DataSetArchivingStatus newStatus, boolean presentInArchive) throws UserFailureException;
 
     void updateShareIdAndSize(String dataSetCode, String shareId, long size);
+
+    void updateSize(String dataSetCode, long size);
 
     void archiveDataSets(List<String> dataSetCodes, boolean removeFromDataStore, Map<String, String> options) throws UserFailureException;
 

@@ -449,8 +449,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
 
     private String login()
     {
-        ICredentials credentials = getEtlServerCredentials();
-        return getService().login(credentials.getUserId(), credentials.getPassword());
+        return ServiceProvider.getOpenBISService().getSessionToken();
     }
 
     protected IApplicationServerApi getService()

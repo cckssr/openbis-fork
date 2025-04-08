@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -525,6 +526,16 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
         {
             operationLog.info("Updated in openBIS: data set " + dataSetCode + ", share Id: "
                     + shareId + ", size: " + size);
+        }
+    }
+
+    @Override public void updateSize(final String dataSetCode, final long size)
+    {
+        service.updatePhysicalDataSetsSize(session.getSessionToken(), Collections.singletonMap(dataSetCode, size));
+
+        if (operationLog.isInfoEnabled())
+        {
+            operationLog.info("Updated in openBIS: data set " + dataSetCode + ",  size: " + size);
         }
     }
 

@@ -54,4 +54,10 @@ public enum AtomicFileSystemServerParameter
     apiServerTransactionManagerKey,
     apiServerWorkerTimeout,
     apiServerObserver,
+
+    //
+    // Parameters for share manager
+    //
+    lockingTimeoutInSeconds,
+    lockingWaitingIntervalInMillis
 }

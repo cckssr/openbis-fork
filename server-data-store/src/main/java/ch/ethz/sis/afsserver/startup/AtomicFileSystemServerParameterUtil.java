@@ -46,6 +46,18 @@ public class AtomicFileSystemServerParameterUtil
         return storageIncomingShareId;
     }
 
+    public static Integer getLockingTimeoutInSeconds(final Configuration configuration)
+    {
+        Integer timeout = getIntegerParameter(configuration, AtomicFileSystemServerParameter.lockingTimeoutInSeconds, false);
+        return timeout != null ? timeout : 5;
+    }
+
+    public static Integer getLockingWaitingIntervalInMillis(final Configuration configuration)
+    {
+        Integer interval = getIntegerParameter(configuration, AtomicFileSystemServerParameter.lockingWaitingIntervalInMillis, false);
+        return interval != null ? interval : 100;
+    }
+
     public static JsonObjectMapper getJsonObjectMapper(Configuration configuration) throws Exception
     {
         getStringParameter(configuration, AtomicFileSystemServerParameter.jsonObjectMapperClass, true);
