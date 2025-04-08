@@ -92,7 +92,11 @@ export default class UserGroupFormControllerChange extends PageControllerChange 
         registrationDate: {
           ...newUser.registrationDate,
           value: user.registrationDate
-        }
+        },
+        expiryDate: {
+          ...newUser.expiryDate,
+          value: user.expiryDate
+        },
       })
     }
   }

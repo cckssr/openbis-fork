@@ -22,6 +22,7 @@ export default class UserGroupFormControllerAddUser {
       active: FormUtil.createField({}),
       registrator: FormUtil.createField({}),
       registrationDate: FormUtil.createField({}),
+      expiryDate: FormUtil.createField({}),
       original: null
     }
 
