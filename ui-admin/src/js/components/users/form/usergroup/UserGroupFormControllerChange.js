@@ -95,7 +95,7 @@ export default class UserGroupFormControllerChange extends PageControllerChange 
         },
         expiryDate: {
           ...newUser.expiryDate,
-          value: user.expiryDate
+          value: user.expiryDate ? { dateObject: new Date(user.expiryDate) } : null
         },
       })
     }

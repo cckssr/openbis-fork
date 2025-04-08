@@ -63,7 +63,7 @@ class UsersGrid extends React.PureComponent {
           {
             name: 'userStatus',
             label: messages.get(messages.USER_STATUS),
-            getValue: ({ row }) => this.userStatusValue(row.active.value, row.expiryDate.value)
+            getValue: ({ row }) => this.userStatusValue(row.userId.value, row.active.value, row.expiryDate.value)
           },
           GridUtil.dateObjectColumn({ name: 'expiryDate',
                     label: messages.get(messages.EXPIRY_DATE),
@@ -114,7 +114,10 @@ class UsersGrid extends React.PureComponent {
     )
   }
 
-  userStatusValue(active, expiryDate) {
+  userStatusValue(userId, active, expiryDate) {
+      if(!userId) {
+        return null;
+      }
       if(active) {
           if(expiryDate && expiryDate.dateObject) {
             return messages.get(messages.ACTIVE_UNTIL_EXPIRY_DATE);
