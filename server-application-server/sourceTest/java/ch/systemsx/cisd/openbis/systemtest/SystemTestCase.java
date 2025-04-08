@@ -182,6 +182,13 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         TestInitializer.init();
     }
 
+    @AfterSuite
+    public void afterSuite() throws IOException
+    {
+        System.clearProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
+        System.clearProperty(Constants.ENABLED_MODULES_KEY);
+    }
+
     @BeforeMethod(alwaysRun = true)
     @BeforeClass
     public void loginAsSystem()

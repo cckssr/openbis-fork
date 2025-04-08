@@ -68,19 +68,31 @@ public class CorePluginsUtilsTest extends AbstractFileSystemTestCase
     @Test
     public void testAddCorePluginsProperties()
     {
-        File corePluginsFolder = new File(workingDirectory, "core-plugins");
-        corePluginsFolder.mkdirs();
-        String enabledTechnology = "tech-" + (int) (100 * Math.random());
-        FileUtilities.writeToFile(new File(corePluginsFolder,
-                CorePluginsUtils.CORE_PLUGINS_PROPERTIES_FILE), "  " + Constants.ENABLED_MODULES_KEY + " =   "
-                + enabledTechnology + "   ");
+        String corePluginsProperty = System.getProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
+        String enabledModulesProperty = System.getProperty(Constants.ENABLED_MODULES_KEY);
+        try
+        {
+            System.clearProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
+            System.clearProperty(Constants.ENABLED_MODULES_KEY);
+            File corePluginsFolder = new File(workingDirectory, "core-plugins");
+            corePluginsFolder.mkdirs();
+            String enabledTechnology = "tech-" + (int) (100 * Math.random());
+            FileUtilities.writeToFile(new File(corePluginsFolder,
+                            CorePluginsUtils.CORE_PLUGINS_PROPERTIES_FILE),
+                    "  " + Constants.ENABLED_MODULES_KEY + " =   "
+                            + enabledTechnology + "   ");
 
-        Properties properties = new Properties();
-        properties.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY,
-                corePluginsFolder.getPath());
+            Properties properties = new Properties();
+            properties.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY,
+                    corePluginsFolder.getPath());
 
-        CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
+            CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
 
-        assertEquals(enabledTechnology, properties.getProperty(Constants.ENABLED_MODULES_KEY));
+            assertEquals(enabledTechnology, properties.getProperty(Constants.ENABLED_MODULES_KEY));
+        } finally
+        {
+            System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, corePluginsProperty);
+            System.setProperty(Constants.ENABLED_MODULES_KEY, enabledModulesProperty);
+        }
     }
 }
