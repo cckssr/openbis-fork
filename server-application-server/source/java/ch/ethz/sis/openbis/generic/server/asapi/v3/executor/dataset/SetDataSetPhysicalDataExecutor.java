@@ -51,42 +51,44 @@ public class SetDataSetPhysicalDataExecutor implements ISetDataSetPhysicalDataEx
     public void set(final IOperationContext context, final MapBatch<DataSetCreation, DataPE> batch)
     {
         new MapBatchProcessor<DataSetCreation, DataPE>(context, batch)
+        {
+            @Override
+            public void process(DataSetCreation creation, DataPE entity)
             {
-                @Override
-                public void process(DataSetCreation creation, DataPE entity)
-                {
-                    PhysicalDataCreation physicalCreation = creation.getPhysicalData();
+                PhysicalDataCreation physicalCreation = creation.getPhysicalData();
 
-                    if (entity instanceof ExternalDataPE)
+                if (entity instanceof ExternalDataPE)
+                {
+                    if (physicalCreation == null)
                     {
-                        if (physicalCreation == null)
-                        {
-                            throw new UserFailureException("Physical data cannot be null for a physical data set.");
-                        }
-                        set(context, physicalCreation, (ExternalDataPE) entity);
-                    } else
+                        throw new UserFailureException("Physical data cannot be null for a physical data set.");
+                    }
+                    set(context, creation, (ExternalDataPE) entity);
+                } else
+                {
+                    if (physicalCreation != null)
                     {
-                        if (physicalCreation != null)
-                        {
-                            throw new UserFailureException("Physical data cannot be set for a non-physical data set.");
-                        }
+                        throw new UserFailureException("Physical data cannot be set for a non-physical data set.");
                     }
                 }
+            }
 
-                @Override
-                public IProgress createProgress(DataSetCreation creation, DataPE entity, int objectIndex, int totalObjectCount)
-                {
-                    return new SetRelationProgress(entity, creation, "dataset-physicaldata", objectIndex, totalObjectCount);
-                }
-            };
+            @Override
+            public IProgress createProgress(DataSetCreation creation, DataPE entity, int objectIndex, int totalObjectCount)
+            {
+                return new SetRelationProgress(entity, creation, "dataset-physicaldata", objectIndex, totalObjectCount);
+            }
+        };
 
         setDataSetStorageFormatExecutor.set(context, batch);
         setDataSetFileFormatTypeExecutor.set(context, batch);
         setDataSetLocatorTypeExecutor.set(context, batch);
     }
 
-    private void set(IOperationContext context, PhysicalDataCreation physicalCreation, ExternalDataPE dataSet)
+    private void set(IOperationContext context, DataSetCreation creation, ExternalDataPE dataSet)
     {
+        PhysicalDataCreation physicalCreation = creation.getPhysicalData();
+
         dataSet.setShareId(physicalCreation.getShareId());
         dataSet.setLocation(physicalCreation.getLocation());
 
@@ -113,6 +115,11 @@ public class SetDataSetPhysicalDataExecutor implements ISetDataSetPhysicalDataEx
         dataSet.setH5Folders(physicalCreation.isH5Folders());
         dataSet.setH5arFolders(physicalCreation.isH5arFolders());
         dataSet.setArchivingRequested(physicalCreation.isArchivingRequested());
+
+        if (creation.isAfsData())
+        {
+            dataSet.setStorageConfirmation(true);
+        }
     }
 
 }

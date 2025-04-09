@@ -162,12 +162,8 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
     @Override
     public void setUp(String pluginName, Properties properties)
     {
-        dataStoreCode =
-                PropertyUtils.getMandatoryProperty(properties,
-                        DssPropertyParameters.DSS_CODE_KEY).toUpperCase();
-        storeRoot =
-                new File(PropertyUtils.getMandatoryProperty(properties,
-                        DssPropertyParameters.STOREROOT_DIR_KEY));
+        dataStoreCode = ShufflingServiceProviderFactory.getInstance().getConfigProvider().getDataStoreCode();
+        storeRoot = ShufflingServiceProviderFactory.getInstance().getConfigProvider().getStoreRoot();
         if (storeRoot.isDirectory() == false)
         {
             throw new ConfigurationFailureException(

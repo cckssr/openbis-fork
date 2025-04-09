@@ -399,6 +399,7 @@ public class OpenBISService implements IOpenBISService
         }
 
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
         // data sets codes are equal to sample/experiment perm ids they are connected to
         criteria.withCodes().thatIn(experimentsAndSamplesBatch.stream().map(ExperimentOrSample::getPermId).collect(Collectors.toList()));
 

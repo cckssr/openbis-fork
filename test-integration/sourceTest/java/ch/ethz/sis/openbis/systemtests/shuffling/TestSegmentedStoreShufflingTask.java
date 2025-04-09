@@ -88,7 +88,7 @@ public class TestSegmentedStoreShufflingTask implements IMaintenanceTask
                 File storeRoot = ShufflingServiceProviderFactory.getInstance().getConfigProvider().getStoreRoot();
                 File shareFolder = new File(storeRoot, physicalDataSet.getDataSetShareId());
                 File dataSetFolder = new File(shareFolder, physicalDataSet.getDataSetLocation());
-                return FileUtils.checksumCRC32(new File(dataSetFolder, relativePath));
+                return (int) FileUtils.checksumCRC32(new File(dataSetFolder, relativePath));
             } else
             {
                 return -1;

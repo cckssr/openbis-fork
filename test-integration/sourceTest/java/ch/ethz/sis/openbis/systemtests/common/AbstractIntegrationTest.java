@@ -207,7 +207,7 @@ public abstract class AbstractIntegrationTest
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
     {
-        log("BEFORE " + method.getDeclaringClass().getName() + "." + method.getName());
+        log("\n>>>>>>>>>>>>>>>>\nBEFORE " + method.getDeclaringClass().getName() + "." + method.getName() + "\n>>>>>>>>>>>>>>>>\n");
         setApplicationServerProxyInterceptor(null);
         setAfsServerProxyInterceptor(null);
     }
@@ -215,7 +215,7 @@ public abstract class AbstractIntegrationTest
     @AfterMethod
     public void afterMethod(Method method) throws Exception
     {
-        log("AFTER  " + method.getDeclaringClass().getName() + "." + method.getName());
+        log("\n<<<<<<<<<<<<<<<<\nAFTER  " + method.getDeclaringClass().getName() + "." + method.getName() + "\n<<<<<<<<<<<<<<<<\n");
     }
 
     private void initLogging()
@@ -654,7 +654,7 @@ public abstract class AbstractIntegrationTest
         spaceCreation.setCode(spaceCode);
         List<SpacePermId> spaceIds = openBIS.createSpaces(List.of(spaceCreation));
         Space space = getSpace(openBIS, spaceIds.get(0));
-        log("Created " + space.getCode() + " space.");
+        log("Created space " + space.getCode());
         return space;
     }
 
@@ -670,7 +670,7 @@ public abstract class AbstractIntegrationTest
         projectCreation.setCode(projectCode);
         List<ProjectPermId> projectIds = openBIS.createProjects(List.of(projectCreation));
         Project project = openBIS.getProjects(projectIds, new ProjectFetchOptions()).get(projectIds.get(0));
-        log("Created " + project.getIdentifier() + " (" + project.getPermId().getPermId() + ") project.");
+        log("Created project " + project.getIdentifier() + " (" + project.getPermId().getPermId() + ")");
         return project;
     }
 
@@ -682,7 +682,7 @@ public abstract class AbstractIntegrationTest
         experimentCreation.setCode(experimentCode);
         List<ExperimentPermId> experimentIds = openBIS.createExperiments(List.of(experimentCreation));
         Experiment experiment = openBIS.getExperiments(experimentIds, new ExperimentFetchOptions()).get(experimentIds.get(0));
-        log("Created " + experiment.getIdentifier() + " (" + experiment.getPermId().getPermId() + ") experiment.");
+        log("Created experiment " + experiment.getIdentifier() + " (" + experiment.getPermId().getPermId() + ")");
         return experiment;
     }
 
@@ -700,7 +700,7 @@ public abstract class AbstractIntegrationTest
         options.setReason("test");
         IDeletionId deletionId = openBIS.deleteExperiments(List.of(experimentId), options);
         openBIS.confirmDeletions(List.of(deletionId));
-        log("Deleted " + experimentId + " experiment.");
+        log("Deleted experiment " + experimentId);
     }
 
     public static Sample createSample(OpenBIS openBIS, ISpaceId spaceId, String sampleCode)
@@ -711,7 +711,7 @@ public abstract class AbstractIntegrationTest
         sampleCreation.setCode(sampleCode);
         List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
         Sample sample = getSample(openBIS, sampleIds.get(0));
-        log("Created " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ") sample.");
+        log("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
         return sample;
     }
 
@@ -733,7 +733,7 @@ public abstract class AbstractIntegrationTest
         sampleCreation.setCode(sampleCode);
         List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
         Sample sample = getSample(openBIS, sampleIds.get(0));
-        log("Created " + sample.getIdentifier() + " sample.");
+        log("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
         return sample;
     }
 
@@ -751,7 +751,7 @@ public abstract class AbstractIntegrationTest
         options.setReason("test");
         IDeletionId deletionId = openBIS.deleteSamples(List.of(sampleId), options);
         openBIS.confirmDeletions(List.of(deletionId));
-        log("Deleted " + sampleId + " sample.");
+        log("Deleted sample " + sampleId);
     }
 
     public static Sample getSample(OpenBIS openBIS, ISampleId sampleId)
@@ -798,7 +798,7 @@ public abstract class AbstractIntegrationTest
         List<DataSetPermId> dataSetIds = openBIS.createDataSetsAS(List.of(dataSetCreation));
         DataSet dataSet = openBIS.getDataSets(dataSetIds, new DataSetFetchOptions()).get(dataSetIds.get(0));
 
-        log("Created " + dataSet.getPermId() + " dataSet.");
+        log("Created dataSet " + dataSet.getPermId());
         return dataSet;
     }
 
@@ -818,7 +818,7 @@ public abstract class AbstractIntegrationTest
         openBIS.createRoleAssignments(List.of(roleCreation));
 
         Person person = openBIS.getPersons(List.of(personId), new PersonFetchOptions()).get(personId);
-        log("Created " + person.getUserId() + " user.");
+        log("Created user " + person.getUserId());
         return person;
     }
 

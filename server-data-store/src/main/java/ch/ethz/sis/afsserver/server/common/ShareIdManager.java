@@ -160,17 +160,15 @@ public class ShareIdManager implements IShareIdManager
 
     @Override public void releaseLock(final UUID ownerId, final String dataSetCode)
     {
-        DataSet dataSet = getDataSet(dataSetCode);
-
-        if (dataSet == null)
-        {
-            throw new UnknownDataSetException(dataSetCode);
-        }
-
+        List<Lock<UUID, String>> locks = filterLocksByOwnerId(transactionManager.getLocks(), ownerId);
         List<Lock<UUID, String>> locksToRelease = new ArrayList<>();
-        for (LockType lockType : LockType.values())
+
+        for (Lock<UUID, String> lock : locks)
         {
-            locksToRelease.addAll(createLocks(ownerId, List.of(dataSet), lockType));
+            if (lock.getResource().contains(dataSetCode)) // TODO improve the condition
+            {
+                locksToRelease.add(lock);
+            }
         }
 
         boolean success = transactionManager.unlock(locksToRelease);

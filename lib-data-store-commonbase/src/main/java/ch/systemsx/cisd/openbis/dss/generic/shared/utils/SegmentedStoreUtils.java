@@ -538,6 +538,9 @@ public class SegmentedStoreUtils
         UUID ownerId = UUID.randomUUID();
 
         shareIdManager.lock(ownerId, dataSetCode);
+
+        logger.log(LogLevel.INFO, "Locked data set " + dataSetCode + " before shuffling.");
+
         try
         {
             File oldShare =
@@ -564,7 +567,9 @@ public class SegmentedStoreUtils
         } finally
         {
             shareIdManager.releaseLock(ownerId, dataSetCode);
+            logger.log(LogLevel.INFO, "Unlocked data set " + dataSetCode + " after shuffling.");
         }
+
         deleteDataSet(dataSetCode, dataSetDirInStore, shareIdManager, logger);
     }
 

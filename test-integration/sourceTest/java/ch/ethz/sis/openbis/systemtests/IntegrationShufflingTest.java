@@ -93,11 +93,11 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 1);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n",
                 TestLogger.getRecordedLog());
     }
@@ -176,11 +176,11 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n",
                 TestLogger.getRecordedLog());
     }
@@ -217,19 +217,17 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
                         + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Locked data set " + sample.getPermId().getPermId()
-                        + " before clean up.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Unlocked data set " + sample.getPermId().getPermId()
-                        + " after clean up.\n",
+                        + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
+                        + " to be unlocked.\n",
                 TestLogger.getRecordedLog());
 
         AssertionUtil.assertDoesNotContainLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n", TestLogger.getRecordedLog());
     }
 
@@ -266,19 +264,17 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
                         + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Locked data set " + sample.getPermId().getPermId()
-                        + " before clean up.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Unlocked data set " + sample.getPermId().getPermId()
-                        + " after clean up.\n",
+                        + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
+                        + " to be unlocked.\n",
                 TestLogger.getRecordedLog());
 
         AssertionUtil.assertDoesNotContainLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n", TestLogger.getRecordedLog());
     }
 
