@@ -11,4 +11,6 @@ public interface IShufflingServiceProvider
     IHierarchicalContentProvider getHierarchicalContentProvider();
 
     IChecksumProvider getChecksumProvider();
+
+    IIncomingShareIdProvider getIncomingShareIdProvider();
 }

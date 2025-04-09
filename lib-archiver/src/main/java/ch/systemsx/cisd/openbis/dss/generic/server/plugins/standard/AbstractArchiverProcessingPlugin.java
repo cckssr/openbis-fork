@@ -457,7 +457,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
     protected IUnarchivingPreparation getUnarchivingPreparation()
     {
         String dataStoreCode = ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreCode();
-        Set<String> incomingShares = IncomingShareIdProvider.getIdsOfIncomingShares();
+        Set<String> incomingShares = ArchiverServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares();
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
         List<Share> shares =
                 SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode, FilterOptions.ALL, incomingShares,

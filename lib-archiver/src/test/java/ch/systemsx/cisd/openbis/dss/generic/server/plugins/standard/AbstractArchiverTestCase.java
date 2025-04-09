@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -41,11 +42,11 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProviderTestWrapper;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
@@ -124,6 +125,8 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
 
     protected IUnarchivingPreparation unarchivingPreparation;
 
+    protected IIncomingShareIdProvider incomingShareIdProvider;
+
     private IArchiverServiceProvider originalServiceProvider;
 
     public AbstractArchiverTestCase()
@@ -152,6 +155,7 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         shareIdManager = context.mock(IShareIdManager.class);
         deleter = context.mock(IDataSetDeleter.class);
         fileOperationsManagerFactory = context.mock(IDataSetFileOperationsManagerFactory.class);
+        incomingShareIdProvider = context.mock(IIncomingShareIdProvider.class);
 
         originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
         ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
@@ -185,10 +189,18 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
             {
                 return service;
             }
+
+            @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return incomingShareIdProvider;
+            }
         });
         context.checking(new Expectations()
         {
             {
+                allowing(incomingShareIdProvider).getIdsOfIncomingShares();
+                will(returnValue(Collections.singleton("1")));
+
                 allowing(configProvider).getDataStoreCode();
                 will(returnValue(DATA_STORE_CODE));
 
@@ -205,7 +217,6 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
             }
         });
 
-        IncomingShareIdProviderTestWrapper.setShareIds(Arrays.asList("1"));
         store = new File(workingDirectory, "store");
         store.mkdirs();
         share1 = new File(store, "1");
@@ -222,7 +233,6 @@ public abstract class AbstractArchiverTestCase extends AbstractFileSystemTestCas
         System.out.println("======================");
         logRecorder.reset();
         ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
-        IncomingShareIdProviderTestWrapper.restoreOriginalShareIds();
         try
         {
             context.assertIsSatisfied();

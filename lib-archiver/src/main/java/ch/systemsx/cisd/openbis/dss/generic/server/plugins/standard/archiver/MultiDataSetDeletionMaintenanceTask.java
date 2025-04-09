@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
+
 import static org.apache.commons.io.FileUtils.ONE_KB;
 import static org.apache.commons.io.FileUtils.ONE_MB;
 
@@ -177,7 +178,7 @@ public class MultiDataSetDeletionMaintenanceTask
         IConfigProvider configProvider = getConfigProvider();
         File storeRoot = configProvider.getStoreRoot();
         String dataStoreCode = configProvider.getDataStoreCode();
-        Set<String> idsOfIncomingShares = IncomingShareIdProvider.getIdsOfIncomingShares();
+        Set<String> idsOfIncomingShares = ArchiverServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares();
 
         return SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode,
                 SegmentedStoreUtils.FilterOptions.AVAILABLE_FOR_SHUFFLING,

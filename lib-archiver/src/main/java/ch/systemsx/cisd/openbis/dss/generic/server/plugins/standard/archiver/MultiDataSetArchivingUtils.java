@@ -110,7 +110,7 @@ public class MultiDataSetArchivingUtils
             IConfigProvider configProvider, ISimpleLogger logger)
     {
         String dataStoreCode = configProvider.getDataStoreCode();
-        Set<String> incomingShares = IncomingShareIdProvider.getIdsOfIncomingShares();
+        Set<String> incomingShares = ArchiverServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares();
         List<Share> shares =
                 SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode, FilterOptions.ARCHIVING_SCRATCH,
                         incomingShares, freeSpaceProvider, service, logger);

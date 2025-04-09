@@ -141,7 +141,8 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
 
     public SegmentedStoreShufflingTask()
     {
-        this(IncomingShareIdProvider.getIdsOfIncomingShares(), ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
+        this(ShufflingServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares(),
+                ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
                 new SimpleFreeSpaceProvider(), new DataSetMover(
                         ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
                         ShufflingServiceProviderFactory.getInstance().getShareIdManager()),

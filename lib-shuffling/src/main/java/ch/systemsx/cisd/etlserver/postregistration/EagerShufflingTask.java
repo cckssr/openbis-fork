@@ -125,9 +125,11 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
 
     public EagerShufflingTask(Properties properties, IOpenBISService service)
     {
-        this(properties, IncomingShareIdProvider.getIdsOfIncomingShares(), service, ShufflingServiceProviderFactory.getInstance()
+        this(properties, ShufflingServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares(), service,
+                ShufflingServiceProviderFactory.getInstance()
                         .getShareIdManager(), new SimpleFreeSpaceProvider(), new DataSetMover(service,
-                        ShufflingServiceProviderFactory.getInstance().getShareIdManager()), ShufflingServiceProviderFactory.getInstance().getConfigProvider(),
+                        ShufflingServiceProviderFactory.getInstance().getShareIdManager()),
+                ShufflingServiceProviderFactory.getInstance().getConfigProvider(),
                 ShufflingServiceProviderFactory.getInstance().getChecksumProvider(), new Log4jSimpleLogger(
                         operationLog), new Log4jSimpleLogger(notificationLog));
     }

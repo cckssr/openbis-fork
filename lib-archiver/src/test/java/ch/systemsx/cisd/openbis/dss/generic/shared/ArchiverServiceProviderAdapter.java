@@ -76,4 +76,9 @@ public class ArchiverServiceProviderAdapter implements IArchiverServiceProvider
     {
         throw new UnsupportedOperationException();
     }
+
+    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

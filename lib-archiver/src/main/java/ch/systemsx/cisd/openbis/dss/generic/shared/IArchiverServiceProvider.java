@@ -36,4 +36,5 @@ public interface IArchiverServiceProvider
 
     IApplicationServerApi getV3ApplicationService();
 
+    IIncomingShareIdProvider getIncomingShareIdProvider();
 }

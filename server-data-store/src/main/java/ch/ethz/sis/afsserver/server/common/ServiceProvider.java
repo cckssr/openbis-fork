@@ -3,6 +3,7 @@ package ch.ethz.sis.afsserver.server.common;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -10,6 +11,7 @@ import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.exceptions.NotImplementedException;
@@ -32,10 +34,12 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache;
@@ -85,6 +89,8 @@ public class ServiceProvider implements IServiceProvider
     private IContentCache contentCache;
 
     private IDssServiceFactory dssServiceFactory;
+
+    private IIncomingShareIdProvider incomingShareIdProvider;
 
     public static void configure(Configuration configuration)
     {
@@ -357,5 +363,17 @@ public class ServiceProvider implements IServiceProvider
         }
 
         return contentCache;
+    }
+
+    public synchronized IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        if (incomingShareIdProvider == null)
+        {
+            IncomingShareIdProvider provider = new IncomingShareIdProvider();
+            provider.add(Set.of(AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration).toString()));
+            incomingShareIdProvider = provider;
+        }
+
+        return incomingShareIdProvider;
     }
 }

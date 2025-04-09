@@ -15,4 +15,6 @@ public interface IServiceProvider
     IDataSetDeleter getDataSetDeleter();
 
     IApplicationServerApi getV3ApplicationService();
+
+    IIncomingShareIdProvider getIncomingShareIdProvider();
 }

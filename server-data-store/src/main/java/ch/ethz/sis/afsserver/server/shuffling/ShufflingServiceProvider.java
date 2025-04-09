@@ -5,6 +5,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentChecksumPr
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShufflingServiceProvider;
@@ -41,6 +42,11 @@ public class ShufflingServiceProvider implements IShufflingServiceProvider
     @Override public IChecksumProvider getChecksumProvider()
     {
         return new HierarchicalContentChecksumProvider(getHierarchicalContentProvider());
+    }
+
+    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        return serviceProvider.getIncomingShareIdProvider();
     }
 
 }

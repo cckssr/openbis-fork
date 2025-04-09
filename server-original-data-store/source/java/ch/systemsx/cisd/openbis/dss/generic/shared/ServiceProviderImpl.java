@@ -33,4 +33,9 @@ public class ServiceProviderImpl implements IServiceProvider
     {
         return ServiceProvider.getV3ApplicationService();
     }
+
+    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        return ServiceProvider.getIncomingShareIdProvider();
+    }
 }

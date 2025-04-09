@@ -26,21 +26,21 @@ import java.util.Set;
  *
  * @author Franz-Josef Elmer
  */
-public class IncomingShareIdProvider
+public class IncomingShareIdProvider implements IIncomingShareIdProvider
 {
-    private static Set<String> incomingShareIds = new LinkedHashSet<String>();
+    private final Set<String> incomingShareIds = new LinkedHashSet<String>();
 
-    public static Set<String> getIdsOfIncomingShares()
+    public Set<String> getIdsOfIncomingShares()
     {
         return Collections.unmodifiableSet(incomingShareIds);
     }
 
-    public static void add(Collection<String> ids)
+    public void add(Collection<String> ids)
     {
         incomingShareIds.addAll(ids);
     }
 
-    public static void removeAllShareIds()
+    public void removeAllShareIds()
     {
         incomingShareIds.clear();
     }

@@ -14,6 +14,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
@@ -65,6 +66,11 @@ public class TestSegmentedStoreShufflingTask implements IMaintenanceTask
             @Override public IChecksumProvider getChecksumProvider()
             {
                 return checksumProvider;
+            }
+
+            @Override public IncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return null;
             }
         });
 

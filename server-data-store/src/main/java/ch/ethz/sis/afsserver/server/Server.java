@@ -17,7 +17,6 @@ package ch.ethz.sis.afsserver.server;
 
 import java.io.File;
 import java.util.List;
-import java.util.Set;
 
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpServer;
@@ -38,7 +37,6 @@ import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoServiceProvider;
 import ch.ethz.sis.afsserver.server.shuffling.ShufflingServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.shared.log.LogFactory;
 import ch.ethz.sis.shared.log.LogFactoryFactory;
 import ch.ethz.sis.shared.log.LogManager;
@@ -53,7 +51,6 @@ import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.etlserver.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
@@ -172,8 +169,6 @@ public final class Server<CONNECTION, API>
         httpServer.start(httpServerPort, maxContentLength, httpServerUri, new HttpServerHandler[] { apiServerAdapter });
 
         // 2.8 Create objects used by the old DSS code
-        IncomingShareIdProvider.add(Set.of(AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration).toString()));
-
         ServiceProvider.configure(configuration);
         ServiceProviderFactory.setInstance(ServiceProvider.getInstance());
         PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider(ServiceProvider.getInstance()));

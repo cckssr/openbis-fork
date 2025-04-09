@@ -26,4 +26,9 @@ public class ShufflingServiceProvider implements IShufflingServiceProvider
     {
         return new HierarchicalContentChecksumProvider(getHierarchicalContentProvider());
     }
+
+    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        return ServiceProvider.getIncomingShareIdProvider();
+    }
 }
