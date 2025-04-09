@@ -28,34 +28,10 @@ function StockView(stockController, stockView) {
 		var $formTitle = $("<h2>").append(profile.MainMenuNodeNames.Stock);
 		
 		//
-		// Toolbar
-		//
-		var toolbarModel = [];
-		
-		var $export = FormUtil.getButtonWithIcon("glyphicon-export", function() {
-			Util.blockUI();
-			var facade = mainController.serverFacade;
-			facade.listSpaces(function(spaces) {
-	            var stockSpaces = [];
-				for (var i = 0; i < spaces.length; i++) {
-	                var space = spaces[i];
-	                if(space === "STOCK_CATALOG" || space === "STOCK_ORDERS") {
-	                	stockSpaces.push({ type: "SPACE", permId : space, expand : true });
-	                }
-	            }
-	            
-				facade.exportAll(stockSpaces, function(error, result) {
-					if(error) {
-						Util.showError(error);
-					} else {
-						Util.showSuccess("Export is being processed, you will receive an email when is ready, if you logout the process will stop.", function() { Util.unblockUI(); });
-					}
-				});
-				
-			});
-		}, "Export");
-		toolbarModel.push({ component : $export });
-		
+        // Toolbar
+        //
+        var toolbarModel = [];
+
 		views.header.append($formTitle);
 		views.header.append(FormUtil.getToolbar(toolbarModel));
 		views.content.append($formColumn);
