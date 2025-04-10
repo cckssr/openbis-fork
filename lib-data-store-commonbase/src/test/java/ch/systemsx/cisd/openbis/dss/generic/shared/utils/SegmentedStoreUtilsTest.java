@@ -454,6 +454,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 }, log);
 
         log.assertNextLogMessage("Await for data set ds-1 to be unlocked.");
+        log.assertNextLogMessage("Locked data set ds-1 before shuffling.");
         log.assertNextLogMessage("Start moving directory 'targets/unit-test-wd/ch.systemsx.cisd."
                 + "openbis.dss.generic.shared.utils.SegmentedStoreUtilsTest/store/1/uuid/01/02/03/ds-1' "
                 + "to new share 'targets/unit-test-wd/ch.systemsx.cisd.openbis.dss.generic.shared.utils."
@@ -463,6 +464,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 + " to new share 'targets/unit-test-wd/ch.systemsx.cisd.openbis.dss.generic.shared.utils."
                 + "SegmentedStoreUtilsTest/store/2/uuid/01/02/03/ds-1'");
         log.assertNextLogMessage("Verifying structure, size and optional checksum of data set content in share 2.");
+        log.assertNextLogMessage("Unlocked data set ds-1 after shuffling.");
         log.assertNextLogMessage("Await for data set ds-1 to be unlocked.");
         log.assertNextLogMessage("Start deleting data set ds-1 at " + share1
                 + "/uuid/01/02/03/ds-1");
@@ -525,6 +527,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         SegmentedStoreUtils.moveDataSetToAnotherShare(dataSetDirInStore, share2, service,
                 shareIdManager, null, log);
 
+        log.assertNextLogMessage("Locked data set ds-1 before shuffling.");
         log.assertNextLogMessage("Start moving directory 'targets/unit-test-wd/ch.systemsx.cisd."
                 + "openbis.dss.generic.shared.utils.SegmentedStoreUtilsTest/store/1/uuid/01/02/03/ds-1' "
                 + "to new share 'targets/unit-test-wd/ch.systemsx.cisd.openbis.dss.generic.shared.utils."
@@ -534,6 +537,7 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 + " to new share 'targets/unit-test-wd/ch.systemsx.cisd.openbis.dss.generic.shared.utils."
                 + "SegmentedStoreUtilsTest/store/2/uuid/01/02/03/ds-1'");
         log.assertNextLogMessage("Verifying structure, size and optional checksum of data set content in share 2.");
+        log.assertNextLogMessage("Unlocked data set ds-1 after shuffling.");
         log.assertNextLogMessage("Await for data set ds-1 to be unlocked.");
         log.assertNextLogMessage("Start deleting data set ds-1 at " + share1
                 + "/uuid/01/02/03/ds-1");
