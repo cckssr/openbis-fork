@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -39,8 +40,12 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dat
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSetDTO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.ArchiverTaskInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory;
@@ -86,6 +91,10 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
 
     private File scratchShare;
 
+    private IIncomingShareIdProvider incomingShareIdProvider;
+
+    private IArchiverServiceProvider originalServiceProvider;
+
     @BeforeMethod
     public void setup()
     {
@@ -103,14 +112,33 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
         freeSpaceProvider = context.mock(IFreeSpaceProvider.class);
         queryDAO = context.mock(IMultiDataSetArchiverReadonlyQueryDAO.class);
         configProvider = context.mock(IConfigProvider.class);
+        incomingShareIdProvider = context.mock(IIncomingShareIdProvider.class);
         task = createTask();
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(configProvider).getDataStoreCode();
-                    will(returnValue(DSS_CODE));
-                }
-            });
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DSS_CODE));
+
+                allowing(incomingShareIdProvider).getIdsOfIncomingShares();
+                will(returnValue(Collections.singleton(SCRATCH_SHARE_ID)));
+            }
+        });
+
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
+        {
+            @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return incomingShareIdProvider;
+            }
+        });
+    }
+
+    @AfterMethod
+    public void afterMethod()
+    {
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
     }
 
     @Test
@@ -199,12 +227,12 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
                 .archived().presentInArchive().presentInStore().withKnownSize().build();
         prepareListDataSets(ds1, ds2);
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(queryDAO).getDataSetForCode(ds1.getDataSetCode());
-                    allowing(queryDAO).getDataSetForCode(ds2.getDataSetCode());
-                }
-            });
+                allowing(queryDAO).getDataSetForCode(ds1.getDataSetCode());
+                allowing(queryDAO).getDataSetForCode(ds2.getDataSetCode());
+            }
+        });
 
         // When
         task.execute();
@@ -288,22 +316,22 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
     private void prepareListDataSets(SimpleDataSetInformationDTO... dataSets)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(openBISService).listPhysicalDataSets();
-                    will(returnValue(Arrays.asList(dataSets)));
-                }
-            });
+                one(openBISService).listPhysicalDataSets();
+                will(returnValue(Arrays.asList(dataSets)));
+            }
+        });
     }
 
     private void prepareUpdateShareIdAndSize(SimpleDataSetInformationDTO dataSet, long size)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(openBISService).updateShareIdAndSize(dataSet.getDataSetCode(), SCRATCH_SHARE_ID, size);
-                }
-            });
+                one(openBISService).updateShareIdAndSize(dataSet.getDataSetCode(), SCRATCH_SHARE_ID, size);
+            }
+        });
     }
 
     private void prepareUpdateStatusAndDelete(SimpleDataSetInformationDTO... dataSets)
@@ -311,17 +339,17 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
         List<String> dataSetCodes = Arrays.asList(dataSets).stream().map(SimpleDataSetInformationDTO::getDataSetCode)
                 .collect(Collectors.toList());
         context.checking(new Expectations()
+        {
             {
+                one(openBISService).updateDataSetStatuses(dataSetCodes, DataSetArchivingStatus.ARCHIVED, true);
+                for (SimpleDataSetInformationDTO dataSet : dataSets)
                 {
-                    one(openBISService).updateDataSetStatuses(dataSetCodes, DataSetArchivingStatus.ARCHIVED, true);
-                    for (SimpleDataSetInformationDTO dataSet : dataSets)
-                    {
-                        one(shareIdManager).await(dataSet.getDataSetCode());
-                        one(directoryProvider).getDataSetDirectory(dataSet);
-                        will(returnValue(getDataSetFolder(dataSet, false)));
-                    }
+                    one(shareIdManager).await(dataSet.getDataSetCode());
+                    one(directoryProvider).getDataSetDirectory(dataSet);
+                    will(returnValue(getDataSetFolder(dataSet, false)));
                 }
-            });
+            }
+        });
     }
 
     private final class Builder
@@ -422,19 +450,19 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
         void buildAndPrepare()
         {
             context.checking(new Expectations()
+            {
                 {
+                    for (MultiDataSetArchiverDataSetDTO dataSet : dataSets)
                     {
-                        for (MultiDataSetArchiverDataSetDTO dataSet : dataSets)
-                        {
-                            allowing(queryDAO).getDataSetForCode(dataSet.getCode());
-                            will(returnValue(dataSet));
-                        }
-                        allowing(queryDAO).getContainerForId(container.getId());
-                        will(returnValue(container));
-                        allowing(queryDAO).listDataSetsForContainerId(container.getId());
-                        will(returnValue(dataSets));
+                        allowing(queryDAO).getDataSetForCode(dataSet.getCode());
+                        will(returnValue(dataSet));
                     }
-                });
+                    allowing(queryDAO).getContainerForId(container.getId());
+                    will(returnValue(container));
+                    allowing(queryDAO).listDataSetsForContainerId(container.getId());
+                    will(returnValue(dataSets));
+                }
+            });
         }
     }
 
@@ -471,48 +499,48 @@ public class CleanUpUnarchivingScratchShareTaskTest extends AbstractFileSystemTe
     private CleanUpUnarchivingScratchShareTask createTask()
     {
         return new CleanUpUnarchivingScratchShareTask()
+        {
+            @Override
+            protected IShareIdManager getShareIdManager()
             {
-                @Override
-                protected IShareIdManager getShareIdManager()
-                {
-                    return shareIdManager;
-                }
+                return shareIdManager;
+            }
 
-                @Override
-                protected IDataSetDirectoryProvider getDirectoryProvider()
-                {
-                    return directoryProvider;
-                }
+            @Override
+            protected IDataSetDirectoryProvider getDirectoryProvider()
+            {
+                return directoryProvider;
+            }
 
-                @Override
-                protected File getStoreRoot()
-                {
-                    return store;
-                }
+            @Override
+            protected File getStoreRoot()
+            {
+                return store;
+            }
 
-                @Override
-                protected IOpenBISService getService()
-                {
-                    return openBISService;
-                }
+            @Override
+            protected IOpenBISService getService()
+            {
+                return openBISService;
+            }
 
-                @Override
-                protected IFreeSpaceProvider createFreeSpaceProvider()
-                {
-                    return freeSpaceProvider;
-                }
+            @Override
+            protected IFreeSpaceProvider createFreeSpaceProvider()
+            {
+                return freeSpaceProvider;
+            }
 
-                @Override
-                protected IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()
-                {
-                    return queryDAO;
-                }
+            @Override
+            protected IMultiDataSetArchiverReadonlyQueryDAO getReadonlyQuery()
+            {
+                return queryDAO;
+            }
 
-                @Override
-                protected IConfigProvider getConfigProvider()
-                {
-                    return configProvider;
-                }
-            };
+            @Override
+            protected IConfigProvider getConfigProvider()
+            {
+                return configProvider;
+            }
+        };
     }
 }

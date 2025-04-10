@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,9 +61,13 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.MockContent;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverDBTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.IMultiDataSetArchiverReadonlyQueryDAO;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverContainerDTO;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderAdapter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
@@ -106,6 +111,10 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
     private IConfigProvider configProvider;
 
     private MultiDataSetDeletionMaintenanceTask task;
+
+    private IIncomingShareIdProvider incomingShareIdProvider;
+
+    private IArchiverServiceProvider originalServiceProvider;
 
     private static final String LAST_SEEN_DATA_SET_FILE = "last-seen-data-set";
 
@@ -292,6 +301,7 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
         v3api = context.mock(IApplicationServerApi.class);
         directoryProvider = context.mock(IDataSetDirectoryProvider.class);
         configProvider = context.mock(IConfigProvider.class);
+        incomingShareIdProvider = context.mock(IIncomingShareIdProvider.class);
 
         Properties properties = createProperties(true, true);
 
@@ -306,6 +316,18 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
 
                 allowing(openBISService).getSessionToken();
                 will(returnValue(SESSION_TOKEN));
+
+                allowing(incomingShareIdProvider).getIdsOfIncomingShares();
+                will(returnValue(Collections.singleton("1")));
+            }
+        });
+
+        originalServiceProvider = ArchiverServiceProviderFactory.getInstance();
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProviderAdapter()
+        {
+            @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return incomingShareIdProvider;
             }
         });
 
@@ -420,6 +442,7 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
     @AfterMethod
     public void tearDown()
     {
+        ArchiverServiceProviderFactory.setInstance(originalServiceProvider);
         context.assertIsSatisfied();
     }
 

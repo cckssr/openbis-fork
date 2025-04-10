@@ -38,21 +38,29 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.ISimpleLogger;
 import ch.systemsx.cisd.common.logging.LogLevel;
 import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+
 import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.CLASS_PROPERTY_NAME;
 import static ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask.SHUFFLING_SECTION_NAME;
+
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderAdapter;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory;
+
 import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.SHARE_PROPS_FILE;
 import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.ShareFactory.WITHDRAW_SHARE_PROP;
+
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 /**
  * @author Franz-Josef Elmer
  */
 @Friend(toClasses =
-{ ShareFactory.class, SegmentedStoreShufflingTask.class })
+        { ShareFactory.class, SegmentedStoreShufflingTask.class })
 public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
 {
     private static final String DATA_STORE_CODE = "DATA-STORE-1";
@@ -119,6 +127,10 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
 
     private File storeRoot;
 
+    private IConfigProvider configProvider;
+
+    private IShufflingServiceProvider originalServiceProvider;
+
     @BeforeMethod
     public void beforeMethod()
     {
@@ -128,17 +140,39 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
         spaceProvider = context.mock(IFreeSpaceProvider.class);
         dataSetMover = context.mock(IDataSetMover.class);
         logger = context.mock(ISimpleLogger.class);
+        configProvider = context.mock(IConfigProvider.class);
         LinkedHashSet<String> incomingShareIds = new LinkedHashSet<String>(Arrays.asList("1"));
         balancerTask =
                 new SegmentedStoreShufflingTask(incomingShareIds, service, spaceProvider,
                         dataSetMover, logger);
         storeRoot = new File(workingDirectory, "store");
         storeRoot.mkdirs();
+
+        context.checking(new Expectations()
+        {
+            {
+                allowing(configProvider).getDataStoreCode();
+                will(returnValue(DATA_STORE_CODE));
+
+                allowing(configProvider).getStoreRoot();
+                will(returnValue(storeRoot));
+            }
+        });
+
+        originalServiceProvider = ShufflingServiceProviderFactory.getInstance();
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProviderAdapter()
+        {
+            @Override public IConfigProvider getConfigProvider()
+            {
+                return configProvider;
+            }
+        });
     }
 
     @AfterMethod
     public void afterMethod()
     {
+        ShufflingServiceProviderFactory.setInstance(originalServiceProvider);
         logRecorder.reset();
         // The following line of code should also be called at the end of each test method.
         // Otherwise one do not known which test failed.
@@ -164,42 +198,42 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
         balancerTask.setUp("mock-balancer", properties);
         final Sequence sequence1 = context.sequence("seq1");
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).listPhysicalDataSets();
-                    SimpleDataSetInformationDTO ds1 = new SimpleDataSetInformationDTO();
-                    ds1.setDataStoreCode(DATA_STORE_CODE);
-                    ds1.setDataSetCode("ds1");
-                    ds1.setDataSetShareId("1");
-                    ds1.setDataSetSize(10l);
-                    ds1.setDataSetLocation("ds1");
-                    SimpleDataSetInformationDTO ds2 = new SimpleDataSetInformationDTO();
-                    ds2.setDataStoreCode(DATA_STORE_CODE);
-                    ds2.setDataSetCode("ds2");
-                    ds2.setDataSetShareId("2");
-                    ds2.setDataSetSize(20l);
-                    ds2.setDataSetLocation("ds2");
-                    SimpleDataSetInformationDTO ds3 = new SimpleDataSetInformationDTO();
-                    ds3.setDataStoreCode("other data store");
-                    will(returnValue(Arrays.asList(ds1, ds2, ds3)));
-                    inSequence(sequence1);
+                one(service).listPhysicalDataSets();
+                SimpleDataSetInformationDTO ds1 = new SimpleDataSetInformationDTO();
+                ds1.setDataStoreCode(DATA_STORE_CODE);
+                ds1.setDataSetCode("ds1");
+                ds1.setDataSetShareId("1");
+                ds1.setDataSetSize(10l);
+                ds1.setDataSetLocation("ds1");
+                SimpleDataSetInformationDTO ds2 = new SimpleDataSetInformationDTO();
+                ds2.setDataStoreCode(DATA_STORE_CODE);
+                ds2.setDataSetCode("ds2");
+                ds2.setDataSetShareId("2");
+                ds2.setDataSetSize(20l);
+                ds2.setDataSetLocation("ds2");
+                SimpleDataSetInformationDTO ds3 = new SimpleDataSetInformationDTO();
+                ds3.setDataStoreCode("other data store");
+                will(returnValue(Arrays.asList(ds1, ds2, ds3)));
+                inSequence(sequence1);
 
-                    SimpleDataSetInformationDTO ds1b = new SimpleDataSetInformationDTO();
-                    ds1b.setDataStoreCode(DATA_STORE_CODE);
-                    ds1b.setDataSetCode("ds1");
-                    ds1b.setDataSetShareId("2");
-                    ds1b.setDataSetSize(10l);
-                    ds1b.setDataSetLocation("ds1");
-                    one(service).listPhysicalDataSets();
-                    will(returnValue(Arrays.asList(ds1b, ds2)));
-                    inSequence(sequence1);
+                SimpleDataSetInformationDTO ds1b = new SimpleDataSetInformationDTO();
+                ds1b.setDataStoreCode(DATA_STORE_CODE);
+                ds1b.setDataSetCode("ds1");
+                ds1b.setDataSetShareId("2");
+                ds1b.setDataSetSize(10l);
+                ds1b.setDataSetLocation("ds1");
+                one(service).listPhysicalDataSets();
+                will(returnValue(Arrays.asList(ds1b, ds2)));
+                inSequence(sequence1);
 
-                    allowing(logger).log(
-                            with(LogLevel.INFO),
-                            with(Matchers.startsWith("Obtained the list of all "
-                                    + "datasets in all shares")));
-                }
-            });
+                allowing(logger).log(
+                        with(LogLevel.INFO),
+                        with(Matchers.startsWith("Obtained the list of all "
+                                + "datasets in all shares")));
+            }
+        });
         logRecorder.resetLogContent();
 
         balancerTask.execute();
@@ -219,11 +253,11 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
         assertSame(logger, balancer.logger);
         assertEquals(true, balancer.initialized);
         assertEquals("INFO  OPERATION.SegmentedStoreShufflingTask - "
-                + "Starting segmented store shuffling.\n"
-                + "INFO  OPERATION.SegmentedStoreShufflingTask - "
-                + "Segmented store shuffling finished.\n"
-                + "INFO  NOTIFY.SegmentedStoreShufflingTask - "
-                + "The following shares were emptied by shuffling: [1]",
+                        + "Starting segmented store shuffling.\n"
+                        + "INFO  OPERATION.SegmentedStoreShufflingTask - "
+                        + "Segmented store shuffling finished.\n"
+                        + "INFO  NOTIFY.SegmentedStoreShufflingTask - "
+                        + "The following shares were emptied by shuffling: [1]",
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
@@ -236,15 +270,15 @@ public class SegmentedStoreShufflingTaskTest extends AbstractFileSystemTestCase
         properties.setProperty(DssPropertyParameters.STOREROOT_DIR_KEY, storeRoot.getPath());
         balancerTask.setUp("mock-balancer", properties);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(logger).log(LogLevel.INFO, "Data Store Shares:");
-                    allowing(logger).log(
-                            with(LogLevel.INFO),
-                            with(Matchers.startsWith("Obtained the list of all "
-                                    + "datasets in all shares")));
-                }
-            });
+                one(logger).log(LogLevel.INFO, "Data Store Shares:");
+                allowing(logger).log(
+                        with(LogLevel.INFO),
+                        with(Matchers.startsWith("Obtained the list of all "
+                                + "datasets in all shares")));
+            }
+        });
 
         balancerTask.execute();
 

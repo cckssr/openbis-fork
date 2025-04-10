@@ -85,6 +85,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
@@ -298,6 +299,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
     private IArchiverTaskScheduler archiverTaskScheduler;
 
+    private IIncomingShareIdProvider incomingShareIdProvider;
+
     private IArchiverServiceProvider originalServiceProvider;
 
     @BeforeMethod
@@ -319,6 +322,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         archiverTaskScheduler = context.mock(IArchiverTaskScheduler.class);
         fileOperations = context.mock(IMultiDataSetFileOperationsManager.class);
         freeSpaceProvider = context.mock(IFreeSpaceProvider.class);
+        incomingShareIdProvider = context.mock(IIncomingShareIdProvider.class);
         timeProvider = new MockTimeProvider();
         dataSetDeleter = new MockDataSetDeleter(share);
         cleaner = new MockCleaner();
@@ -366,6 +370,11 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
             {
                 return openBISService;
             }
+
+            @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return incomingShareIdProvider;
+            }
         });
 
         staging = new File(workingDirectory, "staging");
@@ -393,6 +402,9 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
                 allowing(configProvider).getDataStoreCode();
                 will(returnValue(DSS_CODE));
+
+                allowing(incomingShareIdProvider).getIdsOfIncomingShares();
+                will(returnValue(Collections.singleton("1")));
             }
         });
     }

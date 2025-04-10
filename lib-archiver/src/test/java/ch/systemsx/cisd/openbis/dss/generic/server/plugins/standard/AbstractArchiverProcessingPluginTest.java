@@ -52,6 +52,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
@@ -319,6 +320,8 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
 
     private File pauseFile;
 
+    private IIncomingShareIdProvider incomingShareIdProvider;
+
     private IArchiverServiceProvider originalServiceProvider;
 
     @BeforeMethod
@@ -334,6 +337,7 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
         service = context.mock(IOpenBISService.class);
         configProvider = context.mock(IConfigProvider.class);
         shareIdManager = context.mock(IShareIdManager.class);
+        incomingShareIdProvider = context.mock(IIncomingShareIdProvider.class);
 
         pauseFile = new File(workingDirectory, "pause-file");
 
@@ -346,6 +350,9 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
             {
                 allowing(configProvider).getDataStoreCode();
                 will(returnValue(DATA_STORE_CODE));
+
+                allowing(incomingShareIdProvider).getIdsOfIncomingShares();
+                will(returnValue(Collections.singleton("1")));
             }
         });
 
@@ -370,6 +377,11 @@ public class AbstractArchiverProcessingPluginTest extends AbstractFileSystemTest
             @Override public IOpenBISService getOpenBISService()
             {
                 return service;
+            }
+
+            @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+            {
+                return incomingShareIdProvider;
             }
         });
     }
