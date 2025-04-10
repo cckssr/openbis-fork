@@ -95,8 +95,8 @@ public class DTOTranslator
             {
                 physicalData.setLocatorType(translate(dataSet.getPhysicalData().getLocatorType()));
             }
-            // TODO H5Folders - add to V3 API
-            // TODO H5ARFolders - add to V3 API
+            physicalData.setH5Folders(dataSet.getPhysicalData().isH5Folders());
+            physicalData.setH5arFolders(dataSet.getPhysicalData().isH5arFolders());
             externalData = physicalData;
         } else if (dataSet.getLinkedData() != null)
         {
@@ -241,9 +241,8 @@ public class DTOTranslator
             description.setSpeedHint(dataSet.getPhysicalData().getSpeedHint());
             description.setFileFormatType(dataSet.getPhysicalData().getFileFormatType().getCode());
             description.setStorageConfirmed(dataSet.getPhysicalData().isStorageConfirmation());
-            // TODO
-            // description.setH5Folders(physicalData.isH5Folders());
-            // description.setH5arFolders(physicalData.isH5arFolders());
+            description.setH5Folders(dataSet.getPhysicalData().isH5Folders());
+            description.setH5arFolders(dataSet.getPhysicalData().isH5arFolders());
         }
 
         if (dataSet.getSample() != null)
