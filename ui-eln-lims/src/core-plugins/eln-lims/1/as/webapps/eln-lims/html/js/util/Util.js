@@ -20,6 +20,8 @@
  * Contains methods used for common tasks.
  */
 var Util = new function() {
+
+    var loadingComponent = null;
 	
     this.reloadApplication = function(popupMessage) {
         alert(popupMessage);
@@ -48,7 +50,10 @@ var Util = new function() {
 	this.blockUIConfirm = function(message, okAction, cancelAction) {
 		var $messageWithOKAndCancel = $("<div>").append(message);
 		
-		var $ok = FormUtil.getButtonWithText("Accept", okAction);
+		var $ok = FormUtil.getButtonWithText("Accept", function() {
+		    okAction();
+		    Util.unblockUI();
+		});
 		
 		var $cancel = FormUtil.getButtonWithText("Cancel", function() {
 			if(cancelAction) {
@@ -75,39 +80,57 @@ var Util = new function() {
 	
 	this.blockUI = function(message, extraCSS, disabledFadeAnimation, onBlock) {
 		this.unblockUI();
-		
-		var css = { 
-					'border': 'none', 
+
+		var css = {
+					'border': 'none',
 					'padding': '10px',
-					'-webkit-border-radius': '6px 6px 6px 6px', 
-					'-moz-border-radius': '6px 6px 6px 6px', 
+					'-webkit-border-radius': '6px 6px 6px 6px',
+					'-moz-border-radius': '6px 6px 6px 6px',
 					'border-radius' : '6px 6px 6px 6px',
 					'box-shadow' : '0 1px 10px rgba(0, 0, 0, 0.1)',
 					'cursor' : 'default'
 		};
-		
+
 		if(extraCSS) {
 			for(extraCSSProperty in extraCSS) {
 				var extraCSSValue = extraCSS[extraCSSProperty];
 				css[extraCSSProperty] = extraCSSValue;
 			}
 		}
-		
+
 		$('#navbar').block({ message: '', css: { width: '0px' } });
 		var params = { css : css };
-		if (message) {
-			params.message = message;
-		} else {
-			params.message = '<img src="./img/busy.gif" />';
-		}
-		if (disabledFadeAnimation) {
-			params.fadeIn = 0;
-			params.fadeOut = 0;
-		}
-		if (onBlock) {
-			params.onBlock = onBlock;
-		}
-		$.blockUI(params);
+
+        if (message) {
+            params.message = message;
+
+            if (disabledFadeAnimation) {
+                params.fadeIn = 0;
+                params.fadeOut = 0;
+            }
+            if (onBlock) {
+                params.onBlock = onBlock;
+            }
+            $.blockUI(params);
+
+        } else {
+            if(!loadingComponent) {
+                this._showLoading()
+            }
+        }
+
+	}
+
+	this._showLoading = function() {
+	     var props = {
+            variant: 'indeterminate',
+            loading: true,
+            showBackground: true,
+        }
+        let LoadingDialog = React.createElement(window.NgComponents.default.LoadingDialog, props )
+
+        var $window = $('body')
+        loadingComponent = NgComponentsManager.renderComponent(LoadingDialog, $window.get(0));
 	}
 	
 	//
@@ -115,7 +138,11 @@ var Util = new function() {
 	//
 	this.unblockUI = function(callback) {
 		$('#navbar').unblock();
-		$.unblockUI({ 
+		if(loadingComponent) {
+		    loadingComponent.unmount();
+		    loadingComponent = null;
+		}
+		$.unblockUI({
 			onUnblock: function() {
 				window.setTimeout(function() { //Enable after all possible enable/disable events happen
 					if (callback) {
