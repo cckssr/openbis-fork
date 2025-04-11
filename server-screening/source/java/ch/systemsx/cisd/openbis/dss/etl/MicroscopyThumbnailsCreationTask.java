@@ -447,7 +447,7 @@ public class MicroscopyThumbnailsCreationTask extends AbstractMaintenanceTaskWit
         return null;
     }
 
-    private String login()
+    protected String login()
     {
         return ServiceProvider.getOpenBISService().getSessionToken();
     }
