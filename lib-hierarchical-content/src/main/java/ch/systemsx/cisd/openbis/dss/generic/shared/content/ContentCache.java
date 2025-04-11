@@ -59,7 +59,7 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;

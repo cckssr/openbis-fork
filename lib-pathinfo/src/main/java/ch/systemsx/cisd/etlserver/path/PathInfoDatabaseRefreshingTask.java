@@ -35,10 +35,9 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.etlserver.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetV3Location;
 import net.lemnik.eodsql.QueryTool;
 

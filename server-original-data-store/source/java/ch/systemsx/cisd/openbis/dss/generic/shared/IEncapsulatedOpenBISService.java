@@ -382,6 +382,12 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
             throws UserFailureException;
 
     /**
+     * Updates size of specified data set.
+     */
+    @ManagedAuthentication
+    public void updateSize(String dataSetCode, long size);
+
+    /**
      * Checks if the dataset is on the TrasCan or Deleted
      */
     @ManagedAuthentication

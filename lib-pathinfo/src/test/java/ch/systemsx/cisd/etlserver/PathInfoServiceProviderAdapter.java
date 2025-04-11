@@ -6,6 +6,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoServiceProvider;
 
 public class PathInfoServiceProviderAdapter implements IPathInfoServiceProvider
 {

@@ -54,15 +54,15 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
-import ch.systemsx.cisd.etlserver.IPathInfoServiceProvider;
 import ch.systemsx.cisd.etlserver.PathInfoServiceProviderAdapter;
-import ch.systemsx.cisd.etlserver.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetV3Location;
 
 /**

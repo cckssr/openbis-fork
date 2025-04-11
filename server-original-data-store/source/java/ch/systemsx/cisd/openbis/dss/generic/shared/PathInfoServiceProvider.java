@@ -3,7 +3,6 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 import javax.sql.DataSource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.systemsx.cisd.etlserver.IPathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 
 public class PathInfoServiceProvider implements IPathInfoServiceProvider

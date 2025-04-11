@@ -2,7 +2,6 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import javax.sql.DataSource;
 
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;

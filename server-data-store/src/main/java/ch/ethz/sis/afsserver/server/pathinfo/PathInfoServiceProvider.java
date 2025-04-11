@@ -2,12 +2,12 @@ package ch.ethz.sis.afsserver.server.pathinfo;
 
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.systemsx.cisd.etlserver.IPathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoServiceProvider;
 
 public class PathInfoServiceProvider implements IPathInfoServiceProvider
 {

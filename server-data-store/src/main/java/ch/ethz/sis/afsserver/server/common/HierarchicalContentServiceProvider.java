@@ -1,8 +1,8 @@
 package ch.ethz.sis.afsserver.server.common;
 
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;

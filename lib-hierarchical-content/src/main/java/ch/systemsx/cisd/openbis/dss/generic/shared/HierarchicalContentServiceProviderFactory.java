@@ -1,4 +1,4 @@
-package ch.systemsx.cisd.openbis.common.io.hierarchical_content;
+package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 public class HierarchicalContentServiceProviderFactory
 {
