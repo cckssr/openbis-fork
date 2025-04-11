@@ -18,7 +18,7 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     dataSetTypeDefinitionsExtension : {
         "IMAGING_DATA" : {
             "SHOW" : false,
-            "SHOW_ON_NAV" : false
+            "SHOW_ON_NAV" : true
         }
     },
     _getDataListDynamic: function(dataSets) {

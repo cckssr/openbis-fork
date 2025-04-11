@@ -243,6 +243,7 @@ function MoveEntityController(entityType, entityPermIds, optionalPostAction) {
                             var experimentUpdate = new ExperimentUpdate();
                             experimentUpdate.setExperimentId(moveEntityModel.entity.getIdentifier());
                             experimentUpdate.setProjectId(moveEntityModel.selected.getIdentifier());
+                            experimentUpdate.setProperties(moveEntityModel.entity.getProperties())
                             mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(done).fail(fail);
                         });
                     break;
@@ -348,12 +349,16 @@ function MoveEntityController(entityType, entityPermIds, optionalPostAction) {
                         function(DataSetUpdate) {
                             var datasetUpdate = new DataSetUpdate();
                             datasetUpdate.setDataSetId(moveEntityModel.entity.getPermId());
+                            datasetUpdate.setProperties(moveEntityModel.entity.getProperties())
 
                             switch(moveEntityModel.selected["@type"]) {
                                 case "as.dto.experiment.Experiment":
                                     datasetUpdate.setExperimentId(moveEntityModel.selected.getIdentifier());
                                 break;
                                 case "as.dto.sample.Sample":
+                                    if(moveEntityModel.selected.getExperiment()) {
+                                        datasetUpdate.setExperimentId(moveEntityModel.selected.getExperiment().getIdentifier());
+                                    }
                                     datasetUpdate.setSampleId(moveEntityModel.selected.getIdentifier());
                                 break;
                             }
