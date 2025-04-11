@@ -415,13 +415,6 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $header.css("background-color", "rgb(248, 248, 248)")
         $header.css("padding", "10px")
 
-        $header.append(this._logoutButton().css("min-width", "38px").css("width", "38px"));
-
-        if(profile.mainMenu.showBarcodes) {
-            $header.append("&nbsp;")
-            $header.append(this._barcodeReaderBtn().css("min-width", "38px").css("width", "38px"))
-        }
-
 
         var $body = $("<div>", { id: "sideMenuBody" })
         $body.css("overflow-y", "auto")
