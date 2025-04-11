@@ -59,12 +59,14 @@ import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
+import ch.systemsx.cisd.etlserver.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
@@ -237,6 +239,7 @@ public abstract class SystemTestCase extends AssertJUnit
         ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
         ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
         HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
+        PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider());
 
         QueueingPathRemoverService.start(rootDir, ETLDaemon.shredderQueueFile);
         DataStoreServer.main(new String[0]);

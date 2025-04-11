@@ -31,6 +31,7 @@ dependencies {
             project(':lib-db'),
             project(':lib-dbmigration'),
             project(':lib-pathinfo-db'),
+            project(':lib-pathinfo'),
             project(':lib-archiver-db'),
             project(':lib-archiver'),
             project(':lib-shuffling'),
