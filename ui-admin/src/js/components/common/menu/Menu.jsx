@@ -11,7 +11,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import IconButton from '@mui/material/IconButton'
 
 import SvgIcon from '@mui/material/SvgIcon';
-import Logo from '@src/resources/img/openbis-logo-transparent-white.png'
+import Logo from '@src/resources/img/openbis-logo-alt-transparent.png'
 
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Menu as DropdownMenu } from '@mui/material';
