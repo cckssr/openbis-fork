@@ -92,6 +92,7 @@ function MainController(profile) {
 	// Views currently being displayed
 	this.views = {
 			menu : null,
+			mainHeader: null,
 			header : null,
 			content : null,
 			auxContent : null
@@ -303,6 +304,9 @@ function MainController(profile) {
                                                 var startAppFunc = function() {
                                                     //Start App
                                                     localReference.sideMenu = new SideMenuWidgetController(localReference);
+                                                    localReference.mainHeader = new MainHeaderController(localReference);
+                                                    localReference.views.mainHeader = $("<div>");
+                                                    localReference.mainHeader.init(localReference.views.mainHeader, () => {});
                                                     localReference.views.menu = $("<div>");
                                                     localReference.sideMenu.init(localReference.views.menu, function() {
                                                         //Page reload using the URL info

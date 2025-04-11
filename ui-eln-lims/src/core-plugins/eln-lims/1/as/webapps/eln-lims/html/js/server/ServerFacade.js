@@ -368,6 +368,7 @@ function ServerFacade(openbisServer) {
 	}
 
 	this.logout = function() {
+		$("#mainHeader").hide();
 		$("#mainContainer").hide();
 		this.openbisServer.logout(function() {
 			location.reload();

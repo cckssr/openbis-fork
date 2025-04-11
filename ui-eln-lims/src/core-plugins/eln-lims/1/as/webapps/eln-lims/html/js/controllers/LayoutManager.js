@@ -11,6 +11,10 @@ var LayoutManager = {
 	MAX_THIRD_COLUMN_WIDTH : 350,
 	body : null,
 	mainContainer : null,
+	mainHeader : null,
+	MAIN_HEADER_HEIGHT: 48,
+	currentContainer : null,
+	containers : null,
 	firstColumn : null,
 	firstColumnResize: null,
 	secondColumn : null,
@@ -21,7 +25,7 @@ var LayoutManager = {
 		var width = $( window ).width();
 		if (width > LayoutManager.TABLET_SIZE) {
 			LayoutManager.secondColumnContent.css({
-				height : $( window ).height() - LayoutManager.secondColumnHeader.outerHeight()
+				height : $( window ).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT
 			});
 		}
 	},
@@ -31,6 +35,14 @@ var LayoutManager = {
 	isLoadingView : false,
     settings: null,
     fullScreenFlag : false,
+    hideMainHeader: function() {
+        $("#mainHeader").hide();
+        this.MAIN_HEADER_HEIGHT = 0;
+    },
+    showMainHeader: function() {
+        $("#mainHeader").show();
+        this.MAIN_HEADER_HEIGHT = 48;
+    },
 	_init : function(isFirstTime) {
 		var _this = this;
 
@@ -43,6 +55,10 @@ var LayoutManager = {
 
 		if(this.mainContainer === null) {
 			this.mainContainer = $("#mainContainer");
+		}
+
+		if(this.mainHeader === null) {
+		    this.mainHeader = $("#mainHeader");
 		}
 
 		if(isFirstTime) {
@@ -194,7 +210,7 @@ var LayoutManager = {
 
         var settings = _this._loadSettings()
         var width = $( window ).width();
-        var height = $( window ).height();
+        var height = $( window ).height() - _this.MAIN_HEADER_HEIGHT;
         var headerHeight = 0;
 
         var firstColumnWidth = settings.firstColumnWidth;
@@ -299,7 +315,7 @@ var LayoutManager = {
 
         var settings = _this._loadSettings()
         var width = $( window ).width();
-        var height = $( window ).height();
+        var height = $( window ).height() - _this.MAIN_HEADER_HEIGHT;
         var headerHeight = 0;
 
         var firstColumnWidth = settings.firstColumnWidth;
@@ -371,7 +387,7 @@ var LayoutManager = {
     },
 	_setMobileLayout : function(view, isFirstTime) {
 		var width = $( window ).width();
-		var height = $( window ).height();
+		var height = $( window ).height() - this.MAIN_HEADER_HEIGHT;
 
 		//
 		// Set screen size
@@ -438,7 +454,7 @@ var LayoutManager = {
 		}
 	},
     getExpectedContentHeight : function() {
-        return $(window).height() - LayoutManager.secondColumnHeader.outerHeight();
+        return $(window).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT;
     },
     getExpectedContentWidth : function() {
         return LayoutManager.secondColumnHeader.outerWidth();
@@ -521,6 +537,11 @@ var LayoutManager = {
 			this.fullScreenFlag = false;
 		} else if (this.FOUND_SIZE === this.MOBILE_SIZE) {
 			this._setMobileLayout(view, isFirstTime);
+		}
+
+		if(view.mainHeader) {
+            _this.mainHeader.append(view.mainHeader);
+            view.mainHeader.css('width', $( window ).width());
 		}
 
 		// sideMenuBody scroll fix
