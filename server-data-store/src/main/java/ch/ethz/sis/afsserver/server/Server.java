@@ -15,7 +15,6 @@
  */
 package ch.ethz.sis.afsserver.server;
 
-import java.io.File;
 import java.util.List;
 
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
@@ -51,7 +50,6 @@ import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 
@@ -175,7 +173,6 @@ public final class Server<CONNECTION, API>
         HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider(ServiceProvider.getInstance()));
         ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider(ServiceProvider.getInstance()));
         ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider(ServiceProvider.getInstance()));
-        QueueingDataSetStatusUpdaterService.start(new File(".updater"));
 
         // 2.9 Create maintenance tasks
         logger.info("Starting maintenance tasks");

@@ -13,6 +13,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -44,6 +45,11 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
         return serviceProvider.getHierarchicalContentProvider();
     }
 
+    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        return serviceProvider.getIncomingShareIdProvider();
+    }
+
     @Override public IDataSetDirectoryProvider getDataSetDirectoryProvider()
     {
         return serviceProvider.getDataSetDirectoryProvider();
@@ -67,6 +73,11 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
     @Override public IDataSetDeleter getDataSetDeleter()
     {
         return serviceProvider.getDataSetDeleter();
+    }
+
+    @Override public IDataSetStatusUpdater getDataSetStatusUpdater()
+    {
+        return serviceProvider.getDataSetStatusUpdater();
     }
 
     @Override public IShareIdManager getShareIdManager()
@@ -99,8 +110,4 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
         return serviceProvider.getV3ApplicationService();
     }
 
-    @Override public IIncomingShareIdProvider getIncomingShareIdProvider()
-    {
-        return serviceProvider.getIncomingShareIdProvider();
-    }
 }

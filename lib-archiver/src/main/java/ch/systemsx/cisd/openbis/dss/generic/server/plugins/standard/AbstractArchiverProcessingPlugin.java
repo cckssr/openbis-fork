@@ -59,11 +59,8 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IUnarchivingPreparation;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ProcessingStatus;
-import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.StandardShareFinder;
-import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.Share;
@@ -783,16 +780,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
 
         if (statusUpdater == null)
         {
-            statusUpdater = new IDataSetStatusUpdater()
-            {
-                @Override
-                public void update(List<String> codes, DataSetArchivingStatus status,
-                        boolean present)
-                {
-                    QueueingDataSetStatusUpdaterService.update(new DataSetCodesWithStatus(
-                            codes, status, present));
-                }
-            };
+            statusUpdater = ArchiverServiceProviderFactory.getInstance().getDataSetStatusUpdater();
         }
         statusUpdater.update(dataSetCodes, newStatus, presentInArchive);
     }

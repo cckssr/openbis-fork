@@ -8,7 +8,9 @@ import javax.sql.DataSource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 public class ArchiverServiceProvider implements IArchiverServiceProvider
@@ -69,6 +71,20 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
     @Override public IDataSetDeleter getDataSetDeleter()
     {
         return ServiceProvider.getDataStoreService().getDataSetDeleter();
+    }
+
+    @Override public IDataSetStatusUpdater getDataSetStatusUpdater()
+    {
+        return new IDataSetStatusUpdater()
+        {
+            @Override
+            public void update(List<String> codes, DataSetArchivingStatus status,
+                    boolean present)
+            {
+                QueueingDataSetStatusUpdaterService.update(new DataSetCodesWithStatus(
+                        codes, status, present));
+            }
+        };
     }
 
     @Override public IShareIdManager getShareIdManager()

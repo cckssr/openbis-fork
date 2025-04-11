@@ -47,6 +47,11 @@ public class ArchiverServiceProviderAdapter implements IArchiverServiceProvider
         throw new UnsupportedOperationException();
     }
 
+    @Override public IDataSetStatusUpdater getDataSetStatusUpdater()
+    {
+        throw new UnsupportedOperationException();
+    }
+
     @Override public IShareIdManager getShareIdManager()
     {
         throw new UnsupportedOperationException();

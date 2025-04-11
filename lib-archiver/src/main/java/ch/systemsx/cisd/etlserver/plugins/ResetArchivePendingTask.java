@@ -28,8 +28,6 @@ import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
@@ -92,9 +90,7 @@ public class ResetArchivePendingTask implements IMaintenanceTask
 
             // 3. Update datasets status to AVAILABLE
             operationLog.info("Going to update " + dataSetsToUpdate.size() + " datasets.");
-            DataSetCodesWithStatus codesWithStatus = new DataSetCodesWithStatus(dataSetsToUpdate,
-                    DataSetArchivingStatus.AVAILABLE, false);
-            QueueingDataSetStatusUpdaterService.update(codesWithStatus);
+            ArchiverServiceProviderFactory.getInstance().getDataSetStatusUpdater().update(dataSetsToUpdate, DataSetArchivingStatus.AVAILABLE, false);
         }
         operationLog.info(ResetArchivePendingTask.class.getSimpleName() + " Finished");
     }

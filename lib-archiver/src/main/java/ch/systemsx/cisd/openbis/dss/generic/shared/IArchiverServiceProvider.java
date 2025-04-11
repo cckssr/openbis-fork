@@ -14,6 +14,8 @@ public interface IArchiverServiceProvider
 
     IHierarchicalContentProvider getHierarchicalContentProvider();
 
+    IIncomingShareIdProvider getIncomingShareIdProvider();
+
     IDataSetDirectoryProvider getDataSetDirectoryProvider();
 
     IDataSetPathInfoProvider getDataSetPathInfoProvider();
@@ -23,6 +25,8 @@ public interface IArchiverServiceProvider
     IArchiverDataSourceProvider getArchiverDataSourceProvider();
 
     IDataSetDeleter getDataSetDeleter();
+
+    IDataSetStatusUpdater getDataSetStatusUpdater();
 
     IShareIdManager getShareIdManager();
 
@@ -36,5 +40,4 @@ public interface IArchiverServiceProvider
 
     IApplicationServerApi getV3ApplicationService();
 
-    IIncomingShareIdProvider getIncomingShareIdProvider();
 }

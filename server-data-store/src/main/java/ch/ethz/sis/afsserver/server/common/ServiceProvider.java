@@ -33,6 +33,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetStatusUpdater;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IIncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -44,6 +45,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import lombok.Getter;
@@ -71,6 +73,8 @@ public class ServiceProvider implements IServiceProvider
     private IArchiverDataSourceProvider archiverDataSourceProvider;
 
     private IDataSetDeleter dataSetDeleter;
+
+    private IDataSetStatusUpdater dataSetStatusUpdater;
 
     private IShareIdManager shareIdManager;
 
@@ -242,6 +246,22 @@ public class ServiceProvider implements IServiceProvider
         return dataSetDeleter;
     }
 
+    public synchronized IDataSetStatusUpdater getDataSetStatusUpdater()
+    {
+        if (dataSetStatusUpdater == null)
+        {
+            dataSetStatusUpdater = new IDataSetStatusUpdater()
+            {
+                @Override public void update(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
+                {
+                    getOpenBISService().updateDataSetStatuses(dataSetCodes, status, presentInArchive);
+                }
+            };
+        }
+
+        return dataSetStatusUpdater;
+    }
+
     public synchronized IShareIdManager getShareIdManager()
     {
         if (shareIdManager == null)
@@ -376,4 +396,5 @@ public class ServiceProvider implements IServiceProvider
 
         return incomingShareIdProvider;
     }
+
 }
