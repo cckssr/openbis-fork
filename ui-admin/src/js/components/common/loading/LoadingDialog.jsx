@@ -11,7 +11,10 @@ const styles = theme => ({
   dialogPaper: {
     padding: theme.spacing(1),
     maxWidth: '80vw',
-    maxHeight: '80vh'
+    maxHeight: '80vh',
+    borderRadius: '60px',
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: "none",
   },
   title: {
     fontFamily: theme.typography.h6.fontFamily,

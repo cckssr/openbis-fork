@@ -5,6 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import logger from '@src/js/common/logger.js'
 import util from '@src/js/common/util.js'
 import pages from '@src/js/common/consts/pages.js'
+import messages from '@src/js/common/messages.js'
 
 import Loading from '@src/js/components/common/loading/Loading.jsx'
 import Error from '@src/js/components/common/error/Error.jsx'
@@ -24,6 +25,8 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 import { faFolder, faFile, faFileArchive, faFileAudio, faFileImage, faFileText,
   faFileVideo, faFileCode, faFilePdf, faFileWord, faFileExcel,
   faFilePowerpoint } from '@fortawesome/free-regular-svg-icons'
+
+import LogoutIcon from '@mui/icons-material/PowerSettingsNew'
 
 library.add(fab, faFolder, faFile, faFileAudio, faFileText, faFileVideo,
   faFileCode, faFileImage, faFileArchive, faFilePdf, faFileWord, faFileExcel,
@@ -54,6 +57,14 @@ const pageToComponent = {
   [pages.USERS]: Users,
   [pages.TOOLS]: Tools
 }
+
+const tabs = [
+        {page: pages.DATABASE, label: messages.get(messages.DATABASE)},
+        {page: pages.TYPES, label: messages.get(messages.TYPES)},
+        {page: pages.USERS, label: messages.get(messages.USERS)},
+        {page: pages.TOOLS, label: messages.get(messages.TOOLS)}
+    ]
+
 
 class App extends React.Component {
   constructor(props) {
@@ -96,13 +107,47 @@ class App extends React.Component {
     )
   }
 
+  handlePageChange(event, value) {
+    AppController.getInstance().pageChange(value)
+  }
+
+  searchFunction(page, searchText) {
+    AppController.getInstance().search(
+      page,
+      searchText
+    )
+  }
+
+  handleLogout() {
+    AppController.getInstance().logout()
+  }
+
   renderPage() {
     const classes = this.props.classes
-
+    let menuStyles = {
+        searchField: {
+            width: '200px',
+            transition: "width 0.3s",
+            '&:focus-within': {
+                  width: '300px',
+                },
+            '&:hover': {
+                width: '300px',
+                },
+        }
+    }
     if (AppController.getInstance().getSession()) {
       return (
         <div className={classes.container}>
-          <Menu userName={AppController.getInstance().getSession().userName}/>
+          <Menu userName={AppController.getInstance().getSession().userName}
+                tabs={tabs}
+                pageChangeFunction={this.handlePageChange}
+                searchFunction={this.searchFunction}
+                logoutFunction={this.handleLogout}
+                currentPage={AppController.getInstance().getCurrentPage()}
+                searchText={AppController.getInstance().getSearch()}
+                menuStyles={menuStyles}
+                />
           {_.map(pageToComponent, (PageComponent, page) => {
             let visible = AppController.getInstance().getCurrentPage() === page
             return (

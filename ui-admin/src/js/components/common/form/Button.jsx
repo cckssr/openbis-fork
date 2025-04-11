@@ -36,7 +36,8 @@ class FormButton extends React.Component {
       onClick,
       startIcon,
       endIcon,
-      fullWidth
+      fullWidth,
+      sx
     } = this.props
 
     let theColor = null
@@ -72,6 +73,7 @@ class FormButton extends React.Component {
         size='small'
         startIcon={startIcon}
         endIcon={endIcon}
+        sx={sx}
       >
         {label}
       </Button>

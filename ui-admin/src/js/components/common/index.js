@@ -14,6 +14,8 @@ import ImagingDatasetViewer from '@src/js/components/common/imaging/ImagingDatas
 import ImagingGalleryViewer from "@src/js/components/common/imaging/ImagingGalleryViewer.jsx";
 import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx';
 import DataBrowserToolbar from '@src/js/components/common/data-browser/components/toolbar/DataBrowserToolbar.jsx'
+import Menu from '@src/js/components/common/menu/Menu.jsx'
+import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import openbis from '@src/js/services/openbis.js'
 
 export default {
@@ -33,5 +35,7 @@ export default {
   ImagingGalleryViewer,
   DataBrowser,
   DataBrowserToolbar,
-  openbis 
+  Menu,
+  LoadingDialog,
+  openbis
 }
