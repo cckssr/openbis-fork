@@ -165,12 +165,15 @@ function SideMenuWidgetController(mainController) {
         })
     }
 
-    this.collapseSideMenu = function() {
+    this.collapseSideMenu = function(reRender) {
         this.isCollapsed = true;
         LayoutManager._saveSettings();
         this._browserController._saveSettings()
         if(!LayoutManager.isMobile()) {
             this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, true);
+            if(reRender) {
+                this._sideMenuWidgetView.repaintTreeMenu = true;
+            }
         } else {
             if(!LayoutManager.fullScreenFlag) {
                 LayoutManager.fullScreen();
@@ -199,8 +202,10 @@ function SideMenuWidgetController(mainController) {
         var sideMenuHeaderHeight = $elementHead.outerHeight()
         var $elementSortField = $("#sideMenuSortBar")
         var sideMenuSortFieldHeight = $elementSortField.outerHeight()
+        var $sideMenuFooter = $("#sideMenuFooter")
+        var sideMenuFooterHeight = $sideMenuFooter.outerHeight()
         var height = $(window).height()
-        var availableHeight = height - sideMenuHeaderHeight - sideMenuSortFieldHeight
+        var availableHeight = height - sideMenuHeaderHeight - sideMenuSortFieldHeight  - LayoutManager.MAIN_HEADER_HEIGHT - sideMenuFooterHeight;
         $elementBody.css("height", availableHeight * percentageOfUsage)
     }
 
@@ -225,8 +230,11 @@ function SideMenuWidgetController(mainController) {
             this._sideMenuWidgetModel.percentageOfUsage = 0.5
             $("#sideMenuFooter").remove()
             $("#sideMenuTopContainer").append(subSideMenu)
+//            $("#sideMenuBody").append(subSideMenu)
             if(!LayoutManager.isMobile()) {
                 $("#sideMenuTopContainer").append(this._sideMenuWidgetView._expandedFooter())
+//                this._expandedMenu.append(this._expandedFooter())
+//                subSideMenu.append(this._sideMenuWidgetView._expandedFooter())
             }
             this.resizeElement($("#sideMenuBody"), 0.5)
             this.resizeElement(subSideMenu, 0.5)
@@ -236,6 +244,7 @@ function SideMenuWidgetController(mainController) {
     this.removeSubSideMenu = function () {
         if (this._sideMenuWidgetModel.subSideMenu) {
             this._sideMenuWidgetModel.subSideMenu.remove()
+            this._sideMenuWidgetModel.subSideMenu = null;
             this._sideMenuWidgetModel.percentageOfUsage = 1
             this.resizeElement($("#sideMenuBody"), 1)
         }

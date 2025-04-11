@@ -34,9 +34,12 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                    } else if(width > 55 && mainController.sideMenu.isCollapsed && !LayoutManager.isMobile()) {
                         mainController.sideMenu.expandSideMenu();
                    } else if(width == 55 && !mainController.sideMenu.isCollapsed) {
-                        mainController.sideMenu.collapseSideMenu();
+                        mainController.sideMenu.collapseSideMenu(true);
                    }
                });
+    this._expandedMenu = null;
+    this.repaintTreeMenu = false;
+    this._collapsedMenu = null;
 
     var MIN_LENGTH = 3
 
@@ -52,6 +55,59 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
         } else {
             mainController.sideMenu.isCollapsed = false;
+
+
+            if(this._expandedMenu) {
+                var $widget = $("<div>", { id: "sideMenuTopContainer" })
+                var _this = this;
+                $widget.css("height", "100%")
+                $widget.css("display", "flex")
+                $widget.css("flex-direction", "column")
+
+                $("#sideMenuFooter").remove()
+                $widget.append(this._expandedMenu);
+
+                $container.empty()
+                $container.css("height", "100%")
+                $container.append($widget)
+
+                if(LayoutManager.firstColumn && LayoutManager.firstColumn.width() <= 55) {
+                    var width = $(window).width();
+                    var firstColumnWidth = Math.floor(width * 0.25);
+                    LayoutManager.setColumnSize(firstColumnWidth, width - firstColumnWidth, null);
+                }
+
+                if(this._sideMenuWidgetModel.subSideMenu) {
+                    var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+                    subSideMenu.css("margin-left", "3px")
+                    this._sideMenuWidgetModel.percentageOfUsage = 0.5
+                    this._expandedMenu.append(subSideMenu)
+                    var $body = $("#sideMenuBody")
+                    this._sideMenuWidgetController.resizeElement($body, 0.5)
+                    this._sideMenuWidgetController.resizeElement(subSideMenu, 0.5)
+                    if(this.subSideMenuViewer && this.subSideMenuViewer.init) {
+                        this.subSideMenuViewer.init();
+                    }
+                }
+
+                if(!LayoutManager.isMobile()) {
+                    this._expandedMenu.find("#sideMenuFooter").remove()
+                    this._expandedMenu.append(this._expandedFooter())
+                }
+
+
+                if(this.repaintTreeMenu) {
+                    this.repaintTreeMenuDinamic()
+                    this.repaintTreeMenu = false;
+                }
+
+
+                if(this._resizeObserver && !LayoutManager.isMobile()) {
+                    this._resizeObserver.observe($widget[0]);
+                }
+
+                return;
+            }
             //
             // Fix Header
             //
@@ -71,6 +127,9 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
 
             var $header = $("<div>", { id: "sideMenuHeader" })
+
+            //TODO search bar
+            if(LayoutManager.isMobile()) {
             $header.css("background-color", "rgb(248, 248, 248)")
             $header.css("padding", "10px")
             var searchDomains = profile.getSearchDomains()
@@ -192,6 +251,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             $searchForm.css("display", "flex")
 
             $header.append($searchForm)
+            }
 
             var $body = $("<div>", { id: "sideMenuBody" })
             $body.css("overflow-y", "auto")
@@ -206,8 +266,15 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             })
 
 
+            this._expandedMenu = $("<div>", { id: "expandedSideMenuTree" })
+            this._expandedMenu.css("height", "100%")
+            this._expandedMenu.css("display", "flex")
+            this._expandedMenu.css("flex-direction", "column")
+            this._expandedMenu.css('visibility','visible');
 
-            $widget.append($header).append($body)
+//            $widget.append($header).append($body)
+            this._expandedMenu.append($header).append($body)
+            $widget.append(this._expandedMenu);
 
             if(this._sideMenuWidgetModel.subSideMenu) {
                 var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
@@ -222,7 +289,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             }
 
             if(!LayoutManager.isMobile()) {
-             $widget.append(this._expandedFooter())
+             this._expandedMenu.append(this._expandedFooter())
             }
 
             $container.empty()
@@ -236,7 +303,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             this.repaintTreeMenuDinamic()
 
             if(this._resizeObserver && !LayoutManager.isMobile()) {
-                this._resizeObserver.observe($body[0]);
+                this._resizeObserver.observe($widget[0]);
             }
         }
     }
@@ -269,6 +336,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             _this._resizeObserver.disconnect();
             LayoutManager.setColumnSize(55, $(window).width() - 55, null);
             mainController.sideMenu.isCollapsed = true;
+            LayoutManager._saveSettings();
             _this._sideMenuWidgetController._browserController._saveSettings();
             _this._collapsedSideMenu(_this._$container)
         });
@@ -283,6 +351,63 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         $widget.css("height", "100%")
         $widget.css("display", "flex")
         $widget.css("flex-direction", "column")
+
+        if(this._collapsedMenu) {
+            var $widget = $("<div>", { id: "sideMenuTopContainer" })
+            var _this = this;
+            $widget.css("height", "100%")
+            $widget.css("display", "flex")
+            $widget.css("flex-direction", "column")
+
+            $("#sideMenuFooter").remove()
+
+             var $footer = $("<div>", { id: "sideMenuFooter"})
+            $footer.css("background-color", "rgb(248, 248, 248)");
+            $footer.css("height", "40px");
+            $footer.css("align-content", "center");
+
+
+            var $btn = null;
+            $btn = $("<a>", { 'class' : 'btn btn-showhide' });
+            $btn.css("height", "40px");
+            $btn.css("padding-right", "20px");
+            $btn.css("align-content", "end");
+
+            var tooltip = "Show menu"
+            var iconType = IconUtil.getToolbarIconType("SHOW");
+            var icon = IconUtil.getIcon(iconType);
+            $btn.append(icon);
+            $btn.attr("title", "Show sidebar")
+            $btn.attr("id", "show-hide-menu-id");
+
+            var _this = this;
+            $btn.click(function() {
+                    _this._resizeObserver.disconnect();
+                    mainController.sideMenu.isCollapsed = false;
+                    LayoutManager.restoreStandardSize();
+                    _this.repaint(_this._$container, false);
+                    LayoutManager._saveSettings();
+                    _this._sideMenuWidgetController._browserController._saveSettings();
+            });
+
+            var $toolbarContainer = $("<span>").append($btn);
+            $footer.append($toolbarContainer.css("float", "right"));
+
+            this._collapsedMenu.find("#sideMenuFooter").remove()
+            this._collapsedMenu.append($footer);
+            $widget.append(this._collapsedMenu);
+
+            $container.empty()
+            $container.css("height", "100%")
+            $container.append($widget)
+
+            if(this._resizeObserver && !LayoutManager.isMobile()) {
+                this._resizeObserver.observe($widget[0]);
+            }
+
+            return;
+        }
+
         //
         // Fix Header
         //
@@ -326,17 +451,25 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         var _this = this;
         $btn.click(function() {
                 _this._resizeObserver.disconnect();
-                _this._sideMenuWidgetController._browserController._saveSettings();
                 mainController.sideMenu.isCollapsed = false;
                 LayoutManager.restoreStandardSize();
                 _this.repaint(_this._$container, false);
+                 LayoutManager._saveSettings();
+                _this._sideMenuWidgetController._browserController._saveSettings();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
         $footer.append($toolbarContainer.css("float", "right"));
 
+        this._collapsedMenu = $("<div>", { id: "collapsedSideMenuTree" })
+        this._collapsedMenu.css("height", "100%")
+        this._collapsedMenu.css("display", "flex")
+        this._collapsedMenu.css("flex-direction", "column")
+        this._collapsedMenu.css('visibility','visible');
 
-        $widget.append($header).append($body).append($footer)
+
+        this._collapsedMenu.append($header).append($body).append($footer)
+        $widget.append(this._collapsedMenu)
 
         $container.empty()
         $container.css("height", "100%")

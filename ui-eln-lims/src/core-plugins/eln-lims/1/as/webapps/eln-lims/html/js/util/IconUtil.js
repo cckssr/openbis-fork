@@ -150,6 +150,14 @@ var IconUtil = new function() {
         } else if(type === "COLLAPSE_UP") {
             icon.class = "material-icons";
             icon.text = "keyboard_double_arrow_up";
+        } else if(type === "LAB_NOTEBOOK") {
+            icon.class = "glyphicon glyphicon-book";
+        } else if(type === "INVENTORY") {
+            icon.class = "fa fa-cubes";
+        } else if(type === "STOCK") {
+            icon.class = "fa fa-shopping-cart";
+        }  else if(type === "UTILITIES") {
+            icon.class = "glyphicon glyphicon-wrench";
         }
         return icon;
     }
@@ -173,9 +181,7 @@ var IconUtil = new function() {
             icon.class = "fa fa-cubes";
         } else if(type === "STOCK") {
             icon.class = "fa fa-shopping-cart";
-        } else if(type === "STOCK") {
-            icon.class = "fa fa-shopping-cart";
-        } else if(type === "UTILITIES") {
+        }  else if(type === "UTILITIES") {
             icon.class = "glyphicon glyphicon-wrench";
         } else if(type === "EXPORTS") {
             icon.class = "glyphicon glyphicon-export";

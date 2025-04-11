@@ -136,6 +136,14 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         },
     ]
 
+    TREES_INITIALIZED = false
+    CURRENT_TREE = "lab_notebook"
+    TREES_BY_TYPE = {
+        "lab_notebook": [],
+        "lims": [],
+        "tools": []
+    }
+
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)
     SORTINGS_BY_CODE_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_CODE).concat(this.SORTINGS_BY_REGISTRATION_DATE)
 
@@ -695,6 +703,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     async _loadFilteredNodes(params) {
         var { node } = params
+        var _this = this;
 
         var [spaces, projects, experiments, samples, dataSets] = await Promise.all([
             this._loadFilteredSpaces(params),
@@ -754,15 +763,15 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 this._createFilteredStockNode(entities),
             ])
 
-            if (labNotebookNode) {
+            if (labNotebookNode && _this.CURRENT_TREE === "lab_notebook") {
                 results.nodes.push(labNotebookNode)
             }
 
-            if (inventoryNode) {
+            if (inventoryNode && _this.CURRENT_TREE === "lims") {
                 results.nodes.push(inventoryNode)
             }
 
-            if (stockNode) {
+            if (stockNode && _this.CURRENT_TREE === "lims") {
                 results.nodes.push(stockNode)
             }
         } else if (node.object.type === this.TYPE_SPACE) {
@@ -1624,11 +1633,28 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     async _loadNodesRoot(params) {
         var results = { nodes: [] }
 
-        results.nodes.push(this._createLabNotebookNode())
-        results.nodes.push(this._createInventoryNode())
-        results.nodes.push(this._createStockNode())
-        results.nodes.push(this._createUtilitiesNode())
-        results.nodes.push(this._createAboutNode())
+        if(!this.TREES_INITIALIZED) {
+            var elnNodes = this._createLabNotebookNode();
+            this.TREES_BY_TYPE["lab_notebook"].push(elnNodes);
+
+            results.nodes.push(elnNodes)
+
+            var inv = this._createInventoryNode()
+            var stock = this._createStockNode()
+
+            this.TREES_BY_TYPE["lims"].push(inv);
+            this.TREES_BY_TYPE["lims"].push(stock);
+
+            var utilities = this._createUtilitiesNode();
+            this.TREES_BY_TYPE["tools"].push(utilities);
+
+            var about = this._createAboutNode();
+
+            this.TREES_BY_TYPE["tools"].push(about);
+            this.TREES_INITIALIZED = true
+        } else {
+            results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
+        }
 
         results.nodes = results.nodes.filter((node) => !!node)
 

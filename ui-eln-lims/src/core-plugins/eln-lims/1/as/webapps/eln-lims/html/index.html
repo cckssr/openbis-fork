@@ -277,9 +277,10 @@
 	<script type="text/javascript" src="./js/views/SampleTable/widgets/TypeAndFileController.js"></script>
 	<script type="text/javascript" src="./js/views/SampleTable/widgets/TypeAndFileModel.js"></script>
 	<script type="text/javascript" src="./js/views/SampleTable/widgets/TypeAndFileView.js"></script>
-	<script type="text/javascript" src="./js/views/SampleTable/widgets/MoveSampleController.js"></script>
-	<script type="text/javascript" src="./js/views/SampleTable/widgets/MoveSampleModel.js"></script>
-	<script type="text/javascript" src="./js/views/SampleTable/widgets/MoveSampleView.js"></script>
+
+	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderController.js"></script>
+	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderModel.js"></script>
+	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderView.js"></script>
 	
 	<script type="text/javascript" src="./js/views/legacy/SampleHierarchy.js"></script>
 	
@@ -375,6 +376,7 @@
 			reactRoot.render(reactComponentWithProviders)
 			var url = window.location.href;
 			this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer, url: url })
+			return reactRoot;
 		}
 		
 		this.cleanupComponents = function(){
@@ -444,6 +446,7 @@
 		
 			$('#openbis-login-service').submit(function() {
 				Util.blockUI();
+				$("#mainHeader").show();
 				$("#mainContainer").show();
 				var username = $('#username').val();
 				var password = $('#password').val();
@@ -636,7 +639,8 @@
 	</div>
 
 	<div class="container-fluid">
-		<div id='mainContainer' class="row"></div>
+		<div id='mainHeader' class="row mainHeader"></div>
+		<div id='mainContainer' class="row mainContainer"></div>
 	</div>
 
 	<script type="text/javascript" src="./etc/config.js"></script>
