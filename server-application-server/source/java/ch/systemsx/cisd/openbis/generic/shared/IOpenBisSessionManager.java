@@ -18,12 +18,16 @@ package ch.systemsx.cisd.openbis.generic.shared;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 
+import java.util.Set;
+
 /**
  * @author Jakub Straszewski
  */
 public interface IOpenBisSessionManager extends ISessionManager<Session>
 {
     public void updateAllSessions();
+
+    public void updateSessions(Set<String> userIds);
 
     public String getUserForAnonymousLogin();
 }
