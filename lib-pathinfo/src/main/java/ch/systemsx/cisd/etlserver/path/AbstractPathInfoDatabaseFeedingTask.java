@@ -77,24 +77,29 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
 
         try
         {
-            File dataSetRoot = directoryProvider.getDataSetDirectory(dataSet);
-            if (dataSetRoot.exists() == false)
-            {
-                getOperationLog().error("Root directory of data set " + dataSetCode
-                        + " does not exists: " + dataSetRoot);
-                shareIdManager.releaseLocks(null);
-                return size;
-            }
             DatabaseBasedDataSetPathsInfoFeeder feeder =
                     new DatabaseBasedDataSetPathsInfoFeeder(dao, new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders), computeChecksum,
                             checksumType);
             Long id = dao.tryGetDataSetId(dataSetCode);
+
             if (id == null)
             {
+                File dataSetRoot = directoryProvider.getDataSetDirectory(dataSet);
+
+                if (!dataSetRoot.exists())
+                {
+                    getOperationLog().error("Root directory of data set " + dataSetCode
+                            + " does not exists: " + dataSetRoot);
+                    return size;
+                }
+
                 size = feeder.addPaths(dataSetCode, dataSet.getDataSetLocation(), dataSetRoot);
                 feeder.commit();
                 getOperationLog().info("Paths inside data set " + dataSetCode
                         + " successfully added to database. Data set size: " + size);
+            } else
+            {
+                getOperationLog().info("Data set " + dataSetCode + " already exists in the path info database. Skipping.");
             }
         } catch (Exception ex)
         {

@@ -176,7 +176,7 @@ public final class Server<CONNECTION, API>
 
         // 2.9 Create maintenance tasks
         logger.info("Starting maintenance tasks");
-        MaintenanceTaskParameters[] maintenanceTaskParameters = MaintenanceTaskUtils.createMaintenancePlugins(configuration.getProperties());
+        MaintenanceTaskParameters[] maintenanceTaskParameters = MaintenanceTaskUtils.   createMaintenancePlugins(configuration.getProperties());
         maintenancePlugins = MaintenanceTaskUtils.startupMaintenancePlugins(maintenanceTaskParameters);
 
         // 2.10 Init observer

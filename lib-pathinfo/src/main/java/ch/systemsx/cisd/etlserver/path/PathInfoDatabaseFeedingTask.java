@@ -172,22 +172,23 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         {
             dataSets = filteredDataSets(getNextChunk(), processedDataSets);
             operationLog.info("Feeding " + ++chunkCount + ". chunk. " + dataSets.size() + " data sets.");
-            Date maxRegistrationTimestamp = null;
+            Date maxImmutableDataTimestamp = null;
             for (SimpleDataSetInformationDTO dataSet : dataSets)
             {
                 feedPathInfoDatabase(dataSet, dataSet.isH5Folders(), dataSet.isH5ArFolders());
                 processedDataSets.add(dataSet.getDataSetCode());
-                Date registrationTimestamp = dataSet.getRegistrationTimestamp();
-                if (maxRegistrationTimestamp == null || maxRegistrationTimestamp.getTime() < registrationTimestamp.getTime())
+                Date immutableDataTimestamp = dataSet.getImmutableDataDate();
+                if (maxImmutableDataTimestamp == null || maxImmutableDataTimestamp.getTime() < immutableDataTimestamp.getTime())
                 {
-                    maxRegistrationTimestamp = registrationTimestamp;
+                    maxImmutableDataTimestamp = immutableDataTimestamp;
                 }
                 stopCondition.handle(dataSet);
             }
-            if (maxRegistrationTimestamp != null)
+            if (maxImmutableDataTimestamp != null)
             {
-                dao.deleteLastSeenTimestamp(DataStoreKind.DSS.name());
-                dao.createLastSeenTimestamp(maxRegistrationTimestamp, DataStoreKind.DSS.name());
+                DataStoreKind dataStoreKind = PathInfoServiceProviderFactory.getInstance().getConfigProvider().getDataStoreKind();
+                dao.deleteLastSeenTimestamp(dataStoreKind.name());
+                dao.createLastSeenTimestamp(maxImmutableDataTimestamp, dataStoreKind.name());
                 dao.commit();
             }
         } while (dataSets.size() >= chunkSize && stopCondition.fulfilled() == false);
@@ -288,23 +289,23 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
         {
             result = service.listOldestPhysicalDataSets(timestamp, actualChunkSize);
         }
-        if (result.size() < actualChunkSize || allRegistrationTimeStampsTheSame(result) == false)
+        if (result.size() < actualChunkSize || allImmutableDataTimestampsTheSame(result) == false)
         {
             return result;
         }
         operationLog.warn("There are at least " + actualChunkSize
-                + " data sets with same registration time stamp. Twice the chunk size will be tried.");
+                + " data sets with same registration/immutableData timestamp. Twice the chunk size will be tried.");
         return listDataSets(timestamp, 2 * actualChunkSize);
     }
 
-    private boolean allRegistrationTimeStampsTheSame(List<SimpleDataSetInformationDTO> dataSets)
+    private boolean allImmutableDataTimestampsTheSame(List<SimpleDataSetInformationDTO> dataSets)
     {
-        Set<Date> registrationTimeStamps = new HashSet<>();
+        Set<Date> immutableDataTimestamps = new HashSet<>();
         for (SimpleDataSetInformationDTO dataSet : dataSets)
         {
-            registrationTimeStamps.add(dataSet.getRegistrationTimestamp());
+            immutableDataTimestamps.add(dataSet.getImmutableDataDate());
         }
-        return registrationTimeStamps.size() == 1;
+        return immutableDataTimestamps.size() == 1;
     }
 
     @Override

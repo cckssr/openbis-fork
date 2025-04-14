@@ -4,13 +4,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.manager.TransactionManager;
-import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.ConnectionFactory;
@@ -249,13 +249,13 @@ public class ShareIdManager implements IShareIdManager
 
     private List<Lock<UUID, String>> filterLocksByOwnerId(List<Lock<UUID, String>> locks, UUID ownerId)
     {
-        return locks.stream().filter(lock -> ownerId.equals(lock.getOwner())).collect(Collectors.toList());
+        return locks.stream().filter(lock -> Objects.equals(ownerId, lock.getOwner())).collect(Collectors.toList());
     }
 
     private List<Lock<UUID, String>> filterLocksByDataSet(List<Lock<UUID, String>> locks, DataSet dataSet)
     {
         Lock<UUID, String> dataSetLock = createLocks(null, List.of(dataSet), null).get(0);
-        return locks.stream().filter(lock -> dataSetLock.getResource().equals(lock.getResource())).collect(Collectors.toList());
+        return locks.stream().filter(lock -> Objects.equals(dataSetLock.getResource(), lock.getResource())).collect(Collectors.toList());
     }
 
     private static class UnknownDataSetException extends IllegalArgumentException

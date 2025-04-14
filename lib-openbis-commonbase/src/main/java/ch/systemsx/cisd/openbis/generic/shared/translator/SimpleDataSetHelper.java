@@ -62,6 +62,7 @@ public class SimpleDataSetHelper
         result.setDataSetCode(data.getCode());
         result.setRegistrationTimestamp(data.getRegistrationDate());
         result.setModificationTimestamp(data.getModificationDate());
+        result.setImmutableDataTimestamp(data.getRegistrationDate());
         result.setAccessTimestamp(data.getAccessTimestamp());
         result.setSpeedHint(data.getSpeedHint());
         result.setDataSetShareId(data.getShareId());
@@ -100,6 +101,7 @@ public class SimpleDataSetHelper
         SimpleDataSetInformationDTO result = new SimpleDataSetInformationDTO();
         result.setDataSetCode(datasetDescription.getDataSetCode());
         result.setRegistrationTimestamp(datasetDescription.getRegistrationTimestamp());
+        result.setImmutableDataTimestamp(datasetDescription.getRegistrationTimestamp());
         result.setSpeedHint(datasetDescription.getSpeedHint());
         result.setDataSetLocation(datasetDescription.getDataSetLocation());
         result.setDataSetShareId(datasetDescription.getDataSetShareId());
