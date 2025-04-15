@@ -735,7 +735,7 @@ public class SampleDAO extends AbstractGenericEntityWithPropertiesDAO<SamplePE> 
             Number childId = (Number) result[0];
             Number parentId = (Number) result[1];
 
-            Set<Long> parentIds = childIdToParentIdsMap.get(childId);
+            Set<Long> parentIds = childIdToParentIdsMap.get(childId.longValue());
             if (parentIds == null)
             {
                 parentIds = new HashSet<Long>();
