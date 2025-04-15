@@ -3,6 +3,7 @@ package ch.eth.sis.rocrate.facade;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface IMetadataEntry
 {
@@ -16,7 +17,7 @@ public interface IMetadataEntry
     String getClassId();
 
     /* Returns the type of the entry */
-    String getType();
+    Set<String> getTypes();
 
     /* These are key-value pairs for serialization. These are single-valued.
      * Serializable classes are: String, Number and Boolean */

@@ -148,7 +148,8 @@ public class Mapper
         for (Map.Entry<SpacePermId, Space> space : openBisModel.getSpaces().entrySet())
         {
             metaDataEntries.add(
-                    new MetadataEntry(space.getKey().getPermId(), Writer.SYSTEM_SPACE, Map.of(), Map.of()))
+                    new MetadataEntry(space.getKey().getPermId(), Set.of(Writer.SYSTEM_SPACE),
+                            Map.of(), Map.of()))
             ;
         }
         for (var project : openBisModel.getProjects().entrySet())
@@ -159,7 +160,8 @@ public class Mapper
                 props.put("description", project.getValue().getDescription());
             }
             metaDataEntries.add(
-                    new MetadataEntry(project.getKey().toString(), Writer.SYSTEM_PROJECT, props,
+                    new MetadataEntry(project.getKey().toString(), Set.of(Writer.SYSTEM_PROJECT),
+                            props,
                             Map.of()));
         }
 
@@ -205,7 +207,7 @@ public class Mapper
                         .map(x -> x.getIdentifier().getIdentifier()).collect(Collectors.toList()));
                 MetadataEntry
                         entry =
-                        new MetadataEntry(sample.getIdentifier().toString(), type, props,
+                        new MetadataEntry(sample.getIdentifier().toString(), Set.of(type), props,
                                 references);
 
                 metaDataEntries.add(entry
@@ -221,7 +223,7 @@ public class Mapper
                     props.put(propName, a.getValue());
                 }
                 metaDataEntries.add(
-                        new MetadataEntry(dataSet.getCode(), type, props, Map.of()));
+                        new MetadataEntry(dataSet.getCode(), Set.of(type), props, Map.of()));
 
             }
             if (val instanceof Experiment experiment)
@@ -233,7 +235,8 @@ public class Mapper
                     props.put(propName, a.getValue());
                 }
                 metaDataEntries.add(
-                        new MetadataEntry(experiment.getIdentifier().toString(), type, props,
+                        new MetadataEntry(experiment.getIdentifier().toString(), Set.of(type),
+                                props,
                                 Map.of()));
 
             }
