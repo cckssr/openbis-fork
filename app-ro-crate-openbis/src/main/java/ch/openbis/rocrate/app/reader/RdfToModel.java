@@ -80,14 +80,14 @@ public class RdfToModel
             if (kind == EntityKind.SAMPLE)
             {
 
-                SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
-                sampleTypeFetchOptions.withSemanticAnnotations();
-                sampleTypeFetchOptions.withPropertyAssignments();
+                SampleTypeFetchOptions
+                        sampleTypeFetchOptions = getSampleTypeFetchOptions();
 
                 SampleType sampleType = new SampleType();
                 sampleType.setCode(removePrefix(type.getId()));
                 sampleType.setFetchOptions(sampleTypeFetchOptions);
                 sampleType.setPermId(new EntityTypePermId(type.getId(), EntityKind.SAMPLE));
+                sampleType.setPropertyAssignments(new ArrayList<>());
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
 
@@ -213,6 +213,66 @@ public class RdfToModel
             }
 
         }
+        {
+            Set<Set<String>> intersectionTypes = new LinkedHashSet<>();
+            for (IMetadataEntry entry : entries)
+            {
+                if (entry.getTypes().size() > 1)
+                {
+                    intersectionTypes.add(entry.getTypes());
+                }
+            }
+            for (Set<String> intersectionType : intersectionTypes)
+            {
+                SampleType sampleType = new SampleType();
+                sampleType.setFetchOptions(getSampleTypeFetchOptions());
+                String artificialTypeIdentifier = getIntersectionTypeIdentifier(intersectionType);
+                sampleType.setCode(artificialTypeIdentifier);
+
+                List<PropertyAssignment> assignments = new ArrayList<>();
+                List<SemanticAnnotation> semanticAnnotations = new ArrayList<>();
+
+                for (String type : intersectionType)
+                {
+
+                    IEntityType entityType =
+                            schema.get(new EntityTypePermId(type, EntityKind.SAMPLE));
+                    if (entityType == null)
+                    {
+                        continue;
+                    }
+                    SampleType sampleType1 =
+                            (SampleType) entityType;
+
+                    for (var propertyAssignment : sampleType1.getPropertyAssignments())
+                    {
+                        PropertyAssignment newAssignment = new PropertyAssignment();
+                        newAssignment.setMandatory(propertyAssignment.isMandatory());
+                        newAssignment.setFetchOptions(propertyAssignment.getFetchOptions());
+                        newAssignment.setPropertyType(propertyAssignment.getPropertyType());
+                        newAssignment.setSemanticAnnotations(
+                                propertyAssignment.getSemanticAnnotations());
+                        newAssignment.setUnique(propertyAssignment.isUnique());
+                        newAssignment.setEntityType(sampleType1);
+                        if (assignments.stream().noneMatch(
+                                x -> x.getPropertyType().equals(newAssignment.getPropertyType())))
+                        {
+                            assignments.add(newAssignment);
+                        }
+                    }
+
+                }
+                sampleType.setPropertyAssignments(assignments);
+                sampleType.setSemanticAnnotations(semanticAnnotations);
+                sampleType.setCode(getIntersectionTypeIdentifier(intersectionType));
+                sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
+                schema.put(sampleType.getPermId(), sampleType);
+                codeToSampleType.put(sampleType.getCode(), sampleType);
+
+            }
+
+        }
+
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
         for (IMetadataEntry entry : entries)
@@ -238,8 +298,11 @@ public class RdfToModel
 
 
                 objectIdentifier = new SampleIdentifier(entry.getId());
+                String typeCode = entry.getTypes().size() == 1 ?
+                        entry.getTypes().stream().findFirst().orElseThrow() :
+                        getIntersectionTypeIdentifier(entry.getTypes());
 
-                sample.setType(codeToSampleType.get(entry.getType()));
+                sample.setType(codeToSampleType.get(typeCode));
                 entity = sample;
                 Map<String, Serializable> properties = new LinkedHashMap<>(entry.getValues());
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
@@ -262,12 +325,12 @@ public class RdfToModel
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
 
-            } else if (entry.getType().equals(GRAPH_ID_SPACE))
+            } else if (entry.getTypes().stream().anyMatch(x -> x.equals(GRAPH_ID_SPACE)))
             {
                 Space space = new Space();
                 space.setCode(entry.getId());
                 spaces.put(new SpacePermId(space.getCode()), space);
-            } else if (entry.getType().equals(GRAPH_ID_PROJECT))
+            } else if (entry.getTypes().contains(GRAPH_ID_PROJECT))
             {
                 Project project = new Project();
                 {
@@ -287,8 +350,11 @@ public class RdfToModel
 
                 projects.put(identifier, project);
 
-            } else if (typeToInheritanceChain.get(entry.getType()).stream().filter(Objects::nonNull)
-                    .anyMatch(x -> x.equals(Constants.GRAPH_ID_Collection)))
+            } else if (entry.getTypes().stream().anyMatch(
+                    x -> typeToInheritanceChain.get(x) != null && typeToInheritanceChain.get(x)
+                            .stream()
+                    .filter(Objects::nonNull)
+                            .anyMatch(y -> y.equals(Constants.GRAPH_ID_Collection))))
             {
                 ExperimentType experiment = new ExperimentType();
                 experiment.setCode(entry.getId());
@@ -349,6 +415,14 @@ public class RdfToModel
         return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
     }
 
+    private static SampleTypeFetchOptions getSampleTypeFetchOptions()
+    {
+        SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withSemanticAnnotations();
+        sampleTypeFetchOptions.withPropertyAssignments();
+        return sampleTypeFetchOptions;
+    }
+
     private static PropertyAssignment getPropertyAssignment(PropertyType propertyType,
             SampleType sampleType)
     {
@@ -403,8 +477,11 @@ public class RdfToModel
             Map<String, List<String>> typeToInheritanceChain)
     {
         List<String> a =
-                typeToInheritanceChain.get(metfadataEntry.getType());
-        if (a == null)
+                metfadataEntry.getTypes().stream().map(x -> typeToInheritanceChain.get(x))
+                        .filter(Objects::nonNull).flatMap(Collection::stream)
+                        .collect(Collectors.toList());
+
+        if (a.isEmpty())
         {
             return Optional.empty();
         }
@@ -606,6 +683,12 @@ public class RdfToModel
         {
             return projectCode;
         }
+
+    }
+
+    private static String getIntersectionTypeIdentifier(Set<String> types)
+    {
+        return String.join("_", types);
 
     }
 

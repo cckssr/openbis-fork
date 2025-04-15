@@ -3,6 +3,11 @@ package ch.openbis.rocrate.app.examples;
 import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
@@ -16,12 +21,9 @@ import org.junit.Test;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class JSON2ExcelTest {
 
@@ -30,6 +32,9 @@ public class JSON2ExcelTest {
     static final String REFERENCE_EXCEL = "src/test/resources/json2excel/ro_out.xlsx";
 
     public static final String TMP_OPENBIS_TEST_RO_OUT_XLSX = "/tmp/openbis_test_ro_out.xlsx";
+
+    public static final EntityTypePermId
+            PUBLICATION_TYPE_PERMID = new EntityTypePermId("PUBLICATION", EntityKind.SAMPLE);
 
     @Test
     public void conversionTest() throws IOException
@@ -41,17 +46,93 @@ public class JSON2ExcelTest {
 
         List<IType> types = schemaFacade.getTypes();
 
-        List<IMetadataEntry> entryList = new ArrayList<>();
+        Set<IMetadataEntry> entryList = new LinkedHashSet<>();
         for (var type : types)
         {
             entryList.addAll(schemaFacade.getEntries(type.getId()));
 
         }
 
+
         OpenBisModel
                 openBisModel =
-                RdfToModel.convert(types, schemaFacade.getPropertyTypes(), entryList, "DEFAULT",
+                RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
+                        entryList.stream().toList(), "DEFAULT",
                         "DEFAULT");
+
+        // assertions on model because the Excel files might have different orders of stuff
+        // ordering comes from the RO-Crate library and is outside our control
+
+        Optional<IEntityType>
+                maybePublicatioNType =
+                openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
+                        PUBLICATION_TYPE_PERMID)).findFirst();
+        List<String> publicationCodes = List.of("PUBLICATION.PUBLISHER",
+                "PUBLICATION.PUBLICATION_YEAR",
+                "XMLCOMMENTS");
+
+
+        assertEquals(8, openBisModel.getEntities().size());
+        assertTrue(maybePublicatioNType.isPresent());
+        assertEquals(2, openBisModel.getSpaces().size());
+        assertEquals(2, openBisModel.getProjects().size());
+        for (String propertyCode : publicationCodes)
+        {
+            assertTrue(maybePublicatioNType.filter(x -> x.getPropertyAssignments().stream()
+                            .anyMatch(y -> y.getPropertyType().getCode().equals(propertyCode)))
+                    .isPresent());
+        }
+
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA22")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA23")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB25")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB24")));
+            assertNotNull(openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26")));
+        {
+            Sample sample = (Sample) openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30"));
+
+            assertEquals("Quantum computational advantage using photons",
+                    sample.getProperties().get("NAME").toString());
+            assertEquals("Registered", sample.getProperties().get("PUBLICATION.STATUS").toString());
+            assertEquals("DataPaper", sample.getProperties().get("PUBLICATION.TYPE").toString());
+            assertEquals("https://www.science.org/doi/10.1126/science.abe8770",
+                    sample.getProperties().get("PUBLICATION.URL").toString());
+            assertEquals("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27",
+                    sample.getProperties().get("PUBLICATION.CREATOR").toString());
+            assertEquals("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26",
+                    sample.getProperties().get("PUBLICATION.PUBLISHER").toString());
+
+            Sample creatorSample = (Sample) openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27"));
+            assertEquals("https://orcid.org/0000-0001-9844-8214",
+                    creatorSample.getProperties().get("PUBLICATION_CREATOR.IDENTIFIER").toString());
+            assertEquals("https://orcid.org",
+                    creatorSample.getProperties().get("PUBLICATION_CREATOR.IDENTIFIER_SCHEME")
+                            .toString());
+
+            Sample creatorPublisher = (Sample) openBisModel.getEntities()
+                    .get(new SampleIdentifier("/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26"));
+            assertEquals("Science",
+                    creatorPublisher.getProperties().get("PUBLICATION_PUBLISHER.IDENTIFIER")
+                            .toString());
+
+
+        }
+
+
+
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.EXCEL, openBisModel);
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
                 TMP_OPENBIS_TEST_RO_OUT_XLSX))
@@ -65,7 +146,7 @@ public class JSON2ExcelTest {
                 Workbook workbook2 = new XSSFWorkbook(fis2)
         )
         {
-            assertSameSheets(workbook1, workbook2);
+            //assertSameSheets(workbook1, workbook2);
 
         }
     }

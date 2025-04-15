@@ -7,6 +7,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
@@ -17,6 +19,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTy
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
@@ -48,7 +51,7 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
         assertTrue(result.getSchema().getClasses().isEmpty());
-        assertTrue(result.getSchema().getProperties().isEmpty());
+        assertEquals(result.getSchema().getProperties().size(), 2);
         assertTrue(result.getMetaDataEntries().isEmpty());
         assertTrue(result.getMappingInfo().getRdfsToObjects().isEmpty());
         assertTrue(result.getMappingInfo().getRdfsPropertiesUsedIn().isEmpty());
@@ -98,7 +101,7 @@ public class MapperTest extends TestCase
         MapResult result = mapper.transform(openBisModel);
 
         assertEquals(1, result.getSchema().getClasses().size());
-        assertEquals(0, result.getSchema().getProperties().size());
+        assertEquals(2, result.getSchema().getProperties().size());
         assertTrue(result.getMetaDataEntries().isEmpty());
 
     }
@@ -169,8 +172,6 @@ public class MapperTest extends TestCase
 
         PropertyAssignment propertyAssignment = new PropertyAssignment();
 
-        IEntityType entryType = context.mock(IEntityType.class);
-        propertyAssignment.setEntityType(entryType);
         PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
         fetchOptions.withPropertyType();
         fetchOptions.withSemanticAnnotations();
@@ -184,37 +185,54 @@ public class MapperTest extends TestCase
         propertyType.setFetchOptions(propertyTypeFetchOptions);
 
 
-        context.checking(new Expectations()
-        {
-            {
-                atLeast(1).of(entryType).getCode();
-                will(returnValue("ENTRY1"));
 
-                allowing(entryType).getPropertyAssignments();
-                will(returnValue(List.of(propertyAssignment)));
-            }
-
-        });
-
-        schema.put(entityTypePermId, entryType);
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
         SampleIdentifier objectIdentifier = new SampleIdentifier("JOHN", "JOHN", "ENTRY1");
+        Space space = new Space();
+        space.setCode("JOHN");
+        Project project = new Project();
+        project.setCode("JOHN");
+        project.setSpace(space);
+        project.setIdentifier(new ProjectIdentifier("JOHN", "JOHN"));
+        Experiment experiment = new Experiment();
+        experiment.setIdentifier(new ExperimentIdentifier("JOHN", "JOHN", "JOHN"));
+
         Sample object = new Sample();
+        object.setSpace(space);
+        object.setProject(project);
+        object.setExperiment(experiment);
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
         sampleFetchOptions.withType();
         sampleFetchOptions.withProperties();
         sampleFetchOptions.withChildren();
         sampleFetchOptions.withParents();
+        sampleFetchOptions.withSpace();
+        sampleFetchOptions.withProject();
+        sampleFetchOptions.withExperiment();
         object.setFetchOptions(sampleFetchOptions);
         object.setChildren(new ArrayList<>());
         object.setParents(new ArrayList<>());
         SampleType sampleType = new SampleType();
+
+        {
+            SampleTypeFetchOptions fetchOptions1 = new SampleTypeFetchOptions();
+            fetchOptions1.withPropertyAssignments();
+            fetchOptions1.withSemanticAnnotations();
+            sampleType.setSemanticAnnotations(new ArrayList<>());
+            sampleType.setPropertyAssignments(List.of(propertyAssignment));
+
+            sampleType.setFetchOptions(fetchOptions1);
+
+        }
+
         sampleType.setCode("ENTRY1");
         object.setType(sampleType);
         object.setIdentifier(objectIdentifier);
         object.setProperties(Map.of("NAME", "AAAAAAA"));
         metadata.put(objectIdentifier, object);
+        propertyAssignment.setEntityType(sampleType);
+        schema.put(entityTypePermId, sampleType);
 
         Map<ProjectIdentifier, Project> projects = new HashMap<>();
         Map<SpacePermId, Space> spaces = new HashMap<>();
@@ -229,7 +247,7 @@ public class MapperTest extends TestCase
         MetadataEntry metaDataEntry = result.getMetaDataEntries().get(0);
         assertTrue(metaDataEntry.getValues().containsKey("hasNAME"));
         assertTrue(result.getMappingInfo().getRdfsToObjects().get("ENTRY1")
-                .contains(entryType));
+                .contains(sampleType));
 
     }
 

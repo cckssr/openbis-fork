@@ -8,6 +8,7 @@ import edu.kit.datamanager.ro_crate.writer.FolderWriter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class WriteExample
 {
@@ -38,7 +39,8 @@ public class WriteExample
 
         }
         {
-            IMetadataEntry metadataEntry = new MetadataEntry("TextResource1", "TextResource",
+            IMetadataEntry metadataEntry =
+                    new MetadataEntry("TextResource1", Set.of("TextResource"),
                     Map.of("hasDate", "2025-01-21T07:12:20Z"), Map.of());
             schemaFacade.addEntry(metadataEntry);
 

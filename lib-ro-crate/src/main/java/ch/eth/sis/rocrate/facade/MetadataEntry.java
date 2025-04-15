@@ -1,15 +1,13 @@
 package ch.eth.sis.rocrate.facade;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MetadataEntry implements IMetadataEntry
 {
     String id;
 
-    String type;
+    Set<String> types;
 
     Map<String, Serializable> props;
 
@@ -23,11 +21,11 @@ public class MetadataEntry implements IMetadataEntry
     {
     }
 
-    public MetadataEntry(String id, String type, Map<String, Serializable> props,
+    public MetadataEntry(String id, Set<String> types, Map<String, Serializable> props,
             Map<String, List<String>> references)
     {
         this.id = id;
-        this.type = type;
+        this.types = types;
         this.props = props;
         this.references = references;
     }
@@ -40,7 +38,7 @@ public class MetadataEntry implements IMetadataEntry
     @Override
     public String getClassId()
     {
-        return type;
+        return null;
     }
 
     @Override
@@ -61,14 +59,14 @@ public class MetadataEntry implements IMetadataEntry
     }
 
     @Override
-    public String getType()
+    public Set<String> getTypes()
     {
-        return type;
+        return types;
     }
 
-    public void setType(String type)
+    public void setTypes(Set<String> types)
     {
-        this.type = type;
+        this.types = types;
     }
 
     public void addChildIdentifier(String a)
@@ -99,5 +97,22 @@ public class MetadataEntry implements IMetadataEntry
     public void setReferences(Map<String, List<String>> references)
     {
         this.references = references;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        MetadataEntry entry = (MetadataEntry) o;
+        return Objects.equals(id, entry.id) && Objects.equals(types, entry.types);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, types);
     }
 }

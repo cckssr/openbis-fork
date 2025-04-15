@@ -11,6 +11,9 @@ import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SchemaFacade implements ISchemaFacade
 {
@@ -23,6 +26,9 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
 
+    Pattern p;
+
+    String localPrefix = ":";
 
     private Map<String, IType> types;
 
@@ -112,7 +118,10 @@ public class SchemaFacade implements ISchemaFacade
     {
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
         builder.setId(metaDataEntry.getId());
-        builder.addProperty("@type", metaDataEntry.getClassId());
+        for (String type : metaDataEntry.getTypes())
+        {
+            builder.addType(type);
+        }
         ObjectMapper objectMapper = new ObjectMapper();
 
         metaDataEntry.getValues().forEach((s, o) -> {
@@ -149,12 +158,32 @@ public class SchemaFacade implements ISchemaFacade
     @Override
     public List<IMetadataEntry> getEntries(String rdfsClassId)
     {
-        return metadataEntries.values().stream().filter(x -> x.getType().equals(rdfsClassId))
+        return metadataEntries.values().stream()
+                .filter(x -> matchClasses(resolvePrefixSingleValue(rdfsClassId), x))
                 .toList();
+    }
+
+    private boolean matchClasses(String queryClassId, IMetadataEntry entry)
+    {
+        if (entry.getTypes().stream().anyMatch(x -> x.equals(queryClassId)))
+        {
+            return true;
+        }
+
+        return entry.getTypes().stream()
+                .map(x -> p.matcher(x))
+                .map(x -> x.replaceAll("_:"))
+                .anyMatch(x -> x.equals(queryClassId));
+
     }
 
     private void parseEntities() throws JsonProcessingException
     {
+
+        localPrefix = getLocalPrefix(crate.getJsonMetadata());
+
+
+
         Map<String, IPropertyType> properties = new LinkedHashMap<>();
         Map<String, IType> classes = new LinkedHashMap<>();
         Map<String, IMetadataEntry> entries = new LinkedHashMap<>();
@@ -175,21 +204,25 @@ public class SchemaFacade implements ISchemaFacade
                     rdfsClass.setSubClassOf(parseMultiValued(entity, "rdfs:subClassOf"));
                     rdfsClass.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CLASS));
-                    rdfsClass.setId(id);
-                    classes.put(id, rdfsClass);
+                    rdfsClass.setId(resolvePrefixSingleValue(id));
+                    classes.put(resolvePrefixSingleValue(id), rdfsClass);
 
                 }
                 case "rdfs:Property" ->
                 {
                     TypeProperty rdfsProperty = new TypeProperty();
-                    rdfsProperty.setId(id);
+                    rdfsProperty.setId(resolvePrefixSingleValue(id));
                     rdfsProperty.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CONCEPT));
                     rdfsProperty.setRangeIncludes(
-                            parseMultiValued(entity, "schema:rangeIncludes"));
+                            parseMultiValued(entity, "schema:rangeIncludes").stream()
+                                    .map(x -> resolvePrefixSingleValue(x)).collect(
+                                            Collectors.toList()));
                     rdfsProperty.setDomainIncludes(
-                            parseMultiValued(entity, "schema:domainIncludes"));
-                    properties.put(id, rdfsProperty);
+                            parseMultiValued(entity, "schema:domainIncludes").stream()
+                                    .map(x -> resolvePrefixSingleValue(x)).collect(
+                                            Collectors.toList()));
+                    properties.put(resolvePrefixSingleValue(id), rdfsProperty);
 
                 }
 
@@ -199,12 +232,12 @@ public class SchemaFacade implements ISchemaFacade
 
         for (var entity : crate.getAllDataEntities())
         {
-            String type = entity
-                    .getProperty("@type").asText();
+            Set<String> type = parseTypes(entity);
+
             String id =
                     entity.getProperty("@id")
                             .asText();
-            if (!classes.containsKey(type))
+            if (!doesTypeExist(type, classes, localPrefix))
             {
                 continue;
             }
@@ -212,7 +245,8 @@ public class SchemaFacade implements ISchemaFacade
             Map<String, Serializable> entryProperties = new LinkedHashMap<>();
             MetadataEntry entry = new MetadataEntry();
             entry.setId(id);
-            entry.setType(type);
+
+            entry.setTypes(resolvePrefix(type));
             Map<String, List<String>> references = new LinkedHashMap<>();
             ObjectMapper objectMapper = new ObjectMapper();
             Map<String, Serializable> keyVals =
@@ -243,6 +277,26 @@ public class SchemaFacade implements ISchemaFacade
 
     }
 
+    private Set<String> resolvePrefix(Set<String> types)
+    {
+        Pattern placeholderPattern = Pattern.compile("^_:");
+
+        LinkedHashSet newTypes = new LinkedHashSet();
+        for (String type : types)
+        {
+            newTypes.add(placeholderPattern.matcher(type).replaceAll(localPrefix));
+
+        }
+        return newTypes;
+    }
+
+    private String resolvePrefixSingleValue(String type)
+    {
+        Pattern placeholderPattern = Pattern.compile("^_:");
+
+        return placeholderPattern.matcher(type).replaceAll(localPrefix);
+    }
+
     private List<String> parseMultiValued(DataEntity dataEntity, String key)
     {
         JsonNode node = dataEntity.getProperty(key);
@@ -261,4 +315,86 @@ public class SchemaFacade implements ISchemaFacade
         return List.of();
 
     }
+
+    private Set<String> parseTypes(DataEntity entity)
+    {
+        JsonNode typeResult = entity.getProperty("@type");
+        if (typeResult.isTextual())
+        {
+            return Set.of(typeResult.textValue());
+        }
+        if (typeResult.isArray())
+        {
+            ArrayNode arrayNode = (ArrayNode) typeResult;
+            Set<String> typeroos = new LinkedHashSet<>();
+            arrayNode.forEach(x -> typeroos.add(x.textValue()));
+            return typeroos;
+
+        }
+        throw new RuntimeException("Unknown node type for @type");
+
+    }
+
+    Map<String, String> getKeyValPairsFromMetadata(String metaDataJson)
+            throws JsonProcessingException
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        LinkedHashMap vals = objectMapper.readValue(metaDataJson, LinkedHashMap.class);
+        List<Object> nodes = (List<Object>) vals.get("@context");
+        Map key_vals = (Map) nodes.get(1);
+
+        Map<String, String> result = new LinkedHashMap<>();
+        for (Object a : key_vals.entrySet())
+        {
+            Map.Entry b = (Map.Entry) a;
+            result.put(b.getKey().toString(), b.getValue().toString());
+        }
+
+        return result;
+    }
+
+    String getLocalPrefix(String jsonMetaData) throws JsonProcessingException
+    {
+        Map<String, String> keyVals = getKeyValPairsFromMetadata(jsonMetaData);
+        for (Map.Entry<String, String> entry : keyVals.entrySet())
+        {
+            if (entry.getValue().equals("_:"))
+            {
+                return entry.getKey() + ":";
+            }
+
+        }
+        return "";
+    }
+
+    boolean doesTypeExist(Set<String> types, Map<String, IType> classes, String localPrefix)
+    {
+        p = Pattern.compile("^" + localPrefix + ":", Pattern.CASE_INSENSITIVE);
+
+        boolean somethingFound = false;
+        for (String type : types)
+        {
+            boolean typeFound = false;
+
+            Matcher m = p.matcher(type);
+            if (classes.containsKey(type))
+            {
+                typeFound = true;
+            }
+            if (classes.containsKey(m.replaceAll("_:")))
+            {
+                typeFound = true;
+            }
+
+            if (!typeFound)
+            {
+                System.out.println("Type " + type + " does not seem to be part of the schema");
+            }
+            somethingFound = somethingFound || typeFound;
+        }
+
+        return somethingFound;
+
+    }
+
 }

@@ -18,7 +18,7 @@ public class Read
 {
 
     private final static String TEST_DIR =
-            "/home/meiandr/Documents/sissource/openbis/build/ro_out_2/";
+            "/home/meiandr/Downloads/psi/edited-ro-crate";
 
     public static void main(String[] args) throws IOException
     {
