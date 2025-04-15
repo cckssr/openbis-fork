@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -350,17 +349,17 @@ public class DataStoreServiceTest extends AssertJUnit
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(with(any(UUID.class)), with("ds1"));
+                    one(shareIdManager).lock(with("ds1"));
                     one(shareIdManager).isKnown("ds1");
                     will(returnValue(true));
                     one(shareIdManager).getShareId("ds1");
                     will(returnValue(shareId));
-                    one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds1"));
+                    one(shareIdManager).releaseLock(with("ds1"));
 
-                    one(shareIdManager).lock(with(any(UUID.class)), with("ds2"));
+                    one(shareIdManager).lock(with("ds2"));
                     one(shareIdManager).isKnown("ds2");
                     will(returnValue(false));
-                    one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds2"));
+                    one(shareIdManager).releaseLock(with("ds2"));
                 }
             });
 

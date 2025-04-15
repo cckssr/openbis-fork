@@ -114,7 +114,7 @@ public class ShareIdManagerTest extends AssertJUnit
     {
         try
         {
-            manager.lock(null, "ds?");
+            manager.lock("ds?");
             fail("IllegalArgumentException expected");
         } catch (IllegalArgumentException ex)
         {
@@ -125,7 +125,7 @@ public class ShareIdManagerTest extends AssertJUnit
     @Test
     public void testReleaseLockOfUnknownDataSet()
     {
-        manager.releaseLock(null, "ds?");
+        manager.releaseLock("ds?");
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ShareIdManagerTest extends AssertJUnit
             @Override
             public void run()
             {
-                manager.lock(null, DS1);
+                manager.lock(DS1);
                 try
                 {
                     manager.await(DS1);
@@ -189,7 +189,7 @@ public class ShareIdManagerTest extends AssertJUnit
             @Override
             public void run()
             {
-                manager.lock(null, DS1);
+                manager.lock(DS1);
                 ch1.send("locked");
                 try
                 {
@@ -198,7 +198,7 @@ public class ShareIdManagerTest extends AssertJUnit
                 {
                     // ignored
                 }
-                manager.releaseLock(null, DS1);
+                manager.releaseLock(DS1);
                 ch1.send("unlocked");
             }
         }, "T1").start();
@@ -230,10 +230,10 @@ public class ShareIdManagerTest extends AssertJUnit
             @Override
             public void run()
             {
-                manager.lock(null, DS1);
+                manager.lock(DS1);
                 ch3.send("locked");
                 ch4.assertNextMessage("locked");
-                manager.releaseLock(null, DS1);
+                manager.releaseLock(DS1);
                 ch1.send("unlocked");
             }
         }, "T1").start();
@@ -244,7 +244,7 @@ public class ShareIdManagerTest extends AssertJUnit
             public void run()
             {
                 ch3.assertNextMessage("locked");
-                manager.lock(null, DS1);
+                manager.lock(DS1);
                 ch2.send("locked");
                 ch4.send("locked");
             }

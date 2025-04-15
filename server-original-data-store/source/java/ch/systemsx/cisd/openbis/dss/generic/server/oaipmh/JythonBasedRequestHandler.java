@@ -128,7 +128,7 @@ public class JythonBasedRequestHandler implements IRequestHandler
             runner.handle(req, resp);
         } finally
         {
-            manager.releaseLocks(null);
+            manager.releaseLocks();
         }
     }
 

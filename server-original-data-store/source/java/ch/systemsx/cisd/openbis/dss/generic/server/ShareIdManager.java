@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -163,7 +162,7 @@ public class ShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void lock(UUID ownerId, String dataSetCode)
+    public void lock(String dataSetCode)
     {
         synchronized (lockedDataSets)
         {
@@ -187,7 +186,7 @@ public class ShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void lock(UUID ownerId, List<String> dataSetCodes)
+    public void lock(List<String> dataSetCodes)
     {
         synchronized (lockedDataSets)
         {
@@ -218,7 +217,7 @@ public class ShareIdManager implements IShareIdManager
             {
                 for (String dataSetCode : locked)
                 {
-                    releaseLock(ownerId, dataSetCode);
+                    releaseLock(dataSetCode);
                 }
                 throw CheckedExceptionTunnel.wrapIfNecessary(th);
             }
@@ -263,7 +262,7 @@ public class ShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void releaseLock(UUID ownerId, String dataSetCode)
+    public void releaseLock(String dataSetCode)
     {
         synchronized (lockedDataSets)
         {
@@ -287,14 +286,14 @@ public class ShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void releaseLocks(UUID ownerId)
+    public void releaseLocks()
     {
         synchronized (lockedDataSets)
         {
             List<String> dataSets = new ArrayList<String>(lockedDataSets.keySet());
             for (String dataSet : dataSets)
             {
-                releaseLock(ownerId, dataSet);
+                releaseLock(dataSet);
             }
         }
     }

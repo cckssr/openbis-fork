@@ -16,7 +16,6 @@
 package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Proxy of a {@link IShareIdManager} which delegates calls to wrapped share ID manager. Methods can be overridden to change behavior.
@@ -51,15 +50,15 @@ public class ProxyShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void lock(UUID ownerId, String dataSetCode)
+    public void lock(String dataSetCode)
     {
-        shareIdManager.lock(ownerId, dataSetCode);
+        shareIdManager.lock(dataSetCode);
     }
 
     @Override
-    public void lock(UUID ownerId, List<String> dataSetCodes)
+    public void lock(List<String> dataSetCodes)
     {
-        shareIdManager.lock(ownerId, dataSetCodes);
+        shareIdManager.lock(dataSetCodes);
     }
 
     @Override
@@ -69,15 +68,15 @@ public class ProxyShareIdManager implements IShareIdManager
     }
 
     @Override
-    public void releaseLock(UUID ownerId, String dataSetCode)
+    public void releaseLock(String dataSetCode)
     {
-        shareIdManager.releaseLock(ownerId, dataSetCode);
+        shareIdManager.releaseLock(dataSetCode);
     }
 
     @Override
-    public void releaseLocks(UUID ownerId)
+    public void releaseLocks()
     {
-        shareIdManager.releaseLocks(ownerId);
+        shareIdManager.releaseLocks();
     }
 
     @Override public void cleanupLocks()

@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -728,7 +727,7 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(with(any(UUID.class)), with(DATA_SET_CODE));
+                    one(shareIdManager).lock(with(DATA_SET_CODE));
                 }
             });
     }
@@ -738,7 +737,7 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).releaseLock(with(any(UUID.class)), with(DATA_SET_CODE));
+                    one(shareIdManager).releaseLock(with(DATA_SET_CODE));
                 }
             });
     }
@@ -750,9 +749,9 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
                 {
                     for (String dataSetCode : dataSetCodes)
                     {
-                        one(shareIdManager).lock(with(any(UUID.class)), with(Arrays.asList(dataSetCode)));
+                        one(shareIdManager).lock(with(Arrays.asList(dataSetCode)));
                     }
-                    one(shareIdManager).releaseLocks(with(any(UUID.class)));
+                    one(shareIdManager).releaseLocks();
                 }
             });
     }

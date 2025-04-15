@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -1101,8 +1100,8 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).lock(with(any(UUID.class)), with(Arrays.asList(dataSetCodes)));
-                one(shareIdManager).releaseLocks(with(any(UUID.class)));
+                one(shareIdManager).lock(with(Arrays.asList(dataSetCodes)));
+                one(shareIdManager).releaseLocks();
             }
         });
     }

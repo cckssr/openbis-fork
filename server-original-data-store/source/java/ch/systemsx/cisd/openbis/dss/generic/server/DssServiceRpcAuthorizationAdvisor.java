@@ -88,7 +88,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
                 inputStream.close();
             } finally
             {
-                manager.releaseLocks(null);
+                manager.releaseLocks();
             }
         }
 
@@ -214,7 +214,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
                     shouldLocksAutomaticallyBeReleased(methodInvocation.getMethod());
             if (dataSetCodes.isEmpty() == false)
             {
-                manager.lock(null, dataSetCodes);
+                manager.lock(dataSetCodes);
             }
             try
             {
@@ -258,7 +258,7 @@ public class DssServiceRpcAuthorizationAdvisor extends DefaultPointcutAdvisor
             {
                 if (shouldLocksAutomaticallyBeReleased)
                 {
-                    manager.releaseLocks(null);
+                    manager.releaseLocks();
                 }
             }
         }

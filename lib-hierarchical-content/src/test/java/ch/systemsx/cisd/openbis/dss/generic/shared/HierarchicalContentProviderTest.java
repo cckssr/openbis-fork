@@ -17,7 +17,6 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.io.File;
 import java.util.List;
-import java.util.UUID;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -28,7 +27,6 @@ import org.testng.annotations.Test;
 
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
-import ch.systemsx.cisd.common.test.CaptureParameterValues;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
@@ -96,7 +94,6 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         final DatasetLocationNode data = new DatasetLocationNode(dataLocation);
         final File dataRootFile = new File("DS_FILE");
         final RecordingMatcher<IDelegatedAction> actionMatcher = RecordingMatcher.create();
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
         context.checking(new Expectations()
         {
             {
@@ -104,8 +101,7 @@ public class HierarchicalContentProviderTest extends AssertJUnit
                 one(openbisService).tryGetDataSetLocation(dataSetCode);
                 will(returnValue(data));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with(dataSetCode));
                 one(directoryProvider).getDataSetDirectory(data.getLocation());
                 will(returnValue(dataRootFile));
 
@@ -122,12 +118,10 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSetCode));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).releaseLock(with(dataSetCode));
             }
         });
         actionMatcher.recordedObject().execute();
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
         context.assertIsSatisfied();
     }
 
@@ -162,9 +156,6 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         container.addContained(dataSet3);
 
         final RecordingMatcher<IDelegatedAction> actionMatcher = RecordingMatcher.create();
-        final CaptureParameterValues<UUID> dataSet1Owners = new CaptureParameterValues<>();
-        final CaptureParameterValues<UUID> dataSet2Owners = new CaptureParameterValues<>();
-        final CaptureParameterValues<UUID> dataSet3Owners = new CaptureParameterValues<>();
         final RecordingMatcher<List<IHierarchicalContent>> contentMatcher = new RecordingMatcher<List<IHierarchicalContent>>();
         context.checking(new Expectations()
         {
@@ -172,18 +163,15 @@ public class HierarchicalContentProviderTest extends AssertJUnit
                 one(openbisService).tryGetDataSetLocation(containerCode);
                 will(returnValue(container));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSet1Code));
-                will(dataSet1Owners.captureParameter(0));
+                one(shareIdManager).lock(with(dataSet1Code));
                 one(directoryProvider).getDataSetDirectory(dataSet1.getLocation());
                 will(returnValue(dataSetRootFile1));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSet2Code));
-                will(dataSet2Owners.captureParameter(0));
+                one(shareIdManager).lock(with(dataSet2Code));
                 one(directoryProvider).getDataSetDirectory(dataSet2.getLocation());
                 will(returnValue(dataSetRootFile2));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSet3Code));
-                will(dataSet3Owners.captureParameter(0));
+                one(shareIdManager).lock(with(dataSet3Code));
                 one(directoryProvider).getDataSetDirectory(dataSet3.getLocation());
                 will(returnValue(dataSetRootFile3));
 
@@ -202,8 +190,7 @@ public class HierarchicalContentProviderTest extends AssertJUnit
                 one(hierarchicalContentFactory).asHierarchicalContent(
                         with(same(dataSetRootFile3)), with(actionMatcher));
                 will(throwException(new IllegalArgumentException("")));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSet3Code));
-                will(dataSet3Owners.captureParameter(0));
+                one(shareIdManager).releaseLock(with(dataSet3Code));
 
                 one(hierarchicalContentFactory).asVirtualHierarchicalContent(with(
                         contentMatcher));
@@ -218,8 +205,7 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSet2Code));
-                will(dataSet2Owners.captureParameter(0));
+                one(shareIdManager).releaseLock(with(dataSet2Code));
             }
         });
         List<IHierarchicalContent> contents = contentMatcher.recordedObject();
@@ -228,15 +214,10 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSet3Code));
-                will(dataSet3Owners.captureParameter(0));
+                one(shareIdManager).releaseLock(with(dataSet3Code));
             }
         });
         actionMatcher.getRecordedObjects().get(1).execute();
-
-        assertEquals(1, dataSet1Owners.getCapturedValuesSet().size());
-        assertEquals(1, dataSet2Owners.getCapturedValuesSet().size());
-        assertEquals(1, dataSet3Owners.getCapturedValuesSet().size());
 
         context.assertIsSatisfied();
     }
@@ -321,13 +302,11 @@ public class HierarchicalContentProviderTest extends AssertJUnit
 
         final File dataRootFile = new File("DS_FILE");
         final RecordingMatcher<IDelegatedAction> actionMatcher = RecordingMatcher.create();
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
 
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).lock(with(any(UUID.class)), with(code));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with(code));
                 one(directoryProvider).getDataSetDirectory(dataSetLocation);
                 will(returnValue(dataRootFile));
 
@@ -343,13 +322,11 @@ public class HierarchicalContentProviderTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(code));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).releaseLock(with(code));
             }
         });
 
         actionMatcher.recordedObject().execute();
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
         context.assertIsSatisfied();
     }
 

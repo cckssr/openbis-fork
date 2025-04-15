@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.Filter;
@@ -201,8 +200,8 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
                 allowing(shareIdManager).getShareId(DATA_SET1);
                 will(returnValue(SHARE_ID));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(DATA_SET1));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(DATA_SET1));
+                one(shareIdManager).lock(with(DATA_SET1));
+                one(shareIdManager).releaseLock(with(DATA_SET1));
 
                 one(service)
                         .updateShareIdAndSize(DATA_SET1, SHARE_ID, EXAMPLE_CONTENT.length());

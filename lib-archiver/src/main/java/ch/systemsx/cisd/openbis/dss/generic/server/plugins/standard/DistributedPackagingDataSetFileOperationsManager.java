@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -153,9 +152,8 @@ public class DistributedPackagingDataSetFileOperationsManager extends AbstractDa
         Status status = Status.OK;
         String dataSetCode = datasetDescription.getDataSetCode();
         File file = getArchiveFile(datasetDescription);
-        UUID ownerId = UUID.randomUUID();
 
-        shareIdManager.lock(ownerId, dataSetCode);
+        shareIdManager.lock(dataSetCode);
         try
         {
             packageManager.create(file, dataSet);
@@ -183,7 +181,7 @@ public class DistributedPackagingDataSetFileOperationsManager extends AbstractDa
             {
                 operationLog.error("Couldn't create package file: " + file, ex);
             }
-            shareIdManager.releaseLock(ownerId, dataSetCode);
+            shareIdManager.releaseLock(dataSetCode);
         }
         return status;
     }

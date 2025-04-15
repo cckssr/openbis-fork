@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Level;
 import org.hamcrest.BaseMatcher;
@@ -379,7 +378,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
 
                 one(dao).commit();
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
+                one(shareIdManager).lock(with(dataSetCode));
 
                 one(directoryProvider).getDataSetDirectory(with(new BaseMatcher<DatasetV3Location>()
                                                                 {
@@ -404,7 +403,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
                 ));
                 will(returnValue(file));
 
-                one(shareIdManager).releaseLocks(with(any(UUID.class)));
+                one(shareIdManager).releaseLocks();
             }
         });
     }

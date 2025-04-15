@@ -19,7 +19,6 @@ import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -70,9 +69,8 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
 
         IShareIdManager shareIdManager = directoryProvider.getShareIdManager();
         String dataSetCode = dataSet.getDataSetCode();
-        UUID ownerId = UUID.randomUUID();
 
-        shareIdManager.lock(ownerId, dataSetCode);
+        shareIdManager.lock(dataSetCode);
         Long size = null;
 
         try
@@ -108,7 +106,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
             throw ex;
         } finally
         {
-            shareIdManager.releaseLocks(ownerId);
+            shareIdManager.releaseLocks();
         }
         return size;
     }

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
@@ -44,7 +43,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.MockLogger;
-import ch.systemsx.cisd.common.test.CaptureParameterValues;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
@@ -389,8 +387,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         final File hiFile = new File(file, "hi.txt");
         FileUtilities.writeToFile(hiFile, "hi");
 
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
-
         context.checking(new Expectations()
         {
             {
@@ -398,11 +394,9 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 will(returnValue(new PhysicalDataSet()));
 
                 one(service).updateShareIdAndSize("ds-1", "2", 11L);
-                one(shareIdManager).lock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with("ds-1"));
                 one(shareIdManager).setShareId("ds-1", "2");
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).releaseLock(with("ds-1"));
                 exactly(2).of(shareIdManager).await("ds-1");
 
                 one(datasetLocation).getDataSetCode();
@@ -430,9 +424,9 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                         service, new ProxyShareIdManager(shareIdManager)
                         {
                             @Override
-                            public void lock(UUID ownerId, String dataSetCode)
+                            public void lock(String dataSetCode)
                             {
-                                super.lock(ownerId, dataSetCode);
+                                super.lock(dataSetCode);
                                 moveChannel.send(LOCK);
                                 deletionChannel.assertNextMessage(START_DELETION);
                             }
@@ -479,7 +473,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 "targets/unit-test-wd/ch.systemsx.cisd.openbis.dss.generic.shared.utils."
                         + "SegmentedStoreUtilsTest/store/2/uuid/01/02/03/ds-1").exists());
         assertFileNames(share2uuid01, "02", "22");
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
         moveChannel.assertEmpty();
         deletionChannel.assertEmpty();
         log.assertNoMoreLogMessages();
@@ -504,8 +497,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         file.mkdirs();
         FileUtilities.writeToFile(new File(file, "hi.txt"), "hi");
 
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
-
         context.checking(new Expectations()
         {
             {
@@ -513,11 +504,9 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
                 will(returnValue(new PhysicalDataSet()));
 
                 one(service).updateShareIdAndSize("ds-1", "2", 11L);
-                one(shareIdManager).lock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with("ds-1"));
                 one(shareIdManager).setShareId("ds-1", "2");
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).releaseLock(with("ds-1"));
                 one(shareIdManager).await("ds-1");
             }
         });
@@ -544,7 +533,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         log.assertNextLogMessage("Data set ds-1 at " + share1
                 + "/uuid/01/02/03/ds-1 has been successfully deleted.");
         assertEquals(false, dataSetDirInStore.exists());
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
         assertFileNames(share2uuid01, "02", "22");
         assertEquals("hello world\n",
                 FileUtilities.loadToString(new File(share2uuid01, "02/03/ds-1/original/hello.txt")));
@@ -563,18 +551,14 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         FileUtilities.writeToFile(helloFile, "hello world");
         File share2 = new File(workingDirectory, "store/2");
 
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
-
         context.checking(new Expectations()
         {
             {
                 one(service).tryGetDataSet("ds-1");
                 will(returnValue(new PhysicalDataSet()));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with("ds-1"));
+                one(shareIdManager).releaseLock(with("ds-1"));
 
                 one(checksumProvider).getChecksum("ds-1", "original/hello.txt");
                 will(returnValue(1L));
@@ -583,8 +567,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
 
         SegmentedStoreUtils.moveDataSetToAnotherShare(dataSetDirInStore, share2, service,
                 shareIdManager, checksumProvider, log);
-
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
 
         fail();
     }
@@ -604,18 +586,14 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         FileUtilities.writeToFile(new File(share2, ShareFactory.SHARE_PROPS_FILE),
                 ShareFactory.UNARCHIVING_SCRATCH_SHARE_PROP + "=true");
 
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
-
         context.checking(new Expectations()
         {
             {
                 one(service).tryGetDataSet("ds-1");
                 will(returnValue(new PhysicalDataSet()));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with("ds-1"));
+                one(shareIdManager).releaseLock(with("ds-1"));
             }
         });
 
@@ -629,8 +607,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
             assertEquals("Share '2' is a scratch share for unarchiving purposes. "
                     + "No data sets can be moved from/to such a share.", ex.getMessage());
         }
-
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
     }
 
     @Test
@@ -647,18 +623,14 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
         FileUtilities.writeToFile(helloFile, "hello world");
         File share2 = new File(workingDirectory, "store/2");
 
-        final CaptureParameterValues<UUID> dataSetOwners = new CaptureParameterValues<>();
-
         context.checking(new Expectations()
         {
             {
                 one(service).tryGetDataSet("ds-1");
                 will(returnValue(new PhysicalDataSet()));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with("ds-1"));
-                will(dataSetOwners.captureParameter(0));
+                one(shareIdManager).lock(with("ds-1"));
+                one(shareIdManager).releaseLock(with("ds-1"));
             }
         });
 
@@ -672,8 +644,6 @@ public class SegmentedStoreUtilsTest extends AbstractFileSystemTestCase
             assertEquals("Share '1' is a scratch share for unarchiving purposes. "
                     + "No data sets can be moved from/to such a share.", ex.getMessage());
         }
-
-        assertEquals(1, dataSetOwners.getCapturedValuesSet().size());
     }
 
     @Test

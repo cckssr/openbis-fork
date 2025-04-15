@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -315,20 +314,17 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
     @Override
     public IHierarchicalContent asContent(final IDatasetLocation datasetLocation)
     {
-        final UUID ownerId = UUID.randomUUID();
-
         // NOTE: remember to call IHierarchicalContent.close() to unlock the data set when finished
         // working with the IHierarchivalContent
 
-        directoryProvider.getShareIdManager().lock(ownerId, datasetLocation.getDataSetCode());
+        directoryProvider.getShareIdManager().lock(datasetLocation.getDataSetCode());
         File dataSetDirectory = directoryProvider.getDataSetDirectory(datasetLocation);
         IDelegatedAction onCloseAction = new IDelegatedAction()
         {
             @Override
             public void execute()
             {
-                directoryProvider.getShareIdManager().releaseLock(ownerId,
-                        datasetLocation.getDataSetCode());
+                directoryProvider.getShareIdManager().releaseLock(datasetLocation.getDataSetCode());
             }
         };
         IHierarchicalContentFactory contentFactory = datasetLocation instanceof LinkDataSetLocation ?

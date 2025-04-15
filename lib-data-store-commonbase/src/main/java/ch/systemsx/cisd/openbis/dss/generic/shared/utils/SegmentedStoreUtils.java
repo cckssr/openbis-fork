@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -535,9 +534,7 @@ public class SegmentedStoreUtils
             throw new UserFailureException("Unknown data set: " + dataSetCode);
         }
 
-        UUID ownerId = UUID.randomUUID();
-
-        shareIdManager.lock(ownerId, dataSetCode);
+        shareIdManager.lock(dataSetCode);
 
         logger.log(LogLevel.INFO, "Locked data set " + dataSetCode + " before shuffling.");
 
@@ -566,7 +563,7 @@ public class SegmentedStoreUtils
             shareIdManager.setShareId(dataSetCode, shareId);
         } finally
         {
-            shareIdManager.releaseLock(ownerId, dataSetCode);
+            shareIdManager.releaseLock(dataSetCode);
             logger.log(LogLevel.INFO, "Unlocked data set " + dataSetCode + " after shuffling.");
         }
 

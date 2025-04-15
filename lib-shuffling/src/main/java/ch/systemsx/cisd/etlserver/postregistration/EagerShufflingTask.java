@@ -45,7 +45,6 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareFinder;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SegmentedStoreUtils.FilterOptions;
@@ -60,8 +59,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
  */
 public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalDataSets
 {
-    private static final int SHARES_CACHING_TIMEOUT = 60 * 60 * 1000;
-
     @Private
     public static final String SHARE_FINDER_KEY = "share-finder";
 
@@ -74,6 +71,9 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
 
     @Private
     public static final String VERIFY_CHECKSUM_KEY = "verify-checksum";
+
+    @Private
+    public static final String SHARE_CACHING_TIMEOUT_KEY = "share-caching-timeout";
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             EagerShufflingTask.class);
@@ -123,6 +123,8 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
 
     private boolean verifyChecksum;
 
+    private long shareCachingTimeoutInSeconds;
+
     public EagerShufflingTask(Properties properties, IOpenBISService service)
     {
         this(properties, ShufflingServiceProviderFactory.getInstance().getIncomingShareIdProvider().getIdsOfIncomingShares(), service,
@@ -167,6 +169,7 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
         stopOnNoShareFound =
                 PropertyUtils.getBoolean(properties, STOP_ON_NO_SHARE_FOUND_KEY, false);
         verifyChecksum = PropertyUtils.getBoolean(properties, VERIFY_CHECKSUM_KEY, true);
+        shareCachingTimeoutInSeconds = PropertyUtils.getLong(properties, SHARE_CACHING_TIMEOUT_KEY, 60 * 60);
     }
 
     private IChecksumProvider getChecksumProvider()
@@ -199,7 +202,7 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
     private List<Share> getShares()
     {
         if (shares == null || sharesTimestamp == null
-                || sharesTimestamp.getTime() + SHARES_CACHING_TIMEOUT < System.currentTimeMillis())
+                || sharesTimestamp.getTime() + shareCachingTimeoutInSeconds * 1000 < System.currentTimeMillis())
         {
             shares = SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode,
                     FilterOptions.AVAILABLE_FOR_SHUFFLING,

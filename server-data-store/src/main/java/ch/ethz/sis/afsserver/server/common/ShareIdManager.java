@@ -36,6 +36,8 @@ public class ShareIdManager implements IShareIdManager
 
     private final int lockingWaitingIntervalInMillis;
 
+    private final ThreadLocal<UUID> threadOwnerId = new ThreadLocal<>();
+
     public ShareIdManager(Configuration configuration, OpenBISFacade openBISFacade)
     {
         this.openBISFacade = openBISFacade;
@@ -95,13 +97,14 @@ public class ShareIdManager implements IShareIdManager
         // do nothing
     }
 
-    @Override public void lock(final UUID ownerId, final String dataSetCode)
+    @Override public void lock(final String dataSetCode)
     {
-        lock(ownerId, List.of(dataSetCode));
+        lock(List.of(dataSetCode));
     }
 
-    @Override public void lock(final UUID ownerId, final List<String> dataSetCodes)
+    @Override public void lock(final List<String> dataSetCodes)
     {
+        UUID ownerId = getThreadOwnerId();
         List<DataSet> dataSets = getDataSets(dataSetCodes);
 
         if (dataSets.size() != dataSetCodes.size())
@@ -158,8 +161,9 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
-    @Override public void releaseLock(final UUID ownerId, final String dataSetCode)
+    @Override public void releaseLock(final String dataSetCode)
     {
+        UUID ownerId = getThreadOwnerId();
         List<Lock<UUID, String>> locks = filterLocksByOwnerId(transactionManager.getLocks(), ownerId);
         List<Lock<UUID, String>> locksToRelease = new ArrayList<>();
 
@@ -179,8 +183,9 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
-    @Override public void releaseLocks(final UUID ownerId)
+    @Override public void releaseLocks()
     {
+        UUID ownerId = getThreadOwnerId();
         List<Lock<UUID, String>> locksToRelease = filterLocksByOwnerId(transactionManager.getLocks(), ownerId);
 
         boolean success = transactionManager.unlock(locksToRelease);
@@ -290,6 +295,17 @@ public class ShareIdManager implements IShareIdManager
         {
             super("Unlocking of data sets: " + dataSetCodes + " failed.");
         }
+    }
+
+    private UUID getThreadOwnerId()
+    {
+        UUID ownerId = threadOwnerId.get();
+        if (ownerId == null)
+        {
+            ownerId = UUID.randomUUID();
+            threadOwnerId.set(ownerId);
+        }
+        return ownerId;
     }
 
 }

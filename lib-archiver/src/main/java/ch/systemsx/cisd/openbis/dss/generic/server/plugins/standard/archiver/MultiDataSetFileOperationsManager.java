@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -269,7 +268,6 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
     {
         File containerFile = new File(getStageArchive().getDestination(), containerPath);
         IShareIdManager shareIdManager = getDirectoryProvider().getShareIdManager();
-        UUID ownerId = UUID.randomUUID();
         Status status = Status.OK;
         try
         {
@@ -278,7 +276,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
             {
                 AbstractExternalData dataSet = getDataSetWithAllMetaData(datasetDescription);
                 dataSets.add(dataSet);
-                shareIdManager.lock(ownerId, dataSet.getCode());
+                shareIdManager.lock(dataSet.getCode());
                 operationLog.info("Archive dataset " + dataSet.getCode() + " in " + containerFile);
             }
 
@@ -317,7 +315,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
             }
             for (DatasetDescription datasetDescription : datasetDescriptions)
             {
-                shareIdManager.releaseLock(ownerId, datasetDescription.getDataSetCode());
+                shareIdManager.releaseLock(datasetDescription.getDataSetCode());
             }
         }
         return status;

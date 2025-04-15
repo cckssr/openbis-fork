@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
@@ -1018,8 +1017,8 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         context.checking(new Expectations()
         {
             {
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSetCode));
+                one(shareIdManager).lock(with(dataSetCode));
+                one(shareIdManager).releaseLock(with(dataSetCode));
             }
         });
     }

@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
-import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -345,9 +344,9 @@ public class ZipDataSetPackagerTest extends AbstractFileSystemTestCase
                 exactly(2).of(shareIdManager).getShareId(dataSetCode);
                 will(returnValue(SHARE_ID));
 
-                one(shareIdManager).lock(with(any(UUID.class)), with(dataSetCode));
+                one(shareIdManager).lock(with(dataSetCode));
 
-                one(shareIdManager).releaseLock(with(any(UUID.class)), with(dataSetCode));
+                one(shareIdManager).releaseLock(with(dataSetCode));
             }
         });
     }

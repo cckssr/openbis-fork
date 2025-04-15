@@ -19,7 +19,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.UUID;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -90,10 +89,10 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
         {
             {
-                allowing(shareIdManager).lock(with(any(UUID.class)), with(any(String.class)));
+                allowing(shareIdManager).lock(with(any(String.class)));
                 allowing(shareIdManager).getShareId(with(any(String.class)));
                 will(returnValue("1"));
-                allowing(shareIdManager).releaseLocks(with(any(UUID.class)));
+                allowing(shareIdManager).releaseLocks();
                 allowing(configProvider).getDataStoreKind();
                 will(returnValue(DataStoreKind.DSS));
             }
@@ -143,6 +142,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setDataSetCode("ds1");
         ds1.setDataSetLocation("2");
         ds1.setRegistrationTimestamp(new Date(78000));
+        ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         context.checking(new Expectations()
         {
@@ -173,6 +173,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setDataSetCode("ds1");
         ds1.setDataSetLocation("1");
         ds1.setRegistrationTimestamp(new Date(78000));
+        ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         context.checking(new Expectations()
         {
@@ -207,6 +208,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setDataSetCode("ds1");
         ds1.setDataSetLocation("1");
         ds1.setRegistrationTimestamp(new Date(78000));
+        ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         ds1.setH5Folders(true);
         context.checking(new Expectations()
@@ -260,6 +262,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setDataSetCode("ds1");
         ds1.setDataSetLocation("1");
         ds1.setRegistrationTimestamp(new Date(78000));
+        ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         ds1.setH5arFolders(true);
         context.checking(new Expectations()
@@ -313,6 +316,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setDataSetCode("ds1");
         ds1.setDataSetLocation("2");
         ds1.setRegistrationTimestamp(new Date(78000));
+        ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         context.checking(new Expectations()
         {
@@ -343,12 +347,14 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1NonConfirmed.setDataSetCode("ds1");
         ds1NonConfirmed.setDataSetLocation("2");
         ds1NonConfirmed.setRegistrationTimestamp(new Date(78000));
+        ds1NonConfirmed.setImmutableDataTimestamp(ds1NonConfirmed.getRegistrationTimestamp());
         ds1NonConfirmed.setStorageConfirmed(false);
 
         final SimpleDataSetInformationDTO ds1Confirmed = new SimpleDataSetInformationDTO();
         ds1Confirmed.setDataSetCode("ds1");
         ds1Confirmed.setDataSetLocation("2");
         ds1Confirmed.setRegistrationTimestamp(new Date(79000));
+        ds1Confirmed.setImmutableDataTimestamp(ds1Confirmed.getRegistrationTimestamp());
         ds1Confirmed.setStorageConfirmed(true);
 
         context.checking(new Expectations()
@@ -762,6 +768,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         SimpleDataSetInformationDTO dataSet = new SimpleDataSetInformationDTO();
         dataSet.setDataSetCode(dataSetCode);
         dataSet.setRegistrationTimestamp(new Date(timeStamp));
+        dataSet.setImmutableDataTimestamp(dataSet.getRegistrationTimestamp());
         dataSet.setDataSetLocation(location);
         dataSet.setStorageConfirmed(true);
         return dataSet;
