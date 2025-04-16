@@ -88,7 +88,7 @@ public class RdfToModel
                 SampleType sampleType = new SampleType();
                 sampleType.setCode(openBisifyCode(removePrefix(type.getId())));
                 sampleType.setFetchOptions(sampleTypeFetchOptions);
-                sampleType.setPermId(new EntityTypePermId(type.getId(), EntityKind.SAMPLE));
+                sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
                 sampleType.setPropertyAssignments(new ArrayList<>());
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
@@ -314,7 +314,8 @@ public class RdfToModel
                 Map<String, Serializable> properties = new LinkedHashMap<>(entry.getValues());
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
                 {
-                    properties.put(deRdfIdentifier(property.getKey()), property.getValue());
+                    properties.put(openBisifyCode(deRdfIdentifier(property.getKey())),
+                            property.getValue());
 
                 }
 
@@ -663,7 +664,8 @@ public class RdfToModel
 
     private static String removePrefix(String a)
     {
-        return a.replaceFirst("^_:", "");
+
+        return a.replaceFirst("^:", "").replaceFirst("^_:", "");
     }
 
     private static class ReferencesToResolve
