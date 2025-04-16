@@ -51,9 +51,13 @@ function MainHeaderView(controller) {
             searchDomains: searchDomains,
             searchDomainChangeFunction: this._controller.handleSearchDomainChange,
             menuStyles: {
-                searchField: {
+                searchBox: {
                     width: '500px',
                     transition: "width 0.3s",
+                },
+                searchField: {
+                    'fontSize': "14px",
+                    height: '29.125px'
                 }
             }
         }

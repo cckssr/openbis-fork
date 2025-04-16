@@ -58,7 +58,6 @@ const styles = theme => ({
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
     marginRight: theme.spacing(1),
-    fontSize: '14px'
   },
   searchIcon: {
     paddingLeft: theme.spacing(1) / 2,
@@ -67,7 +66,8 @@ const styles = theme => ({
     color:'white'
   },
   searchClear: {
-    cursor: 'pointer'
+    cursor: 'pointer',
+    color:'white'
   },
   userInfo: {
     margin: '0px 10px 0px 5px'
@@ -187,7 +187,7 @@ class Menu extends React.PureComponent {
      if(!this.props.searchFunction){
        return null;
      }
-    const { classes, searchDomains } = this.props
+    const { classes, searchDomains, menuStyles } = this.props
 
     return (
             <>
@@ -206,10 +206,11 @@ class Menu extends React.PureComponent {
                         endAdornment: this.renderSearchClearIcon(),
                         classes: {
                           root: classes.search
-                        }
+                        },
+                        sx: menuStyles.searchField
                       }
                     }}
-                    sx={this.props.menuStyles.searchField}
+                    sx={this.props.menuStyles.searchBox}
                   />
                   </div>
               </>
@@ -291,7 +292,7 @@ class Menu extends React.PureComponent {
                           this.setState({ anchorEl: anchorEl, menuOpen: !this.state.menuOpen });
                       } }
               >
-                 <KeyboardArrowDownIcon fontSize='medium' />
+                 <KeyboardArrowDownIcon fontSize='medium' sx={{ color: 'white' }} />
               </IconButton>
               <DropdownMenu
                     anchorEl={this.state.anchorEl}
@@ -323,8 +324,8 @@ class Menu extends React.PureComponent {
   renderSearchIcon() {
       const { classes } = this.props
       return (
-        <InputAdornment position='start' sx={{height: '100%'}}>
-          <SearchIcon classes={{ root: classes.searchIcon }} fontSize='medium' />
+        <InputAdornment position='start' >
+          <SearchIcon classes={{ root: classes.searchIcon }} sx={{width: '32px', height: '24px'}} />
         </InputAdornment>
       )
     }
@@ -337,7 +338,7 @@ class Menu extends React.PureComponent {
               <CloseIcon
                 classes={{ root: classes.searchClear }}
                 onMouseDown={this.handleSearchClear}
-                fontSize='small'
+                sx={{fontSize: '20px'}}
               />
             </InputAdornment>
       )

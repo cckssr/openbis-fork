@@ -132,7 +132,7 @@ class App extends React.Component {
   renderPage() {
     const classes = this.props.classes
     let menuStyles = {
-        searchField: {
+        searchBox: {
             width: '200px',
             transition: "width 0.3s",
             '&:focus-within': {
@@ -141,6 +141,9 @@ class App extends React.Component {
             '&:hover': {
                 width: '300px',
                 },
+        },
+        searchField: {
+            fontSize: '14px'
         }
     }
     if (AppController.getInstance().getSession()) {
