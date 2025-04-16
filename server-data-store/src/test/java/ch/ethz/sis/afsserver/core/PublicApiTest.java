@@ -15,26 +15,27 @@
  */
 package ch.ethz.sis.afsserver.core;
 
-import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.afsapi.dto.FreeSpace;
-import ch.ethz.sis.afsserver.AbstractTest;
-import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
-import ch.ethz.sis.afsapi.api.PublicAPI;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.shared.io.IOUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsapi.dto.FreeSpace;
+import ch.ethz.sis.afsserver.AbstractTest;
+import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.shared.io.IOUtils;
 
 public abstract class PublicApiTest extends AbstractTest
 {

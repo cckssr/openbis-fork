@@ -38,7 +38,7 @@ public class OpenBISConfiguration
 
     private final Integer openBISLastSeenDeletionIntervalInSeconds;
 
-    private final OpenBISFacade openBISFacade;
+    private final IOpenBISFacade openBISFacade;
 
     public static OpenBISConfiguration getInstance(Configuration configuration)
     {

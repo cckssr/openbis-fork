@@ -11,14 +11,10 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.dto.LockType;
 import ch.ethz.sis.afs.manager.TransactionManager;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
-import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
-import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 
 public class ShareIdManager implements IShareIdManager
@@ -26,7 +22,7 @@ public class ShareIdManager implements IShareIdManager
 
     private static final String DEFAULT_SHARE_ID = "1";
 
-    private final OpenBISFacade openBISFacade;
+    private final IOpenBISFacade openBISFacade;
 
     private final TransactionManager transactionManager;
 
@@ -38,35 +34,14 @@ public class ShareIdManager implements IShareIdManager
 
     private final ThreadLocal<UUID> threadOwnerId = new ThreadLocal<>();
 
-    public ShareIdManager(Configuration configuration, OpenBISFacade openBISFacade)
+    public ShareIdManager(IOpenBISFacade openBISFacade, TransactionManager transactionManager, String storageRoot, int lockingTimeoutInSeconds,
+            int lockingWaitingIntervalInMillis)
     {
         this.openBISFacade = openBISFacade;
-        this.storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-        this.lockingTimeoutInSeconds = AtomicFileSystemServerParameterUtil.getLockingTimeoutInSeconds(configuration);
-        this.lockingWaitingIntervalInMillis = AtomicFileSystemServerParameterUtil.getLockingWaitingIntervalInMillis(configuration);
-
-        Object connectionFactoryObject;
-
-        try
-        {
-            connectionFactoryObject = configuration.getSharableInstance(AtomicFileSystemServerParameter.connectionFactoryClass);
-        } catch (Exception e)
-        {
-            throw new RuntimeException("Could not get instance of connection factory", e);
-        }
-
-        if (connectionFactoryObject == null)
-        {
-            throw new RuntimeException("Connection factory was null");
-        } else if (connectionFactoryObject instanceof ConnectionFactory)
-        {
-            ConnectionFactory connectionFactory = (ConnectionFactory) connectionFactoryObject;
-            transactionManager = connectionFactory.getTransactionManager();
-        } else
-        {
-            throw new RuntimeException("Unsupported connection factory class " + connectionFactoryObject.getClass()
-                    + ". Cannot extract instance of transaction manager from it.");
-        }
+        this.transactionManager = transactionManager;
+        this.storageRoot = storageRoot;
+        this.lockingTimeoutInSeconds = lockingTimeoutInSeconds;
+        this.lockingWaitingIntervalInMillis = lockingWaitingIntervalInMillis;
     }
 
     @Override public boolean isKnown(final String dataSetCode)

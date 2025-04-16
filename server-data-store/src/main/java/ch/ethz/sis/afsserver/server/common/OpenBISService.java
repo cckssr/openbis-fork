@@ -67,13 +67,13 @@ public class OpenBISService implements IOpenBISService
 
     private static final Logger logger = LogManager.getLogger(OpenBISService.class);
 
-    private final OpenBISFacade openBISFacade;
+    private final IOpenBISFacade openBISFacade;
 
     private final IArchiverPlugin archiverPlugin;
 
     private final IArchiverContextFactory archiverContextFactory;
 
-    public OpenBISService(final OpenBISFacade openBISFacade, final IArchiverPlugin archiverPlugin,
+    public OpenBISService(final IOpenBISFacade openBISFacade, final IArchiverPlugin archiverPlugin,
             final IArchiverContextFactory archiverContextFactory)
     {
 

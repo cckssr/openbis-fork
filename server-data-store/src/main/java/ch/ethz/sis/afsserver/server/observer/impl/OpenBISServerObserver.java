@@ -14,8 +14,8 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.IOpenBISFacade;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiResponseBuilder;
@@ -93,7 +93,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         while (true)
         {
-            OpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
+            IOpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
 
             try
             {

@@ -7,11 +7,14 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import ch.ethz.sis.afs.manager.TransactionManager;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
+import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.exceptions.NotImplementedException;
@@ -266,8 +269,37 @@ public class ServiceProvider implements IServiceProvider
     {
         if (shareIdManager == null)
         {
-            OpenBISConfiguration openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-            shareIdManager = new ShareIdManager(configuration, openBISConfiguration.getOpenBISFacade());
+            final IOpenBISFacade openBISFacade = OpenBISConfiguration.getInstance(configuration).getOpenBISFacade();
+            final String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
+            final int lockingTimeoutInSeconds = AtomicFileSystemServerParameterUtil.getLockingTimeoutInSeconds(configuration);
+            final int lockingWaitingIntervalInMillis = AtomicFileSystemServerParameterUtil.getLockingWaitingIntervalInMillis(configuration);
+
+            Object connectionFactoryObject;
+            TransactionManager transactionManager;
+
+            try
+            {
+                connectionFactoryObject = configuration.getSharableInstance(AtomicFileSystemServerParameter.connectionFactoryClass);
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Could not get instance of connection factory", e);
+            }
+
+            if (connectionFactoryObject == null)
+            {
+                throw new RuntimeException("Connection factory was null");
+            } else if (connectionFactoryObject instanceof ConnectionFactory)
+            {
+                ConnectionFactory connectionFactory = (ConnectionFactory) connectionFactoryObject;
+                transactionManager = connectionFactory.getTransactionManager();
+            } else
+            {
+                throw new RuntimeException("Unsupported connection factory class " + connectionFactoryObject.getClass()
+                        + ". Cannot extract instance of transaction manager from it.");
+            }
+
+            shareIdManager =
+                    new ShareIdManager(openBISFacade, transactionManager, storageRoot, lockingTimeoutInSeconds, lockingWaitingIntervalInMillis);
         }
 
         return shareIdManager;
