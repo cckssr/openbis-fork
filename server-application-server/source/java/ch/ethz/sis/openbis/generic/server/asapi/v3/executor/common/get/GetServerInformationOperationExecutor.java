@@ -15,12 +15,13 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.StringWriter;
+import java.util.*;
 
 import javax.annotation.Resource;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
+import ch.systemsx.cisd.openbis.generic.shared.dto.RoleAssignmentPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,6 +65,8 @@ public class GetServerInformationOperationExecutor
         return GetServerInformationOperation.class;
     }
 
+    private String servicePropertiesString;
+
     @Override
     protected GetServerInformationOperationResult doExecute(IOperationContext context, GetServerInformationOperation operation)
     {
@@ -83,6 +86,32 @@ public class GetServerInformationOperationExecutor
                 Long.toString(personalAccessTokenConfig.getPersonalAccessTokensValidityWarningPeriod()));
         info.put("openbis-version", BuildAndEnvironmentInfo.INSTANCE.getVersion());
 
+        if(isInstanceAdmin(context)) {
+            if(servicePropertiesString == null) {
+                Properties propertiesCopy = new Properties();
+                configurer.getResolvedProps().forEach((key, value) -> {
+                    if(key.toString().toLowerCase().contains("password")) {
+                        propertiesCopy.setProperty((String) key, "*****");
+                    } else {
+                        propertiesCopy.setProperty((String) key, (String) value);
+                    }
+                });
+
+                StringWriter writer = new StringWriter();
+                try {
+                    propertiesCopy.store(writer, "");
+                    servicePropertiesString = writer.toString();
+                } catch (Exception e) {
+                    info.put("as-service-properties", e.toString());
+                }
+
+            } else
+            {
+                info.put("as-service-properties", servicePropertiesString);
+            }
+        }
+
+
         return new GetServerInformationOperationResult(info);
     }
 
@@ -93,6 +122,23 @@ public class GetServerInformationOperationExecutor
                 (GetServerPublicInformationOperationResult) getPublicInformationExecutor.execute(context, Collections.singletonList(operation))
                         .get(operation);
         return result.getServerInformation();
+    }
+
+    private boolean isInstanceAdmin(IOperationContext context)
+    {
+        Set<RoleAssignmentPE> roles = context.getSession() != null && context.getSession().tryGetPerson() != null ?
+                context.getSession().tryGetPerson().getAllPersonRoles() :
+                Collections.emptySet();
+
+        for (RoleAssignmentPE role : roles)
+        {
+            if (RoleWithHierarchy.RoleCode.ADMIN.equals(role.getRole()) && role.getRoleWithHierarchy().isInstanceLevel())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

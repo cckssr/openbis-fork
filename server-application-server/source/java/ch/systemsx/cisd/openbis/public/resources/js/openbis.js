@@ -302,7 +302,7 @@ openbis.prototype.setResponseInterceptor = function(responseInterceptor) {
  * @see IGeneralInformationService.tryToAuthenticateForAllServices(String, String)
  * @method
  */
-openbis.prototype.login = function(userId, userPassword, action) {
+openbis.prototype.login = function(userId, userPassword, action, errorAction) {
 	var openbisObj = this
 	this._internal.ajaxRequest({
 		url: this._internal.generalInfoServiceUrl,
@@ -313,6 +313,7 @@ openbis.prototype.login = function(userId, userPassword, action) {
 			function(loginResponse) {
 				if(loginResponse.error){
 					alert("Login failed: " + loginResponse.error.message);
+					errorAction();
 				}else{
 					openbisObj._internal.sessionToken = loginResponse.result;
 					openbisObj.rememberSession();
