@@ -29,8 +29,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.RelationshipTypePE;
 import org.hibernate.Session;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.testng.AssertJUnit;
@@ -117,6 +119,38 @@ public final class SampleDAOTest extends AbstractDAOTest
         assertEquals(grandParent, parent.getGeneratedFrom());
         assertTrue(HibernateUtils.isInitialized(parent.getContainer()));
         assertEquals(container, parent.getContainer());
+    }
+
+    /*
+     * BIS - 1871 - Cycle bug: hierarchy graphs for some entries are not displayed in openbis-yamauchi     *
+     */
+    @Test
+    public final void testMapSampleIdsByChildrenIds()
+    {
+        final SampleTypePE type1 = getSampleType("MASTER_PLATE");
+
+        SamplePE parent1 = createSample(type1, "parent1");
+        save(parent1);
+        SamplePE parent2 = createSample(type1, "parent");
+        save(parent2);
+
+        SamplePE child1 = createDerivedSample(type1, "child1", parent1);
+        save(child1);
+
+        addParentRelationship(child1, parent2);
+
+        // clear session to avoid using samples from first level cache
+        final Session currentSession = sessionFactory.getCurrentSession();
+        currentSession.flush();
+        currentSession.clear();
+
+        Map<Long, Set<Long>> longSetMap = daoFactory.getSampleDAO()
+                .mapSampleIdsByChildrenIds(Collections.singletonList(child1.getId()),
+                        getRelationshipByCode(BasicConstant.PARENT_CHILD_INTERNAL_RELATIONSHIP).getId());
+        assertEquals( "Expected only one entry in the map for the child sample id", 1, longSetMap.size());
+        assertEquals( "Expected two parent sample ids for the child sample", 2, longSetMap.get(child1.getId()).size());
+        assertTrue("Expected child sample's parent IDs set to contain both parent1 and parent2 ids",
+                longSetMap.get(child1.getId()).containsAll(Set.of(parent1.getId(), parent2.getId())));
     }
 
     private final SamplePE findSample(final SamplePE sample, final List<SamplePE> samples)
@@ -664,12 +698,22 @@ public final class SampleDAOTest extends AbstractDAOTest
         sample.setModificationDate(new Date());
         if (generatorOrNull != null)
         {
-            sample.addParentRelationship(new SampleRelationshipPE(generatorOrNull, sample,
-                    daoFactory.getRelationshipTypeDAO().tryFindRelationshipTypeByCode(
-                            BasicConstant.PARENT_CHILD_INTERNAL_RELATIONSHIP), getTestPerson()));
+            addParentRelationship(sample, generatorOrNull);
         }
         sample.setContainer(containerOrNull);
         return sample;
+    }
+
+    private void addParentRelationship(SamplePE samplePE, SamplePE parentSamplePE)
+    {
+        samplePE.addParentRelationship(new SampleRelationshipPE(parentSamplePE, samplePE,
+                getRelationshipByCode(BasicConstant.PARENT_CHILD_INTERNAL_RELATIONSHIP), getTestPerson()));
+    }
+
+    private RelationshipTypePE getRelationshipByCode(String relationshipString)
+    {
+        return daoFactory.getRelationshipTypeDAO().tryFindRelationshipTypeByCode(
+                relationshipString);
     }
 
     @Test

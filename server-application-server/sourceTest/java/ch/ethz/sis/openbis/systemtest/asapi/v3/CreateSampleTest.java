@@ -824,6 +824,57 @@ public class CreateSampleTest extends AbstractSampleTest
             }
         }, "Circular dependency found");
     }
+    /*
+     * BIS - 1871 - Cycle bug: hierarchy graphs for some entries are not displayed in openbis-yamauchi     *
+     */
+    @Test
+    public void testCreateWithParentChildComplexCircularDependency()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        SampleCreation sampleParent1 = new SampleCreation();
+        sampleParent1.setCode("SAMPLE_PARENT1");
+        sampleParent1.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleParent1.setSpaceId(new SpacePermId("CISD"));
+        sampleParent1.setCreationId(new CreationId("parentid"));
+
+
+        SampleCreation sampleParent2 = new SampleCreation();
+        sampleParent2.setCode("SAMPLE_PARENT2");
+        sampleParent2.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleParent2.setSpaceId(new SpacePermId("CISD"));
+        sampleParent2.setCreationId(new CreationId("parentid"));
+
+        List<SamplePermId> parentPermIds = v3api.createSamples(sessionToken,
+                Arrays.asList(sampleParent1, sampleParent2));
+
+
+        final SampleCreation sampleChild = new SampleCreation();
+        sampleChild.setCode("SAMPLE_CHILD");
+        sampleChild.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleChild.setSpaceId(new SpacePermId("CISD"));
+        sampleChild.setCreationId(new CreationId("childid"));
+        sampleChild.setParentIds(parentPermIds);
+
+
+
+        final SampleCreation sampleGrandChild = new SampleCreation();
+        sampleGrandChild.setCode("SAMPLE_GRAND_CHILD");
+        sampleGrandChild.setTypeId(new EntityTypePermId("CELL_PLATE"));
+        sampleGrandChild.setSpaceId(new SpacePermId("CISD"));
+        sampleGrandChild.setParentIds(Arrays.asList(sampleChild.getCreationId()));
+        sampleGrandChild.setChildIds(List.of(parentPermIds.get(0)));
+
+        assertUserFailureException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
+            {
+                v3api.createSamples(sessionToken, Arrays.asList(sampleChild, sampleGrandChild));
+            }
+        }, "Circular dependency found");
+    }
+
 
     @Test
     public void testCreateWithParentAndChildViolatingBusinessRules()

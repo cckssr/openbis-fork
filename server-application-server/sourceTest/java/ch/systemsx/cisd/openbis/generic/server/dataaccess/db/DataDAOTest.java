@@ -29,6 +29,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
@@ -577,6 +579,43 @@ public final class DataDAOTest extends AbstractDAOTest
         HashSet<String> keys = new HashSet<String>();
         List<DataPE> result = daoFactory.getDataDAO().listByCode(keys);
         AssertJUnit.assertTrue(result.isEmpty());
+    }
+
+    /*
+     * BIS - 1871 - Cycle bug: hierarchy graphs for some entries are not displayed in openbis-yamauchi     *
+     */
+    @Test
+    public final void testMapSampleIdsByChildrenIds()
+    {
+        final IDataDAO dataDAO = daoFactory.getDataDAO();
+
+        // try to add a parent to a data set that already had one
+        final DataPE dataSetConnectedWithParent = findData(CHILD_CODE);
+        assertFalse(dataSetConnectedWithParent.getParents().isEmpty());
+        final DataPE anotherDataSet = findData("20081105092159111-1");
+        dataSetConnectedWithParent.addParentRelationship(new DataSetRelationshipPE(anotherDataSet,
+                dataSetConnectedWithParent, getParentChildRelationshipType(),
+                null, getTestPerson()));
+        dataDAO.updateDataSet(dataSetConnectedWithParent, getTestPerson());
+
+        DataPE dataSet = dataDAO.tryToFindDataSetByCode(CHILD_CODE);
+        assertEquals(dataSetConnectedWithParent.getParents().size(), dataSet.getParents().size());
+        List<DataPE> extractedParents = dataSet.getParents();
+        Set<Long> parents = new HashSet<>();
+        for (DataPE parent : dataSetConnectedWithParent.getParents())
+        {
+            parents.add(parent.getId());
+            assertTrue(extractedParents.contains(parent));
+        }
+        assertTrue(extractedParents.contains(anotherDataSet));
+
+        Map<Long, Set<Long>> longSetMap = dataDAO
+                .mapDataSetIdsByChildrenIds(Collections.singletonList(dataSet.getId()),
+                        getParentChildRelationshipType().getId());
+        assertEquals( "Expected only one entry in the map for the child dataset id", 1, longSetMap.size());
+        assertEquals( "Expected two parent sample ids for the child dataset", 2, longSetMap.get(dataSet.getId()).size());
+        assertTrue("Expected dataset sample's parent IDs set to contain both parent1 and parent2 ids",
+                longSetMap.get(dataSet.getId()).containsAll(parents));
     }
 
     private RelationshipTypePE getParentChildRelationshipType()

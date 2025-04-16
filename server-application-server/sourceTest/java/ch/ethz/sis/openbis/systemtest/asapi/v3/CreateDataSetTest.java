@@ -922,6 +922,33 @@ public class CreateDataSetTest extends AbstractDataSetTest
             }
         }, "Circular dependency found");
     }
+    /*
+     * BIS - 1871 - Cycle bug: hierarchy graphs for some entries are not displayed in openbis-yamauchi     *
+     */
+    @Test
+    public void testCreateWithContainersComplexCircularDependency()
+    {
+        final String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        final DataSetCreation creation1 = containerDataSetCreation();
+        final DataSetCreation creation2 = containerDataSetCreation();
+        final DataSetCreation creation3 = containerDataSetCreation();
+        final DataSetCreation creation4 = containerDataSetCreation();
+
+
+        creation4.setContainerIds(List.of(creation2.getCreationId(), creation3.getCreationId()));
+        creation2.setContainerIds(Collections.singletonList(creation1.getCreationId()));
+        creation1.setContainerIds(Collections.singletonList(creation4.getCreationId()));
+
+        assertUserFailureException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
+            {
+                v3api.createDataSets(sessionToken, Arrays.asList(creation1, creation2, creation3, creation4));
+            }
+        }, "Circular dependency found");
+    }
 
     @Test
     public void testCreateWithContainersUnauthorized()
