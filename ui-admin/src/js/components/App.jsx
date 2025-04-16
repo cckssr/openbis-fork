@@ -122,6 +122,13 @@ class App extends React.Component {
     AppController.getInstance().logout()
   }
 
+  userNameLoginFunction(userName, password) {
+      AppController.getInstance().login(
+          userName,
+          password
+     )
+  }
+
   renderPage() {
     const classes = this.props.classes
     let menuStyles = {
@@ -165,7 +172,11 @@ class App extends React.Component {
         </div>
       )
     } else {
-      return <Login disabled={AppController.getInstance().getLoading()} />
+      return <Login disabled={AppController.getInstance().getLoading()}
+                    title={'Admin Dashboard'}
+                    loginFunction={this.userNameLoginFunction}
+
+                    />
     }
   }
 }

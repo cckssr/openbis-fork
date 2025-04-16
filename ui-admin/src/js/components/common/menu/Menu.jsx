@@ -98,6 +98,10 @@ class Menu extends React.PureComponent {
         searchDomain = this.props.searchDomains[0].label;
     }
 
+    if(this.props.controller) {
+            this.props.controller.attach(this)
+        }
+
     this.state = {
         currentPage: this.props.currentPage,
         searchText: this.props.searchText || '',

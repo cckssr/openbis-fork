@@ -31,6 +31,9 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center'
   },
+  title: {
+    marginBottom: theme.spacing(1)
+  },
   header: {
     marginBottom: theme.spacing(1)
   },
@@ -82,7 +85,13 @@ class WithLogin extends React.Component {
   }
 
   async componentDidMount() {
-    const serverInformation = await openbis.getServerPublicInformation()
+      let servInfo = null;
+      if(this.props.serverInformation) {
+          servInfo = this.props.serverInformation
+      } else {
+          servInfo = await openbis.getServerPublicInformation()
+      }
+    const serverInformation = servInfo;
 
     if (this.getSwitchAaiLink(serverInformation)) {
       this.setState({
@@ -171,10 +180,10 @@ class WithLogin extends React.Component {
       },
       () => {
         if (this.validate(true)) {
-          AppController.getInstance().login(
-            this.state.user.value,
-            this.state.password.value
-          )
+            this.props.loginFunction(
+                this.state.user.value,
+                this.state.password.value
+            )
         }
       }
     )
@@ -210,19 +219,19 @@ class WithLogin extends React.Component {
       return null
     }
 
-    const { classes } = this.props
+    const { classes, title, styles } = this.props
 
     return (
       <div>
         <div className={classes.container}>
           <form>
-            <Card classes={{ root: classes.card }}>
+            <Card classes={{ root: classes.card }} sx={styles}>
               <Container square={true}>
                 <div className={classes.logo}>
                   <img src={Logo} width='200' height='89' />
                 </div>
-                <Typography variant='h6' classes={{ root: classes.header }}>
-                  Login
+                <Typography variant='h4' align='center' classes={{ root: classes.title }}>
+                  {title}
                 </Typography>
                 {this.renderAuthenticationServiceChoice()}
                 {this.renderOpenBISAuthentication()}
