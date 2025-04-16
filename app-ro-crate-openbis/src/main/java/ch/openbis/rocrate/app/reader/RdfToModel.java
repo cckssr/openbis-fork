@@ -35,6 +35,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -84,7 +86,7 @@ public class RdfToModel
                         sampleTypeFetchOptions = getSampleTypeFetchOptions();
 
                 SampleType sampleType = new SampleType();
-                sampleType.setCode(removePrefix(type.getId()));
+                sampleType.setCode(openBisifyCode(removePrefix(type.getId())));
                 sampleType.setFetchOptions(sampleTypeFetchOptions);
                 sampleType.setPermId(new EntityTypePermId(type.getId(), EntityKind.SAMPLE));
                 sampleType.setPropertyAssignments(new ArrayList<>());
@@ -156,14 +158,14 @@ public class RdfToModel
             }
             propertyType.setSemanticAnnotations(new ArrayList<>());
             propertyType.setMultiValue(false);
-            propertyType.setCode(deRdfIdentifier(a.getId()));
+            propertyType.setCode(openBisifyCode(deRdfIdentifier(a.getId())));
             propertyType.setDescription(propertyType.getCode());
             propertyType.setLabel(propertyType.getCode());
 
 
             String code = deRdfIdentifier(a.getId());
             propertyType.setPermId(new PropertyTypePermId(code));
-            propertyType.setCode(code);
+            propertyType.setCode(openBisifyCode(code));
             DataType dataType = matchDataType(a);
             propertyType.setDataType(dataType);
 
@@ -174,7 +176,7 @@ public class RdfToModel
                     continue;
                 }
 
-                SampleType sampleType = codeToSampleType.get(domain);
+                SampleType sampleType = codeToSampleType.get(openBisifyCode(domain));
                 if (sampleType != null)
                 {
                     List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
@@ -226,7 +228,8 @@ public class RdfToModel
             {
                 SampleType sampleType = new SampleType();
                 sampleType.setFetchOptions(getSampleTypeFetchOptions());
-                String artificialTypeIdentifier = getIntersectionTypeIdentifier(intersectionType);
+                String artificialTypeIdentifier =
+                        openBisifyCode(getIntersectionTypeIdentifier(intersectionType));
                 sampleType.setCode(artificialTypeIdentifier);
 
                 List<PropertyAssignment> assignments = new ArrayList<>();
@@ -264,7 +267,7 @@ public class RdfToModel
                 }
                 sampleType.setPropertyAssignments(assignments);
                 sampleType.setSemanticAnnotations(semanticAnnotations);
-                sampleType.setCode(getIntersectionTypeIdentifier(intersectionType));
+                sampleType.setCode(artificialTypeIdentifier);
                 sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
                 schema.put(sampleType.getPermId(), sampleType);
                 codeToSampleType.put(sampleType.getCode(), sampleType);
@@ -272,6 +275,7 @@ public class RdfToModel
             }
 
         }
+        Map<String, String> identifierToOpenBisCode = new LinkedHashMap<>();
 
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
@@ -294,15 +298,18 @@ public class RdfToModel
                     fetchOptions.withProperties();
                     sample.setFetchOptions(fetchOptions);
                 }
-                sample.setCode(entry.getId());
-
-
-                objectIdentifier = new SampleIdentifier(entry.getId());
                 String typeCode = entry.getTypes().size() == 1 ?
                         entry.getTypes().stream().findFirst().orElseThrow() :
                         getIntersectionTypeIdentifier(entry.getTypes());
 
-                sample.setType(codeToSampleType.get(typeCode));
+                SampleType type = codeToSampleType.get(openBisifyCode(typeCode));
+                sample.setType(type);
+
+                String code = createSampleCode(type, entry.getId());
+                sample.setCode(code);
+                identifierToOpenBisCode.put(entry.getId(), code);
+
+                objectIdentifier = new SampleIdentifier(entry.getId());
                 entity = sample;
                 Map<String, Serializable> properties = new LinkedHashMap<>(entry.getValues());
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
@@ -689,6 +696,31 @@ public class RdfToModel
     private static String getIntersectionTypeIdentifier(Set<String> types)
     {
         return String.join("_", types);
+
+    }
+
+    private static String openBisifyCode(String code)
+    {
+        return code.replaceAll(":", "_");
+    }
+
+    private static String createSampleCode(SampleType sampleType, String identifier)
+    {
+        boolean isUrl = false;
+        try
+        {
+            URL url = new URL(identifier);
+            isUrl = true;
+
+        } catch (MalformedURLException ignored)
+        {
+        }
+        if (isUrl)
+        {
+            String[] parts = identifier.split("/");
+            return sampleType.getCode() + "_" + parts[parts.length - 1];
+        }
+        return identifier;
 
     }
 
