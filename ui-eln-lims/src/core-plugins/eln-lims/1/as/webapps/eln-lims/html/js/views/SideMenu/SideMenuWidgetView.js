@@ -99,6 +99,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     this._expandedMenu.append(this._expandedFooter())
                 }
 
+                var body = $("#sideMenuBody");
+                if(body.children().length < 1 || body.children().first().children().length < 1) {
+                    this.repaintTreeMenu = true;
+                }
 
                 if(this.repaintTreeMenu) {
                     this.repaintTreeMenuDinamic()
