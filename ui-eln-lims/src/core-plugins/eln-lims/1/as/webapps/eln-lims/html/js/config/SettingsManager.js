@@ -114,6 +114,57 @@ var SettingsManagerUtils = new function() {
             return result;
         }
     }
+
+    this.isLabNotebookSpace = function(space) {
+        var spaceCode = space;
+        if(space && space.getCode) {
+            spaceCode = space.getCode();
+        }
+        var showLabNotebook = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showLabNotebook
+        )
+        var isLabNotebookSpace = !profile.isInventorySpace(spaceCode)
+        var isHiddenSpace = profile.isHiddenSpace(spaceCode)
+        return showLabNotebook && isLabNotebookSpace && !isHiddenSpace
+    }
+
+    this.isInventorySpace = function(space) {
+        var spaceCode = space;
+        if(space && space.getCode) {
+            spaceCode = space.getCode();
+        }
+        var showInventory = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showInventory
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        var isHiddenSpace = profile.isHiddenSpace(spaceCode)
+        return (
+            showInventory &&
+            isInventorySpace &&
+            !isHiddenSpace &&
+            !spaceCode.endsWith("STOCK_CATALOG") &&
+            !spaceCode.endsWith("STOCK_ORDERS")
+        )
+    }
+
+    this.isStockSpace = function(space) {
+        var spaceCode = space;
+        if(space && space.getCode) {
+            spaceCode = space.getCode();
+        }
+        var showStock = SettingsManagerUtils.isEnabledForGroup(
+            spaceCode,
+            SettingsManagerUtils.ShowSetting.showStock
+        )
+        var isInventorySpace = profile.isInventorySpace(spaceCode)
+        return (
+            showStock &&
+            isInventorySpace &&
+            (spaceCode.endsWith("STOCK_CATALOG") || spaceCode.endsWith("STOCK_ORDERS"))
+        )
+    }
 };
 
 function SettingsManager(serverFacade) {

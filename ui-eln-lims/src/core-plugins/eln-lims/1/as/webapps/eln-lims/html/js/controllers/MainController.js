@@ -271,7 +271,8 @@ function MainController(profile) {
 		// Start App if credentials are ok
 		//
 		$('body').removeClass('bodyLogin');
-		$("#login-form-div").hide();
+		$("#login-form").hide();
+		$("#login-form-sub").hide();
 		$("#main").show();
 		
         //Get Metadata from all sample types before showing the main menu
@@ -577,6 +578,7 @@ function MainController(profile) {
 			        var barcodesGeneratorViews = this._getNewViewModel(true, true, false);
 			        BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews);
 			        this.currentView = null;
+			        this.mainHeader.navigateToTab("TOOLS");
 			        break;
 				case "showJupyterWorkspace":
 					document.title = "Jupyter Workspace";
@@ -587,14 +589,17 @@ function MainController(profile) {
 					var win = window.open(url, '_blank');
 					win.focus(); 
 					this.currentView = null;
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showNewJupyterNotebookCreator":
 					var jupyterNotebook = new JupyterNotebookController();
 					jupyterNotebook.init();
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showUserProfilePage":
 					document.title = "User Profile";
 					this._showUserProfilePage(FormMode.VIEW);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showEditUserProfilePage":
 					document.title = "Edit User Profile";
@@ -603,10 +608,12 @@ function MainController(profile) {
 				case "showOtherToolsPage":
 					document.title = "Other Tools";
 					this._showOtherToolsPage();
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showSettingsPage":
 				    document.title = "Settings";
 				    this._showSettingsPage(FormMode.VIEW, arg);
+				    this.mainHeader.navigateToTab("TOOLS");
 				    break;
 				case "showEditSettingsPage":
 					document.title = "Edit Settings";
@@ -615,6 +622,7 @@ function MainController(profile) {
                 case "showCustomImportPage":
                     document.title = "Custom Import";
                     this._showCustomImportPage();
+                    this.mainHeader.navigateToTab("TOOLS");
                     break;
 				case "showExportTreePage":
 					document.title = "Export Builder";
@@ -622,7 +630,7 @@ function MainController(profile) {
 					var exportViews = this._getNewViewModel(true, true, false);
 					newExportView.init(exportViews);
 					this.currentView = newExportView;
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showResearchCollectionExportPage":
 					document.title = "Research Collection Export Builder";
@@ -630,6 +638,7 @@ function MainController(profile) {
 					var researchCollectionExportViews = this._getNewViewModel(true, true, false);
 					newResearchCollectionExportView.init(researchCollectionExportViews);
 					this.currentView = newResearchCollectionExportView;
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showZenodoExportPage":
 					document.title = "Zenodo Export Builder";
@@ -637,6 +646,7 @@ function MainController(profile) {
 					var zenodoExportViews = this._getNewViewModel(true, true, false);
 					newZenodoExportView.init(zenodoExportViews);
 					this.currentView = newZenodoExportView;
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
@@ -644,7 +654,7 @@ function MainController(profile) {
 					var views = this._getNewViewModel(true, true, false);
 					newView.init(views);
 					this.currentView = newView;
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
 					break;
 				case "showInventoryPage":
 					document.title = "Inventory";
@@ -652,60 +662,62 @@ function MainController(profile) {
 					var views = this._getNewViewModel(true, true, false);
 					newView.init(views);
 					this.currentView = newView;
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("LIMS");
 					break;
 				case "showAdvancedSearchPage":
 					document.title = "Advanced Search";
 					this._showAdvancedSearchPage(arg);
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
                 case "showDropboxMonitorPage":
                     document.title = "Dropbox Monitor";
                     this._showDropboxMonitor();
-                    //window.scrollTo(0,0);
+                    this.mainHeader.navigateToTab("TOOLS");
                     break;
 				case "showArchivingHelperPage":
 					document.title = "Archiving Helper";
 					this._showArchivingHelper();
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showUnarchivingHelperPage":
 				    document.title = "Unarchiving Helper";
 				    this._showUnarchivingHelper();
-				    //window.scrollTo(0,0);
+				    this.mainHeader.navigateToTab("TOOLS");
 				    break;
 				case "showUserManagerPage":
 					document.title = "User Manager";
 					this._showUserManager();
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
                 case "showUserManagementConfigPage":
                     document.title = "User Management Config";
                     this._showUserManagementConfig(arg);
-                    //window.scrollTo(0,0);
+                    this.mainHeader.navigateToTab("TOOLS");
                     break;
 				case "showVocabularyManagerPage":
 					document.title = "Vocabulary Browser";
 					this._showVocabularyManager();
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showTrashcanPage":
 					document.title = "Trashcan";
 					this._showTrashcan();
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showStorageManager":
 					document.title = "Storage Manager";
 					this._showStorageManager();
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showWelcomePage":
 					document.title = "Main Menu";
 					this._showWelcomePage();
+					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
 					break;
 				case "showBlancPage":
                     document.title = "Main Menu";
                     this._showBlancPage();
+                    this.mainHeader.navigateToTab("LAB_NOTEBOOK");
                     break;
 				case "showStockPage":
 					document.title = "Stock";
@@ -713,6 +725,7 @@ function MainController(profile) {
 					var views = this._getNewViewModel(true, true, false);
 					newView.init(views);
 					this.currentView = newView;
+					this.mainHeader.navigateToTab("LIMS");
 					break;
 				case "showSearchPage":
 					document.title = "Search";
@@ -720,14 +733,14 @@ function MainController(profile) {
 					var searchDomain = arg["searchDomain"];
 					var searchDomainLabel = arg["searchDomainLabel"];
 					this._showSearchPage(searchText, searchDomain, searchDomainLabel);
-					//window.scrollTo(0,0);
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showSpacePage":
 					var _this = this;
 					this.serverFacade.getSpaceFromCode(arg, function(space) {
 						document.title = "Space " + space;
 						_this._showSpacePage(space);
-						//window.scrollTo(0,0);
+						_this.mainHeader.navigateToTabByEntity("SPACE", space, space);
 					});
 					break;
                 case "showEditSpacePage":
@@ -742,7 +755,7 @@ function MainController(profile) {
 					this.serverFacade.getProjectFromIdentifier(arg, function(project) {
 						document.title = "Project " + project.code;
 						_this._showProjectPage(project);
-						//window.scrollTo(0,0);
+						_this.mainHeader.navigateToTabByEntity("PROJECT", project.spaceCode, project.permId);
 					});
 					break;
 				case "showProjectPageFromPermId":
@@ -750,7 +763,7 @@ function MainController(profile) {
 					this.serverFacade.getProjectFromPermId(arg, function(project) {
 						document.title = "Project " + project.code;
 						_this._showProjectPage(project);
-						//window.scrollTo(0,0);
+						_this.mainHeader.navigateToTabByEntity("PROJECT", project.spaceCode, project.permId);
 					});
 					break;
 				case "showEditProjectPageFromPermId":
@@ -789,6 +802,7 @@ function MainController(profile) {
 					this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(data) {
 						mainController.changeView('showExperimentPageFromIdentifier', encodeURIComponent('["' +
 								data.objects[0].identifier.identifier + '",false]'));
+                        _this.mainHeader.navigateToTabByEntity("COLLECTION", data);
 					});
 					break;
 				case "showExperimentPageFromIdentifier":
@@ -798,6 +812,8 @@ function MainController(profile) {
 					    argsArray = [argsArray, false];
 					}
 					this._showExperimentView(argsArray[0], argsArray[1], "FORM_VIEW");
+					var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(argsArray[0])
+                    _this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
 					break;
 				case "showCreateDataSetPageFromExpPermId":
 					var _this = this;
@@ -840,7 +856,12 @@ function MainController(profile) {
 					document.title = "" + ELNDictionary.Sample + " Browser";
 					var argsArray = arg ? arg : [null, null];
                     this._showExperimentView(argsArray[0], argsArray[1], "LIST_VIEW");
-					//window.scrollTo(0,0);
+                    if(arg) {
+                        var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(argsArray[0])
+                        this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
+                    } else {
+                        this.mainHeader.navigateToTab("TOOLS");
+                    }
 					break;
 				case "showSampleHierarchyPage":
 					document.title = "Hierarchy " + arg;
@@ -915,7 +936,7 @@ function MainController(profile) {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
 							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
-							//window.scrollTo(0,0);
+							_this.mainHeader.navigateToTabByEntity("OBJECT", data[0].spaceCode, data[0].permId);
 						}
 					});
 					break;
@@ -937,7 +958,7 @@ function MainController(profile) {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1&& _this.profile.inventorySpaces.length > 0;
 							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
-							//window.scrollTo(0,0);
+							_this.mainHeader.navigateToTabByEntity("COLLECTION", data[0]);
 						}
 					});
 					break;
@@ -985,6 +1006,8 @@ function MainController(profile) {
 									_this.serverFacade.searchWithIdentifiers([dataSetData.result[0].sampleIdentifierOrNull], function(sampleData) {
 										document.title = "Data Set " + dataSetData.result[0].code;
 										_this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
+										var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].sampleIdentifierOrNull)
+                                        _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
 									_this.serverFacade.listExperimentsForIdentifiers([dataSetData.result[0].experimentIdentifier], function(experimentResults) {
@@ -993,6 +1016,8 @@ function MainController(profile) {
 										_this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(experimentData) {
 											document.title = "Data Set " + dataSetData.result[0].code;
 											_this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
+											var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].experimentIdentifier)
+                                            _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
 										});
 									});
 								}
@@ -1052,12 +1077,14 @@ function MainController(profile) {
 					$.get('version.txt', function(data) {
 						Util.showInfo("Current Version: " + data);
 					}, 'text');
+					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "EXTRA_PLUGIN_UTILITY":
 				    var uniqueViewName = arg;
 				    var viewContainers = mainController._getNewViewModel(true, true, false);
                     var pluginUtility = profile.getPluginUtility(uniqueViewName);
                     pluginUtility.paintView(viewContainers.header, viewContainers.content);
+                    this.mainHeader.navigateToTab("TOOLS");
 				    break
 				default:
 					window.alert("The system tried to create a non existing view: " + newViewChange);
@@ -1606,37 +1633,8 @@ function MainController(profile) {
         this.sideMenu.collapseSideMenu();
     }
 
-    this._isInventorySpace = function(spaceCode) {
-        var showInventory = SettingsManagerUtils.isEnabledForGroup(
-            spaceCode,
-            SettingsManagerUtils.ShowSetting.showInventory
-        )
-        var isInventorySpace = profile.isInventorySpace(spaceCode)
-        var isHiddenSpace = profile.isHiddenSpace(spaceCode)
-        return (
-            showInventory &&
-            isInventorySpace &&
-            !isHiddenSpace &&
-            !spaceCode.endsWith("STOCK_CATALOG") &&
-            !spaceCode.endsWith("STOCK_ORDERS")
-        )
-    }
-
-    this._isStockSpace = function(spaceCode) {
-        var showStock = SettingsManagerUtils.isEnabledForGroup(
-            spaceCode,
-            SettingsManagerUtils.ShowSetting.showStock
-        )
-        var isInventorySpace = profile.isInventorySpace(spaceCode)
-        return (
-            showStock &&
-            isInventorySpace &&
-            (spaceCode.endsWith("STOCK_CATALOG") || spaceCode.endsWith("STOCK_ORDERS"))
-        )
-    }
-    
 	this._showSpacePage = function(space) {
-	    var isRegularSpace = (this._isInventorySpace(space) || this._isStockSpace(space));
+	    var isRegularSpace = (SettingsManagerUtils.isInventorySpace(space) || SettingsManagerUtils.isStockSpace(space));
 		//Show Form
 		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, isRegularSpace, space);
 		var views = this._getNewViewModel(true, true, false);

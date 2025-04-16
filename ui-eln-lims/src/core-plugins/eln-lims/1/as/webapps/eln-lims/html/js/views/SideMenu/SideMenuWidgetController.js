@@ -31,6 +31,9 @@ function SideMenuWidgetController(mainController) {
     //
     // External API for real time updates
     //
+    this.finalize = function() {
+        this._sideMenuWidgetView.finalize();
+    }
 
     this.getCurrentNodeId = function () {
         var nodeObject = this._browserController.getSelectedObject()
@@ -41,6 +44,29 @@ function SideMenuWidgetController(mainController) {
         } else {
             return null
         }
+    }
+
+    this.changeCurrentTree = function(treeName, optionalNode) {
+        var _this = this;
+        var counter = 200;
+        var repeatUntilSet = function() {
+            if(counter <= 0) {
+                return;
+            }
+           if(!_this._browserController.isLoading()) {
+            _this._browserController.changeCurrentTree(treeName);
+            setTimeout(() => {
+                  if(optionalNode) {
+                      _this.moveToNodeIdAfterLoad(optionalNode)
+                  }
+                }, 100)
+
+           } else {
+                counter--;
+               setTimeout(repeatUntilSet, 50);
+           }
+        }
+        repeatUntilSet();
     }
 
     this.deleteNodeByEntityPermId = async function (entityType, entityPermId, isMoveToParent) {
@@ -133,6 +159,23 @@ function SideMenuWidgetController(mainController) {
         }
 
         return this._browserController.selectObject(nodeObject, { ignore: true })
+    }
+
+    this.moveToNodeIdAfterLoad = function(nodeObj) {
+        var _this = this;
+        var counter = 20;
+        var repeatUntilSet = function() {
+            if(counter <= 0) {
+                return;
+            }
+           if(!_this._browserController.isLoading()) {
+                _this._browserController.selectObject(nodeObj, { ignore: true })
+           } else {
+                counter--;
+                setTimeout(repeatUntilSet, 500);
+           }
+        }
+        repeatUntilSet();
     }
 
     this.getNodeSetAsRoot = function() {
@@ -230,11 +273,8 @@ function SideMenuWidgetController(mainController) {
             this._sideMenuWidgetModel.percentageOfUsage = 0.5
             $("#sideMenuFooter").remove()
             $("#sideMenuTopContainer").append(subSideMenu)
-//            $("#sideMenuBody").append(subSideMenu)
             if(!LayoutManager.isMobile()) {
                 $("#sideMenuTopContainer").append(this._sideMenuWidgetView._expandedFooter())
-//                this._expandedMenu.append(this._expandedFooter())
-//                subSideMenu.append(this._sideMenuWidgetView._expandedFooter())
             }
             this.resizeElement($("#sideMenuBody"), 0.5)
             this.resizeElement(subSideMenu, 0.5)

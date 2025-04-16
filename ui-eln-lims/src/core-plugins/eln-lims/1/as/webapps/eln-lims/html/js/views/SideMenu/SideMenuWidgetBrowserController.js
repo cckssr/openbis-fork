@@ -136,12 +136,25 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         },
     ]
 
+    TREE_LAB_NOTEBOOK = "lab_notebook"
+    TREE_LIMS = "lims"
+    TREE_TOOLS = "tools"
+
     TREES_INITIALIZED = false
-    CURRENT_TREE = "lab_notebook"
+    CURRENT_TREE = this.TREE_LAB_NOTEBOOK
     TREES_BY_TYPE = {
         "lab_notebook": [],
         "lims": [],
         "tools": []
+    }
+
+    changeCurrentTree(treeName) {
+        this.setState({
+          loaded: false,
+          loading: true,
+        })
+        this.CURRENT_TREE = treeName;
+        this.load()
     }
 
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)
@@ -479,7 +492,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         if (space) {
             var rootNode = window.NgComponents.default.BrowserCommon.rootNode()
             path.push(rootNode)
-            if (this._isLabNotebookSpace(space)) {
+            if (SettingsManagerUtils.isLabNotebookSpace(space)) {
                 path.push(this._createLabNotebookNode())
 
                 if (space.code === HOME_SPACE) {
@@ -491,10 +504,10 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     path.push(this._createLabNotebookOthersNode())
                     path.push(this._createSpaceNode(space, false))
                 }
-            } else if (this._isInventorySpace(space)) {
+            } else if (SettingsManagerUtils.isInventorySpace(space)) {
                 path.push(this._createInventoryNode())
                 path.push(this._createSpaceNode(space, false))
-            } else if (this._isStockSpace(space)) {
+            } else if (SettingsManagerUtils.isStockSpace(space)) {
                 path.push(this._createStockNode())
                 path.push(this._createSpaceNode(space, false))
             }
@@ -763,15 +776,15 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 this._createFilteredStockNode(entities),
             ])
 
-            if (labNotebookNode && _this.CURRENT_TREE === "lab_notebook") {
+            if (labNotebookNode && _this.CURRENT_TREE === _this.TREE_LAB_NOTEBOOK) {
                 results.nodes.push(labNotebookNode)
             }
 
-            if (inventoryNode && _this.CURRENT_TREE === "lims") {
+            if (inventoryNode && _this.CURRENT_TREE === _this.TREE_LIMS) {
                 results.nodes.push(inventoryNode)
             }
 
-            if (stockNode && _this.CURRENT_TREE === "lims") {
+            if (stockNode && _this.CURRENT_TREE === _this.TREE_LIMS) {
                 results.nodes.push(stockNode)
             }
         } else if (node.object.type === this.TYPE_SPACE) {
@@ -1149,7 +1162,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
     }
 
     _addFilteredSpace(entities, space) {
-        if (!this._isLabNotebookSpace(space) && !this._isInventorySpace(space) && !this._isStockSpace(space)) {
+        if (!SettingsManagerUtils.isLabNotebookSpace(space) && !SettingsManagerUtils.isInventorySpace(space) && !SettingsManagerUtils.isStockSpace(space)) {
             return null
         }
 
@@ -1316,7 +1329,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     async _createFilteredLabNotebookNode(entities) {
         var labNotebookSpaces = Object.values(entities.spaces).filter((space) => {
-            return this._isLabNotebookSpace(space.original)
+            return SettingsManagerUtils.isLabNotebookSpace(space.original)
         })
 
         if (labNotebookSpaces.length > 0) {
@@ -1368,7 +1381,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     async _createFilteredInventoryNode(entities) {
         var inventorySpaces = Object.values(entities.spaces).filter((space) => {
-            return this._isInventorySpace(space.original)
+            return SettingsManagerUtils.isInventorySpace(space.original)
         })
 
         if (inventorySpaces.length > 0) {
@@ -1392,7 +1405,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
     async _createFilteredStockNode(entities) {
         var stockSpaces = Object.values(entities.spaces).filter((space) => {
-            return this._isStockSpace(space.original)
+            return SettingsManagerUtils.isStockSpace(space.original)
         })
 
         if (stockSpaces.length > 0) {
@@ -1635,26 +1648,23 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
         if(!this.TREES_INITIALIZED) {
             var elnNodes = this._createLabNotebookNode();
-            this.TREES_BY_TYPE["lab_notebook"].push(elnNodes);
-
-            results.nodes.push(elnNodes)
+            this.TREES_BY_TYPE[this.TREE_LAB_NOTEBOOK].push(elnNodes);
 
             var inv = this._createInventoryNode()
             var stock = this._createStockNode()
 
-            this.TREES_BY_TYPE["lims"].push(inv);
-            this.TREES_BY_TYPE["lims"].push(stock);
+            this.TREES_BY_TYPE[this.TREE_LIMS].push(inv);
+            this.TREES_BY_TYPE[this.TREE_LIMS].push(stock);
 
             var utilities = this._createUtilitiesNode();
-            this.TREES_BY_TYPE["tools"].push(utilities);
+            this.TREES_BY_TYPE[this.TREE_TOOLS].push(utilities);
 
             var about = this._createAboutNode();
 
-            this.TREES_BY_TYPE["tools"].push(about);
+            this.TREES_BY_TYPE[this.TREE_TOOLS].push(about);
             this.TREES_INITIALIZED = true
-        } else {
-            results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
         }
+        results.nodes = this.TREES_BY_TYPE[this.CURRENT_TREE];
 
         results.nodes = results.nodes.filter((node) => !!node)
 
@@ -1679,7 +1689,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 var results = { nodes: [] }
 
                 searchResult.objects.forEach((space) => {
-                    if (this._isLabNotebookSpace(space) && space.code === HOME_SPACE) {
+                    if (SettingsManagerUtils.isLabNotebookSpace(space) && space.code === HOME_SPACE) {
                         results.nodes.push(this._createSpaceNode(space, true))
                     }
                 })
@@ -1713,7 +1723,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 var results = { nodes: [], totalCount: searchResult.totalCount }
 
                 searchResult.objects.forEach((space) => {
-                    if (this._isLabNotebookSpace(space) && space.getCode() !== HOME_SPACE) {
+                    if (SettingsManagerUtils.isLabNotebookSpace(space) && space.getCode() !== HOME_SPACE) {
                         var spaceDisabled = spacesDisabledStatus[space.getCode()]
                         if ((showEnabled && !spaceDisabled) || (showDisabled && spaceDisabled)) {
                             results.nodes.push(this._createSpaceNode(space))
@@ -1744,7 +1754,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 var results = { nodes: [], totalCount: searchResult.totalCount }
 
                 searchResult.objects.forEach((space) => {
-                    if (this._isInventorySpace(space)) {
+                    if (SettingsManagerUtils.isInventorySpace(space)) {
                         results.nodes.push(this._createSpaceNode(space))
                     }
                 })
@@ -1772,7 +1782,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 var results = { nodes: [], totalCount: searchResult.totalCount }
 
                 searchResult.objects.forEach((space) => {
-                    if (this._isStockSpace(space)) {
+                    if (SettingsManagerUtils.isStockSpace(space)) {
                         results.nodes.push(this._createSpaceNode(space))
                     }
                 })
@@ -3501,45 +3511,6 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         }
 
         return filteredResults
-    }
-
-    _isLabNotebookSpace(space) {
-        var showLabNotebook = SettingsManagerUtils.isEnabledForGroup(
-            space.getCode(),
-            SettingsManagerUtils.ShowSetting.showLabNotebook
-        )
-        var isLabNotebookSpace = !profile.isInventorySpace(space.getCode())
-        var isHiddenSpace = profile.isHiddenSpace(space.getCode())
-        return showLabNotebook && isLabNotebookSpace && !isHiddenSpace
-    }
-
-    _isInventorySpace(space) {
-        var showInventory = SettingsManagerUtils.isEnabledForGroup(
-            space.getCode(),
-            SettingsManagerUtils.ShowSetting.showInventory
-        )
-        var isInventorySpace = profile.isInventorySpace(space.getCode())
-        var isHiddenSpace = profile.isHiddenSpace(space.getCode())
-        return (
-            showInventory &&
-            isInventorySpace &&
-            !isHiddenSpace &&
-            !space.getCode().endsWith("STOCK_CATALOG") &&
-            !space.getCode().endsWith("STOCK_ORDERS")
-        )
-    }
-
-    _isStockSpace(space) {
-        var showStock = SettingsManagerUtils.isEnabledForGroup(
-            space.getCode(),
-            SettingsManagerUtils.ShowSetting.showStock
-        )
-        var isInventorySpace = profile.isInventorySpace(space.getCode())
-        return (
-            showStock &&
-            isInventorySpace &&
-            (space.getCode().endsWith("STOCK_CATALOG") || space.getCode().endsWith("STOCK_ORDERS"))
-        )
     }
 
     _isQueriesProject(project) {

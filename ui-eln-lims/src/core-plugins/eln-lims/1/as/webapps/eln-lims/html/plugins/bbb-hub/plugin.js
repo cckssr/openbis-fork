@@ -17,7 +17,8 @@ $.extend(BBBHubTechnology.prototype, ELNLIMSPlugin.prototype, {
 	    //
 
         // Setting help page and resize the login form
-        $("#login-form-div").attr("style", "width:500px !important; height:500px !important");
+//        $("#login-form-div").attr("style", "width:500px !important; height:500px !important");
+        $("#login-form").attr("style", "width:500px !important; height:500px !important");
         setHelp("./plugins/bbb-hub/www/help.html");
 
         loadJSResorce("./plugins/bbb-hub/UiComponents.js");

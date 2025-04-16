@@ -359,8 +359,8 @@ function ServerFacade(openbisServer) {
 		return userId;
 	}
 
-	this.login = function(username, pass, callbackFunction) {
-		this.openbisServer.login(username, pass, callbackFunction);
+	this.login = function(username, pass, callbackFunction, errorCallback) {
+		this.openbisServer.login(username, pass, callbackFunction, errorCallback);
 	}
 
 	this.ifRestoredSessionActive = function(callbackFunction) {

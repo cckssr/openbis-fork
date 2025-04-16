@@ -43,6 +43,10 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
 
     var MIN_LENGTH = 3
 
+    this.finalize = function() {
+        this._resizeObserver.disconnect();
+    }
+
     this.repaint = function ($container, isCollapsed) {
         this._$container = $container
         this._resizeObserver.disconnect();

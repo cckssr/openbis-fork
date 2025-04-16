@@ -1,7 +1,7 @@
-function MainHeaderController(sideMenu) {
-    this.sideMenu = sideMenu;
+function MainHeaderController() {
     this._mainController = mainController
     this._mainHeaderModel = new MainHeaderModel()
+    this._mainHeaderController = new MainHeaderMenu()
     this._mainHeaderView = new MainHeaderView(this)
     var _this = this;
 
@@ -14,7 +14,7 @@ function MainHeaderController(sideMenu) {
         _this._mainHeaderModel.$container = $container;
         _this._mainHeaderModel.currentPage = "lab_notebook";
 
-        _this._mainHeaderView.repaint($container)
+        _this.test =  _this._mainHeaderView.repaint($container)
 
         initCallback()
 
@@ -26,8 +26,7 @@ function MainHeaderController(sideMenu) {
 
     this.handlePageChange = function(event, value) {
         _this._mainHeaderModel.currentPage = value;
-        mainController.sideMenu._browserController.CURRENT_TREE = value;
-        mainController.sideMenu._browserController.load()
+        mainController.sideMenu.changeCurrentTree(value);
     }
 
     this.setSearchDomains = function(searchDomains) {
@@ -44,8 +43,6 @@ function MainHeaderController(sideMenu) {
         var page = page;
         var searchText = searchText;
 
-//        var searchFunction = function () {
-//        var searchText = $("#search").val()
         if (searchText.length < MIN_LENGTH) {
             Util.showInfo(
                 "The minimum length for a global text search is " + MIN_LENGTH + " characters.",
@@ -55,17 +52,9 @@ function MainHeaderController(sideMenu) {
             return false
         }
 
-//        var domainIndex = $("#search").attr("domain-index")
         var searchDomain = _this._mainHeaderModel.searchDomain.name;
         var searchDomainLabel = _this._mainHeaderModel.searchDomain.label;
 
-//        if (domainIndex) {
-//            searchDomain = profile.getSearchDomains()[domainIndex].name
-//            searchDomainLabel = profile.getSearchDomains()[domainIndex].label
-//        } else {
-//            searchDomain = profile.getSearchDomains()[0].name
-//            searchDomainLabel = profile.getSearchDomains()[0].label
-//        }
 
         var argsMap = {
             searchText: searchText,
@@ -75,15 +64,70 @@ function MainHeaderController(sideMenu) {
         var argsMapStr = JSON.stringify(argsMap)
 
         mainController.changeView("showSearchPage", argsMapStr)
-//    }
 
     }
 
     this.handleLogout = function() {
+        mainController.sideMenu.finalize()
         $("body").addClass("bodyLogin")
         sessionStorage.setItem("forceNormalLogin", mainController.loggedInAnonymously)
         mainController.loggedInAnonymously = false
         mainController.serverFacade.logout()
     }
+
+    this.navigateToTabByEntity = function(type, spaceCode, permId) {
+        var tree = this._getTreeFromSpaceCode(spaceCode);
+        var node = null
+        if(permId) {
+            node = {
+                id: permId,
+            };
+            switch(type) {
+                case "SPACE":
+                    node.type = "SPACE"
+                    break;
+                case "PROJECT":
+                    node.type = "PROJECT"
+                    break;
+                case "COLLECTION":
+                    node.type = "EXPERIMENT"
+                    break;
+                case "OBJECT":
+                    node.type = "SAMPLE"
+                    break;
+                case "DATASET":
+                    node.type = "DATASET"
+                    break;
+            }
+        }
+        if(tree !== _this._mainHeaderModel.currentPage) {
+            _this._mainHeaderModel.currentPage = tree;
+            _this._mainHeaderController.changeTab(tree);
+            _this._mainController.sideMenu.changeCurrentTree(tree, node)
+        }
+    }
+
+    this._getTreeFromSpaceCode = function(spaceCode) {
+        if(SettingsManagerUtils.isLabNotebookSpace(spaceCode)) {
+            return "lab_notebook";
+        } else {
+            return "lims";
+        }
+    }
+
+    this.navigateToTab = function(type) {
+        var tabTypes = ["LAB_NOTEBOOK", "LIMS", "TOOLS"]
+        var tree = _this._mainHeaderModel.currentPage;
+        if(tabTypes.includes(type)) {
+            tree = type.toLowerCase();
+        }
+        if(tree !== _this._mainHeaderModel.currentPage) {
+            _this._mainHeaderModel.currentPage = tree;
+            _this._mainController.sideMenu.changeCurrentTree(tree)
+            _this._mainHeaderController.changeTab(tree);
+
+        }
+    }
+
 
 }

@@ -280,7 +280,10 @@
 
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderController.js"></script>
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderModel.js"></script>
+	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderMenu.js"></script>
 	<script type="text/javascript" src="./js/views/MainHeader/MainHeaderView.js"></script>
+
+	<script type="text/javascript" src="./js/views/Login/LoginView.js"></script>
 	
 	<script type="text/javascript" src="./js/views/legacy/SampleHierarchy.js"></script>
 	
@@ -381,7 +384,10 @@
 		
 		this.cleanupComponents = function(){
 			var stillConnectedComponents = []
-			var backStack = mainController.backStack;
+			var backStack = [];
+			if(mainController) {
+				backStack = mainController.backStack;
+			}
 			this.components.forEach(function(component){
 				if (component.domContainer.isConnected) {
 					stillConnectedComponents.push(component)
@@ -435,76 +441,10 @@
 					Util.showError("Unknown AJAX Error");
 				}
 			});
+
+			new LoginView(mainController).init();
 			
 			$('#main').hide();
-			var username = $("#username").value;
-			if(username == null || username.length==0) {
-				$("#username").focus();
-			} else {
-				$("#login-button").focus();
-			}
-		
-			$('#openbis-login-service').submit(function() {
-				Util.blockUI();
-				$("#mainHeader").show();
-				$("#mainContainer").show();
-				var username = $('#username').val();
-				var password = $('#password').val();
-				mainController.serverFacade.login(
-						$.trim($('#username').val()), 
-						$.trim($('#password').val()), 
-						function(data) { mainController.enterApp(data, username, password) });
-			});
-			var singleSignOnUrlTemplate = mainController.profile.singleSignOnUrlTemplate;
-			if (singleSignOnUrlTemplate) { // Single sign on login service enabled
-				// Hide the openbis login service
-				var $openbisLoginService = $("#openbis-login-service")
-				$openbisLoginService.css('margin-top', '0px');
-				$openbisLoginService.css('margin-bottom', '6px');
-				$openbisLoginService.hide();
-
-				// Show the single sign on login service
-				var $container = $("#single-sign-on-login-service");
-				$container.empty();
-				$container.css('text-align', 'center');
-				$container.css('min-height', '62px');
-				$container.css('margin-top', '20px');
-				$container.css('margin-bottom', '20px');
-				
-				var url = mainController.profile.singleSignOnUrlTemplate
-				var url = url.replaceAll("${host}", window.location.hostname);
-				var url = url.replaceAll("${current-url}", window.location.href);
-
-				var link = $("<a>", {href: url, text: "Login"})
-				link.css('font-weight', 'bold')
-				link.css('font-size', '18px')
-				$container.append(link);
-				$container.show();
-
-				// Show login selector
-				var $loginServicesContainer = $("#login-service-selector");
-				var $loginServices = FormUtil.getDropdown([
-					{ label: mainController.profile.singleSignOnLinkLabel, value: 'SSO', selected: true },
-					{ label: 'Default Login Service', value: 'OPENBIS' }
-				]);
-				$loginServices.change(function() {
-					$("#single-sign-on-login-service").hide();
-					$("#openbis-login-service").hide();
-
-					switch($loginServices.val()) {
-						case 'SSO':
-								$("#single-sign-on-login-service").show();
-							break;
-						case 'OPENBIS':
-								$("#openbis-login-service").show();
-							break;
-					}
-				});
-				$loginServicesContainer.append($loginServices);
-
-			} else { // Only openbis login service enabled
-				// Do nothing
-			}
 
 			var queryString = Util.queryString();
 			var test = queryString.test;
@@ -535,16 +475,6 @@
 			}
 			sessionStorage.removeItem("forceNormalLogin");
 
-			
-			// Make the ENTER key the default button
-			$("openbis-login-service input").keypress(function (e) {
-				if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
-					$('button[type=submit].default').click();
-					return false;
-				} else {
-					return true;
-				}
-			});
 			
 			//Automatic login if special parameters are given
 			var user = queryString.user;
@@ -608,35 +538,15 @@
 	</script>
 </head>
 <body class="bodyLogin">
-	<div id="login-form-div" class="loginForm" visibility="hidden">
-			<img id="mainLogo" class="loginLogo" src="" alt="openBIS" />
-			<h1 id="mainLogoTitle"></h1>
+	<div id="login-form" visibility="hidden">
 
-			<div id="login-wrapper">
-				<div id="login-service-selector"></div>
-				<div id="single-sign-on-login-service"></div>
-				<form id="openbis-login-service" action="javascript:">
-					<fieldset>
-							<div class='loginInputBox'>
-								<input placeholder="Account" id="username" type="text" required="required">
-							</div>
-
-							<div class='loginInputBox'>
-								<input placeholder="Password" id="password" type="password" required="required">
-							</div>
-
-							<button class="btn btn-primary" id="login-button" type="submit">LOGIN</button>
-					</fieldset>
-				</form>
-			</div>
-
-			<center>
-				<div id="password-reset-container"></div>
-				<div id="help"></div>
-				<div style="margin-bottom: 5px;">Compatible With:</div>
-				<img src="./img/browser-icon-chrome.png" style="width: 43px; height:43px;" /><img src="./img/browser-icon-safari.png" style="width: 43px; height:43px;" /><img src="./img/browser-icon-firefox.png" style="width: 43px; height:43px;" />
-			</center>
 	</div>
+	<center id="login-form-sub">
+		<div id="password-reset-container"></div>
+			<div id="help"></div>
+			<div style="margin-bottom: 5px;">Compatible With:</div>
+			<img src="./img/browser-icon-chrome.png" style="width: 43px; height:43px;" /><img src="./img/browser-icon-safari.png" style="width: 43px; height:43px;" /><img src="./img/browser-icon-firefox.png" style="width: 43px; height:43px;" />
+	</center>
 
 	<div class="container-fluid">
 		<div id='mainHeader' class="row mainHeader"></div>

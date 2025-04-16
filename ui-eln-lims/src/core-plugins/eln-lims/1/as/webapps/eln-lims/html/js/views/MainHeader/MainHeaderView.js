@@ -28,6 +28,7 @@ function MainHeaderView(controller) {
 
         this._controller.setSearchDomains(searchDomains);
 
+        this.menu = new MainHeaderMenu()
 
         let props = {
             pageChangeFunction: this._controller.handlePageChange,
@@ -39,9 +40,11 @@ function MainHeaderView(controller) {
 
             userName: mainController.serverFacade.getUserId(),
 
+            controller: this._controller._mainHeaderController,
+
             tabs: [
                 {page: "lab_notebook", label: "Lab Notebook"},
-                {page: "lims", label: "LIMS"},
+                {page: "lims", label: "Inventory"},
                 {page: "tools", label: "Tools"},
             ],
             barcodeFunction: barcodeFunction,
@@ -49,14 +52,14 @@ function MainHeaderView(controller) {
             searchDomainChangeFunction: this._controller.handleSearchDomainChange,
             menuStyles: {
                 searchField: {
-                    width: '800px',
+                    width: '500px',
                     transition: "width 0.3s",
                 }
             }
         }
 
         let Menu = React.createElement(window.NgComponents.default.Menu, props)
-        NgComponentsManager.renderComponent(Menu, $container.get(0));
+        return NgComponentsManager.renderComponent(Menu, $container.get(0));
     }
 
 }
