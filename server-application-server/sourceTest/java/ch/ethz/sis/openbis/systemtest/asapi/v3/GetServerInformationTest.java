@@ -38,7 +38,7 @@ public class GetServerInformationTest extends AbstractTest
         Map<String, String> result = v3api.getServerInformation(sessionToken);
 
         // Then
-        assertEquals(result.size(), 14);
+        assertEquals(result.size(), 15);
         assertEquals(result.get("api-version"), "3.7");
         assertEquals(result.get("archiving-configured"), "false");
         assertEquals(result.get("authentication-service"), "dummy-authentication-service");
