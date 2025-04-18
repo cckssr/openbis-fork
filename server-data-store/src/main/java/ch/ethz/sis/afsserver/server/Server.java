@@ -80,6 +80,9 @@ public final class Server<CONNECTION, API>
         LogManager.setLogFactory(logFactory);
         logger = LogManager.getLogger(Server.class);
 
+
+        configuration.logLoadedProperties(LogManager.getLogger(Configuration.class));
+
         // Make the legacy code that bases on Apache Commons Logging or Log4j use the same logging mechanism as the rest of AFS
         ApacheCommonsLoggingConfiguration.reconfigureToUseAFSLogging();
         ApacheLog4j1Configuration.reconfigureToUseAFSLogging();

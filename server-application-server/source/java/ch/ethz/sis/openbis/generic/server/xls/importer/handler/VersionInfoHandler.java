@@ -117,7 +117,7 @@ public class VersionInfoHandler
             ExposablePropertyPlaceholderConfigurer config =
                     (ExposablePropertyPlaceholderConfigurer) context.getBean(
                             ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME);
-            return config.getResolvedProps().getProperty("xls-import.version-data-file",
+            return config.getPropertyValue("xls-import.version-data-file",
                     "../../../xls-import-version-info.json");
         }
     }

@@ -110,8 +110,8 @@ public class SingleSignOnServlet extends AbstractServlet
     @Override
     protected void initServletContext(ServletContext servletContext)
     {
-        enabled = Boolean.parseBoolean(configurer.getResolvedProps().getProperty(SINGLE_SIGN_ON_ENABLED_PROPERTY, Boolean.toString(Boolean.FALSE)));
-        template = new Template(configurer.getResolvedProps().getProperty(SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE_PROPERTY,
+        enabled = Boolean.parseBoolean(configurer.getPropertyValue(SINGLE_SIGN_ON_ENABLED_PROPERTY, Boolean.toString(Boolean.FALSE)));
+        template = new Template(configurer.getPropertyValue(SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE_PROPERTY,
                 DEFAULT_SINGLE_SIGN_ON_REDIRECT_URL_TEMPLATE));
         template.createFreshCopy().bind("host", ""); // Check that template contains '${host}'
     }
@@ -222,7 +222,7 @@ public class SingleSignOnServlet extends AbstractServlet
             String host = request.getHeader("X-Forwarded-Host");
             Template template = this.template.createFreshCopy();
             template.bind("host", host);
-            redirectUrl = configurer.getResolvedProps().getProperty(REDIRECT_URL_KEY, template.createText());
+            redirectUrl = configurer.getPropertyValue(REDIRECT_URL_KEY, template.createText());
         }
 
         operationLog.info("redirect to " + redirectUrl);
@@ -251,7 +251,7 @@ public class SingleSignOnServlet extends AbstractServlet
 
     private String getHeader(HttpServletRequest request, String keyProperty, String defaultKey)
     {
-        String key = configurer.getResolvedProps().getProperty(keyProperty, defaultKey);
+        String key = configurer.getPropertyValue(keyProperty, defaultKey);
         String header = request.getHeader(key);
         if (header != null)
         {

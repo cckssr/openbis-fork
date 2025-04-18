@@ -150,7 +150,7 @@ final class ExportPropertiesUtils
 
     private static File getFilesRepository(ExposablePropertyPlaceholderConfigurer configurer)
     {
-        return new File(configurer.getResolvedProps().getProperty(REPO_PATH_KEY, DEFAULT_REPO_PATH));
+        return new File(configurer.getPropertyValue(REPO_PATH_KEY, DEFAULT_REPO_PATH));
     }
 
 

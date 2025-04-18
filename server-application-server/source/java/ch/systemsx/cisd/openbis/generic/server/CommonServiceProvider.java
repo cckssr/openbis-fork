@@ -123,7 +123,13 @@ public class CommonServiceProvider
     public static String tryToGetProperty(String propertyName) {
         ExposablePropertyPlaceholderConfigurer config =
                 (ExposablePropertyPlaceholderConfigurer) applicationContext.getBean(ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME);
-        return config.getResolvedProps().getProperty(propertyName);
+        return config.getPropertyValue(propertyName);
+    }
+
+    public static String tryToGetProperty(String propertyName, String defaultValue) {
+        ExposablePropertyPlaceholderConfigurer config =
+                (ExposablePropertyPlaceholderConfigurer) applicationContext.getBean(ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME);
+        return config.getPropertyValue(propertyName, defaultValue);
     }
 
     public static ApplicationContext getApplicationContext()

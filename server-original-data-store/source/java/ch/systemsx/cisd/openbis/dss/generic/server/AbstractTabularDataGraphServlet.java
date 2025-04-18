@@ -190,7 +190,7 @@ public abstract class AbstractTabularDataGraphServlet extends AbstractDatasetDow
                                         ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME);
 
                 String workspace =
-                        config.getResolvedProps().getProperty(
+                        config.getPropertyValue(
                                 SessionWorkspaceUtil.SESSION_WORKSPACE_ROOT_DIR_KEY);
 
                 if (workspace == null)

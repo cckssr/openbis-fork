@@ -46,6 +46,7 @@ public class Main
         logFactory.configure(
                 configuration.getStringProperty(AtomicFileSystemParameter.logConfigFile));
         LogManager.setLogFactory(logFactory);
+        configuration.logLoadedProperties(LogManager.getLogger(Configuration.class));
 
         //
         JsonObjectMapper jsonObjectMapper =

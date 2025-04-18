@@ -1,5 +1,5 @@
 /*
- * Copyright ETH 2022 - 2023 Zürich, Scientific IT Services
+ * Copyright ETH 2022 - 2025 Zürich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 package ch.ethz.sis.shared.startup;
+
+import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.Logger;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -33,6 +36,9 @@ public class Configuration {
 
         try (InputStream inputStream = new FileInputStream(pathToConfigurationFile)) {
             properties.load(inputStream);
+            properties.forEach((key, value) -> {
+                properties.setProperty(key.toString(), getValue(key.toString(), value.toString()));
+            });
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -47,7 +53,9 @@ public class Configuration {
 
     public Configuration(Map<Enum, String> values) {
         for (Enum key:values.keySet()) {
-            properties.setProperty(key.name(), values.get(key));
+            String keyName = key.name();
+            String value = values.get(key);
+            properties.setProperty(key.name(), getValue(keyName, value));
         }
     }
 
@@ -56,8 +64,33 @@ public class Configuration {
 
         while(propertyNames.hasMoreElements()) {
             Object propertyName = propertyNames.nextElement();
-            this.properties.setProperty(String.valueOf(propertyName), properties.getProperty(String.valueOf(propertyName)));
+            String key = String.valueOf(propertyName);
+            String value = properties.getProperty(String.valueOf(propertyName));
+            this.properties.setProperty(key, getValue(key, value));
         }
+    }
+
+    private static String getValue(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        if(value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    public void logLoadedProperties(Logger logger) {
+        logger.info(String.format("Loaded properties count: %s", this.properties.size()));
+        this.properties.forEach((propKey, propValue) -> {
+            String key = propKey.toString();
+            String value = propValue == null ? "" : propValue.toString();
+            if(key.contains("password")) {
+                value = "*****";
+            }
+            logger.info(String.format("Loaded property: ('%s', '%s')", key, value));
+        });
     }
 
     public <E extends Enum<E>> void setProperty(E parameter, String value) {
@@ -109,5 +142,17 @@ public class Configuration {
 
     public Properties getProperties(){
         return this.properties;
+    }
+
+    public String getProperty(String key){
+        if(properties.containsKey(key)) {
+            return properties.getProperty(key);
+        }
+
+        String value = getValue(key, null);
+        if(value != null) {
+            properties.put(key,  value);
+        }
+        return value;
     }
 }

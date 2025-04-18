@@ -151,7 +151,7 @@ public class ELNFixes {
 
     static String getProperty(String key) {
         ExposablePropertyPlaceholderConfigurer configurer = ((ExposablePropertyPlaceholderConfigurer) CommonServiceProvider.tryToGetBean(PROPERTY_CONFIGURER_BEAN_NAME));
-        return configurer.getResolvedProps().getProperty(key);
+        return configurer.getPropertyValue(key);
     }
 
     private static void fixProperties(final String propertiesTable, final String entityTypePropertyTypesTable,

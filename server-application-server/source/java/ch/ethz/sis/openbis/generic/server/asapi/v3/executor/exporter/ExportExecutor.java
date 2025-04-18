@@ -387,7 +387,7 @@ public class ExportExecutor implements IExportExecutor
 
     private String getDownloadPath(final String sessionToken, final String fileName)
     {
-        final String protocolWithDomain = configurer.getResolvedProps().getProperty(DOWNLOAD_URL);
+        final String protocolWithDomain = configurer.getPropertyValue(DOWNLOAD_URL);
         if (protocolWithDomain == null || protocolWithDomain.isBlank())
         {
             throw new UserFailureException(String.format("The property '%s' is not configured for the application server.", DOWNLOAD_URL));
@@ -491,9 +491,8 @@ public class ExportExecutor implements IExportExecutor
     {
         if (dataLimit < 0)
         {
-            final String dataLimitString = ((ExposablePropertyPlaceholderConfigurer) CommonServiceProvider
-                    .tryToGetBean(PROPERTY_CONFIGURER_BEAN_NAME))
-                    .getResolvedProps().getProperty("export.data-limit", "10737418240");
+            final String dataLimitString = CommonServiceProvider
+                    .tryToGetProperty("export.data-limit", "10737418240");
 
             try
             {

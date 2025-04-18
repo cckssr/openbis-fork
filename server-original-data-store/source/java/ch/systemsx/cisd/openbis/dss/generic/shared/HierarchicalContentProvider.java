@@ -110,7 +110,7 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
     {
         this(openbisService, directoryProvider, hierarchicalContentFactory, serviceFactory,
                 contentCache, sessionTokenProvider, dataStoreCode, infoProvider != null
-                        && "true".equalsIgnoreCase(infoProvider.getResolvedProps().getProperty(
+                        && "true".equalsIgnoreCase(infoProvider.getPropertyValue(
                         "trust-all-certificates")));
     }
 

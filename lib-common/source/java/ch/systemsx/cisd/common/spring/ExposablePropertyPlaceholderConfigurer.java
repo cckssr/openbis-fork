@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -40,6 +43,9 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
     /** Standard bean name in an application context file. */
     public static final String PROPERTY_CONFIGURER_BEAN_NAME = "propertyConfigurer";
 
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
+            ExposablePropertyPlaceholderConfigurer.class);
+
     private Properties resolvedProps;
 
     private int systemPropertiesMode = PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK;
@@ -50,6 +56,30 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
     public final Properties getResolvedProps()
     {
         return resolvedProps;
+    }
+
+    public final String getPropertyValue(String key) {
+        return getPropertyValue(key, null);
+    }
+
+    public final String getPropertyValue(String key, String defaultValue) {
+        String result = resolvedProps.getProperty(key);
+        if(result != null) {
+            return result;
+        }
+
+        result = System.getProperty(key);
+
+        if(result == null) {
+            result = System.getenv(key);
+        }
+
+        if(result != null) {
+            resolvedProps.put(key, result);
+        } else {
+            result = defaultValue;
+        }
+        return result;
     }
 
     //
@@ -104,6 +134,16 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
 
         injectPropertiesInto(resolvedProps);
         super.processProperties(beanFactoryToProcess, resolvedProps);
+
+        operationLog.info("Service properties loaded. Properties count:" + resolvedProps.size());
+        resolvedProps.forEach((propKey, propValue) -> {
+            String key = propKey.toString();
+            String value = propValue == null ? "" : propValue.toString();
+            if(key.contains("password")) {
+                value = "*****";
+            }
+            operationLog.info(String.format("Loaded property: ('%s', '%s')", key, value));
+        });
     }
 
     protected void injectPropertiesInto(Properties properties)

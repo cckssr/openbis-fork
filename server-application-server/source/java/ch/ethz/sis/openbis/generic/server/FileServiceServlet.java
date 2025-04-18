@@ -243,7 +243,7 @@ public class FileServiceServlet extends AbstractServlet
     private Template getTemplate(PathInfo pathInfo, String type, String defaultValue)
     {
         String key = KEY_PREFIX + "section_" + pathInfo.getSection() + "." + type;
-        String template = configurer.getResolvedProps().getProperty(key);
+        String template = configurer.getPropertyValue(key);
         if (template == null)
         {
             operationLog.warn("No template configured for '" + key + "'. Using default template: " + defaultValue);
@@ -254,7 +254,7 @@ public class FileServiceServlet extends AbstractServlet
     
     private File getFilesRepository()
     {
-        return new File(configurer.getResolvedProps().getProperty(REPO_PATH_KEY, DEFAULT_REPO_PATH));
+        return new File(configurer.getPropertyValue(REPO_PATH_KEY, DEFAULT_REPO_PATH));
     }
 
     private static final class PathInfo

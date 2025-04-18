@@ -76,8 +76,8 @@ public class GetServerInformationOperationExecutor
         info.put("api-version", server.getMajorVersion() + "." + server.getMinorVersion());
         info.put("project-samples-enabled", Boolean.toString(CommonServiceProvider.getCommonServer().isProjectSamplesEnabled(null)));
         info.put("archiving-configured", Boolean.toString(CommonServiceProvider.getCommonServer().isArchivingConfigured(null)));
-        info.put("enabled-technologies", configurer.getResolvedProps().getProperty(Constants.ENABLED_MODULES_KEY));
-        info.put("create-continuous-sample-codes", configurer.getResolvedProps().getProperty(Constants.CREATE_CONTINUOUS_SAMPLES_CODES_KEY));
+        info.put("enabled-technologies", configurer.getPropertyValue(Constants.ENABLED_MODULES_KEY));
+        info.put("create-continuous-sample-codes", configurer.getPropertyValue(Constants.CREATE_CONTINUOUS_SAMPLES_CODES_KEY));
         info.put(PersonalAccessTokenConstants.PERSONAL_ACCESS_TOKENS_ENABLED_KEY,
                 Boolean.toString(personalAccessTokenConfig.arePersonalAccessTokensEnabled()));
         info.put(PersonalAccessTokenConstants.PERSONAL_ACCESS_TOKENS_MAX_VALIDITY_PERIOD,

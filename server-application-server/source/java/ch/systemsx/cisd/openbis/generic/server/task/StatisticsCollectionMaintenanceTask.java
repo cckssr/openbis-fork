@@ -24,7 +24,6 @@ import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
-import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -154,9 +153,7 @@ public class StatisticsCollectionMaintenanceTask implements IMaintenanceTask
         final String disableStatistics = System.getenv().get("DISABLE_OPENBIS_STATISTICS");
         if (!"true".equals(disableStatistics))
         {
-            final String collectStatistics = ((ExposablePropertyPlaceholderConfigurer) CommonServiceProvider
-                    .tryToGetBean(PROPERTY_CONFIGURER_BEAN_NAME))
-                    .getResolvedProps().getProperty("collect-statistics");
+            final String collectStatistics = CommonServiceProvider.tryToGetProperty("collect-statistics");
             final boolean propertyIsMissing = collectStatistics == null || collectStatistics.isEmpty();
             if ("true".equals(collectStatistics) || propertyIsMissing)
             {
