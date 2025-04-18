@@ -623,7 +623,7 @@ def getServiceProperty(context, parameters):
     propertyKey = parameters.get("propertyKey")
     if propertyKey not in ["ui.unarchiving.threshold.relative", "ui.unarchiving.threshold.absolute"]:
         raise UserFailureException("Invalid property: %s" % propertyKey)
-    property = CommonServiceProvider.tryToGetBean("propertyConfigurer").getResolvedProps().getProperty(propertyKey)
+    property = CommonServiceProvider.tryToGetProperty(propertyKey)
     if property is None:
         return parameters.get("defaultValue")
     return property
