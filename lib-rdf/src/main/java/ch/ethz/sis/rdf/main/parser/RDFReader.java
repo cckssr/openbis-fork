@@ -49,7 +49,8 @@ public class RDFReader
 
         handleSubclassChains(model, modelRDF);
         handleOntologyModel(model, inputFileNames, inputFormatValue, modelRDF);
-        ResourceParsingResult resourceParsingResult =  handleResources(model, modelRDF, additionalModel);
+        ResourceParsingResult resourceParsingResult =
+                handleResources(model, modelRDF, additionalModel);
         printResourceParsingResult(resourceParsingResult);
 
 
@@ -142,7 +143,8 @@ public class RDFReader
 
     }
 
-    private ResourceParsingResult handleResources(Model model, ModelRDF modelRDF, OntModel additionalOntModel)
+    private ResourceParsingResult handleResources(Model model, ModelRDF modelRDF,
+            OntModel additionalOntModel)
     {
         boolean modelContainsResources = ParserUtils.containsResources(model);
         System.out.println("Model contains Resources ? " + (modelContainsResources ? "YES" : "NO"));
@@ -152,7 +154,9 @@ public class RDFReader
 
 
         modelRDF.resourcesGroupedByType =
-                modelContainsResources ? ParserUtils.getResourceMap(model) : Collections.emptyMap();
+                modelContainsResources ?
+                        ParserUtils.getResourceMap(model) :
+                        Collections.emptyMap();
 
         Map<String, List<SampleObject>> sampleObjectsGroupedByTypeMap =
                 modelContainsResources ?

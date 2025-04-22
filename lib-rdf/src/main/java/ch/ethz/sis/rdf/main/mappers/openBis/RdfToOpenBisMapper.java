@@ -221,17 +221,22 @@ public class RdfToOpenBisMapper
                         (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType) sampleType;
 
                 sample.setType(sampleType1);
-                sample.setCode(sampleObject.code);
+                sample.setCode(makeOpenBisCodeCompliant(sampleObject.code));
                 Map<String, PropertyAssignment>
                         labelToProperty = sampleType1.getPropertyAssignments().stream()
                         .collect(Collectors.toMap(x -> x.getPropertyType().getLabel(), x -> x));
 
                 Map<String, Serializable> proppies = sampleObject.getProperties().stream()
-                        .collect(Collectors.toMap(x -> x.getLabel(),
+                        .collect(Collectors.toMap(x -> makeOpenBisCodeCompliant(x.getLabel()),
                                 x -> convertValue(vocabularyOptionList, x,
                                         labelToProperty.get(x.label).getPropertyType(),
                                         sample.getSpace().getCode(), sample.getProject().getCode()),
                                 (existing, replacement) -> existing + " \n" + replacement));
+                if (!proppies.containsKey("Name"))
+                {
+                    proppies.put("Name", sampleObject.name);
+                }
+
                 sample.setProperties(proppies);
 
                 metadata.put(new SampleIdentifier(projectIdentifier, "DEFAULT", sampleObject.code),
@@ -244,6 +249,14 @@ public class RdfToOpenBisMapper
                 Map.of());
 
     }
+
+    private static String makeOpenBisCodeCompliant(String candiate)
+    {
+        return candiate.replaceAll("\\|", "_")
+                .replaceAll("%7C", "_");
+    }
+
+
 
     private static String convertValue(List<String> vocabularyOptionList,
             SampleObjectProperty sampleObjectProperty, PropertyType propertyType, String space,

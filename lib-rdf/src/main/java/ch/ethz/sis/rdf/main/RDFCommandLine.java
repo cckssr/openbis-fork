@@ -115,7 +115,8 @@ public class RDFCommandLine {
                 asURL, dssURL,
                 USERNAME, PASSWORD,
                 PROJECT_ID,
-                false, List.of("/home/meiandr/Downloads/snomed-ct-ch-20231201.ttl/snomed-ct-CH-20231201.ttl"));
+                false,
+                List.of("/home/meiandr/Downloads/snomed-ct-ch-20231201.ttl/snomed-ct-CH-20231201.ttl"));
     }
 
     //TODO: add flag -d for dependecies list of files or zip
@@ -160,6 +161,7 @@ public class RDFCommandLine {
 
         Option help = new Option("h", "help", false, "Display this help message");
         options.addOption(help);
+
 
         Option additionalFiles = new Option("a", ADDITIONALFILES, true,
                 "Additional files. These are additional ontologies that are referenced by the main import file. If an ontology is not found, this can lead to dummy entries in openBIS. At the moment, these have to be on the file system and are not fetched from remote sources.");
@@ -255,6 +257,7 @@ public class RDFCommandLine {
         String projectIdentifier = cmd.getOptionValue("project");
         boolean verbose = cmd.hasOption("verbose");
         boolean removeDanglingReferences = cmd.hasOption(ARG_LONG_REMOVE_DANGLING_REFERENCES);
+
         Config.setConfig(removeDanglingReferences);
 
 
@@ -370,7 +373,9 @@ public class RDFCommandLine {
 
     private static void handleOpenBISDevOutput(String inputFormatValue, String[] inputFilePaths,
             String openbisASURL, String openBISDSSURL,
-            String username, String password, String projectIdentifier, boolean verbose, List<String> additionalFilePaths) {
+            String username, String password, String projectIdentifier, boolean verbose,
+            List<String> additionalFilePaths)
+    {
 
         Path tempFile = Utils.createTemporaryFile();
         String tempFileOutput = tempFile.toString();

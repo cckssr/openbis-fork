@@ -7,18 +7,13 @@ public class Config
 
     private final boolean removeDanglingReferences;
 
-    private Config(boolean removeDanglingReferences)
+    public Config(boolean removeDanglingReferences)
     {
         this.removeDanglingReferences = removeDanglingReferences;
     }
 
     public static void setConfig(boolean removeDanglingReferences)
     {
-        if (INSTANCE != null)
-        {
-            throw new IllegalStateException("Config has already been set, something's wrong!");
-        }
-
         INSTANCE = new Config(removeDanglingReferences);
 
     }

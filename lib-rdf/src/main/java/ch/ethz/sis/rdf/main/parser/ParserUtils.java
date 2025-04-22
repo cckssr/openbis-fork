@@ -11,6 +11,7 @@ import ch.ethz.sis.rdf.main.model.xlsx.SampleType;
 import ch.systemsx.cisd.common.shared.basic.string.StringUtils;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.util.SplitIRI;
 import org.apache.jena.vocabulary.*;
 import org.apache.thrift.annotation.Nullable;
 
@@ -29,7 +30,8 @@ public class ParserUtils {
 
     //---------- RESOURCE PREFIX EXTRACTION ------------------
 
-    public static Map<String, List<SampleObject>> getSampleObjectsGroupedByTypeMap(Model model){
+    public static Map<String, List<SampleObject>> getSampleObjectsGroupedByTypeMap(Model model)
+    {
         List<String> sampleObjectPrefixList = getSampleObjectPrefixList(model);
 
         // Map to store the resources grouped by type
@@ -45,7 +47,11 @@ public class ParserUtils {
                         String typeURI = object.getURI();
                         String type = object.getLocalName();
 
-                        SampleObject sampleObject = new SampleObject(subject.getLocalName(), typeURI, type);
+                        SampleObject sampleObject =
+                                new SampleObject(findIdentifier(subject), typeURI,
+                                        type);
+
+
                         sampleObjectsGroupedByTypeMap.putIfAbsent(typeURI, new ArrayList<>());
                         sampleObjectsGroupedByTypeMap.get(typeURI).add(sampleObject);
 
@@ -69,7 +75,8 @@ public class ParserUtils {
         return sampleObjectsGroupedByTypeMap;
     }
 
-    public static Map<String, List<ResourceRDF>> getResourceMap(Model model){
+    public static Map<String, List<ResourceRDF>> getResourceMap(Model model)
+    {
         // Namespace prefix
         //String prefix = model.getNsPrefixURI(RESOURCE_URI_NS);
         List<String> resourcePrefixes = getSampleObjectPrefixList(model);
@@ -84,8 +91,12 @@ public class ParserUtils {
                     Resource subject = statement.getSubject();
                     if (subject.isURIResource() && subject.getURI().startsWith(prefix)) {
 
+                        var parts = subject.getURI().split("/");
+
+
                         // Create a new ResourceRDF object
-                        ResourceRDF resource = new ResourceRDF(subject.getLocalName());
+                        ResourceRDF resource =
+                                new ResourceRDF(findIdentifier(subject));
 
                         // Set the type of the resource
                         Resource type = statement.getObject().asResource();
@@ -118,6 +129,11 @@ public class ParserUtils {
             }
         }
         return groupedResources;
+    }
+
+    private static String findIdentifier(Resource subject)
+    {
+        return SplitIRI.localname(subject.getURI());
     }
 
 

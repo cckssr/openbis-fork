@@ -1,6 +1,7 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.rdf.main.ClassCollector;
+import ch.ethz.sis.rdf.main.Config;
 import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.xlsx.SamplePropertyType;
@@ -27,6 +28,8 @@ public class RDFReaderTest {
 
     @Before
     public void setup() {
+        Config.setConfig(false);
+
         rdfReader = new RDFReader();
         model = LoaderRDF.loadModel(inputFileName, inputFormatValue);
         ontModel = LoaderRDF.loadOntModel(new String[] { inputFileName }, inputFormatValue);
@@ -34,6 +37,7 @@ public class RDFReaderTest {
 
     @Test
     public void testReadBasicRDFModel() {
+
         OntModel ontModel1 = ModelFactory.createOntologyModel();
         ModelRDF modelRDF =
                 rdfReader.read(new String[] { inputFileName }, inputFormatValue, false, ontModel1);

@@ -2,7 +2,6 @@ package ch.ethz.sis.rdf.main.model.xlsx;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SampleObject
 {
@@ -31,6 +30,11 @@ public class SampleObject
         this.typeURI = typeURI;
         this.type = type;
         this.properties = new ArrayList<>();
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     public void addProperty(SampleObjectProperty sampleObjectProperty){
