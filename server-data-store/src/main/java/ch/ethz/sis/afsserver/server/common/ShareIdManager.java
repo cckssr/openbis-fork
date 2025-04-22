@@ -122,7 +122,7 @@ public class ShareIdManager implements IShareIdManager
             if (!locks.isEmpty())
             {
                 // Unfortunately, we don't have a mechanism in AFS what would notify
-                // us when all the locks are released, therefore we need to do the waiting here.
+                // us when all the locks are released, therefore, we need to do the waiting here.
 
                 try
                 {
@@ -139,18 +139,18 @@ public class ShareIdManager implements IShareIdManager
     @Override public void releaseLock(final String dataSetCode)
     {
         UUID ownerId = getThreadOwnerId();
-        List<Lock<UUID, String>> locks = filterLocksByOwnerId(transactionManager.getLocks(), ownerId);
-        List<Lock<UUID, String>> locksToRelease = new ArrayList<>();
+        DataSet dataSet = getDataSet(dataSetCode);
 
-        for (Lock<UUID, String> lock : locks)
+        if (dataSet == null)
         {
-            if (lock.getResource().contains(dataSetCode)) // TODO improve the condition
-            {
-                locksToRelease.add(lock);
-            }
+            throw new UnknownDataSetException(dataSetCode);
         }
 
-        boolean success = transactionManager.unlock(locksToRelease);
+        List<Lock<UUID, String>> locks = new ArrayList<>(transactionManager.getLocks());
+        locks = filterLocksByOwnerId(locks, ownerId);
+        locks = filterLocksByDataSet(locks, dataSet);
+
+        boolean success = transactionManager.unlock(locks);
 
         if (!success)
         {
@@ -161,9 +161,11 @@ public class ShareIdManager implements IShareIdManager
     @Override public void releaseLocks()
     {
         UUID ownerId = getThreadOwnerId();
-        List<Lock<UUID, String>> locksToRelease = filterLocksByOwnerId(transactionManager.getLocks(), ownerId);
 
-        boolean success = transactionManager.unlock(locksToRelease);
+        List<Lock<UUID, String>> locks = new ArrayList<>(transactionManager.getLocks());
+        locks = filterLocksByOwnerId(locks, ownerId);
+
+        boolean success = transactionManager.unlock(locks);
 
         if (!success)
         {
@@ -203,17 +205,6 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
-    private List<DataSet> filterDataSetsByMutability(List<DataSet> dataSets, boolean mutable)
-    {
-        return dataSets.stream().filter(dataSet ->
-        {
-            Date experimentImmutableDate = dataSet.getExperiment() != null ? dataSet.getExperiment().getImmutableDataDate() : null;
-            Date sampleImmutableDate = dataSet.getSample() != null ? dataSet.getSample().getImmutableDataDate() : null;
-
-            return (experimentImmutableDate == null && sampleImmutableDate == null) == mutable;
-        }).collect(Collectors.toList());
-    }
-
     private List<Lock<UUID, String>> createLocks(UUID owner, List<DataSet> dataSets, LockType lockType)
     {
         List<Lock<UUID, String>> locks = new ArrayList<>();
@@ -225,6 +216,17 @@ public class ShareIdManager implements IShareIdManager
         }
 
         return locks;
+    }
+
+    private List<DataSet> filterDataSetsByMutability(List<DataSet> dataSets, boolean mutable)
+    {
+        return dataSets.stream().filter(dataSet ->
+        {
+            Date experimentImmutableDate = dataSet.getExperiment() != null ? dataSet.getExperiment().getImmutableDataDate() : null;
+            Date sampleImmutableDate = dataSet.getSample() != null ? dataSet.getSample().getImmutableDataDate() : null;
+
+            return (experimentImmutableDate == null && sampleImmutableDate == null) == mutable;
+        }).collect(Collectors.toList());
     }
 
     private List<Lock<UUID, String>> filterLocksByOwnerId(List<Lock<UUID, String>> locks, UUID ownerId)

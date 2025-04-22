@@ -48,7 +48,7 @@ public class HierarchicalLockManagerTest extends AbstractTest {
     @Before
     public void setup() {
         pathLockFinder = new PathLockFinder();
-        lockManager = new LockManager<>(pathLockFinder);
+        lockManager = new LockManager<>(new NopLockMapper<>(), pathLockFinder);
     }
 
     @After

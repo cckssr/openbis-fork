@@ -16,8 +16,10 @@
 package ch.ethz.sis.afs.dto;
 
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 @Value
+@NonFinal
 public class Lock<O, E> {
     private O owner;
     private E resource;

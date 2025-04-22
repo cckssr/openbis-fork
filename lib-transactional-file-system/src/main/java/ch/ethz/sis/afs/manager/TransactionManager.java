@@ -52,11 +52,11 @@ public class TransactionManager
 
     private RecoveredTransactions recoveredTransactions;
 
-    public TransactionManager(JsonObjectMapper jsonObjectMapper,
+    public TransactionManager(LockMapper<UUID, String> lockMapper, JsonObjectMapper jsonObjectMapper,
             String writeAheadLogRoot,
             String storageRoot) throws IOException
     {
-        this.lockManager = new LockManager<>(new PathLockFinder());
+        this.lockManager = new LockManager<>(lockMapper, new PathLockFinder());
         this.jsonObjectMapper = jsonObjectMapper;
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;

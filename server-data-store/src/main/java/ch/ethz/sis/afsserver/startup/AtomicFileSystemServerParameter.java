@@ -26,6 +26,7 @@ public enum AtomicFileSystemServerParameter
     //
     // Parameters from the AFS Library
     //
+    lockMapperClass,
     jsonObjectMapperClass,
     writeAheadLogRoot,
     storageRoot,

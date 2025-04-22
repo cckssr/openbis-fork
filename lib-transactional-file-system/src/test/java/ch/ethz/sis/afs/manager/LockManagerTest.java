@@ -37,7 +37,7 @@ public class LockManagerTest extends AbstractTest {
 
     @Before
     public void setup() {
-        lockManager = new LockManager<>(null);
+        lockManager = new LockManager<>(new NopLockMapper<>(),null);
     }
 
     @After

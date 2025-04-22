@@ -22,6 +22,7 @@ import ch.ethz.sis.afsserver.client.DummyAuthApiClientTest;
 import ch.ethz.sis.afsserver.client.OpenBisAuthApiClientTest;
 import ch.ethz.sis.afsserver.impl.ApiServerAdapterTest;
 import ch.ethz.sis.afsserver.impl.ApiServerTest;
+import ch.ethz.sis.afsserver.server.common.ShareIdManagerTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -29,6 +30,7 @@ import ch.ethz.sis.afsserver.impl.ApiServerTest;
         ApiServerAdapterTest.class,
         DummyAuthApiClientTest.class,
         OpenBisAuthApiClientTest.class,
+        ShareIdManagerTest.class
 })
 
 public class TestSuite

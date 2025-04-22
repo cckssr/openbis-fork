@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.afs.startup;
 
+import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afs.manager.TransactionManager;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.log.LogFactory;
@@ -24,6 +25,7 @@ import ch.ethz.sis.shared.startup.Configuration;
 
 import java.io.File;
 import java.util.List;
+import java.util.UUID;
 
 public class Main
 {
@@ -48,14 +50,17 @@ public class Main
         LogManager.setLogFactory(logFactory);
 
         //
+        LockMapper<UUID, String> lockMapper = configuration.getSharableInstance(AtomicFileSystemParameter.lockMapperClass);
         JsonObjectMapper jsonObjectMapper =
                 configuration.getSharableInstance(AtomicFileSystemParameter.jsonObjectMapperClass);
         String writeAheadLogRoot =
                 configuration.getStringProperty(AtomicFileSystemParameter.writeAheadLogRoot);
         String storageRoot = configuration.getStringProperty(AtomicFileSystemParameter.storageRoot);
 
+        lockMapper.init(configuration);
+
         TransactionManager transactionManager =
-                new TransactionManager(jsonObjectMapper, writeAheadLogRoot, storageRoot);
+                new TransactionManager(lockMapper, jsonObjectMapper, writeAheadLogRoot, storageRoot);
         transactionManager.reCommitTransactionsAfterCrash();
     }
 }

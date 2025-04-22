@@ -62,7 +62,7 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
         String writeAheadLogRoot = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.writeAheadLogRoot);
         String storageRoot = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
         jsonObjectMapper = AFSEnvironment.getDefaultAFSConfig().getSharableInstance(AtomicFileSystemParameter.jsonObjectMapperClass);
-        lockManager = new LockManager<>(new PathLockFinder());
+        lockManager = new LockManager<>(new NopLockMapper<>(), new PathLockFinder());
         transaction = new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, new RecoveredTransactions());
     }
 

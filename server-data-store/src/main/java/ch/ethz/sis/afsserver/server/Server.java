@@ -16,7 +16,9 @@
 package ch.ethz.sis.afsserver.server;
 
 import java.util.List;
+import java.util.UUID;
 
+import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.HttpServer;
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
@@ -80,7 +82,7 @@ public final class Server<CONNECTION, API>
 
     public Server(Configuration configuration) throws Exception
     {
-        //1. Load logging plugin, Initializing LogManager
+        // 1. Load logging plugin, Initializing LogManager
         shutdown = false;
 
         LogFactoryFactory logFactoryFactory = new LogFactoryFactory();
@@ -96,7 +98,11 @@ public final class Server<CONNECTION, API>
         logger.info("=== Server Bootstrap ===");
         logger.info("Running with java.version: " + System.getProperty("java.version"));
 
-        // 2 Create pathinfo DB and archiving DB
+        // 2.0 Lock mapper
+        LockMapper<UUID, String> lockMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.lockMapperClass);
+        lockMapper.init(configuration);
+
+        // 2.1 Create pathinfo DB and archiving DB
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
         if (pathInfoDatabaseConfiguration != null)
         {
@@ -113,25 +119,26 @@ public final class Server<CONNECTION, API>
                     null);
         }
 
-        // 2.1 Load DB plugin
+        // 2.2 Load DB plugin
         logger.info("Creating Connection Factory");
         Factory<Configuration, Configuration, CONNECTION> connectionFactory =
                 configuration.getSharableInstance(AtomicFileSystemServerParameter.connectionFactoryClass);
         connectionFactory.init(configuration);
 
+        // 2.3 Workers factory
         logger.info("Creating Workers Factory");
         Factory<Configuration, Configuration, Worker<CONNECTION>> workerFactory =
                 configuration.getSharableInstance(AtomicFileSystemServerParameter.workerFactoryClass);
         workerFactory.init(configuration);
 
-        // 2.2 Creating workers pool
+        // 2.4 Creating workers pool
         logger.info("Creating server workers");
         int poolSize = configuration.getIntegerProperty(AtomicFileSystemServerParameter.poolSize);
 
         connectionsPool = new Pool<>(poolSize, configuration, connectionFactory);
         workersPool = new Pool<>(poolSize, configuration, workerFactory);
 
-        // 2.3 Init API Server observer
+        // 2.5 Init API Server observer
         APIServerObserver<CONNECTION> apiServerObserver = configuration.getSharableInstance(AtomicFileSystemServerParameter.apiServerObserver);
         if (apiServerObserver == null)
         {
@@ -139,7 +146,7 @@ public final class Server<CONNECTION, API>
         }
         apiServerObserver.init(configuration);
 
-        // 2.4 Creating API Server
+        // 2.6 Creating API Server
         logger.info("Creating API server");
         Class<?> publicApiInterface = configuration.getInterfaceClass(AtomicFileSystemServerParameter.publicApiInterface);
         String interactiveSessionKey = configuration.getStringProperty(AtomicFileSystemServerParameter.apiServerInteractiveSessionKey);
@@ -149,16 +156,16 @@ public final class Server<CONNECTION, API>
                 new APIServer(connectionsPool, workersPool, publicApiInterface, interactiveSessionKey, transactionManagerKey, apiServerWorkerTimeout,
                         apiServerObserver);
 
-        // 2.5 Creating JSON RPC Service
+        // 2.7 Creating JSON RPC Service
         logger.info("Creating API Server adaptor");
         jsonObjectMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
         apiServerAdapter = new ApiServerAdapter(apiServer, jsonObjectMapper);
 
-        // 2.6 Creating Download Service
+        // 2.8 Creating Download Service
         logger.info("Creating Download Server adaptor");
         httpDownloadAdapter = new HttpDownloadAdapter<>(apiServer, jsonObjectMapper);
 
-        // 2.7 Creating HTTP Service
+        // 2.9 Creating HTTP Service
         int httpServerPort = configuration.getIntegerProperty(AtomicFileSystemServerParameter.httpServerPort);
         int maxContentLength = configuration.getIntegerProperty(AtomicFileSystemServerParameter.httpMaxContentLength);
         logger.info("Starting HTTP Service on port " + httpServerPort + " with maxContentLength " + maxContentLength);
@@ -166,7 +173,7 @@ public final class Server<CONNECTION, API>
         String httpServerUri = configuration.getStringProperty(AtomicFileSystemServerParameter.httpServerUri);
         httpServer.start(httpServerPort, maxContentLength, httpServerUri, new HttpServerHandler[] { apiServerAdapter });
 
-        // 2.8 Create objects used by the old DSS code
+        // 2.10 Create objects used by the old DSS code
         ServiceProvider.configure(configuration);
         ServiceProviderFactory.setInstance(ServiceProvider.getInstance());
         PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider(ServiceProvider.getInstance()));
@@ -174,12 +181,12 @@ public final class Server<CONNECTION, API>
         ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider(ServiceProvider.getInstance()));
         ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider(ServiceProvider.getInstance()));
 
-        // 2.9 Create maintenance tasks
+        // 2.11 Create maintenance tasks
         logger.info("Starting maintenance tasks");
-        MaintenanceTaskParameters[] maintenanceTaskParameters = MaintenanceTaskUtils.   createMaintenancePlugins(configuration.getProperties());
+        MaintenanceTaskParameters[] maintenanceTaskParameters = MaintenanceTaskUtils.createMaintenancePlugins(configuration.getProperties());
         maintenancePlugins = MaintenanceTaskUtils.startupMaintenancePlugins(maintenanceTaskParameters);
 
-        // 2.10 Init observer
+        // 2.12 Init observer
         observer = configuration.getSharableInstance(AtomicFileSystemServerParameter.serverObserver);
         if (observer == null)
         {

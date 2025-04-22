@@ -18,6 +18,7 @@ package ch.ethz.sis.afsserver;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.ethz.sis.afs.manager.NopLockMapper;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.impl.NettyHttpServer;
@@ -75,9 +76,11 @@ public class ServerClientEnvironmentFS
         configuration.put(AtomicFileSystemServerParameter.logFactoryClass, Log4J2LogFactory.class.getName());
         //        configuration.put(AtomicFileSystemServerParameter.logConfigFile,  "objectfs-afs-config-log4j2.xml");
 
+        configuration.put(AtomicFileSystemServerParameter.lockMapperClass, NopLockMapper.class.getName());
         configuration.put(AtomicFileSystemServerParameter.jsonObjectMapperClass, JacksonObjectMapper.class.getName());
         configuration.put(AtomicFileSystemServerParameter.writeAheadLogRoot, "./targets/tests/transactions");
         configuration.put(AtomicFileSystemServerParameter.storageRoot, "./targets/tests/storage");
+        configuration.put(AtomicFileSystemServerParameter.storageUuid, "test-storage-uuid");
 
         configuration.put(AtomicFileSystemServerParameter.httpServerClass, NettyHttpServer.class.getName());
         configuration.put(AtomicFileSystemServerParameter.httpServerUri, "/fileserver");

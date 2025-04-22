@@ -2,7 +2,11 @@ package ch.ethz.sis.afsserver.server.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,6 +22,7 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.AbstractTest;
 import ch.ethz.sis.afsserver.ServerClientEnvironmentFS;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.worker.providers.impl.OpenBISAuthorizationInfoProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
@@ -26,11 +31,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.shared.io.IOUtils;
+import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
 
 public class ShareIdManagerTest extends AbstractTest
 {
+
+    private static final Logger logger = LogManager.getLogger(ShareIdManagerTest.class);
 
     private static final String SHARE_1 = "1";
 
@@ -43,10 +53,10 @@ public class ShareIdManagerTest extends AbstractTest
     private static final String DATA_SET_2_CODE = "data-set-2";
 
     private static final String DATA_SET_1_LOCATION =
-            STORAGE_UUID + "/test-location-1/" + String.join("/", IOUtils.getShards(DATA_SET_1_CODE)) + "/" + DATA_SET_1_CODE;
+            STORAGE_UUID + "/" + String.join("/", IOUtils.getShards(DATA_SET_1_CODE)) + "/" + DATA_SET_1_CODE;
 
     private static final String DATA_SET_2_LOCATION =
-            STORAGE_UUID + "/test-location-2/" + String.join("/", IOUtils.getShards(DATA_SET_2_CODE)) + "/" + DATA_SET_2_CODE;
+            STORAGE_UUID + "/" + String.join("/", IOUtils.getShards(DATA_SET_2_CODE)) + "/" + DATA_SET_2_CODE;
 
     private Mockery context;
 
@@ -145,6 +155,38 @@ public class ShareIdManagerTest extends AbstractTest
         testLockDataSetsInDifferentThreads(immutableExperimentDataSet1, immutableExperimentDataSet2, null);
     }
 
+    @Test
+    public void testLockAndReleaseLock() throws Exception
+    {
+        DataSet mutableSampleDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(mutableSampleDataSet, false);
+
+        DataSet immutableSampleDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(immutableSampleDataSet, false);
+
+        DataSet mutableExperimentDataSet = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(mutableExperimentDataSet, false);
+
+        DataSet immutableExperimentDataSet = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(immutableExperimentDataSet, false);
+    }
+
+    @Test
+    public void testLockAndReleaseAllLocks() throws Exception
+    {
+        DataSet mutableSampleDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(mutableSampleDataSet, true);
+
+        DataSet immutableSampleDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(immutableSampleDataSet, true);
+
+        DataSet mutableExperimentDataSet = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(mutableExperimentDataSet, true);
+
+        DataSet immutableExperimentDataSet = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockAndReleaseLock(immutableExperimentDataSet, true);
+    }
+
     private void testLockDataSetsInTheSameThread(DataSet dataSet1, DataSet dataSet2, String expectedException) throws Exception
     {
         context.checking(new Expectations()
@@ -197,8 +239,9 @@ public class ShareIdManagerTest extends AbstractTest
             {
                 shareIdManager.lock(dataSet1.getCode());
                 channel.send("locked");
-            } catch (Exception e)
+            } catch (Throwable e)
             {
+                logger.info("Thread 1 exception", e);
                 exception1.set(e);
             }
         });
@@ -210,8 +253,9 @@ public class ShareIdManagerTest extends AbstractTest
             try
             {
                 shareIdManager.lock(dataSet2.getCode());
-            } catch (Exception e)
+            } catch (Throwable e)
             {
+                logger.info("Thread 2 exception", e);
                 exception2.set(e);
             }
         });
@@ -226,15 +270,112 @@ public class ShareIdManagerTest extends AbstractTest
         assertEquals(expectedException, exception2.get() != null ? exception2.get().getMessage() : null);
     }
 
+    private void testLockAndReleaseLock(DataSet dataSet, boolean releaseAllLocks) throws Exception
+    {
+        context.checking(new Expectations()
+        {
+            {
+                allowing(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet)));
+            }
+        });
+
+        IShareIdManager shareIdManager = shareIdManager();
+
+        MessageChannel channel1 = new MessageChannel();
+        MessageChannel channel2 = new MessageChannel();
+
+        AtomicReference<Throwable> exception1 = new AtomicReference<Throwable>(null);
+        Thread thread1 = new Thread(() ->
+        {
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked");
+                channel2.assertNextMessage("failed");
+                if (releaseAllLocks)
+                {
+                    shareIdManager.releaseLock(dataSet.getCode());
+                } else
+                {
+                    shareIdManager.releaseLocks();
+                }
+                channel1.send("released");
+                channel2.assertNextMessage("locked");
+            } catch (Throwable e)
+            {
+                logger.info("Thread 1 exception", e);
+                exception1.set(e);
+            }
+        });
+
+        AtomicReference<Throwable> exception2 = new AtomicReference<Throwable>(null);
+        Thread thread2 = new Thread(() ->
+        {
+            try
+            {
+                channel1.assertNextMessage("locked");
+                try
+                {
+                    shareIdManager.lock(dataSet.getCode());
+                    fail();
+                } catch (Exception e)
+                {
+                    assertEquals("Locking of data sets: [" + dataSet.getCode() + "] failed.", e.getMessage());
+                }
+                channel2.send("failed");
+                channel1.assertNextMessage("released");
+                shareIdManager.lock(dataSet.getCode());
+                channel2.send("locked");
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2 exception", e);
+                exception2.set(e);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        assertNull(exception1.get());
+        assertNull(exception2.get());
+    }
+
     private ShareIdManager shareIdManager() throws Exception
     {
-        JsonObjectMapper jsonObjectMapper = ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration()
-                .getInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
-        String storageRoot = ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration().getStringProperty(
-                AtomicFileSystemServerParameter.storageRoot);
-        String writeAheadLogRoot = ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration().getStringProperty(
-                AtomicFileSystemServerParameter.writeAheadLogRoot);
-        TransactionManager transactionManager = new TransactionManager(jsonObjectMapper, writeAheadLogRoot, storageRoot);
+        Configuration configuration = new Configuration(ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration().getProperties());
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, "test-openbis-url");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISTimeout, "1");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUser, "test-user");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISPassword, "test-password");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISLastSeenDeletionFile, "last-seen-deletion-file");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISLastSeenDeletionBatchSize, "1");
+        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISLastSeenDeletionIntervalInSeconds, "1");
+
+        JsonObjectMapper jsonObjectMapper = configuration.getInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
+        String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+        String writeAheadLogRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot);
+
+        Path storageRootPath = Paths.get(storageRoot);
+        if (!Files.exists(storageRootPath))
+        {
+            Files.createDirectory(storageRootPath);
+        }
+
+        Path share = Paths.get(storageRoot, "1");
+        if (!Files.exists(share))
+        {
+            Files.createDirectory(share);
+        }
+
+        OpenBISAuthorizationInfoProvider openBISAuthorizationInfoProvider = new OpenBISAuthorizationInfoProvider();
+        openBISAuthorizationInfoProvider.init(configuration);
+
+        TransactionManager transactionManager =
+                new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot);
         return new ShareIdManager(openBISFacade, transactionManager, storageRoot, 0, 0);
     }
 
