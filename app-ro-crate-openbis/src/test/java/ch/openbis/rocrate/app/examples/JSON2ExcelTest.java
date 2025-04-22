@@ -71,8 +71,7 @@ public class JSON2ExcelTest {
                 "PUBLICATION.PUBLICATION_YEAR",
                 "XMLCOMMENTS");
 
-
-        assertEquals(8, openBisModel.getEntities().size());
+        assertEquals(11, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(2, openBisModel.getSpaces().size());
         assertEquals(2, openBisModel.getProjects().size());
@@ -127,6 +126,14 @@ public class JSON2ExcelTest {
             assertEquals("Science",
                     creatorPublisher.getProperties().get("PUBLICATION_PUBLISHER.IDENTIFIER")
                             .toString());
+            assertTrue(maybePublicatioNType.get().getPropertyAssignments().stream()
+                    .filter(x -> x.getPropertyType()
+                            .getCode().equals("PUBLICATION.PUBLISHER")).findFirst().orElseThrow()
+                    .isMandatory());
+            assertFalse(maybePublicatioNType.get().getPropertyAssignments().stream()
+                    .filter(x -> x.getPropertyType()
+                            .getCode().equals("XMLCOMMENTS")).findFirst().orElseThrow()
+                    .isMandatory());
 
 
         }

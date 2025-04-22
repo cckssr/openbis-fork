@@ -16,7 +16,7 @@ public interface IMetadataEntry
     /* Returns the type ID of this entry */
     String getClassId();
 
-    /* Returns the type of the entry */
+    /* Returns the types of the entry */
     Set<String> getTypes();
 
     /* These are key-value pairs for serialization. These are single-valued.

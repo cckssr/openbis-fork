@@ -1,10 +1,7 @@
 package ch.openbis.rocrate.app.writer;
 
 import ch.eth.sis.rocrate.SchemaFacade;
-import ch.eth.sis.rocrate.facade.ISchemaFacade;
-import ch.eth.sis.rocrate.facade.MetadataEntry;
-import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.TypeProperty;
+import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.writer.mapping.Mapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
@@ -45,6 +42,7 @@ public class Writer
                 "https://www.w3.org/TR/rdf-schema");
         builder.addValuePairToContext("owl",
                 "https://www.w3.org/TR/owl-ref");
+        builder.addValuePairToContext("openBIS", "_:");
 
         RoCrate crate = builder.build();
         ISchemaFacade schemaFacade = new SchemaFacade(crate);
@@ -73,48 +71,48 @@ public class Writer
     {
 
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_SPACE);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_SPACE);
+            facade.addType(type);
 
         }
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_OBJECT);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_OBJECT);
+            facade.addType(type);
 
         }
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_COLLECTION);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_COLLECTION);
+            facade.addType(type);
         }
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_PROJECT);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_PROJECT);
+            facade.addType(type);
         }
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_DATASET);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_DATASET);
+            facade.addType(type);
         }
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId(SYSTEM_VOCABULARY);
-            facade.addType(rdfsClass);
+            Type type = new Type();
+            type.setId(SYSTEM_VOCABULARY);
+            facade.addType(type);
         }
 
     }
 
     private void addSchema(ISchemaFacade facade, MapResult mapResult)
     {
-        for (RdfsClass rdfsClass : mapResult.getSchema().getClasses())
+        for (IType type : mapResult.getSchema().getClasses())
         {
-            facade.addType(rdfsClass);
+            facade.addType(type);
 
         }
-        for (TypeProperty rdfsProperty : mapResult.getSchema().getProperties())
+        for (PropertyType rdfsProperty : mapResult.getSchema().getProperties())
         {
             facade.addPropertyType(rdfsProperty);
 

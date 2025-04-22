@@ -57,9 +57,9 @@ public class PsiExcel2Json
                 maybePublicatioNType =
                 openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
                         PUBLICATION_TYPE_PERMID)).findFirst();
-        List<String> publicationCodes = List.of("scicat_scicatUser", "scicat_relatedPublications",
-                "scicat_numberOfFiles",
-                "scicat_sizeOfArchive");
+        List<String> publicationCodes = List.of("scicatUser", "relatedPublications",
+                "numberOfFiles",
+                "sizeOfArchive");
 
         assertEquals(1, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
@@ -73,11 +73,11 @@ public class PsiExcel2Json
         }
         AbstractEntityPropertyHolder
                 entity = openBisModel.getEntities().values().stream().findFirst().orElseThrow();
-        assertEquals("0", entity.getProperties().get("scicat_numberOfFiles").toString());
-        assertTrue("0", entity.getProperties().get("scicat_relatedPublications").toString()
+        assertEquals("0", entity.getProperties().get("numberOfFiles").toString());
+        assertTrue("0", entity.getProperties().get("relatedPublications").toString()
                 .contains("Miettinen"));
-        assertEquals("schlepuetz_c", entity.getProperties().get("scicat_scicatUser").toString());
-        assertEquals("0", entity.getProperties().get("scicat_sizeOfArchive").toString());
+        assertEquals("schlepuetz_c", entity.getProperties().get("scicatUser").toString());
+        assertEquals("0", entity.getProperties().get("sizeOfArchive").toString());
 
 
 

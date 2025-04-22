@@ -1,7 +1,6 @@
 package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import org.apache.poi.ss.usermodel.Cell;
@@ -111,9 +110,6 @@ public class SampleHelper
 
         for (var property : sampleObject.getProperties().entrySet())
         {
-            SampleType sampleType = openBisModel.getSampleTypes().stream()
-                    .filter(x -> x.equals(sampleObject.getType()))
-                    .findFirst().orElseThrow();
 
 
             //propertyRowValues.createCell(1).setCellValue(projectId + "/" + sampleObject.code); // Identifier

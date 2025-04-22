@@ -1,8 +1,6 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
-import ch.eth.sis.rocrate.facade.MetadataEntry;
-import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.TypeProperty;
+import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
@@ -33,28 +31,44 @@ public class Mapper
 
     public MapResult transform(OpenBisModel openBisModel)
     {
-        Map<String, List<Pair<PropertyAssignment, RdfsClass>>> classesUsingProperty =
+        Map<String, List<Pair<PropertyAssignment, IType>>> classesUsingProperty =
                 new HashMap<>();
 
         Map<String, String> openBisPropertiesToRdfsProperties = new HashMap<>();
 
         Map<IEntityType, String> typeToRdfsName = new HashMap<>();
 
-        List<RdfsClass> classes = new ArrayList<RdfsClass>();
-        List<TypeProperty> properties = new ArrayList<TypeProperty>();
+        Map<String, IType> classes = new LinkedHashMap<>();
+        List<PropertyType> properties = new ArrayList<PropertyType>();
         Map<String, List<IEntityType>> reverseMapping = new HashMap<String, List<IEntityType>>();
         Map<String, List<IEntityType>> rdfsPropertiesUsedIn =
                 new HashMap<String, List<IEntityType>>();
-        List<String> typesWithSpace = new ArrayList<>();
-        List<String> typesWithProject = new ArrayList<>();
-        List<String> typesWithCollection
+        List<IType> typesWithSpace = new ArrayList<>();
+        List<IType> typesWithProject = new ArrayList<>();
+        List<IType> typesWithCollection
                 = new ArrayList<>();
+
+        {
+            IType type = getSpaceType();
+            classes.put(type.getId(), getSpaceType());
+        }
+
+        {
+            IType type = getCollectionType();
+            classes.put(type.getId(), getCollectionType());
+        }
+
+        {
+            IType type = getProjectType();
+            classes.put(type.getId(), getProjectType());
+        }
+
 
 
         for (Map.Entry<EntityTypePermId, IEntityType> schemaEntry : openBisModel.getEntityTypes()
                 .entrySet())
         {
-            RdfsClass myClass = new RdfsClass();
+            Type myClass = new Type();
             IEntityType value = schemaEntry.getValue();
             String rdfsID = value.getCode();
             myClass.setId(rdfsID);
@@ -64,9 +78,9 @@ public class Mapper
             reverseMapping.put(rdfsID, types);
             typeToRdfsName.put(value, rdfsID);
             typesWithCollection
-                    .add(rdfsID);
-            typesWithProject.add(rdfsID);
-            typesWithSpace.add(rdfsID);
+                    .add(myClass);
+            typesWithProject.add(myClass);
+            typesWithSpace.add(myClass);
 
             if (value instanceof SampleType)
             {
@@ -101,36 +115,64 @@ public class Mapper
                 typesProperty.add(value);
                 rdfsPropertiesUsedIn.put(propertyName, typesProperty);
 
-                List<Pair<PropertyAssignment, RdfsClass>> classes1 =
+                List<Pair<PropertyAssignment, IType>> classes1 =
                         classesUsingProperty.getOrDefault(propertyName,
-                                new ArrayList<Pair<PropertyAssignment, RdfsClass>>());
+                                new ArrayList<Pair<PropertyAssignment, IType>>());
                 classes1.add(
-                        new ImmutablePair<PropertyAssignment, RdfsClass>(propertyAssignment,
+                        new ImmutablePair<PropertyAssignment, IType>(propertyAssignment, (IType)
                                 myClass));
                 classesUsingProperty.put(propertyName, classes1);
             }
 
-
-            classes.add(myClass);
+            classes.put(myClass.getId(), myClass);
 
         }
 
-        for (Map.Entry<String, List<Pair<PropertyAssignment, RdfsClass>>> a : classesUsingProperty
+        for (Map.Entry<String, List<Pair<PropertyAssignment, IType>>> a : classesUsingProperty
                 .entrySet())
         {
-            TypeProperty rdfsProperty = new TypeProperty();
+            PropertyType rdfsProperty = new PropertyType();
             rdfsProperty.setId(a.getKey());
 
-            List<String> domainIncludes =
-                    a.getValue().stream().map(x -> x.getRight().getId()).toList();
+            List<IType> domainIncludes =
+                    a.getValue().stream().map(x -> x.getRight()).toList();
             rdfsProperty.setDomainIncludes(domainIncludes);
-            List<String> range =
-                    a.getValue().stream().map(x -> x.getLeft().getPropertyType().getDataType())
-                            .map(Enum::name)
-                            .distinct()
-                            .map(this::mapOpenBisToXsdDataTypes)
-                            .collect(Collectors.toList());
-            rdfsProperty.setRangeIncludes(range);
+
+            rdfsProperty.setLabel(a.getValue().stream().map(Pair::getLeft)
+                    .map(PropertyAssignment::getPropertyType)
+                    .findFirst().map(x -> x.getLabel()).orElse(null)
+            );
+
+            rdfsProperty.setComment(a.getValue().stream().map(Pair::getLeft)
+                    .map(PropertyAssignment::getPropertyType)
+                    .findFirst().map(x -> x.getDescription()).orElse(null));
+
+            int minCardinality = a.getValue().stream().map(x -> x.getLeft())
+                    .findFirst()
+                    .map(x -> x.isMandatory())
+                    .orElse(false) ? 1 : 0;
+            rdfsProperty.setMinCardinality(minCardinality);
+            rdfsProperty.setMaxCardinality(minCardinality);
+
+            int maxCardinality = a.getValue().stream().map(x -> x.getLeft())
+                    .findFirst()
+                    .map(x -> x.getPropertyType().isMultiValue())
+                    .orElse(false) ? 0 : 1;
+
+            rdfsProperty.setMaxCardinality(maxCardinality);
+
+
+            a.getValue().stream().map(x -> x.getLeft().getPropertyType().getDataType())
+                    .filter(x -> x != DataType.SAMPLE)
+                    .map(Enum::name)
+                    .distinct()
+                    .map(this::mapOpenBisToXsdDataTypes)
+                    .forEach(rdfsProperty::addDataType);
+            a.getValue().stream()
+                    .filter(x -> x.getLeft().getPropertyType().getDataType() == DataType.SAMPLE)
+                    .map(x -> classes.get(x.getLeft().getPropertyType().getSampleType().getCode()))
+                    .forEach(rdfsProperty::addType);
+
 
             List<String> semanticAnnotations = a.getValue().stream().map(x -> x.getLeft())
                     .map(x -> x.getPropertyType())
@@ -148,22 +190,22 @@ public class Mapper
         for (Map.Entry<SpacePermId, Space> space : openBisModel.getSpaces().entrySet())
         {
             metaDataEntries.add(
-                    new MetadataEntry(space.getKey().getPermId(), Set.of(Writer.SYSTEM_SPACE),
+                    new MetadataEntry(space.getKey().getPermId(), Set.of(Constants.GRAPH_ID_SPACE),
                             Map.of(), Map.of()))
             ;
         }
-        for (var project : openBisModel.getProjects().entrySet())
-        {
+        openBisModel.getProjects().entrySet().forEach(project -> {
             Map<String, Serializable> props = new HashMap<>();
             if (project.getValue().getDescription() != null)
             {
                 props.put("description", project.getValue().getDescription());
             }
             metaDataEntries.add(
-                    new MetadataEntry(project.getKey().toString(), Set.of(Writer.SYSTEM_PROJECT),
+                    new MetadataEntry(project.getKey().toString(),
+                            Set.of(Constants.GRAPH_ID_PROJECT),
                             props,
                             Map.of()));
-        }
+        });
 
         for (var metaData : openBisModel.getEntities().entrySet())
         {
@@ -243,35 +285,40 @@ public class Mapper
 
         }
         {
-            TypeProperty typeProperty = new TypeProperty();
-            typeProperty.setId(Constants.PROPERTY_SPACE);
-            typeProperty.setDomainIncludes(typesWithSpace);
-            typeProperty.setRangeIncludes(List.of(Constants.GRAPH_ID_SPACE));
-            properties.add(typeProperty);
+            PropertyType propertyType = new PropertyType();
+            propertyType.setId(Constants.PROPERTY_SPACE);
+            propertyType.setDomainIncludes(typesWithSpace);
+            propertyType.addType(getSpaceType()); //Constants.GRAPH_ID_SPACE
+            properties.add(propertyType);
         }
         {
-            TypeProperty typeProperty = new TypeProperty();
-            typeProperty.setId(Constants.PROPERTY_PROJECT);
-            typeProperty.setDomainIncludes(typesWithProject);
-            typeProperty.setRangeIncludes(List.of(Constants.GRAPH_ID_PROJECT));
+            PropertyType propertyType = new PropertyType();
+            propertyType.setId(Constants.PROPERTY_PROJECT);
+            propertyType.setDomainIncludes(typesWithProject);
+            propertyType.addType(getProjectType());
         }
         {
-            TypeProperty typeProperty = new TypeProperty();
-            typeProperty.setId(Constants.PROPERTY_COLLECTION);
-            typeProperty.setDomainIncludes(typesWithCollection
+            PropertyType propertyType = new PropertyType();
+            propertyType.setId(Constants.PROPERTY_COLLECTION);
+            propertyType.setDomainIncludes(typesWithCollection
             );
-            typeProperty.setRangeIncludes(List.of(":COLLECTION"));
-            properties.add(typeProperty);
+            propertyType.addType(getCollectionType());
+            properties.add(propertyType);
 
         }
 
 
         return new MapResult(
-                new RdfsSchema(classes, properties),
+                new RdfsSchema(classes.values().stream().collect(Collectors.toList()), properties),
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries);
     }
 
-    String mapOpenBisToXsdDataTypes(String openBisType)
+    IType mapOpenBisToRdfType()
+    {
+        return null;
+    }
+
+    IDataType mapOpenBisToXsdDataTypes(String openBisType)
     {
         DataType type = DataType.valueOf(openBisType);
 
@@ -279,44 +326,40 @@ public class Mapper
         {
             case VARCHAR, MULTILINE_VARCHAR, XML ->
             {
-                return "xsd:string";
+                return LiteralType.STRING;
             }
             case BOOLEAN ->
             {
-                return "xsd:boolean";
+                return LiteralType.STRING;
             }
             case CONTROLLEDVOCABULARY ->
             {
-                return "xsd:string";
+                return LiteralType.STRING;
             }
             case INTEGER ->
             {
-                return "xsd:integer";
+                return LiteralType.INTEGER;
             }
             case DATE ->
             {
-                return "xsd:dateTime";
+                return LiteralType.DATETIME;
 
             }
             case JSON ->
             {
-                return "xsd:string";
+                return LiteralType.STRING;
             }
             case REAL ->
             {
-                return "xsd:double";
+                return LiteralType.DOUBLE;
             }
             case TIMESTAMP ->
             {
-                return "xsd:dateTime";
-            }
-            case SAMPLE ->
-            {
-                return ":Object";
+                return LiteralType.DATETIME;
             }
             case HYPERLINK ->
             {
-                return "xsd:string";
+                return LiteralType.STRING;
             }
 
             default ->
@@ -331,9 +374,9 @@ public class Mapper
     {
         if (dataType.equals(DataType.BOOLEAN))
         {
-            return "is" + label;
+            return "openBIS:is" + label;
         }
-        return "has" + label;
+        return "openBIS:has" + label;
 
     }
 
@@ -344,6 +387,33 @@ public class Mapper
             return label.replaceFirst("is", "");
         }
         return label.replaceFirst("has", "");
+    }
+
+    IType getSpaceType()
+    {
+        Type type = new Type();
+        type.setId(Constants.GRAPH_ID_SPACE);
+        type.setType("rdfs:class");
+        return type;
+
+    }
+
+    IType getCollectionType()
+    {
+        Type type = new Type();
+        type.setId(Constants.GRAPH_ID_Collection);
+        type.setType("rdfs:class");
+        return type;
+
+    }
+
+    IType getProjectType()
+    {
+        Type type = new Type();
+        type.setId(Constants.GRAPH_ID_PROJECT);
+        type.setType("rdfs:class");
+        return type;
+
     }
 
 }

@@ -134,10 +134,10 @@ public class RdfToModel
 
         }
 
-        Map<String, List<String>> typesToProperties = new LinkedHashMap<>();
+        Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
         for (IPropertyType typeProperty : typeProperties)
         {
-            for (String domain : typeProperty.getDomain())
+            for (IType domain : typeProperty.getDomain())
             {
                 List<String> typeToDomain =
                         typesToProperties.getOrDefault(domain, new ArrayList<>());
@@ -153,6 +153,7 @@ public class RdfToModel
                 PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
                 fetchOptions.withSemanticAnnotations();
                 fetchOptions.withVocabulary();
+                fetchOptions.withSampleType();
 
                 propertyType.setFetchOptions(fetchOptions);
             }
@@ -169,20 +170,21 @@ public class RdfToModel
             DataType dataType = matchDataType(a);
             propertyType.setDataType(dataType);
 
-            for (String domain : a.getDomain())
+            for (IType domain : a.getDomain())
             {
                 if (requiresSpecialHandling(a))
                 {
                     continue;
                 }
 
-                SampleType sampleType = codeToSampleType.get(openBisifyCode(domain));
+                SampleType sampleType = codeToSampleType.get(openBisifyCode(domain.getId()));
                 if (sampleType != null)
                 {
                     List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
                     List<PropertyAssignment> newAssignments = new ArrayList<>();
                     PropertyAssignment curProperty =
-                            getPropertyAssignment(propertyType, sampleType);
+                            getPropertyAssignment(propertyType, sampleType,
+                                    a.getMinCardinality() == 1, a.getMaxCardinality() == 0);
 
                     newAssignments.add(curProperty);
                     if (assignments != null)
@@ -432,7 +434,7 @@ public class RdfToModel
     }
 
     private static PropertyAssignment getPropertyAssignment(PropertyType propertyType,
-            SampleType sampleType)
+            SampleType sampleType, boolean mandatory, boolean multiValued)
     {
         PropertyAssignment curProperty = new PropertyAssignment();
         curProperty.setPropertyType(propertyType);
@@ -449,7 +451,8 @@ public class RdfToModel
         }
         curProperty.setSemanticAnnotations(new ArrayList<>());
 
-        curProperty.setMandatory(false);
+        curProperty.setMandatory(mandatory);
+        propertyType.setMultiValue(multiValued);
 
         curProperty.setPermId(new PropertyAssignmentPermId(sampleType.getPermId(),
                 propertyType.getPermId()));
@@ -505,6 +508,10 @@ public class RdfToModel
     {
         Pattern patternBool = Pattern.compile("^is");
         Pattern patternRest = Pattern.compile("^has");
+
+        Pattern prefix = Pattern.compile("");
+
+        a = a.replaceFirst("^[a-zA-Z0-9]*:", "");
 
         if (a.startsWith("_"))
         {

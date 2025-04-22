@@ -230,7 +230,7 @@ interface ISchemaFacade
 {
 
   /* Adds a single class */
-  void addType(IType rdfsClass);
+  void addType(IType type);
 
   /** Retrieves all Classes */
   List<IType> getTypes();

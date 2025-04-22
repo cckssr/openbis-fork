@@ -29,4 +29,30 @@ public enum LiteralType implements IDataType
     {
         return typeName;
     }
+
+    public static boolean isLiteralType(String typeName)
+    {
+        for (LiteralType literalType : LiteralType.values())
+        {
+            if (typeName.equals(literalType.getTypeName()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static LiteralType getByTypeName(String typeName)
+    {
+        for (LiteralType literalType : LiteralType.values())
+        {
+            if (typeName.equals(literalType.getTypeName()))
+            {
+                return literalType;
+            }
+        }
+        throw new IllegalArgumentException("Unknown literal type: " + typeName);
+
+    }
+
 }

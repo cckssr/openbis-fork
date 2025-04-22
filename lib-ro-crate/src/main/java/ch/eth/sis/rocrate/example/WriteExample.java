@@ -20,17 +20,17 @@ public class WriteExample
         ISchemaFacade schemaFacade = SchemaFacade.of(roCrateBuilder.build());
 
         {
-            RdfsClass rdfsClass = new RdfsClass();
-            rdfsClass.setId("TextResource");
-            rdfsClass.setSubClassOf(List.of("https://schema.org/Thing"));
-            rdfsClass.setOntologicalAnnotations(
+            Type type = new Type();
+            type.setId("TextResource");
+            type.setSubClassOf(List.of("https://schema.org/Thing"));
+            type.setOntologicalAnnotations(
                     List.of("https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dcmitype/Text/"));
-            schemaFacade.addType(rdfsClass);
+            schemaFacade.addType(type);
 
-            TypeProperty property = new TypeProperty();
+            PropertyType property = new PropertyType();
             property.setId("hasDateSubmitted");
             property.setTypes(List.of(LiteralType.DATETIME));
-            rdfsClass.addProperty(property);
+            type.addProperty(property);
 
 
             property.setOntologicalAnnotations(

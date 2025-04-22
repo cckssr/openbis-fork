@@ -2,8 +2,9 @@ package ch.eth.sis.rocrate.facade;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class RdfsClass implements IType
+public class Type implements IType
 {
     String id;
 
@@ -13,9 +14,13 @@ public class RdfsClass implements IType
 
     List<String> ontologicalAnnotations;
 
-    List<TypeProperty> rdfsProperties;
+    List<PropertyType> rdfsProperties;
 
-    public RdfsClass()
+    String comment;
+
+    String label;
+
+    public Type()
     {
         this.subClassOf = new ArrayList<>();
         this.ontologicalAnnotations = new ArrayList<>();
@@ -40,13 +45,25 @@ public class RdfsClass implements IType
         return ontologicalAnnotations;
     }
 
+    @Override
+    public String getComment()
+    {
+        return null;
+    }
+
+    @Override
+    public String getLabel()
+    {
+        return null;
+    }
+
     /**
      * This is a convenience method for adding a property to a class.
      *
      */
-    public void addProperty(TypeProperty rdfsProperty)
+    public void addProperty(PropertyType rdfsProperty)
     {
-        List<String> domainIncludes = rdfsProperty.getDomainIncludes();
+        List<IType> domainIncludes = rdfsProperty.getDomainIncludes();
         if (domainIncludes == null)
         {
             domainIncludes = new ArrayList<>();
@@ -56,7 +73,7 @@ public class RdfsClass implements IType
         {
             throw new IllegalArgumentException("Class id is null");
         }
-        domainIncludes.add(id);
+        domainIncludes.add(this);
     }
 
     public void setId(String id)
@@ -82,5 +99,32 @@ public class RdfsClass implements IType
     public void setOntologicalAnnotations(List<String> ontologicalAnnotations)
     {
         this.ontologicalAnnotations = ontologicalAnnotations;
+    }
+
+    public void setComment(String comment)
+    {
+        this.comment = comment;
+    }
+
+    public void setLabel(String label)
+    {
+        this.label = label;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Type type = (Type) o;
+        return Objects.equals(id, type.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id);
     }
 }

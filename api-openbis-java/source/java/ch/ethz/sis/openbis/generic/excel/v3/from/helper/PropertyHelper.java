@@ -1,12 +1,17 @@
 package ch.ethz.sis.openbis.generic.excel.v3.from.helper;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.excel.v3.from.utils.IAttribute;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,10 +79,15 @@ public class PropertyHelper extends BasicImportHelper
 
     Map<String, PropertyType> accumulator = new HashMap<>();
 
+    List<ReferenceToResolve> referencesToResolve = new ArrayList<>();
+
     VocabularyHelper vocabularyHelper;
 
-    public PropertyHelper(VocabularyHelper vocabularyHelper)
+    ObjectTypeHelper objectTypeHelper;
+
+    public PropertyHelper(VocabularyHelper vocabularyHelper, ObjectTypeHelper objectTypeHelper)
     {
+        this.objectTypeHelper = objectTypeHelper;
         this.vocabularyHelper = vocabularyHelper;
     }
 
@@ -98,6 +108,7 @@ public class PropertyHelper extends BasicImportHelper
                 Attribute.Description);
         String dataTypeXLS =
                 getValueByColumnName(header, values, Attribute.DataType);
+        PropertyType creation = new PropertyType();
 
         DataType dataType = null;
         String dataTypeObjectType = null;
@@ -105,6 +116,9 @@ public class PropertyHelper extends BasicImportHelper
         {
             dataType = DataType.valueOf(dataTypeXLS.split(SAMPLE_DATA_TYPE_MANDATORY_TYPE)[0]);
             dataTypeObjectType = dataTypeXLS.split(SAMPLE_DATA_TYPE_MANDATORY_TYPE)[1];
+
+            referencesToResolve.add(new ReferenceToResolve(creation, dataTypeObjectType));
+
         } else
         {
             dataType = DataType.valueOf(dataTypeXLS);
@@ -122,12 +136,13 @@ public class PropertyHelper extends BasicImportHelper
         PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
         fetchOptions.withVocabulary();
         fetchOptions.withSemanticAnnotations();
-        PropertyType creation = new PropertyType();
+        fetchOptions.withSampleType();
         creation.setCode(code);
         creation.setLabel(propertyLabel);
         creation.setDescription(description);
         creation.setDataType(dataType);
         creation.setFetchOptions(fetchOptions);
+        //creation.setSampleType();
 
         /*
         if (dataType == DataType.SAMPLE && dataTypeObjectType != null)
@@ -169,5 +184,35 @@ public class PropertyHelper extends BasicImportHelper
     protected void validateHeader(Map<String, Integer> header)
     {
 
+    }
+
+    public List<ReferenceToResolve> getReferencesToResolve()
+    {
+        return referencesToResolve;
+    }
+
+    public void resolveReferences()
+    {
+        for (var a : referencesToResolve)
+        {
+            IEntityType enitityType = objectTypeHelper.getResult()
+                    .get(new EntityTypePermId(a.sampleTypeCode, EntityKind.SAMPLE));
+            SampleType sampleType = (SampleType) enitityType;
+            a.propertyType.setSampleType(sampleType);
+        }
+
+    }
+
+    public static class ReferenceToResolve
+    {
+        PropertyType propertyType;
+
+        String sampleTypeCode;
+
+        public ReferenceToResolve(PropertyType propertyType, String sampleTypeCode)
+        {
+            this.propertyType = propertyType;
+            this.sampleTypeCode = sampleTypeCode;
+        }
     }
 }

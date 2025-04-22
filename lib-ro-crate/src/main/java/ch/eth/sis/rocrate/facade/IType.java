@@ -14,5 +14,11 @@ public interface IType
     /* Returns the ontological annotations of this type */
     List<String> getOntologicalAnnotations();
 
+    /* Returns a human-readable description of this type */
+    String getComment();
+
+    /* Returns a human-readable label of this type */
+    String getLabel();
+
 
 }

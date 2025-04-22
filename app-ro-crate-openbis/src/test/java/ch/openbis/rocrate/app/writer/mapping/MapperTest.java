@@ -1,7 +1,7 @@
 package ch.openbis.rocrate.app.writer.mapping;
 
 import ch.eth.sis.rocrate.facade.MetadataEntry;
-import ch.eth.sis.rocrate.facade.TypeProperty;
+import ch.eth.sis.rocrate.facade.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -13,7 +13,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
@@ -50,7 +49,7 @@ public class MapperTest extends TestCase
                 new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
-        assertTrue(result.getSchema().getClasses().isEmpty());
+        assertEquals(3, result.getSchema().getClasses().size());
         assertEquals(result.getSchema().getProperties().size(), 2);
         assertTrue(result.getMetaDataEntries().isEmpty());
         assertTrue(result.getMappingInfo().getRdfsToObjects().isEmpty());
@@ -100,7 +99,7 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
-        assertEquals(1, result.getSchema().getClasses().size());
+        assertEquals(4, result.getSchema().getClasses().size());
         assertEquals(2, result.getSchema().getProperties().size());
         assertTrue(result.getMetaDataEntries().isEmpty());
 
@@ -122,7 +121,8 @@ public class MapperTest extends TestCase
         PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
         fetchOptions.withPropertyType();
         fetchOptions.withSemanticAnnotations();
-        PropertyType propertyType = new PropertyType();
+        ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType
+                propertyType = new ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType();
         propertyType.setCode("NAME");
         propertyAssignment.setFetchOptions(fetchOptions);
         propertyAssignment.setPropertyType(propertyType);
@@ -154,9 +154,9 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
-        assertEquals(result.getSchema().getClasses().size(), 1);
-        TypeProperty res1 = result.getSchema().getProperties().get(0);
-        assertEquals("hasNAME", res1.getId());
+        assertEquals(4, result.getSchema().getClasses().size());
+        PropertyType res1 = result.getSchema().getProperties().get(0);
+        assertEquals("openBIS:hasNAME", res1.getId());
         assertTrue(result.getMetaDataEntries().isEmpty());
 
     }
@@ -175,7 +175,8 @@ public class MapperTest extends TestCase
         PropertyAssignmentFetchOptions fetchOptions = new PropertyAssignmentFetchOptions();
         fetchOptions.withPropertyType();
         fetchOptions.withSemanticAnnotations();
-        PropertyType propertyType = new PropertyType();
+        ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType
+                propertyType = new ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType();
         propertyType.setCode("NAME");
         propertyAssignment.setFetchOptions(fetchOptions);
         propertyAssignment.setPropertyType(propertyType);
@@ -242,10 +243,10 @@ public class MapperTest extends TestCase
         Mapper mapper = new Mapper();
         MapResult result = mapper.transform(openBisModel);
 
-        assertEquals(result.getSchema().getClasses().size(), 1);
-        assertEquals("hasNAME", result.getSchema().getProperties().get(0).getId());
+        assertEquals(4, result.getSchema().getClasses().size());
+        assertEquals("openBIS:hasNAME", result.getSchema().getProperties().get(0).getId());
         MetadataEntry metaDataEntry = result.getMetaDataEntries().get(0);
-        assertTrue(metaDataEntry.getValues().containsKey("hasNAME"));
+        assertTrue(metaDataEntry.getValues().containsKey("openBIS:hasNAME"));
         assertTrue(result.getMappingInfo().getRdfsToObjects().get("ENTRY1")
                 .contains(sampleType));
 

@@ -1,28 +1,28 @@
 package ch.openbis.rocrate.app.writer.mapping.types;
 
-import ch.eth.sis.rocrate.facade.RdfsClass;
-import ch.eth.sis.rocrate.facade.TypeProperty;
+import ch.eth.sis.rocrate.facade.IType;
+import ch.eth.sis.rocrate.facade.PropertyType;
 
 import java.util.List;
 
 public class RdfsSchema
 {
-    public RdfsSchema(List<RdfsClass> classes, List<TypeProperty> properties)
+    public RdfsSchema(List<IType> classes, List<PropertyType> properties)
     {
         this.classes = classes;
         this.properties = properties;
     }
 
-    List<RdfsClass> classes;
+    List<IType> classes;
 
-    List<TypeProperty> properties;
+    List<PropertyType> properties;
 
-    public List<RdfsClass> getClasses()
+    public List<IType> getClasses()
     {
         return classes;
     }
 
-    public List<TypeProperty> getProperties()
+    public List<PropertyType> getProperties()
     {
         return properties;
     }

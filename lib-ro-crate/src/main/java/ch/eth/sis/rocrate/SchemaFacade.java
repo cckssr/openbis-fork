@@ -26,6 +26,20 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
 
+    String rangeIdentifier = "schema:rangeIncludes";
+
+    String domainIdentifier = "schema:domainIncludes";
+
+    public static final String OWL_MIN_CARDINALITY = "owl:minCardinality";
+
+    public static final String OWL_MAX_CARDINALITY = "owl:maxCardinality";
+
+    public static final String RDFS_LABEL = "rdfs:label";
+
+    public static final String RDFS_COMMENT = "rdfs:comment";
+
+
+
     Pattern p;
 
     String localPrefix = ":";
@@ -61,6 +75,9 @@ public class SchemaFacade implements ISchemaFacade
         DataEntity.DataEntityBuilder builder = new DataEntity.DataEntityBuilder();
         builder.addProperty("@id", rdfsClass.getId());
         builder.addProperty("@type", RDFS_CLASS);
+        builder.addProperty(RDFS_LABEL, rdfsClass.getLabel());
+        builder.addProperty(RDFS_COMMENT, rdfsClass.getComment());
+
         rdfsClass.getSubClassOf().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
         this.types.put(rdfsClass.getId(), rdfsClass);
         DataEntity entity = builder.build();
@@ -88,12 +105,16 @@ public class SchemaFacade implements ISchemaFacade
 
         builder.setId(rdfsProperty.getId());
         builder.addProperty("@type", RDFS_PROPERTY);
+        builder.addProperty(OWL_MIN_CARDINALITY, rdfsProperty.getMinCardinality());
+        builder.addProperty(OWL_MAX_CARDINALITY, rdfsProperty.getMaxCardinality());
+        builder.addProperty(RDFS_LABEL, rdfsProperty.getLabel());
+        builder.addProperty(RDFS_COMMENT, rdfsProperty.getComment());
 
         var stuff = builder.build();
         stuff.addIdListProperties("schema:rangeIncludes",
                 rdfsProperty.getRange());
         stuff.addIdListProperties("schema:domainIncludes",
-                rdfsProperty.getDomain());
+                rdfsProperty.getDomain().stream().map(x -> x.getId()).collect(Collectors.toList()));
         stuff.addIdListProperties(EQUIVALENT_CONCEPT,
                 rdfsProperty.getOntologicalAnnotations());
         crate.addDataEntity(stuff);
@@ -181,6 +202,19 @@ public class SchemaFacade implements ISchemaFacade
     {
 
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
+        Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());
+        for (var keyValPair : keyValuePairs.entrySet())
+        {
+            if (keyValPair.getValue().equals("http://schema.org/rangeIncludes"))
+            {
+                rangeIdentifier = keyValPair.getKey();
+            }
+            if (keyValPair.getValue().equals("http://schema.org/domainIncludes"))
+            {
+                domainIdentifier = keyValPair.getKey();
+            }
+        }
+
 
 
 
@@ -200,32 +234,77 @@ public class SchemaFacade implements ISchemaFacade
             {
                 case "rdfs:Class" ->
                 {
-                    RdfsClass rdfsClass = new RdfsClass();
-                    rdfsClass.setSubClassOf(parseMultiValued(entity, "rdfs:subClassOf"));
-                    rdfsClass.setOntologicalAnnotations(
+                    Type myType = new Type();
+                    myType.setSubClassOf(parseMultiValued(entity, "rdfs:subClassOf"));
+                    myType.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CLASS));
-                    rdfsClass.setId(resolvePrefixSingleValue(id));
-                    classes.put(resolvePrefixSingleValue(id), rdfsClass);
+                    myType.setId(resolvePrefixSingleValue(id));
+                    classes.put(resolvePrefixSingleValue(id), myType);
 
                 }
+
+
+            }
+
+        }
+
+        for (DataEntity entity : crate.getAllDataEntities())
+        {
+            String type = entity
+                    .getProperty("@type").asText();
+            String id =
+                    entity.getProperty("@id")
+                            .asText();
+
+            switch (type)
+            {
                 case "rdfs:Property" ->
                 {
-                    TypeProperty rdfsProperty = new TypeProperty();
+                    PropertyType rdfsProperty = new PropertyType();
                     rdfsProperty.setId(resolvePrefixSingleValue(id));
+                    {
+                        int minCardinality =
+                                Optional.ofNullable(entity.getProperty("owl:minCardinality")).map(
+                                                JsonNode::numberValue)
+                                        .map(Number::intValue)
+                                        .orElse(0);
+                        int maxCardinality =
+                                Optional.ofNullable(entity.getProperty("owl:maxCardinality"))
+                                        .map(JsonNode::numberValue)
+                                        .map(Number::intValue)
+                                        .orElse(1);
+                        rdfsProperty.setMaxCardinality(maxCardinality);
+                        rdfsProperty.setMinCardinality(minCardinality);
+
+                    }
+
                     rdfsProperty.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CONCEPT));
-                    rdfsProperty.setRangeIncludes(
-                            parseMultiValued(entity, "schema:rangeIncludes").stream()
-                                    .map(x -> resolvePrefixSingleValue(x)).collect(
-                                            Collectors.toList()));
+
+                    List<String> rawRange = parseMultiValued(entity, rangeIdentifier);
+
+                    List<IDataType> dataTypes = rawRange.stream()
+                            .filter(LiteralType::isLiteralType)
+                            .map(LiteralType::getByTypeName)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
+                    List<IType> types = rawRange.stream()
+                            .filter(x -> !LiteralType.isLiteralType(x))
+                            .map(this::resolvePrefixSingleValue)
+                            .map(classes::get)
+                            .collect(Collectors.toList());
+
+                    dataTypes.stream().forEach(rdfsProperty::addDataType);
+                    types.forEach(rdfsProperty::addType);
+
                     rdfsProperty.setDomainIncludes(
-                            parseMultiValued(entity, "schema:domainIncludes").stream()
-                                    .map(x -> resolvePrefixSingleValue(x)).collect(
+                            parseMultiValued(entity, domainIdentifier).stream()
+                                    .map(x -> resolvePrefixSingleValue(x))
+                                    .map(classes::get).collect(
                                             Collectors.toList()));
                     properties.put(resolvePrefixSingleValue(id), rdfsProperty);
 
                 }
-
             }
 
         }
@@ -340,6 +419,14 @@ public class SchemaFacade implements ISchemaFacade
     {
         ObjectMapper objectMapper = new ObjectMapper();
         LinkedHashMap vals = objectMapper.readValue(metaDataJson, LinkedHashMap.class);
+
+        if (vals.get("@context") instanceof LinkedHashMap<?, ?>)
+        {
+
+            return (Map<String, String>) vals.get("@context");
+
+        }
+
         List<Object> nodes = (List<Object>) vals.get("@context");
         Map key_vals = (Map) nodes.get(1);
 

@@ -106,7 +106,6 @@ public class ExcelReader
         this.vocabularyHelper = new VocabularyHelper();
         this.vocabularyTermHelper = new VocabularyTermHelper(vocabularyHelper);
         this.dataSetTypeHelper = new DataSetTypeHelper();
-        this.propertyHelper = new PropertyHelper(vocabularyHelper);
         this.collectionTypeHelper = new CollectionTypeHelper();
         this.objectTypeHelper = new ObjectTypeHelper();
         this.spaceHelper = new SpaceHelper();
@@ -116,6 +115,7 @@ public class ExcelReader
         this.objectHelper =
                 new ObjectHelper(spaceHelper, projectHelper, collectionTypeHelper,
                         objectTypeHelper, collectionHelper);
+        this.propertyHelper = new PropertyHelper(vocabularyHelper, objectTypeHelper);
 
         this.propertyAssignmentHelper =
                 new PropertyAssignmentHelper(dataSetTypeHelper, collectionTypeHelper,
@@ -392,6 +392,7 @@ public class ExcelReader
         schema.putAll(dataSetResult);
 
         objectHelper.resolveReferences();
+        propertyHelper.resolveReferences();
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new HashMap<>();
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> objectResult = objectHelper.getResult();
