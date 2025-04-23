@@ -13,8 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import ch.ethz.sis.afs.manager.TransactionManager;
@@ -28,6 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.shared.io.IOUtils;
@@ -57,23 +56,6 @@ public class ShareIdManagerTest extends AbstractTest
 
     private static final String DATA_SET_2_LOCATION =
             STORAGE_UUID + "/" + String.join("/", IOUtils.getShards(DATA_SET_2_CODE)) + "/" + DATA_SET_2_CODE;
-
-    private Mockery context;
-
-    private IOpenBISFacade openBISFacade;
-
-    @Before
-    public void beforeMethod()
-    {
-        context = new Mockery();
-        openBISFacade = context.mock(IOpenBISFacade.class);
-    }
-
-    @After
-    public void afterMethod()
-    {
-        context.assertIsSatisfied();
-    }
 
     @Test
     public void testLockTheSameDataSetInTheSameThread() throws Exception
@@ -158,49 +140,60 @@ public class ShareIdManagerTest extends AbstractTest
     @Test
     public void testLockAndReleaseLock() throws Exception
     {
-        DataSet mutableSampleDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(mutableSampleDataSet, false);
+        DataSet mutableSampleDataSet1 = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet mutableSampleDataSet2 = dataSet(null, sample(true), DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(mutableSampleDataSet1, mutableSampleDataSet2, false);
 
-        DataSet immutableSampleDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(immutableSampleDataSet, false);
+        DataSet immutableSampleDataSet1 = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet immutableSampleDataSet2 = dataSet(null, sample(false), DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(immutableSampleDataSet1, immutableSampleDataSet2, false);
 
-        DataSet mutableExperimentDataSet = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(mutableExperimentDataSet, false);
+        DataSet mutableExperimentDataSet1 = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet mutableExperimentDataSet2 = dataSet(experiment(true), null, DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(mutableExperimentDataSet1, mutableExperimentDataSet2, false);
 
-        DataSet immutableExperimentDataSet = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(immutableExperimentDataSet, false);
+        DataSet immutableExperimentDataSet1 = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet immutableExperimentDataSet2 = dataSet(experiment(false), null, DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(immutableExperimentDataSet1, immutableExperimentDataSet2, false);
     }
 
     @Test
     public void testLockAndReleaseAllLocks() throws Exception
     {
-        DataSet mutableSampleDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(mutableSampleDataSet, true);
+        DataSet mutableSampleDataSet1 = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet mutableSampleDataSet2 = dataSet(null, sample(true), DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(mutableSampleDataSet1, mutableSampleDataSet2, true);
 
-        DataSet immutableSampleDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(immutableSampleDataSet, true);
+        DataSet immutableSampleDataSet1 = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet immutableSampleDataSet2 = dataSet(null, sample(false), DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(immutableSampleDataSet1, immutableSampleDataSet2, true);
 
-        DataSet mutableExperimentDataSet = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(mutableExperimentDataSet, true);
+        DataSet mutableExperimentDataSet1 = dataSet(experiment(true), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet mutableExperimentDataSet2 = dataSet(experiment(true), null, DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(mutableExperimentDataSet1, mutableExperimentDataSet2, true);
 
-        DataSet immutableExperimentDataSet = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
-        testLockAndReleaseLock(immutableExperimentDataSet, true);
+        DataSet immutableExperimentDataSet1 = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        DataSet immutableExperimentDataSet2 = dataSet(experiment(false), null, DATA_SET_2_CODE, SHARE_1, DATA_SET_2_LOCATION);
+        testLockAndReleaseLock(immutableExperimentDataSet1, immutableExperimentDataSet2, true);
     }
 
     private void testLockDataSetsInTheSameThread(DataSet dataSet1, DataSet dataSet2, String expectedException) throws Exception
     {
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
         context.checking(new Expectations()
         {
             {
-                one(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet1.getCode())), with(any(DataSetFetchOptions.class)));
                 will(returnValue(searchResult(dataSet1)));
 
-                one(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet2.getCode())), with(any(DataSetFetchOptions.class)));
                 will(returnValue(searchResult(dataSet2)));
             }
         });
 
-        IShareIdManager shareIdManager = shareIdManager();
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
         shareIdManager.lock(dataSet1.getCode());
 
         Exception exception = null;
@@ -212,24 +205,29 @@ public class ShareIdManagerTest extends AbstractTest
             exception = e;
         }
 
-        assertEquals(expectedException, exception != null ? exception.getMessage() : null);
+        assertNull(exception);
+
+        context.assertIsSatisfied();
     }
 
     private void testLockDataSetsInDifferentThreads(DataSet dataSet1, DataSet dataSet2, String expectedException)
             throws Exception
     {
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
         context.checking(new Expectations()
         {
             {
-                one(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet1.getCode())), with(any(DataSetFetchOptions.class)));
                 will(returnValue(searchResult(dataSet1)));
 
-                one(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet2.getCode())), with(any(DataSetFetchOptions.class)));
                 will(returnValue(searchResult(dataSet2)));
             }
         });
 
-        IShareIdManager shareIdManager = shareIdManager();
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
         MessageChannel channel = new MessageChannel();
 
         AtomicReference<Throwable> exception1 = new AtomicReference<Throwable>(null);
@@ -268,19 +266,27 @@ public class ShareIdManagerTest extends AbstractTest
 
         assertNull(exception1.get());
         assertEquals(expectedException, exception2.get() != null ? exception2.get().getMessage() : null);
+
+        context.assertIsSatisfied();
     }
 
-    private void testLockAndReleaseLock(DataSet dataSet, boolean releaseAllLocks) throws Exception
+    private void testLockAndReleaseLock(DataSet dataSet1, DataSet dataSet2, boolean releaseAllLocks) throws Exception
     {
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
         context.checking(new Expectations()
         {
             {
-                allowing(openBISFacade).searchDataSets(with(any(DataSetSearchCriteria.class)), with(any(DataSetFetchOptions.class)));
-                will(returnValue(searchResult(dataSet)));
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet1.getCode())), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet1)));
+
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet2.getCode())), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet2)));
             }
         });
 
-        IShareIdManager shareIdManager = shareIdManager();
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
 
         MessageChannel channel1 = new MessageChannel();
         MessageChannel channel2 = new MessageChannel();
@@ -290,18 +296,19 @@ public class ShareIdManagerTest extends AbstractTest
         {
             try
             {
-                shareIdManager.lock(dataSet.getCode());
-                channel1.send("locked");
-                channel2.assertNextMessage("failed");
+                shareIdManager.lock(dataSet1.getCode());
+                shareIdManager.lock(dataSet2.getCode());
+                channel1.send("lock 1 and 2");
+                channel2.assertNextMessage("lock 2");
                 if (releaseAllLocks)
                 {
-                    shareIdManager.releaseLock(dataSet.getCode());
+                    shareIdManager.releaseLocks();
                 } else
                 {
-                    shareIdManager.releaseLocks();
+                    shareIdManager.releaseLock(dataSet2.getCode());
                 }
-                channel1.send("released");
-                channel2.assertNextMessage("locked");
+                channel1.send("release");
+                channel2.assertNextMessage("lock 1");
             } catch (Throwable e)
             {
                 logger.info("Thread 1 exception", e);
@@ -314,19 +321,51 @@ public class ShareIdManagerTest extends AbstractTest
         {
             try
             {
-                channel1.assertNextMessage("locked");
+                channel1.assertNextMessage("lock 1 and 2");
                 try
                 {
-                    shareIdManager.lock(dataSet.getCode());
-                    fail();
+                    shareIdManager.lock(dataSet2.getCode());
+                    if (isMutable(dataSet2)) // exclusive lock is expected to fail
+                    {
+                        fail();
+                    }
                 } catch (Exception e)
                 {
-                    assertEquals("Locking of data sets: [" + dataSet.getCode() + "] failed.", e.getMessage());
+                    if (isMutable(dataSet2)) // exclusive lock is expected to fail
+                    {
+                        assertEquals("Locking of data sets: [" + dataSet2.getCode() + "] failed.", e.getMessage());
+                    } else // shared lock is NOT expected to fail
+                    {
+                        fail();
+                    }
                 }
-                channel2.send("failed");
-                channel1.assertNextMessage("released");
-                shareIdManager.lock(dataSet.getCode());
-                channel2.send("locked");
+                channel2.send("lock 2");
+                channel1.assertNextMessage("release");
+                if (releaseAllLocks)
+                {
+                    shareIdManager.lock(dataSet1.getCode());
+                } else
+                {
+                    try
+                    {
+                        shareIdManager.lock(dataSet1.getCode());
+                        if (isMutable(dataSet1)) // exclusive lock is expected to fail
+                        {
+                            fail();
+                        }
+                    } catch (Exception e)
+                    {
+                        if (isMutable(dataSet1)) // exclusive lock is expected to fail
+                        {
+                            assertEquals("Locking of data sets: [" + dataSet1.getCode() + "] failed.", e.getMessage());
+                        } else // shared lock is NOT expected to fail
+                        {
+                            fail();
+                        }
+                    }
+                }
+                shareIdManager.lock(dataSet2.getCode());
+                channel2.send("lock 1");
             } catch (Throwable e)
             {
                 logger.info("Thread 2 exception", e);
@@ -342,9 +381,11 @@ public class ShareIdManagerTest extends AbstractTest
 
         assertNull(exception1.get());
         assertNull(exception2.get());
+
+        context.assertIsSatisfied();
     }
 
-    private ShareIdManager shareIdManager() throws Exception
+    private ShareIdManager shareIdManager(IOpenBISFacade openBISFacade) throws Exception
     {
         Configuration configuration = new Configuration(ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration().getProperties());
         configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, "test-openbis-url");
@@ -418,6 +459,20 @@ public class ShareIdManagerTest extends AbstractTest
         dataSet.setFetchOptions(fetchOptions);
 
         return dataSet;
+    }
+
+    private DataSetSearchCriteria dataSetSearchCriteria(String... dataSetCodes)
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+        criteria.withCodes().thatIn(List.of(dataSetCodes));
+        return criteria;
+    }
+
+    private boolean isMutable(DataSet dataSet)
+    {
+        return (dataSet.getSample() == null || dataSet.getSample().getImmutableDataDate() == null) &&
+                (dataSet.getExperiment() == null || dataSet.getExperiment().getImmutableDataDate() == null);
     }
 
     private SearchResult<DataSet> searchResult(DataSet... dataSets)
