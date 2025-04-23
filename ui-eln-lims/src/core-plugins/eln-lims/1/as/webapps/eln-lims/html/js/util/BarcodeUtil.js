@@ -301,6 +301,18 @@ var BarcodeUtil = new function() {
 
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
 
+        $barcodeTypesDropdown.on('change', function() {
+                   if(this.value === 'qrcode' || this.value === 'microqrcode') {
+                        $height.val(50)
+                        $width.val(50)
+                   } else if(this.value === 'code128') {
+                        $height.val(15)
+                        $width.val(50)
+                   }
+                   $height.trigger('change.select2');
+                   $width.trigger('change.select2');
+                 });
+
         var numberDropdownModel = [];
         for(var nIdx = 1; nIdx <= 100; nIdx++) {
             numberDropdownModel.push({ label: '' + nIdx, value: nIdx });
@@ -391,7 +403,7 @@ var BarcodeUtil = new function() {
                     orientation = 'l';
                 } else {
                     pageSize = [width+margin*2, (height) * (barcodes.length) + (barcodes.length) * margin*2 + (barcodes.length)*lineWidth ];
-                    orientation = barcodes.length <= 2 ? 'l' : 'p';
+                    orientation = pageSize[0] > pageSize[1] ? 'l' : 'p';
                 }
                 format = {
                     orientation: orientation,
@@ -767,6 +779,18 @@ var BarcodeUtil = new function() {
         var $canvas = $('<img>');
 
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
+
+        $barcodeTypesDropdown.on('change', function() {
+                   if(this.value === 'qrcode' || this.value === 'microqrcode') {
+                        $height.val(50)
+                        $width.val(50)
+                   } else if(this.value === 'code128') {
+                        $height.val(15)
+                        $width.val(50)
+                   }
+                   $height.trigger('change.select2');
+                   $width.trigger('change.select2');
+                 });
 
         var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15 },
