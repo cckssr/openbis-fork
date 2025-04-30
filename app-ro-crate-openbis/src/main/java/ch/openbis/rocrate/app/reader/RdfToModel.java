@@ -1,9 +1,6 @@
 package ch.openbis.rocrate.app.reader;
 
-import ch.eth.sis.rocrate.facade.IMetadataEntry;
-import ch.eth.sis.rocrate.facade.IPropertyType;
-import ch.eth.sis.rocrate.facade.IType;
-import ch.eth.sis.rocrate.facade.LiteralType;
+import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -182,9 +179,15 @@ public class RdfToModel
                 {
                     List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
                     List<PropertyAssignment> newAssignments = new ArrayList<>();
+                    Optional<IRestriction> maybeRestriction = domain.getResstrictions().stream()
+                            .filter(x -> x.getPropertyType().equals(a))
+                            .findFirst();
                     PropertyAssignment curProperty =
                             getPropertyAssignment(propertyType, sampleType,
-                                    a.getMinCardinality() == 1, a.getMaxCardinality() == 0);
+                                    maybeRestriction.filter(x -> x.getMinCardinality() == 1)
+                                            .isPresent(),
+                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 1)
+                                            .isPresent());
 
                     newAssignments.add(curProperty);
                     if (assignments != null)

@@ -26,6 +26,9 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String EQUIVALENT_CONCEPT = "owl:equivalentProperty";
 
+    public static final String TYPE_RESTRICTION = "owl:restriction";
+
+
     String rangeIdentifier = "schema:rangeIncludes";
 
     String domainIdentifier = "schema:domainIncludes";
@@ -33,6 +36,11 @@ public class SchemaFacade implements ISchemaFacade
     public static final String OWL_MIN_CARDINALITY = "owl:minCardinality";
 
     public static final String OWL_MAX_CARDINALITY = "owl:maxCardinality";
+
+    public static final String OWL_RESTRICTION = "owl:restriction";
+
+    public static final String ON_PROPERTY = "owl:onProperty";
+
 
     public static final String RDFS_LABEL = "rdfs:label";
 
@@ -78,6 +86,19 @@ public class SchemaFacade implements ISchemaFacade
         builder.addProperty(RDFS_LABEL, rdfsClass.getLabel());
         builder.addProperty(RDFS_COMMENT, rdfsClass.getComment());
 
+        for (IRestriction restriction : rdfsClass.getResstrictions())
+        {
+            DataEntity.DataEntityBuilder restrictionBuilder = new DataEntity.DataEntityBuilder();
+            restrictionBuilder.addProperty("@id", restriction.getId());
+            restrictionBuilder.addProperty("@type", TYPE_RESTRICTION);
+            restrictionBuilder.addIdProperty(ON_PROPERTY, restriction.getPropertyType().getId());
+            restrictionBuilder.addProperty(OWL_MIN_CARDINALITY, restriction.getMinCardinality());
+            restrictionBuilder.addProperty(OWL_MAX_CARDINALITY, restriction.getMaxCardinality());
+            builder.addIdProperty(OWL_RESTRICTION, restriction.getId());
+            crate.addDataEntity(restrictionBuilder.build());
+        }
+
+
         rdfsClass.getSubClassOf().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
         this.types.put(rdfsClass.getId(), rdfsClass);
         DataEntity entity = builder.build();
@@ -105,8 +126,6 @@ public class SchemaFacade implements ISchemaFacade
 
         builder.setId(rdfsProperty.getId());
         builder.addProperty("@type", RDFS_PROPERTY);
-        builder.addProperty(OWL_MIN_CARDINALITY, rdfsProperty.getMinCardinality());
-        builder.addProperty(OWL_MAX_CARDINALITY, rdfsProperty.getMaxCardinality());
         builder.addProperty(RDFS_LABEL, rdfsProperty.getLabel());
         builder.addProperty(RDFS_COMMENT, rdfsProperty.getComment());
 
@@ -119,6 +138,12 @@ public class SchemaFacade implements ISchemaFacade
                 rdfsProperty.getOntologicalAnnotations());
         crate.addDataEntity(stuff);
         propertyTypes.put(rdfsProperty.getId(), rdfsProperty);
+
+    }
+
+    @Override
+    public void addRestriction(IRestriction restriction)
+    {
 
     }
 
@@ -184,6 +209,12 @@ public class SchemaFacade implements ISchemaFacade
                 .toList();
     }
 
+    @Override
+    public List<IRestriction> getRestrictions()
+    {
+        return null;
+    }
+
     private boolean matchClasses(String queryClassId, IMetadataEntry entry)
     {
         if (entry.getTypes().stream().anyMatch(x -> x.equals(queryClassId)))
@@ -222,6 +253,10 @@ public class SchemaFacade implements ISchemaFacade
         Map<String, IType> classes = new LinkedHashMap<>();
         Map<String, IMetadataEntry> entries = new LinkedHashMap<>();
 
+        Map<String, Type> restrictionToTypeId = new LinkedHashMap<>();
+
+
+
         for (DataEntity entity : crate.getAllDataEntities())
         {
             String type = entity
@@ -240,6 +275,8 @@ public class SchemaFacade implements ISchemaFacade
                             parseMultiValued(entity, EQUIVALENT_CLASS));
                     myType.setId(resolvePrefixSingleValue(id));
                     classes.put(resolvePrefixSingleValue(id), myType);
+                    parseMultiValued(entity, OWL_RESTRICTION).forEach(
+                            x -> restrictionToTypeId.put(x, myType));
 
                 }
 
@@ -262,21 +299,6 @@ public class SchemaFacade implements ISchemaFacade
                 {
                     PropertyType rdfsProperty = new PropertyType();
                     rdfsProperty.setId(resolvePrefixSingleValue(id));
-                    {
-                        int minCardinality =
-                                Optional.ofNullable(entity.getProperty("owl:minCardinality")).map(
-                                                JsonNode::numberValue)
-                                        .map(Number::intValue)
-                                        .orElse(0);
-                        int maxCardinality =
-                                Optional.ofNullable(entity.getProperty("owl:maxCardinality"))
-                                        .map(JsonNode::numberValue)
-                                        .map(Number::intValue)
-                                        .orElse(1);
-                        rdfsProperty.setMaxCardinality(maxCardinality);
-                        rdfsProperty.setMinCardinality(minCardinality);
-
-                    }
 
                     rdfsProperty.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CONCEPT));
@@ -308,6 +330,30 @@ public class SchemaFacade implements ISchemaFacade
             }
 
         }
+
+        for (DataEntity entity : crate.getAllDataEntities())
+        {
+            String type = entity.getProperty("@type").asText();
+            String id =
+                    entity.getProperty("@id")
+                            .asText();
+
+            if (type.equals(OWL_RESTRICTION))
+            {
+                String onProperty = parseMultiValued(entity, ON_PROPERTY).get(0);
+                int minCardinality =
+                        entity.getProperty(OWL_MIN_CARDINALITY).numberValue().intValue();
+
+                int maxCardinality =
+                        entity.getProperty(OWL_MAX_CARDINALITY).numberValue().intValue();
+                Restriction restriction =
+                        new Restriction(id, properties.get(onProperty), minCardinality,
+                                maxCardinality);
+                restrictionToTypeId.get(id).addRestriction(restriction);
+            }
+
+        }
+
 
         for (var entity : crate.getAllDataEntities())
         {

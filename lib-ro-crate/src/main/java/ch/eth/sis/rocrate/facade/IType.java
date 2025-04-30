@@ -20,5 +20,8 @@ public interface IType
     /* Returns a human-readable label of this type */
     String getLabel();
 
+    /* Get Restrictions placed on the properties of this type */
+    List<IRestriction> getResstrictions();
+
 
 }

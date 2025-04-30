@@ -20,11 +20,14 @@ public class Type implements IType
 
     String label;
 
+    List<IRestriction> restrictions;
+
     public Type()
     {
         this.subClassOf = new ArrayList<>();
         this.ontologicalAnnotations = new ArrayList<>();
         this.rdfsProperties = new ArrayList<>();
+        this.restrictions = new ArrayList<>();
 
     }
 
@@ -55,6 +58,12 @@ public class Type implements IType
     public String getLabel()
     {
         return null;
+    }
+
+    @Override
+    public List<IRestriction> getResstrictions()
+    {
+        return restrictions;
     }
 
     /**
@@ -109,6 +118,11 @@ public class Type implements IType
     public void setLabel(String label)
     {
         this.label = label;
+    }
+
+    public void addRestriction(IRestriction restriction)
+    {
+        this.restrictions.add(restriction);
     }
 
     @Override

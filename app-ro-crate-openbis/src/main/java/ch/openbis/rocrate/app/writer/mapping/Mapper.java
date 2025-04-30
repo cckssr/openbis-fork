@@ -151,15 +151,24 @@ public class Mapper
                     .findFirst()
                     .map(x -> x.isMandatory())
                     .orElse(false) ? 1 : 0;
-            rdfsProperty.setMinCardinality(minCardinality);
-            rdfsProperty.setMaxCardinality(minCardinality);
 
             int maxCardinality = a.getValue().stream().map(x -> x.getLeft())
                     .findFirst()
                     .map(x -> x.getPropertyType().isMultiValue())
                     .orElse(false) ? 0 : 1;
 
-            rdfsProperty.setMaxCardinality(maxCardinality);
+            if (minCardinality != 0 || maxCardinality != 0)
+            {
+                for (IType type : domainIncludes)
+                {
+                    Restriction restriction =
+                            new Restriction(UUID.randomUUID().toString(), rdfsProperty,
+                                    minCardinality, maxCardinality);
+                    Type type1 = (Type) type;
+                    type1.addRestriction(restriction);
+                }
+
+            }
 
 
             a.getValue().stream().map(x -> x.getLeft().getPropertyType().getDataType())

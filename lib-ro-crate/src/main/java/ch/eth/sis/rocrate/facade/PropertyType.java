@@ -17,9 +17,6 @@ public class PropertyType implements IPropertyType
 
     List<String> ontologicalAnnotations = new ArrayList<>();
 
-    int minCardinality = 0;
-
-    int maxCardinality = 1;
 
     String label;
 
@@ -72,18 +69,6 @@ public class PropertyType implements IPropertyType
     }
 
     @Override
-    public int getMinCardinality()
-    {
-        return minCardinality;
-    }
-
-    @Override
-    public int getMaxCardinality()
-    {
-        return maxCardinality;
-    }
-
-    @Override
     public String getComment()
     {
         return comment;
@@ -133,16 +118,6 @@ public class PropertyType implements IPropertyType
         {
             this.rangeIncludes.add(type);
         }
-    }
-
-    public void setMinCardinality(int minCardinality)
-    {
-        this.minCardinality = minCardinality;
-    }
-
-    public void setMaxCardinality(int maxCardinality)
-    {
-        this.maxCardinality = maxCardinality;
     }
 
     public void setLabel(String label)

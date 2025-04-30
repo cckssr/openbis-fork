@@ -17,6 +17,9 @@ public interface ISchemaFacade
     /* Adds a single property */
     void addPropertyType(IPropertyType property);
 
+    /* Adds a restriction */
+    void addRestriction(IRestriction restriction);
+
     /* Get all Properties */
     List<IPropertyType> getPropertyTypes();
 
@@ -31,5 +34,7 @@ public interface ISchemaFacade
 
     /* Get all metadata entities */
     List<IMetadataEntry> getEntries(String rdfsClassId);
+
+    List<IRestriction> getRestrictions();
 
 }

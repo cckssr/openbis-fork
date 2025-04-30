@@ -16,12 +16,6 @@ public interface IPropertyType
     /* Returns the ontological annotations of this property type */
     List<String> getOntologicalAnnotations();
 
-    /* Returns whether this property has a min cardinality. 0 means optional, 1 means mandatory. */
-    int getMinCardinality();
-
-    /* Returns whether this property has a max cardinality. 0 means many values possible, 1 means only one is possible. */
-    int getMaxCardinality();
-
     /* Returns a human-readable description of this type */
     String getComment();
 
