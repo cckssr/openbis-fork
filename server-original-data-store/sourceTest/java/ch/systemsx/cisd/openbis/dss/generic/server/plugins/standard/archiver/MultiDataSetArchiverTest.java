@@ -568,6 +568,9 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         ds1.setDataSetSize(10L);
         transaction.insertDataset(ds1, container);
         transaction.commit();
+
+        createContainerFile(container.getPath());
+
         prepareUpdateShareIdAndSize(ds2, 20);
         prepareConsistencyCheck(ds2.getDataSetCode());
         prepareLockAndReleaseDataSet(ds2);
@@ -763,6 +766,8 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         transaction.insertDataset(ds2, container);
         transaction.commit();
 
+        createContainerFile(container.getPath());
+
         MultiDataSetArchiver archiver = createArchiver(null);
         ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
 
@@ -773,6 +778,43 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         assertEquals("[]", status.getErrorStatuses().toString());
         assertEquals("[]", Arrays.asList(staging.list()).toString());
         assertEquals("[ds2]: AVAILABLE true\n", statusUpdater.toString());
+        assertEquals("Containers:\nMultiDataSetArchiverContainerDTO [id=0, path=path, unarchiving requested=false]\n"
+                + "Data sets:\nMultiDataSetArchiverDataSetDTO [id=1, code=ds2, containerId=0, sizeInBytes=20]\n"
+                + "committed: true, rolledBack: false", transaction.toString());
+        context.assertIsSatisfied();
+    }
+
+    @Test
+    public void testArchiveDataSetWithArchiveDBEntriesButNoFilesInTheArchive()
+    {
+        properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
+        MultiDataSetArchiverContainerDTO container = transaction.createContainer("path");
+        ds2.setDataSetSize(20L);
+        transaction.insertDataset(ds2, container);
+        transaction.commit();
+
+        MultiDataSetArchiver archiver = createArchiver(null);
+        ProcessingStatus status = archiver.archive(Arrays.asList(ds2, afsDataSet), archiverContext, false);
+
+        AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
+                        + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n",
+                getLogContent());
+        assertEquals(
+                "[ERROR: \"Archiving failed :Inconsistency between archive database and archive storage found. The following containers appear in the archive database but could not be found in the archive storage: [MultiDataSetArchiverContainerDTO [id=0, path=path, unarchiving requested=false]].\n"
+                        + "\n"
+                        + "This should not normally happen. Potential scenarios that could have led to this situation:\n"
+                        + "- Archive database was unavailable and could not be updated properly after the previous failed archiving attempt\n"
+                        + "- Data has been manually removed from the archive storage but the archive database was not updated accordingly\n"
+                        + "- Archive storage failed and lost the previously archived data\n"
+                        + "\n"
+                        + "Potential solution (use with caution):\n"
+                        + "1) Make sure the data of problematic data sets is still in the data store\n"
+                        + "2) Manually change archiving status of the problematic data sets to 'AVAILABLE' and present_in_archive flag to 'FALSE'\n"
+                        + "3) Delete entries of the problematic data sets from the archive database\n"
+                        + "4) Retrigger archiving of the problematic data sets\"]", status.getErrorStatuses().toString());
+        assertEquals("[]", Arrays.asList(staging.list()).toString());
+        assertEquals("[ds2]: AVAILABLE false\n", statusUpdater.toString());
         assertEquals("Containers:\nMultiDataSetArchiverContainerDTO [id=0, path=path, unarchiving requested=false]\n"
                 + "Data sets:\nMultiDataSetArchiverDataSetDTO [id=1, code=ds2, containerId=0, sizeInBytes=20]\n"
                 + "committed: true, rolledBack: false", transaction.toString());
@@ -791,6 +833,9 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         ds2.setDataSetSize(20L);
         transaction.insertDataset(ds2, container);
         transaction.commit();
+
+        createContainerFile(container.getPath());
+
         assertEquals(true, new File(share, ds1.getDataSetCode()).exists());
         assertEquals(true, new File(share, ds2.getDataSetCode()).exists());
 
@@ -1590,6 +1635,22 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
     {
         return content.replaceAll("0:\\d{2}:\\d{2}\\.\\d{3}", "0:??:??.???")
                 .replaceAll("\\d{8}-\\d{6}", "yyyyMMdd-HHmmss");
+    }
+
+    private void createContainerFile(String containerPath)
+    {
+        try
+        {
+            File containerFile = new File(archive, containerPath);
+            boolean success = containerFile.createNewFile();
+            if (!success)
+            {
+                throw new RuntimeException("Could not create file: " + containerFile.getAbsolutePath());
+            }
+        } catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
 }

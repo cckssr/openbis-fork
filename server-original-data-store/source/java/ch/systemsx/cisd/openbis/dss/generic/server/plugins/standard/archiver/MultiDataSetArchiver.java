@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -349,6 +350,8 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     protected DatasetProcessingStatuses doArchive(List<DatasetDescription> paramDataSets,
             ArchiverTaskContext context, boolean removeFromDataStore)
     {
+        assertConsistencyBetweenArchiveDBAndArchiveStorage(paramDataSets, removeFromDataStore);
+
         LinkedList<DatasetDescription> dataSets = new LinkedList<DatasetDescription>(paramDataSets);
         MultiDataSetProcessingStatuses result = new MultiDataSetProcessingStatuses();
 
@@ -403,7 +406,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     private void filterBasedOnArchiveStatus(LinkedList<? extends IDatasetLocation> dataSets,
             DatasetProcessingStatuses result, FilterOption filterOption, Status status, Operation operation)
     {
-        for (Iterator<? extends IDatasetLocation> iterator = dataSets.iterator(); iterator.hasNext();)
+        for (Iterator<? extends IDatasetLocation> iterator = dataSets.iterator(); iterator.hasNext(); )
         {
             IDatasetLocation dataSet = iterator.next();
             boolean isPresentInArchive = isDataSetPresentInArchive(dataSet.getDataSetCode());
@@ -591,6 +594,44 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
                         + createChecker.createReport());
             }
         }
+    }
+
+    private void assertConsistencyBetweenArchiveDBAndArchiveStorage(List<DatasetDescription> dataSets, boolean removeFromDataStore)
+    {
+        operationLog.info("Starts consistency check between archive database and archive storage");
+
+        String[] dataSetCodes = dataSets.stream().map(DatasetDescription::getDataSetCode).toArray(String[]::new);
+
+        List<MultiDataSetArchiverContainerDTO> containers = getReadonlyQuery().listContainersWithDataSets(dataSetCodes);
+        List<MultiDataSetArchiverContainerDTO> containersMissingInArchiveStorage = new ArrayList<>();
+
+        for (MultiDataSetArchiverContainerDTO container : containers)
+        {
+            File containerFileInArchiveStorage = new File(getFileOperations().getOriginalArchiveFilePath(container.getPath()));
+            if (!containerFileInArchiveStorage.exists())
+            {
+                containersMissingInArchiveStorage.add(container);
+            }
+        }
+
+        if (!containersMissingInArchiveStorage.isEmpty())
+        {
+            throw new EnvironmentFailureException(
+                    "Inconsistency between archive database and archive storage found. The following containers appear in the archive database but could not be found in the archive storage: "
+                            + containersMissingInArchiveStorage + ".\n\n"
+                            + "This should not normally happen. Potential scenarios that could have led to this situation:\n"
+                            + "- Archive database was unavailable and could not be updated properly after the previous failed archiving attempt\n"
+                            + "- Data has been manually removed from the archive storage but the archive database was not updated accordingly\n"
+                            + "- Archive storage failed and lost the previously archived data\n\n"
+                            + "Potential solution (use with caution):\n"
+                            + "1) Make sure the data of problematic data sets is still in the data store\n"
+                            + "2) Manually change archiving status of the problematic data sets to 'AVAILABLE' and present_in_archive flag to 'FALSE'\n"
+                            + "3) Delete entries of the problematic data sets from the archive database\n"
+                            + "4) Retrigger archiving of the problematic data sets"
+            );
+        }
+
+        operationLog.info("Consistency check between archive database and archive storage finished.");
     }
 
     protected DataSetAndPathInfoDBConsistencyChecker createChecker()
@@ -1055,8 +1096,8 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         if (totalSumInBytes > maximumUnarchivingCapacityInMB * FileUtils.ONE_MB)
         {
             String message = String.format("Total size of selected data sets (%.2f MB)"
-                    + " and those already scheduled for unarchiving (%.2f MB) exceeds capacity."
-                    + " Please narrow down your selection or try again later.",
+                            + " and those already scheduled for unarchiving (%.2f MB) exceeds capacity."
+                            + " Please narrow down your selection or try again later.",
                     ((double) (totalSumInBytes - totalSizeOfUnarchivingRequested) / FileUtils.ONE_MB),
                     ((double) totalSizeOfUnarchivingRequested / FileUtils.ONE_MB));
             throw new UserFailureException(message);
@@ -1111,7 +1152,15 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     protected boolean isDataSetPresentInArchive(String dataSetCode)
     {
         MultiDataSetArchiverDataSetDTO dataSetInArchiveDB = getReadonlyQuery().getDataSetForCode(dataSetCode);
-        return dataSetInArchiveDB != null;
+        if (dataSetInArchiveDB == null)
+        {
+            return false;
+        } else
+        {
+            MultiDataSetArchiverContainerDTO containerInArchiveDB = getReadonlyQuery().getContainerForId(dataSetInArchiveDB.getContainerId());
+            File containerFileInArchiveStorage = new File(getFileOperations().getOriginalArchiveFilePath(containerInArchiveDB.getPath()));
+            return containerFileInArchiveStorage.exists();
+        }
     }
 
     @Private
