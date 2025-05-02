@@ -157,7 +157,7 @@ task compileGwt(dependsOn: classes, type: JavaExec) {
         file(buildDir).mkdirs()
     }
 
-    main = 'com.google.gwt.dev.Compiler'
+    mainClass = 'com.google.gwt.dev.Compiler'
 
     classpath {
         [
@@ -273,6 +273,7 @@ war.dependsOn copyOpenbisStaticResources
 war.dependsOn copyV3ApiResources
 war.dependsOn checkFilesExist
 war.dependsOn copyJarsForWebStart
+war.dependsOn signWebStartJars
 war {
     rootSpec.eachFile { file ->
         if (file.name.startsWith('cisd-cifex')
@@ -340,7 +341,7 @@ import org.paleozogt.gradle.zip.SymZip;
 task zipCorePlugins(type: SymZip) {
     duplicatesStrategy 'include'
     includeEmptyDirs = false
-    archiveName 'core-plugins.zip'
+    archiveFileName = 'core-plugins.zip'
 
     downloadCorePlugin('https://github.com/aarpon/obit_flow_core_technology/archive/release/20.x.zip', 'flow')
     downloadCorePlugin('https://github.com/aarpon/obit_microscopy_core_technology/archive/release/20.x.zip', 'microscopy')
@@ -419,8 +420,8 @@ zip.dependsOn zipCorePlugins
 zip.dependsOn zipAdminConsole
 zip.dependsOn checksums
 
-task zipDss(type: Zip, dependsOn: copyJarsForWebStart) {
-    baseName 'datastore_server-standard-technologies'
+task zipDss(type: Zip, dependsOn: [copyJarsForWebStart,signWebStartJars]) {
+    archiveBaseName = 'datastore_server-standard-technologies'
     includeEmptyDirs true
 
     from(configurations.server_original_data_store) {
@@ -464,22 +465,22 @@ task zipDss(type: Zip, dependsOn: copyJarsForWebStart) {
 }
 
 task zipBdlServer(type: Zip, dependsOn: project(':server-external-data-store').tasks.distZip) {
-    baseName 'big_data_link_server'
+    archiveBaseName = 'big_data_link_server'
     from zipTree('../server-external-data-store/build/distributions/server-external-data-store.zip')
 }
 
 task zipAfsServer(type: Zip, dependsOn: project(':server-data-store').tasks.AFSServerZip) {
-    baseName 'afs_server'
+    archiveBaseName = 'afs_server'
     from zipTree('../server-data-store/build/distributions/afs-server.zip')
 }
 
 task pybisZip(type: Zip) {
-    baseName 'pybis'
+    archiveBaseName = 'pybis'
     from '../api-openbis-python3-pybis/'
 }
 
 task obisZip(type: Zip) {
-    baseName 'obis'
+    archiveBaseName = 'obis'
     from '../app-openbis-command-line/'
 }
 
@@ -488,10 +489,11 @@ task libOpenbisCommonJavadoc(type: Javadoc) {
         include "**/ch/systemsx/cisd/openbis/common/io/hierarchical_content/api/**/*.java"
     }
     classpath = configurations.libOpenbisCommonJavadoc
+    destinationDir = file("$buildDir/docs/javadoc-lib-openbis-common")
 }
 
 task libOpenbisCommonJavadocZip(type: Zip, dependsOn: libOpenbisCommonJavadoc) {
-    archiveName 'javadoc-lib-openbis-common.zip'
+    archiveFileName = 'javadoc-lib-openbis-common.zip'
     from libOpenbisCommonJavadoc.destinationDir
 }
 
@@ -501,15 +503,16 @@ task serverOriginalDataStoreJavadoc(type: Javadoc) {
         include "**/ch/systemsx/cisd/openbis/dss/generic/shared/api/internal/**/*.java"
     }
     classpath = configurations.serverOriginalDataStoreJavadoc
+    destinationDir = file("$buildDir/docs/javadoc-server-original-dataStore")
 }
 
 task serverOriginalDataStoreJavadocZip(type: Zip, dependsOn: serverOriginalDataStoreJavadoc) {
-    archiveName 'javadoc-server-original-data-store.zip'
+    archiveFileName = 'javadoc-server-original-data-store.zip'
     from serverOriginalDataStoreJavadoc.destinationDir
 }
 
 task commonbaseZip(type: Zip, dependsOn: [project(':lib-commonbase').tasks.jar]) {
-    baseName 'openBIS-API-commonbase'
+    archiveBaseName = 'openBIS-API-commonbase'
     from project(':lib-commonbase').tasks.jar.archiveFile
     into 'openBIS-API-commonbase'
 }
@@ -520,17 +523,18 @@ task serverApplicationServerJavadoc(type: Javadoc) {
         include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
     }
     classpath = configurations.serverApplicationServerJavadoc
+    destinationDir = file("$buildDir/docs/javadoc-server-application-server")
 }
 
 task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
-    archiveName 'javadoc-server-application-server.zip'
+    archiveFileName = 'javadoc-server-application-server.zip'
     from serverApplicationServerJavadoc.destinationDir
 }
 
 task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, screeningApiZip, pybisZip, obisZip,
                                            dropboxJavaDocZip, dynamicApiJavadocZip, libOpenbisCommonJavadocZip,
                                            serverOriginalDataStoreJavadocZip, serverApplicationServerJavadocZip, dropboxApiZip, commonbaseZip]) {
-    baseName 'openBIS-clients-and-APIs'
+    archiveBaseName = 'openBIS-clients-and-APIs'
     from dssClientZip.archiveFile
     from queryApiZip.archiveFile
     from apiV3Zip.archiveFile

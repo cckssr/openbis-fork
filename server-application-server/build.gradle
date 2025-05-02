@@ -156,7 +156,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 }
 
 task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
-    main = 'org.eclipse.jetty.runner.Runner'
+    mainClass = 'org.eclipse.jetty.runner.Runner'
     classpath = sourceSets.asExec.runtimeClasspath
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/log.xml',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',

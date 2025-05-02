@@ -41,7 +41,7 @@ sourceSets {
 def premiseAdaptersName = 'premise-adapters.jar'
 jar {
     dependsOn compileJava
-    archiveName premiseAdaptersName
+    archiveFileName = premiseAdaptersName
     includeEmptyDirs false
 }
 

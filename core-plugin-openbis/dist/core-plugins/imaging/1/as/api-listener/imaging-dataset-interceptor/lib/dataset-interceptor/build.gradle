@@ -39,7 +39,7 @@ sourceSets {
 def premiseArchiveName = 'imaging-dataset-interceptor.jar'
 jar {
     dependsOn compileJava
-    archiveName premiseArchiveName
+    archiveFileName = premiseArchiveName
     includeEmptyDirs false
 }
 

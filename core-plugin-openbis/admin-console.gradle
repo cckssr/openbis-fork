@@ -24,7 +24,7 @@ dependencies {
 
 task adminConsole(type: Jar) {
     duplicatesStrategy 'include'
-    archiveName 'openbis-admin-console.jar'
+    archiveFileName = 'openbis-admin-console.jar'
     includeEmptyDirs false
     from project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-openbis-common').compileJava.outputs.getFiles().getAsFileTree().plus(
@@ -70,7 +70,7 @@ task adminConsole(type: Jar) {
 }
 
 task zipAdminConsole(type: Zip) {
-    archiveName 'openbis-admin-console.zip'
+    archiveFileName = 'openbis-admin-console.zip'
     from adminConsole.archivePath
     into 'openbis-admin-console'
 }

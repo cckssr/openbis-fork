@@ -15,7 +15,7 @@ dependencies {
 }
 
 task generateZip(type: Zip) {
-    archiveName 'api-data-store-server-javascript.zip'
+    archiveFileName = 'api-data-store-server-javascript.zip'
     from project.files('src/js').getAsFileTree()
 }
 

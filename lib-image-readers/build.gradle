@@ -18,8 +18,8 @@ dependencies {
 
 def jarConfiguration(parameters) {
     return {
-        destinationDir = project.distsDirectory.getAsFile().get()
-        baseName = parameters.get('baseName')
+        destinationDirectory = project.distsDirectory.getAsFile().get()
+        archiveBaseName = parameters.get('baseName')
         def libraryName = parameters.get('libraryName')
 
         from('targets/dist') {
@@ -63,11 +63,11 @@ task jarImageJ(type: Jar) {
 }
 
 jar {
-    destinationDir = project.distsDirectory.getAsFile().get()
+    destinationDirectory = project.distsDirectory.getAsFile().get()
 }
 jar.dependsOn([jarImageIO, jarBioformats, jarImageJ])
 
 sourcesJar {
-    destinationDir = project.distsDirectory.getAsFile().get()
+    destinationDirectory = project.distsDirectory.getAsFile().get()
 }
 
