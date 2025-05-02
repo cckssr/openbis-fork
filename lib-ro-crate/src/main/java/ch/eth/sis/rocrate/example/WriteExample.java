@@ -17,6 +17,12 @@ public class WriteExample
         RoCrate.RoCrateBuilder roCrateBuilder =
                 new RoCrate.RoCrateBuilder("name", "description", "2024-12-04T07:53:11Z",
                         "licenseIdentifier");
+        roCrateBuilder.addValuePairToContext("schema",
+                "https://www.w3.org/TR/rdf-schema");
+        roCrateBuilder.addValuePairToContext("owl",
+                "https://www.w3.org/TR/owl-ref");
+        roCrateBuilder.addValuePairToContext("openBIS", "_:");
+
         ISchemaFacade schemaFacade = SchemaFacade.of(roCrateBuilder.build());
 
         {
