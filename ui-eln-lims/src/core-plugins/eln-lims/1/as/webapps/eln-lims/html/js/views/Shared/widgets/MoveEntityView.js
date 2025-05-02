@@ -86,7 +86,7 @@ function MoveEntityView(moveEntityController, moveEntityModel) {
         $window.append($optionalBox);
         if(moveEntityModel.entity["@type"] === "as.dto.sample.Sample") {
             var _this = this;
-            $window.append(FormUtil.getFieldForComponentWithLabel(FormUtil.getOptionsRadioButtons("oldOrNewExp",true, ["Existing entity", "New " + ELNDictionary.getExperimentDualName() + ""], function(event) {
+            $window.append(FormUtil.getFieldForComponentWithLabel(FormUtil.getOptionsRadioButtons("oldOrNewExp",true, ["Existing Space, Project or Experiment/Collection", "New " + ELNDictionary.getExperimentDualName() + ""], function(event) {
                 var value = $(event.target).val();
                 if(value === "Existing entity") {
                     moveEntityModel.isNewExperiment = false;
@@ -95,7 +95,7 @@ function MoveEntityView(moveEntityController, moveEntityModel) {
                     moveEntityModel.isNewExperiment = true;
                     _this.repaintNewEntity();
                 }
-            }), "Choose existing entity or create a new " + ELNDictionary.getExperimentDualName() +"?"));
+            }), "Choose existing Space, Project or Experiment/Collection or create a new " + ELNDictionary.getExperimentDualName() +"?"));
         } else {
             $window.append($('<br>'));
         }
