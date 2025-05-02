@@ -473,6 +473,11 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
+        if (vals.get("@context") instanceof String)
+        {
+            return Map.of();
+        }
+
         List<Object> nodes = (List<Object>) vals.get("@context");
         Map key_vals = (Map) nodes.get(1);
 
