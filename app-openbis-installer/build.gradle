@@ -25,9 +25,7 @@ buildscript {
     dependencies {
         classpath 'izpack:izpack:5.0-beta9-SNAPSHOT-2022-03-22',
                 'apache:commons-io:2.6',
-                'apache:commons-lang:2.4',
-                'commons-cli:commons-cli:1.5.0'
-
+                'apache:commons-lang:2.4'
     }
 }
 
@@ -42,10 +40,11 @@ dependencies {
             'testng:testng:6.8-CISD',
             'jmock:jmock:2.5.1'
 
-    runtimeOnly 'apache:commons-io:2.6',
-                'apache:log4j:1.2.15',
-                'sis:sis-base:23.06.0',
-                'postgresql:postgresql:42.5.0'
+    archives 'apache:commons-io:2.6',
+            'apache:log4j:1.2.15',
+            'sis:sis-base:23.06.0',
+            'postgresql:postgresql:42.5.0',
+            'gradle:core:7.4'
 
 }
 
@@ -167,24 +166,21 @@ compileInstaller.dependsOn copyResources
 
 task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     duplicatesStrategy 'include'
-    archiveFileName ='openBIS-installer.jar'
+    archiveName 'openBIS-installer.jar'
     from zipTree(new File(izPackJar))
     from zipTree(jar.archivePath)
     from zipTree(project(':lib-common').jar.archivePath)
     from zipTree(project(':lib-commonbase').jar.archivePath)
-//    for (f in configurations.archives.files) {
-//        from zipTree(f)
-//    }
-    from {
-        configurations.runtimeClasspath.files.collect { zipTree(it) }
+    for (f in configurations.archives.files) {
+        from zipTree(f)
     }
 }
 
 task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
     compression = Compression.GZIP
-    archiveExtension = 'tar.gz'
-    archiveBaseName = 'openBIS-installation-standard-technologies'
-    from createInstallerJar.archiveFile
+    extension = 'tar.gz'
+    baseName 'openBIS-installation-standard-technologies'
+    from createInstallerJar.archivePath
     from('resource/tarball') {
         include 'console.properties'
         include 'extract.sh'

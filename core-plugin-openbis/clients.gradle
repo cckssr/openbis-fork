@@ -42,10 +42,9 @@ ext.dssCliClientJarName = 'dss_client.jar'
 ext.dssGuiClientJarName = 'dss_upload_gui.jar'
 
 task createOpenbisJar(type: Jar) {
-    archiveBaseName = openbisClientJarName
-    destinationDirectory = file(jarsToBeSignedFolder)
-    // Gradle automatically calculates the output: destinationDirectory + archiveBaseName + .jar
-    //outputs.file = new File(jarsToBeSignedFolder, archiveBaseName.get())
+    archiveName = openbisClientJarName
+    destinationDir = file(jarsToBeSignedFolder)
+    outputs.file new File(jarsToBeSignedFolder, archiveName)
     from zipTree(project(':lib-commonbase').jar.archivePath).plus(
             zipTree(project(':lib-common').jar.archivePath).plus(
                     zipTree(project(':lib-openbis-common').jar.archivePath).plus(
@@ -73,9 +72,9 @@ createOpenbisJar.dependsOn(':lib-commonbase:jar', ':lib-common:jar', ':lib-openb
         ':api-openbis-java:jar', ':server-original-data-store:jar', ':server-screening:jar', ':server-application-server:jar')
 
 task createDssClientJar(type: Jar) {
-    archiveFileName = dssGuiClientJarName
-    destinationDirectory = file(jarsToBeSignedFolder)
-    //outputs.file new File(jarsToBeSignedFolder, archiveFileName)
+    archiveName = dssGuiClientJarName
+    destinationDir = file(jarsToBeSignedFolder)
+    outputs.file new File(jarsToBeSignedFolder, archiveName)
 
     from(project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
@@ -152,7 +151,7 @@ task signWebStartJars(type: Copy, dependsOn: [copyJarsForWebStart]) {
 }
 
 task dssClientZip(type: Zip, dependsOn: signWebStartJars) {
-    archiveBaseName = 'dss_client'
+    baseName 'dss_client'
 
     from(signedJarsFolder) {
         into 'dss_client/lib'
@@ -211,8 +210,8 @@ dssUploadGuiStandalone.dependsOn signWebStartJars
 
 
 task dssUploadGuiStandaloneJar(type: Jar, dependsOn: dssUploadGuiStandalone) {
-    duplicatesStrategy = 'include'
-    archiveBaseName = 'dss_upload_gui_standalone'
+    duplicatesStrategy 'include'
+    baseName 'dss_upload_gui_standalone'
     from({
         fileTree("${signedJarsFolder}").matching {
             include "aopalliance.jar"
@@ -254,7 +253,7 @@ task dssUploadGuiStandaloneJar(type: Jar, dependsOn: dssUploadGuiStandalone) {
 }
 
 task dssUploadGuiStandaloneZip(type: Zip, dependsOn: dssUploadGuiStandalone) {
-    archiveBaseName = 'dss_upload_gui_standalone'
+    baseName 'dss_upload_gui_standalone'
 
     from("${buildDir}/DataSetUploader.app") {
         into 'DataSetUploader.app'

@@ -3,17 +3,4 @@ ext.repositoryConfig = {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
-    maven {
-        name = "OME Artifacts"
-        url = uri("https://artifacts.openmicroscopy.org/artifactory/ome.releases")
-    }
-    maven {
-        name = "imagej Artifacts"
-        url = uri("https://maven.imagej.net/content/repositories/public/")
-    }
-
-    mavenCentral()
-    gradlePluginPortal()
-
-
 }

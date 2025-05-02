@@ -39,7 +39,7 @@ sourceSets {
 def imagingTechnologyName = 'openBIS-imaging-technology.jar'
 jar {
     dependsOn compileJava
-    archiveFileName = imagingTechnologyName
+    archiveName imagingTechnologyName
     includeEmptyDirs false
     from sourceSets.main.allSource
 }

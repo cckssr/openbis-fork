@@ -4,7 +4,7 @@ dependencies {
 }
 
 task screeningApiJar(type: Jar) {
-    archiveFileName = 'openbis_screening_api.jar'
+    archiveName 'openbis_screening_api.jar'
     includeEmptyDirs false
     from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
@@ -48,7 +48,7 @@ task screeningApiJar(type: Jar) {
 }
 
 task screeningApiSources(type: Zip) {
-    archiveFileName = 'sources-screening-api.zip'
+    archiveName 'sources-screening-api.zip'
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
             project(':lib-common').files('source/java').getAsFileTree().plus(
                     project(':lib-openbis-common').files('source/java').getAsFileTree().plus(
@@ -72,11 +72,10 @@ task screeningApiJavaDoc(type: Javadoc) {
         include "**/*.java"
     }
     classpath = configurations.screeningApiJavadoc
-    destinationDir = file("$buildDir/docs/javadoc-screening-api")
 }
 
 task screeningApiJavaDocZip(type: Zip, dependsOn: screeningApiJavaDoc) {
-    archiveFileName = 'javadoc-screening-api.zip'
+    archiveName 'javadoc-screening-api.zip'
     from screeningApiJavaDoc.destinationDir
 }
 
@@ -104,7 +103,7 @@ dependencies {
 
 task springExt(type: Jar) {
     duplicatesStrategy 'include'
-    archiveFileName = 'spring-ext.jar'
+    archiveName 'spring-ext.jar'
     for (File f : configurations.batteries.files) {
         from zipTree(f).matching {
             include '**/**'
@@ -113,17 +112,17 @@ task springExt(type: Jar) {
 }
 
 task screeningApiBatteriesIncluded(type: Jar, dependsOn: [screeningApiJar, springExt]) {
-    archiveFileName = 'openbis_screening_api-batteries_included.jar'
-    from zipTree(springExt.archiveFile)
-    from zipTree(screeningApiJar.archiveFile)
+    archiveName 'openbis_screening_api-batteries_included.jar'
+    from zipTree(springExt.archivePath)
+    from zipTree(screeningApiJar.archivePath)
 }
 
 task screeningApiZip(type: Zip, dependsOn: [screeningApiJavaDocZip, screeningApiSources, screeningApiBatteriesIncluded]) {
-    archiveBaseName = 'openBIS-screening-API'
-    from screeningApiJar.archiveFile
-    from springExt.archiveFile
-    from screeningApiBatteriesIncluded.archiveFile
-    from screeningApiSources.archiveFile
-    from screeningApiJavaDocZip.archiveFile
+    baseName 'openBIS-screening-API'
+    from screeningApiJar.archivePath
+    from springExt.archivePath
+    from screeningApiBatteriesIncluded.archivePath
+    from screeningApiSources.archivePath
+    from screeningApiJavaDocZip.archivePath
     from project(':server-screening').files('dist/api/').getAsFileTree()
 }

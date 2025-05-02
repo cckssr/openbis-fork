@@ -121,11 +121,6 @@ task compileTypeScript(type: NpxTask, dependsOn: copyTypeScriptDTS) {
 
 test {
     useTestNG()
-    dependsOn clean
-    dependsOn copyWar
-    dependsOn copyBlast
-    dependsOn compileTypeScript
-
     def eln = System.getProperty("eln") == "yes" ? "-eln" : ""
     def dev = System.getProperty("dev") == "yes" ? "-dev" : ""
     def testSuitePath = 'source/java/tests' + eln + dev + '.xml'
@@ -133,8 +128,7 @@ test {
     options.suites(testSuitePath)
 
     jvmArgs '-Xmx2048m', '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog', '-Duser.timezone=Europe/Zurich',
-            '-Xdebug', '-Xrunjdwp:transport=dt_socket,address=20010,server=y,suspend=n',
-            '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED'
+            '-Xdebug', '-Xrunjdwp:transport=dt_socket,address=20010,server=y,suspend=n'
 
     testLogging.showStandardStreams = true
     ignoreFailures = false
@@ -154,9 +148,11 @@ test {
     } else {
         println "Please set up geckodriver"
     }
-
-    finalizedBy deleteBlast
 }
+test.dependsOn clean
+test.dependsOn copyWar
+test.dependsOn copyBlast
+test.dependsOn compileTypeScript
 
-
+test.finalizedBy deleteBlast
 

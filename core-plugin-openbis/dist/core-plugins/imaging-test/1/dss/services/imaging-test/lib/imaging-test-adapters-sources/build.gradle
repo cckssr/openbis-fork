@@ -39,7 +39,7 @@ sourceSets {
 def adaptersName = 'imaging-test-adapters.jar'
 jar {
     dependsOn compileJava
-    archiveFileName = adaptersName
+    archiveName adaptersName
     includeEmptyDirs false
 }
 

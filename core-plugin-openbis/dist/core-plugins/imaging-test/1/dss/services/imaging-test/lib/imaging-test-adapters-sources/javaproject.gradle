@@ -333,7 +333,7 @@ eclipse.classpath.file {
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {
-    archiveBaseName = "test-${project.archivesBaseName}"
+    baseName = "test-${project.archivesBaseName}"
     from sourceSets.test.output
 }
 

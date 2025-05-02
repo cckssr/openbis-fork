@@ -44,7 +44,7 @@ dependencies {
 }
 
 task openBISDevelopmentEnvironmentAFSStart(type: JavaExec) {
-    mainClass = 'ch.ethz.sis.afsserver.startup.Main'
+    main = 'ch.ethz.sis.afsserver.startup.Main'
     classpath = sourceSets.main.runtimeClasspath
     args(["../server-data-store/src/main/resources/service.properties"])
     jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
@@ -94,7 +94,7 @@ task benchmarkAFSAuth(type: JavaExec) {
 
 
 task AFSServerZip(type: Zip, dependsOn: compileJava) {
-    archiveBaseName = 'afs-server'
+    baseName 'afs-server'
     from(jar) {
         into('afs-server/lib/')
     }
@@ -107,7 +107,7 @@ task AFSServerZip(type: Zip, dependsOn: compileJava) {
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {
-    archiveBaseName = "test-${project.name}"
+    baseName = "test-${project.name}"
     from sourceSets.test.output
 }
 

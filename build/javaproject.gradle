@@ -246,17 +246,13 @@ task deleteSymLinks {
 clean.dependsOn deleteSymLinks
 
 test {
-    useTestNG {
-        suites 'sourceTest/java/tests.xml'
-    }
+    useTestNG()
+    options.suites('sourceTest/java/tests.xml')    
 
     systemProperty "ant.project.name", project.name
 
     maxHeapSize = "8192m"
-    jvmArgs '-Duser.timezone=Europe/Zurich', '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
-            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
-            "--add-opens", "java.base/java.io=ALL-UNNAMED"
+    jvmArgs '-Duser.timezone=Europe/Zurich', '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'
     
     testLogging.showStandardStreams = true
     ignoreFailures = true
@@ -337,13 +333,13 @@ eclipse.classpath.file {
 }
 
 task testJar(type: Jar, dependsOn: testClasses) {
-    archiveBaseName = "test-${project.archivesBaseName}"
+    baseName = "test-${project.archivesBaseName}"
     from sourceSets.test.output
 }
 
 task sourcesJar(type: Jar) {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    archiveClassifier.set('sources')
+    duplicatesStrategy 'include'
+    classifier = 'sources'
     from sourceSets.main.allSource
 }
 
@@ -401,7 +397,6 @@ publishing {
             ivyPattern "file://${project.ivyRepository}/[organisation]/[module]/[revision]/ivy.xml"
             artifactPattern "file://${project.ivyRepository}/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
         }
-        mavenCentral()
     }
 }
 
@@ -414,24 +409,4 @@ if (JavaVersion.current().isJava8Compatible()) {
         options.addStringOption('Xdoclint:none', '-quiet')
         options.addStringOption('encoding', 'utf-8')
     }
-}
-
-// Gradle 8 - Apply to every Test task in every project
-tasks.withType(Test).configureEach { t ->
-    t.jvmArgs += [
-            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
-            "--add-opens", "java.base/java.io=ALL-UNNAMED",
-            "--add-opens", "java.base/java.util=ALL-UNNAMED"
-    ]
-}
-
-// Gradle 8 : Apply to every JavaExec (server‐start, custom execs, etc.)
-tasks.withType(JavaExec).configureEach { je ->
-    je.jvmArgs += [
-            "--add-opens", "java.base/java.lang=ALL-UNNAMED",
-            "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED",
-            "--add-opens", "java.base/java.io=ALL-UNNAMED",
-            "--add-opens", "java.base/java.util=ALL-UNNAMED"
-    ]
 }

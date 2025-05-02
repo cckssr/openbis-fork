@@ -59,7 +59,7 @@ task compileGWTToTemp(type: JavaExec, dependsOn: prepareGWT) {
     inputs.dir sourceSets.main.output.resourcesDir
     outputs.dir 'targets/www/gwt-temp'
 
-    mainClass = 'com.google.gwt.dev.Compiler'
+    main = 'com.google.gwt.dev.Compiler'
     maxHeapSize = '1024m'
     classpath {
         [

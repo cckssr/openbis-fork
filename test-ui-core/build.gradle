@@ -62,9 +62,6 @@ task makeGeckodriverExecutable(type: Exec) {
 
 test {
     useTestNG()
-    dependsOn(tasks.named('makeGeckodriverExecutable'))
-    dependsOn(tasks.named('copyWar'))
-
     options.suites('source/java/tests.xml')
 
     jvmArgs '-Xmx2048m', '-Duser.timezone=Europe/Zurich'
@@ -82,6 +79,7 @@ test {
     }
 }
 
-
+test.dependsOn makeGeckodriverExecutable
+test.dependsOn copyWar
 
 
