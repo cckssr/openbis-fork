@@ -60,6 +60,34 @@ public class SchemaFacade implements ISchemaFacade
 
     private final RoCrate crate;
 
+    @Override
+    public RoCrate getCrate()
+    {
+        return crate;
+    }
+
+    public SchemaFacade(String name, String description, String dateString,
+            String licenseIdentifier, Map<String, String> context)
+    {
+        RoCrate.RoCrateBuilder roCrateBuilder =
+                new RoCrate.RoCrateBuilder(name, description, dateString,
+                        licenseIdentifier);
+        roCrateBuilder.addValuePairToContext("schema",
+                "https://www.w3.org/TR/rdf-schema");
+        roCrateBuilder.addValuePairToContext("owl",
+                "https://www.w3.org/TR/owl-ref");
+        for (Map.Entry<String, String> keyVal : context.entrySet()
+        )
+        {
+            roCrateBuilder.addValuePairToContext(keyVal.getKey(), keyVal.getValue());
+        }
+
+        this.crate = roCrateBuilder.build();
+        this.types = new LinkedHashMap<>();
+        this.propertyTypes = new LinkedHashMap<>();
+        this.metadataEntries = new LinkedHashMap<>();
+    }
+
     public SchemaFacade(RoCrate crate)
     {
         this.crate = crate;

@@ -11,6 +11,7 @@ import edu.kit.datamanager.ro_crate.entities.contextual.ContextualEntity;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 public class Writer
 {
@@ -35,25 +36,20 @@ public class Writer
 
     public void write(OpenBisModel openBisModel, Path outPath) throws JsonProcessingException
     {
-        RoCrate.RoCrateBuilder builder =
-                new RoCrate.RoCrateBuilder("name", "description", "2024-12-04T07:53:11Z",
-                        "licenseIdentifier");
-        builder.addValuePairToContext("schema",
-                "https://www.w3.org/TR/rdf-schema");
-        builder.addValuePairToContext("owl",
-                "https://www.w3.org/TR/owl-ref");
-        builder.addValuePairToContext("openBIS", "_:");
 
-        RoCrate crate = builder.build();
-        ISchemaFacade schemaFacade = new SchemaFacade(crate);
-        crate.getAllContextualEntities();
+        SchemaFacade schemaFacade = new SchemaFacade(
+                "name", "description", "2024-12-04T07:53:11Z", "licenseIdentifier",
+                Map.of("openBIS", "_:")
+
+        );
+
         addSystemSchema(schemaFacade);
         Mapper mapper = new Mapper();
         MapResult rdfsRepresentation =
                 mapper.transform(openBisModel);
         addSchema(schemaFacade, rdfsRepresentation);
         addMetaData(schemaFacade, rdfsRepresentation);
-        RoCrate roCrate = builder.build();
+        RoCrate roCrate = schemaFacade.getCrate();
         FolderWriter folderRoCrateWriter = new FolderWriter();
         folderRoCrateWriter.save(roCrate, outPath.toString());
 

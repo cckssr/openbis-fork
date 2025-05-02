@@ -8,7 +8,14 @@ import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 
 public class ReadExample
 {
-
+    /**
+     * This reads an RO-Crate with schema information and prints out
+     * If you need a compatible RO-Crate, run WriteExample.java first.
+     * Takes one optional command line argument for an output path, if not provided, it will read from
+     * ./out
+     * @param args
+     * @throws JsonProcessingException
+     */
     public static void main(String[] args) throws JsonProcessingException
     {
         String path = args.length >= 1 ? args[0] : "out";
