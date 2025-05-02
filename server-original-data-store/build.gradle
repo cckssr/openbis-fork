@@ -127,7 +127,7 @@ jar {
 }
 
 task openBISDevelopmentEnvironmentDSSStart(type: JavaExec) {
-    main = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
+    mainClass = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
     classpath = sourceSets.datastoreExec.runtimeClasspath
     jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])

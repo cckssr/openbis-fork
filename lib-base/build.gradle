@@ -22,8 +22,8 @@ sourceSets {
 }
 
 jar {
-    duplicatesStrategy 'include'
-    archiveName "${project.group}-base-${version}.jar"
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    archiveFileName.set("${project.group}-base-${version}.jar")
     manifest {
         attributes 'Main-Class': 'ch.systemsx.cisd.base.BuildAndEnvironmentInfo'
     }
@@ -36,13 +36,13 @@ jar {
 }
 
 sourcesJar {
-    archiveName "${project.group}-base-${version}-sources.jar"
+    archiveFileName.set("${project.group}-base-${version}-sources.jar")
 }
 
 task distributionZip(type: Zip, dependsOn: [jar, sourcesJar, javadoc, testJar]) {
     def ver = project.ext.versionNumber.startsWith('SNAPSHOT') ? "${version}" : ""
     def myVersion = project.ext.versionNumber.startsWith('SNAPSHOT') ? "${project.ext.versionNumber}-${project.ext.revisionNumber}" : project.ext.versionNumber
-    archiveName "${project.group}-base-${myVersion}.zip"
+    archiveFileName.set("${project.group}-base-${myVersion}.zip")
     from ('dist') {
         into "${project.group}-base"
     }

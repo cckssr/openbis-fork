@@ -1,5 +1,5 @@
 task queryApiJar(type: Jar) {
-    baseName 'openBIS-query-API'
+    archiveBaseName = 'openBIS-query-API'
     includeEmptyDirs false
     from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
@@ -25,7 +25,7 @@ task queryApiJar(type: Jar) {
 }
 
 task queryApiSources(type: Zip) {
-    archiveName 'sources-query-api.zip'
+    archiveFileName = 'sources-query-api.zip'
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
             project(':lib-common').files('source/java').getAsFileTree().plus(
                     project(':lib-openbis-common').files('source/java').getAsFileTree().plus(
@@ -58,10 +58,11 @@ task queryApiJavaDoc(type: Javadoc) {
         include "**/*.java"
     }
     classpath = configurations.queryApiJavadoc
+    destinationDir = file("$buildDir/docs/query-api-javadoc")
 }
 
 task queryApiJavaDocZip(type: Zip, dependsOn: queryApiJavaDoc) {
-    archiveName 'javadoc-query-api.zip'
+    archiveFileName = 'javadoc-query-api.zip'
     from queryApiJavaDoc.destinationDir
 }
 
@@ -85,7 +86,7 @@ dependencies {
 }
 
 task queryApiZip(type: Zip, dependsOn: [queryApiJar, queryApiSources, queryApiJavaDocZip]) {
-    baseName 'openBIS-query-API'
+    archiveBaseName = 'openBIS-query-API'
     from queryApiJar.archivePath
     from queryApiSources.archivePath
     from queryApiJavaDocZip.archivePath
@@ -96,7 +97,7 @@ task queryApiZip(type: Zip, dependsOn: [queryApiJar, queryApiSources, queryApiJa
 /////////// API V3 ////////////////////
 
 task apiV3Jar(type: Jar) {
-    baseName 'openBIS-API-V3'
+    archiveBaseName = 'openBIS-API-V3'
     includeEmptyDirs false
     from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
@@ -210,7 +211,7 @@ task publishApiV3(type: Sync) {
 
 task apiV3JarBatteriesIncluded(type: Jar, dependsOn: [apiV3Jar]) {
     duplicatesStrategy 'include'
-    baseName 'openBIS-API-V3-batteries-included'
+    archiveBaseName = 'openBIS-API-V3-batteries-included'
     includeEmptyDirs false
     from(zipTree(apiV3Jar.archivePath)) {
         include '**/*'
@@ -221,7 +222,7 @@ task apiV3JarBatteriesIncluded(type: Jar, dependsOn: [apiV3Jar]) {
 }
 
 task apiV3Sources(type: Jar) {
-    archiveName 'sources-api-v3.zip'
+    archiveFileName = 'sources-api-v3.zip'
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
             project(':lib-common').files('source/java').getAsFileTree().plus(
                     project(':lib-openbis-common').files('source/java').getAsFileTree().plus(
@@ -252,15 +253,16 @@ task apiV3JavaDoc(type: Javadoc) {
         include "**/*.java"
     }
     classpath = configurations.apiV3Javadoc
+    destinationDir = file("$buildDir/docs/javadoc-api-v3")
 }
 
 task apiV3JavaDocZip(type: Zip, dependsOn: apiV3JavaDoc) {
-    archiveName 'javadoc-api-v3.zip'
+    archiveFileName = 'javadoc-api-v3.zip'
     from apiV3JavaDoc.destinationDir
 }
 
 task apiV3Zip(type: Zip, dependsOn: [apiV3JarBatteriesIncluded, apiV3Sources, apiV3JavaDocZip]) {
-    baseName 'openBIS-API-V3'
+    archiveBaseName ='openBIS-API-V3'
     from apiV3Jar.archiveFile
     from apiV3JarBatteriesIncluded.archiveFile
     from apiV3Sources.archiveFile
@@ -272,7 +274,7 @@ task apiV3Zip(type: Zip, dependsOn: [apiV3JarBatteriesIncluded, apiV3Sources, ap
 /////////// DROPBOX API V2 ////////////////////
 
 task dropboxApiJar(type: Jar) {
-    baseName 'openBIS-API-dropbox'
+    archiveBaseName =  'openBIS-API-dropbox'
     includeEmptyDirs false
     from project(':server-original-data-store').compileJava.outputs.getFiles().getAsFileTree().matching {
         include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.class"
@@ -282,7 +284,7 @@ task dropboxApiJar(type: Jar) {
 }
 
 task dropboxApiZip(type: Zip, dependsOn: [dropboxApiJar]) {
-    baseName 'openBIS-API-dropbox'
+    archiveBaseName = 'openBIS-API-dropbox'
     from dropboxApiJar.archiveFile
     into 'openBIS-API-dropbox'
 }
@@ -299,10 +301,11 @@ task dropboxApiJavadoc(type: Javadoc) {
         include "ch/systemsx/cisd/openbis/dss/generic/shared/api/**/*.class"
     }
     classpath = configurations.dropboxApiJavadoc
+    destinationDir = file("$buildDir/docs/javadoc-dropbox")
 }
 
 task dropboxJavaDocZip(type: Zip, dependsOn: dropboxApiJavadoc) {
-    archiveName 'javadoc-dropbox-api.zip'
+    archiveBaseName =  'javadoc-dropbox-api.zip'
     from dropboxApiJavadoc.destinationDir
 }
 
@@ -318,9 +321,10 @@ task dynamicApiJavadoc(type: Javadoc) {
         include "ch/systemsx/cisd/openbis/generic/shared/hotdeploy_plugins/api/*.java"
     }
     classpath = configurations.dynamicApiJavadoc
+    destinationDir = file("$buildDir/docs/javadoc-dynamic-api")
 }
 
 task dynamicApiJavadocZip(type: Zip, dependsOn: dynamicApiJavadoc) {
-    archiveName 'javadoc-dynamic-api.zip'
-    from dropboxApiJavadoc.destinationDir
+    archiveFileName =  'javadoc-dynamic-api.zip'
+    from dynamicApiJavadoc.destinationDir
 }
