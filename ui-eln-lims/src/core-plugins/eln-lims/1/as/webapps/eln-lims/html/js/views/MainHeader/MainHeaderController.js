@@ -14,7 +14,7 @@ function MainHeaderController() {
         _this._mainHeaderModel.$container = $container;
         _this._mainHeaderModel.currentPage = "lab_notebook";
 
-        _this.test =  _this._mainHeaderView.repaint($container)
+        _this._mainHeaderView.repaint($container)
 
         initCallback()
 
@@ -27,6 +27,9 @@ function MainHeaderController() {
     this.handlePageChange = function(event, value) {
         _this._mainHeaderModel.currentPage = value;
         mainController.sideMenu.changeCurrentTree(value);
+        if(mainController.sideMenu.isCollapsed) {
+            mainController.sideMenu.expandSideMenu();
+        }
     }
 
     this.setSearchDomains = function(searchDomains) {

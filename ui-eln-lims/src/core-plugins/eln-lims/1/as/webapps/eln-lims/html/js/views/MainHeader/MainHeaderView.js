@@ -15,10 +15,6 @@ function MainHeaderView(controller) {
         $container.css('display', 'flex');
         $container.css('width', 'flex');
 
-        $icon = $("<span/>")
-        $icon.addClass('material-icons')
-        $icon.text('check_circle')
-
         var barcodeFunction = null;
         if(profile.mainMenu.showBarcodes) {
             barcodeFunction = () => { BarcodeUtil.readBarcodeFromScannerOrCamera(); }
@@ -27,8 +23,6 @@ function MainHeaderView(controller) {
         var searchDomains = profile.getSearchDomains();
 
         this._controller.setSearchDomains(searchDomains);
-
-        this.menu = new MainHeaderMenu()
 
         let props = {
             pageChangeFunction: this._controller.handlePageChange,
