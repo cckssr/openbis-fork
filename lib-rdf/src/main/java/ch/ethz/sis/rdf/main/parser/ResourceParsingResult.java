@@ -1,7 +1,10 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.rdf.main.model.xlsx.SampleObject;
+import ch.ethz.sis.rdf.main.model.xlsx.SamplePropertyType;
+import org.apache.commons.lang3.tuple.Triple;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +20,8 @@ public class ResourceParsingResult
 
     private final List<String> propertiesImported;
 
+    private Set<Triple<SampleObject, SamplePropertyType, String>> danglingReferences;
+
     public ResourceParsingResult(List<SampleObject> deletedObjects,
             List<SampleObject> unchangedObjects,
             List<SampleObject> editedObjects, Set<String> classesImported,
@@ -27,6 +32,18 @@ public class ResourceParsingResult
         this.editedObjects = editedObjects;
         this.classesImported = classesImported;
         this.propertiesImported = propertiesImported;
+        this.danglingReferences = new HashSet<>();
+    }
+
+    public Set<Triple<SampleObject, SamplePropertyType, String>> getDanglingReferences()
+    {
+        return danglingReferences;
+    }
+
+    public void setDanglingReferences(
+            Set<Triple<SampleObject, SamplePropertyType, String>> danglingReferences)
+    {
+        this.danglingReferences = danglingReferences;
     }
 
     public List<SampleObject> getDeletedObjects()

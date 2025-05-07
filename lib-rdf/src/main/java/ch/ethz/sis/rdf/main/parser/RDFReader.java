@@ -1,6 +1,7 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.rdf.main.ClassCollector;
+import ch.ethz.sis.rdf.main.Config;
 import ch.ethz.sis.rdf.main.mappers.rdf.AdditionalVocabularyMapper;
 import ch.ethz.sis.rdf.main.mappers.rdf.DatatypeMapper;
 import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
@@ -8,6 +9,8 @@ import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.xlsx.*;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.Restriction;
@@ -191,6 +194,52 @@ public class RDFReader
 
         modelRDF.sampleObjectsGroupedByTypeMap = Stream.concat( resourceParsingResult.getUnchangedObjects()
                 .stream(), resourceParsingResult.getEditedObjects().stream() ).collect(Collectors.groupingBy(x -> x.type));
+        Set<String> objectCodes =
+                modelRDF.sampleObjectsGroupedByTypeMap.values().stream().flatMap(Collection::stream)
+                        .map(x -> x.code)
+                        .collect(Collectors.toSet());
+
+        Set<Triple<SampleObject, SamplePropertyType, String>> editedStuff = new LinkedHashSet<>();
+        for (Map.Entry<String, List<SampleObject>> typeAndObjects : modelRDF.sampleObjectsGroupedByTypeMap.entrySet())
+        {
+            SampleType sampleType = modelRDF.sampleTypeList.stream()
+                    .filter(x -> x.code.equals(typeAndObjects.getKey().toUpperCase())).findFirst()
+                    .orElseThrow();
+
+            for (SampleObject sampleObject : typeAndObjects.getValue())
+            {
+
+                for (SamplePropertyType property : sampleType.properties.stream()
+                        .filter(x -> x.dataType.equals("SAMPLE")).collect(
+                                Collectors.toList()))
+                {
+
+                    Optional<SampleObjectProperty> valProperty =
+                            sampleObject.getProperties().stream()
+                                    .filter(x -> x.getLabel().equals(property.propertyLabel))
+                                    .findFirst();
+                    if (valProperty.isEmpty())
+                    {
+                        continue;
+                    }
+
+                    if (!objectCodes.contains(valProperty.get().getValue()))
+                    {
+                        editedStuff.add(new ImmutableTriple<>(sampleObject, property,
+                                valProperty.get().getValue()));
+                        if (Config.getINSTANCE().removeDanglingReferences())
+                        {
+                            valProperty.get().value = null;
+
+                        }
+                    }
+
+                }
+            }
+
+        }
+        resourceParsingResult.setDanglingReferences(editedStuff);
+
         return resourceParsingResult;
 
     }
@@ -496,6 +545,26 @@ public class RDFReader
     }
 
     private void printResourceParsingResult(ResourceParsingResult resourceParsingResult){
+        if (!resourceParsingResult.getDanglingReferences().isEmpty())
+        {
+            System.out.println("There were references to objects that could not be resolved");
+            System.out.println(resourceParsingResult.getDanglingReferences().stream().map(x -> {
+                String a = "Object";
+                a += x.getLeft().code;
+                a += " Property ";
+                a += x.getMiddle().code;
+                a += " reference ";
+                a += x.getRight();
+                return a;
+            }).collect(Collectors.joining("\n")));
+
+            if (Config.getINSTANCE().removeDanglingReferences())
+            {
+                System.out.println("These references were deleted");
+            }
+        }
+
+
         if (resourceParsingResult.getDeletedObjects().isEmpty()){
             return;
         }

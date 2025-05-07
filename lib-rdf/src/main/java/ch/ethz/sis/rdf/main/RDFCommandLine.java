@@ -46,6 +46,9 @@ public class RDFCommandLine {
 
     public static final String RESULT_FILE = "resultfile";
 
+    public static final String ARG_LONG_REMOVE_DANGLING_REFERENCES = "remove-dangling-references";
+
+
 
     public static void main(String[] args) {
 
@@ -177,6 +180,12 @@ public class RDFCommandLine {
             options.addOption(resultFile);
         }
 
+        Option dangling = new Option("dangling", ARG_LONG_REMOVE_DANGLING_REFERENCES, false,
+                "Remove dangling object references that could cause the openBIS import to fail.");
+        options.addOption(dangling);
+
+
+
 
         return options;
     }
@@ -245,6 +254,10 @@ public class RDFCommandLine {
         String openBISDSSURL = null;
         String projectIdentifier = cmd.getOptionValue("project");
         boolean verbose = cmd.hasOption("verbose");
+        boolean removeDanglingReferences = cmd.hasOption(ARG_LONG_REMOVE_DANGLING_REFERENCES);
+        Config.setConfig(removeDanglingReferences);
+
+
         String[] additionalFileOption = cmd.getOptionValues(ADDITIONALFILES);
         String[] inputFilePaths = cmd.getOptionValues(INPUT_PATHS);
 

@@ -320,6 +320,9 @@ public class ParserUtils {
             Map<String, List<SampleObject>> sampleObjectsGroupedByTypeMap, Map<String, List<String>>
             additionalChains,@Nullable OntModel additionModel)
     {
+        Set<String> knownObjects = new LinkedHashSet<>();
+        Set<String> unknownObjects = new LinkedHashSet<>();
+
         Map<String, List<SampleObject>> unknownTypeSampleObjects =
                 sampleObjectsGroupedByTypeMap.values().stream()
                         .flatMap(Collection::stream)

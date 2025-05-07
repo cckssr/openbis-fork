@@ -55,6 +55,7 @@ java -jar rdf-lib-tool.jar [options]
 -v, --verbose: displays detailed information on the process.
 -h, --help: displays the help message.
 -a, --additionalfiles: specifies additional file paths for resolving ontologies and terminology.  
+-dangling, --remove-dangling-references: removes references that can't be resolved. Use with caution. 
 ```
 
 Other mandatory parameters must be provided based on what output format has been chosen:
