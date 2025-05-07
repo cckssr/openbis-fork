@@ -101,6 +101,7 @@ public class GetServerInformationOperationExecutor
                 try {
                     propertiesCopy.store(writer, "");
                     servicePropertiesString = writer.toString();
+                    info.put("as-service-properties", servicePropertiesString);
                 } catch (Exception e) {
                     info.put("as-service-properties", e.toString());
                 }

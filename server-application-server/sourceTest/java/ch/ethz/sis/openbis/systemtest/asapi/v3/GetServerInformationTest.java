@@ -16,9 +16,11 @@
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.openbis.BuildAndEnvironmentInfo;
@@ -38,7 +40,6 @@ public class GetServerInformationTest extends AbstractTest
         Map<String, String> result = v3api.getServerInformation(sessionToken);
 
         // Then
-        assertEquals(result.size(), 15);
         assertEquals(result.get("api-version"), "3.7");
         assertEquals(result.get("archiving-configured"), "false");
         assertEquals(result.get("authentication-service"), "dummy-authentication-service");
@@ -56,4 +57,23 @@ public class GetServerInformationTest extends AbstractTest
 
         v3api.logout(sessionToken);
     }
+
+    @Test(dataProvider = USER_ROLES_PROVIDER)
+    public void testGetServerInformationWithDifferentRoles(RoleWithHierarchy role)
+    {
+        testWithUserRole(role, params ->
+        {
+            Map<String, String> result = v3api.getServerInformation(params.userSessionToken);
+
+            if (RoleWithHierarchy.INSTANCE_ADMIN.equals(role))
+            {
+                assertEquals(result.size(), 15);
+                assertTrue(result.containsKey("as-service-properties"));
+            } else
+            {
+                assertEquals(result.size(), 14);
+            }
+        });
+    }
+
 }
