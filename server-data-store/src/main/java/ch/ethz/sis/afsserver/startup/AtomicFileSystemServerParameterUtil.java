@@ -58,10 +58,16 @@ public class AtomicFileSystemServerParameterUtil
         return interval != null ? interval : 100;
     }
 
-    public static JsonObjectMapper getJsonObjectMapper(Configuration configuration) throws Exception
+    public static JsonObjectMapper getJsonObjectMapper(Configuration configuration)
     {
-        getStringParameter(configuration, AtomicFileSystemServerParameter.jsonObjectMapperClass, true);
-        return configuration.getInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
+        try
+        {
+            getStringParameter(configuration, AtomicFileSystemServerParameter.jsonObjectMapperClass, true);
+            return configuration.getInstance(AtomicFileSystemServerParameter.jsonObjectMapperClass);
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getInteractiveSessionKey(Configuration configuration)

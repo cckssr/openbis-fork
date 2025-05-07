@@ -66,7 +66,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
  *
  * @author Franz-Josef Elmer
  */
-class MultiDataSetArchivingFinalizer implements IArchiverTask
+public class MultiDataSetArchivingFinalizer implements IArchiverTask
 {
     private static final long serialVersionUID = 1L;
 
@@ -110,7 +110,7 @@ class MultiDataSetArchivingFinalizer implements IArchiverTask
 
     private transient IMultiDataSetArchiverReadonlyQueryDAO readonlyQuery;
 
-    MultiDataSetArchivingFinalizer(Properties cleanerProperties, File pauseFile, long pauseFilePollingTime,
+    public MultiDataSetArchivingFinalizer(Properties cleanerProperties, File pauseFile, long pauseFilePollingTime,
             ITimeAndWaitingProvider timeProvider)
     {
         this.cleanerProperties = cleanerProperties;
@@ -699,6 +699,21 @@ class MultiDataSetArchivingFinalizer implements IArchiverTask
             this.waitForTFlag = waitForTFlag;
         }
 
+    }
+
+    public Properties getCleanerProperties()
+    {
+        return cleanerProperties;
+    }
+
+    public File getPauseFile()
+    {
+        return pauseFile;
+    }
+
+    public long getPauseFilePollingTime()
+    {
+        return pauseFilePollingTime;
     }
 
 }

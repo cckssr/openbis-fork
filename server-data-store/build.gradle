@@ -31,6 +31,7 @@ dependencies {
             project(':lib-data-store-common'),
             project(':lib-mail'),
             project(':lib-json'),
+            project(':lib-messages-db'),
             project(':lib-archiver-db'),
             project(':lib-archiver'),
             project(':lib-pathinfo-db'),

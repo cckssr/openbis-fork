@@ -121,7 +121,7 @@ public class ShareIdManager implements IShareIdManager
 
             if (!locks.isEmpty())
             {
-                // Unfortunately, we don't have a mechanism in AFS what would notify
+                // Unfortunately, we don't have a mechanism in AFS that would notify
                 // us when all the locks are released, therefore, we need to do the waiting here.
 
                 try

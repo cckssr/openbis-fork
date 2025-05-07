@@ -8,9 +8,14 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import ch.ethz.sis.afs.manager.TransactionManager;
+import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
+import ch.ethz.sis.afsserver.server.archiving.message.FinalizeArchivingMessage;
+import ch.ethz.sis.afsserver.server.archiving.message.UpdateDataSetArchivingStatusMessage;
+import ch.ethz.sis.afsserver.server.messages.DeleteDataSetMessage;
+import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
@@ -24,7 +29,7 @@ import ch.systemsx.cisd.common.mail.MailClientParameters;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
-import ch.systemsx.cisd.openbis.dss.generic.server.DeletionCommand;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentProvider;
@@ -240,8 +245,9 @@ public class ServiceProvider implements IServiceProvider
                 public void scheduleDeletionOfDataSets(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
                         final long waitingTimeBetweenRetries)
                 {
-                    new DeletionCommand(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).execute(getHierarchicalContentProvider(),
-                            getDataSetDirectoryProvider());
+                    MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                    JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+                    facade.create(new DeleteDataSetMessage(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).serialize(objectMapper));
                 }
             };
         }
@@ -257,7 +263,9 @@ public class ServiceProvider implements IServiceProvider
             {
                 @Override public void update(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
                 {
-                    getOpenBISService().updateDataSetStatuses(dataSetCodes, status, presentInArchive);
+                    MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                    JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+                    facade.create(new UpdateDataSetArchivingStatusMessage(dataSetCodes, status, presentInArchive).serialize(objectMapper));
                 }
             };
         }
@@ -328,7 +336,16 @@ public class ServiceProvider implements IServiceProvider
                 public void scheduleTask(final String taskKey, final IArchiverTask task, final Map<String, String> parameterBindings,
                         final List<DatasetDescription> datasets, final String userId, final String userEmailOrNull, final String userSessionToken)
                 {
-                    task.process(datasets, parameterBindings);
+                    if (task instanceof MultiDataSetArchivingFinalizer)
+                    {
+                        MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                        JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+                        facade.create(new FinalizeArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, datasets).serialize(
+                                objectMapper));
+                    } else
+                    {
+                        throw new IllegalArgumentException("Unsupported task: " + task.getClass());
+                    }
                 }
             };
         }

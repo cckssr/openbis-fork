@@ -1,0 +1,5 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    api project(':lib-db')
+}

@@ -31,6 +31,7 @@ import ch.ethz.sis.afsserver.server.common.HierarchicalContentServiceProvider;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.afsserver.server.impl.HttpDownloadAdapter;
+import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
 import ch.ethz.sis.afsserver.server.observer.ServerObserver;
 import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
@@ -102,7 +103,15 @@ public final class Server<CONNECTION, API>
         LockMapper<UUID, String> lockMapper = configuration.getSharableInstance(AtomicFileSystemServerParameter.lockMapperClass);
         lockMapper.init(configuration);
 
-        // 2.1 Create pathinfo DB and archiving DB
+        // 2.1 Create messages DB, pathinfo DB and archiving DB
+        DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
+        if (messagesDatabaseConfiguration != null)
+        {
+            DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(messagesDatabaseConfiguration.getContext(),
+                    messagesDatabaseConfiguration.getVersion(), null,
+                    null);
+        }
+
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
         if (pathInfoDatabaseConfiguration != null)
         {
