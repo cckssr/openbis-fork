@@ -34,6 +34,7 @@ dependencies {
 }
 
 tasks.register('buildRdfTool', Jar) {
+    zip64 = true
     dependsOn tasks.build
     duplicatesStrategy 'include'
 
