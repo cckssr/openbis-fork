@@ -28,6 +28,10 @@ const styles = theme => ({
   },
   error: {
     marginTop: theme.spacing(1)
+  },
+  details: {
+    height: 'calc(100vh - (' + theme.spacing(32) + ' ))',
+    display: 'flex',
   }
 })
 
@@ -116,12 +120,14 @@ class ImportAllForm extends React.PureComponent {
             mountOnEnter={true}
             unmountOnExit={true}
           >
-            <SourceCodeField
-              language='log'
-              label={messages.get(messages.ERROR)}
-              readOnly={true}
-              value={result.output}
-            />
+            <div className={classes.details}>
+                <SourceCodeField
+                  language='log'
+                  label={messages.get(messages.ERROR)}
+                  readOnly={true}
+                  value={result.output}
+                />
+            </div>
           </Collapse>
         </div>
       </div>
