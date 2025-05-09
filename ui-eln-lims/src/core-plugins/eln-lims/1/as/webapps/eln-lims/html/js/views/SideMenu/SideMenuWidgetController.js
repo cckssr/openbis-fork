@@ -46,6 +46,10 @@ function SideMenuWidgetController(mainController) {
         }
     }
 
+    this.getCurrentTree = function() {
+        return this._browserController.CURRENT_TREE;
+    }
+
     this.changeCurrentTree = function(treeName, optionalNode) {
         var _this = this;
         var counter = 200;
@@ -137,17 +141,21 @@ function SideMenuWidgetController(mainController) {
         }
     }
 
-    this.refreshNodeParentByPermId = async function (entityType, entityPermId) {
-        var _this = this
-        var nodes = this._browserController.getNodes()
-        for(var i = 0; i < nodes.length; i++){
-            var node = nodes[i]
-            if (node.object && entityType === node.object.type && entityPermId === node.object.id) {
-                await _this._browserController.reloadNode(node.parentId)
-                break;
+    this.refreshNodeParentByPermId = async function (entityType, entityPermId, callback) {
+            var _this = this
+            var nodes = this._browserController.getNodes()
+            for(var i = 0; i < nodes.length; i++){
+                var node = nodes[i]
+                if (node.object && entityType === node.object.type && entityPermId === node.object.id) {
+                    if(callback) {
+                        await _this._browserController.reloadNode(node.parentId).then(() => callback())
+                    } else {
+                        await _this._browserController.reloadNode(node.parentId)
+                    }
+                    break;
+                }
             }
         }
-    }
 
     this.moveToNodeId = function (nodeObjectStr) {
         var nodeObject = null

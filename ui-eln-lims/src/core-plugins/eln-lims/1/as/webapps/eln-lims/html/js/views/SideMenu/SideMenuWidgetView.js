@@ -316,6 +316,21 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
         }
     }
 
+    this._refreshSubSideMenu = function() {
+        if(this._sideMenuWidgetModel.subSideMenu) {
+            var subSideMenu = this._sideMenuWidgetModel.subSideMenu;
+            subSideMenu.css("margin-left", "3px")
+            this._sideMenuWidgetModel.percentageOfUsage = 0.5
+            $widget.append(subSideMenu)
+            this._sideMenuWidgetController.resizeElement($body, 0.5)
+            this._sideMenuWidgetController.resizeElement(subSideMenu, 0.5)
+            if(this.subSideMenuViewer && this.subSideMenuViewer.init) {
+                this.subSideMenuViewer.init();
+            }
+        }
+
+    }
+
     this._expandedFooter = function() {
         // Footer
         var $footer = $("<div>", { id: "sideMenuFooter"})

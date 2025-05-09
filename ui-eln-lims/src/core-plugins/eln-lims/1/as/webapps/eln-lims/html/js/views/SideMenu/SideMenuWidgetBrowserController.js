@@ -1837,7 +1837,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                         var parentless = [];
                         var ids = searchResult.objects.map(x => x.permId.permId);
                         searchResult.objects.forEach((sample) => {
-                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
                                promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
                                parentless.push(sample);
                             }
@@ -1862,7 +1862,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                         var ids = searchResult.objects.map(x => x.permId.permId);
 
                         searchResult.objects.forEach((sample) => {
-                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
                                 var node = this._createSampleNode(sample);
 
                                 results.nodes.push(node);
@@ -2017,7 +2017,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                          var parentless = [];
                          var ids = searchResult.objects.map(x => x.permId.permId);
                          searchResult.objects.forEach((sample) => {
-                             if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                             if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
                                 promises.push(mainController.openbisV3.getAfsServerFacade().list(sample.permId.permId ,"", false))
                                 parentless.push(sample);
                              }
@@ -2041,7 +2041,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
 
                         var ids = searchResult.objects.map(x => x.permId.permId);
                         searchResult.objects.forEach((sample) => {
-                            if(sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
                                 results.nodes.push(this._createSampleNode(sample, false))
                                 results.totalCount++;
                             }
@@ -2308,11 +2308,14 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                 },
                 sampleFetchOptions,
                 (searchResult) => {
-                    var results = this._filterResultsByFunction(params, searchResult, (sample) => {
-                        if (this._isExperimentSample(sample)) {
-                            return this._createSampleNode(sample)
-                        } else {
-                            return null
+
+                    var results = { nodes: [], totalCount: 0 }
+
+                    var ids = searchResult.objects.map(x => x.permId.permId);
+                    searchResult.objects.forEach((sample) => {
+                        if(this._isSampleTypeOnNav(sample) && sample.parents && !sample.parents.some(parent => ids.includes(parent.permId.permId) )) {
+                            results.nodes.push(this._createSampleNode(sample))
+                            results.totalCount++;
                         }
                     })
 
@@ -2457,7 +2460,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             rules: { [Util.guid()]: { type: "Attribute", name: "PERM_ID", value: params.node.samplePermId } },
         }
 
-        var parentFetchOptions = { only: true, withExperiment: true }
+        var parentFetchOptions = { only: true, withExperiment: true, withProject: true, withSpace: true }
 
         var parent = await new Promise((resolve) => {
             mainController.serverFacade.searchForSamplesAdvanced(
@@ -2488,6 +2491,23 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                         name: "ATTR.PERM_ID",
                         value: parent.experiment.permId.permId,
                     }
+        } else if(parent.project) {
+            // branch for project samples
+            sampleRules[Util.guid()] = {
+                        type: "Project",
+                        name: "ATTR.PERM_ID",
+                        value: parent.project.permId.permId,
+                    }
+            sampleRules[Util.guid()] = { type: "Experiment", name: "NULL.NULL", value: "NULL" }
+        } else if(parent.space) {
+            // branch for space samples
+            sampleRules[Util.guid()] = {
+                        type: "Space",
+                        name: "ATTR.PERM_ID",
+                        value: parent.space.permId.permId,
+                    }
+            sampleRules[Util.guid()] = { type: "Project", name: "NULL.NULL", value: "NULL" }
+            sampleRules[Util.guid()] = { type: "Experiment", name: "NULL.NULL", value: "NULL" }
         }
 
         var sampleSubcriteria = []
@@ -3554,6 +3574,13 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         }
 
         return false
+    }
+
+    _isSampleTypeOnNav(sample) {
+        return profile.showOnNavForSpace(
+            IdentifierUtil.getSpaceCodeFromIdentifier(sample.getIdentifier().getIdentifier()),
+            sample.getType().getCode()
+        )
     }
 
     _isChildSample(sample) {

@@ -18,7 +18,13 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 	this._mainController = mainController;
 	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab);
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
-//	this._storageControllers = [];
+
+    this.refresh = function(views) {
+        if(this._sampleFormModel.dataSetViewer) {
+            mainController.sideMenu.addSubSideMenu(this._sampleFormView._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
+            this._sampleFormModel.dataSetViewer.init();
+        }
+    }
 	
 	this.init = function(views, loadFromTemplate) {
 		// Loading datasets
@@ -340,12 +346,14 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             var mergedAnnotationsState = {};
             for(var key in parentsAnnotationsState) {
                 if(key in mergedAnnotationsState) {
+                   alert("Error merging annotations: Do you have the same object as parent or children?");
                    throw 'Error merging annotations: Do you have the same object as parent or children?';
                 }
                 mergedAnnotationsState[key] = parentsAnnotationsState[key];
             }
             for(var key in childrenAnnotationsState) {
                 if(key in mergedAnnotationsState) {
+                   alert("Error merging annotations: Do you have the same object as parent or children?");
                    throw 'Error merging annotations: Do you have the same object as parent or children?';
                 }
                 mergedAnnotationsState[key] = childrenAnnotationsState[key];
@@ -807,16 +815,82 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                         permId = operationResult.getObjectIds()[0].getPermId();
                     }
                 });
+                var sampleChildrenChanges = {
+                    'added': parameters["sampleChildrenAdded"],
+                    'new': parameters["sampleChildrenNew"],
+                    'removed': parameters["sampleChildrenRemoved"],
+                }
+                var sampleParentsChanges = {
+                    'parents': parameters["sampleParents"],
+                    'added': parameters["sampleParentsAdded"],
+                    'new': parameters["sampleParentsNew"],
+                    'removed': parameters["sampleParentsRemoved"],
+                }
                 _this._createUpdateCopySampleCallback(_this, parameters["isCopyWithNewCode"], permId, 
                         parameters["samplesToDelete"], parameters["parentsAnnotationsState"], 
-                        parameters["childrenAnnotationsState"], parameters["copyChildrenOnCopy"]);
+                        parameters["childrenAnnotationsState"], parameters["copyChildrenOnCopy"], sampleParentsChanges, sampleChildrenChanges);
             }).fail(function(result) {
                 Util.showFailedServerCallError(result);
             });
         });
     }
+
+    this._refreshSideMenuNodes = function(_this, sampleParentsChanges, sampleChildrenChanges) {
+           var refreshFlag = true;
+           var permId = _this._sampleFormModel.sample.permId;
+           if(sampleParentsChanges && sampleParentsChanges.added &&
+                sampleParentsChanges.added.length !== 0) {
+                // update new parent nodes
+                refreshFlag = false;
+                mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", permId, () => {
+                    mainController.serverFacade.searchWithIdentifiers(sampleParentsChanges.added, function(data) {
+                        for(var i = 0; i < data.length; i++) {
+                            mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", data[i].permId)
+                        }
+                    });
+                });
+           } else if(sampleParentsChanges && sampleParentsChanges.removed &&
+                  sampleParentsChanges.removed.length !== 0) {
+                refreshFlag = false;
+                mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", permId, () => {
+                    mainController.serverFacade.searchWithIdentifiers(sampleParentsChanges.removed, function(data) {
+                        for(var i = 0; i < data.length; i++) {
+                            mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", data[i].permId)
+                        }
+                    });
+                });
+
+           }
+
+           // Children
+           if(sampleChildrenChanges && sampleChildrenChanges.added &&
+                               sampleChildrenChanges.added.length !== 0) {
+                refreshFlag = false;
+                mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", permId, () => {
+                    mainController.serverFacade.searchWithIdentifiers(sampleChildrenChanges.added, function(data) {
+                        for(var i = 0; i < data.length; i++) {
+                            mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", data[i].permId)
+                        }
+                    });
+                });
+           } else if(sampleChildrenChanges && sampleChildrenChanges.removed &&
+                                   sampleChildrenChanges.removed.length !== 0) {
+                 refreshFlag = false;
+                 mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", permId, () => {
+                     mainController.serverFacade.searchWithIdentifiers(sampleChildrenChanges.removed, function(data) {
+                         for(var i = 0; i < data.length; i++) {
+                             mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", data[i].permId)
+                         }
+                     });
+                 });
+
+           }
+           if(refreshFlag) {
+               mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", _this._sampleFormModel.sample.permId);
+           }
+    }
     
-    this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, permId, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy) {
+    this._createUpdateCopySampleCallback = function(_this, isCopyWithNewCode, permId, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy, sampleParentsChanges, sampleChildrenChanges) {
         this.setClean();
 
         var sampleType = profile.getSampleTypeForSampleTypeCode(_this._sampleFormModel.sample.sampleTypeCode);
@@ -839,7 +913,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                 if(_this._sampleFormModel.mode === FormMode.CREATE) {
                     mainController.sideMenu.refreshCurrentNode();
                 } else if(_this._sampleFormModel.mode === FormMode.EDIT || isCopyWithNewCode) {
-                    mainController.sideMenu.refreshNodeParentByPermId("SAMPLE", _this._sampleFormModel.sample.permId);
+                    _this._refreshSideMenuNodes(_this, sampleParentsChanges, sampleChildrenChanges);
                 }
             }
             
