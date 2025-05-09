@@ -119,16 +119,6 @@ public class OpenBisSessionManager extends DefaultSessionManager<Session> implem
         }
     }
 
-    @Override
-    public void updateSessions(Set<String> userIds)
-    {
-        synchronized (SessionManagerLock.getInstance())
-        {
-            List<Session> list = sessions.values().stream().map(FullSession::getSession).filter(s -> userIds.contains(s.tryGetPerson().getUserId())).collect(Collectors.toList());
-            updateSessions(daoFactory, list);
-        }
-    }
-
     public static void updateSessions(IDAOFactory daoFactory, Collection<Session> sessions)
     {
         for (Session session : sessions)

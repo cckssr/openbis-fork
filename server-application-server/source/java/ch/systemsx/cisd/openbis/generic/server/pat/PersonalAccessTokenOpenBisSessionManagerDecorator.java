@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.Resource;
@@ -112,16 +111,7 @@ public class PersonalAccessTokenOpenBisSessionManagerDecorator implements IOpenB
     @Override public void updateAllSessions()
     {
         sessionManager.updateAllSessions();
-        synchronized (SessionManagerLock.getInstance())
-        {
-            OpenBisSessionManager.updateSessions(daoFactory, sessions.values());
-        }
-    }
 
-    @Transactional(readOnly = true, noRollbackFor = Exception.class)
-    @Override public void updateSessions(Set<String> userIds)
-    {
-        sessionManager.updateSessions(userIds);
         synchronized (SessionManagerLock.getInstance())
         {
             OpenBisSessionManager.updateSessions(daoFactory, sessions.values());

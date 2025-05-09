@@ -16,10 +16,7 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.Transaction;
 import org.hibernate.type.Type;
@@ -43,8 +40,6 @@ public class SessionsUpdateInterceptor extends EmptyInterceptor
     private IDAOFactory daoFactory;
 
     private boolean sessionsUpdateNeeded;
-
-    private ThreadLocal<Set<String>> userSessionsUpdateNeeded = new ThreadLocal<>();
 
     public SessionsUpdateInterceptor(IOpenBisSessionManager openBisSessionManager, IDAOFactory daoFactory)
     {
@@ -88,12 +83,6 @@ public class SessionsUpdateInterceptor extends EmptyInterceptor
         {
             sessionsUpdateNeeded = true;
         }
-        if (entity instanceof PersonPE) {
-            if (userSessionsUpdateNeeded.get() == null) {
-                userSessionsUpdateNeeded.set(new HashSet<>());
-            }
-            userSessionsUpdateNeeded.get().add(((PersonPE) entity).getUserId());
-        }
     }
 
     private void checkSpace(Object entity)
@@ -116,24 +105,6 @@ public class SessionsUpdateInterceptor extends EmptyInterceptor
             } finally
             {
                 wasCommited.set(null);
-                if (userSessionsUpdateNeeded.get() != null) {
-                    userSessionsUpdateNeeded.set(null);
-                }
-            }
-        }
-        if (!sessionsUpdateNeeded
-                && !Boolean.TRUE.equals(wasCommited.get())
-                && userSessionsUpdateNeeded.get() != null
-                && false == userSessionsUpdateNeeded.get().isEmpty()) {
-            try
-            {
-                openBisSessionManager.updateSessions(userSessionsUpdateNeeded.get());
-            } finally
-            {
-                wasCommited.set(null);
-                if (userSessionsUpdateNeeded.get() != null) {
-                    userSessionsUpdateNeeded.set(null);
-                }
             }
         }
     }
