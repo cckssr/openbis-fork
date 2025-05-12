@@ -3,17 +3,20 @@ package ch.ethz.sis.afsserver.server.messages;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.messages.db.MessagesDatabase;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 
-public class MessagesDatabaseConfiguration
+public class MessagesDatabaseConfiguration extends DatabaseConfiguration
 {
 
-    private static volatile DatabaseConfiguration instance;
+    private static volatile MessagesDatabaseConfiguration instance;
 
     private static volatile Configuration configuration;
 
-    public static DatabaseConfiguration getInstance(Configuration configuration)
+    private final MessagesDatabaseFacade messagesDatabaseFacade;
+
+    public static MessagesDatabaseConfiguration getInstance(Configuration configuration)
     {
         if (MessagesDatabaseConfiguration.configuration != configuration)
         {
@@ -25,7 +28,7 @@ public class MessagesDatabaseConfiguration
 
                     if (!databaseProperties.isEmpty())
                     {
-                        instance = new DatabaseConfiguration(new Configuration(databaseProperties));
+                        instance = new MessagesDatabaseConfiguration(new Configuration(databaseProperties));
                     } else
                     {
                         instance = null;
@@ -39,8 +42,23 @@ public class MessagesDatabaseConfiguration
         return instance;
     }
 
-    private MessagesDatabaseConfiguration()
+    private MessagesDatabaseConfiguration(Configuration configuration)
     {
+        super(configuration);
+
+        DatabaseConfiguration databaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
+
+        if (databaseConfiguration != null)
+        {
+            messagesDatabaseFacade = new MessagesDatabaseFacade(new MessagesDatabase(databaseConfiguration.getDataSource()));
+        } else
+        {
+            throw new RuntimeException("Messages database not configured");
+        }
     }
 
+    public MessagesDatabaseFacade getMessagesDatabaseFacade()
+    {
+        return messagesDatabaseFacade;
+    }
 }

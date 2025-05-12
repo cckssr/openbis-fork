@@ -43,10 +43,10 @@ public class FinalizeArchivingMessageTest
         DatasetDescription description2 = new DatasetDescription();
         description1.setDataSetCode("test-code-2");
 
-        FinalizeArchivingMessage originalArchivingMessage =
-                new FinalizeArchivingMessage(task, parameterBindings, Arrays.asList(description1, description2));
+        FinalizeDataSetArchivingMessage originalArchivingMessage =
+                new FinalizeDataSetArchivingMessage(task, parameterBindings, Arrays.asList(description1, description2));
         Message message = originalArchivingMessage.serialize(objectMapper);
-        FinalizeArchivingMessage deserializedArchivingMessage = FinalizeArchivingMessage.deserialize(objectMapper, message);
+        FinalizeDataSetArchivingMessage deserializedArchivingMessage = FinalizeDataSetArchivingMessage.deserialize(objectMapper, message);
 
         Assert.assertEquals(deserializedArchivingMessage.getTask().getCleanerProperties(), originalArchivingMessage.getTask().getCleanerProperties());
         Assert.assertEquals(deserializedArchivingMessage.getTask().getPauseFile(), originalArchivingMessage.getTask().getPauseFile());

@@ -17,10 +17,10 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import lombok.Data;
 import lombok.Getter;
 
-public class FinalizeArchivingMessage
+public class FinalizeDataSetArchivingMessage
 {
 
-    public static final String TYPE = "afs.archiving.finalize";
+    public static final String TYPE = "afs.archiving.finalizeDataSetArchiving";
 
     @Getter
     private final MultiDataSetArchivingFinalizer task;
@@ -31,7 +31,7 @@ public class FinalizeArchivingMessage
     @Getter
     private final List<DatasetDescription> dataSets;
 
-    public FinalizeArchivingMessage(MultiDataSetArchivingFinalizer task, Map<String, String> parameterBindings,
+    public FinalizeDataSetArchivingMessage(MultiDataSetArchivingFinalizer task, Map<String, String> parameterBindings,
             List<DatasetDescription> dataSets)
     {
         if (task == null)
@@ -57,7 +57,8 @@ public class FinalizeArchivingMessage
         Message message = new Message();
         message.setType(TYPE);
         message.setDescription(
-                "Finalize archiving of " + CollectionUtils.abbreviate(dataSets, 10, DatasetDescription::getDataSetCode) + " data sets");
+                "Finalize archiving of " + CollectionUtils.abbreviate(dataSets, CollectionUtils.DEFAULT_MAX_LENGTH,
+                        DatasetDescription::getDataSetCode) + " data sets");
         message.setCreationTimestamp(new Date());
 
         MetaDataTask metaDataTask = new MetaDataTask();
@@ -94,7 +95,7 @@ public class FinalizeArchivingMessage
         return message;
     }
 
-    public static FinalizeArchivingMessage deserialize(JsonObjectMapper objectMapper, Message message)
+    public static FinalizeDataSetArchivingMessage deserialize(JsonObjectMapper objectMapper, Message message)
     {
         try
         {
@@ -116,7 +117,7 @@ public class FinalizeArchivingMessage
                     new MultiDataSetArchivingFinalizer(cleanerProperties, pauseFile, metaData.getTask().getPauseFilePollingTime(),
                             SystemTimeProvider.SYSTEM_TIME_PROVIDER);
 
-            return new FinalizeArchivingMessage(task, metaData.getParameterBindings(), metaData.getDataSets());
+            return new FinalizeDataSetArchivingMessage(task, metaData.getParameterBindings(), metaData.getDataSets());
         } catch (Exception e)
         {
             throw new RuntimeException(e);

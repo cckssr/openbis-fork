@@ -3,48 +3,56 @@ package ch.ethz.sis.afsserver.server.archiving.messages;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.messages.db.Message;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 import lombok.Data;
 import lombok.Getter;
 
-public class UpdateDataSetArchivingStatusMessage
+public class ArchiveDataSetMessage
 {
 
-    public static final String TYPE = "afs.archiving.updateDataSetArchivingStatus";
+    public static final String TYPE = "afs.archiving.archiveDataSet";
 
     @Getter
     private final List<String> dataSetCodes;
 
     @Getter
-    private final DataSetArchivingStatus archivingStatus;
+    private final boolean removeFromDataStore;
 
     @Getter
-    private final Boolean presentInArchive;
+    private final Map<String, String> options;
 
-    public UpdateDataSetArchivingStatusMessage(final List<String> dataSetCodes, final DataSetArchivingStatus archivingStatus,
-            final Boolean presentInArchive)
+    public ArchiveDataSetMessage(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
     {
+        if (dataSetCodes == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (options == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
         this.dataSetCodes = dataSetCodes;
-        this.archivingStatus = archivingStatus;
-        this.presentInArchive = presentInArchive;
+        this.removeFromDataStore = removeFromDataStore;
+        this.options = options;
     }
 
     public Message serialize(JsonObjectMapper objectMapper)
     {
         Message message = new Message();
         message.setType(TYPE);
-        message.setDescription("Update archiving status of " + CollectionUtils.abbreviate(dataSetCodes, CollectionUtils.DEFAULT_MAX_LENGTH)
-                + " data sets");
+        message.setDescription(
+                "Archive " + CollectionUtils.abbreviate(dataSetCodes, CollectionUtils.DEFAULT_MAX_LENGTH) + " data sets");
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
         metaData.setDataSetCodes(dataSetCodes);
-        metaData.setArchivingStatus(archivingStatus);
-        metaData.setPresentInArchive(presentInArchive);
+        metaData.setRemoveFromDataStore(removeFromDataStore);
+        metaData.setOptions(options);
 
         try
         {
@@ -57,12 +65,12 @@ public class UpdateDataSetArchivingStatusMessage
         return message;
     }
 
-    public static UpdateDataSetArchivingStatusMessage deserialize(JsonObjectMapper objectMapper, Message message)
+    public static ArchiveDataSetMessage deserialize(JsonObjectMapper objectMapper, Message message)
     {
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new UpdateDataSetArchivingStatusMessage(metaData.getDataSetCodes(), metaData.getArchivingStatus(), metaData.getPresentInArchive());
+            return new ArchiveDataSetMessage(metaData.getDataSetCodes(), metaData.isRemoveFromDataStore(), metaData.getOptions());
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -72,12 +80,11 @@ public class UpdateDataSetArchivingStatusMessage
     @Data
     private static class MetaData
     {
-
         private List<String> dataSetCodes;
 
-        private DataSetArchivingStatus archivingStatus;
+        private boolean removeFromDataStore;
 
-        private Boolean presentInArchive;
-
+        private Map<String, String> options;
     }
+
 }

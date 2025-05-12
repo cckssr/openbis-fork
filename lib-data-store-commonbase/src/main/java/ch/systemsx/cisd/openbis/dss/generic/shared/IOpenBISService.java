@@ -50,7 +50,7 @@ public interface IOpenBISService
 
     List<DeletedDataSet> listDeletedDataSets(Long lastSeenDeletionEventIdOrNull, Date maxDeletionDateOrNull);
 
-    void updateDataSetStatuses(List<String> dataSetCodes, DataSetArchivingStatus newStatus, boolean presentInArchive) throws UserFailureException;
+    void updateDataSetStatuses(List<String> dataSetCodes, DataSetArchivingStatus newStatus, Boolean presentInArchive) throws UserFailureException;
 
     void updateShareIdAndSize(String dataSetCode, String shareId, long size);
 

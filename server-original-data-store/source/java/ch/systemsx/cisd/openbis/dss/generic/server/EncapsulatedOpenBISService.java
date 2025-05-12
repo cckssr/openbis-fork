@@ -541,7 +541,7 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
 
     @Override
     public final void updateDataSetStatuses(List<String> codes, DataSetArchivingStatus newStatus,
-            boolean presentInArchive) throws UserFailureException
+            Boolean presentInArchive) throws UserFailureException
 
     {
         assert codes != null : "missing data set codes";

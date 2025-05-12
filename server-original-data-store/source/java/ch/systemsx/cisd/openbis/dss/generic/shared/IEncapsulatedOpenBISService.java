@@ -422,7 +422,7 @@ public interface IEncapsulatedOpenBISService extends IEncapsulatedBasicOpenBISSe
      */
     @ManagedAuthentication
     public void updateDataSetStatuses(List<String> codes, DataSetArchivingStatus newStatus,
-            boolean presentInArchive) throws UserFailureException;
+            Boolean presentInArchive) throws UserFailureException;
 
     /**
      * See {@link IServiceForDataStoreServer#updateDataSetStatuses(String, List, DataSetArchivingStatus, boolean)}

@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
+import ch.ethz.sis.afsjson.JsonObjectMapper;
+import ch.ethz.sis.afsserver.server.archiving.messages.ArchiveDataSetMessage;
+import ch.ethz.sis.afsserver.server.messages.IMessagesDatabaseFacade;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -40,8 +42,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ArchiverDataSetCriteria;
@@ -57,7 +57,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
-import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
@@ -69,17 +68,17 @@ public class OpenBISService implements IOpenBISService
 
     private final IOpenBISFacade openBISFacade;
 
-    private final IArchiverPlugin archiverPlugin;
+    private final IMessagesDatabaseFacade messagesDatabaseFacade;
 
-    private final IArchiverContextFactory archiverContextFactory;
+    private final JsonObjectMapper objectMapper;
 
-    public OpenBISService(final IOpenBISFacade openBISFacade, final IArchiverPlugin archiverPlugin,
-            final IArchiverContextFactory archiverContextFactory)
+    public OpenBISService(final IOpenBISFacade openBISFacade, final IMessagesDatabaseFacade messagesDatabaseFacade,
+            final JsonObjectMapper objectMapper)
     {
 
         this.openBISFacade = openBISFacade;
-        this.archiverPlugin = archiverPlugin;
-        this.archiverContextFactory = archiverContextFactory;
+        this.messagesDatabaseFacade = messagesDatabaseFacade;
+        this.objectMapper = objectMapper;
     }
 
     @Override public String getSessionToken()
@@ -500,14 +499,8 @@ public class OpenBISService implements IOpenBISService
     }
 
     @Override public void updateDataSetStatuses(final List<String> dataSetCodes, final DataSetArchivingStatus newStatus,
-            final boolean presentInArchive)
+            final Boolean presentInArchive)
             throws UserFailureException
-    {
-        updateDataSetStatuses(dataSetCodes, newStatus, Boolean.valueOf(presentInArchive));
-    }
-
-    public void updateDataSetStatuses(final List<String> dataSetCodes, final DataSetArchivingStatus newStatus,
-            final Boolean presentInArchive) throws UserFailureException
     {
         List<DataSetUpdate> updates = dataSetCodes.stream().map(dataSetCode ->
         {
@@ -556,54 +549,7 @@ public class OpenBISService implements IOpenBISService
     @Override public void archiveDataSets(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
             throws UserFailureException
     {
-        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
-        criteria.withPhysicalData();
-        criteria.withCodes().thatIn(dataSetCodes);
-
-        DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
-        dataSetFetchOptions.withType();
-        dataSetFetchOptions.withDataStore();
-        dataSetFetchOptions.withPhysicalData().withFileFormatType();
-        dataSetFetchOptions.withContainers();
-
-        SampleFetchOptions sampleFetchOptions = dataSetFetchOptions.withSample();
-        sampleFetchOptions.withType();
-        sampleFetchOptions.withSpace();
-        sampleFetchOptions.withProject();
-
-        ExperimentFetchOptions experimentFetchOptions = dataSetFetchOptions.withExperiment();
-        experimentFetchOptions.withType();
-        experimentFetchOptions.withProject().withSpace();
-
-        List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, dataSetFetchOptions).getObjects();
-
-        List<String> notAvailableDataSets =
-                dataSets.stream().filter(dataSet -> !ArchivingStatus.AVAILABLE.equals(dataSet.getPhysicalData().getStatus())).map(DataSet::getCode)
-                        .collect(Collectors.toList());
-
-        if (!notAvailableDataSets.isEmpty())
-        {
-            throw new RuntimeException(
-                    "Data sets: " + notAvailableDataSets + " cannot be archived as their archiving status is not " + ArchivingStatus.AVAILABLE);
-        }
-
-        updateDataSetStatuses(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()),
-                removeFromDataStore ? DataSetArchivingStatus.ARCHIVE_PENDING : DataSetArchivingStatus.BACKUP_PENDING,
-                null);
-
-        try
-        {
-            List<DatasetDescription> dataSetDescriptions = dataSets.stream().map(DTOTranslator::translateToDescription).collect(Collectors.toList());
-
-            ArchiverTaskContext archiverTaskContext = archiverContextFactory.createContext();
-            archiverTaskContext.setOptions(options);
-
-            archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
-        } catch (Exception e)
-        {
-            updateDataSetStatuses(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()), DataSetArchivingStatus.AVAILABLE, null);
-        }
+        messagesDatabaseFacade.create(new ArchiveDataSetMessage(dataSetCodes, removeFromDataStore, options).serialize(objectMapper));
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)

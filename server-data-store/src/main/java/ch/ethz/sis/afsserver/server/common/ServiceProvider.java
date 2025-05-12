@@ -12,9 +12,10 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
-import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeArchivingMessage;
+import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessage;
 import ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
 import ch.ethz.sis.afsserver.server.messages.DeleteDataSetMessage;
+import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
@@ -246,7 +247,7 @@ public class ServiceProvider implements IServiceProvider
                 public void scheduleDeletionOfDataSets(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
                         final long waitingTimeBetweenRetries)
                 {
-                    MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                    MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
                     facade.create(new DeleteDataSetMessage(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).serialize(objectMapper));
                 }
@@ -264,7 +265,7 @@ public class ServiceProvider implements IServiceProvider
             {
                 @Override public void update(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
                 {
-                    MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                    MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
                     facade.create(new UpdateDataSetArchivingStatusMessage(dataSetCodes, status, presentInArchive).serialize(objectMapper));
                 }
@@ -339,10 +340,11 @@ public class ServiceProvider implements IServiceProvider
                 {
                     if (task instanceof MultiDataSetArchivingFinalizer)
                     {
-                        MessagesDatabaseFacade facade = new MessagesDatabaseFacade(configuration);
+                        MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                         JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                        facade.create(new FinalizeArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, datasets).serialize(
-                                objectMapper));
+                        facade.create(
+                                new FinalizeDataSetArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, datasets).serialize(
+                                        objectMapper));
                     } else
                     {
                         throw new IllegalArgumentException("Unsupported task: " + task.getClass());
@@ -389,7 +391,10 @@ public class ServiceProvider implements IServiceProvider
         if (openBISService == null)
         {
             OpenBISConfiguration openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-            openBISService = new OpenBISService(openBISConfiguration.getOpenBISFacade(), getArchiverPlugin(), getArchiverContextFactory());
+            MessagesDatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
+            JsonObjectMapper jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+            openBISService = new OpenBISService(openBISConfiguration.getOpenBISFacade(), messagesDatabaseConfiguration.getMessagesDatabaseFacade(),
+                    jsonObjectMapper);
         }
 
         return openBISService;
