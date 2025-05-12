@@ -1,4 +1,4 @@
-package ch.ethz.sis.messagesdb;
+package ch.ethz.sis.messages.db;
 
 import java.util.Date;
 
@@ -16,6 +16,8 @@ public class Message
     private String processId;
 
     private Date creationTimestamp;
+
+    private Date consumptionTimestamp;
 
     public Long getId()
     {
@@ -75,5 +77,15 @@ public class Message
     public void setCreationTimestamp(final Date creationTimestamp)
     {
         this.creationTimestamp = creationTimestamp;
+    }
+
+    public Date getConsumptionTimestamp()
+    {
+        return consumptionTimestamp;
+    }
+
+    public void setConsumptionTimestamp(final Date consumptionTimestamp)
+    {
+        this.consumptionTimestamp = consumptionTimestamp;
     }
 }

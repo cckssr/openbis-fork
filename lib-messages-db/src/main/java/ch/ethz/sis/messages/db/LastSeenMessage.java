@@ -1,4 +1,4 @@
-package ch.ethz.sis.messagesdb;
+package ch.ethz.sis.messages.db;
 
 public class LastSeenMessage
 {

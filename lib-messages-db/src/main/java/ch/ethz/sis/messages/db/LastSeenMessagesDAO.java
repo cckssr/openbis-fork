@@ -1,11 +1,9 @@
-package ch.ethz.sis.messagesdb;
+package ch.ethz.sis.messages.db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import javax.sql.DataSource;
 
 public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 {
@@ -19,17 +17,16 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
     private static final String GET_BY_CONSUMER_ID =
             "SELECT ID, LAST_SEEN_MESSAGE_ID, CONSUMER_ID FROM LAST_SEEN_MESSAGES WHERE CONSUMER_ID = ?";
 
-    private final DataSource dataSource;
+    private final Connection connection;
 
-    public LastSeenMessagesDAO(DataSource dataSource)
+    public LastSeenMessagesDAO(Connection connection)
     {
-        this.dataSource = dataSource;
+        this.connection = connection;
     }
 
     @Override public void create(final LastSeenMessage lastSeenMessage)
     {
-        try (Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement(CREATE_SQL);)
+        try (PreparedStatement statement = connection.prepareStatement(CREATE_SQL);)
         {
             statement.setLong(1, lastSeenMessage.getLastSeenMessageId());
             statement.setString(2, lastSeenMessage.getConsumerId());
@@ -42,8 +39,7 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 
     @Override public void update(final LastSeenMessage lastSeenMessage)
     {
-        try (Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement(UPDATE_SQL);)
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_SQL);)
         {
             statement.setLong(1, lastSeenMessage.getLastSeenMessageId());
             statement.setLong(2, lastSeenMessage.getId());
@@ -56,8 +52,7 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 
     @Override public LastSeenMessage getByConsumerId(final String consumerId)
     {
-        try (Connection connection = dataSource.getConnection();
-                PreparedStatement statement = connection.prepareStatement(GET_BY_CONSUMER_ID);)
+        try (PreparedStatement statement = connection.prepareStatement(GET_BY_CONSUMER_ID);)
         {
             statement.setString(1, consumerId);
 

@@ -5,19 +5,24 @@ import java.util.Date;
 import java.util.List;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.messagesdb.Message;
+import ch.ethz.sis.messages.db.Message;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
+import lombok.Data;
+import lombok.Getter;
 
 public class DeleteDataSetMessage
 {
 
-    private static final String TYPE = "afs.delete.dataSets";
+    public static final String TYPE = "afs.common.deleteDataSets";
 
+    @Getter
     private final List<? extends IDatasetLocation> dataSets;
 
+    @Getter
     private final int maxNumberOfRetries;
 
+    @Getter
     private final long waitingTimeBetweenRetries;
 
     public DeleteDataSetMessage(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries, final long waitingTimeBetweenRetries)
@@ -40,13 +45,12 @@ public class DeleteDataSetMessage
                 + " data sets");
         message.setCreationTimestamp(new Date());
 
-        MetaData metaData = new MetaData();
-        metaData.dataSets = dataSets;
-        metaData.maxNumberOfRetries = maxNumberOfRetries;
-        metaData.waitingTimeBetweenRetries = waitingTimeBetweenRetries;
-
         try
         {
+            MetaData metaData = new MetaData();
+            metaData.setDataSets(dataSets);
+            metaData.setMaxNumberOfRetries(maxNumberOfRetries);
+            metaData.setWaitingTimeBetweenRetries(waitingTimeBetweenRetries);
             message.setMetaData(new String(objectMapper.writeValue(metaData)));
         } catch (Exception e)
         {
@@ -54,11 +58,6 @@ public class DeleteDataSetMessage
         }
 
         return message;
-    }
-
-    public static boolean canDeserialize(Message message)
-    {
-        return TYPE.equals(message.getType());
     }
 
     public static DeleteDataSetMessage deserialize(JsonObjectMapper objectMapper, Message message)
@@ -73,6 +72,7 @@ public class DeleteDataSetMessage
         }
     }
 
+    @Data
     private static class MetaData
     {
 
@@ -83,4 +83,5 @@ public class DeleteDataSetMessage
         private long waitingTimeBetweenRetries;
 
     }
+
 }

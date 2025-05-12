@@ -1,5 +1,5 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    api project(':lib-db')
+    api project(':lib-logging'), project(':lib-db')
 }

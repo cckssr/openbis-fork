@@ -1,4 +1,4 @@
-package ch.ethz.sis.afsserver.server.archiving.message;
+package ch.ethz.sis.afsserver.server.archiving.messages;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -9,21 +9,26 @@ import java.util.Map;
 import java.util.Properties;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.messagesdb.Message;
+import ch.ethz.sis.messages.db.Message;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
+import lombok.Data;
+import lombok.Getter;
 
 public class FinalizeArchivingMessage
 {
 
-    private static final String TYPE = "afs.archiving.finalize";
+    public static final String TYPE = "afs.archiving.finalize";
 
+    @Getter
     private final MultiDataSetArchivingFinalizer task;
 
+    @Getter
     private final Map<String, String> parameterBindings;
 
+    @Getter
     private final List<DatasetDescription> dataSets;
 
     public FinalizeArchivingMessage(MultiDataSetArchivingFinalizer task, Map<String, String> parameterBindings,
@@ -56,7 +61,7 @@ public class FinalizeArchivingMessage
         message.setCreationTimestamp(new Date());
 
         MetaDataTask metaDataTask = new MetaDataTask();
-        metaDataTask.pauseFilePollingTime = task.getPauseFilePollingTime();
+        metaDataTask.setPauseFilePollingTime(task.getPauseFilePollingTime());
 
         if (task.getCleanerProperties() != null)
         {
@@ -65,18 +70,18 @@ public class FinalizeArchivingMessage
             {
                 cleanerProperties.put(propertyName, task.getCleanerProperties().getProperty(propertyName));
             }
-            metaDataTask.cleanerProperties = cleanerProperties;
+            metaDataTask.setCleanerProperties(cleanerProperties);
         }
 
         if (task.getPauseFile() != null)
         {
-            metaDataTask.pauseFile = task.getPauseFile().getPath();
+            metaDataTask.setPauseFile(task.getPauseFile().getPath());
         }
 
         MetaData metaData = new MetaData();
-        metaData.task = metaDataTask;
-        metaData.parameterBindings = parameterBindings;
-        metaData.dataSets = dataSets;
+        metaData.setTask(metaDataTask);
+        metaData.setParameterBindings(parameterBindings);
+        metaData.setDataSets(dataSets);
 
         try
         {
@@ -89,11 +94,6 @@ public class FinalizeArchivingMessage
         return message;
     }
 
-    public static boolean canDeserialize(Message message)
-    {
-        return TYPE.equals(message.getType());
-    }
-
     public static FinalizeArchivingMessage deserialize(JsonObjectMapper objectMapper, Message message)
     {
         try
@@ -101,39 +101,41 @@ public class FinalizeArchivingMessage
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
 
             Properties cleanerProperties = new Properties();
-            if (metaData.task.cleanerProperties != null)
+            if (metaData.getTask().getCleanerProperties() != null)
             {
-                cleanerProperties.putAll(metaData.task.cleanerProperties);
+                cleanerProperties.putAll(metaData.getTask().getCleanerProperties());
             }
 
             File pauseFile = null;
-            if (metaData.task.pauseFile != null)
+            if (metaData.getTask().getPauseFile() != null)
             {
-                pauseFile = new File(metaData.task.pauseFile);
+                pauseFile = new File(metaData.getTask().getPauseFile());
             }
 
             MultiDataSetArchivingFinalizer task =
-                    new MultiDataSetArchivingFinalizer(cleanerProperties, pauseFile, metaData.task.pauseFilePollingTime,
+                    new MultiDataSetArchivingFinalizer(cleanerProperties, pauseFile, metaData.getTask().getPauseFilePollingTime(),
                             SystemTimeProvider.SYSTEM_TIME_PROVIDER);
 
-            return new FinalizeArchivingMessage(task, metaData.parameterBindings, metaData.dataSets);
+            return new FinalizeArchivingMessage(task, metaData.getParameterBindings(), metaData.getDataSets());
         } catch (Exception e)
         {
             throw new RuntimeException(e);
         }
     }
 
+    @Data
     private static class MetaData
     {
 
-        private MetaDataTask task;
+        MetaDataTask task;
 
-        private Map<String, String> parameterBindings;
+        Map<String, String> parameterBindings;
 
-        private List<DatasetDescription> dataSets;
+        List<DatasetDescription> dataSets;
 
     }
 
+    @Data
     private static class MetaDataTask
     {
 

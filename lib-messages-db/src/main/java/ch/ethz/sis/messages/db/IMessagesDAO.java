@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.ethz.sis.messagesdb;
+package ch.ethz.sis.messages.db;
+
+import java.util.List;
 
 /**
  * @author pkupczyk
  */
-public interface ILastSeenMessagesDAO
+public interface IMessagesDAO
 {
 
-    void create(LastSeenMessage message);
+    void create(Message message);
 
-    void update(LastSeenMessage message);
+    void update(Message message);
 
-    LastSeenMessage getByConsumerId(String consumerId);
+    List<Message> listByTypesAndLastSeenId(List<String> messageTypes, Long lastSeenMessageIdOrNull, int messageBatchSize);
 
 }

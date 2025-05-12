@@ -1,29 +1,35 @@
-package ch.ethz.sis.afsserver.server.archiving.message;
+package ch.ethz.sis.afsserver.server.archiving.messages;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.List;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.messagesdb.Message;
+import ch.ethz.sis.messages.db.Message;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
+import lombok.Data;
+import lombok.Getter;
 
 public class UpdateDataSetArchivingStatusMessage
 {
 
-    private static final String TYPE = "afs.delete.dataSets";
+    public static final String TYPE = "afs.archiving.updateArchivingStatus";
 
+    @Getter
     private final List<String> dataSetCodes;
 
-    private final DataSetArchivingStatus status;
+    @Getter
+    private final DataSetArchivingStatus archivingStatus;
 
+    @Getter
     private final boolean presentInArchive;
 
-    public UpdateDataSetArchivingStatusMessage(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
+    public UpdateDataSetArchivingStatusMessage(final List<String> dataSetCodes, final DataSetArchivingStatus archivingStatus,
+            final boolean presentInArchive)
     {
         this.dataSetCodes = dataSetCodes;
-        this.status = status;
+        this.archivingStatus = archivingStatus;
         this.presentInArchive = presentInArchive;
     }
 
@@ -36,9 +42,9 @@ public class UpdateDataSetArchivingStatusMessage
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
-        metaData.dataSetCodes = dataSetCodes;
-        metaData.status = status;
-        metaData.presentInArchive = presentInArchive;
+        metaData.setDataSetCodes(dataSetCodes);
+        metaData.setArchivingStatus(archivingStatus);
+        metaData.setPresentInArchive(presentInArchive);
 
         try
         {
@@ -51,29 +57,25 @@ public class UpdateDataSetArchivingStatusMessage
         return message;
     }
 
-    public static boolean canDeserialize(Message message)
-    {
-        return TYPE.equals(message.getType());
-    }
-
     public static UpdateDataSetArchivingStatusMessage deserialize(JsonObjectMapper objectMapper, Message message)
     {
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new UpdateDataSetArchivingStatusMessage(metaData.dataSetCodes, metaData.status, metaData.presentInArchive);
+            return new UpdateDataSetArchivingStatusMessage(metaData.getDataSetCodes(), metaData.getArchivingStatus(), metaData.isPresentInArchive());
         } catch (Exception e)
         {
             throw new RuntimeException(e);
         }
     }
 
+    @Data
     private static class MetaData
     {
 
         private List<String> dataSetCodes;
 
-        private DataSetArchivingStatus status;
+        private DataSetArchivingStatus archivingStatus;
 
         private boolean presentInArchive;
 

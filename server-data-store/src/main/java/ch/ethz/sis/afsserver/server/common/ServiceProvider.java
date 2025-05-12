@@ -12,8 +12,8 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
-import ch.ethz.sis.afsserver.server.archiving.message.FinalizeArchivingMessage;
-import ch.ethz.sis.afsserver.server.archiving.message.UpdateDataSetArchivingStatusMessage;
+import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeArchivingMessage;
+import ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
 import ch.ethz.sis.afsserver.server.messages.DeleteDataSetMessage;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
@@ -64,6 +64,7 @@ public class ServiceProvider implements IServiceProvider
     @Getter
     private static ServiceProvider instance;
 
+    @Getter
     private final Configuration configuration;
 
     private IConfigProvider configProvider;

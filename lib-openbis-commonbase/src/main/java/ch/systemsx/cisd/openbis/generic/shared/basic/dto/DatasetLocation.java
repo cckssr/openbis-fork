@@ -17,11 +17,14 @@ package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 
 /**
  * Encapsulates location and code of a data set in a store.
- * 
+ *
  * @author Piotr Buczek
  */
 public class DatasetLocation implements IDatasetLocation, Serializable, ICodeHolder
@@ -93,6 +96,11 @@ public class DatasetLocation implements IDatasetLocation, Serializable, ICodeHol
         this.datasetCode = datasetCode;
     }
 
+    public void setDataSetCode(String dataSetCode)
+    {
+        setDatasetCode(dataSetCode);
+    }
+
     @Override public String getDataSetShareId()
     {
         return dataSetShareId;
@@ -113,6 +121,11 @@ public class DatasetLocation implements IDatasetLocation, Serializable, ICodeHol
     public String getCode()
     {
         return getDataSetCode();
+    }
+
+    public void setCode(String code)
+    {
+        setDatasetCode(code);
     }
 
     @Override
@@ -143,4 +156,18 @@ public class DatasetLocation implements IDatasetLocation, Serializable, ICodeHol
         return null;
     }
 
+    public void setDataSetSize(Long size)
+    {
+        // do nothing
+    }
+
+    @Override public boolean equals(final Object obj)
+    {
+        return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    @Override public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
 }
