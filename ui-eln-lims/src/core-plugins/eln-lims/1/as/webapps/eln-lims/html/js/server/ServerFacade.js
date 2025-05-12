@@ -2297,6 +2297,16 @@ function ServerFacade(openbisServer) {
                                     break;
                                 }
                                 break;
+                            case "Space":
+                                switch(fieldNameType) {
+                                    case "ATTR":
+                                        setAttributeCriteria(setOperator(searchCriteria.withSpace(),advancedSearchCriteria.logicalOperator), fieldName, fieldValue, fieldOperator);
+                                        break;
+                                    case "NULL":
+                                        searchCriteria.withoutProject();
+                                        break;
+                                }
+                                break;
                             case "Parent":
                                 switch(fieldNameType) {
                                     case "PROP":
