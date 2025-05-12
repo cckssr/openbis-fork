@@ -30,7 +30,7 @@ public class UpdateDataSetArchivingStatusMessageTest
 
         Assert.assertEquals(deserializedUpdateMessage.getDataSetCodes(), originalUpdateMessage.getDataSetCodes());
         Assert.assertEquals(deserializedUpdateMessage.getArchivingStatus(), originalUpdateMessage.getArchivingStatus());
-        Assert.assertEquals(deserializedUpdateMessage.isPresentInArchive(), originalUpdateMessage.isPresentInArchive());
+        Assert.assertEquals(deserializedUpdateMessage.getPresentInArchive(), originalUpdateMessage.getPresentInArchive());
     }
 
 }
