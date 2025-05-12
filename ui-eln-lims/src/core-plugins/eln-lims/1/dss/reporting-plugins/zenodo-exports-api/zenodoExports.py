@@ -26,7 +26,8 @@ from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.nio.file import Paths
 from org.apache.log4j import Logger
-from org.eclipse.jetty.client import HttpClient, HttpProxy
+from org.eclipse.jetty.client import HttpClient
+from org.eclipse.jetty.client import HttpProxy
 from org.eclipse.jetty.client.util import MultiPartContentProvider
 from org.eclipse.jetty.client.util import PathContentProvider
 from org.eclipse.jetty.client.util import StringContentProvider

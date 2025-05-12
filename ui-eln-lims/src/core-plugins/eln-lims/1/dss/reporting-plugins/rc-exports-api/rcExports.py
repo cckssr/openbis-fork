@@ -30,7 +30,8 @@ from java.text import SimpleDateFormat
 from java.util import UUID
 from java.util.zip import ZipOutputStream, Deflater
 from org.apache.log4j import Logger
-from org.eclipse.jetty.client import HttpClient, HttpProxy
+from org.eclipse.jetty.client import HttpClient
+from org.eclipse.jetty.client import HttpProxy
 from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
