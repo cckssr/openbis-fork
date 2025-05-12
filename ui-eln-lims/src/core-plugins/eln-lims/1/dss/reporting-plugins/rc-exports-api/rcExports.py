@@ -30,7 +30,7 @@ from java.text import SimpleDateFormat
 from java.util import UUID
 from java.util.zip import ZipOutputStream, Deflater
 from org.apache.log4j import Logger
-from org.eclipse.jetty.client import HttpClient
+from org.eclipse.jetty.client import HttpClient, HttpProxy
 from org.eclipse.jetty.client.util import BasicAuthentication
 from org.eclipse.jetty.http import HttpMethod
 from org.eclipse.jetty.util.ssl import SslContextFactory
@@ -167,8 +167,10 @@ def sendToDSpace(params, tr, tempZipFileName, tempZipFilePath):
 
 
 def authenticateUserJava(url, tr):
-    sslContextFactory = SslContextFactory()
+    sslContextFactory = SslContextFactory.Client()
     httpClient = HttpClient(sslContextFactory)
+    proxyConfig = httpClient.getProxyConfiguration()
+    proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
     uri = URI(url)
     user = getConfigurationProperty(tr, 'user')
     password = getConfigurationProperty(tr, 'password')

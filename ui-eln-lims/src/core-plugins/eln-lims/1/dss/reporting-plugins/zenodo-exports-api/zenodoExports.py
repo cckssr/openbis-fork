@@ -26,7 +26,7 @@ from ch.systemsx.cisd.common.logging import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.nio.file import Paths
 from org.apache.log4j import Logger
-from org.eclipse.jetty.client import HttpClient
+from org.eclipse.jetty.client import HttpClient, HttpProxy
 from org.eclipse.jetty.client.util import MultiPartContentProvider
 from org.eclipse.jetty.client.util import PathContentProvider
 from org.eclipse.jetty.client.util import StringContentProvider
@@ -154,9 +154,12 @@ def addAuthenticationHeader(accessToken, request):
 
 
 def createHttpClient():
-    sslContextFactory = SslContextFactory()
+    sslContextFactory = SslContextFactory.Client()
     sslContextFactory.setTrustAll(True)
-    return HttpClient(sslContextFactory)
+    httpClient =  HttpClient(sslContextFactory)
+    proxyConfig = httpClient.getProxyConfiguration()
+    proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
+    return httpClient
 
 
 class ZenodoCallable(object):
