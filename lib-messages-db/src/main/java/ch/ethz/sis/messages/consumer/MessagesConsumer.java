@@ -72,15 +72,13 @@ public class MessagesConsumer
 
         if (messages.isEmpty())
         {
-            operationLog.info(
-                    "Message consumer '" + consumerId + "' found no new messages with types " + allMessageTypes + ".");
+            operationLog.info("Found no new messages with types " + allMessageTypes + ".");
 
         } else
         {
             List<String> foundMessageTypes = messages.stream().map(Message::getType).collect(Collectors.toList());
             operationLog.info(
-                    "Message consumer '" + consumerId + "' found " + messages.size() + " new message(s) with types "
-                            + foundMessageTypes + ".");
+                    "Found " + messages.size() + " new message(s) with types " + foundMessageTypes + ".");
         }
 
         return messages;
@@ -111,8 +109,9 @@ public class MessagesConsumer
                 try
                 {
                     MessageProcessId.setCurrent(message.getProcessId());
+                    operationLog.info("Started handling message " + toString(message) + ".");
                     matchingHandler.handleMessage(message);
-                    operationLog.info("Handled message " + toString(message) + ".");
+                    operationLog.info("Finished handling message " + toString(message) + ".");
                     successCounter++;
                 } catch (Exception e)
                 {
@@ -153,9 +152,7 @@ public class MessagesConsumer
             }
         }
 
-        operationLog.info(
-                "Message consumer '" + consumerId + "' handled " + messages.size() + " message(s). Successes: " + successCounter + ", failures: "
-                        + failureCounter + ".");
+        operationLog.info("Handled " + messages.size() + " message(s). Successes: " + successCounter + ", failures: " + failureCounter + ".");
     }
 
     private String toString(Message message)
