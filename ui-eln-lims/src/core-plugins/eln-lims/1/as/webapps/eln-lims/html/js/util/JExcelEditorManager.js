@@ -46,6 +46,8 @@ var JExcelEditorManager = new function() {
                 // force utf-8 encoding using TextEncoder
                 var arr = new TextEncoder().encode(text);
                 text = new TextDecoder("utf8").decode(arr);
+
+                 entity.properties[propertyCode] = "<DATA>" + window.btoa(text) + "</DATA>";
             }
         }
     }
@@ -155,7 +157,7 @@ var JExcelEditorManager = new function() {
 	    var style = null;
 	    var meta = null;
         var width = null;
-	    if(entity.properties && entity.properties[propertyCode]) {
+	    if(entity && entity.properties && entity.properties[propertyCode]) {
 	        var jExcelEditorValueAsStringWithTags = entity.properties[propertyCode];
 	        var jExcelEditorValue = null;
 	        if(jExcelEditorValueAsStringWithTags) {
@@ -289,6 +291,12 @@ var JExcelEditorManager = new function() {
         }
 
         var jexcelField = jspreadsheet($container[0], options);
+
+        $container.refresh = function() {
+            $container.empty();
+            jexcelField.init();
+        }
+
         this.jExcelEditors[guid] = jexcelField;
 	}
 
