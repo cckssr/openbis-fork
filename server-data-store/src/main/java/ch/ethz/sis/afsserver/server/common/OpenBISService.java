@@ -549,6 +549,10 @@ public class OpenBISService implements IOpenBISService
     @Override public void archiveDataSets(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
             throws UserFailureException
     {
+        if (dataSetCodes.isEmpty())
+        {
+            return;
+        }
         messagesDatabaseFacade.create(new ArchiveDataSetMessage(dataSetCodes, removeFromDataStore, options).serialize(objectMapper));
     }
 

@@ -1,27 +1,26 @@
 package ch.ethz.sis.afsserver.server.messages;
 
+import javax.sql.DataSource;
+
 import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.db.MessagesDatabase;
 
 public class MessagesDatabaseFacade implements IMessagesDatabaseFacade
 {
 
-    private final MessagesDatabase messagesDatabase;
+    private final DataSource dataSource;
 
-    public MessagesDatabaseFacade(MessagesDatabase messagesDatabase)
+    public MessagesDatabaseFacade(DataSource dataSource)
     {
-        this.messagesDatabase = messagesDatabase;
+        this.dataSource = dataSource;
     }
 
     @Override public void create(Message message)
     {
+        MessagesDatabase messagesDatabase = new MessagesDatabase(dataSource);
         messagesDatabase.begin();
         messagesDatabase.getMessagesDAO().create(message);
         messagesDatabase.commit();
     }
 
-    public MessagesDatabase getMessagesDatabase()
-    {
-        return messagesDatabase;
-    }
 }

@@ -7,6 +7,7 @@ import java.util.Properties;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.consumer.MessagesConsumer;
+import ch.ethz.sis.messages.db.MessagesDatabase;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
@@ -36,8 +37,9 @@ public class MessagesConsumerMaintenanceTask implements IMaintenanceTask
         }
 
         Configuration configuration = ServiceProvider.getInstance().getConfiguration();
-        MessagesDatabaseFacade messagesDatabaseFacade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
-        this.consumer = new MessagesConsumer(consumerId, handlerInstances, batchSize, messagesDatabaseFacade.getMessagesDatabase());
+        MessagesDatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
+        this.consumer =
+                new MessagesConsumer(consumerId, handlerInstances, batchSize, new MessagesDatabase(messagesDatabaseConfiguration.getDataSource()));
     }
 
     @Override public void execute()

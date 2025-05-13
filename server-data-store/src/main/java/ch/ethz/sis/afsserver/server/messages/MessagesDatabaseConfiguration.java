@@ -3,7 +3,6 @@ package ch.ethz.sis.afsserver.server.messages;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.messages.db.MessagesDatabase;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 
@@ -31,7 +30,7 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
                         instance = new MessagesDatabaseConfiguration(new Configuration(databaseProperties));
                     } else
                     {
-                        instance = null;
+                        throw new RuntimeException("Messages database is not configured.");
                     }
 
                     MessagesDatabaseConfiguration.configuration = configuration;
@@ -45,16 +44,7 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
     private MessagesDatabaseConfiguration(Configuration configuration)
     {
         super(configuration);
-
-        DatabaseConfiguration databaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
-
-        if (databaseConfiguration != null)
-        {
-            messagesDatabaseFacade = new MessagesDatabaseFacade(new MessagesDatabase(databaseConfiguration.getDataSource()));
-        } else
-        {
-            throw new RuntimeException("Messages database not configured");
-        }
+        messagesDatabaseFacade = new MessagesDatabaseFacade(getDataSource());
     }
 
     public MessagesDatabaseFacade getMessagesDatabaseFacade()

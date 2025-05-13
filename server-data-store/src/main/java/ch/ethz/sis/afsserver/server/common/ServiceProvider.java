@@ -247,6 +247,10 @@ public class ServiceProvider implements IServiceProvider
                 public void scheduleDeletionOfDataSets(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
                         final long waitingTimeBetweenRetries)
                 {
+                    if (dataSets.isEmpty())
+                    {
+                        return;
+                    }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
                     facade.create(new DeleteDataSetMessage(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).serialize(objectMapper));
@@ -265,6 +269,10 @@ public class ServiceProvider implements IServiceProvider
             {
                 @Override public void update(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
                 {
+                    if (dataSetCodes.isEmpty())
+                    {
+                        return;
+                    }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
                     facade.create(new UpdateDataSetArchivingStatusMessage(dataSetCodes, status, presentInArchive).serialize(objectMapper));
@@ -336,14 +344,19 @@ public class ServiceProvider implements IServiceProvider
             archiverTaskScheduler = new IArchiverTaskScheduler()
             {
                 public void scheduleTask(final String taskKey, final IArchiverTask task, final Map<String, String> parameterBindings,
-                        final List<DatasetDescription> datasets, final String userId, final String userEmailOrNull, final String userSessionToken)
+                        final List<DatasetDescription> dataSets, final String userId, final String userEmailOrNull, final String userSessionToken)
                 {
+                    if (dataSets.isEmpty())
+                    {
+                        return;
+                    }
+
                     if (task instanceof MultiDataSetArchivingFinalizer)
                     {
                         MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                         JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
                         facade.create(
-                                new FinalizeDataSetArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, datasets).serialize(
+                                new FinalizeDataSetArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, dataSets).serialize(
                                         objectMapper));
                     } else
                     {
