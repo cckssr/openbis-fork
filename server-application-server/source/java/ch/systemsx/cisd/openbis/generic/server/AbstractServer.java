@@ -694,7 +694,10 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
             return;
         }
 
-        DisplaySettings settings = session.tryGetPerson().getDisplaySettings();
+        PersonPE attachedPerson = getDAOFactory().getPersonDAO().tryFindPersonByUserId(session.tryGetPerson().getUserId());
+        getDAOFactory().getPersonDAO().lock(attachedPerson);
+
+        DisplaySettings settings = attachedPerson.getDisplaySettings();
         Iterator<EntityVisit> iterator = settings.getVisits().iterator();
         boolean changed = false;
 
@@ -731,7 +734,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
 
         if (changed)
         {
-            daoFactory.getPersonDAO().updatePerson(session.tryGetPerson());
+            daoFactory.getPersonDAO().updatePerson(attachedPerson);
         }
     }
 

@@ -157,8 +157,8 @@ public class GeneralInformationChangingService extends
                 {
                     @Override public Object execute(final boolean didOperationSucceed)
                     {
-                        displaySettingsProvider.replaceWebAppSettings(person, webAppSettings);
-                        getDAOFactory().getPersonDAO().updatePerson(person);
+                        displaySettingsProvider.replaceWebAppSettings(attachedPerson, webAppSettings);
+                        getDAOFactory().getPersonDAO().updatePerson(attachedPerson);
                         return null;
                     }
                 });
