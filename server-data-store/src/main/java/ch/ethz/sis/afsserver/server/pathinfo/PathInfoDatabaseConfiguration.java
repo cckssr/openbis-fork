@@ -6,14 +6,26 @@ import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 
-public class PathInfoDatabaseConfiguration
+public class PathInfoDatabaseConfiguration extends DatabaseConfiguration
 {
 
-    private static volatile DatabaseConfiguration instance;
+    private static volatile PathInfoDatabaseConfiguration instance;
 
     private static volatile Configuration configuration;
 
-    public static DatabaseConfiguration getInstance(Configuration configuration)
+    public static boolean hasInstance(Configuration configuration)
+    {
+        try
+        {
+            getInstance(configuration);
+            return true;
+        } catch (DatabaseNotConfiguredException e)
+        {
+            return false;
+        }
+    }
+
+    public static PathInfoDatabaseConfiguration getInstance(Configuration configuration)
     {
         if (PathInfoDatabaseConfiguration.configuration != configuration)
         {
@@ -25,10 +37,10 @@ public class PathInfoDatabaseConfiguration
 
                     if (!databaseProperties.isEmpty())
                     {
-                        instance = new DatabaseConfiguration(new Configuration(databaseProperties));
+                        instance = new PathInfoDatabaseConfiguration(new Configuration(databaseProperties));
                     } else
                     {
-                        instance = null;
+                        throw new DatabaseNotConfiguredException();
                     }
 
                     PathInfoDatabaseConfiguration.configuration = configuration;
@@ -39,8 +51,9 @@ public class PathInfoDatabaseConfiguration
         return instance;
     }
 
-    private PathInfoDatabaseConfiguration()
+    private PathInfoDatabaseConfiguration(Configuration configuration)
     {
+        super(configuration);
     }
 
 }

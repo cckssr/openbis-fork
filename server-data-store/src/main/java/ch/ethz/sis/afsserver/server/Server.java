@@ -104,25 +104,25 @@ public final class Server<CONNECTION, API>
         lockMapper.init(configuration);
 
         // 2.1 Create messages DB, pathinfo DB and archiving DB
-        DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
-        if (messagesDatabaseConfiguration != null)
+        if (MessagesDatabaseConfiguration.hasInstance(configuration))
         {
+            DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(messagesDatabaseConfiguration.getContext(),
                     messagesDatabaseConfiguration.getVersion(), null,
                     null);
         }
 
-        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-        if (pathInfoDatabaseConfiguration != null)
+        if (PathInfoDatabaseConfiguration.hasInstance(configuration))
         {
+            DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(pathInfoDatabaseConfiguration.getContext(),
                     pathInfoDatabaseConfiguration.getVersion(), null,
                     null);
         }
 
-        DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
-        if (archiverDatabaseConfiguration != null)
+        if (ArchiverDatabaseConfiguration.hasInstance(configuration))
         {
+            DatabaseConfiguration archiverDatabaseConfiguration = ArchiverDatabaseConfiguration.getInstance(configuration);
             DBMigrationEngine.createOrMigrateDatabaseAndGetScriptProvider(archiverDatabaseConfiguration.getContext(),
                     archiverDatabaseConfiguration.getVersion(), null,
                     null);

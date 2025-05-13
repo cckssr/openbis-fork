@@ -15,6 +15,18 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
 
     private final MessagesDatabaseFacade messagesDatabaseFacade;
 
+    public static boolean hasInstance(Configuration configuration)
+    {
+        try
+        {
+            getInstance(configuration);
+            return true;
+        } catch (DatabaseNotConfiguredException e)
+        {
+            return false;
+        }
+    }
+
     public static MessagesDatabaseConfiguration getInstance(Configuration configuration)
     {
         if (MessagesDatabaseConfiguration.configuration != configuration)
@@ -30,7 +42,7 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
                         instance = new MessagesDatabaseConfiguration(new Configuration(databaseProperties));
                     } else
                     {
-                        throw new RuntimeException("Messages database is not configured.");
+                        throw new DatabaseNotConfiguredException();
                     }
 
                     MessagesDatabaseConfiguration.configuration = configuration;
@@ -51,4 +63,5 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
     {
         return messagesDatabaseFacade;
     }
+
 }
