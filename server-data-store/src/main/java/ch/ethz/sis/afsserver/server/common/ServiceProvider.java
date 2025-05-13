@@ -21,6 +21,7 @@ import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.ConnectionFactory;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.exceptions.NotImplementedException;
@@ -253,7 +254,8 @@ public class ServiceProvider implements IServiceProvider
                     }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                    facade.create(new DeleteDataSetMessage(dataSets, maxNumberOfRetries, waitingTimeBetweenRetries).serialize(objectMapper));
+                    facade.create(new DeleteDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSets, maxNumberOfRetries,
+                            waitingTimeBetweenRetries).serialize(objectMapper));
                 }
             };
         }
@@ -267,7 +269,7 @@ public class ServiceProvider implements IServiceProvider
         {
             dataSetStatusUpdater = new IDataSetStatusUpdater()
             {
-                @Override public void update(final List<String> dataSetCodes, final DataSetArchivingStatus status, final boolean presentInArchive)
+                @Override public void scheduleUpdate(final List<String> dataSetCodes, final DataSetArchivingStatus status, final Boolean presentInArchive)
                 {
                     if (dataSetCodes.isEmpty())
                     {
@@ -275,7 +277,8 @@ public class ServiceProvider implements IServiceProvider
                     }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                    facade.create(new UpdateDataSetArchivingStatusMessage(dataSetCodes, status, presentInArchive).serialize(objectMapper));
+                    facade.create(new UpdateDataSetArchivingStatusMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, status,
+                            presentInArchive).serialize(objectMapper));
                 }
             };
         }
@@ -355,9 +358,8 @@ public class ServiceProvider implements IServiceProvider
                     {
                         MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                         JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                        facade.create(
-                                new FinalizeDataSetArchivingMessage((MultiDataSetArchivingFinalizer) task, parameterBindings, dataSets).serialize(
-                                        objectMapper));
+                        facade.create(new FinalizeDataSetArchivingMessage(MessageProcessId.getCurrentOrGenerateNew(), (MultiDataSetArchivingFinalizer) task,
+                                parameterBindings, dataSets).serialize(objectMapper));
                     } else
                     {
                         throw new IllegalArgumentException("Unsupported task: " + task.getClass());

@@ -9,6 +9,7 @@ import org.testng.Assert;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 
 public class UpdateDataSetArchivingStatusMessageTest
@@ -24,7 +25,7 @@ public class UpdateDataSetArchivingStatusMessageTest
         boolean presentInArchive = true;
 
         UpdateDataSetArchivingStatusMessage originalUpdateMessage =
-                new UpdateDataSetArchivingStatusMessage(dataSetCodes, archivingStatus, presentInArchive);
+                new UpdateDataSetArchivingStatusMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, archivingStatus, presentInArchive);
         Message message = originalUpdateMessage.serialize(objectMapper);
         UpdateDataSetArchivingStatusMessage deserializedUpdateMessage = UpdateDataSetArchivingStatusMessage.deserialize(objectMapper, message);
 

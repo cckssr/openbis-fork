@@ -90,7 +90,7 @@ public class ResetArchivePendingTask implements IMaintenanceTask
 
             // 3. Update datasets status to AVAILABLE
             operationLog.info("Going to update " + dataSetsToUpdate.size() + " datasets.");
-            ArchiverServiceProviderFactory.getInstance().getDataSetStatusUpdater().update(dataSetsToUpdate, DataSetArchivingStatus.AVAILABLE, false);
+            ArchiverServiceProviderFactory.getInstance().getDataSetStatusUpdater().scheduleUpdate(dataSetsToUpdate, DataSetArchivingStatus.AVAILABLE, false);
         }
         operationLog.info(ResetArchivePendingTask.class.getSimpleName() + " Finished");
     }

@@ -78,8 +78,8 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
         return new IDataSetStatusUpdater()
         {
             @Override
-            public void update(List<String> codes, DataSetArchivingStatus status,
-                    boolean present)
+            public void scheduleUpdate(List<String> codes, DataSetArchivingStatus status,
+                    Boolean present)
             {
                 QueueingDataSetStatusUpdaterService.update(new DataSetCodesWithStatus(
                         codes, status, present));

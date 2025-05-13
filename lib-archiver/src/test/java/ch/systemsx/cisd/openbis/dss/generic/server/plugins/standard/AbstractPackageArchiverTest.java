@@ -997,7 +997,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
         context.checking(new Expectations()
         {
             {
-                one(statusUpdater).update(Arrays.asList(DATA_SET_CODE), status, presentInArchive);
+                one(statusUpdater).scheduleUpdate(Arrays.asList(DATA_SET_CODE), status, presentInArchive);
             }
         });
     }

@@ -8,6 +8,7 @@ import org.testng.Assert;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
@@ -29,7 +30,8 @@ public class DeleteDataSetMessageTest
         long waitingTimeBetweenRetries = 100;
 
         DeleteDataSetMessage originalDeleteMessage =
-                new DeleteDataSetMessage(Arrays.asList(location, description), maxNumberOfRetries, waitingTimeBetweenRetries);
+                new DeleteDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), Arrays.asList(location, description), maxNumberOfRetries,
+                        waitingTimeBetweenRetries);
         Message message = originalDeleteMessage.serialize(objectMapper);
         DeleteDataSetMessage deserializedDeleteMessage = DeleteDataSetMessage.deserialize(objectMapper, message);
 

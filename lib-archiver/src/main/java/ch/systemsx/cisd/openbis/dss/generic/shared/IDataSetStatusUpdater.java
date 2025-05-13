@@ -26,6 +26,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
  */
 public interface IDataSetStatusUpdater
 {
-    public void update(List<String> dataSetCodes, DataSetArchivingStatus status,
-            boolean presentInArchive);
+    public void scheduleUpdate(List<String> dataSetCodes, DataSetArchivingStatus status,
+            Boolean presentInArchive);
 }

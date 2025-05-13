@@ -11,6 +11,7 @@ import org.testng.Assert;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 
 public class ArchiveDataSetMessageTest
 {
@@ -27,7 +28,7 @@ public class ArchiveDataSetMessageTest
         options.put("test-option-2", "test-value-2");
 
         ArchiveDataSetMessage originalArchiveMessage =
-                new ArchiveDataSetMessage(dataSetCodes, removeFromDataStore, options);
+                new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options);
         Message message = originalArchiveMessage.serialize(objectMapper);
         ArchiveDataSetMessage deserializedArchiveMessage = ArchiveDataSetMessage.deserialize(objectMapper, message);
 

@@ -86,7 +86,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
                             TimingParameters.DEFAULT_MAXIMUM_RETRY_COUNT,
                             TimingParameters.DEFAULT_INTERVAL_TO_WAIT_AFTER_FAILURE_SECONDS);
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
+                    one(statusUpdater).scheduleUpdate(Arrays.asList("ds1"),
                             DataSetArchivingStatus.ARCHIVED, true);
                 }
             });
@@ -123,7 +123,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
                     one(fileOperationsManager).isHosted();
                     will(returnValue(true));
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
+                    one(statusUpdater).scheduleUpdate(Arrays.asList("ds1"),
                             DataSetArchivingStatus.AVAILABLE, true);
 
                     one(contentProvider).asContentWithoutModifyingAccessTimestamp("ds1");
@@ -170,7 +170,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
                     one(fileOperationsManager).retrieveFromDestination(file, ds1);
                     will(returnValue(Status.OK));
 
-                    one(statusUpdater).update(Arrays.asList("ds1"),
+                    one(statusUpdater).scheduleUpdate(Arrays.asList("ds1"),
                             DataSetArchivingStatus.AVAILABLE, true);
                 }
             });
@@ -209,7 +209,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(statusUpdater).update(Arrays.asList("ds1"),
+                    one(statusUpdater).scheduleUpdate(Arrays.asList("ds1"),
                             DataSetArchivingStatus.ARCHIVED, true);
                 }
             });
@@ -231,7 +231,7 @@ public class RsyncArchiverTest extends AbstractArchiverTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(statusUpdater).update(Arrays.asList("ds1", "ds2"),
+                    one(statusUpdater).scheduleUpdate(Arrays.asList("ds1", "ds2"),
                             DataSetArchivingStatus.ARCHIVED, true);
                 }
             });

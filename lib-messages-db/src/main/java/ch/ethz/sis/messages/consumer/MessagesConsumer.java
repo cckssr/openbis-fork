@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import ch.ethz.sis.messages.db.IMessagesDatabase;
 import ch.ethz.sis.messages.db.LastSeenMessage;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 
@@ -109,6 +110,7 @@ public class MessagesConsumer
             {
                 try
                 {
+                    MessageProcessId.setCurrent(message.getProcessId());
                     matchingHandler.handleMessage(message);
                     operationLog.info("Handled message " + toString(message) + ".");
                     successCounter++;
@@ -116,6 +118,9 @@ public class MessagesConsumer
                 {
                     operationLog.info("Handling of message " + toString(message) + " has failed.", e);
                     failureCounter++;
+                } finally
+                {
+                    MessageProcessId.setCurrent(null);
                 }
             } else
             {

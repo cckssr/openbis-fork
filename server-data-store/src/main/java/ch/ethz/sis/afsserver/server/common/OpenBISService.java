@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.archiving.messages.ArchiveDataSetMessage;
 import ch.ethz.sis.afsserver.server.messages.IMessagesDatabaseFacade;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -553,7 +554,8 @@ public class OpenBISService implements IOpenBISService
         {
             return;
         }
-        messagesDatabaseFacade.create(new ArchiveDataSetMessage(dataSetCodes, removeFromDataStore, options).serialize(objectMapper));
+        messagesDatabaseFacade.create(
+                new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options).serialize(objectMapper));
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)

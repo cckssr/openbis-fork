@@ -114,8 +114,8 @@ public class SecondCopyPostRegistrationTask extends AbstractPostRegistrationTask
             setStatusUpdater(new IDataSetStatusUpdater()
             {
                 @Override
-                public void update(List<String> dataSetCodes, DataSetArchivingStatus status,
-                        boolean presentInArchive)
+                public void scheduleUpdate(List<String> dataSetCodes, DataSetArchivingStatus status,
+                        Boolean presentInArchive)
                 {
                 }
             });

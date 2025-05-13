@@ -12,6 +12,7 @@ import org.testng.Assert;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
@@ -44,7 +45,8 @@ public class FinalizeArchivingMessageTest
         description1.setDataSetCode("test-code-2");
 
         FinalizeDataSetArchivingMessage originalArchivingMessage =
-                new FinalizeDataSetArchivingMessage(task, parameterBindings, Arrays.asList(description1, description2));
+                new FinalizeDataSetArchivingMessage(MessageProcessId.getCurrentOrGenerateNew(), task, parameterBindings,
+                        Arrays.asList(description1, description2));
         Message message = originalArchivingMessage.serialize(objectMapper);
         FinalizeDataSetArchivingMessage deserializedArchivingMessage = FinalizeDataSetArchivingMessage.deserialize(objectMapper, message);
 

@@ -782,7 +782,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         {
             statusUpdater = ArchiverServiceProviderFactory.getInstance().getDataSetStatusUpdater();
         }
-        statusUpdater.update(dataSetCodes, newStatus, presentInArchive);
+        statusUpdater.scheduleUpdate(dataSetCodes, newStatus, presentInArchive);
     }
 
     protected static class GroupedDatasets

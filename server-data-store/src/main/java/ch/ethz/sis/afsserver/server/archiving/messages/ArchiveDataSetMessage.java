@@ -17,6 +17,9 @@ public class ArchiveDataSetMessage
     public static final String TYPE = "afs.archiving.archiveDataSet";
 
     @Getter
+    private final String processId;
+
+    @Getter
     private final List<String> dataSetCodes;
 
     @Getter
@@ -25,8 +28,13 @@ public class ArchiveDataSetMessage
     @Getter
     private final Map<String, String> options;
 
-    public ArchiveDataSetMessage(final List<String> dataSetCodes, final boolean removeFromDataStore, final Map<String, String> options)
+    public ArchiveDataSetMessage(final String processId, final List<String> dataSetCodes, final boolean removeFromDataStore,
+            final Map<String, String> options)
     {
+        if (processId == null)
+        {
+            throw new IllegalArgumentException();
+        }
         if (dataSetCodes == null)
         {
             throw new IllegalArgumentException();
@@ -36,6 +44,7 @@ public class ArchiveDataSetMessage
             throw new IllegalArgumentException();
         }
 
+        this.processId = processId;
         this.dataSetCodes = dataSetCodes;
         this.removeFromDataStore = removeFromDataStore;
         this.options = options;
@@ -47,6 +56,7 @@ public class ArchiveDataSetMessage
         message.setType(TYPE);
         message.setDescription(
                 "Archive " + CollectionUtils.abbreviate(dataSetCodes, CollectionUtils.DEFAULT_MAX_LENGTH) + " data sets");
+        message.setProcessId(processId);
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
@@ -70,7 +80,8 @@ public class ArchiveDataSetMessage
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new ArchiveDataSetMessage(metaData.getDataSetCodes(), metaData.isRemoveFromDataStore(), metaData.getOptions());
+            return new ArchiveDataSetMessage(message.getProcessId(), metaData.getDataSetCodes(), metaData.isRemoveFromDataStore(),
+                    metaData.getOptions());
         } catch (Exception e)
         {
             throw new RuntimeException(e);

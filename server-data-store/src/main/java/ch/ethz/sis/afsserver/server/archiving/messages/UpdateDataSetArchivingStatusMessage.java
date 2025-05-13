@@ -17,6 +17,9 @@ public class UpdateDataSetArchivingStatusMessage
     public static final String TYPE = "afs.archiving.updateDataSetArchivingStatus";
 
     @Getter
+    private final String processId;
+
+    @Getter
     private final List<String> dataSetCodes;
 
     @Getter
@@ -25,9 +28,23 @@ public class UpdateDataSetArchivingStatusMessage
     @Getter
     private final Boolean presentInArchive;
 
-    public UpdateDataSetArchivingStatusMessage(final List<String> dataSetCodes, final DataSetArchivingStatus archivingStatus,
+    public UpdateDataSetArchivingStatusMessage(final String processId, final List<String> dataSetCodes, final DataSetArchivingStatus archivingStatus,
             final Boolean presentInArchive)
     {
+        if (processId == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (dataSetCodes == null)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (archivingStatus == null)
+        {
+            throw new IllegalArgumentException();
+        }
+
+        this.processId = processId;
         this.dataSetCodes = dataSetCodes;
         this.archivingStatus = archivingStatus;
         this.presentInArchive = presentInArchive;
@@ -39,6 +56,7 @@ public class UpdateDataSetArchivingStatusMessage
         message.setType(TYPE);
         message.setDescription("Update archiving status of " + CollectionUtils.abbreviate(dataSetCodes, CollectionUtils.DEFAULT_MAX_LENGTH)
                 + " data sets");
+        message.setProcessId(processId);
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
@@ -62,7 +80,8 @@ public class UpdateDataSetArchivingStatusMessage
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new UpdateDataSetArchivingStatusMessage(metaData.getDataSetCodes(), metaData.getArchivingStatus(), metaData.getPresentInArchive());
+            return new UpdateDataSetArchivingStatusMessage(message.getProcessId(), metaData.getDataSetCodes(), metaData.getArchivingStatus(),
+                    metaData.getPresentInArchive());
         } catch (Exception e)
         {
             throw new RuntimeException(e);

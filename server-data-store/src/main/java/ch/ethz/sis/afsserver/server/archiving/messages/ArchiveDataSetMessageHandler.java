@@ -8,8 +8,6 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.common.DTOTranslator;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
-import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.db.Message;
@@ -90,11 +88,8 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
             archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, archiveMessage.isRemoveFromDataStore());
         } catch (Exception e)
         {
-            MessagesDatabaseFacade messagesDatabaseFacade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
-            UpdateDataSetArchivingStatusMessage updateStatusMessage =
-                    new UpdateDataSetArchivingStatusMessage(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()),
-                            DataSetArchivingStatus.AVAILABLE, null);
-            messagesDatabaseFacade.create(updateStatusMessage.serialize(jsonObjectMapper));
+            ServiceProvider.getInstance().getDataSetStatusUpdater()
+                    .scheduleUpdate(dataSets.stream().map(DataSet::getCode).collect(Collectors.toList()), DataSetArchivingStatus.AVAILABLE, null);
         }
     }
 }

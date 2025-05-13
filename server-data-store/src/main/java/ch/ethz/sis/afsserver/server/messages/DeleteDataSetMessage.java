@@ -17,6 +17,9 @@ public class DeleteDataSetMessage
     public static final String TYPE = "afs.common.deleteDataSets";
 
     @Getter
+    private final String processId;
+
+    @Getter
     private final List<? extends IDatasetLocation> dataSets;
 
     @Getter
@@ -25,13 +28,19 @@ public class DeleteDataSetMessage
     @Getter
     private final long waitingTimeBetweenRetries;
 
-    public DeleteDataSetMessage(final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries, final long waitingTimeBetweenRetries)
+    public DeleteDataSetMessage(final String processId, final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
+            final long waitingTimeBetweenRetries)
     {
+        if (processId == null)
+        {
+            throw new IllegalArgumentException();
+        }
         if (dataSets == null)
         {
             throw new IllegalArgumentException();
         }
 
+        this.processId = processId;
         this.dataSets = dataSets;
         this.maxNumberOfRetries = maxNumberOfRetries;
         this.waitingTimeBetweenRetries = waitingTimeBetweenRetries;
@@ -42,7 +51,8 @@ public class DeleteDataSetMessage
         Message message = new Message();
         message.setType(TYPE);
         message.setDescription("Delete " + CollectionUtils.abbreviate(dataSets, CollectionUtils.DEFAULT_MAX_LENGTH, IDatasetLocation::getDataSetCode)
-                + " data sets");
+                + " data sets from the store");
+        message.setProcessId(processId);
         message.setCreationTimestamp(new Date());
 
         try
@@ -65,7 +75,8 @@ public class DeleteDataSetMessage
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new DeleteDataSetMessage(metaData.dataSets, metaData.maxNumberOfRetries, metaData.waitingTimeBetweenRetries);
+            return new DeleteDataSetMessage(message.getProcessId(), metaData.dataSets, metaData.maxNumberOfRetries,
+                    metaData.waitingTimeBetweenRetries);
         } catch (Exception e)
         {
             throw new RuntimeException(e);

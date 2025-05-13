@@ -23,6 +23,9 @@ public class FinalizeDataSetArchivingMessage
     public static final String TYPE = "afs.archiving.finalizeDataSetArchiving";
 
     @Getter
+    private final String processId;
+
+    @Getter
     private final MultiDataSetArchivingFinalizer task;
 
     @Getter
@@ -31,9 +34,14 @@ public class FinalizeDataSetArchivingMessage
     @Getter
     private final List<DatasetDescription> dataSets;
 
-    public FinalizeDataSetArchivingMessage(MultiDataSetArchivingFinalizer task, Map<String, String> parameterBindings,
-            List<DatasetDescription> dataSets)
+    public FinalizeDataSetArchivingMessage(final String processId, final MultiDataSetArchivingFinalizer task,
+            final Map<String, String> parameterBindings,
+            final List<DatasetDescription> dataSets)
     {
+        if (processId == null)
+        {
+            throw new IllegalArgumentException();
+        }
         if (task == null)
         {
             throw new IllegalArgumentException();
@@ -47,6 +55,7 @@ public class FinalizeDataSetArchivingMessage
             throw new IllegalArgumentException();
         }
 
+        this.processId = processId;
         this.task = task;
         this.parameterBindings = parameterBindings;
         this.dataSets = dataSets;
@@ -59,6 +68,7 @@ public class FinalizeDataSetArchivingMessage
         message.setDescription(
                 "Finalize archiving of " + CollectionUtils.abbreviate(dataSets, CollectionUtils.DEFAULT_MAX_LENGTH,
                         DatasetDescription::getDataSetCode) + " data sets");
+        message.setProcessId(processId);
         message.setCreationTimestamp(new Date());
 
         MetaDataTask metaDataTask = new MetaDataTask();
@@ -117,7 +127,7 @@ public class FinalizeDataSetArchivingMessage
                     new MultiDataSetArchivingFinalizer(cleanerProperties, pauseFile, metaData.getTask().getPauseFilePollingTime(),
                             SystemTimeProvider.SYSTEM_TIME_PROVIDER);
 
-            return new FinalizeDataSetArchivingMessage(task, metaData.getParameterBindings(), metaData.getDataSets());
+            return new FinalizeDataSetArchivingMessage(message.getProcessId(), task, metaData.getParameterBindings(), metaData.getDataSets());
         } catch (Exception e)
         {
             throw new RuntimeException(e);
