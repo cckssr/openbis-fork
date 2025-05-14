@@ -8,6 +8,8 @@ import javax.sql.DataSource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiveCleaner;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiveCleaner;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
@@ -85,6 +87,11 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
                         codes, status, present));
             }
         };
+    }
+
+    @Override public IMultiDataSetArchiveCleaner getDataSetArchiveCleaner(Properties properties)
+    {
+        return new MultiDataSetArchiveCleaner(properties);
     }
 
     @Override public IShareIdManager getShareIdManager()

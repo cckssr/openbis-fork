@@ -16,17 +16,11 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.IMailClientProvider;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
@@ -40,37 +34,31 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactor
  *
  * @author Franz-Josef Elmer
  */
-class MultiDataSetArchiveCleaner implements IMultiDataSetArchiveCleaner
+public class MultiDataSetArchiveCleaner extends AbstractMultiDataSetArchiveCleaner
 {
-    static final String FILE_PATH_PREFIXES_FOR_ASYNC_DELETION_KEY = "file-path-prefixes-for-async-deletion";
-
     static final String DELETION_REQUESTS_DIR_KEY = "deletion-requests-dir";
 
-    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
-            MultiDataSetArchiveCleaner.class);
-
-    private static Map<File, FileDeleter> globalDeleters = new HashMap<File, FileDeleter>();
-
-    private final List<String> filePathPrefixesForAsyncDeletion;
+    private static final Map<File, FileDeleter> globalDeleters = new HashMap<File, FileDeleter>();
 
     private File deletionRequestsDir;
 
     private final Map<File, FileDeleter> deleters;
 
-    MultiDataSetArchiveCleaner(Properties properties)
+    public MultiDataSetArchiveCleaner(Properties properties)
     {
         this(properties, SystemTimeProvider.SYSTEM_TIME_PROVIDER, globalDeleters);
     }
 
     MultiDataSetArchiveCleaner(Properties properties, ITimeAndWaitingProvider timeProvider, Map<File, FileDeleter> deleters)
     {
+        super(properties);
         this.deleters = deleters;
-        this.filePathPrefixesForAsyncDeletion = getPathPrefixesForAsyncDeletion(properties);
 
-        if (filePathPrefixesForAsyncDeletion.isEmpty())
+        if (getFilePathPrefixesForAsyncDeletion().isEmpty())
         {
             return;
         }
+
         deletionRequestsDir = new File(PropertyUtils.getMandatoryProperty(properties, DELETION_REQUESTS_DIR_KEY));
         if (deletionRequestsDir.isFile())
         {
@@ -103,51 +91,10 @@ class MultiDataSetArchiveCleaner implements IMultiDataSetArchiveCleaner
         }
     }
 
-    private List<String> getPathPrefixesForAsyncDeletion(Properties properties)
+    @Override protected void deleteAsync(final File file)
     {
-        List<String> relativeFilePathPrefixesForAsyncDeletion = PropertyUtils.getList(properties, FILE_PATH_PREFIXES_FOR_ASYNC_DELETION_KEY);
-        ArrayList<String> result = new ArrayList<String>();
-        for (String path : relativeFilePathPrefixesForAsyncDeletion)
-        {
-            result.add(new File(path).getAbsolutePath());
-        }
-        return result;
+        FileDeleter deleter = deleters.get(deletionRequestsDir);
+        deleter.requestDeletion(file);
     }
 
-    @Override
-    public void delete(File file)
-    {
-        if (isFileForAsyncDeletion(file))
-        {
-            FileDeleter deleter = deleters.get(deletionRequestsDir);
-            deleter.requestDeletion(file);
-        } else
-        {
-            deleteSync(file);
-        }
-    }
-
-    private void deleteSync(File file)
-    {
-        if (file.delete())
-        {
-            operationLog.info("File immediately deleted: " + file);
-        } else
-        {
-            operationLog.warn("Failed to delete file immediately: " + file);
-        }
-    }
-
-    private boolean isFileForAsyncDeletion(File file)
-    {
-        String path = file.getAbsolutePath();
-        for (String prefix : filePathPrefixesForAsyncDeletion)
-        {
-            if (path.startsWith(prefix))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 }

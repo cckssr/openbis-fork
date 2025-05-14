@@ -72,7 +72,7 @@ public class MessagesConsumer
 
         if (messages.isEmpty())
         {
-            operationLog.info("Found no new messages with types " + allMessageTypes + ".");
+            operationLog.info("No new messages found with types " + allMessageTypes + ".");
 
         } else
         {

@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.common;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -14,7 +15,8 @@ import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
 import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessage;
 import ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
-import ch.ethz.sis.afsserver.server.messages.DeleteDataSetFilesFromStoreMessage;
+import ch.ethz.sis.afsserver.server.messages.DeleteDataSetFromStoreMessage;
+import ch.ethz.sis.afsserver.server.messages.DeleteFileMessage;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
@@ -31,6 +33,8 @@ import ch.systemsx.cisd.common.mail.MailClientParameters;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.AbstractMultiDataSetArchiveCleaner;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiveCleaner;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
@@ -254,7 +258,7 @@ public class ServiceProvider implements IServiceProvider
                     }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                    facade.create(new DeleteDataSetFilesFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSets, maxNumberOfRetries,
+                    facade.create(new DeleteDataSetFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSets, maxNumberOfRetries,
                             waitingTimeBetweenRetries).serialize(objectMapper));
                 }
             };
@@ -269,7 +273,8 @@ public class ServiceProvider implements IServiceProvider
         {
             dataSetStatusUpdater = new IDataSetStatusUpdater()
             {
-                @Override public void scheduleUpdate(final List<String> dataSetCodes, final DataSetArchivingStatus status, final Boolean presentInArchive)
+                @Override public void scheduleUpdate(final List<String> dataSetCodes, final DataSetArchivingStatus status,
+                        final Boolean presentInArchive)
                 {
                     if (dataSetCodes.isEmpty())
                     {
@@ -284,6 +289,19 @@ public class ServiceProvider implements IServiceProvider
         }
 
         return dataSetStatusUpdater;
+    }
+
+    public IMultiDataSetArchiveCleaner getDataSetArchiveCleaner(final Properties properties)
+    {
+        return new AbstractMultiDataSetArchiveCleaner(properties)
+        {
+            @Override protected void deleteAsync(final File file)
+            {
+                MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
+                JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
+                facade.create(new DeleteFileMessage(MessageProcessId.getCurrentOrGenerateNew(), file).serialize(objectMapper));
+            }
+        };
     }
 
     public synchronized IShareIdManager getShareIdManager()
@@ -358,8 +376,9 @@ public class ServiceProvider implements IServiceProvider
                     {
                         MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                         JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                        facade.create(new FinalizeDataSetArchivingMessage(MessageProcessId.getCurrentOrGenerateNew(), (MultiDataSetArchivingFinalizer) task,
-                                parameterBindings, dataSets).serialize(objectMapper));
+                        facade.create(
+                                new FinalizeDataSetArchivingMessage(MessageProcessId.getCurrentOrGenerateNew(), (MultiDataSetArchivingFinalizer) task,
+                                        parameterBindings, dataSets).serialize(objectMapper));
                     } else
                     {
                         throw new IllegalArgumentException("Unsupported task: " + task.getClass());

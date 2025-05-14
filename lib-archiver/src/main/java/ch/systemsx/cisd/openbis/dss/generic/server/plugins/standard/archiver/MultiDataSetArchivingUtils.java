@@ -59,7 +59,7 @@ public class MultiDataSetArchivingUtils
 {
     static IMultiDataSetArchiveCleaner createCleaner(Properties properties)
     {
-        return new MultiDataSetArchiveCleaner(properties);
+        return ArchiverServiceProviderFactory.getInstance().getDataSetArchiveCleaner(properties);
     }
 
     static Map<String, Status> sanityCheck(IHierarchicalContent archivedContent,

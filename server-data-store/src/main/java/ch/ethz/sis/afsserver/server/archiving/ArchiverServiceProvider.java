@@ -5,6 +5,7 @@ import java.util.Properties;
 import ch.ethz.sis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.mail.IMailClient;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiveCleaner;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverDataSourceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverServiceProvider;
@@ -78,6 +79,11 @@ public class ArchiverServiceProvider implements IArchiverServiceProvider
     @Override public IDataSetStatusUpdater getDataSetStatusUpdater()
     {
         return serviceProvider.getDataSetStatusUpdater();
+    }
+
+    @Override public IMultiDataSetArchiveCleaner getDataSetArchiveCleaner(final Properties properties)
+    {
+        return serviceProvider.getDataSetArchiveCleaner(properties);
     }
 
     @Override public IShareIdManager getShareIdManager()

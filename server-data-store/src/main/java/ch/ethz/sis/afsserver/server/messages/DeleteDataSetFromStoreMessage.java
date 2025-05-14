@@ -11,10 +11,10 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 import lombok.Data;
 import lombok.Getter;
 
-public class DeleteDataSetFilesFromStoreMessage
+public class DeleteDataSetFromStoreMessage
 {
 
-    public static final String TYPE = "afs.common.deleteDataSetFilesFromStore";
+    public static final String TYPE = "afs.common.deleteDataSetFromStore";
 
     @Getter
     private final String processId;
@@ -28,7 +28,7 @@ public class DeleteDataSetFilesFromStoreMessage
     @Getter
     private final long waitingTimeBetweenRetries;
 
-    public DeleteDataSetFilesFromStoreMessage(final String processId, final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
+    public DeleteDataSetFromStoreMessage(final String processId, final List<? extends IDatasetLocation> dataSets, final int maxNumberOfRetries,
             final long waitingTimeBetweenRetries)
     {
         if (processId == null)
@@ -50,9 +50,9 @@ public class DeleteDataSetFilesFromStoreMessage
     {
         Message message = new Message();
         message.setType(TYPE);
-        message.setDescription("Delete files of datasets " + CollectionUtils.abbreviate(dataSets, CollectionUtils.DEFAULT_MAX_LENGTH,
+        message.setDescription("Delete datasets " + CollectionUtils.abbreviate(dataSets, CollectionUtils.DEFAULT_MAX_LENGTH,
                 IDatasetLocation::getDataSetCode)
-                + " from the store");
+                + " from store");
         message.setProcessId(processId);
         message.setCreationTimestamp(new Date());
 
@@ -71,12 +71,12 @@ public class DeleteDataSetFilesFromStoreMessage
         return message;
     }
 
-    public static DeleteDataSetFilesFromStoreMessage deserialize(JsonObjectMapper objectMapper, Message message)
+    public static DeleteDataSetFromStoreMessage deserialize(JsonObjectMapper objectMapper, Message message)
     {
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new DeleteDataSetFilesFromStoreMessage(message.getProcessId(), metaData.dataSets, metaData.maxNumberOfRetries,
+            return new DeleteDataSetFromStoreMessage(message.getProcessId(), metaData.dataSets, metaData.maxNumberOfRetries,
                     metaData.waitingTimeBetweenRetries);
         } catch (Exception e)
         {

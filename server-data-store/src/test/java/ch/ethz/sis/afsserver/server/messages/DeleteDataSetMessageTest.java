@@ -29,11 +29,11 @@ public class DeleteDataSetMessageTest
         int maxNumberOfRetries = 1;
         long waitingTimeBetweenRetries = 100;
 
-        DeleteDataSetFilesFromStoreMessage originalDeleteMessage =
-                new DeleteDataSetFilesFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), Arrays.asList(location, description), maxNumberOfRetries,
+        DeleteDataSetFromStoreMessage originalDeleteMessage =
+                new DeleteDataSetFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), Arrays.asList(location, description), maxNumberOfRetries,
                         waitingTimeBetweenRetries);
         Message message = originalDeleteMessage.serialize(objectMapper);
-        DeleteDataSetFilesFromStoreMessage deserializedDeleteMessage = DeleteDataSetFilesFromStoreMessage.deserialize(objectMapper, message);
+        DeleteDataSetFromStoreMessage deserializedDeleteMessage = DeleteDataSetFromStoreMessage.deserialize(objectMapper, message);
 
         Assert.assertEquals(deserializedDeleteMessage.getDataSets(), originalDeleteMessage.getDataSets());
         Assert.assertEquals(deserializedDeleteMessage.getMaxNumberOfRetries(), originalDeleteMessage.getMaxNumberOfRetries());
