@@ -318,7 +318,25 @@ public class RdfToOpenBisMapper
                 } else if (matchUris(XSDDatatype.XSDanyURI.getURI(), datatypeURI))
                 {
                     return literal.getString().replaceAll("\"", "");
+                } else if (matchUris(XSDDatatype.XSDtime.getURI(), datatypeURI))
+                {
+                    String a = literal.getValue().toString().replaceAll("\"", "");
+                    return a;
+                } else if (matchUris(XSDDatatype.XSDgYear.getURI(), datatypeURI))
+                {
+                    String a = literal.getValue().toString().replaceAll("\"", "");
+                    return a;
+                } else if (matchUris(XSDDatatype.XSDgMonth.getURI(), datatypeURI))
+                {
+                    String a = literal.getValue().toString().replaceAll("\"", "");
+                    return a;
+                } else if (matchUris(XSDDatatype.XSDgDay.getURI(), datatypeURI))
+                {
+                    String a = literal.getValue().toString().replaceAll("\"", "");
+                    return a;
                 }
+
+
                 return value;
             }
         }
