@@ -14,7 +14,7 @@ import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.archiving.IArchiverContextFactory;
 import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessage;
 import ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
-import ch.ethz.sis.afsserver.server.messages.DeleteDataSetMessage;
+import ch.ethz.sis.afsserver.server.messages.DeleteDataSetFilesFromStoreMessage;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseFacade;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
@@ -254,7 +254,7 @@ public class ServiceProvider implements IServiceProvider
                     }
                     MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                     JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                    facade.create(new DeleteDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSets, maxNumberOfRetries,
+                    facade.create(new DeleteDataSetFilesFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSets, maxNumberOfRetries,
                             waitingTimeBetweenRetries).serialize(objectMapper));
                 }
             };

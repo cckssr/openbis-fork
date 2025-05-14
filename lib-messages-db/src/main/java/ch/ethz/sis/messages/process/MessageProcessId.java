@@ -20,12 +20,7 @@ public class MessageProcessId
         synchronized (MessageProcessId.class)
         {
             String processId = processIds.get();
-            if (processId == null)
-            {
-                processId = UUID.randomUUID().toString();
-                processIds.set(processId);
-            }
-            return processId;
+            return processId != null ? processId : UUID.randomUUID().toString();
         }
     }
 
