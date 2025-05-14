@@ -240,6 +240,10 @@ public class Mapper
                 String type = typeToRdfsName.get(sample.getType());
                 for (Map.Entry<String, Serializable> a : sample.getProperties().entrySet())
                 {
+                    if (a.getValue() == null)
+                    {
+                        continue;
+                    }
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
                     if (!referenceTypeNames.contains(a.getKey()))
                     {
