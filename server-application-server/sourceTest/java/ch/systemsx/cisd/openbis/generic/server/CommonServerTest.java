@@ -378,6 +378,8 @@ public final class CommonServerTest extends AbstractServerTestCase
                     person.addRoleAssignment(roleAssignmentPE);
 
                     one(roleAssignmentDAO).createRoleAssignment(with(roleAssignmentPE));
+
+                    allowing(personDAO).tryFindPersonByUserId("test");
                 }
             });
 
@@ -451,6 +453,8 @@ public final class CommonServerTest extends AbstractServerTestCase
                     will(returnValue(person));
 
                     one(personDAO).lock(person);
+
+                    allowing(personDAO).tryFindPersonByUserId("test");
                 }
             });
         assertEquals(null, mySession.tryGetPerson());

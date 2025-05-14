@@ -107,7 +107,7 @@ public class QueryApiServerTest extends AbstractServerTestCase
                     allowing(personDAO).tryFindPersonByUserId(session.getUserName());
                     will(returnValue(person));
 
-                    one(personDAO).lock(person);
+                    allowing(personDAO).lock(person);
 
                     one(personDAO).updatePerson(person);
 

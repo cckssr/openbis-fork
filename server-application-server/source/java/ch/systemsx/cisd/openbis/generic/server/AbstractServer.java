@@ -689,12 +689,16 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
     @SuppressWarnings("deprecation")
     private void removeNotExistingVisits(Session session)
     {
-        if (session == null || session.tryGetPerson() == null)
+        if (session == null || session.tryGetPerson() == null || session.tryGetPerson().getUserId() == null)
         {
             return;
         }
 
         PersonPE attachedPerson = getDAOFactory().getPersonDAO().tryFindPersonByUserId(session.tryGetPerson().getUserId());
+        if (attachedPerson == null) {
+            return;
+        }
+
         getDAOFactory().getPersonDAO().lock(attachedPerson);
 
         DisplaySettings settings = attachedPerson.getDisplaySettings();

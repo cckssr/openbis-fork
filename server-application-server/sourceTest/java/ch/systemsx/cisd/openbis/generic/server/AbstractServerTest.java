@@ -121,7 +121,7 @@ public class AbstractServerTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(personDAO).tryFindPersonByUserId(with(USERNAME));
+                allowing(personDAO).tryFindPersonByUserId(with(USERNAME));
                 will(returnValue(null));
                 one(personDAO).lock(with((PersonPE) null));
 
@@ -171,7 +171,7 @@ public class AbstractServerTest extends AssertJUnit
         context.checking(new Expectations()
         {
             {
-                one(personDAO).tryFindPersonByUserId(with(ETL_SERVER));
+                allowing(personDAO).tryFindPersonByUserId(with(ETL_SERVER));
                 will(returnValue(null));
                 one(personDAO).lock(with((PersonPE) null));
 
