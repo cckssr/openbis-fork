@@ -39,13 +39,17 @@ public class MessagesConsumer
 
     public void consume()
     {
+        final Set<String> allSupportedMessageTypes = getAllSupportedMessageTypes();
+
         while (true)
         {
             messagesDatabase.begin();
             LastSeenMessage lastSeenMessage = messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId);
+            Message newestMessage = messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes));
             messagesDatabase.commit();
 
-            List<Message> messages = loadNextBatch(lastSeenMessage);
+            List<Message> messages = loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
+                    newestMessage != null ? newestMessage.getId() : null);
 
             if (messages.isEmpty())
             {
@@ -56,24 +60,16 @@ public class MessagesConsumer
         }
     }
 
-    private List<Message> loadNextBatch(LastSeenMessage lastSeenMessage)
+    private List<Message> loadNextBatch(Set<String> messageTypes, Long minMessageId, Long maxMessageId)
     {
-        Set<String> allMessageTypes = new TreeSet<>();
-
-        for (IMessageHandler messageHandler : messageHandlers)
-        {
-            allMessageTypes.addAll(messageHandler.getSupportedMessageTypes());
-        }
-
         messagesDatabase.begin();
-        List<Message> messages = messagesDatabase.getMessagesDAO().listByTypesAndLastSeenId(new ArrayList<>(allMessageTypes),
-                lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null, messageBatchSize);
+        List<Message> messages = messagesDatabase.getMessagesDAO()
+                .listByTypesAndIdRange(new ArrayList<>(messageTypes), minMessageId, maxMessageId, messageBatchSize);
         messagesDatabase.commit();
 
         if (messages.isEmpty())
         {
-            operationLog.info("No new messages found with types " + allMessageTypes + ".");
-
+            operationLog.info("No new messages found with types " + messageTypes + ".");
         } else
         {
             List<String> foundMessageTypes = messages.stream().map(Message::getType).collect(Collectors.toList());
@@ -153,6 +149,18 @@ public class MessagesConsumer
         }
 
         operationLog.info("Handled " + messages.size() + " message(s). Successes: " + successCounter + ", failures: " + failureCounter + ".");
+    }
+
+    private Set<String> getAllSupportedMessageTypes()
+    {
+        Set<String> allMessageTypes = new TreeSet<>();
+
+        for (IMessageHandler messageHandler : messageHandlers)
+        {
+            allMessageTypes.addAll(messageHandler.getSupportedMessageTypes());
+        }
+
+        return allMessageTypes;
     }
 
     private String toString(Message message)

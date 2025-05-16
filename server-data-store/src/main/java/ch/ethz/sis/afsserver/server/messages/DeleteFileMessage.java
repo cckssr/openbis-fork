@@ -19,7 +19,26 @@ public class DeleteFileMessage
     @Getter
     private final File file;
 
-    public DeleteFileMessage(final String processId, final File file)
+    @Getter
+    private final Date timestamp;
+
+    @Getter
+    private final long timeout;
+
+    @Getter
+    private final String email;
+
+    @Getter
+    private final String emailTemplate;
+
+    @Getter
+    private final String emailSubject;
+
+    @Getter
+    private final String emailFromAddress;
+
+    public DeleteFileMessage(final String processId, final File file, final Date timestamp, final long timeout, String email, String emailTemplate,
+            String emailSubject, String emailFromAddress)
     {
         if (processId == null)
         {
@@ -32,6 +51,12 @@ public class DeleteFileMessage
 
         this.processId = processId;
         this.file = file;
+        this.timestamp = timestamp;
+        this.timeout = timeout;
+        this.email = email;
+        this.emailTemplate = emailTemplate;
+        this.emailSubject = emailSubject;
+        this.emailFromAddress = emailFromAddress;
     }
 
     public Message serialize(JsonObjectMapper objectMapper)
@@ -46,6 +71,12 @@ public class DeleteFileMessage
         {
             MetaData metaData = new MetaData();
             metaData.setFile(file.getAbsolutePath());
+            metaData.setTimestamp(timestamp);
+            metaData.setTimeout(timeout);
+            metaData.setEmail(email);
+            metaData.setEmailTemplate(emailTemplate);
+            metaData.setEmailSubject(emailSubject);
+            metaData.setEmailFromAddress(emailFromAddress);
             message.setMetaData(new String(objectMapper.writeValue(metaData)));
         } catch (Exception e)
         {
@@ -60,7 +91,8 @@ public class DeleteFileMessage
         try
         {
             MetaData metaData = objectMapper.readValue(new ByteArrayInputStream(message.getMetaData().getBytes()), MetaData.class);
-            return new DeleteFileMessage(message.getProcessId(), new File(metaData.getFile()));
+            return new DeleteFileMessage(message.getProcessId(), new File(metaData.getFile()), metaData.getTimestamp(), metaData.getTimeout(),
+                    metaData.getEmail(), metaData.getEmailTemplate(), metaData.getEmailSubject(), metaData.getEmailFromAddress());
         } catch (Exception e)
         {
             throw new RuntimeException(e);
@@ -72,6 +104,18 @@ public class DeleteFileMessage
     {
 
         private String file;
+
+        private Date timestamp;
+
+        private long timeout;
+
+        private String email;
+
+        private String emailTemplate;
+
+        private String emailSubject;
+
+        private String emailFromAddress;
 
     }
 }

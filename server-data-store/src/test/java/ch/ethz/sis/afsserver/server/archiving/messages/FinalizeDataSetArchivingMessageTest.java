@@ -17,7 +17,7 @@ import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
-public class FinalizeArchivingMessageTest
+public class FinalizeDataSetArchivingMessageTest
 {
 
     @Test
@@ -44,18 +44,19 @@ public class FinalizeArchivingMessageTest
         DatasetDescription description2 = new DatasetDescription();
         description1.setDataSetCode("test-code-2");
 
-        FinalizeDataSetArchivingMessage originalArchivingMessage =
+        FinalizeDataSetArchivingMessage originalMessage =
                 new FinalizeDataSetArchivingMessage(MessageProcessId.getCurrentOrGenerateNew(), task, parameterBindings,
                         Arrays.asList(description1, description2));
-        Message message = originalArchivingMessage.serialize(objectMapper);
-        FinalizeDataSetArchivingMessage deserializedArchivingMessage = FinalizeDataSetArchivingMessage.deserialize(objectMapper, message);
+        Message message = originalMessage.serialize(objectMapper);
+        FinalizeDataSetArchivingMessage deserializedMessage = FinalizeDataSetArchivingMessage.deserialize(objectMapper, message);
 
-        Assert.assertEquals(deserializedArchivingMessage.getTask().getCleanerProperties(), originalArchivingMessage.getTask().getCleanerProperties());
-        Assert.assertEquals(deserializedArchivingMessage.getTask().getPauseFile(), originalArchivingMessage.getTask().getPauseFile());
-        Assert.assertEquals(deserializedArchivingMessage.getTask().getPauseFilePollingTime(),
-                originalArchivingMessage.getTask().getPauseFilePollingTime());
-        Assert.assertEquals(deserializedArchivingMessage.getDataSets(), originalArchivingMessage.getDataSets());
-        Assert.assertEquals(deserializedArchivingMessage.getParameterBindings(), originalArchivingMessage.getParameterBindings());
+        Assert.assertEquals(deserializedMessage.getProcessId(), originalMessage.getProcessId());
+        Assert.assertEquals(deserializedMessage.getTask().getCleanerProperties(), originalMessage.getTask().getCleanerProperties());
+        Assert.assertEquals(deserializedMessage.getTask().getPauseFile(), originalMessage.getTask().getPauseFile());
+        Assert.assertEquals(deserializedMessage.getTask().getPauseFilePollingTime(),
+                originalMessage.getTask().getPauseFilePollingTime());
+        Assert.assertEquals(deserializedMessage.getDataSets(), originalMessage.getDataSets());
+        Assert.assertEquals(deserializedMessage.getParameterBindings(), originalMessage.getParameterBindings());
     }
 
 }

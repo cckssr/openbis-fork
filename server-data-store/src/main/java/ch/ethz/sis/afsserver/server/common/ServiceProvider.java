@@ -1,6 +1,7 @@
 package ch.ethz.sis.afsserver.server.common;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -30,10 +31,13 @@ import ch.systemsx.cisd.common.exceptions.NotImplementedException;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
+import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ch.systemsx.cisd.common.time.DateTimeUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.AbstractMultiDataSetArchiveCleaner;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.FileDeleter;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.IMultiDataSetArchiveCleaner;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingFinalizer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
@@ -297,9 +301,26 @@ public class ServiceProvider implements IServiceProvider
         {
             @Override protected void deleteAsync(final File file)
             {
+                final long timeout =
+                        DateTimeUtils.getDurationInMillis(properties, FileDeleter.DELETION_TIME_OUT_KEY, FileDeleter.DEFAULT_DELETION_TIME_OUT);
+                final String emailOrNull = PropertyUtils.getProperty(properties, FileDeleter.EMAIL_ADDRESS_KEY);
+
+                String emailTemplate = null;
+                String emailSubject = null;
+                String emailFromAddressOrNull = null;
+
+                if (emailOrNull != null)
+                {
+                    emailTemplate = PropertyUtils.getMandatoryProperty(properties, FileDeleter.EMAIL_TEMPLATE_KEY);
+                    emailSubject = PropertyUtils.getMandatoryProperty(properties, FileDeleter.EMAIL_SUBJECT_KEY);
+                    emailFromAddressOrNull = properties.getProperty(FileDeleter.EMAIL_FROM_ADDRESS_KEY);
+                }
+
                 MessagesDatabaseFacade facade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
                 JsonObjectMapper objectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-                facade.create(new DeleteFileMessage(MessageProcessId.getCurrentOrGenerateNew(), file).serialize(objectMapper));
+                facade.create(new DeleteFileMessage(MessageProcessId.getCurrentOrGenerateNew(), file, new Date(), timeout,
+                        emailOrNull, emailTemplate, emailSubject, emailFromAddressOrNull).serialize(
+                        objectMapper));
             }
         };
     }

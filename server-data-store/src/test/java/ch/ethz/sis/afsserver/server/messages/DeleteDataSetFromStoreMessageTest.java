@@ -12,7 +12,7 @@ import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
-public class DeleteDataSetMessageTest
+public class DeleteDataSetFromStoreMessageTest
 {
 
     @Test
@@ -29,15 +29,17 @@ public class DeleteDataSetMessageTest
         int maxNumberOfRetries = 1;
         long waitingTimeBetweenRetries = 100;
 
-        DeleteDataSetFromStoreMessage originalDeleteMessage =
-                new DeleteDataSetFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), Arrays.asList(location, description), maxNumberOfRetries,
+        DeleteDataSetFromStoreMessage originalMessage =
+                new DeleteDataSetFromStoreMessage(MessageProcessId.getCurrentOrGenerateNew(), Arrays.asList(location, description),
+                        maxNumberOfRetries,
                         waitingTimeBetweenRetries);
-        Message message = originalDeleteMessage.serialize(objectMapper);
-        DeleteDataSetFromStoreMessage deserializedDeleteMessage = DeleteDataSetFromStoreMessage.deserialize(objectMapper, message);
+        Message message = originalMessage.serialize(objectMapper);
+        DeleteDataSetFromStoreMessage deserializedMessage = DeleteDataSetFromStoreMessage.deserialize(objectMapper, message);
 
-        Assert.assertEquals(deserializedDeleteMessage.getDataSets(), originalDeleteMessage.getDataSets());
-        Assert.assertEquals(deserializedDeleteMessage.getMaxNumberOfRetries(), originalDeleteMessage.getMaxNumberOfRetries());
-        Assert.assertEquals(deserializedDeleteMessage.getWaitingTimeBetweenRetries(), originalDeleteMessage.getWaitingTimeBetweenRetries());
+        Assert.assertEquals(deserializedMessage.getProcessId(), originalMessage.getProcessId());
+        Assert.assertEquals(deserializedMessage.getDataSets(), originalMessage.getDataSets());
+        Assert.assertEquals(deserializedMessage.getMaxNumberOfRetries(), originalMessage.getMaxNumberOfRetries());
+        Assert.assertEquals(deserializedMessage.getWaitingTimeBetweenRetries(), originalMessage.getWaitingTimeBetweenRetries());
     }
 
 }

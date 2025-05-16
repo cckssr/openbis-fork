@@ -63,7 +63,7 @@ public class FileDeleter
     /** Property: Time out in milliseconds of deletion requests. */
     public static final String DELETION_TIME_OUT_KEY = "deletion-time-out";
 
-    private static final long DEFAULT_DELETION_TIME_OUT = 24 * DateUtils.MILLIS_PER_HOUR;
+    public static final long DEFAULT_DELETION_TIME_OUT = 24 * DateUtils.MILLIS_PER_HOUR;
 
     /** Property: Email address for notifying time-outed deletion requests. */
     public static final String EMAIL_ADDRESS_KEY = "email-address";

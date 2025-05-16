@@ -27,6 +27,8 @@ public interface IMessagesDAO
 
     void update(Message message);
 
-    List<Message> listByTypesAndLastSeenId(List<String> messageTypes, Long lastSeenMessageIdOrNull, int messageBatchSize);
+    Message getNewestByTypes(List<String> messageTypes);
+
+    List<Message> listByTypesAndIdRange(List<String> messageTypes, Long minMessageId, Long maxMessageId, int messageBatchSize);
 
 }

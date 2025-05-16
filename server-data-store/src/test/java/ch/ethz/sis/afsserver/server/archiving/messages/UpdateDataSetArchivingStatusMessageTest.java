@@ -24,14 +24,15 @@ public class UpdateDataSetArchivingStatusMessageTest
         DataSetArchivingStatus archivingStatus = DataSetArchivingStatus.ARCHIVED;
         boolean presentInArchive = true;
 
-        UpdateDataSetArchivingStatusMessage originalUpdateMessage =
+        UpdateDataSetArchivingStatusMessage originalMessage =
                 new UpdateDataSetArchivingStatusMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, archivingStatus, presentInArchive);
-        Message message = originalUpdateMessage.serialize(objectMapper);
-        UpdateDataSetArchivingStatusMessage deserializedUpdateMessage = UpdateDataSetArchivingStatusMessage.deserialize(objectMapper, message);
+        Message message = originalMessage.serialize(objectMapper);
+        UpdateDataSetArchivingStatusMessage deserializedMessage = UpdateDataSetArchivingStatusMessage.deserialize(objectMapper, message);
 
-        Assert.assertEquals(deserializedUpdateMessage.getDataSetCodes(), originalUpdateMessage.getDataSetCodes());
-        Assert.assertEquals(deserializedUpdateMessage.getArchivingStatus(), originalUpdateMessage.getArchivingStatus());
-        Assert.assertEquals(deserializedUpdateMessage.getPresentInArchive(), originalUpdateMessage.getPresentInArchive());
+        Assert.assertEquals(deserializedMessage.getProcessId(), originalMessage.getProcessId());
+        Assert.assertEquals(deserializedMessage.getDataSetCodes(), originalMessage.getDataSetCodes());
+        Assert.assertEquals(deserializedMessage.getArchivingStatus(), originalMessage.getArchivingStatus());
+        Assert.assertEquals(deserializedMessage.getPresentInArchive(), originalMessage.getPresentInArchive());
     }
 
 }

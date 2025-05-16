@@ -27,14 +27,15 @@ public class ArchiveDataSetMessageTest
         options.put("test-option-1", "test-value-1");
         options.put("test-option-2", "test-value-2");
 
-        ArchiveDataSetMessage originalArchiveMessage =
+        ArchiveDataSetMessage originalMessage =
                 new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options);
-        Message message = originalArchiveMessage.serialize(objectMapper);
-        ArchiveDataSetMessage deserializedArchiveMessage = ArchiveDataSetMessage.deserialize(objectMapper, message);
+        Message message = originalMessage.serialize(objectMapper);
+        ArchiveDataSetMessage deserializedMessage = ArchiveDataSetMessage.deserialize(objectMapper, message);
 
-        Assert.assertEquals(deserializedArchiveMessage.getDataSetCodes(), originalArchiveMessage.getDataSetCodes());
-        Assert.assertEquals(deserializedArchiveMessage.isRemoveFromDataStore(), originalArchiveMessage.isRemoveFromDataStore());
-        Assert.assertEquals(deserializedArchiveMessage.getOptions(), originalArchiveMessage.getOptions());
+        Assert.assertEquals(deserializedMessage.getProcessId(), originalMessage.getProcessId());
+        Assert.assertEquals(deserializedMessage.getDataSetCodes(), originalMessage.getDataSetCodes());
+        Assert.assertEquals(deserializedMessage.isRemoveFromDataStore(), originalMessage.isRemoveFromDataStore());
+        Assert.assertEquals(deserializedMessage.getOptions(), originalMessage.getOptions());
     }
 
 }
