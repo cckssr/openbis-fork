@@ -329,6 +329,11 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
             {
                 return incomingShareIdProvider;
             }
+
+            @Override public IMultiDataSetArchiveCleaner getDataSetArchiveCleaner(final Properties properties)
+            {
+                return new MultiDataSetArchiveCleaner(properties);
+            }
         });
 
         IFreeSpaceProvider freeSpaceProvider = new SimpleFreeSpaceProvider();
@@ -522,9 +527,9 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
                         "Container container1.tar contains 0 not deleted data sets.\n" +
                         "INFO  OPERATION.AbstractDataSetDeletionPostProcessingMaintenanceTask - " +
                         "Container container1.tar was successfully deleted from the database.\n" +
-                        "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                        "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         archiveContainer.getAbsolutePath() + "\n" +
-                        "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                        "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         replicateContainer.getAbsolutePath(),
                 getLogContent());
     }
@@ -562,15 +567,15 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
 
         String log = getLogContent();
         AssertionUtil.assertContainsLines(
-                "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         archiveContainer.getAbsolutePath() + "\n", log);
 
         // There is no information of replicate file.
         AssertionUtil.assertContainsNot(
-                "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         replicatePath + "\n", log);
         AssertionUtil.assertContainsNot(
-                "WARN  OPERATION.MultiDataSetArchiveCleaner - Failed to delete file immediately: " +
+                "WARN  OPERATION.AbstractMultiDataSetArchiveCleaner - Failed to delete file immediately: " +
                         replicatePath + "\n", log);
     }
 
@@ -646,9 +651,9 @@ public class MultiDataSetDeletionMaintenanceTaskTest extends AbstractFileSystemT
                         "INFO  OPERATION.AbstractDataSetDeletionPostProcessingMaintenanceTask - Sanity check finished.\n" +
                         "INFO  OPERATION.AbstractDataSetDeletionPostProcessingMaintenanceTask - " +
                         "Container container2.tar was successfully deleted from the database.\n" +
-                        "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                        "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         archiveContainer.getAbsolutePath() + "\n" +
-                        "INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " +
+                        "INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " +
                         replicateContainer.getAbsolutePath(),
                 getLogContent());
     }
