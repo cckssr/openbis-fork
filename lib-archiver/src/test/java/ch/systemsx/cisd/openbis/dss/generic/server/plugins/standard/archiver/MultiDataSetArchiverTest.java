@@ -840,7 +840,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         properties.setProperty(MINIMUM_CONTAINER_SIZE_IN_BYTES, "15");
         MultiDataSetArchiverContainerDTO container = transaction.createContainer("path");
         ds2.setDataSetSize(20L);
-        transaction.insertDataset(ds2, container);
+        transaction.insertDataset(ds2.getDataSetCode(), ds2.getDataSetSize(), container);
         transaction.commit();
 
         MultiDataSetArchiver archiver = createArchiver(null);
@@ -848,7 +848,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
 
         AssertionUtil.assertContainsLines("INFO  OPERATION.AbstractDatastorePlugin - "
                         + "Archiving of the following datasets has been requested: [Dataset 'ds2', Dataset 'afsDataSet']\n"
-                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by AFS data store. They will be ignored by the archiver.\n",
+                        + "INFO  OPERATION.AbstractDatastorePlugin - Data sets [afsDataSet] were created by a different data store (not by DSS1 data store). They will be ignored by the archiver.\n",
                 getLogContent());
         assertEquals(
                 "[ERROR: \"Archiving failed :Inconsistency between archive database and archive storage found. The following containers appear in the archive database but could not be found in the archive storage: [MultiDataSetArchiverContainerDTO [id=0, path=path, unarchiving requested=false]].\n"
