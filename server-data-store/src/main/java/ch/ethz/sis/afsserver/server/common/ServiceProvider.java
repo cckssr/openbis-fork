@@ -437,10 +437,13 @@ public class ServiceProvider implements IServiceProvider
         if (openBISService == null)
         {
             OpenBISConfiguration openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-            MessagesDatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(configuration);
+            MessagesDatabaseFacade messagesDatabaseFacade = null;
+            if (MessagesDatabaseConfiguration.hasInstance(configuration))
+            {
+                messagesDatabaseFacade = MessagesDatabaseConfiguration.getInstance(configuration).getMessagesDatabaseFacade();
+            }
             JsonObjectMapper jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
-            openBISService = new OpenBISService(openBISConfiguration.getOpenBISFacade(), messagesDatabaseConfiguration.getMessagesDatabaseFacade(),
-                    jsonObjectMapper);
+            openBISService = new OpenBISService(openBISConfiguration.getOpenBISFacade(), messagesDatabaseFacade, jsonObjectMapper);
         }
 
         return openBISService;

@@ -554,8 +554,13 @@ public class OpenBISService implements IOpenBISService
         {
             return;
         }
+        if (messagesDatabaseFacade == null)
+        {
+            throw new RuntimeException("Messages database not configured");
+        }
         messagesDatabaseFacade.create(
-                new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options).serialize(objectMapper));
+                new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options).serialize(
+                        objectMapper));
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)
