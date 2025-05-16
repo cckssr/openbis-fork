@@ -24,9 +24,9 @@ public class DatatypeMapper {
         datatypeMappings.put(XSDDatatype.XSDstring.getURI(), DataType.VARCHAR.name());
         datatypeMappings.put(XSDDatatype.XSDdouble.getURI(), DataType.REAL.name());
         datatypeMappings.put(XSDDatatype.XSDdateTime.getURI(), DataType.TIMESTAMP.name());
-        datatypeMappings.put(XSDDatatype.XSDgDay.getURI(), DataType.INTEGER.name());
-        datatypeMappings.put(XSDDatatype.XSDgMonth.getURI(), DataType.INTEGER.name());
-        datatypeMappings.put(XSDDatatype.XSDgYear.getURI(), DataType.INTEGER.name());
+        datatypeMappings.put(XSDDatatype.XSDgDay.getURI(), DataType.VARCHAR.name());
+        datatypeMappings.put(XSDDatatype.XSDgMonth.getURI(), DataType.VARCHAR.name());
+        datatypeMappings.put(XSDDatatype.XSDgYear.getURI(), DataType.VARCHAR.name());
         datatypeMappings.put(XSDDatatype.XSDtime.getURI(), DataType.VARCHAR.name());
         datatypeMappings.put(XSDDatatype.XSDanyURI.getURI(), DataType.VARCHAR.name());
     }
