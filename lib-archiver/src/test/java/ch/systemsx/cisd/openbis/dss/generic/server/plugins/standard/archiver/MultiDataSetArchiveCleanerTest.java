@@ -122,7 +122,7 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
 
         assertEquals(true, dataFolder1.exists());
         assertEquals(true, file.exists());
-        assertEquals("WARN  OPERATION.MultiDataSetArchiveCleaner - Failed to delete file immediately: " + dataFolder1,
+        assertEquals("WARN  OPERATION.AbstractMultiDataSetArchiveCleaner - Failed to delete file immediately: " + dataFolder1,
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
@@ -138,7 +138,7 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
         cleaner.delete(file);
 
         assertEquals(false, file.exists());
-        assertEquals("INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " + file,
+        assertEquals("INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " + file,
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
@@ -198,7 +198,7 @@ public class MultiDataSetArchiveCleanerTest extends AbstractFileSystemTestCase
         cleaner.delete(file);
 
         assertEquals(false, file.exists());
-        assertEquals("INFO  OPERATION.MultiDataSetArchiveCleaner - File immediately deleted: " + file,
+        assertEquals("INFO  OPERATION.AbstractMultiDataSetArchiveCleaner - File immediately deleted: " + file,
                 logRecorder.getLogContent());
         context.assertIsSatisfied();
     }
