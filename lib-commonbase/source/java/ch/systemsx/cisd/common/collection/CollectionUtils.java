@@ -31,6 +31,9 @@ import java.util.Map;
  */
 public final class CollectionUtils
 {
+
+    public static final int DEFAULT_MAX_LENGTH = 10;
+
     private CollectionUtils()
     {
         // Can not be instantiated

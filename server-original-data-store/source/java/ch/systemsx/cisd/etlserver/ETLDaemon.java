@@ -87,6 +87,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IncomingShareIdProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetCodesWithStatus;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
@@ -276,7 +277,8 @@ public final class ETLDaemon
                             new Log4jSimpleLogger(operationLog));
             incomingShares.add(shareId);
         }
-        IncomingShareIdProvider.add(incomingShares);
+
+        ((IncomingShareIdProvider)ServiceProviderFactory.getInstance().getIncomingShareIdProvider()).add(incomingShares);
     }
 
     @Private

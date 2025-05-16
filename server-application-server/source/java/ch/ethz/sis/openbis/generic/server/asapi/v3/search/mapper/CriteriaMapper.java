@@ -15,6 +15,8 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AccessDateSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventTechIdSearchCriteria;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_COLUMN;
 import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_STORE_COLUMN;
@@ -296,6 +298,8 @@ public class CriteriaMapper
                 booleanFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(RegistrationDateSearchCriteria.class,
                 dateFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(AccessDateSearchCriteria.class,
+                dateFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(ImmutableDataDateSearchCriteria.class,
                 dateFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(SamplePropertySearchCriteria.class,
@@ -315,6 +319,7 @@ public class CriteriaMapper
                 new TextAttributeConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdSearchCriteria.class, new UserIdSearchConditionTranslator());
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(UserIdsSearchCriteria.class, collectionFieldSearchConditionTranslator);
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventTechIdSearchCriteria.class, numberFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventTypeSearchCriteria.class, enumFieldConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventIdentifierSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventDescriptionSearchCriteria.class, stringFieldSearchConditionTranslator);

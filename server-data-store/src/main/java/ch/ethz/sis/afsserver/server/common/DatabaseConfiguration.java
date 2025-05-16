@@ -57,4 +57,9 @@ public class DatabaseConfiguration
         return getContext().getDataSource();
     }
 
+    public static class DatabaseNotConfiguredException extends RuntimeException
+    {
+
+    }
+
 }

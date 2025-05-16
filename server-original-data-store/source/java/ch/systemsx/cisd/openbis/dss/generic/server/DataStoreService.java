@@ -78,7 +78,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.UuidUtil;
 
 /**
  * Implementation of {@link IDataStoreService} which will be accessed remotely by the openBIS server.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DataStoreService extends AbstractServiceWithLogger<IDataStoreService> implements
@@ -182,7 +182,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
     {
         dataSetCommandExecutorProvider.init(storeRoot);
         getShareIdManager().isKnown(""); // initializes ShareIdManager: reading all share ids from
-                                         // the data base
+        // the data base
         if (operationLog.isInfoEnabled())
         {
             operationLog.info("Initialization finished.");
@@ -201,13 +201,13 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                         "Couldn't create default share in data store: " + defaultShare));
             }
             File[] stores = storeRoot.listFiles(new FilenameFilter()
+            {
+                @Override
+                public boolean accept(File dir, String name)
                 {
-                    @Override
-                    public boolean accept(File dir, String name)
-                    {
-                        return UuidUtil.isValidUUID(name);
-                    }
-                });
+                    return UuidUtil.isValidUUID(name);
+                }
+            });
             for (File file : stores)
             {
                 if (file.renameTo(new File(defaultShare, file.getName())) == false)
@@ -257,7 +257,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
             {
                 if (manager.isKnown(datasetCode)
                         && (ignoreNonExistingLocation || new File(new File(storeRoot,
-                                manager.getShareId(datasetCode)), location).exists()))
+                        manager.getShareId(datasetCode)), location).exists()))
                 {
                     knownLocations.add(location);
                 }
@@ -617,13 +617,13 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
     {
         List<DatastoreServiceDescription> pluginDescriptions = provider.getPluginDescriptions();
         Collections.sort(pluginDescriptions, new SimpleComparator<DatastoreServiceDescription, String>()
+        {
+            @Override
+            public String evaluate(DatastoreServiceDescription item)
             {
-                @Override
-                public String evaluate(DatastoreServiceDescription item)
-                {
-                    return item.getKey();
-                }
-            });
+                return item.getKey();
+            }
+        });
         DatastoreServiceDescription availableService = null;
         for (DatastoreServiceDescription description : pluginDescriptions)
         {
@@ -686,6 +686,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                 pluginTaskInfoProvider.getReportingPluginsProvider();
         IReportingPluginTask task = reportingPlugins.getPluginInstance(serviceKey);
         IShareIdManager manager = getShareIdManager();
+
         try
         {
             String dssCode = config.getDataStoreCode();
@@ -721,6 +722,7 @@ public class DataStoreService extends AbstractServiceWithLogger<IDataStoreServic
                 pluginTaskInfoProvider.getReportingPluginsProvider();
         IReportingPluginTask task = reportingPlugins.getPluginInstance(serviceKey);
         IShareIdManager manager = getShareIdManager();
+
         try
         {
             IMailClient mailClient = createEMailClient();

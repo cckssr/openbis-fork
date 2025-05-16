@@ -1,0 +1,7 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-commonbase'),
+            project(':api-openbis-java')
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests')
+}

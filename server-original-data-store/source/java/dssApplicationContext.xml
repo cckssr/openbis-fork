@@ -39,7 +39,12 @@
     
 	<bean id="memory-monitor" class="ch.systemsx.cisd.common.monitoring.JMXMemoryMonitorSpringBean" />
 
-    <bean id="data-set-path-infos-provider" class="ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider"/>
+    <bean id="data-set-path-infos-provider-factory" class="ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProviderFactory" />
+
+    <bean id="data-set-path-infos-provider" class="ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider"
+          factory-bean="data-set-path-infos-provider-factory"
+          factory-method="createProvider"
+    />
 
 	  <bean id="plugin-tasks" class="ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.PluginTaskInfoProvider" depends-on="jython-evaluator"
         factory-method="create" />
@@ -222,7 +227,7 @@
     <bean id="config-provider" class="ch.systemsx.cisd.etlserver.ConfigProvider"/>
     
     <bean id="content-cache" class="ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache" 
-          factory-method="create">
+          factory-method="create" init-method="init">
         <constructor-arg ref="configProperties" />
     </bean>
 
@@ -233,7 +238,7 @@
         <constructor-arg ref="config-provider" />
         <constructor-arg ref="content-cache" />
         <constructor-arg ref="sessionHolder" />
-        <constructor-arg ref="propertyConfigurer" />
+        <constructor-arg ref="configProperties" />
     </bean>
 
     <bean id="objectMapper-v1" class="ch.systemsx.cisd.openbis.generic.shared.api.v1.json.GenericObjectMapper" />

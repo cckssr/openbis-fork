@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 //@Test(groups = "db")
 public class DAOFactoryTest extends AbstractDAOTest

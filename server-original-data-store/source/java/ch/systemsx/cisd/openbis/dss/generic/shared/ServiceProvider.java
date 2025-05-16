@@ -34,10 +34,10 @@ import ch.ethz.sis.openbis.generic.server.dssapi.v3.DataStoreServerApiJsonServer
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
-import ch.systemsx.cisd.openbis.generic.shared.pat.IPersonalAccessTokenConverter;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
+import ch.systemsx.cisd.openbis.generic.shared.pat.IPersonalAccessTokenConverter;
 
 /**
  * Provider of remote service onto openBIS.
@@ -66,6 +66,8 @@ public class ServiceProvider
     public static final Date DSS_STARTUP_DATE = new Date();
 
     private static boolean buildingApplicationContext;
+
+    private static final IIncomingShareIdProvider incomingShareIdProvider = new IncomingShareIdProvider();
 
     /**
      * @deprecated This method should only be used from {@link ServiceProviderTestWrapper} to avoid leaving the application context uncleaned after
@@ -263,6 +265,11 @@ public class ServiceProvider
     public static IPersonalAccessTokenConverter getPersonalAccessTokenConverter()
     {
         return getApplicationContext().getBean(IPersonalAccessTokenConverter.class);
+    }
+
+    public static IIncomingShareIdProvider getIncomingShareIdProvider()
+    {
+        return incomingShareIdProvider;
     }
 
     private ServiceProvider()

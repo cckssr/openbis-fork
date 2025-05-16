@@ -19,14 +19,25 @@ dependencies {
         exclude group: 'google', module: 'gwt-user'
     }
 
-    api project(':lib-common'),
+    api project(':lib-commonbase'),
+            project(':lib-common'),
+            project(':lib-openbis-commonbase'),
             project(':lib-openbis-common'),
+            project(':lib-data-store-commonbase'),
+            project(':lib-data-store-common'),
             // lib-authentication and lib-dbmigration are required as they contain later versions of
             // some classes than cisd-cifex.jar. They need to be in classpath before cisd-cifex.jar
             project(':lib-authentication'),
             project(':lib-db'),
             project(':lib-dbmigration'),
             project(':lib-pathinfo-db'),
+            project(':lib-pathinfo'),
+            project(':lib-archiver-db'),
+            project(':lib-archiver'),
+            project(':lib-shuffling'),
+            project(':lib-compress'),
+            project(':lib-maintenance'),
+            project(':lib-hierarchical-content'),
             'apache:ftpserver-core:1.0.6',
             'apache:sshd-sftp:2.7.0',
             'slf4j:slf4j-api:1.7.24',
@@ -40,7 +51,8 @@ dependencies {
             'docx4j:docx4j:6.1.2',
             'freva:ascii-table:1.2.0',
             'jsoup:jsoup:1.14.2',
-            'dspace:xoai-data-provider:4.2.0'
+            'dspace:xoai-data-provider:4.2.0',
+            'sis:sis-jhdf5:19.04.0'
 
     runtimeOnly 'bioformats:bioformats:6.5.1'
 
@@ -67,9 +79,13 @@ dependencies {
             project(path: ':lib-common', configuration: 'tests'),
             project(path: ':lib-dbmigration', configuration: 'tests'),
             project(path: ':lib-authentication', configuration: 'tests'),
+            project(path: ':lib-hierarchical-content', configuration: 'tests'),
             project(path: ':api-openbis-java', configuration: 'tests'),
             project(path: ':lib-openbis-common', configuration: 'tests'),
+            project(path: ':lib-openbis-commonbase', configuration: 'tests'),
+            project(path: ':lib-data-store-commonbase', configuration: 'tests'),
             project(path: ':lib-logging', configuration: 'tests'),
+            project(path: ':lib-hdf5', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD'
 

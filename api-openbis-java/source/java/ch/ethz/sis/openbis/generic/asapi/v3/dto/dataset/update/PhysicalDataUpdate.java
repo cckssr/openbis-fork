@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IFileFormatTypeId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -38,6 +39,12 @@ public class PhysicalDataUpdate implements IUpdate
 
     @JsonProperty
     private FieldUpdateValue<Boolean> archivingRequested = new FieldUpdateValue<Boolean>();
+
+    @JsonProperty
+    private FieldUpdateValue<Boolean> presentInArchive = new FieldUpdateValue<Boolean>();
+
+    @JsonProperty
+    private FieldUpdateValue<ArchivingStatus> status = new FieldUpdateValue<ArchivingStatus>();
 
     @JsonProperty
     private FieldUpdateValue<String> shareId = new FieldUpdateValue<String>();
@@ -69,6 +76,30 @@ public class PhysicalDataUpdate implements IUpdate
     public void setArchivingRequested(boolean archivingRequested)
     {
         this.archivingRequested.setValue(archivingRequested);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> isPresentInArchive()
+    {
+        return presentInArchive;
+    }
+
+    @JsonIgnore
+    public void setPresentInArchive(boolean presentInArchive)
+    {
+        this.presentInArchive.setValue(presentInArchive);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<ArchivingStatus> getStatus()
+    {
+        return status;
+    }
+
+    @JsonIgnore
+    public void setStatus(ArchivingStatus status)
+    {
+        this.status.setValue(status);
     }
 
     @JsonIgnore

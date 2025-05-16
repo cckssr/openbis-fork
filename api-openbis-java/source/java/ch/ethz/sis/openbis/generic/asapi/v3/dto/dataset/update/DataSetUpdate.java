@@ -15,16 +15,21 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
@@ -89,6 +94,9 @@ public class DataSetUpdate extends AbstractEntityUpdate
 
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
+
+    @JsonProperty
+    private FieldUpdateValue<Date> accessDate = new FieldUpdateValue<Date>();
 
     @Override
     @JsonIgnore
@@ -285,6 +293,17 @@ public class DataSetUpdate extends AbstractEntityUpdate
     public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
     {
         metaData.setActions(actions);
+    }
+
+    public FieldUpdateValue<Date> getAccessDate()
+    {
+        return accessDate;
+    }
+
+    @JsonIgnore
+    public void setAccessDate(Date accessDate)
+    {
+        this.accessDate.setValue(accessDate);
     }
 
     @Override

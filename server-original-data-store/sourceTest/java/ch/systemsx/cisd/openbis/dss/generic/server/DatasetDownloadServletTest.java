@@ -52,6 +52,7 @@ import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.DefaultFileBasedHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
@@ -74,7 +75,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Space;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
 import ch.systemsx.cisd.openbis.generic.shared.pat.IPersonalAccessTokenConverter;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -839,8 +839,8 @@ public class DatasetDownloadServletTest
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(EXAMPLE_DATA_SET_CODE);
-                    one(shareIdManager).releaseLock(EXAMPLE_DATA_SET_CODE);
+                    one(shareIdManager).lock(with(EXAMPLE_DATA_SET_CODE));
+                    one(shareIdManager).releaseLock(with(EXAMPLE_DATA_SET_CODE));
                 }
             });
     }

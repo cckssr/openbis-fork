@@ -1,0 +1,2 @@
+includeFlat 'lib-logging', 'lib-commonbase', 'lib-maintenance', 'lib-pathinfo-db',
+        'lib-hierarchical-content', 'lib-data-store-commonbase', 'lib-openbis-commonbase', 'api-openbis-java'

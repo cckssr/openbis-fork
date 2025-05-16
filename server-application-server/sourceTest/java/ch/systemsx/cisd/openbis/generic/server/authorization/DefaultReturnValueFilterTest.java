@@ -43,7 +43,7 @@ import ch.systemsx.cisd.common.string.StringUtilities;
 import ch.systemsx.cisd.common.test.LogMonitoringAppender;
 import ch.systemsx.cisd.openbis.generic.server.authorization.validator.IValidator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * Test cases for corresponding {@link DefaultReturnValueFilter} class.

@@ -4,6 +4,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
@@ -14,7 +15,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsserver.server.common.TestLogger;
-import ch.ethz.sis.afsserver.server.shuffling.SimpleChecksumProvider;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -93,11 +93,11 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 1);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n",
                 TestLogger.getRecordedLog());
     }
@@ -140,16 +140,19 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
 
         Thread shufflingThread = new Thread(() ->
         {
-            TestChecksumProvider checksumProvider = new TestChecksumProvider((dataSetCode, relativePath) ->
+            TestChecksumProvider checksumProvider = new TestChecksumProvider()
             {
-                if (dataSetCode.equals(sample.getPermId().getPermId()))
+                @Override public long getChecksum(final String dataSetCode, final String relativePath) throws IOException
                 {
-                    fromShuffling.send("beforeChecksum");
-                    toShuffling.assertNextMessage("afterRead");
-                }
+                    if (dataSetCode.equals(sample.getPermId().getPermId()))
+                    {
+                        fromShuffling.send("beforeChecksum");
+                        toShuffling.assertNextMessage("afterRead");
+                    }
 
-                return new SimpleChecksumProvider().getChecksum(dataSetCode, relativePath);
-            });
+                    return super.getChecksum(dataSetCode, relativePath);
+                }
+            };
             TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
         });
 
@@ -173,11 +176,11 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n",
                 TestLogger.getRecordedLog());
     }
@@ -196,34 +199,35 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
-        TestChecksumProvider checksumProvider = new TestChecksumProvider((dataSetCode, relativePath) ->
+        TestChecksumProvider checksumProvider = new TestChecksumProvider()
         {
-            if (dataSetCode.equals(sample.getPermId().getPermId()))
+            @Override public long getChecksum(final String dataSetCode, final String relativePath) throws IOException
             {
-                throw new RuntimeException("Test checksum exception");
-            }
+                if (dataSetCode.equals(sample.getPermId().getPermId()))
+                {
+                    throw new RuntimeException("Test checksum exception");
+                }
 
-            return new SimpleChecksumProvider().getChecksum(dataSetCode, relativePath);
-        });
+                return super.getChecksum(dataSetCode, relativePath);
+            }
+        };
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
                         + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Locked data set " + sample.getPermId().getPermId()
-                        + " before clean up.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Unlocked data set " + sample.getPermId().getPermId()
-                        + " after clean up.\n",
+                        + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
+                        + " to be unlocked.\n",
                 TestLogger.getRecordedLog());
 
         AssertionUtil.assertDoesNotContainLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n", TestLogger.getRecordedLog());
     }
 
@@ -241,35 +245,36 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
-        TestChecksumProvider checksumProvider = new TestChecksumProvider((dataSetCode, relativePath) ->
+        TestChecksumProvider checksumProvider = new TestChecksumProvider()
         {
-            if (dataSetCode.equals(sample.getPermId().getPermId()))
+            @Override public long getChecksum(final String dataSetCode, final String relativePath) throws IOException
             {
-                // +1 to make the checksum incorrect
-                return new SimpleChecksumProvider().getChecksum(dataSetCode, relativePath) + 1;
-            }
+                if (dataSetCode.equals(sample.getPermId().getPermId()))
+                {
+                    // +1 to make the checksum incorrect
+                    return super.getChecksum(dataSetCode, relativePath) + 1;
+                }
 
-            return new SimpleChecksumProvider().getChecksum(dataSetCode, relativePath);
-        });
+                return super.getChecksum(dataSetCode, relativePath);
+            }
+        };
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
                         + " before shuffling.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
+                        + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
                         + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Locked data set " + sample.getPermId().getPermId()
-                        + " before clean up.\n"
-                        + "INFO  ch.ethz.sis.afsserver.server.shuffling.SimpleShuffling - Unlocked data set " + sample.getPermId().getPermId()
-                        + " after clean up.\n",
+                        + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
+                        + " to be unlocked.\n",
                 TestLogger.getRecordedLog());
 
         AssertionUtil.assertDoesNotContainLines(
-                "INFO  ch.ethz.sis.afsserver.server.shuffling.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
+                "INFO  OPERATION.EagerShufflingTask - Data set " + sample.getPermId().getPermId()
                         + " successfully moved from share 1 to 2.\n", TestLogger.getRecordedLog());
     }
 

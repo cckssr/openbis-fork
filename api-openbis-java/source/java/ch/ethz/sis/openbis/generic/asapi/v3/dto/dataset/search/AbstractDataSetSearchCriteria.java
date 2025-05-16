@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractEntitySearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AccessDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchCriteriaToStringBuilder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
@@ -59,6 +60,11 @@ public abstract class AbstractDataSetSearchCriteria<T extends AbstractDataSetSea
     public ExperimentSearchCriteria withExperiment()
     {
         return with(new ExperimentSearchCriteria());
+    }
+
+    public AccessDateSearchCriteria withAccessDate()
+    {
+        return with(new AccessDateSearchCriteria());
     }
 
     @SuppressWarnings("unchecked")

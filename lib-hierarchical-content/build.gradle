@@ -1,0 +1,17 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-logging'),
+            project(':lib-commonbase'),
+            project(':lib-openbis-commonbase'),
+            project(':lib-data-store-commonbase'),
+            project(':lib-pathinfo-db'),
+            project(':lib-hdf5'),
+            project(':lib-compress'),
+            'sis:sis-base:23.06.0',
+            'sis:sis-jhdf5:19.04.0',
+            'apache:commons-compress:1.8',
+            'truezip:truezip:6.8.1'
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests'), 'testng:testng:6.8-CISD', 'jmock:jmock:2.5.1',
+            'apache:commons-compress:1.8'
+}

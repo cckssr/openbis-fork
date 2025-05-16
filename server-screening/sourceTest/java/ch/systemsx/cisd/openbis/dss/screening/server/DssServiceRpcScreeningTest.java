@@ -114,7 +114,7 @@ import net.iharder.Base64;
 
 /**
  * Test cases for the {@link DssServiceRpcScreening}.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DssServiceRpcScreeningTest extends AssertJUnit
@@ -204,28 +204,28 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                         new ArrayList<InternalImageTransformationInfo>());
         imageParameters.setInternalChannels(Arrays.asList(imageChannel));
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(imageLoader).getImageParameters();
-                    will(returnValue(imageParameters));
-                    allowing(contentProvider).asContent(with(any(String.class)));
-                    will(returnValue(null));
-                    allowing(contentProvider).cloneFor(with(any(ISessionTokenProvider.class)));
-                    will(returnValue(contentProvider));
-                }
-            });
+                allowing(imageLoader).getImageParameters();
+                will(returnValue(imageParameters));
+                allowing(contentProvider).asContent(with(any(String.class)));
+                will(returnValue(null));
+                allowing(contentProvider).cloneFor(with(any(ISessionTokenProvider.class)));
+                will(returnValue(contentProvider));
+            }
+        });
         testMethodInterceptor = new TestMethodInterceptor(shareIdManager);
         DssServiceRpcScreening rawScreeningService =
                 new DssServiceRpcScreening("targets", dao, transformerDAO, service,
                         streamRepository, shareIdManager, contentProvider, false)
+                {
+                    @Override
+                    IImagingDatasetLoader tryCreateImageLoader(String dataSetCode,
+                            IHierarchicalContent content, boolean check)
                     {
-                        @Override
-                        IImagingDatasetLoader tryCreateImageLoader(String dataSetCode,
-                                IHierarchicalContent content, boolean check)
-                        {
-                            return imageLoader;
-                        }
-                    };
+                        return imageLoader;
+                    }
+                };
         ProxyFactory pf = new ProxyFactory();
         pf.addAdvisor(new DssServiceRpcAuthorizationAdvisor(testMethodInterceptor));
         pf.setTarget(rawScreeningService);
@@ -238,12 +238,12 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         final IFeatureVectorDatasetIdentifier identifier =
                 context.mock(IFeatureVectorDatasetIdentifier.class, dataSetCode);
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(identifier).getDatasetCode();
-                    will(returnValue(dataSetCode));
-                }
-            });
+                allowing(identifier).getDatasetCode();
+                will(returnValue(dataSetCode));
+            }
+        });
         return identifier;
     }
 
@@ -270,7 +270,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
                         .listPlateImageReferences(SESSION_TOKEN, ds, wellPositions, channel);
 
         assertEquals("[Image for [dataset ds1, well [1, 3], channel DAPI, tile 0], "
-                + "Image for [dataset ds1, well [1, 3], channel DAPI, tile 1]]",
+                        + "Image for [dataset ds1, well [1, 3], channel DAPI, tile 1]]",
                 plateImageReferences.toString());
 
         assertTrue(testMethodInterceptor.methodInvoked);
@@ -393,7 +393,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         testLoadImagesPrepare();
         InputStream images =
                 screeningService.loadImages(SESSION_TOKEN, new DatasetIdentifier(DATASET_CODE,
-                        "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
+                                "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
                         new ImageSize(2, 1));
 
         ConcatenatedFileOutputStreamWriter imagesWriter =
@@ -417,7 +417,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
 
         InputStream images =
                 screeningService.loadImages(SESSION_TOKEN, new DatasetIdentifier(DATASET_CODE,
-                        "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
+                                "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
                         new ImageSize(2, 1));
 
         ConcatenatedFileOutputStreamWriter imagesWriter =
@@ -435,7 +435,7 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
 
         List<String> imagesBase64 =
                 screeningService.loadImagesBase64(SESSION_TOKEN, new DatasetIdentifier(
-                        DATASET_CODE, "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
+                                DATASET_CODE, "url1"), Arrays.asList(new WellPosition(1, 3)), CHANNEL_CODE,
                         new ImageSize(2, 1));
 
         assertEquals(imagesBase64.get(0), Base64.encodeBytes(image1));
@@ -450,28 +450,28 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareAssetDataSetIsAccessible(DATASET_CODE);
         prepareLockDataSet(DATASET_CODE);
         context.checking(new Expectations()
+        {
             {
-                {
-                    RequestedImageSize thumbnailSize =
-                            new RequestedImageSize(new Size(2, 1), false);
-                    one(imageLoader).tryGetImage(
-                            CHANNEL_CODE,
-                            ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
-                                    new Location(1, 1)),
-                            thumbnailSize, null);
-                    will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
-                            null, thumbnailSize, createBlueColor(),
-                            new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
-                    one(imageLoader).tryGetImage(
-                            CHANNEL_CODE,
-                            ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
-                                    new Location(2, 1)),
-                            thumbnailSize, null);
-                    will(returnValue(new AbsoluteImageReference(image("img1.gif"), "img1", null,
-                            null, thumbnailSize, createBlueColor(),
-                            new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
-                }
-            });
+                RequestedImageSize thumbnailSize =
+                        new RequestedImageSize(new Size(2, 1), false);
+                one(imageLoader).tryGetImage(
+                        CHANNEL_CODE,
+                        ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
+                                new Location(1, 1)),
+                        thumbnailSize, null);
+                will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
+                        null, thumbnailSize, createBlueColor(),
+                        new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
+                one(imageLoader).tryGetImage(
+                        CHANNEL_CODE,
+                        ImageChannelStackReference.createHCSFromLocations(new Location(3, 1),
+                                new Location(2, 1)),
+                        thumbnailSize, null);
+                will(returnValue(new AbsoluteImageReference(image("img1.gif"), "img1", null,
+                        null, thumbnailSize, createBlueColor(),
+                        new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
+            }
+        });
     }
 
     private static ChannelColorRGB createBlueColor()
@@ -502,37 +502,37 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareLockDataSet(DATASET_CODE, DATASET_CODE2);
         prepareAssetDataSetsAreAccessible(DATASET_CODE, DATASET_CODE2);
         context.checking(new Expectations()
+        {
             {
-                {
-                    ImgImageDatasetDTO ds1 =
-                            new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
-                                    null);
-                    ds1.setId(42);
-                    allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE, DATASET_CODE2 });
-                    will(returnValue(Arrays.asList(ds1)));
-                    allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE2, DATASET_CODE });
-                    will(returnValue(Arrays.asList(ds1)));
+                ImgImageDatasetDTO ds1 =
+                        new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
+                                null);
+                ds1.setId(42);
+                allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE, DATASET_CODE2 });
+                will(returnValue(Arrays.asList(ds1)));
+                allowing(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE2, DATASET_CODE });
+                will(returnValue(Arrays.asList(ds1)));
 
-                    one(dao).listImageZoomLevels(42L);
-                    ImgImageZoomLevelDTO level1 =
-                            new ImgImageZoomLevelDTO("i1", true, "r1", 10, 20, 8, "png", 102);
-                    ImgImageZoomLevelDTO level2 =
-                            new ImgImageZoomLevelDTO("i2", false, "r2", 11, 21, 16, "blub", 103);
-                    will(returnValue(Arrays.asList(level1, level2)));
+                one(dao).listImageZoomLevels(42L);
+                ImgImageZoomLevelDTO level1 =
+                        new ImgImageZoomLevelDTO("i1", true, "r1", 10, 20, 8, "png", 102);
+                ImgImageZoomLevelDTO level2 =
+                        new ImgImageZoomLevelDTO("i2", false, "r2", 11, 21, 16, "blub", 103);
+                will(returnValue(Arrays.asList(level1, level2)));
 
-                    one(dao).listImageZoomLevelTransformations(42L);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform1 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR1", "ch1", "i2", 111,
-                                    11, 100);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform2 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR2", "ch2", "i2", 112,
-                                    12, 101);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform3 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR3", "ch3", "i2", 113,
-                                    13, 102);
-                    will(returnValue(Arrays.asList(transform1, transform2, transform3)));
-                }
-            });
+                one(dao).listImageZoomLevelTransformations(42L);
+                ImgImageZoomLevelTransformationEnrichedDTO transform1 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR1", "ch1", "i2", 111,
+                                11, 100);
+                ImgImageZoomLevelTransformationEnrichedDTO transform2 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR2", "ch2", "i2", 112,
+                                12, 101);
+                ImgImageZoomLevelTransformationEnrichedDTO transform3 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR3", "ch3", "i2", 113,
+                                13, 102);
+                will(returnValue(Arrays.asList(transform1, transform2, transform3)));
+            }
+        });
 
         DatasetIdentifier id1 = new DatasetIdentifier(DATASET_CODE, URL1);
         DatasetIdentifier id2 = new DatasetIdentifier(DATASET_CODE2, URL1);
@@ -559,56 +559,56 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         PlateImageReference plateRef1 = new PlateImageReference(1, 1, 0, CHANNEL_CODE, id1);
         PlateImageReference plateRef2 = new PlateImageReference(1, 2, 1, CHANNEL_CODE, id1);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE });
-                    ImgImageDatasetDTO ds1 =
-                            new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
-                                    null);
-                    ds1.setId(42);
-                    will(returnValue(Arrays.asList(ds1)));
+                one(dao).listImageDatasetsByPermId(new String[] { DATASET_CODE });
+                ImgImageDatasetDTO ds1 =
+                        new ImgImageDatasetDTO(DATASET_CODE, null, null, null, false, null,
+                                null);
+                ds1.setId(42);
+                will(returnValue(Arrays.asList(ds1)));
 
-                    one(dao).listImageZoomLevels(42L);
-                    ImgImageZoomLevelDTO level1 =
-                            new ImgImageZoomLevelDTO("i1", true, "r1", 10, 20, null, null, 102);
-                    ImgImageZoomLevelDTO level2 =
-                            new ImgImageZoomLevelDTO("i2", false, "r2", 11, 21, null, null, 103);
-                    will(returnValue(Arrays.asList(level1, level2)));
+                one(dao).listImageZoomLevels(42L);
+                ImgImageZoomLevelDTO level1 =
+                        new ImgImageZoomLevelDTO("i1", true, "r1", 10, 20, null, null, 102);
+                ImgImageZoomLevelDTO level2 =
+                        new ImgImageZoomLevelDTO("i2", false, "r2", 11, 21, null, null, 103);
+                will(returnValue(Arrays.asList(level1, level2)));
 
-                    one(dao).listImageZoomLevelTransformations(42L);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform1 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR1", "ch1", "i2", 111,
-                                    11, 100);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform2 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR2", "ch2", "i2", 112,
-                                    12, 101);
-                    ImgImageZoomLevelTransformationEnrichedDTO transform3 =
-                            new ImgImageZoomLevelTransformationEnrichedDTO("TR3", "ch3", "i2", 113,
-                                    13, 102);
-                    will(returnValue(Arrays.asList(transform1, transform2, transform3)));
+                one(dao).listImageZoomLevelTransformations(42L);
+                ImgImageZoomLevelTransformationEnrichedDTO transform1 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR1", "ch1", "i2", 111,
+                                11, 100);
+                ImgImageZoomLevelTransformationEnrichedDTO transform2 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR2", "ch2", "i2", 112,
+                                12, 101);
+                ImgImageZoomLevelTransformationEnrichedDTO transform3 =
+                        new ImgImageZoomLevelTransformationEnrichedDTO("TR3", "ch3", "i2", 113,
+                                13, 102);
+                will(returnValue(Arrays.asList(transform1, transform2, transform3)));
 
-                    RequestedImageSize thumbnailSize =
-                            new RequestedImageSize(new Size(10, 20), false);
-                    one(imageLoader).tryGetImage(
-                            CHANNEL_CODE,
-                            ImageChannelStackReference.createHCSFromLocations(new Location(1, 1),
-                                    new Location(1, 1)),
-                            thumbnailSize, null);
-                    will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
-                            null, thumbnailSize, createBlueColor(),
-                            new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
+                RequestedImageSize thumbnailSize =
+                        new RequestedImageSize(new Size(10, 20), false);
+                one(imageLoader).tryGetImage(
+                        CHANNEL_CODE,
+                        ImageChannelStackReference.createHCSFromLocations(new Location(1, 1),
+                                new Location(1, 1)),
+                        thumbnailSize, null);
+                will(returnValue(new AbsoluteImageReference(image("img1.jpg"), "img1", null,
+                        null, thumbnailSize, createBlueColor(),
+                        new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
 
-                    one(imageLoader).tryGetImage(
-                            CHANNEL_CODE,
-                            ImageChannelStackReference.createHCSFromLocations(new Location(2, 1),
-                                    new Location(2, 1)),
-                            thumbnailSize, null);
-                    will(returnValue(new AbsoluteImageReference(image("img1.png"), "img1", null,
-                            null, thumbnailSize, createBlueColor(),
-                            new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
+                one(imageLoader).tryGetImage(
+                        CHANNEL_CODE,
+                        ImageChannelStackReference.createHCSFromLocations(new Location(2, 1),
+                                new Location(2, 1)),
+                        thumbnailSize, null);
+                will(returnValue(new AbsoluteImageReference(image("img1.png"), "img1", null,
+                        null, thumbnailSize, createBlueColor(),
+                        new ImageTransfomationFactories(), null, null, CHANNEL_CODE)));
 
-                }
-            });
+            }
+        });
 
         InputStream stream =
                 screeningService.loadImages(SESSION_TOKEN, Arrays.asList(plateRef1, plateRef2),
@@ -634,28 +634,28 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareGetExperimentPermIDs(ds1, ds2);
         prepareLockDataSet("ds1", DATASET_CODE2);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dao).tryGetChannelForExperimentPermId(EXPERIMENT_PERM_ID, channel);
-                    ImgChannelDTO channelDTO =
-                            new ImgChannelDTO("dapi", null, null, Long.valueOf(42), null, "dapi", 0, 0,
-                                    255);
-                    long channelId = 444;
-                    channelDTO.setId(channelId);
-                    will(returnValue(channelDTO));
+                one(dao).tryGetChannelForExperimentPermId(EXPERIMENT_PERM_ID, channel);
+                ImgChannelDTO channelDTO =
+                        new ImgChannelDTO("dapi", null, null, Long.valueOf(42), null, "dapi", 0, 0,
+                                255);
+                long channelId = 444;
+                channelDTO.setId(channelId);
+                will(returnValue(channelDTO));
 
-                    one(dao).tryGetImageTransformation(channelId,
-                            DssServiceRpcScreening.IMAGE_VIEWER_TRANSFORMATION_CODE);
-                    ImgImageTransformationDTO transformationDTO =
-                            new ImgImageTransformationDTO("tr_code", "tr_labal", null, false,
-                                    channelId, transformerFactory, true);
-                    will(returnValue(transformationDTO));
-                }
-            });
+                one(dao).tryGetImageTransformation(channelId,
+                        DssServiceRpcScreening.IMAGE_VIEWER_TRANSFORMATION_CODE);
+                ImgImageTransformationDTO transformationDTO =
+                        new ImgImageTransformationDTO("tr_code", "tr_labal", null, false,
+                                channelId, transformerFactory, true);
+                will(returnValue(transformationDTO));
+            }
+        });
 
         IImageTransformerFactory result =
                 screeningService.getImageTransformerFactoryOrNull(SESSION_TOKEN,
-                        Arrays.<IDatasetIdentifier> asList(ds1, ds2), channel);
+                        Arrays.<IDatasetIdentifier>asList(ds1, ds2), channel);
 
         assertEquals(transformerFactory.id, ((ImageTransformerFactory) result).id);
         assertTrue(testMethodInterceptor.methodInvoked);
@@ -671,19 +671,19 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareGetExperimentPermIDs(ds1, ds2);
         prepareLockDataSet("ds1", DATASET_CODE2);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dao).tryGetExperimentByPermId(EXPERIMENT_PERM_ID);
-                    ImgExperimentDTO experiment = new ImgExperimentDTO();
-                    experiment.setSerializedImageTransformerFactory(SerializationUtils
-                            .serialize(transformerFactory));
-                    will(returnValue(experiment));
-                }
-            });
+                one(dao).tryGetExperimentByPermId(EXPERIMENT_PERM_ID);
+                ImgExperimentDTO experiment = new ImgExperimentDTO();
+                experiment.setSerializedImageTransformerFactory(SerializationUtils
+                        .serialize(transformerFactory));
+                will(returnValue(experiment));
+            }
+        });
 
         IImageTransformerFactory result =
                 screeningService.getImageTransformerFactoryOrNull(SESSION_TOKEN,
-                        Arrays.<IDatasetIdentifier> asList(ds1, ds2),
+                        Arrays.<IDatasetIdentifier>asList(ds1, ds2),
                         ScreeningConstants.MERGED_CHANNELS);
 
         assertEquals(transformerFactory.id, ((ImageTransformerFactory) result).id);
@@ -699,17 +699,17 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         final String channel = "dapi";
         prepareLockDataSet(DATASET_CODE, DATASET_CODE2);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
-                    will(throwException(new UserFailureException("You are not a space power user.")));
-                }
-            });
+                one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
+                will(throwException(new UserFailureException("You are not a space power user.")));
+            }
+        });
 
         try
         {
             screeningService.saveImageTransformerFactory(SESSION_TOKEN,
-                    Arrays.<IDatasetIdentifier> asList(ds1, ds2), channel, transformerFactory);
+                    Arrays.<IDatasetIdentifier>asList(ds1, ds2), channel, transformerFactory);
             fail("Unauthorized access not detected.");
         } catch (AuthorizationFailureException ex)
         {
@@ -729,42 +729,42 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareLockDataSet(DATASET_CODE, DATASET_CODE2);
         prepareAssetDataSetsAreAccessible();
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
+                one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
 
-                    long datasetId = 123;
-                    ImgImageDatasetDTO dataset = createImageDataset(datasetId);
-                    dataset.setPermId(DATASET_CODE);
+                long datasetId = 123;
+                ImgImageDatasetDTO dataset = createImageDataset(datasetId);
+                dataset.setPermId(DATASET_CODE);
 
-                    one(dao).tryGetImageDatasetByPermId(DATASET_CODE);
-                    will(returnValue(dataset));
+                one(dao).tryGetImageDatasetByPermId(DATASET_CODE);
+                will(returnValue(dataset));
 
-                    one(dao).tryGetImageDatasetByPermId(DATASET_CODE2);
-                    will(returnValue(dataset));
+                one(dao).tryGetImageDatasetByPermId(DATASET_CODE2);
+                will(returnValue(dataset));
 
-                    allowing(dao).hasDatasetChannels(DATASET_CODE);
-                    will(returnValue(true));
+                allowing(dao).hasDatasetChannels(DATASET_CODE);
+                will(returnValue(true));
 
-                    long channelId = 5;
-                    long transactionId = 123;
-                    exactly(2).of(transformerDAO).getDatasetChannelId(datasetId, channel);
-                    will(returnValue(channelId));
+                long channelId = 5;
+                long transactionId = 123;
+                exactly(2).of(transformerDAO).getDatasetChannelId(datasetId, channel);
+                will(returnValue(channelId));
 
-                    exactly(2).of(transformerDAO).tryGetImageTransformationId(channelId,
-                            DssServiceRpcScreening.IMAGE_VIEWER_TRANSFORMATION_CODE);
+                exactly(2).of(transformerDAO).tryGetImageTransformationId(channelId,
+                        DssServiceRpcScreening.IMAGE_VIEWER_TRANSFORMATION_CODE);
 
-                    will(returnValue(transactionId));
+                will(returnValue(transactionId));
 
-                    exactly(2).of(transformerDAO).updateImageTransformerFactory(transactionId,
-                            transformerFactory);
+                exactly(2).of(transformerDAO).updateImageTransformerFactory(transactionId,
+                        transformerFactory);
 
-                    one(transformerDAO).commit();
-                }
-            });
+                one(transformerDAO).commit();
+            }
+        });
 
         screeningService.saveImageTransformerFactory(SESSION_TOKEN,
-                Arrays.<IDatasetIdentifier> asList(ds1, ds2), channel, transformerFactory);
+                Arrays.<IDatasetIdentifier>asList(ds1, ds2), channel, transformerFactory);
 
         assertTrue(testMethodInterceptor.methodInvoked);
         context.assertIsSatisfied();
@@ -785,38 +785,38 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         prepareLockDataSet(DATASET_CODE);
         prepareAssetDataSetsAreAccessible("ds1");
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
+                one(service).checkProjectPowerUserAuthorization(SESSION_TOKEN);
 
-                    Long containerId = 312L;
+                Long containerId = 312L;
 
-                    long datasetId = 123;
-                    ImgImageDatasetDTO dataset = createImageDataset(datasetId);
-                    dataset.setContainerId(containerId);
-                    dataset.setPermId(DATASET_CODE);
+                long datasetId = 123;
+                ImgImageDatasetDTO dataset = createImageDataset(datasetId);
+                dataset.setContainerId(containerId);
+                dataset.setPermId(DATASET_CODE);
 
-                    long experimentId = 888;
-                    ImgContainerDTO container = new ImgContainerDTO(null, null, null, experimentId);
-                    container.setId(containerId);
+                long experimentId = 888;
+                ImgContainerDTO container = new ImgContainerDTO(null, null, null, experimentId);
+                container.setId(containerId);
 
-                    one(dao).tryGetImageDatasetByPermId(DATASET_CODE);
-                    will(returnValue(dataset));
+                one(dao).tryGetImageDatasetByPermId(DATASET_CODE);
+                will(returnValue(dataset));
 
-                    allowing(dao).hasDatasetChannels(DATASET_CODE);
-                    will(returnValue(false));
+                allowing(dao).hasDatasetChannels(DATASET_CODE);
+                will(returnValue(false));
 
-                    one(dao).getContainerById(containerId);
-                    will(returnValue(container));
+                one(dao).getContainerById(containerId);
+                will(returnValue(container));
 
-                    one(transformerDAO).saveTransformerFactoryForExperiment(experimentId,
-                            transformerFactory);
-                    one(transformerDAO).commit();
-                }
-            });
+                one(transformerDAO).saveTransformerFactoryForExperiment(experimentId,
+                        transformerFactory);
+                one(transformerDAO).commit();
+            }
+        });
 
         screeningService.saveImageTransformerFactory(SESSION_TOKEN,
-                Arrays.<IDatasetIdentifier> asList(ds1), ScreeningConstants.MERGED_CHANNELS,
+                Arrays.<IDatasetIdentifier>asList(ds1), ScreeningConstants.MERGED_CHANNELS,
                 transformerFactory);
 
         assertTrue(testMethodInterceptor.methodInvoked);
@@ -826,22 +826,22 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
     public void prepareGetExperimentPermIDs(final DatasetIdentifier... dataSetIdentifiers)
     {
         context.checking(new Expectations()
+        {
             {
+                Experiment experiment =
+                        new ExperimentBuilder().id(EXPERIMENT_ID).permID(EXPERIMENT_PERM_ID)
+                                .getExperiment();
+                for (DatasetIdentifier datasetIdentifier : dataSetIdentifiers)
                 {
-                    Experiment experiment =
-                            new ExperimentBuilder().id(EXPERIMENT_ID).permID(EXPERIMENT_PERM_ID)
-                                    .getExperiment();
-                    for (DatasetIdentifier datasetIdentifier : dataSetIdentifiers)
-                    {
-                        one(service).tryGetDataSet(SESSION_TOKEN,
-                                datasetIdentifier.getDatasetCode());
-                        PhysicalDataSet dataSet =
-                                new DataSetBuilder().code(datasetIdentifier.getDatasetCode())
-                                        .experiment(experiment).type("HCS_IMAGE").getDataSet();
-                        will(returnValue(dataSet));
-                    }
+                    one(service).tryGetDataSet(SESSION_TOKEN,
+                            datasetIdentifier.getDatasetCode());
+                    PhysicalDataSet dataSet =
+                            new DataSetBuilder().code(datasetIdentifier.getDatasetCode())
+                                    .experiment(experiment).type("HCS_IMAGE").getDataSet();
+                    will(returnValue(dataSet));
                 }
-            });
+            }
+        });
     }
 
     private IHierarchicalContentNode image(String fileName)
@@ -864,189 +864,189 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
             final String[]... featureCodesPerDataset)
     {
         context.checking(new Expectations()
+        {
             {
+                List<ImgFeatureValuesDTO> values = new ArrayList<ImgFeatureValuesDTO>();
+                long[] featureDefIds = new long[countFeatureCodes(featureCodesPerDataset)];
+                int featureDefIx = 0;
+                int datasetIx = 0;
+
+                for (String[] featureCodes : featureCodesPerDataset)
                 {
-                    List<ImgFeatureValuesDTO> values = new ArrayList<ImgFeatureValuesDTO>();
-                    long[] featureDefIds = new long[countFeatureCodes(featureCodesPerDataset)];
-                    int featureDefIx = 0;
-                    int datasetIx = 0;
-
-                    for (String[] featureCodes : featureCodesPerDataset)
+                    long dataSetId = dataSetIDs[datasetIx++];
+                    for (String featureCode : featureCodes)
                     {
-                        long dataSetId = dataSetIDs[datasetIx++];
-                        for (String featureCode : featureCodes)
-                        {
-                            featureDefIds[featureDefIx] = getFeatureDefId(featureCode);
-                            int offset = getFeatureDefId(featureCode);
-                            PlateFeatureValues matrixValues =
-                                    new PlateFeatureValues(NativeTaggedArray
-                                            .toByteArray(new MDFloatArray(new float[][] {
-                                                    { 3.5f * dataSetId + offset },
-                                                    { 1.25f * dataSetId + offset } })));
-                            ImgFeatureValuesDTO value =
-                                    new ImgFeatureValuesDTO(0.0, 0.0, matrixValues, 0L);
-                            value.setFeatureDefId(featureDefIds[featureDefIx]);
-                            values.add(value);
+                        featureDefIds[featureDefIx] = getFeatureDefId(featureCode);
+                        int offset = getFeatureDefId(featureCode);
+                        PlateFeatureValues matrixValues =
+                                new PlateFeatureValues(NativeTaggedArray
+                                        .toByteArray(new MDFloatArray(new float[][] {
+                                                { 3.5f * dataSetId + offset },
+                                                { 1.25f * dataSetId + offset } })));
+                        ImgFeatureValuesDTO value =
+                                new ImgFeatureValuesDTO(0.0, 0.0, matrixValues, 0L);
+                        value.setFeatureDefId(featureDefIds[featureDefIx]);
+                        values.add(value);
 
-                            featureDefIx++;
-                        }
+                        featureDefIx++;
                     }
-                    one(dao).getFeatureValues(featureDefIds);
-                    will(returnValue(values));
                 }
+                one(dao).getFeatureValues(featureDefIds);
+                will(returnValue(values));
+            }
 
-            });
+        });
     }
 
     private void prepareListContainers(final boolean callService, final long... dataSetIDs)
     {
         context.checking(new Expectations()
+        {
             {
+                long[] containerIds = new long[dataSetIDs.length];
+                String[] sampleIdentifiers = new String[dataSetIDs.length];
+
+                List<ImgContainerDTO> containers = new ArrayList<ImgContainerDTO>();
+
+                for (int i = 0; i < dataSetIDs.length; i++)
                 {
-                    long[] containerIds = new long[dataSetIDs.length];
-                    String[] sampleIdentifiers = new String[dataSetIDs.length];
-
-                    List<ImgContainerDTO> containers = new ArrayList<ImgContainerDTO>();
-
-                    for (int i = 0; i < dataSetIDs.length; i++)
-                    {
-                        long id = dataSetIDs[i];
-                        containerIds[i] = getContainerId(id);
-                        ImgContainerDTO container = new ImgContainerDTO("12-34", 1, 2, 0);
-                        container.setId(containerIds[i]);
-                        containers.add(container);
-                        sampleIdentifiers[i] = "12-34";
-                    }
-
-                    if (callService)
-                    {
-                        one(service).listSampleIdentifiers(Arrays.asList(sampleIdentifiers));
-                        Map<String, SampleIdentifier> map = new HashMap<String, SampleIdentifier>();
-                        map.put("12-34", new SampleIdentifier(new SpaceIdentifier("S"), "P1"));
-                        will(returnValue(map));
-                    }
-                    one(dao).listContainersByIds(containerIds);
-                    will(returnValue(containers));
+                    long id = dataSetIDs[i];
+                    containerIds[i] = getContainerId(id);
+                    ImgContainerDTO container = new ImgContainerDTO("12-34", 1, 2, 0);
+                    container.setId(containerIds[i]);
+                    containers.add(container);
+                    sampleIdentifiers[i] = "12-34";
                 }
-            });
+
+                if (callService)
+                {
+                    one(service).listSampleIdentifiers(Arrays.asList(sampleIdentifiers));
+                    Map<String, SampleIdentifier> map = new HashMap<String, SampleIdentifier>();
+                    map.put("12-34", new SampleIdentifier(new SpaceIdentifier("S"), "P1"));
+                    will(returnValue(map));
+                }
+                one(dao).listContainersByIds(containerIds);
+                will(returnValue(containers));
+            }
+        });
     }
 
     private void prepareFeatureVectorContainedDatasets(final long[] dataSetIDs)
     {
         context.checking(new Expectations()
+        {
             {
+                String[] permIDs = new String[dataSetIDs.length];
+
+                List<AbstractExternalData> result = new LinkedList<AbstractExternalData>();
+                for (int i = 0; i < dataSetIDs.length; i++)
                 {
-                    String[] permIDs = new String[dataSetIDs.length];
+                    long id = dataSetIDs[i];
+                    permIDs[i] = "ds" + id;
 
-                    List<AbstractExternalData> result = new LinkedList<AbstractExternalData>();
-                    for (int i = 0; i < dataSetIDs.length; i++)
-                    {
-                        long id = dataSetIDs[i];
-                        permIDs[i] = "ds" + id;
+                    PhysicalDataSet dataSet = new PhysicalDataSet();
+                    dataSet.setCode(permIDs[i]);
 
-                        PhysicalDataSet dataSet = new PhysicalDataSet();
-                        dataSet.setCode(permIDs[i]);
+                    result.add(dataSet);
 
-                        result.add(dataSet);
-
-                    }
-                    one(service).listDataSetsByCode(with(equal(Arrays.asList(permIDs))));
-                    will(returnValue(result));
                 }
-            });
+                one(service).listDataSetsByCode(with(equal(Arrays.asList(permIDs))));
+                will(returnValue(result));
+            }
+        });
     }
 
     private void prepareListAnalysisDatasets(final long... dataSetIDs)
     {
         context.checking(new Expectations()
+        {
             {
+                String[] permIDs = new String[dataSetIDs.length];
+                List<ImgAnalysisDatasetDTO> dataSets = new ArrayList<ImgAnalysisDatasetDTO>();
+
+                for (int i = 0; i < dataSetIDs.length; i++)
                 {
-                    String[] permIDs = new String[dataSetIDs.length];
-                    List<ImgAnalysisDatasetDTO> dataSets = new ArrayList<ImgAnalysisDatasetDTO>();
+                    long id = dataSetIDs[i];
+                    permIDs[i] = "ds" + id;
 
-                    for (int i = 0; i < dataSetIDs.length; i++)
-                    {
-                        long id = dataSetIDs[i];
-                        permIDs[i] = "ds" + id;
+                    ImgAnalysisDatasetDTO dataSet =
+                            new ImgAnalysisDatasetDTO(permIDs[i], getContainerId(id));
+                    dataSet.setId(id);
+                    dataSets.add(dataSet);
 
-                        ImgAnalysisDatasetDTO dataSet =
-                                new ImgAnalysisDatasetDTO(permIDs[i], getContainerId(id));
-                        dataSet.setId(id);
-                        dataSets.add(dataSet);
-
-                    }
-
-                    one(dao).listAnalysisDatasetsByPermId(permIDs);
-                    will(returnValue(dataSets));
                 }
-            });
+
+                one(dao).listAnalysisDatasetsByPermId(permIDs);
+                will(returnValue(dataSets));
+            }
+        });
     }
 
     private void prepareGetFeatureDefinitions(final long[] dataSetIDs,
             final String[]... featureCodesPerDataset)
     {
         context.checking(new Expectations()
+        {
             {
+                List<ImgFeatureDefDTO> defs = new ArrayList<ImgFeatureDefDTO>();
+                int datasetIx = 0;
+                for (String[] featureCodes : featureCodesPerDataset)
                 {
-                    List<ImgFeatureDefDTO> defs = new ArrayList<ImgFeatureDefDTO>();
-                    int datasetIx = 0;
-                    for (String[] featureCodes : featureCodesPerDataset)
+                    long dataSetID = dataSetIDs[datasetIx];
+                    for (String code : featureCodes)
                     {
-                        long dataSetID = dataSetIDs[datasetIx];
-                        for (String code : featureCodes)
-                        {
-                            ImgFeatureDefDTO def = new ImgFeatureDefDTO(code, code, "", 0);
-                            def.setDataSetId(dataSetID);
-                            def.setId(getFeatureDefId(code));
-                            defs.add(def);
-                        }
-                        datasetIx++;
+                        ImgFeatureDefDTO def = new ImgFeatureDefDTO(code, code, "", 0);
+                        def.setDataSetId(dataSetID);
+                        def.setId(getFeatureDefId(code));
+                        defs.add(def);
                     }
-
-                    one(dao).listFeatureDefsByDataSetIds(dataSetIDs);
-                    will(returnValue(defs));
+                    datasetIx++;
                 }
-            });
+
+                one(dao).listFeatureDefsByDataSetIds(dataSetIDs);
+                will(returnValue(defs));
+            }
+        });
     }
 
     private void prepareGetFeatureDefinitions(final long[] dataSetIDs,
             final FeatureInformation[]... featursPerDataset)
     {
         context.checking(new Expectations()
+        {
             {
+                List<ImgFeatureDefDTO> defs = new ArrayList<ImgFeatureDefDTO>();
+                int datasetIx = 0;
+                for (FeatureInformation[] featureCodes : featursPerDataset)
                 {
-                    List<ImgFeatureDefDTO> defs = new ArrayList<ImgFeatureDefDTO>();
-                    int datasetIx = 0;
-                    for (FeatureInformation[] featureCodes : featursPerDataset)
+                    long dataSetID = dataSetIDs[datasetIx];
+                    for (FeatureInformation desc : featureCodes)
                     {
-                        long dataSetID = dataSetIDs[datasetIx];
-                        for (FeatureInformation desc : featureCodes)
-                        {
-                            ImgFeatureDefDTO def =
-                                    new ImgFeatureDefDTO(desc.getLabel(), desc.getCode(), desc
-                                            .getDescription(), 0);
-                            def.setDataSetId(dataSetID);
-                            def.setId(getFeatureDefId(desc.getCode()));
-                            defs.add(def);
-                        }
-                        datasetIx++;
+                        ImgFeatureDefDTO def =
+                                new ImgFeatureDefDTO(desc.getLabel(), desc.getCode(), desc
+                                        .getDescription(), 0);
+                        def.setDataSetId(dataSetID);
+                        def.setId(getFeatureDefId(desc.getCode()));
+                        defs.add(def);
                     }
-
-                    one(dao).listFeatureDefsByDataSetIds(dataSetIDs);
-                    will(returnValue(defs));
+                    datasetIx++;
                 }
-            });
+
+                one(dao).listFeatureDefsByDataSetIds(dataSetIDs);
+                will(returnValue(defs));
+            }
+        });
     }
 
     private void prepareGetFeatureVocabularyTerms(final long[] dataSetIDs)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(dao).listFeatureVocabularyTermsByDataSetId(dataSetIDs);
-                    will(returnValue(new ArrayList<ImgFeatureVocabularyTermDTO>()));
-                }
-            });
+                one(dao).listFeatureVocabularyTermsByDataSetId(dataSetIDs);
+                will(returnValue(new ArrayList<ImgFeatureVocabularyTermDTO>()));
+            }
+        });
     }
 
     private static long getContainerId(long datasetId)
@@ -1072,11 +1072,11 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
     private void prepareAssetDataSetIsAccessible(final String dsCode)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).checkDataSetCollectionAccess(SESSION_TOKEN, Arrays.asList(dsCode));
-                }
-            });
+                one(service).checkDataSetCollectionAccess(SESSION_TOKEN, Arrays.asList(dsCode));
+            }
+        });
     }
 
     private void prepareAssetDataSetsAreAccessible()
@@ -1087,23 +1087,23 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
     private void prepareAssetDataSetsAreAccessible(final String... dsCodes)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service)
-                            .checkDataSetCollectionAccess(SESSION_TOKEN, Arrays.asList(dsCodes));
-                }
-            });
+                one(service)
+                        .checkDataSetCollectionAccess(SESSION_TOKEN, Arrays.asList(dsCodes));
+            }
+        });
     }
 
     private void prepareLockDataSet(final String... dataSetCodes)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(shareIdManager).lock(Arrays.asList(dataSetCodes));
-                    one(shareIdManager).releaseLocks();
-                }
-            });
+                one(shareIdManager).lock(with(Arrays.asList(dataSetCodes)));
+                one(shareIdManager).releaseLocks();
+            }
+        });
     }
 
     private void prepareListDatasets(final String... dataSetCodes)
@@ -1115,12 +1115,12 @@ public class DssServiceRpcScreeningTest extends AssertJUnit
         physicalDataset.setCode("ds2");
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).listDataSetsByCode(Arrays.asList("ds1", "ds2"));
-                    will(returnValue(Arrays.asList(containerDataset, physicalDataset)));
-                }
-            });
+                one(service).listDataSetsByCode(Arrays.asList("ds1", "ds2"));
+                will(returnValue(Arrays.asList(containerDataset, physicalDataset)));
+            }
+        });
     }
 
     private FeatureVectorDatasetReference createFeatureVectorDatasetReference(String dataSetCode)

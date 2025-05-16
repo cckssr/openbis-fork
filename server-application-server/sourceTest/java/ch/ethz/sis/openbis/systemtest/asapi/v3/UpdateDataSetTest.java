@@ -15,12 +15,14 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -413,6 +415,8 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         PhysicalDataUpdate pdupt = new PhysicalDataUpdate();
         pdupt.setFileFormatTypeId(new FileFormatTypePermId("PLKPROPRIETARY"));
         pdupt.setArchivingRequested(true);
+        pdupt.setPresentInArchive(true);
+        pdupt.setStatus(ArchivingStatus.BACKUP_PENDING);
         update.setPhysicalData(pdupt);
 
         v3api.updateDataSets(sessionToken, Collections.singletonList(update));
@@ -425,6 +429,26 @@ public class UpdateDataSetTest extends AbstractDataSetTest
         PhysicalData physicalData = result.getPhysicalData();
         assertEquals(physicalData.getFileFormatType().getCode(), "PLKPROPRIETARY");
         assertEquals(physicalData.isArchivingRequested(), Boolean.TRUE);
+        assertEquals(physicalData.isPresentInArchive(), Boolean.TRUE);
+        assertEquals(physicalData.getStatus(), ArchivingStatus.BACKUP_PENDING);
+    }
+
+    @Test
+    public void testUpdateWithAccessDate()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        DataSetPermId dataSetId = new DataSetPermId("20081105092259000-18");
+
+        DataSetUpdate update = new DataSetUpdate();
+        update.setDataSetId(dataSetId);
+        update.setAccessDate(new Date());
+
+        v3api.updateDataSets(sessionToken, Collections.singletonList(update));
+
+        DataSet result = v3api.getDataSets(sessionToken, Collections.singletonList(dataSetId), new DataSetFetchOptions()).get(dataSetId);
+
+        assertEquals(result.getAccessDate(), update.getAccessDate().getValue());
     }
 
     @Test

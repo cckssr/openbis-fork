@@ -18,6 +18,7 @@ package ch.ethz.sis.afs.startup;
 public enum AtomicFileSystemParameter {
     logFactoryClass,
     logConfigFile,
+    lockMapperClass,
     jsonObjectMapperClass,
     writeAheadLogRoot,
     storageRoot

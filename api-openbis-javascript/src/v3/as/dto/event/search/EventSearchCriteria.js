@@ -4,7 +4,7 @@
 define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/common/search/SearchOperator", "as/dto/event/search/EventTypeSearchCriteria", "as/dto/event/search/EventEntityTypeSearchCriteria",
  "as/dto/event/search/EventEntitySpaceSearchCriteria", "as/dto/event/search/EventEntitySpaceIdSearchCriteria", "as/dto/event/search/EventEntityProjectSearchCriteria",
  "as/dto/event/search/EventEntityProjectIdSearchCriteria", "as/dto/event/search/EventEntityRegistratorSearchCriteria", "as/dto/event/search/EventEntityRegistrationDateSearchCriteria", "as/dto/event/search/EventIdentifierSearchCriteria", "as/dto/event/search/EventDescriptionSearchCriteria", "as/dto/event/search/EventReasonSearchCriteria",
- "as/dto/person/search/RegistratorSearchCriteria", "as/dto/common/search/RegistrationDateSearchCriteria"],
+ "as/dto/person/search/RegistratorSearchCriteria", "as/dto/common/search/RegistrationDateSearchCriteria", "as/dto/event/search/EventTechIdSearchCriteria"],
 	function(require, stjs, AbstractObjectSearchCriteria, SearchOperator) {
 
 	var EventSearchCriteria = function() {
@@ -14,6 +14,10 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 	stjs.extend(EventSearchCriteria, AbstractObjectSearchCriteria, [ AbstractObjectSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.event.search.EventSearchCriteria';
 		constructor.serialVersionUID = 1;
+		prototype.withEventTechId = function() {
+			var EventTechIdSearchCriteria = require("as/dto/event/search/EventTechIdSearchCriteria");
+			return this.addCriteria(new EventTechIdSearchCriteria());
+		};
 		prototype.withEventType = function() {
 			var EventEventTypeSearchCriteria = require("as/dto/event/search/EventTypeSearchCriteria");
 			return this.addCriteria(new EventEventTypeSearchCriteria());

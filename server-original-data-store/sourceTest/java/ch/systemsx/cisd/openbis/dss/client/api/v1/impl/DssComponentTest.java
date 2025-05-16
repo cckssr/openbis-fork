@@ -15,7 +15,12 @@
  */
 package ch.systemsx.cisd.openbis.dss.client.api.v1.impl;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +85,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.ReportDescription
 
 /**
  * A test of the DSS component and {@link IDssServiceRpcGeneric}.
- * 
+ *
  * @author Chandrasekhar Ramakrishnan
  */
 @Test(groups = "slow")
@@ -121,22 +126,21 @@ public class DssComponentTest extends AbstractFileSystemTestCase
     {
         final Advisor advisor = new DssServiceRpcAuthorizationAdvisor(shareIdManager);
         final BeanPostProcessor processor = new AbstractAutoProxyCreator()
-            {
-                private static final long serialVersionUID = 1L;
+        {
+            private static final long serialVersionUID = 1L;
 
-                //
-                // AbstractAutoProxyCreator
-                //
-                @Override
-                protected final Object[] getAdvicesAndAdvisorsForBean(
-                        @SuppressWarnings("rawtypes")
-                        final Class beanClass, final String beanName,
-                        final TargetSource customTargetSource) throws BeansException
-                {
-                    return new Object[]
-                    { advisor };
-                }
-            };
+            //
+            // AbstractAutoProxyCreator
+            //
+            @Override
+            protected final Object[] getAdvicesAndAdvisorsForBean(
+                    @SuppressWarnings("rawtypes") final Class beanClass, final String beanName,
+                    final TargetSource customTargetSource) throws BeansException
+            {
+                return new Object[]
+                        { advisor };
+            }
+        };
         ((AbstractAutoProxyCreator) processor).setBeanFactory(applicationContext);
         final Object proxy =
                 processor.postProcessAfterInitialization(service, "proxy of "
@@ -182,12 +186,12 @@ public class DssComponentTest extends AbstractFileSystemTestCase
         final SessionContextDTO session = getDummySession();
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(openBisService).tryToAuthenticateForAllServices("foo", "bar");
-                    will(returnValue(session.getSessionToken()));
-                }
-            });
+                one(openBisService).tryToAuthenticateForAllServices("foo", "bar");
+                will(returnValue(session.getSessionToken()));
+            }
+        });
 
         dssComponent.login("foo", "bar");
 
@@ -248,7 +252,7 @@ public class DssComponentTest extends AbstractFileSystemTestCase
         File contents = dataSetProxy.tryLinkToContents(null);
         assertNotNull(contents);
         assertEquals(workingDirectory.getParentFile().getAbsolutePath()
-                + "/ch.systemsx.cisd.openbis.dss.client.api.v1.impl.DssComponentTest",
+                        + "/ch.systemsx.cisd.openbis.dss.client.api.v1.impl.DssComponentTest",
                 contents.getPath());
 
         // Check using an alternative path to the data store server
@@ -452,22 +456,21 @@ public class DssComponentTest extends AbstractFileSystemTestCase
         if (isDataSetAccessible != null)
         {
             context.checking(new Expectations()
+            {
                 {
+                    one(etlService).checkDataSetCollectionAccess(DUMMY_SESSION_TOKEN,
+                            Arrays.asList(DUMMY_DATA_SET_CODE));
+                    if (isDataSetAccessible == false)
                     {
-                        one(etlService).checkDataSetCollectionAccess(DUMMY_SESSION_TOKEN,
-                                Arrays.asList(DUMMY_DATA_SET_CODE));
-                        if (isDataSetAccessible == false)
-                        {
-                            will(throwException(new UserFailureException("Not allowed.")));
-                        }
-                        exactly(lockingCount).of(shareIdManager).lock(
-                                Arrays.asList(DUMMY_DATA_SET_CODE));
-                        if (releaseLock)
-                        {
-                            exactly(lockingCount).of(shareIdManager).releaseLocks();
-                        }
+                        will(throwException(new UserFailureException("Not allowed.")));
                     }
-                });
+                    exactly(lockingCount).of(shareIdManager).lock(with(Arrays.asList(DUMMY_DATA_SET_CODE)));
+                    if (releaseLock)
+                    {
+                        exactly(lockingCount).of(shareIdManager).releaseLocks();
+                    }
+                }
+            });
         }
 
         dssServiceV1_0 =
@@ -479,34 +482,34 @@ public class DssComponentTest extends AbstractFileSystemTestCase
                         randomDataFile));
 
         context.checking(new Expectations()
+        {
             {
+                final String dataSetCode = DUMMY_DATA_SET_CODE;
+
+                if (needsLogin)
                 {
-                    final String dataSetCode = DUMMY_DATA_SET_CODE;
-
-                    if (needsLogin)
-                    {
-                        one(openBisService).tryToAuthenticateForAllServices("foo", "bar");
-                        will(returnValue(session.getSessionToken()));
-                    }
-                    allowing(openBisService).tryGetDataStoreBaseURL(session.getSessionToken(),
-                            dataSetCode);
-                    will(returnValue(DUMMY_DSS_DOWNLOAD_URL));
-                    allowing(dssServiceFactory).getSupportedInterfaces(DUMMY_DSS_URL, false);
-                    will(returnValue(ifaces));
-
-                    allowing(dssServiceFactory).getService(ifaceVersionV1_0,
-                            IDssServiceRpcGeneric.class, DUMMY_DSS_URL, false);
-                    will(returnValue(dssServiceV1_0));
-
-                    allowing(dssServiceFactory).getService(ifaceVersionV1_2,
-                            IDssServiceRpcGeneric.class, DUMMY_DSS_URL, false);
-                    will(returnValue(dssServiceV1_2));
-
-                    allowing(openBisService).getDefaultPutDataStoreBaseURL(
-                            session.getSessionToken());
-                    will(returnValue(DUMMY_DSS_DOWNLOAD_URL));
+                    one(openBisService).tryToAuthenticateForAllServices("foo", "bar");
+                    will(returnValue(session.getSessionToken()));
                 }
-            });
+                allowing(openBisService).tryGetDataStoreBaseURL(session.getSessionToken(),
+                        dataSetCode);
+                will(returnValue(DUMMY_DSS_DOWNLOAD_URL));
+                allowing(dssServiceFactory).getSupportedInterfaces(DUMMY_DSS_URL, false);
+                will(returnValue(ifaces));
+
+                allowing(dssServiceFactory).getService(ifaceVersionV1_0,
+                        IDssServiceRpcGeneric.class, DUMMY_DSS_URL, false);
+                will(returnValue(dssServiceV1_0));
+
+                allowing(dssServiceFactory).getService(ifaceVersionV1_2,
+                        IDssServiceRpcGeneric.class, DUMMY_DSS_URL, false);
+                will(returnValue(dssServiceV1_2));
+
+                allowing(openBisService).getDefaultPutDataStoreBaseURL(
+                        session.getSessionToken());
+                will(returnValue(DUMMY_DSS_DOWNLOAD_URL));
+            }
+        });
     }
 
     private SessionContextDTO getDummySession()
@@ -639,7 +642,8 @@ public class DssComponentTest extends AbstractFileSystemTestCase
         }
 
         @Override
-        public File putDirToSessionWorkspace(String sessionToken, String filePath, boolean isEmptyDirectory) throws IOExceptionUnchecked {
+        public File putDirToSessionWorkspace(String sessionToken, String filePath, boolean isEmptyDirectory) throws IOExceptionUnchecked
+        {
             return null;
         }
 

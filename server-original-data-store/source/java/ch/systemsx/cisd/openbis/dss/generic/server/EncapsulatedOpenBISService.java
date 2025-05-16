@@ -17,10 +17,14 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
@@ -32,7 +36,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.fetchoptions.PersonalAccessTokenFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.IPersonalAccessTokenId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.update.PersonalAccessTokenUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.query.fetchoptions.QueryDatabaseFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.fetchoptions.SessionInformationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.search.SessionInformationSearchCriteria;
@@ -95,7 +98,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TrackingDataSetCriteria
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Vocabulary;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.VocabularyTerm;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.IObjectId;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.IMetaprojectId;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetShareId;
@@ -116,7 +119,7 @@ import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.IQueryApiServer;
 
 /**
  * A class that encapsulates the {@link IServiceForDataStoreServer}.
- * 
+ *
  * @author Bernd Rinn
  */
 public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISService, FactoryBean
@@ -147,25 +150,25 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
         RetryingOpenBisCreator(String openBISURL, String timeout, AbstractOpenBisServiceFactory<T> openBisServiceFactory)
         {
             super(new RetryConfiguration()
+            {
+                @Override
+                public float getWaitingTimeBetweenRetriesIncreasingFactor()
                 {
-                    @Override
-                    public float getWaitingTimeBetweenRetriesIncreasingFactor()
-                    {
-                        return 2;
-                    }
+                    return 2;
+                }
 
-                    @Override
-                    public int getWaitingTimeBetweenRetries()
-                    {
-                        return 5000;
-                    }
+                @Override
+                public int getWaitingTimeBetweenRetries()
+                {
+                    return 5000;
+                }
 
-                    @Override
-                    public int getMaximumNumberOfRetries()
-                    {
-                        return 5;
-                    }
-                }, new Log4jSimpleLogger(operationLog));
+                @Override
+                public int getMaximumNumberOfRetries()
+                {
+                    return 5;
+                }
+            }, new Log4jSimpleLogger(operationLog));
             this.timeout = timeout;
             this.openBisServiceFactory = openBisServiceFactory;
         }
@@ -212,7 +215,7 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
     {
         return getGenericRetryingOpenBisV3Creator(openBISURL, timeout).callWithRetry();
     }
-    
+
     public static IDataStoreServerApi createDataStoreV3Service(String dataStoreServerUrl, String timeout)
     {
         return new RetryingOpenBisCreator<>(dataStoreServerUrl, timeout, new DataStoreServerV3Factory(dataStoreServerUrl)).callWithRetry();
@@ -415,6 +418,22 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
         return service.listDataSetsByCode(session.getSessionToken(), dataSetCodes);
     }
 
+    @Override public List<String> listDataSetCodesFromCommandQueue()
+    {
+        final String COMMAND_EXECUTOR_BEAN = "data-set-command-executor-provider";
+        IDataSetCommandExecutorProvider commandExecutorProvider =
+                (IDataSetCommandExecutorProvider) ServiceProvider
+                        .getApplicationContext()
+                        .getBean(COMMAND_EXECUTOR_BEAN);
+        List<IDataSetCommandExecutor> executors = commandExecutorProvider.getAllExecutors();
+        Set<String> inQueue = new HashSet<>();
+        for (IDataSetCommandExecutor executor : executors)
+        {
+            inQueue.addAll(executor.getDataSetCodesFromCommandQueue());
+        }
+        return new ArrayList<>(inQueue);
+    }
+
     @Override
     public long registerExperiment(NewExperiment experiment) throws UserFailureException
     {
@@ -510,9 +529,19 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
         }
     }
 
+    @Override public void updateSize(final String dataSetCode, final long size)
+    {
+        service.updatePhysicalDataSetsSize(session.getSessionToken(), Collections.singletonMap(dataSetCode, size));
+
+        if (operationLog.isInfoEnabled())
+        {
+            operationLog.info("Updated in openBIS: data set " + dataSetCode + ",  size: " + size);
+        }
+    }
+
     @Override
     public final void updateDataSetStatuses(List<String> codes, DataSetArchivingStatus newStatus,
-            boolean presentInArchive) throws UserFailureException
+            Boolean presentInArchive) throws UserFailureException
 
     {
         assert codes != null : "missing data set codes";
@@ -1106,9 +1135,9 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
     }
 
     @Override
-    public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(final IMetaprojectId metaprojectId)
+    public List<AbstractExternalData> listNotArchivedDatasetsWithMetaproject(final MetaprojectIdentifierId metaprojectIdentifier)
     {
-        return service.listNotArchivedDatasetsWithMetaproject(session.getSessionToken(), metaprojectId);
+        return service.listNotArchivedDatasetsWithMetaproject(session.getSessionToken(), metaprojectIdentifier);
     }
 
     @Override public Map<IPersonalAccessTokenId, PersonalAccessToken> getPersonalAccessTokens(

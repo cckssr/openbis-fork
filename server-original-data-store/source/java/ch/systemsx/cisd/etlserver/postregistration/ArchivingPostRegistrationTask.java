@@ -32,7 +32,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 
 /**
  * A post-registration task that archives data sets.
- * 
+ *
  * @author Kaloyan Enimanev
  */
 public class ArchivingPostRegistrationTask extends AbstractPostRegistrationTaskForPhysicalDataSets
@@ -61,7 +61,7 @@ public class ArchivingPostRegistrationTask extends AbstractPostRegistrationTaskF
                 new Template("Eager archiving of dataset '${dataSet}' has failed.\n${errors}\n"
                         + "If you wish to archive the dataset in the future, "
                         + "you can configure an '" + AutoArchiverTask.class.getSimpleName() + "'.");
-        return new ArchivingExecutor(dataSetCode, true, notificationTemplate, service, archiver,
+        return new ArchivingExecutor(dataSetCode, true, notificationTemplate, (IEncapsulatedOpenBISService) service, archiver,
                 dataSetDirectoryProvider, hierarchicalContentProvider, operationLog, notificationLog);
     }
 

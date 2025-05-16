@@ -49,7 +49,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.MaterialBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.SampleBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SessionContextDTO;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

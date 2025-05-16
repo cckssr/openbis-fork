@@ -1,0 +1,9 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-openbis-commonbase'),
+            project(':api-openbis-java'),
+            'shriop:javacsv:2.0'
+    testImplementation project(path: ':lib-openbis-commonbase', configuration: 'tests'),
+            'jmock:jmock:2.5.1'
+}

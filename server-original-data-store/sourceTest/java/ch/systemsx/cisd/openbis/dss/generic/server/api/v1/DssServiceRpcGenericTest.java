@@ -298,8 +298,8 @@ public class DssServiceRpcGenericTest extends AbstractFileSystemTestCase
                     one(shareIdManager).getShareId("ds1");
                     will(returnValue("1"));
 
-                    one(shareIdManager).lock("ds1");
-                    one(shareIdManager).releaseLock("ds1");
+                    one(shareIdManager).lock(with("ds1"));
+                    one(shareIdManager).releaseLock(with("ds1"));
 
                     one(service).updateShareIdAndSize("ds1", "2", 11);
                     one(shareIdManager).setShareId("ds1", "2");
@@ -440,7 +440,7 @@ public class DssServiceRpcGenericTest extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(Arrays.asList(dataSetCode));
+                    one(shareIdManager).lock(with(Arrays.asList(dataSetCode)));
                     allowing(shareIdManager).releaseLocks();
                 }
             });

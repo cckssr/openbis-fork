@@ -30,13 +30,23 @@ import ch.systemsx.cisd.etlserver.ETLDaemon;
 import ch.systemsx.cisd.openbis.common.spring.SpringEoDSQLExceptionTranslator;
 import ch.systemsx.cisd.openbis.dss.BuildAndEnvironmentInfo;
 import ch.systemsx.cisd.openbis.dss.generic.server.CommandQueueLister;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.QueueingDataSetStatusUpdaterService;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.RSyncConfig;
 
 /**
  * Main class starting {@link ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer}, {@link ETLDaemon}.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DataStoreServer
@@ -51,19 +61,19 @@ public class DataStoreServer
 
     private static final UncaughtExceptionHandler loggingExceptionHandler =
             new UncaughtExceptionHandler()
+            {
+
+                //
+                // UncaughtExceptionHandler
+                //
+
+                @Override
+                public final void uncaughtException(final Thread t, final Throwable e)
                 {
-
-                    //
-                    // UncaughtExceptionHandler
-                    //
-
-                    @Override
-                    public final void uncaughtException(final Thread t, final Throwable e)
-                    {
-                        notificationLog.error("An exception has occurred [thread: '" + t.getName()
-                                + "'].", e);
-                    }
-                };
+                    notificationLog.error("An exception has occurred [thread: '" + t.getName()
+                            + "'].", e);
+                }
+            };
 
     private static void initLog()
     {
@@ -100,6 +110,12 @@ public class DataStoreServer
             CommandQueueLister.listQueuedCommand();
             System.exit(0);
         }
+
+        ServiceProviderFactory.setInstance(new ServiceProviderImpl());
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
+        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
+        PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider());
 
         ExtendedProperties props = DssPropertyParametersUtil.loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
         File storeRootDir = DssPropertyParametersUtil.getStoreRootDir(props);

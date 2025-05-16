@@ -1,4 +1,4 @@
-apply from: '../build/javaproject.gradle'
+apply from: '../build/javalibrary.gradle'
 
 dependencies {
     api project(':lib-logging'),

@@ -1,0 +1,9 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-logging'),
+            project(':lib-commonbase'),
+            'springframework:spring-context:5.0.1.RELEASE'
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
+            'testng:testng:6.8-CISD'
+}

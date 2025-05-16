@@ -727,7 +727,7 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).lock(DATA_SET_CODE);
+                    one(shareIdManager).lock(with(DATA_SET_CODE));
                 }
             });
     }
@@ -737,7 +737,7 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
         context.checking(new Expectations()
             {
                 {
-                    one(shareIdManager).releaseLock(DATA_SET_CODE);
+                    one(shareIdManager).releaseLock(with(DATA_SET_CODE));
                 }
             });
     }
@@ -749,7 +749,7 @@ public class DssServiceRpcV1Test extends AbstractFileSystemTestCase
                 {
                     for (String dataSetCode : dataSetCodes)
                     {
-                        one(shareIdManager).lock(Arrays.asList(dataSetCode));
+                        one(shareIdManager).lock(with(Arrays.asList(dataSetCode)));
                     }
                     one(shareIdManager).releaseLocks();
                 }

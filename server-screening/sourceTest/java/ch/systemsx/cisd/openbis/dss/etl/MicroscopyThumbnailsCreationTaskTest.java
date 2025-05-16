@@ -44,7 +44,6 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.common.test.ToStringMatcher;
-import ch.systemsx.cisd.common.utilities.ICredentials;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.AggregationService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -91,16 +90,12 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
         FileUtilities.deleteRecursively(store);
         store.mkdirs();
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(service).login(USER_ID, PASSWORD);
-                    will(returnValue(SESSION_TOKEN));
-
-                    allowing(directoryProvider).getStoreRoot();
-                    will(returnValue(store));
-
-                }
-            });
+                allowing(directoryProvider).getStoreRoot();
+                will(returnValue(store));
+            }
+        });
     }
 
     @Test
@@ -130,10 +125,10 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
                 getLogContent());
         assertTimestampFile("2021-06-28 14:02:34 [2021-06-28 14:02:34-0]\n");
         assertEquals("[DATASET\n"
-                + "    with operator 'AND'\n"
-                + "    with data_set_type:\n"
-                + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
-                + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
+                        + "    with operator 'AND'\n"
+                        + "    with data_set_type:\n"
+                        + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
+                        + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
                 searchCriteria.getRecordedObjects().toString());
     }
 
@@ -180,10 +175,10 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
                 getLogContent());
         assertTimestampFile("2021-06-28 14:02:34 [2021-06-28 14:02:34-0]\n");
         assertEquals("[DATASET\n"
-                + "    with operator 'AND'\n"
-                + "    with data_set_type:\n"
-                + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
-                + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
+                        + "    with operator 'AND'\n"
+                        + "    with data_set_type:\n"
+                        + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
+                        + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
                 searchCriteria.getRecordedObjects().toString());
     }
 
@@ -210,8 +205,8 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
                 + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 5 data sets found.\n"
                 + "INFO  OPERATION.ParallelizedExecutor - Found 5 items to process.", logContent);
         AssertionUtil.assertEnds("INFO  OPERATION.MicroscopyThumbnailsCreationTask - Oldest failed data set: "
-                + "2021-06-28 15:03:45-2, youngest not failed data set: 2021-06-28 14:02:34-0\n"
-                + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 3 thumbnail data sets have been created.",
+                        + "2021-06-28 15:03:45-2, youngest not failed data set: 2021-06-28 14:02:34-0\n"
+                        + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 3 thumbnail data sets have been created.",
                 logContent);
         AssertionUtil.assertContains("Started up 2 worker threads.", logContent);
         AssertionUtil.assertContains("Generate thumbnails for data set 2021-06-28 14:02:34-0", logContent);
@@ -225,10 +220,10 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
         AssertionUtil.assertContains("Generate thumbnails for data set 2021-06-29 05:23:33-8", logContent);
         assertTimestampFile("2021-06-28 14:02:34 [2021-06-28 14:02:34-0]\n");
         assertEquals("[DATASET\n"
-                + "    with operator 'AND'\n"
-                + "    with data_set_type:\n"
-                + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
-                + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
+                        + "    with operator 'AND'\n"
+                        + "    with data_set_type:\n"
+                        + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
+                        + "    with attribute 'registration_date' later than or equal to 'Thu Jan 01 01:00:00 CET 1970'\n]",
                 searchCriteria.getRecordedObjects().toString());
     }
 
@@ -271,11 +266,11 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
                 getLogContent());
         assertTimestampFile("2021-06-29 05:23:33 [2021-06-29 05:23:33-7]\n");
         assertEquals("[DATASET\n"
-                + "    with operator 'AND'\n"
-                + "    with data_set_type:\n"
-                + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
-                + "    with attribute 'registration_date' later than or equal to 'Mon Jun 28 14:02:34 CEST 2021'\n"
-                + "    with attribute 'code' greater than '2021-06-28 14:02:34-0'\n]",
+                        + "    with operator 'AND'\n"
+                        + "    with data_set_type:\n"
+                        + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
+                        + "    with attribute 'registration_date' later than or equal to 'Mon Jun 28 14:02:34 CEST 2021'\n"
+                        + "    with attribute 'code' greater than '2021-06-28 14:02:34-0'\n]",
                 searchCriteria.getRecordedObjects().toString());
     }
 
@@ -298,9 +293,9 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
         String logContent = getLogContent();
         System.out.println("test5DataSets2FailingInTwoThreadSecondStep log content:\n" + logContent);
         AssertionUtil.assertStarts("INFO  OPERATION.MicroscopyThumbnailsCreationTask - Search for data sets of type "
-                + "MICROSCOPY_IMG_CONTAINER which are younger than 2021-06-28 14:02:34 and code after 2021-06-28 14:02:34-0\n"
-                + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 4 data sets found.\n"
-                + "INFO  OPERATION.ParallelizedExecutor - Found 4 items to process.\n",
+                        + "MICROSCOPY_IMG_CONTAINER which are younger than 2021-06-28 14:02:34 and code after 2021-06-28 14:02:34-0\n"
+                        + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 4 data sets found.\n"
+                        + "INFO  OPERATION.ParallelizedExecutor - Found 4 items to process.\n",
                 logContent);
         AssertionUtil.assertContains("Started up 2 worker threads.", logContent);
         AssertionUtil.assertContains("Generate thumbnails for data set 2021-06-28 15:03:45-0", logContent);
@@ -310,18 +305,18 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
         AssertionUtil.assertContains("Generating thumbnails for data set 2021-06-28 15:13:38-5 failed", logContent);
         AssertionUtil.assertContains("ERROR: \"java.lang.RuntimeException: Failed 2\"", logContent);
         AssertionUtil.assertEnds("INFO  OPERATION.MicroscopyThumbnailsCreationTask - Ignoring failed data sets "
-                + "[DataSet 2021-06-28 15:03:45-0, DataSet 2021-06-28 15:13:38-5]\n"
-                + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - Update time stamp file with data set "
-                + "2021-06-29 05:23:33-7\n"
-                + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 0 thumbnail data sets have been created.",
+                        + "[DataSet 2021-06-28 15:03:45-0, DataSet 2021-06-28 15:13:38-5]\n"
+                        + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - Update time stamp file with data set "
+                        + "2021-06-29 05:23:33-7\n"
+                        + "INFO  OPERATION.MicroscopyThumbnailsCreationTask - 0 thumbnail data sets have been created.",
                 logContent);
         assertTimestampFile("2021-06-29 05:23:33 [2021-06-29 05:23:33-7]\n");
         assertEquals("[DATASET\n"
-                + "    with operator 'AND'\n"
-                + "    with data_set_type:\n"
-                + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
-                + "    with attribute 'registration_date' later than or equal to 'Mon Jun 28 14:02:34 CEST 2021'\n"
-                + "    with attribute 'code' greater than '2021-06-28 14:02:34-0'\n]",
+                        + "    with operator 'AND'\n"
+                        + "    with data_set_type:\n"
+                        + "        with attribute 'code' equal to 'MICROSCOPY_IMG_CONTAINER'\n"
+                        + "    with attribute 'registration_date' later than or equal to 'Mon Jun 28 14:02:34 CEST 2021'\n"
+                        + "    with attribute 'code' greater than '2021-06-28 14:02:34-0'\n]",
                 searchCriteria.getRecordedObjects().toString());
     }
 
@@ -349,24 +344,24 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
     {
         RecordingMatcher<DataSetSearchCriteria> criteria = new RecordingMatcher<DataSetSearchCriteria>();
         context.checking(new Expectations()
+        {
             {
+                DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+                fetchOptions.withComponents().withType();
+                fetchOptions.withComponents().withExperiment();
+                fetchOptions.withComponents().withSample();
+                fetchOptions.sortBy().registrationDate();
+                fetchOptions.sortBy().code();
+                if (maxCount > 0)
                 {
-                    DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
-                    fetchOptions.withComponents().withType();
-                    fetchOptions.withComponents().withExperiment();
-                    fetchOptions.withComponents().withSample();
-                    fetchOptions.sortBy().registrationDate();
-                    fetchOptions.sortBy().code();
-                    if (maxCount > 0)
-                    {
-                        fetchOptions.from(0);
-                        fetchOptions.count(maxCount);
-                    }
-                    one(service).searchDataSets(with(SESSION_TOKEN), with(criteria),
-                            with(new ToStringMatcher<DataSetFetchOptions>(fetchOptions)));
-                    will(returnValue(new SearchResult<>(Arrays.asList(dataSets), dataSets.length)));
+                    fetchOptions.from(0);
+                    fetchOptions.count(maxCount);
                 }
-            });
+                one(service).searchDataSets(with(SESSION_TOKEN), with(criteria),
+                        with(new ToStringMatcher<DataSetFetchOptions>(fetchOptions)));
+                will(returnValue(new SearchResult<>(Arrays.asList(dataSets), dataSets.length)));
+            }
+        });
         return criteria;
     }
 
@@ -474,23 +469,9 @@ public class MicroscopyThumbnailsCreationTaskTest extends AbstractFileSystemTest
             return service;
         }
 
-        @Override
-        protected ICredentials getEtlServerCredentials()
+        @Override protected String login()
         {
-            return new ICredentials()
-                {
-                    @Override
-                    public String getUserId()
-                    {
-                        return USER_ID;
-                    }
-
-                    @Override
-                    public String getPassword()
-                    {
-                        return PASSWORD;
-                    }
-                };
+            return SESSION_TOKEN;
         }
     }
 

@@ -14,8 +14,8 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.IOpenBISFacade;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISFacade;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiResponseBuilder;
@@ -59,10 +59,10 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
         this.openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-        if (pathInfoDatabaseConfiguration != null)
+        if (PathInfoDatabaseConfiguration.hasInstance(configuration))
         {
-            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
+            this.pathInfoDAO =
+                    QueryTool.getQuery(PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource(), IPathInfoNonAutoClosingDAO.class);
         }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
@@ -93,7 +93,7 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     {
         while (true)
         {
-            OpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
+            IOpenBISFacade openBISFacade = openBISConfiguration.getOpenBISFacade();
 
             try
             {

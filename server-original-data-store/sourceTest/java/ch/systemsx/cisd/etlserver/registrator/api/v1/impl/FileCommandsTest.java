@@ -26,7 +26,7 @@ import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.etlserver.registrator.api.impl.MkdirsCommand;
 import ch.systemsx.cisd.etlserver.registrator.api.impl.MoveFileCommand;
 import ch.systemsx.cisd.etlserver.registrator.api.impl.NewFileCommand;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Chandrasekhar Ramakrishnan

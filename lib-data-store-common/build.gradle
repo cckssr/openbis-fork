@@ -1,0 +1,11 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-logging'),
+            project(':lib-hierarchical-content'),
+            project(':lib-commonbase'),
+            project(':lib-openbis-commonbase'),
+            project(':lib-data-store-commonbase')
+    testImplementation project(path: ':lib-openbis-commonbase', configuration: 'tests'),
+            'jmock:jmock:2.5.1'
+}

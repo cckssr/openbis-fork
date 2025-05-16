@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.worker.providers.impl;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,8 +24,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.exception.AFSExceptions;
+import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
@@ -58,7 +64,7 @@ import ch.ethz.sis.shared.io.FilePermission;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
 
-public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider
+public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider, LockMapper<UUID, String>
 {
 
     private String storageRoot;
@@ -73,6 +79,8 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
 
     private OpenBISConfiguration openBISConfiguration;
 
+    private Pattern ownerPathPattern;
+
     @Override
     public void init(Configuration configuration) throws Exception
     {
@@ -86,6 +94,7 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
         interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
         openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
+        ownerPathPattern = Pattern.compile("\\d/.+/../../../(.+)");
     }
 
     @Override
@@ -171,6 +180,22 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         }
 
         return false;
+    }
+
+    @Override public Lock<UUID, String> mapLock(final Lock<UUID, String> lock)
+    {
+        Path storageRootPath = Paths.get(storageRoot);
+        Path lockPath = Paths.get(lock.getResource());
+        Path relativeLockPath = storageRootPath.relativize(lockPath);
+
+        Matcher matcher = ownerPathPattern.matcher(relativeLockPath.toString());
+        if (matcher.matches())
+        {
+            return new Lock<>(lock.getOwner(), IOUtils.RELATIVE_PATH_ROOT + matcher.group(1), lock.getType());
+        } else
+        {
+            throw new IllegalArgumentException("Lock relative path: " + lockPath + " does not match the expected format: " + ownerPathPattern);
+        }
     }
 
     private boolean hasPermissions(OpenBIS openBIS, ObjectPermId ownerPermId,

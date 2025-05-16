@@ -1,0 +1,1 @@
+includeFlat 'lib-logging', 'lib-json', 'lib-maintenance', 'lib-two-phase-transaction', 'lib-commonbase', 'lib-common', 'lib-openbis-commonbase', 'api-openbis-java', 'api-data-store-server-java'

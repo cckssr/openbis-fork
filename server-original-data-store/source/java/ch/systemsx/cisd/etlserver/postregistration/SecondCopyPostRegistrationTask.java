@@ -95,7 +95,7 @@ public class SecondCopyPostRegistrationTask extends AbstractPostRegistrationTask
     @Override
     public IPostRegistrationTaskExecutor createExecutor(String dataSetCode)
     {
-        return new ArchivingExecutor(dataSetCode, false, notificationTemplate, service, archiver,
+        return new ArchivingExecutor(dataSetCode, false, notificationTemplate, (IEncapsulatedOpenBISService) service, archiver,
                 dataSetDirectoryProvider, hierarchicalContentProvider, operationLog,
                 notificationLog);
     }
@@ -112,13 +112,13 @@ public class SecondCopyPostRegistrationTask extends AbstractPostRegistrationTask
                     ChecksumVerificationCondition.IF_AVAILABLE);
             setService(service);
             setStatusUpdater(new IDataSetStatusUpdater()
+            {
+                @Override
+                public void scheduleUpdate(List<String> dataSetCodes, DataSetArchivingStatus status,
+                        Boolean presentInArchive)
                 {
-                    @Override
-                    public void update(List<String> dataSetCodes, DataSetArchivingStatus status,
-                            boolean presentInArchive)
-                    {
-                    }
-                });
+                }
+            });
             setShareIdManager(shareIdManager);
         }
 

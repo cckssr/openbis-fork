@@ -17,6 +17,7 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.lang.reflect.Method;
 
+import org.springframework.util.ClassUtils;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
@@ -31,14 +32,15 @@ public class IEncapsulatedOpenBISServiceTest extends AssertJUnit
     {
         for (Method m : IEncapsulatedOpenBISService.class.getMethods())
         {
+            Method mostSpecificMethod = ClassUtils.getMostSpecificMethod(m, IEncapsulatedOpenBISService.class);
             String error =
                     String.format(
                             "The methods of %s should be annotated with @ManagedAuthentication to"
                                     + " enable transparent handling of (re)authentication against openBIS,"
                                     + " but method [%s] was not. If [%s] does not access the remote openBIS"
                                     + " server, then you must adjust this unit test.",
-                            IEncapsulatedOpenBISService.class.getName(), m.getName(), m.getName());
-            assertTrue(error, m.isAnnotationPresent(ManagedAuthentication.class));
+                            IEncapsulatedOpenBISService.class.getName(), mostSpecificMethod.getName(), mostSpecificMethod.getName());
+            assertTrue(error, mostSpecificMethod.isAnnotationPresent(ManagedAuthentication.class));
 
         }
     }

@@ -20,7 +20,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 /**
  * Sample identifier.
- * 
+ *
  * @author pkupczyk
  */
 @JsonObject("as.dto.sample.id.SampleIdentifier")

@@ -17,9 +17,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 
-public class OpenBISFacade
+public class OpenBISFacade implements IOpenBISFacade
 {
 
     private final String openBISUrl;
@@ -40,27 +43,32 @@ public class OpenBISFacade
         this.openBISTimeout = openBISTimeout;
     }
 
-    public SearchResult<Event> searchEvents(EventSearchCriteria criteria, EventFetchOptions fetchOptions)
+    @Override public SearchResult<Event> searchEvents(EventSearchCriteria criteria, EventFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchEvents(criteria, fetchOptions));
     }
 
-    public SearchResult<Experiment> searchExperiments(ExperimentSearchCriteria criteria, ExperimentFetchOptions fetchOptions)
+    @Override public SearchResult<Experiment> searchExperiments(ExperimentSearchCriteria criteria, ExperimentFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchExperiments(criteria, fetchOptions));
     }
 
-    public SearchResult<Sample> searchSamples(SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
+    @Override public SearchResult<Sample> searchSamples(SampleSearchCriteria criteria, SampleFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchSamples(criteria, fetchOptions));
     }
 
-    public SearchResult<DataSet> searchDataSets(DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
+    @Override public SearchResult<DataSet> searchDataSets(DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchDataSets(criteria, fetchOptions));
     }
 
-    public void updateDataSets(final List<DataSetUpdate> updates)
+    @Override public SearchResult<Tag> searchTags(TagSearchCriteria criteria, TagFetchOptions fetchOptions)
+    {
+        return executeOperation(openBIS -> openBIS.searchTags(criteria, fetchOptions));
+    }
+
+    @Override public void updateDataSets(final List<DataSetUpdate> updates)
     {
         executeOperation(openBIS ->
         {
@@ -121,9 +129,17 @@ public class OpenBISFacade
         }
     }
 
-    public String getSessionToken()
+    @Override public String getSessionToken()
     {
-        return sessionToken;
+        OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout);
+        setSessionToken(openBIS);
+
+        if (!openBIS.isSessionActive())
+        {
+            resetSessionToken(openBIS);
+        }
+
+        return openBIS.getSessionToken();
     }
 
 }

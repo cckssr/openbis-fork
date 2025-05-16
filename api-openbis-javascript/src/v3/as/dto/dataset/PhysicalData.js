@@ -24,6 +24,8 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.storageConfirmation = null;
 		prototype.speedHint = null;
 		prototype.archivingRequested = null;
+		prototype.h5Folders = null;
+		prototype.h5arFolders = null;
 
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
@@ -120,6 +122,18 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setArchivingRequested = function(archivingRequested) {
 			this.archivingRequested = archivingRequested;
+		};
+		prototype.isH5Folders = function() {
+			return this.h5Folders;
+		};
+		prototype.setH5Folders = function(h5Folders) {
+			this.h5Folders = h5Folders;
+		};
+		prototype.isH5arFolders = function() {
+			return this.h5arFolders;
+		};
+		prototype.setH5arFolders = function(h5arFolders) {
+			this.h5arFolders = h5arFolders;
 		};
 	}, {
 		fetchOptions : "PhysicalDataFetchOptions",

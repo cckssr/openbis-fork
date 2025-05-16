@@ -71,7 +71,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionState;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 public class OperationExecutionStoreTest
 {

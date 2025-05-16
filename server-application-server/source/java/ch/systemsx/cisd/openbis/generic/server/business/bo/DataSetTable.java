@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
-import static ch.systemsx.cisd.openbis.generic.shared.translator.DataSetTranslator.translateToDescription;
+import static ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator.translateToDescription;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +99,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
  * <p>
  * We are using an interface here to keep the system testable.
  * </p>
- * 
+ *
  * @author Christian Ribeaud
  */
 public final class DataSetTable extends AbstractDataSetBusinessObject implements IDataSetTable
@@ -424,7 +424,9 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         return sampleOrNull != null ? sampleOrNull.getExperiment() : dataSet.getExperiment();
     }
 
-    /** groups data sets by data stores */
+    /**
+     * groups data sets by data stores
+     */
     private Map<DataStorePE, List<DataPE>> groupDataByDataStores()
     {
         Map<DataStorePE, List<DataPE>> map = new LinkedHashMap<DataStorePE, List<DataPE>>();
@@ -442,7 +444,9 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         return map;
     }
 
-    /** groups data sets by data stores filtering out container data sets */
+    /**
+     * groups data sets by data stores filtering out container data sets
+     */
     private Map<DataStorePE, List<ExternalDataPE>> groupExternalDataByDataStores()
     {
         Map<DataStorePE, List<ExternalDataPE>> map =
@@ -464,7 +468,9 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         return map;
     }
 
-    /** groups all data sets (both virtual and non-virtual) by data stores */
+    /**
+     * groups all data sets (both virtual and non-virtual) by data stores
+     */
     private Map<DataStorePE, List<DataPE>> groupDataSetsByDataStores()
     {
         Map<DataStorePE, List<DataPE>> map = new LinkedHashMap<DataStorePE, List<DataPE>>();
@@ -492,13 +498,13 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         List<AbstractExternalData> cleanDataSets =
                 DataSetTranslator.translate(list, "?", "?", new HashMap<Long, Set<Metaproject>>(),
                         managedPropertyEvaluatorFactory, new IValidator<IIdentifierHolder>()
+                        {
+                            @Override
+                            public boolean isValid(IIdentifierHolder object)
                             {
-                                @Override
-                                public boolean isValid(IIdentifierHolder object)
-                                {
-                                    return false;
-                                }
-                            });
+                                return false;
+                            }
+                        });
         service.uploadDataSetsToCIFEX(sessionToken, cleanDataSets, context);
     }
 
@@ -530,39 +536,39 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
 
         IBatchIdProvider<DatasetDescription, String> batchIdProvider =
                 new IBatchIdProvider<DatasetDescription, String>()
+                {
+                    @Override
+                    public String getBatchId(DatasetDescription object)
                     {
-                        @Override
-                        public String getBatchId(DatasetDescription object)
-                        {
-                            return object.getDataStoreCode();
-                        }
-                    };
+                        return object.getDataStoreCode();
+                    }
+                };
 
         IBatchHandler<DatasetDescription, String, Void> batchHandler =
                 new BatchHandlerAbstract<DatasetDescription, String, Void>()
+                {
+                    @Override
+                    public void validateBatch(IBatch<DatasetDescription, String> batch)
                     {
-                        @Override
-                        public void validateBatch(IBatch<DatasetDescription, String> batch)
-                        {
-                            validateParameterBindings(datastoreServiceKey, parameterBindings);
-                            
-                            DataStorePE dataStore = findDataStore(batch.getId());
-                            validateProcessingServiceKey(dataStore, datastoreServiceKey, batch.getId());
-                        }
+                        validateParameterBindings(datastoreServiceKey, parameterBindings);
 
-                        @Override
-                        public List<Void> processBatch(IBatch<DatasetDescription, String> batch)
-                        {
-                            DataStorePE dataStore = findDataStore(batch.getId());
-                            String sessionToken = dataStore.getSessionToken();
-                            String userSessionToken = session.getSessionToken();
-                            IDataStoreService service = tryGetDataStoreService(dataStore, dssFactory);
-                            parameterBindings.put(Constants.USER_PARAMETER, session.tryGetPerson().getUserId());
-                            service.processDatasets(sessionToken, userSessionToken, datastoreServiceKey, batch.getObjects(),
-                                    parameterBindings, tryGetLoggedUserId(), tryGetLoggedUserEmail());
-                            return Collections.emptyList();
-                        }
-                    };
+                        DataStorePE dataStore = findDataStore(batch.getId());
+                        validateProcessingServiceKey(dataStore, datastoreServiceKey, batch.getId());
+                    }
+
+                    @Override
+                    public List<Void> processBatch(IBatch<DatasetDescription, String> batch)
+                    {
+                        DataStorePE dataStore = findDataStore(batch.getId());
+                        String sessionToken = dataStore.getSessionToken();
+                        String userSessionToken = session.getSessionToken();
+                        IDataStoreService service = tryGetDataStoreService(dataStore, dssFactory);
+                        parameterBindings.put(Constants.USER_PARAMETER, session.tryGetPerson().getUserId());
+                        service.processDatasets(sessionToken, userSessionToken, datastoreServiceKey, batch.getObjects(),
+                                parameterBindings, tryGetLoggedUserId(), tryGetLoggedUserEmail());
+                        return Collections.emptyList();
+                    }
+                };
 
         multiplexer.process(locations, batchIdProvider, batchHandler);
 
@@ -594,7 +600,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
                 + "' processing plugin configured.");
     }
-    
+
     private void validateReportingServiceKey(DataStorePE dataStore, final String datastoreServiceKey, String dataStoreCode)
     {
         for (DataStoreServicePE service : dataStore.getServices())
@@ -608,17 +614,18 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
                 + "' reporting plugin configured.");
     }
-    
+
     private void validateAggregationServiceKey(DataStorePE dataStore, final String datastoreServiceKey, String dataStoreCode)
     {
         for (DataStoreServicePE service : dataStore.getServices())
         {
-            if (service.getKey().equals(datastoreServiceKey) && ReportingPluginType.AGGREGATION_TABLE_MODEL.equals(service.getReportingPluginTypeOrNull()))
+            if (service.getKey().equals(datastoreServiceKey) && ReportingPluginType.AGGREGATION_TABLE_MODEL.equals(
+                    service.getReportingPluginTypeOrNull()))
             {
                 return;
             }
         }
-        
+
         throw new UserFailureException("Data store '" + dataStoreCode + "' does not have '" + datastoreServiceKey
                 + "' aggregation plugin configured.");
     }
@@ -670,43 +677,43 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
 
         IBatchIdProvider<DatasetDescription, String> batchIdProvider =
                 new IBatchIdProvider<DatasetDescription, String>()
+                {
+                    @Override
+                    public String getBatchId(DatasetDescription object)
                     {
-                        @Override
-                        public String getBatchId(DatasetDescription object)
-                        {
-                            return object.getDataStoreCode();
-                        }
-                    };
+                        return object.getDataStoreCode();
+                    }
+                };
 
         IBatchHandler<DatasetDescription, String, TableModel> batchHandler =
                 new BatchHandlerAbstract<DatasetDescription, String, TableModel>()
+                {
+                    @Override
+                    public void validateBatch(IBatch<DatasetDescription, String> batch)
                     {
-                        @Override
-                        public void validateBatch(IBatch<DatasetDescription, String> batch)
-                        {
-                            DataStorePE dataStore = findDataStore(batch.getId());
-                            validateReportingServiceKey(dataStore, datastoreServiceKey, batch.getId());
-                        }
+                        DataStorePE dataStore = findDataStore(batch.getId());
+                        validateReportingServiceKey(dataStore, datastoreServiceKey, batch.getId());
+                    }
 
-                        @Override
-                        public List<TableModel> processBatch(IBatch<DatasetDescription, String> batch)
-                        {
-                            DataStorePE dataStore = findDataStore(batch.getId());
-                            String sessionToken = session.getSessionToken();
-                            String storeSessionToken = dataStore.getSessionToken();
+                    @Override
+                    public List<TableModel> processBatch(IBatch<DatasetDescription, String> batch)
+                    {
+                        DataStorePE dataStore = findDataStore(batch.getId());
+                        String sessionToken = session.getSessionToken();
+                        String storeSessionToken = dataStore.getSessionToken();
 
-                            IDataStoreService service =
-                                    getConversationClient().getDataStoreService(
-                                            dataStore.getRemoteUrl(), sessionToken);
+                        IDataStoreService service =
+                                getConversationClient().getDataStoreService(
+                                        dataStore.getRemoteUrl(), sessionToken);
 
-                            TableModel tableModel =
-                                    service.createReportFromDatasets(storeSessionToken,
-                                            sessionToken, datastoreServiceKey, batch.getObjects(),
-                                            tryGetLoggedUserId(), tryGetLoggedUserEmail());
+                        TableModel tableModel =
+                                service.createReportFromDatasets(storeSessionToken,
+                                        sessionToken, datastoreServiceKey, batch.getObjects(),
+                                        tryGetLoggedUserId(), tryGetLoggedUserEmail());
 
-                            return Collections.singletonList(tableModel);
-                        }
-                    };
+                        return Collections.singletonList(tableModel);
+                    }
+                };
 
         IBatchesResults<String, TableModel> batchesResults =
                 multiplexer.process(locations, batchIdProvider, batchHandler);
@@ -750,14 +757,14 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
                 ExternalDataPE externalData = dataSet.tryAsExternalData();
                 if (externalData.getStatus().isAvailable())
                 {
-                    result.add(translateToDescription(externalData));
+                    result.add(DataSetTranslator.translateToDescription(externalData));
                 } else
                 {
                     notAvailableDatasets.add(dataSet.getCode());
                 }
             } else
             {
-                result.add(translateToDescription(dataSet));
+                result.add(DataSetTranslator.translateToDescription(dataSet));
             }
         }
         throwUnavailableOperationExceptionIfNecessary(notAvailableDatasets);
@@ -800,11 +807,11 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         int result =
                 filterByStatusAndUpdate(remap(datasetsWithService), DataSetArchivingStatus.AVAILABLE,
                         pendingStatus);
-        
+
         performArchiving(datasetsWithService, removeFromDataStore, options);
         return result;
     }
-    
+
     private Map<DataStorePE, List<ExternalDataPE>> remap(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
     {
         Map<DataStorePE, List<ExternalDataPE>> result = new HashMap<>();
@@ -815,7 +822,8 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
         return result;
     }
 
-    private Map<DataStoreWithService, List<ExternalDataPE>> removeDataStoresWhereArchivingIsCurrentlyNotPossible(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
+    private Map<DataStoreWithService, List<ExternalDataPE>> removeDataStoresWhereArchivingIsCurrentlyNotPossible(
+            Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
     {
         Map<DataStoreWithService, List<ExternalDataPE>> result = new HashMap<>();
         for (Entry<DataStoreWithService, List<ExternalDataPE>> entry : datasetsWithService.entrySet())
@@ -857,7 +865,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
 
     /**
      * Asks datastore servers for the extended list of datasets to unarchive, and reloads itself.
-     * 
+     *
      * @return true if the reaload of data has happened
      */
     private boolean prepareForUnarchiving(Map<DataStoreWithService, List<ExternalDataPE>> datasetsWithService)
@@ -957,22 +965,22 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     private void performUnarchiving(Map<DataStoreWithService, List<ExternalDataPE>> datasetsByStore)
     {
         performArchivingAction(datasetsByStore, new IArchivingAction()
+        {
+            @Override
+            public void execute(String sessionToken, IDataStoreService service,
+                    List<DatasetDescription> descriptions, String userId, String userEmailOrNull)
             {
-                @Override
-                public void execute(String sessionToken, IDataStoreService service,
-                        List<DatasetDescription> descriptions, String userId, String userEmailOrNull)
-                {
-                    service.unarchiveDatasets(sessionToken, session.getSessionToken(),
-                            descriptions, userId, userEmailOrNull);
-                }
+                service.unarchiveDatasets(sessionToken, session.getSessionToken(),
+                        descriptions, userId, userEmailOrNull);
+            }
 
-                @Override
-                public DataSetArchivingStatus getStatusToRestoreOnFailure()
-                {
-                    return DataSetArchivingStatus.ARCHIVED;
-                }
+            @Override
+            public DataSetArchivingStatus getStatusToRestoreOnFailure()
+            {
+                return DataSetArchivingStatus.ARCHIVED;
+            }
 
-            });
+        });
 
     }
 
@@ -980,21 +988,21 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
             final boolean removeFromDataStore, Map<String, String> options)
     {
         performArchivingAction(datasetsByStore, new IArchivingAction()
+        {
+            @Override
+            public void execute(String sessionToken, IDataStoreService service,
+                    List<DatasetDescription> descriptions, String userId, String userEmailOrNull)
             {
-                @Override
-                public void execute(String sessionToken, IDataStoreService service,
-                        List<DatasetDescription> descriptions, String userId, String userEmailOrNull)
-                {
-                    service.archiveDatasets(sessionToken, session.getSessionToken(), descriptions,
-                            userId, userEmailOrNull, removeFromDataStore, options);
-                }
+                service.archiveDatasets(sessionToken, session.getSessionToken(), descriptions,
+                        userId, userEmailOrNull, removeFromDataStore, options);
+            }
 
-                @Override
-                public DataSetArchivingStatus getStatusToRestoreOnFailure()
-                {
-                    return DataSetArchivingStatus.AVAILABLE;
-                }
-            });
+            @Override
+            public DataSetArchivingStatus getStatusToRestoreOnFailure()
+            {
+                return DataSetArchivingStatus.AVAILABLE;
+            }
+        });
     }
 
     private static class DataStoreWithService

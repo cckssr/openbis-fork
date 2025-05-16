@@ -75,6 +75,20 @@ public class DefaultDataSourceFactory implements IDataSourceFactory
             }
         }
         return new DataSourceWithDefinition(context.getDataSource(),
-                DataSourceDefinition.createFromContext(context));
+                createFromContext(context));
+    }
+
+    /**
+     * Creates an instance based on specified context object.
+     */
+    private static DataSourceDefinition createFromContext(DatabaseConfigurationContext context)
+    {
+        DataSourceDefinition definition = new DataSourceDefinition();
+        definition.setDriverClassName(context.getDatabaseEngine().getDriverClass());
+        definition.setHostPart(context.getUrlHostPart());
+        definition.setSid(context.getDatabaseName());
+        definition.setUsername(context.getOwner());
+        definition.setPassword(context.getPassword());
+        return definition;
     }
 }

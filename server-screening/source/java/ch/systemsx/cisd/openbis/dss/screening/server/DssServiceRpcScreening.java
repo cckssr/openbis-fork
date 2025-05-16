@@ -117,7 +117,7 @@ import net.iharder.Base64;
 /**
  * Implementation of the screening API interface using RPC. The instance will be created in spring and published as a HTTP invoker servlet configured
  * in service.properties.
- * 
+ *
  * @author Tomasz Pylak
  */
 public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpcScreening>
@@ -768,15 +768,15 @@ public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpc
         }
         IImageRepresentationFormatSelectionCriterion criterion =
                 new AbstractFormatSelectionCriterion()
-                    {
-                        private static final long serialVersionUID = 1L;
+                {
+                    private static final long serialVersionUID = 1L;
 
-                        @Override
-                        protected boolean accept(ImageRepresentationFormat availableFormat)
-                        {
-                            return format.getId() == availableFormat.getId();
-                        }
-                    };
+                    @Override
+                    protected boolean accept(ImageRepresentationFormat availableFormat)
+                    {
+                        return format.getId() == availableFormat.getId();
+                    }
+                };
         return loadImages(sessionToken, imageReferences, criterion);
     }
 
@@ -1057,15 +1057,15 @@ public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpc
         }
         IImageRepresentationFormatSelectionCriterion criterion =
                 new AbstractFormatSelectionCriterion()
-                    {
-                        private static final long serialVersionUID = 1L;
+                {
+                    private static final long serialVersionUID = 1L;
 
-                        @Override
-                        protected boolean accept(ImageRepresentationFormat availableFormat)
-                        {
-                            return format.getId() == availableFormat.getId();
-                        }
-                    };
+                    @Override
+                    protected boolean accept(ImageRepresentationFormat availableFormat)
+                    {
+                        return format.getId() == availableFormat.getId();
+                    }
+                };
         return loadPhysicalThumbnails(sessionToken, imageReferences, criterion);
     }
 
@@ -1785,7 +1785,7 @@ public class DssServiceRpcScreening extends AbstractDssServiceRpc<IDssServiceRpc
         String datasetTypeCode = dataset.getDataSetType().getCode();
         return datasetTypeCode.matches(ScreeningConstants.ANY_HCS_IMAGE_DATASET_TYPE_PATTERN)
                 || datasetTypeCode
-                        .matches(ScreeningConstants.ANY_MICROSCOPY_IMAGE_DATASET_TYPE_PATTERN);
+                .matches(ScreeningConstants.ANY_MICROSCOPY_IMAGE_DATASET_TYPE_PATTERN);
     }
 
     private List<ImgFeatureDefDTO> getFeatureDefinitions(

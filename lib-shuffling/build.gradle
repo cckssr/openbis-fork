@@ -1,0 +1,12 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-logging'),
+            project(':lib-commonbase'),
+            project(':lib-data-store-commonbase'),
+            project(':lib-openbis-commonbase'),
+            project(':lib-hierarchical-content'),
+            project(':lib-maintenance'),
+            'apache:commons-io:2.6'
+    testImplementation project(path: ':lib-data-store-commonbase', configuration: 'tests')
+}

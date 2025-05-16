@@ -29,10 +29,10 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataSetShareId;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -63,19 +63,19 @@ public class ShareIdManagerTest extends AssertJUnit
         context = new Mockery();
         service = context.mock(IEncapsulatedOpenBISService.class);
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(service).listDataSetShareIds();
-                    DataSetShareId ds1 = new DataSetShareId();
-                    ds1.setDataSetCode(DS1);
-                    DataSetShareId ds2 = new DataSetShareId();
-                    ds2.setDataSetCode(DS2);
-                    ds2.setShareId("2");
-                    will(returnValue(Arrays.asList(ds1, ds2)));
-                    allowing(service).tryGetLocalDataSet("ds?");
-                    will(returnValue(null));
-                }
-            });
+                allowing(service).listDataSetShareIds();
+                DataSetShareId ds1 = new DataSetShareId();
+                ds1.setDataSetCode(DS1);
+                DataSetShareId ds2 = new DataSetShareId();
+                ds2.setDataSetCode(DS2);
+                ds2.setShareId("2");
+                will(returnValue(Arrays.asList(ds1, ds2)));
+                allowing(service).tryGetLocalDataSet("ds?");
+                will(returnValue(null));
+            }
+        });
         manager = new ShareIdManager(service, 1);
     }
 
@@ -148,21 +148,21 @@ public class ShareIdManagerTest extends AssertJUnit
     {
         final MessageChannel ch = new MessageChannel(2000);
         new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                manager.lock(DS1);
+                try
                 {
-                    manager.lock(DS1);
-                    try
-                    {
-                        manager.await(DS1);
-                    } catch (EnvironmentFailureException ex)
-                    {
-                        System.out.println(ex);
-                        ch.send(ex.getMessage());
-                    }
+                    manager.await(DS1);
+                } catch (EnvironmentFailureException ex)
+                {
+                    System.out.println(ex);
+                    ch.send(ex.getMessage());
                 }
-            }, "T1").start();
+            }
+        }, "T1").start();
         ch.assertNextMessage("Lock for data set ds1 hasn't been released after "
                 + "time out of 1 seconds.");
 
@@ -185,23 +185,23 @@ public class ShareIdManagerTest extends AssertJUnit
     {
         final MessageChannel ch1 = new MessageChannel();
         new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                manager.lock(DS1);
+                ch1.send("locked");
+                try
                 {
-                    manager.lock(DS1);
-                    ch1.send("locked");
-                    try
-                    {
-                        Thread.sleep(200);
-                    } catch (InterruptedException ex)
-                    {
-                        // ignored
-                    }
-                    manager.releaseLock(DS1);
-                    ch1.send("unlocked");
+                    Thread.sleep(200);
+                } catch (InterruptedException ex)
+                {
+                    // ignored
                 }
-            }, "T1").start();
+                manager.releaseLock(DS1);
+                ch1.send("unlocked");
+            }
+        }, "T1").start();
         ch1.assertNextMessage("locked"); // wait until data set is really locked.
 
         manager.await(DS1);
@@ -226,29 +226,29 @@ public class ShareIdManagerTest extends AssertJUnit
         final MessageChannel ch3 = new MessageChannel();
         final MessageChannel ch4 = new MessageChannel();
         new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
-                {
-                    manager.lock(DS1);
-                    ch3.send("locked");
-                    ch4.assertNextMessage("locked");
-                    manager.releaseLock(DS1);
-                    ch1.send("unlocked");
-                }
-            }, "T1").start();
+                manager.lock(DS1);
+                ch3.send("locked");
+                ch4.assertNextMessage("locked");
+                manager.releaseLock(DS1);
+                ch1.send("unlocked");
+            }
+        }, "T1").start();
         final MessageChannel ch2 = new MessageChannel();
         new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
-                {
-                    ch3.assertNextMessage("locked");
-                    manager.lock(DS1);
-                    ch2.send("locked");
-                    ch4.send("locked");
-                }
-            }, "T2").start();
+                ch3.assertNextMessage("locked");
+                manager.lock(DS1);
+                ch2.send("locked");
+                ch4.send("locked");
+            }
+        }, "T2").start();
         ch1.assertNextMessage("unlocked");
         ch2.assertNextMessage("locked");
 

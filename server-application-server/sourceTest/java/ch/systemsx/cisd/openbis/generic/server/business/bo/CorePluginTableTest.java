@@ -35,7 +35,7 @@ import ch.systemsx.cisd.openbis.generic.server.jython.api.v1.impl.MasterDataTran
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CorePlugin;
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.ICorePluginResourceLoader;
 import ch.systemsx.cisd.openbis.generic.shared.dto.CorePluginPE;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Kaloyan Enimanev

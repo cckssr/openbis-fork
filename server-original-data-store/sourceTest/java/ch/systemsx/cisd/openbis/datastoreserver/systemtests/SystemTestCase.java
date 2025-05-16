@@ -55,17 +55,27 @@ import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.DataSetRegistrationTransaction;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
-import ch.systemsx.cisd.openbis.util.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -224,6 +234,12 @@ public abstract class SystemTestCase extends AssertJUnit
         System.setProperty(DOWNLOAD_URL_KEY, TestInstanceHostUtils.getDSSUrl());
         System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "archiver.destination",
                 archive.getAbsolutePath());
+
+        ServiceProviderFactory.setInstance(new ServiceProviderImpl());
+        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
+        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
+        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
+        PathInfoServiceProviderFactory.setInstance(new PathInfoServiceProvider());
 
         QueueingPathRemoverService.start(rootDir, ETLDaemon.shredderQueueFile);
         DataStoreServer.main(new String[0]);

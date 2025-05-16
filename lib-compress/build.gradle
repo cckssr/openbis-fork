@@ -1,0 +1,5 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    implementation project(':lib-commonbase'), 'apache:commons-compress:1.8'
+}

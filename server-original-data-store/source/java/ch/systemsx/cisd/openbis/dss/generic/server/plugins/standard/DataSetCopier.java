@@ -16,13 +16,20 @@
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Properties;
 
 import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.common.exceptions.Status;
+import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
+import ch.systemsx.cisd.common.filesystem.rsync.RsyncCopierFactory;
+import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
+import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IPostRegistrationDatasetHandler;
+import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 
 /**
@@ -33,36 +40,36 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
  * <li>a remote folder accessible via SSH,
  * <li>a remote folder accessible via an rsync server.
  * </ul>
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class DataSetCopier extends AbstractDropboxProcessingPlugin
 {
     private static final long serialVersionUID = 1L;
 
-    public static final String DESTINATION_KEY = "destination";
+    public static final String DESTINATION_KEY = DataSetCopierConst.DESTINATION_KEY;
 
-    public static final String RSYNC_PASSWORD_FILE_KEY = "rsync-password-file";
+    public static final String RSYNC_PASSWORD_FILE_KEY = DataSetCopierConst.RSYNC_PASSWORD_FILE_KEY;
 
-    public static final String RENAME_TO_DATASET_CODE_KEY = "rename-to-dataset-code";
+    public static final String RENAME_TO_DATASET_CODE_KEY = DataSetCopierConst.RENAME_TO_DATASET_CODE_KEY;
 
-    public static final String HARD_LINK_COPY_KEY = "hard-link-copy";
-
-    @Private
-    static final String ALREADY_EXIST_MSG = "already exist";
+    public static final String HARD_LINK_COPY_KEY = DataSetCopierConst.HARD_LINK_COPY_KEY;
 
     @Private
-    static final String COPYING_FAILED_MSG = "copying failed";
+    static final String ALREADY_EXIST_MSG = DataSetCopierConst.ALREADY_EXIST_MSG;
 
-    public static final String GFIND_EXEC = "find";
+    @Private
+    static final String COPYING_FAILED_MSG = DataSetCopierConst.COPYING_FAILED_MSG;
 
-    public static final String RSYNC_EXEC = "rsync";
+    public static final String GFIND_EXEC = DataSetCopierConst.GFIND_EXEC;
 
-    public static final String LN_EXEC = "ln";
+    public static final String RSYNC_EXEC = DataSetCopierConst.RSYNC_EXEC;
 
-    public static final String SSH_EXEC = "ssh";
+    public static final String LN_EXEC = DataSetCopierConst.LN_EXEC;
 
-    public static final long SSH_TIMEOUT_MILLIS = 15 * 1000; // 15s
+    public static final String SSH_EXEC = DataSetCopierConst.SSH_EXEC;
+
+    public static final long SSH_TIMEOUT_MILLIS = DataSetCopierConst.SSH_TIMEOUT_MILLIS; // 15s
 
     public DataSetCopier(Properties properties, File storeRoot)
     {
@@ -74,8 +81,21 @@ public class DataSetCopier extends AbstractDropboxProcessingPlugin
             ISshCommandExecutorFactory sshCommandExecutorFactory,
             IImmutableCopierFactory immutableCopierFactory, ITimeProvider timeProvider)
     {
-        super(properties, storeRoot, new Copier(properties, pathCopierFactory,
-                sshCommandExecutorFactory, immutableCopierFactory), timeProvider);
+        super(properties, storeRoot, new IPostRegistrationDatasetHandler()
+        {
+            private final Copier copier = new Copier(properties, pathCopierFactory, sshCommandExecutorFactory, immutableCopierFactory);
+
+            @Override public Status handle(final File originalData, final DataSetInformation dataSetInformation,
+                    final Map<String, String> parameterBindings)
+            {
+                return copier.handle(originalData, dataSetInformation.getDataSetCode(), parameterBindings);
+            }
+
+            @Override public void undoLastOperation()
+            {
+                copier.undoLastOperation();
+            }
+        }, timeProvider);
     }
 
     public DataSetCopier(Properties properties, File storeRoot,

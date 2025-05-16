@@ -49,7 +49,7 @@ public class PluginTaskInfoProvider implements IPluginTaskInfoProvider
             PluginTaskInfoProvider.class);
 
     /** name of archiver properties section */
-    public static final String ARCHIVER_SECTION_NAME = "archiver";
+    public static final String ARCHIVER_SECTION_NAME = ArchiverTaskInfoProvider.ARCHIVER_SECTION_NAME;
 
     private final PluginTaskProvider<IReportingPluginTask> reportingPlugins;
 
