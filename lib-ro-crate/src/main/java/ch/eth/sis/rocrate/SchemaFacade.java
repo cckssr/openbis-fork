@@ -1,6 +1,9 @@
 package ch.eth.sis.rocrate;
 
 import ch.eth.sis.rocrate.facade.*;
+import ch.eth.sis.rocrate.schemaorg.SchemaOrgInformation;
+import ch.eth.sis.rocrate.schemaorg.SchemaOrgPropertyResolver;
+import ch.eth.sis.rocrate.schemaorg.SchemaOrgReader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -60,6 +64,8 @@ public class SchemaFacade implements ISchemaFacade
 
     private final RoCrate crate;
 
+    private SchemaOrgInformation schema_org_information;
+
     @Override
     public RoCrate getCrate()
     {
@@ -98,6 +104,7 @@ public class SchemaFacade implements ISchemaFacade
 
     public static SchemaFacade of(RoCrate crate) throws JsonProcessingException
     {
+
         SchemaFacade schemaFacade = new SchemaFacade(crate);
         schemaFacade.parseEntities();
         return schemaFacade;
@@ -259,6 +266,9 @@ public class SchemaFacade implements ISchemaFacade
 
     private void parseEntities() throws JsonProcessingException
     {
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource("schemaorg-all-https.ttl").getFile());
+        schema_org_information = SchemaOrgReader.read(file.getPath());
 
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
         Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());
@@ -278,7 +288,7 @@ public class SchemaFacade implements ISchemaFacade
 
 
         Map<String, IPropertyType> properties = new LinkedHashMap<>();
-        Map<String, IType> classes = new LinkedHashMap<>();
+        Map<String, IType> idsToTypes = new LinkedHashMap<>();
         Map<String, IMetadataEntry> entries = new LinkedHashMap<>();
 
         Map<String, Type> restrictionToTypeId = new LinkedHashMap<>();
@@ -302,7 +312,7 @@ public class SchemaFacade implements ISchemaFacade
                     myType.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CLASS));
                     myType.setId(resolvePrefixSingleValue(id));
-                    classes.put(resolvePrefixSingleValue(id), myType);
+                    idsToTypes.put(resolvePrefixSingleValue(id), myType);
                     parseMultiValued(entity, OWL_RESTRICTION).forEach(
                             x -> restrictionToTypeId.put(x, myType));
 
@@ -341,7 +351,7 @@ public class SchemaFacade implements ISchemaFacade
                     List<IType> types = rawRange.stream()
                             .filter(x -> !LiteralType.isLiteralType(x))
                             .map(this::resolvePrefixSingleValue)
-                            .map(classes::get)
+                            .map(idsToTypes::get)
                             .collect(Collectors.toList());
 
                     dataTypes.stream().forEach(rdfsProperty::addDataType);
@@ -350,7 +360,7 @@ public class SchemaFacade implements ISchemaFacade
                     rdfsProperty.setDomainIncludes(
                             parseMultiValued(entity, domainIdentifier).stream()
                                     .map(x -> resolvePrefixSingleValue(x))
-                                    .map(classes::get).collect(
+                                    .map(idsToTypes::get).collect(
                                             Collectors.toList()));
                     properties.put(resolvePrefixSingleValue(id), rdfsProperty);
 
@@ -382,6 +392,25 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
+        for (IType type : idsToTypes.values())
+        {
+            Type type1 = (Type) type;
+
+            Set<IPropertyType> schemaOrgProperties =
+                    SchemaOrgPropertyResolver.findSchemaOrgProperties(schema_org_information, type);
+            for (IPropertyType propertyType : schemaOrgProperties)
+            {
+                if (!propertyType.getDomain().contains(type))
+                {
+                    type1.addProperty((PropertyType) propertyType);
+                }
+                properties.putIfAbsent(propertyType.getId(), propertyType);
+
+
+            }
+
+        }
+
 
         for (var entity : crate.getAllDataEntities())
         {
@@ -390,7 +419,7 @@ public class SchemaFacade implements ISchemaFacade
             String id =
                     entity.getProperty("@id")
                             .asText();
-            if (!doesTypeExist(type, classes, localPrefix))
+            if (!doesTypeExist(type, idsToTypes, localPrefix))
             {
                 continue;
             }
@@ -424,7 +453,7 @@ public class SchemaFacade implements ISchemaFacade
             entries.put(id, entry);
         }
         System.out.println("Done");
-        this.types = classes;
+        this.types = idsToTypes;
         this.propertyTypes = properties;
         this.metadataEntries = entries;
 

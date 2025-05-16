@@ -7,6 +7,7 @@ package ch.eth.sis.rocrate.facade;
 public enum LiteralType implements IDataType
 {
 
+    ANY_URI("xsd:anyURI"),
     BOOLEAN("xsd:boolean"),
     INTEGER("xsd:integer"),
     DOUBLE("xsd:double"),
