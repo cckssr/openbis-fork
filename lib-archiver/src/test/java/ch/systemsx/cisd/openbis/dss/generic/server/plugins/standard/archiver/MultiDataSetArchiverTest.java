@@ -118,7 +118,7 @@ public class MultiDataSetArchiverTest extends AbstractFileSystemTestCase
         private StringBuilder builder = new StringBuilder();
 
         @Override
-        public void update(List<String> dataSetCodes, DataSetArchivingStatus status, boolean presentInArchive)
+        public void scheduleUpdate(List<String> dataSetCodes, DataSetArchivingStatus status, Boolean presentInArchive)
         {
             builder.append(dataSetCodes).append(": ").append(status).append(" ").append(presentInArchive);
             builder.append("\n");
