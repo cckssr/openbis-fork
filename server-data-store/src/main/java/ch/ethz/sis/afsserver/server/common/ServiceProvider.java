@@ -186,15 +186,8 @@ public class ServiceProvider implements IServiceProvider
     {
         if (dataSetPathInfoProvider == null)
         {
-            final DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-
-            if (pathInfoDatabaseConfiguration != null)
-            {
-                dataSetPathInfoProvider = new DatabaseBasedDataSetPathInfoProvider(pathInfoDatabaseConfiguration::getDataSource);
-            } else
-            {
-                throw new RuntimeException("Path info database not configured");
-            }
+            dataSetPathInfoProvider =
+                    new DatabaseBasedDataSetPathInfoProvider(PathInfoDatabaseConfiguration.getInstance(configuration)::getDataSource);
         }
 
         return dataSetPathInfoProvider;
@@ -204,18 +197,16 @@ public class ServiceProvider implements IServiceProvider
     {
         if (pathInfoDataSourceProvider == null)
         {
-            final DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-
             pathInfoDataSourceProvider = new IPathInfoDataSourceProvider()
             {
                 public DataSource getDataSource()
                 {
-                    return pathInfoDatabaseConfiguration.getDataSource();
+                    return PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource();
                 }
 
                 public boolean isDataSourceDefined()
                 {
-                    return pathInfoDatabaseConfiguration != null;
+                    return PathInfoDatabaseConfiguration.hasInstance(configuration);
                 }
             };
         }

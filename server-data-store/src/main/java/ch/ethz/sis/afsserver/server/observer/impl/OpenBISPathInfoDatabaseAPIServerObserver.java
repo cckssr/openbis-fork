@@ -28,10 +28,9 @@ public class OpenBISPathInfoDatabaseAPIServerObserver
 
     public OpenBISPathInfoDatabaseAPIServerObserver(final Configuration configuration)
     {
-        DatabaseConfiguration pathInfoConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-        if (pathInfoConfiguration != null)
+        if (PathInfoDatabaseConfiguration.hasInstance(configuration))
         {
-            pathInfoDAO = QueryTool.getQuery(pathInfoConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
+            pathInfoDAO = QueryTool.getQuery(PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource(), IPathInfoAutoClosingDAO.class);
         }
     }
 

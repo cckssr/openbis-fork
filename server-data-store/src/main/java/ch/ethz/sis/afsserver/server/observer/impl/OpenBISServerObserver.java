@@ -59,10 +59,10 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
     public void init(APIServer<TransactionConnection, ?, ?, ?> apiServer, Configuration configuration) throws Exception
     {
         this.openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
-        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(configuration);
-        if (pathInfoDatabaseConfiguration != null)
+        if (PathInfoDatabaseConfiguration.hasInstance(configuration))
         {
-            this.pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoNonAutoClosingDAO.class);
+            this.pathInfoDAO =
+                    QueryTool.getQuery(PathInfoDatabaseConfiguration.getInstance(configuration).getDataSource(), IPathInfoNonAutoClosingDAO.class);
         }
         this.apiServer = (APIServer<TransactionConnection, ApiRequest, ApiResponse, ?>) apiServer;
         this.jsonObjectMapper = AtomicFileSystemServerParameterUtil.getJsonObjectMapper(configuration);
