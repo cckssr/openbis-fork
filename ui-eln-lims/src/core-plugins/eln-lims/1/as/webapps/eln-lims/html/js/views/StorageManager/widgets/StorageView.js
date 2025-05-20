@@ -27,8 +27,18 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 	this._boxSizeDropDown = FormUtil.getDefaultStorageBoxSizesDropDown("box-size-drop-down-id", false);
 	this._positionContainer = $("<div>");
 
+	this._viewId = mainController.getNextId();
+
 	this.getStoragesDropdown = function() {
 		return this._defaultStoragesDropDown;
+	}
+
+	this.refresh = function() {
+        this._defaultStoragesDropDown.refresh();
+        this._userIdDropdown.refresh();
+        this._boxSizeDropDown.refresh()
+        this._gridViewRack.refresh();
+        this._gridViewPosition.refresh();
 	}
 
 	this.repaint = function($container, callbackFunction) {
@@ -36,7 +46,9 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 		
 		FormUtil.getDefaultStoragesDropDown(_this._storageModel.spaceCode, _this._storageModel.config.storageId, false, function($storagesDropdownComponent) {
 			_this._defaultStoragesDropDown = $storagesDropdownComponent;
-			
+			_this._defaultStoragesDropDown.refresh = function() {
+                Select2Manager.add(_this._defaultStoragesDropDown);
+            }
 			//
 			// Paint View
 			//
@@ -97,19 +109,21 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 				var $controlGroupStorages = FormUtil.getFieldForComponentWithLabel(_this._defaultStoragesDropDown);
 				addToTitleLine("Storage:", $controlGroupStorages);
 				//Attach Event
-				_this._defaultStoragesDropDown.change(function(event) {
-					var storageName = $(this).val();
-					if(_this._storageModel.sample) { //Sample to bind
-						_this._storageModel.sample.properties[_this._storageModel.storagePropertyGroup.nameProperty] = storageName;
-					}
-					_this._storageController.setSelectStorage(storageName);
-					
-					if(storageName === "") {
-						_this._storageModel.cleanSample(false);
-					} else {
-						_this._storageModel.cleanSample(true);
-					}
-				});
+				var changeFunction = function(event) {
+                    var storageName = $(this).val();
+                    if(_this._storageModel.sample) { //Sample to bind
+                        _this._storageModel.sample.properties[_this._storageModel.storagePropertyGroup.nameProperty] = storageName;
+                    }
+                    _this._storageController.setSelectStorage(storageName);
+
+                    if(storageName === "") {
+                        _this._storageModel.cleanSample(false);
+                    } else {
+                        _this._storageModel.cleanSample(true);
+                    }
+                }
+                var attrId = _this._defaultStoragesDropDown.attr("id");
+				$("body").on("change", "#"+attrId, changeFunction);
 			}
 			
 			if(_this._storageModel.config.userSelector === "on" && !_this._storageModel.sample) {
@@ -117,11 +131,18 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 				var $controlGroupUserId = FormUtil.getFieldForComponentWithLabel(_this._userIdDropdown);
 				addToTitleLine("User Id Filter:", $controlGroupUserId);
 				_this._userIdDropdown.multiselect();
+				var changeFunction = function() {
+                    var selectedUserIds = $(this).val();
+                    _this._storageController.setUserIdsSelected(selectedUserIds);
+                }
 				//Attach Event
-				_this._userIdDropdown.change(function() {
-					var selectedUserIds = $(this).val();
-					_this._storageController.setUserIdsSelected(selectedUserIds);
-				});
+				_this._userIdDropdown.change(changeFunction);
+				_this._userIdDropdown.refresh = function() {
+				    _this._userIdDropdown.siblings().remove()
+				    _this._userIdDropdown.multiselect('destroy').multiselect();
+				    _this._userIdDropdown.unbind();
+				    _this._userIdDropdown.change(changeFunction);
+				}
 			} else if(_this._storageModel.sample) { //If someone is updating a sample, his user should go with it
 				_this._storageModel.sample.properties[_this._storageModel.storagePropertyGroup.userProperty] = mainController.serverFacade.getUserId();
 			}
@@ -203,7 +224,9 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 			for (var i = 0; i < contents.length; i++) {
 				this._userIdDropdown.append($('<option>', { 'value' : contents[i] , 'selected' : ''}).html(contents[i]));
 			}
-		} 
+		}
+		this._userIdDropdown.append($('<option>', { 'value' : 'testaaaaa1' , 'selected' : 'false'}).html('testaaaaa1'));
+        this._userIdDropdown.append($('<option>', { 'value' : 'testaaaaa2' , 'selected' : ''}).html('testaaaaa2'));
 		this._userIdDropdown.multiselect('rebuild');
 	}
 	

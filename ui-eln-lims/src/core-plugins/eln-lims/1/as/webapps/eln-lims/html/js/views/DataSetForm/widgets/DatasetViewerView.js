@@ -19,7 +19,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	this._dataSetViewerModel = dataSetViewerModel;
 	this._level = 3;
 	this._imagePreviewIconLoader = new ImagePreviewIconLoader();
-	
+
 	this.repaintDatasets = function() {
         if (this._dataSetViewerModel.formMode == FormMode.VIEW) {
             this._paintDataSetTable();
@@ -63,7 +63,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 					icon.addClass("glyphicon-chevron-up");
 				} else if(icon.hasClass("glyphicon-chevron-up")) {
 					
-					$("#filestree").fancytree("getRootNode").visit(function(node) {
+					$("#" + _this._dataSetViewerModel.containerId + "-filestree").fancytree(_this.fancyTreeOptions).fancytree("getRootNode").visit(function(node) {
 					    node.setExpanded(false);
 					});
 					
@@ -71,7 +71,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 					icon.addClass("glyphicon-chevron-down");
 				}
 				
-			}, null, "Expand/Collapse all");
+			}, null, "Expand/Collapse all", this._dataSetViewerModel.containerId + "-expand-collapse-view-btn");
 			$filesContainer.append(expandCollapseAll);
 			
 			var $treeContainer = $("<div>");
@@ -350,7 +350,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 
 	this._expandAll = function() {
 		var _this = this;
-		var tree = $("#filestree").fancytree("getTree");
+		var tree = $("#" + _this._dataSetViewerModel.containerId + "-filestree").fancytree(_this.fancyTreeOptions).fancytree("getTree");
 		_this._expandDeep(tree.getRootNode());
 	}
 	
@@ -376,7 +376,7 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	this.repaintFilesAsTree = function($container) {
 		$container.empty();
 		var _this = this;
-		var $tree = $("<div>", { "id" : "filestree" });
+		var $tree = $("<div>", { "id" : _this._dataSetViewerModel.containerId + "-filestree" });
 		$container.append($tree);
 		
 		var treeModel = [];
@@ -599,15 +599,16 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	         }
 		}
 
-		$tree.fancytree({
-			extensions: ["dnd", "edit", "glyph"], //, "wide"
-			glyph: glyph_opts,
-			source: treeModel,
-			createNode: onCreateNode,
-			click: onClick,
-			lazyLoad : onLazyLoad,
-			renderNode : onRenderNode,
-		});
+        this.fancyTreeOptions = {
+                                    extensions: ["dnd", "edit", "glyph"], //, "wide"
+                                    glyph: glyph_opts,
+                                    source: treeModel,
+                                    createNode: onCreateNode,
+                                    click: onClick,
+                                    lazyLoad : onLazyLoad,
+                                    renderNode : onRenderNode,
+                                }
+		$tree.fancytree(this.fancyTreeOptions);
 	}
 	
 	this._handleFolderToStart = function(dataSetCode, path, handle) {

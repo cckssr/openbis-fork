@@ -23,6 +23,10 @@ function AdvancedSearchController(mainController, forceSearch) {
 		callback(results);
 	}
 
+	this.refresh = function() {
+        this._advancedSearchView.refresh();
+    }
+
 	this.init = function(views) {
 		var _this = this;
 		_this._searchStoreAvailable(function(searchStoreAvailable) {

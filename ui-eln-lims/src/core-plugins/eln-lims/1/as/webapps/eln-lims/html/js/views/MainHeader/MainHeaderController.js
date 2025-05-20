@@ -27,6 +27,8 @@ function MainHeaderController() {
     this.handlePageChange = function(event, value) {
         _this._mainHeaderModel.currentPage = value;
         mainController.sideMenu.changeCurrentTree(value);
+        mainController.sideMenu.removeSubSideMenu();
+        mainController.tabContent.changePage(value);
         if(mainController.sideMenu.isCollapsed) {
             mainController.sideMenu.expandSideMenu();
         }
@@ -106,6 +108,7 @@ function MainHeaderController() {
         if(tree !== _this._mainHeaderModel.currentPage) {
             _this._mainHeaderModel.currentPage = tree;
             _this._mainHeaderController.changeTab(tree);
+            _this._mainController.tabContent.changePage(tree)
             _this._mainController.sideMenu.changeCurrentTree(tree, node)
         }
     }
@@ -127,6 +130,7 @@ function MainHeaderController() {
         if(tree !== _this._mainHeaderModel.currentPage) {
             _this._mainHeaderModel.currentPage = tree;
             _this._mainController.sideMenu.changeCurrentTree(tree)
+            _this._mainController.tabContent.changePage(tree)
             _this._mainHeaderController.changeTab(tree);
 
         }

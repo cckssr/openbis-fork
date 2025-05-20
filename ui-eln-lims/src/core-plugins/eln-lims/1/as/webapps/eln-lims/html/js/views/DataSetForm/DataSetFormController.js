@@ -20,6 +20,12 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
+
+	this.refresh = function() {
+	    if(this._dataSetFormModel.mode !== FormMode.VIEW) {
+	        this._dataSetFormView.refresh();
+	    }
+    }
 	
 	this.init = function(views) {
 		var _this = this;

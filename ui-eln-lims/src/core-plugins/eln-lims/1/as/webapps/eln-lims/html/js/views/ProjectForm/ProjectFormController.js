@@ -18,6 +18,12 @@ function ProjectFormController(mainController, mode, project) {
 	this._mainController = mainController;
 	this._projectFormModel = new ProjectFormModel(mode, project);
 	this._projectFormView = new ProjectFormView(this, this._projectFormModel);
+
+	this.refresh = function() {
+        if(this._projectFormModel.mode !== FormMode.VIEW) {
+            this._projectFormView.refresh();
+        }
+    }
 	
 	this.init = function(views) {
 		var _this = this;

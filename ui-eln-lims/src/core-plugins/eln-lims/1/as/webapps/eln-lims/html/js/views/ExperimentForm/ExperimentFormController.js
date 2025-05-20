@@ -18,6 +18,16 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this._mainController = mainController;
 	this._experimentFormModel = new ExperimentFormModel(mode, experiment);
 	this._experimentFormView = new ExperimentFormView(this, this._experimentFormModel);
+
+	this.refresh = function(views) {
+        if(this._experimentFormModel.dataSetViewer) {
+            mainController.sideMenu.addSubSideMenu(this._experimentFormView._dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
+            this._experimentFormModel.dataSetViewer.init();
+        }
+        if(this._experimentFormModel.mode !== FormMode.VIEW) {
+            this._experimentFormView.refresh();
+        }
+    }
 	
 	this.init = function(views) {
 		var _this = this;

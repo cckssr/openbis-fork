@@ -20,6 +20,7 @@ function HierarchyTableView(controller, model) {
 	this._container = $("<div>");
 	this._dataGrid;
 	this._hierarchyFilterController;
+	this._viewId = mainController.getNextId();
 	
 	this.repaint = function(views) {
 		var _this = this;
@@ -38,6 +39,12 @@ function HierarchyTableView(controller, model) {
 		this._hierarchyFilterController.init(views.header);
 		this._showHierarchy();
 		
+	}
+
+	this.refresh = function(views) {
+	    views.header.empty();
+	    views.content.empty();
+	    this.repaint(views);
 	}
 	
 	this._showHierarchy = function() {

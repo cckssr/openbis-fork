@@ -18,6 +18,15 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 	this._spaceFormController = spaceFormController;
 	this._spaceFormModel = spaceFormModel;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
+	this._viewId = mainController.getNextId();
+
+    var _refreshableFields = [];
+
+    this.refresh = function() {
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 	
 	this.repaint = function(views) {
 		var _this = this;
@@ -49,32 +58,32 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 
             var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                 _this._spaceFormController.createObject("ENTRY");
-            }, null, "New Entry", "create-btn");
+            }, null, "New Entry", "create-entry-btn-"+ this._viewId);
             toolbarModel.push({ component : $createEntry});
 
             if(!spaceFormModel.isInventory) {
                 var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                     _this._spaceFormController.createObject("FOLDER");
-                }, null, "New Folder", "create-btn");
+                }, null, "New Folder", "create-folder-btn-"+ this._viewId);
                 toolbarModel.push({ component : $createFolder});
             }
             if (_this._allowedToCreateProject()) {
                 var $createProj = FormUtil.getToolbarButton("PROJECT", function() {
                     _this._spaceFormController.createProject();
-                }, null, "New Project", "create-btn");
+                }, null, "New Project", "create-project-btn-"+ this._viewId);
                 toolbarModel.push({ component : $createProj});
             }
 
             var $createOther = FormUtil.getToolbarButton("OTHER", function() {
                 _this._spaceFormController.createObject();
-            }, "Other", "Create different object", "create-btn");
+            }, "Other", "Create different object", "create-object-btn-"+ this._viewId);
             toolbarModel.push({ component : $createOther});
             
             if (this._allowedToEditSpace()) {
                 // edit
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
                     _this._spaceFormController.enableEditing();
-                }, "Edit", "Edit space", "edit-btn");
+                }, "Edit", "Edit space", "edit-space-btn-"+ this._viewId);
                 continuedToolbarModel.push({ component : $editBtn });
             }
             
@@ -85,6 +94,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                     action : function() {
                         var modalView = new DeleteEntityController(function(reason) {
                             _this._spaceFormController.deleteSpace(reason);
+                            mainController.tabContent.closeCurrentTab();
                         }, true, null, null, true);
                         modalView.init();
                     }
@@ -141,7 +151,10 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-            }, "Save", "Save changes", "save-btn");
+                if(_this._spaceFormModel.mode === FormMode.CREATE) {
+                    mainController.tabContent.closeCurrentTab();
+                }
+            }, "Save", "Save changes", "save-space-btn-"+ this._viewId);
             $saveBtn.removeClass("btn-default");
             $saveBtn.addClass("btn-primary");
             continuedToolbarModel.push({ component : $saveBtn });
@@ -157,7 +170,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();
-                        }, null, "Help", "help-btn");
+                        }, null, "Help", "help-btn-space-" + this._viewId);
         continuedToolbarModel.push({ component : $helpBtn });
 
         if(toolbarModel.length>0) {
@@ -177,10 +190,10 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         hideShowOptionsModel.push({
             forceToShow : this._spaceFormModel.mode === FormMode.CREATE,
             label : "Identification Info",
-            section : "#space-identification-info"
+            section : "#space-identification-info-" + this._viewId
         });
         var _this = this;
-        var $identificationInfo = $("<div>", { id : "space-identification-info" });
+        var $identificationInfo = $("<div>", { id : "space-identification-info-" + _this._viewId });
         $identificationInfo.append($("<legend>").append("Identification Info"));
         if (this._spaceFormModel.mode !== FormMode.CREATE) {
             var space = this._spaceFormModel.v3_space;
@@ -206,8 +219,9 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 $identificationInfo.append(FormUtil.getInfoText("When assigning a group to a space, the group settings are applied to it."));
                 $identificationInfo.append(FormUtil.getFieldForComponentWithLabel($prefixDropdown, "Group"));
             }
-            var $textField = FormUtil._getInputField('text', "space-code-id", "Space Code", null, true);
-            $textField.keyup(function(event){
+            var textFieldId = "space-code-id-" + _this._viewId;
+            var $textField = FormUtil._getInputField('text', textFieldId, "Space Code", null, true);
+            $("body").on("keyup", "#"+textFieldId, function(event){
                 var textField = $(this);
                 var caretPosition = this.selectionStart;
                 textField.val(textField.val().toUpperCase());
@@ -239,11 +253,11 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         hideShowOptionsModel.push({
             forceToShow : this._spaceFormModel.mode === FormMode.CREATE,
             label : "Description",
-            section : "#space-description"
+            section : "#space-description-" + this._viewId
         });
         
         var _this = this;
-        var $description = $("<div>", { id : "space-description" });
+        var $description = $("<div>", { id : "space-description-" + _this._viewId });
         $description.append($("<legend>").append("General"));
         var space = this._spaceFormModel.v3_space;
         var description = space ? space.getDescription() : "";
@@ -261,10 +275,12 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             };
             $textBox.val(description);
             $textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
+            _refreshableFields.push($textBox);
             $description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
         } else {
             var $textBox = FormUtil._getTextBox(null, "Description", false);
             $textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
+            _refreshableFields.push($textBox);
             $description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
         }
         $description.hide();

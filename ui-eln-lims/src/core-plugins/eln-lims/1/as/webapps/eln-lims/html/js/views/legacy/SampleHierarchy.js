@@ -21,6 +21,11 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 	this.profile = profile;
 	this.sample = sample;
 	this.hierarchyFilterController = null;
+	this._viewId = mainController.getNextId();
+	this.tabId = "GRAPH-" + sample.permId;
+	this._graphContainer = null;
+	this._svgMap = null;
+	var __this = this;
 	
 	//
 	if(this.sample["@type"] === "Sample") { // V1 Sample
@@ -29,6 +34,14 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 	//
 	this.init = function() {
 		this.repaint();
+	}
+
+	this.refresh = function() {
+        this.views.header.empty();
+        var localInstance = this;
+        views.header.append($("<h1>").append("Hierarchy Graph: " + Util.getDisplayNameForEntity(this.sample)));
+        localInstance.hierarchyFilterController = new HierarchyFilterController(this.sample, function() { localInstance.filterSampleAndUpdate(); });
+        localInstance.hierarchyFilterController.init(views.header);
 	}
 	
 	this.repaint = function() {
@@ -39,22 +52,24 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		var $form = $("<div>");
 		this.views.content.append($form);
 		var $formColumn = $("<div>");
-		$formColumn.append("<span><svg height='100' width='100'><g id='svgControls'/></svg></span>");
+		$formColumn.append("<span><svg height='100' width='100'><g id='svgControls-"+ localInstance._viewId+"'/></svg></span>");
 		$form.append($formColumn);
-		
+
 		
 		views.header.append($("<h1>").append("Hierarchy Graph: " + Util.getDisplayNameForEntity(this.sample)));
 		localInstance.hierarchyFilterController = new HierarchyFilterController(this.sample, function() { localInstance.filterSampleAndUpdate(); });
 		localInstance.hierarchyFilterController.init(views.header);
 
-		$formColumn.append($('<div>', { 'id' : 'graphContainer' }));
+		$graphContainer = $('<div>', { 'id' : 'graphContainer-' + localInstance._viewId })
+        this._graphContainer = $graphContainer;
+
+		$formColumn.append($graphContainer);
 		
-		$('#graphContainer').append("<svg id='svgMapContainer'><g id='svgMap' transform='translate(20,20) scale(1)'/></svg>");
-		
+		$graphContainer.append("<svg id='svgMapContainer-"+ localInstance._viewId +"'><g id='svgMap-"+ localInstance._viewId+"' transform='translate(20,20) scale(1)'/></svg>");
+		this._svgMap = $graphContainer.find('#svgMap-'+this._viewId)[0];
+
 		this.filterSampleAndUpdate();
-		
-		
-		
+
 		//Add SVG Map Controls
 		var path1 = this._makeSVG('path', {'class' : 'svgButton', 'stroke-linecap':'round', 'stroke-miterlimit':'6', 'onclick':'javascript:mainController.currentView.pan( 0, 50);', 'd':'M50 10 l12 20 a40, 70 0 0,0 -24, 0z', 'stroke-width':'1.5', 'fill':'#0088CC', 'stroke': '#0088CC' });
 		var path2 = this._makeSVG('path', {'class' : 'svgButton', 'stroke-linecap':'round', 'stroke-miterlimit':'6', 'onclick':'javascript:mainController.currentView.pan( 50, 0);', 'd':'M10 50 l20 -12 a70, 40 0 0,0 0, 24z', 'stroke-width':'1.5', 'fill':'#0088CC', 'stroke': '#0088CC' });
@@ -66,7 +81,7 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		var rect3 = this._makeSVG('rect', {'x':'48.5', 'y':'55', 'width':'3', 'height':'8' , 'fill':'#fff', 'style' : 'pointer-events: none;'});
 		var circle3 = this._makeSVG('circle', {'class' : 'svgButton', 'stroke-linecap':'round', 'stroke-miterlimit':'6', 'onclick':'javascript:mainController.currentView.zoom(0.8)', 'cx':'50', 'cy':'41', 'r':'8', 'stroke-width':'1.5', 'fill':'#0088CC', 'stroke': '#0088CC' });
 		var circle4 = this._makeSVG('circle', {'class' : 'svgButton', 'stroke-linecap':'round', 'stroke-miterlimit':'6', 'onclick':'javascript:mainController.currentView.zoom(1.25)', 'cx':'50', 'cy':'59', 'r':'8', 'stroke-width':'1.5', 'fill':'#0088CC', 'stroke': '#0088CC' });
-		var svgControls = $("#svgControls")
+		var svgControls = $formColumn.find("#svgControls-"+localInstance._viewId)
 			.append(path1)
 			.append(path2)
 			.append(path3)
@@ -81,13 +96,14 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		//Centers SVG image if is smaller than the max size of the container.
 		var containerWidth = this.views.content.width();
 		var containerHeight = this.views.content.height();
-		
-		var realWidth = $('#svgMap')[0].getBoundingClientRect().width;
-		var realHeight = $('#svgMap')[0].getBoundingClientRect().height;
-		
+
+		var realWidth = this._svgMap.getBoundingClientRect().width;
+		var realHeight =this._svgMap.getBoundingClientRect().height;
+
 		if(containerWidth > realWidth && containerHeight > realHeight) {
-			this.pan(containerWidth/2 - realWidth/2 - 20, containerHeight/2 - realHeight/2 - 20);
+			this.pan(containerWidth/2 - realWidth/2 - 20, containerHeight/2 - realHeight/2 - 160);
 		}
+
 	}
 	
 	this.filterSampleAndUpdate = function() {
@@ -169,14 +185,14 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		
 		var $dropdown = FormUtil.getSampleTypeDropdown('sampleTypeSelector', true, null, null, IdentifierUtil.getSpaceCodeFromIdentifier(identifier));
 		Util.blockUI("Select the type for the Child: <br><br>" + $dropdown[0].outerHTML + "<br> or <a class='btn btn-default' id='sampleTypeSelectorCancel'>Cancel</a>");
-		$("#sampleTypeSelector").select2({ width: '100%', theme: "bootstrap" });
+		this._graphContainer.find("#sampleTypeSelector").select2({ width: '100%', theme: "bootstrap" });
 		
-		$("#sampleTypeSelectorCancel").on("click", function(event) { 
+		this._graphContainer.find("#sampleTypeSelectorCancel").on("click", function(event) {
 			Util.unblockUI();
 		});
 		
 		var _this = this;
-		$("#sampleTypeSelector").on("change", function(event) {
+		this._graphContainer.find("#sampleTypeSelector").on("change", function(event) {
 			var sampleTypeCode = $("#sampleTypeSelector")[0].value;
 			_this.serverFacade.searchWithUniqueId(permId, function(data) {
 				Util.blockUI();
@@ -256,9 +272,9 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 	
 	this._glowNode = function(nodeId) {
 		var _this = this;
-		$("#"+nodeId).removeClass("glow");
+		this._graphContainer.find("#"+nodeId).removeClass("glow");
 		var glow = function() {
-			$("#" + nodeId).addClass("glow"); //Make it Glow
+			this._graphContainer.find("#" + nodeId).addClass("glow"); //Make it Glow
 			
 			//TO-DO: Fix this hack
 			//In Webkit browsers is needed to force rendering moving DOM objects during the animation.
@@ -398,7 +414,7 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		addSampleEdges(sample);
 		
 		// Render the directed graph
-		var svgG = d3.select('#svgMap');
+		var svgG = d3.select('#svgMap-'+this._viewId);
 		var renderer = new dagreD3.Renderer();
 		
 		// Custom transition function
@@ -409,21 +425,26 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		renderer.transition(transition);
 		
 		var layout = dagreD3.layout()
+//		                    .debugLevel(4)
 							.nodeSep(20)
 							.rankDir("TB");
 		
 		//VMG Map container max size on screen
-		var containerWidth = this.views.content.width();
-		var containerHeight = this.views.content.height();
-		
+		var containerWidth = LayoutManager.secondColumn.width() - 50;
+		var containerHeight = $("#tab-content-body").height() - $("#tab-content-header").height();
+
+		$graphContainer.find('#svgMapContainer-' + this._viewId)
+		    .attr('width', containerWidth)
+            .attr('height', containerHeight);
+
 		//Render Layout
 		renderer.layout(layout).run(g, svgG);
-		transition(d3.select('#svgMapContainer'))
+		transition(d3.select('#svgMap-'+this._viewId))
 			.attr('width', containerWidth)
 			.attr('height', containerHeight);
 		
 		//Zoom Function
-		d3.select('#svgMapContainer').call(zoomFunc);
+		d3.select('#svgMap-'+this._viewId).call(zoomFunc);
 	}
 	
 	this._makeSVG = function(tag, attrs) {
@@ -442,7 +463,7 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		var newTranslate = [projection.translate[0] + dx, projection.translate[1] + dy];
 		zoomFunc.translate(newTranslate);
 		projection.translate = newTranslate;
-		d3.select('#svgMap').attr('transform', 'translate(' + newTranslate + ') scale(' + projection.scale + ')');
+		d3.select('#svgMap-'+this._viewId).attr('transform', 'translate(' + newTranslate + ') scale(' + projection.scale + ')');
     }
     
 	this.zoom = function(scale)
@@ -450,8 +471,10 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		var newScale = projection.scale * scale;
 		zoomFunc.scale(newScale);
 		projection.scale = newScale;
-		d3.select('#svgMap').attr('transform', 'translate(' + projection.translate + ') scale(' + newScale + ')');
+		d3.select('#svgMap-'+this._viewId).attr('transform', 'translate(' + projection.translate + ') scale(' + newScale + ')');
     }
+
+
 	
 	//
 	// Zoom and Pan Internals (To keep in sync internal D3 projection of the translate and scale properties with the DOM ones)
@@ -476,6 +499,27 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		  projection.translate = t; 
 		  projection.scale = s;
 		  
-		  d3.select('#svgMap').attr('transform', 'translate(' + t + ') scale(' + s + ')');
+		  d3.select('#svgMap-'+__this._viewId).attr('transform', 'translate(' + t + ') scale(' + s + ')');
 	}
+
+    this._move = function() {
+        var t = d3.event.translate,
+              s = d3.event.scale;
+
+          __this._zoomFunc.translate(t);
+          __this._zoomFunc.scale(s);
+
+          projection.translate = t;
+          projection.scale = s;
+
+          d3.select('#svgMap-'+__this._viewId).attr('transform', 'translate(' + t + ') scale(' + s + ')');
+    }
+
+    this._zoomFunc = d3.behavior.zoom()
+                        .translate(projection.translate)
+                        .scale(projection.scale)
+                        .on("zoom", __this._move);
+
+
+
 }

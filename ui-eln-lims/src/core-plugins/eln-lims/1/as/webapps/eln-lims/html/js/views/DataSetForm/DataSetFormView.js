@@ -19,6 +19,27 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._dataSetFormModel = dataSetFormModel;
 	this._previousGlobalEventListener = null;
     this._dataSetFormViewGlobalEventListener = null;
+    this._viewId = mainController.getNextId();
+
+    var _refreshableFields = [];
+
+    this.refresh = function() {
+        if(this._dataSetFormModel.mode === FormMode.CREATE) {
+            var $datasetDropdown = $("#DATASET_TYPE");
+            Select2Manager.add($datasetDropdown);
+        }
+
+        if(this._dataSetFormModel.datasetParentsComponent) {
+            this._dataSetFormModel.datasetParentsComponent.initSelect2()
+        }
+
+        Select2Manager.add($("#metadataContainer-"+this._viewId+" select:not([id^=sample-field-id])"));
+
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+
+    }
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -27,7 +48,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
         var dataSetTypeDefinitionsExtension = profile.dataSetTypeDefinitionsExtension[this._getTypeCode()];
 
 		//Clean and prepare container
-		var $wrapper = $('<form>', { 'id' : 'mainDataSetForm', 'role' : 'form'});
+		var $wrapper = $('<form>', { 'id' : 'mainDataSetForm-'+_this._viewId, 'role' : 'form'});
 		if(this._dataSetFormModel.isMini) {
 			$wrapper.css('margin', '10px');
 			$wrapper.css('padding', '10px');
@@ -47,12 +68,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		//Metadata Container
-		$wrapper.append($('<div>', { 'id' : 'metadataContainer'}));
+		$wrapper.append($('<div>', { 'id' : 'metadataContainer-'+_this._viewId}));
 		
 		//Attach File
-		$wrapper.append($('<div>', { 'id' : 'APIUploader' } ));
+		$wrapper.append($('<div>', { 'id' : 'APIUploader-'+_this._viewId } ));
 		
-		$wrapper.append($('<div>', { 'id' : 'fileOptionsContainer' } ));
+		$wrapper.append($('<div>', { 'id' : 'fileOptionsContainer-'+_this._viewId } ));
 		
 		// Plugin Hook
 		if(!this._dataSetFormModel.isMini) {
@@ -63,7 +84,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 		
 		//Show Files
-		var filesViewer = $('<div>', { 'id' : 'filesViewer' } );
+		var filesViewer = $('<div>', { 'id' : 'filesViewer-'+_this._viewId } );
 		$wrapper.append(filesViewer);
 		
 		//Submit Button
@@ -164,11 +185,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			}
 			
 			if(this._dataSetFormModel.mode === FormMode.CREATE) {
-				mainController.serverFacade.openbisServer.createSessionWorkspaceUploader($("#APIUploader"), onComplete, {
+				mainController.serverFacade.openbisServer.createSessionWorkspaceUploader($("#APIUploader-"+_this._viewId), onComplete, {
 					main_title : $('<legend>').text('Files Uploader'),
 					uploads_title : $('<legend>').text('File list'),
 					ondelete:onDelete,
-					hideHint:_this._dataSetFormModel.isMini
+					hideHint:_this._dataSetFormModel.isMini,
+					viewId: _this._viewId,
 				});
 			}
 		} else {
@@ -177,7 +199,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		if(this._dataSetFormModel.mode !== FormMode.CREATE) {
-			var dataSetViewer = new DataSetViewerController("filesViewer", profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSetV3], false, true);
+			var dataSetViewer = new DataSetViewerController("filesViewer-"+_this._viewId, profile, this._dataSetFormModel.entity, mainController.serverFacade, profile.getDefaultDataStoreURL(), [this._dataSetFormModel.dataSetV3], false, true);
 			dataSetViewer.init();
 		}
         mainController.profile.afterViewPaint(ViewType.DATASET_FORM, this._dataSetFormModel, $container);
@@ -279,7 +301,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
-				}, "Edit", "Edit data", "dataset-edit-btn");
+				}, "Edit", "Edit data", "dataset-edit-btn-"+_this._viewId);
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn });
 				}
@@ -307,6 +329,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                         action : function() {
                             var modalView = new DeleteEntityController(function(reason) {
 					            _this._dataSetFormController.deleteDataSet(reason);
+					            mainController.tabContent.closeCurrentTab();
                             }, true);
                             modalView.init();
                         }
@@ -422,7 +445,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-btn");
+                if(_this._dataSetFormModel.mode === FormMode.CREATE) {
+                    mainController.tabContent.closeCurrentTab();
+                }
+			}, "Save", "Save changes", "save-dataset-btn-"+this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -453,7 +479,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                         mainController.openHelpPage();
-                                    }, null, "Help", "help-btn");
+                                    }, null, "Help", "help-dataset-btn-"+this._viewId);
             toolbarModel.push({ component : $helpBtn });
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
@@ -509,7 +535,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
                 var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                     moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex-1);
-                }, null, null);
+                }, null, null, "back-btn-dataset-"+_this._viewId);
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex <= 0) {
                     $backBtn.attr("disabled",true);
@@ -521,7 +547,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
                 var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
                                         moveToIndex(_this._dataSetFormModel.paginationInfo.currentIndex+1);
-                }, null, null);
+                }, null, null, "forward-btn-dataset-"+_this._viewId);
 
                 if(this._dataSetFormModel.paginationInfo.currentIndex+1 >= this._dataSetFormModel.paginationInfo.totalCount) {
                     $nextBtn.attr("disabled",true);
@@ -543,12 +569,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		hideShowOptionsModel.push({
 			forceToShow : this._dataSetFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
-			section : "#data-set-identification-info"
+			section : "#data-set-identification-info-"+this._viewId
 		});
 		
 		var _this = this;
 
-		var $dataSetTypeFieldSet = $('<div>', { id : "data-set-identification-info" });
+		var $dataSetTypeFieldSet = $('<div>', { id : "data-set-identification-info-"+_this._viewId });
 		if (!this._dataSetFormModel.isMini) {
 			$dataSetTypeFieldSet.append($('<legend>').text('Identification Info'));
 			if (this._dataSetFormModel.mode !== FormMode.CREATE) {
@@ -559,7 +585,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if (this._dataSetFormModel.mode === FormMode.CREATE) {
             var dataSetTypes = profile.filterDataSetTypesForDropdowns(_this._dataSetFormModel.dataSetTypes);
             $dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', dataSetTypes);
-			$dataSetTypeSelector.change(function() { 
+			$("body").on("change", "#DATASET_TYPE", function() {
+//			$dataSetTypeSelector.change(function() {
 				if (!_this._dataSetFormModel.isMini) {
 					_this._repaintMetadata(
 							_this._dataSetFormController._getDataSetType($('#DATASET_TYPE').val())
@@ -746,7 +773,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._updateFileOptions = function() {
 		var _this = this;
-		$wrapper = $("#fileOptionsContainer"); //Clean existing
+		$wrapper = $("#fileOptionsContainer-"+_this._viewId); //Clean existing
 		$wrapper.empty();
 		
 		if( this._dataSetFormModel.files.length > 1
@@ -797,7 +824,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 								.append($('<div>')
 									.append($textField))
 						);
-						$("#fileOptionsContainer").append($folderName);
+						$("#fileOptionsContainer-"+_this._viewId).append($folderName);
 						$("#folderName").val(_this._dataSetFormModel.files[0].substring(0, _this._dataSetFormModel.files[0].indexOf(".")));
 					} else {
 						$( "#folderNameContainer" ).remove();
@@ -809,7 +836,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	
 	this._repaintMetadata = function(dataSetType) {
 		var _this = this;
-		$("#metadataContainer").empty();
+		$("#metadataContainer-"+_this._viewId).empty();
 		if(dataSetType == null) {
 		    return;
 		}
@@ -924,7 +951,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						$controlGroup.append($controls);
 						
 						var $component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
-						
+						if(['SAMPLE', 'DATE', 'TIMESTAMP'].includes(propertyType.dataType)) {
+						    _refreshableFields.push($component);
+						}
+
 						//Update model
 						var changeEvent = function(propertyType, isMultiValueProperty) {
 							return function(jsEvent, newValue) {
@@ -1027,26 +1057,31 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                 case 'Word Processor':
                                     if(propertyType.dataType === "MULTILINE_VARCHAR") {
                                         $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
+                                        _refreshableFields.push($component);
                                     } else {
                                         alert("Word Processor only works with MULTILINE_VARCHAR data type.");
-                                        $component.change(changeEvent(propertyType));
+                                        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
                                     }
                                     break;
                                 case 'Spreadsheet':
                                     if(propertyType.dataType === "XML") {
-                                        var $jexcelContainer = $("<div>");
+                                        var $jexcelContainer = $("<div>", { id: "spreadsheet-" + propertyType.code + "-" + this._viewId});
+                                        if(!this._dataSetFormModel.dataSetV3) {
+                                            this._dataSetFormModel.dataSetV3 = { properties : {} }
+                                        }
                                         JExcelEditorManager.createField($jexcelContainer, this._dataSetFormModel.mode, propertyType.code, this._dataSetFormModel.dataSetV3);
                                         $component = $jexcelContainer;
+                                        _refreshableFields.push($component);
                                     } else {
                                         alert("Spreadsheet only works with XML data type.");
-                                        $component.change(changeEvent(propertyType));
+                                        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
                                     }
                                     break;
                             }
                         } else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-							$component.on("dp.change", changeEvent(propertyType));
+							$("body").on("dp.change", "#"+$component.attr("id"), changeEvent(propertyType));
 						} else {
-							$component.change(changeEvent(propertyType, isMultiValue));
+							$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType, isMultiValue));
 						}
 						
 						$controls.append($component);
@@ -1064,7 +1099,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			$wrapper.append($fieldset);
 		}
 		
-		$("#metadataContainer").append($wrapper);
+		$("#metadataContainer-"+_this._viewId).append($wrapper);
 	}
 
 	this.requestOrLockArchiving = function() {

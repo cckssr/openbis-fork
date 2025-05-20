@@ -31,8 +31,10 @@ function AdvancedEntitySearchDropdown(isMultiple,
 	var selectsDatasets = selectsDatasets;
 	var selectsProjects = selectsProjects;
 	var selectSpaces = selectSpaces;
-	var $select = FormUtil.getPlainDropdown({}, "");
+	var selectId = "advanced-entity-search-dropdown-id-" + Util.guid();
+	var $select = FormUtil.getPlainDropdown({}, "", selectId);
 	var storedParams = null;
+	var maximumSelectionLength = 1;
 	
 	//
 	// External API
@@ -257,111 +259,116 @@ function AdvancedEntitySearchDropdown(isMultiple,
 	// Build Select
 	//
 	this.init = function($container) {
-		$select.attr("multiple", "multiple");
-		$select.attr("id", "advanced-entity-search-dropdown-id-" + Util.guid());
-		
-		if(isRequired) {
-			$select.attr("required", "required");
-		}
-		if(isMultiple) {
-			maximumSelectionLength = 9999;
-		} else {
-			maximumSelectionLength = 1;
-		}
-		
-		$container.append($select);
-		
-		$select.select2({
-				width: '100%', 
-				theme: "bootstrap",
-				maximumSelectionLength: maximumSelectionLength,
-				minimumInputLength: 2,
-				placeholder : placeholder,
-				ajax: {
-					delay: 1000,
-					processResults: function (data) {
-						var results = [];
-						
-						for(var dIdx = 0; dIdx < data.length; dIdx++) {
-							var group = {
-								text: data[dIdx].type, 
-								children : []
-							}
-							
-							var entities = data[dIdx].objects;
-							for(var eIdx = 0; eIdx < entities.length; eIdx++) {
-								group.children.push({
-									id : entities[eIdx].permId.permId,
-									text : getDisplayName(entities[eIdx]),
-									data : {
-										id : entities[eIdx].permId.permId,
-										text : getDisplayName(entities[eIdx]),
-										data : entities[eIdx]
-									}
-								})
-							}
-							
-							if(entities.length > 0) {
-								results.push(group);
-							}
-						}
-						
-					    return {
-					    	"results": results,
-					    	"pagination": {
-					    		"more": false
-					    	}
-						};
-					},
-				    transport: function (params, success, failure) {
-				    	storedParams = params;
-				    	
-						// Searches
-						var searches = [];
-						var searchesResults = [];
-						if(selectsProjects) {
-							searches.push(searchProject);
-						}
-						if(selectsExperiments) {
-							searches.push(searchExperiment);
-						}
-						if(selectsSamples) {
-							searches.push(searchSample);
-						}
-						if(selectsDatasets) {
-							searches.push(searchDataset);
-						}
-						if (selectSpaces) {
-							searches.push(searchSpace)
-						}
-						      
-						var action = null;
-						action = function(result) {
-							searchesResults.push(result);
-						 	if(searches.length > 0) {
-							    	var search = searches.shift();
-							    	search(action);
-						    } else {
-						    		success(searchesResults);
-						    }
-						};
-						      
-						var search = searches.shift();
-						search(action);
-						      
-					 	return {
-					    	abort : function () { /*Not implemented*/ }
-					  	}
-				    }
-			  }
-		});
+        $select.attr("multiple", "multiple");
+
+        if(isRequired) {
+            $select.attr("required", "required");
+        }
+        if(isMultiple) {
+            maximumSelectionLength = 9999;
+        } else {
+            maximumSelectionLength = 1;
+        }
+
+        $container.append($select);
+		this.initSelect2();
 		
 		var _this = this;
 		if(onChangeCallback) {
-			$select.on('select2:select', function (e) {
+		    $("body").on('select2:select', selectId, function (e) {
     				onChangeCallback(_this.getSelected());
 			});
 		}
+	}
+
+	this.initSelect2 = function() {
+
+	    $select.select2({
+            width: '100%',
+            theme: "bootstrap",
+            maximumSelectionLength: maximumSelectionLength,
+            minimumInputLength: 2,
+            placeholder : placeholder,
+            ajax: {
+                delay: 1000,
+                processResults: function (data) {
+                    var results = [];
+
+                    for(var dIdx = 0; dIdx < data.length; dIdx++) {
+                        var group = {
+                            text: data[dIdx].type,
+                            children : []
+                        }
+
+                        var entities = data[dIdx].objects;
+                        for(var eIdx = 0; eIdx < entities.length; eIdx++) {
+                            group.children.push({
+                                id : entities[eIdx].permId.permId,
+                                text : getDisplayName(entities[eIdx]),
+                                data : {
+                                    id : entities[eIdx].permId.permId,
+                                    text : getDisplayName(entities[eIdx]),
+                                    data : entities[eIdx]
+                                }
+                            })
+                        }
+
+                        if(entities.length > 0) {
+                            results.push(group);
+                        }
+                    }
+
+                    return {
+                        "results": results,
+                        "pagination": {
+                            "more": false
+                        }
+                    };
+                },
+                transport: function (params, success, failure) {
+                    storedParams = params;
+
+                    // Searches
+                    var searches = [];
+                    var searchesResults = [];
+                    if(selectsProjects) {
+                        searches.push(searchProject);
+                    }
+                    if(selectsExperiments) {
+                        searches.push(searchExperiment);
+                    }
+                    if(selectsSamples) {
+                        searches.push(searchSample);
+                    }
+                    if(selectsDatasets) {
+                        searches.push(searchDataset);
+                    }
+                    if (selectSpaces) {
+                        searches.push(searchSpace)
+                    }
+
+                    var action = null;
+                    action = function(result) {
+                        searchesResults.push(result);
+                        if(searches.length > 0) {
+                                var search = searches.shift();
+                                search(action);
+                        } else {
+                                success(searchesResults);
+                        }
+                    };
+
+                    var search = searches.shift();
+                    search(action);
+
+                    return {
+                        abort : function () { /*Not implemented*/ }
+                    }
+                }
+          }
+    });
+
+
 	}
 	
 }

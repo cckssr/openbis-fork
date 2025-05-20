@@ -17,6 +17,7 @@
 function TrashManagerView(trashManagerController, trashManagerModel) {
 	this._trashManagerController = trashManagerController;
 	this._trashManagerModel = trashManagerModel;
+	this._viewId = mainController.getNextId();
 	var deleteMessageOne = "The selected entity in the trashcan will be deleted permanently. This action cannot be undone!<br><br>Are you sure you want to continue?";
 	var deleteMessageMany = "All entities in the trashcan will be deleted permanently. This action cannot be undone!<br><br>Are you sure you want to continue?";
 	
@@ -28,8 +29,9 @@ function TrashManagerView(trashManagerController, trashManagerModel) {
 		//
 		// Title and Empty all button
 		//
-		var deleteAllBtn = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;", "id" : "empty-trash-btn"}).append("Empty Trash");
-		deleteAllBtn.click(function() {
+		var deleteAllBtnId =  "empty-trash-btn-" + this._viewId;
+		var deleteAllBtn = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;", "id" : deleteAllBtnId}).append("Empty Trash");
+		$("body").on("click", "#"+deleteAllBtnId, function() {
 			Util.showWarning(deleteMessageMany, function() {
 				_this._trashManagerController.emptyTrash();
 			}, true);

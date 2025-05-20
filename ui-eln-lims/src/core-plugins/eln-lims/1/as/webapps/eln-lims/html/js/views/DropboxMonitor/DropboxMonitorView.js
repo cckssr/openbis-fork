@@ -1,14 +1,16 @@
 function DropboxMonitorView(dropboxMonitorController, dropboxMonitorModel) {
     this._dropboxMonitorController = dropboxMonitorController;
     this._dropboxMonitorModel = dropboxMonitorModel;
+    this._viewId = mainController.getNextId();
 
     this.repaint = function(views) {
         var _this = this;
         var $header = views.header;
         $header.empty();
         $header.append($("<h1>").append("Dropbox Monitor"));
-        var refreshBtn = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;", "id" : "refresh-btn"}).append("Refresh");
-        refreshBtn.click(function() {
+        var refreshBtnId =  "refresh-dropbox-btn-"+this._viewId;
+        var refreshBtn = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;", "id" : refreshBtnId}).append("Refresh");
+        $("body").on("click", "#"+refreshBtnId, function() {
             _this._dropboxMonitorController.loadOverview(views);
         });
         $header.append(refreshBtn);

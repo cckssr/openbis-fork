@@ -18,6 +18,18 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 	this._experimentFormController = experimentFormController;
 	this._experimentFormModel = experimentFormModel;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
+	this._viewId = mainController.getNextId();
+	this._dataSetViewerContainer = null;
+
+    var _refreshableFields = [];
+
+    this.refresh = function() {
+        Select2Manager.add($("[id^='experiment-properties-section-"+this._viewId+"-'] select:not([id^=sample-field-id])"));
+
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -74,18 +86,18 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                      _this._experimentFormController.createObject("ENTRY");
-                 }, null, "New Entry", "create-entry-btn");
+                 }, null, "New Entry", "create-entry-btn-"+_this._viewId);
                  toolbarModel.push({ component : $createEntry});
 
                  if(!isInventoryExperiment) {
                      var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                           _this._experimentFormController.createObject("FOLDER");
-                     }, null, "New Folder", "create-folder-btn");
+                     }, null, "New Folder", "create-folder-btn-"+_this._viewId);
                      toolbarModel.push({ component : $createFolder});
                  }
                  var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
                        _this._experimentFormController.createObject();
-                  }, "Other", "Create different object", "create-btn");
+                  }, "Other", "Create different object", "create-object-btn-"+_this._viewId);
                   toolbarModel.push({ component : $createBtn});
 
 			}
@@ -96,7 +108,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                    var exp = _this._experimentFormModel.experiment;
                    var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
                    mainController.changeView("showEditExperimentPageFromIdentifier", args);
-              }, "Edit", "Edit collection", "edit-btn");
+              }, "Edit", "Edit collection", "edit-collection-btn-"+_this._viewId);
               continuedToolbarModel.push({ component : $editBtn });
 			}
 			if (_this._allowedToMove() && toolbarConfig.MOVE) {
@@ -221,6 +233,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                         loadDeletionModalData().then(function(modalData){
                             var modalView = new DeleteEntityController(function(reason) {
                                 onDeletionConfirmation(reason)
+                                mainController.tabContent.closeCurrentTab();
                             }, true, null, createDeletionModal(modalData));
                             modalView.init();
                         }, function(error){
@@ -239,7 +252,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			        var $uploadBtn = FormUtil.getToolbarButton("DATA", function() {
                           Util.blockUI();
                           mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-                     }, "Dataset", "Upload dataset", "upload-btn");
+                     }, "Dataset", "Upload dataset", "upload-btn-"+_this._viewId);
                      toolbarModel.push({ component : $uploadBtn});
 	            }
 
@@ -316,7 +329,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-btn");
+                if(_this._experimentFormModel.mode === FormMode.CREATE) {
+                    mainController.tabContent.closeCurrentTab();
+                }
+			}, "Save", "Save changes", "save-collection-btn-"+_this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -328,7 +344,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var hideShowOptionsModel = [];
 
 		// Preview
-        var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+        var $previewImageContainer = new $('<div>', { id : "previewImageContainer-" + this._viewId });
         $previewImageContainer.append($("<legend>").append("Preview"));
         $previewImageContainer.hide();
         $formColumn.append($previewImageContainer);
@@ -362,7 +378,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 
         // Data sets section
-        $formColumn.append($("<div>", {'id':'data-sets-section'}))
+        $formColumn.append($("<div>", {'id':'data-sets-section-'+_this._viewId}))
 
 		//
 		// Identification Info on not Create
@@ -388,7 +404,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 			var $previewImage = $("<img>", { 'data-preview-loaded' : 'false',
 											 'class' : 'zoomableImage',
-											 'id' : 'preview-image',
+											 'id' : 'preview-image-'+_this._viewId,
 											 'src' : './img/image_loading.gif',
 											 'style' : previewStyle
 											});
@@ -414,10 +430,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 this._reloadPreviewImage();
 
                 // Dataset Viewer
-                var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
-                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._experimentFormModel.v3_experiment, mainController.serverFacade,
+                this._dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer-"+this._viewId, style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
+                this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer-"+this._viewId, profile, this._experimentFormModel.v3_experiment, mainController.serverFacade,
                         profile.getDefaultDataStoreURL(), null, false, true, this._experimentFormModel.mode);
-                mainController.sideMenu.addSubSideMenu($dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
+                mainController.sideMenu.addSubSideMenu(this._dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
                 this._experimentFormModel.dataSetViewer.init();
         }
 
@@ -438,7 +454,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                             mainController.openHelpPage();
-                                        }, null, "Help", "help-btn");
+                                        }, null, "Help", "help-collection-btn-"+_this._viewId);
         continuedToolbarModel.push({ component : $helpBtn });
 
         if(toolbarModel.length>0) {
@@ -459,11 +475,11 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		hideShowOptionsModel.push({
 		    forceToShow : this._experimentFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
-			section : "#experiment-identification-info"
+			section : "#experiment-identification-info-"+this._viewId
 		});
 
 		var _this = this;
-		var $identificationInfo = $("<div>", { id : "experiment-identification-info" });
+		var $identificationInfo = $("<div>", { id : "experiment-identification-info-"+_this._viewId });
 		$identificationInfo.append($('<legend>').text("Identification Info"));
         if (this._experimentFormModel.mode !== FormMode.CREATE) {
             $identificationInfo.append(FormUtil.getFieldForLabelWithText("PermId", this._experimentFormModel.experiment.permId));
@@ -556,7 +572,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 	this._createSamplesSection = function(hideShowOptionsModel) {
 		var _this = this;
-		var $samples = $("<div>", { id : "experiment-samples" });
+		var $samples = $("<div>", { id : "experiment-samples-"+_this._viewId });
 		$samples.append($('<legend>').text(ELNDictionary.Samples));
 		var sampleListHeader = $("<p>");
 		var sampleListContainer = $("<div>");
@@ -571,7 +587,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		$samples.hide();
 		hideShowOptionsModel.push({
 			label : ELNDictionary.Samples,
-			section : "#experiment-samples",
+			section : "#experiment-samples-"+_this._viewId,
 			beforeShowingAction : function() {
 				sampleList.refresh();
 			}
@@ -583,7 +599,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var _this = this;
 		var experimentType = mainController.profile.getExperimentTypeForExperimentTypeCode(this._experimentFormModel.experiment.experimentTypeCode);
 
-		var $fieldset = $('<div>');
+		var $fieldset = $('<div>', { id : "experiment-properties-section-" + _this._viewId + "-" + i});
 		var $legend = $('<legend>');
 		$fieldset.append($legend);
 
@@ -668,6 +684,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 						$component = FormUtil.getSampleTypeDropdown(propertyType.code, false, null, null, IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier), true);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
+                        if(['SAMPLE', 'DATE', 'TIMESTAMP'].includes(propertyType.dataType)) {
+                            _refreshableFields.push($component);
+                        }
 					}
 
 					if(this._experimentFormModel.mode === FormMode.EDIT) {
@@ -773,9 +792,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                             case 'Word Processor':
                                 if(propertyType.dataType === "MULTILINE_VARCHAR") {
                     		        $component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
+                    		        _refreshableFields.push($component);
                     	        } else {
                     		        alert("Word Processor only works with MULTILINE_VARCHAR data type.");
-                    		        $component.change(changeEvent(propertyType));
+                    		        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
                     		    }
                                 break;
                     	    case 'Spreadsheet':
@@ -783,16 +803,18 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                                     var $jexcelContainer = $("<div>");
                                     JExcelEditorManager.createField($jexcelContainer, this._experimentFormModel.mode, propertyType.code, this._experimentFormModel.experiment);
                                     $component = $jexcelContainer;
+                                    _refreshableFields.push($component);
                     		    } else {
                     		        alert("Spreadsheet only works with XML data type.");
-                    		        $component.change(changeEvent(propertyType));
+//                    		        $component.change(changeEvent(propertyType));
+                    		        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
                     		    }
                     		    break;
                         }
                     } else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-						$component.on("dp.change", changeEvent(propertyType));
+						$("body").on("dp.change", "#"+$component.attr("id"), changeEvent(propertyType));
 					} else {
-						$component.change(changeEvent(propertyType, isMultiValue));
+						$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType, isMultiValue));
 					}
 
 					$controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
@@ -826,14 +848,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 							} else {
 								for(var pathIdx = 0; pathIdx < dataFiles.result.length; pathIdx++) {
 									if(!dataFiles.result[pathIdx].isDirectory) {
-										var elementId = 'preview-image';
+										var elementId = 'preview-image-'+_this._viewId;
 										var downloadUrl = profile.getDefaultDataStoreURL() + '/' + data.objects[0].code + "/" + dataFiles.result[pathIdx].pathInDataSet + "?sessionID=" + mainController.serverFacade.getSession();
 
 										var img = $("#" + elementId);
 										img.attr('src', downloadUrl);
 										img.attr('data-preview-loaded', 'true');
 										img.show();
-										$("#previewImageContainer").show();
+										$("#previewImageContainer-"+_this._viewId).show();
 										break;
 									}
 								}

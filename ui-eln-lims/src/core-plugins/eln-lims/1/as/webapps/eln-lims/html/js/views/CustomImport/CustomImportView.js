@@ -1,7 +1,8 @@
 function CustomImportView(customImportController, customImportModel) {
     this._controller = customImportController;
     this._model = customImportModel;
-    
+    this._viewId = mainController.getNextId();
+
     this.repaint = function(views) {
         var _this = this;
         var $header = views.header;

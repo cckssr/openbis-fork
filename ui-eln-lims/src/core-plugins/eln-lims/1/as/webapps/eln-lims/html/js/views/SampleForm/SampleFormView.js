@@ -20,6 +20,16 @@
 		this._previousGlobalEventListener = null;
 		this._sampleFormViewGlobalEventListener = null;
 		this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
+		this._viewId = mainController.getNextId();
+		this._dataSetViewerContainer = null;
+
+        var _refreshableFields = [];
+
+        this.refresh = function() {
+            for(var field of _refreshableFields) {
+                field.refresh();
+            }
+        }
 
 		this.repaint = function(views, loadFromTemplate) {
 			var $container = views.content;
@@ -111,18 +121,18 @@
 				if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
 					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                          _this._sampleFormController.createObject("ENTRY");
-                     }, null, "New Entry", "create-entry-btn");
+                     }, null, "New Entry", "create-entry-btn-sample-" + + _this._viewId);
                      toolbarModel.push({ component : $createEntry});
 
                     if(!isInventorySample){
                          var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                               _this._sampleFormController.createObject("FOLDER");
-                         }, null, "New Folder", "create-folder-btn");
+                         }, null, "New Folder", "create-folder-btn-sample-" + + _this._viewId);
                          toolbarModel.push({ component : $createFolder});
                      }
                      var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
                            _this._sampleFormController.createObject();
-                      }, "Other", "Create different object", "create-btn");
+                      }, "Other", "Create different object", "create-btn-sample-" + + _this._viewId);
                       toolbarModel.push({ component : $createBtn});
 				}
 	
@@ -138,7 +148,7 @@
 								};
 								mainController.changeView('showEditSamplePageFromPermId', args);
 							}, 100);
-						}, "Edit", "Edit object", "edit-btn");
+						}, "Edit", "Edit object", "edit-btn-sample-" + _this._viewId);
 						if(toolbarConfig.EDIT) {
 							continuedToolbarModel.push({ component : $editButton, tooltip: null });
 						}
@@ -176,6 +186,7 @@
 										    }
 
 										    mainController.sideMenu.deleteNodeByEntityPermId("SAMPLE", _this._sampleFormModel.sample.permId, true);
+										    mainController.tabContent.closeCurrentTab();
 										});
 							}
 						});
@@ -252,7 +263,7 @@
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-					}, "Dataset", "Upload dataset", "upload-btn");
+					}, "Dataset", "Upload dataset", "upload-btn-sample-"  + mainController.getNextId());
 					if(toolbarConfig.UPLOAD_DATASET) {
 						toolbarModel.push({ component : $uploadBtn, tooltip: null });
 					}
@@ -330,7 +341,10 @@
 					if(!_this._wasSideMenuCollapsed) {
                         mainController.sideMenu.expandSideMenu();
                     }
-				}, "Save", "Save changes", "save-btn");
+                    if(_this._sampleFormModel.mode === FormMode.CREATE) {
+                        mainController.tabContent.closeCurrentTab();
+                    }
+				}, "Save", "Save changes", "save-btn-sample-" + _this._viewId);
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
 				continuedToolbarModel.push({ component : $saveBtn });
@@ -403,7 +417,7 @@
 								Util.unblockUI();
 							});
 						});
-					}, "Templates", null);
+					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId());
 					continuedToolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
 				}
 			}
@@ -455,7 +469,6 @@
 				FormUtil.fixStringPropertiesForForm(documentPropertyTypeV3, this._sampleFormModel.sample);
 				var documentChangeEvent = function(jsEvent, newValue) {
 					var newCleanValue = Util.getEmptyIfNull(newValue);
-					_this._sampleFormModel.isFormDirty = true;
 					_this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
 					var titleStart = newCleanValue.indexOf("<h2>");
 					var titleEnd = newCleanValue.indexOf("</h2>");
@@ -475,6 +488,7 @@
 				var documentEditor = $("<div>", { class : "document-editor" });
 				if(!isReadOnly) {
 					documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
+
 				}
 	
 				var height = LayoutManager.secondColumnContent.outerHeight();
@@ -489,8 +503,19 @@
 				} else if(this._sampleFormModel.mode === FormMode.EDIT && value === "") {
 				    value = "<h2></h2><br><p></p>";
 				}
+
 				var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
-	
+	            _refreshableFields.push(documentEditorEditableFinal);
+
+                if(!isReadOnly) {
+                    documentEditorEditableToolbar.refresh = function() {
+                        var instance = CKEditorManager.getEditorById(documentEditorEditable.attr("id"));
+                        if(!instance) {
+                            this.empty();
+                        }
+                    }
+                    _refreshableFields.push(documentEditorEditableToolbar);
+                }
 				documentEditorEditableFinal.addClass("document-editor__editable");
 				documentEditorEditableFinal.attr("id", "DOCUMENT");
 				//  documentEditorEditableFinal.css("height", "100%");
@@ -603,10 +628,10 @@
 				this._reloadPreviewImage();
 				// Dataset Viewer
 
-				var $dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer", style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
-				this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer", profile, this._sampleFormModel.sample, mainController.serverFacade,
+				this._dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer-" + this._viewId, style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
+				this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer-" + this._viewId, profile, this._sampleFormModel.sample, mainController.serverFacade,
 				        profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true, this._sampleFormModel.mode);
-				mainController.sideMenu.addSubSideMenu($dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
+				mainController.sideMenu.addSubSideMenu(this._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
                 this._sampleFormModel.dataSetViewer.init();
 			}
 	
@@ -628,7 +653,7 @@
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                                 mainController.openHelpPage();
-                                            }, null, "Help", "help-btn");
+                                            }, null, "Help", "help-btn-sample-" + mainController.getNextId());
             continuedToolbarModel.push({ component : $helpBtn });
 
 
@@ -687,7 +712,7 @@
 
                 var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
                                     moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
-                }, null, null);
+                }, null, null, "back-btn-sample-"+ mainController.getNextId());
 
                 if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
                     $backBtn.attr("disabled", true);
@@ -699,7 +724,7 @@
 
                 var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
                                         moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
-                }, null, null);
+                }, null, null, "next-btn-sample-"+ mainController.getNextId());
 
                 if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
                     $nextBtn.attr("disabled", true);
@@ -846,7 +871,9 @@
 						}
 					} else {
 						var $component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);
-	
+						if(['SAMPLE', 'DATE', 'TIMESTAMP', "BOOLEAN", "CONTROLLEDVOCABULARY"].includes(propertyType.dataType)) {
+                            _refreshableFields.push($component);
+                        }
 						//Update values if is into edit mode
 						if(this._sampleFormModel.mode === FormMode.EDIT || loadFromTemplate) {
 							if(propertyType.dataType === "BOOLEAN") {
@@ -875,7 +902,6 @@
 							return function(jsEvent, newValue) {
 								var propertyTypeCode = null;
 								propertyTypeCode = propertyType.code;
-								_this._sampleFormModel.isFormDirty = true;
 								var field = $(this);
 								if(propertyType.dataType === "BOOLEAN") {
 									_this._sampleFormModel.sample.properties[propertyTypeCode] = FormUtil.getBooleanValue(field);
@@ -948,9 +974,10 @@
 								case 'Word Processor':
 									if(propertyType.dataType === "MULTILINE_VARCHAR") {
 										$component = FormUtil.activateRichTextProperties($component, changeEvent(propertyType), propertyType, value, false);
+										_refreshableFields.push($component);
 									} else {
 										alert("Word Processor only works with MULTILINE_VARCHAR data type, " + propertyType.code + " is " + propertyType.dataType + ".");
-										$component.change(changeEvent(propertyType));
+										$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
 									}
 									break;
 								case 'Spreadsheet':
@@ -958,16 +985,17 @@
 										var $jexcelContainer = $("<div>");
 										JExcelEditorManager.createField($jexcelContainer, this._sampleFormModel.mode, propertyType.code, this._sampleFormModel.sample);
 										$component = $jexcelContainer;
+										_refreshableFields.push($component);
 									} else {
 										alert("Spreadsheet only works with XML data type, " + propertyType.code + " is " + propertyType.dataType + ".");
-										$component.change(changeEvent(propertyType));
+										$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
 									}
 									break;
 							}
 						} else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-							$component.on("dp.change", changeEvent(propertyType));
+							$("body").on("dp.change", "#"+$component.attr("id"), changeEvent(propertyType));
 						} else {
-							$component.change(changeEvent(propertyType, isMultiValue));
+							$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType, isMultiValue));
 						}
 	
 						$controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label, null, null, semanticAnnotations);
@@ -1041,11 +1069,11 @@
 		this._createIdentificationInfoSection = function(hideShowOptionsModel, sampleType, entityPath) {
 			hideShowOptionsModel.push({
 				label : "Identification Info",
-				section : "#sample-identification-info"
+				section : "#sample-identification-info-"  + this._viewId
 			});
 	
 			var _this = this;
-			var $identificationInfo = $("<div>", { id : "sample-identification-info" });
+			var $identificationInfo = $("<div>", { id : "sample-identification-info-" + _this._viewId });
 			var $legend = $("<legend>").append("Identification Info");
 			var $fieldset = $("<div>");
 	
@@ -1076,7 +1104,6 @@
 					this.selectionStart = caretPosition;
 					this.selectionEnd = caretPosition;
 					_this._sampleFormModel.sample.code = textField.val();
-					_this._sampleFormModel.isFormDirty = true;
 				});
 				$codeField = FormUtil.getFieldForComponentWithLabel($textField, "Code");
 	
@@ -1084,7 +1111,6 @@
 					mainController.serverFacade.generateCode(sampleType, function(autoGeneratedCode) {
 						$textField.val(autoGeneratedCode);
 						_this._sampleFormModel.sample.code = autoGeneratedCode;
-						_this._sampleFormModel.isFormDirty = true;
 					});
 				}
 			} else {
@@ -1167,7 +1193,7 @@
 				requiredParents = sampleTypeDefinitionsExtension["SAMPLE_PARENTS_HINT"];
 			}
 	
-			var sampleParentsWidgetId = "sample-parents";
+			var sampleParentsWidgetId = "sample-parents-section-" + _this._viewId;
 			var $sampleParentsWidget = $("<div>", { "id" : sampleParentsWidgetId });
 	
 			var isDisabled = this._sampleFormModel.mode === FormMode.VIEW;
@@ -1196,8 +1222,9 @@
 																				annotations,
 																				this._sampleFormModel.sample.spaceCode,
 																				function() {
-																					_this._sampleFormModel.isFormDirty = true;
-																				});
+																				},
+																				this._viewId,
+																				);
 			var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
 	
 			if (
@@ -1217,7 +1244,7 @@
 				hideShowOptionsModel.push({
 					forceToShow : this._sampleFormModel.mode === FormMode.CREATE && (sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["FORCE_TO_SHOW_PARENTS_SECTION"]),
 					label : "Parents",
-					section : "#sample-parents",
+					section : "#" + sampleParentsWidgetId,
 					showByDefault : true,
 					beforeShowingAction : function() {
 						_this._sampleFormModel.sampleLinksParents.refresh();
@@ -1240,7 +1267,7 @@
 				requiredChildren = sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_HINT"];
 			}
 	
-			var sampleChildrenWidgetId = "sample-children";
+			var sampleChildrenWidgetId = "sample-children-section-" + _this._viewId;
 			var $sampleChildrenWidget = $("<div>", { "id" : sampleChildrenWidgetId });
 	
 			var currentChildrenLinks = null;
@@ -1285,8 +1312,9 @@
 																annotations,
 																spaceCode,
 																function() {
-																	_this._sampleFormModel.isFormDirty = true;
-																});
+																},
+																this._viewId,
+																);
 			if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
 				this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
 	
@@ -1299,21 +1327,21 @@
 	
 			var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
 			if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate_children'}).text("Generate " + childrenTitle);
-				$generateChildrenBtn.click(function(event) {
+				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate-children-'+this._viewId}).text("Generate " + childrenTitle);
+				$("body").on("click", '#generate-children-'+this._viewId, function(event) {
 					_this._generateChildren();
 				});
 	
 				var $generateChildrenBox = $("<div>")
 												.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
-												.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown' }))
+												.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown-'+this._viewId }))
 				$sampleChildrenWidget.append($generateChildrenBox);
 			}
 			$sampleChildrenWidget.hide();
 	
 			hideShowOptionsModel.push({
 				label : "Children",
-				section : "#sample-children",
+				section : "#" + sampleChildrenWidgetId,
 				showByDefault : true,
 				beforeShowingAction : function() {
 					_this._sampleFormModel.sampleLinksChildren.refresh();
@@ -1465,7 +1493,7 @@
 			// Utility self contained methods
 			var getGeneratedChildrenCodes = function() {
 				//Get selected parents
-				var $parentsFields = $("#parentsToGenerateChildren").find("input:checked");
+				var $parentsFields = $('#parentsToGenerateChildren-' + _this._viewId).find("input:checked");
 				//Group parents by type - this structure helps the create children algorithm
 				var selectedParentsByType = {};
 				for(var i = 0; i < $parentsFields.length; i++) {
@@ -1516,23 +1544,23 @@
 	
 				return generatedChildrenWithReplicas;
 			}
-	
+	        var _this = this;
 			var showPreview = function() {
-				$("#previewChildrenGenerator").empty();
+				$("#previewChildrenGenerator-"+_this._viewId).empty();
 	
 				var generatedChildren = getGeneratedChildrenCodes();
 				//Show generated children
 				if(generatedChildren) {
 					for(var i = 0; i < generatedChildren.length; i++) {
-						$("#previewChildrenGenerator").append(generatedChildren[i] + "<br />");
+						$("#previewChildrenGenerator-"+_this._viewId).append(generatedChildren[i] + "<br />");
 					}
 				}
 			}
 	
-			var _this = this;
 			// Buttons
-			var $generateButton = $("<a>", { "class" : "btn btn-default" }).append("Generate!");
-			$generateButton.click(function(event) {
+			var generateButtonId = "btn-generate-children-"+_this._viewId;
+			var $generateButton = $("<a>", { "id" : generateButtonId, "class" : "btn btn-default" }).append("Generate!");
+			$("body").on("click", "#"+generateButtonId, function(event) {
 				var generatedChildrenSpace = _this._sampleFormModel.sample.spaceCode;
 				var generatedChildrenProject = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
 				var numberOfReplicas = parseInt($("#childrenReplicas").val());
@@ -1541,7 +1569,7 @@
 					return;
 				}
 				var generatedChildrenCodes = getGeneratedChildrenCodes();
-				var generatedChildrenType = $("#childrenTypeSelector").val();
+				var generatedChildrenType = $("#childrenTypeSelector-"+ _this._viewId).val();
 				if(generatedChildrenType === "") {
 					Util.showUserError("Please select the children type.", function() {}, true);
 				} else {
@@ -1561,21 +1589,23 @@
 	
 	
 			});
-	
-			var $cancelButton = $("<a>", { "class" : "btn btn-default" }).append("<span class='glyphicon glyphicon-remove'></span>");
-			$cancelButton.click(function(event) {
+
+	        var cancelButtonId = "btn-generate-children-cancel-"+_this._viewId;
+			var $cancelButton = $("<a>", { "id" : cancelButtonId, "class" : "btn btn-default" }).append("<span class='glyphicon glyphicon-remove'></span>");
+			$("body").on("click", "#"+cancelButtonId, function(event) {
 				Util.unblockUI();
 			});
-	
-			var $selectAllButton = $("<a>", { "class" : "btn btn-default" }).append("Enable/Disable All");
+
+	        var selectAllButtonId = "btn-generate-children-selectAll-"+_this._viewId;
+			var $selectAllButton = $("<a>", { "id" : selectAllButtonId, "class" : "btn btn-default" }).append("Enable/Disable All");
 			$selectAllButton.attr("ison", "false");
 	
-			$selectAllButton.click(function(event) {
+			$("body").on("click", "#"+selectAllButtonId, function(event) {
 				var $button = $(this);
 				var isOn = !($button.attr("ison") === "true");
 				$button.attr("ison", isOn);
 	
-				var $parentsFields = $("#parentsToGenerateChildren").find("input");
+				var $parentsFields = $('#parentsToGenerateChildren-' + _this._viewId).find("input");
 				for(var i = 0; i < $parentsFields.length; i++) {
 					var $parentField = $parentsFields[i];
 					$parentField.checked = isOn;
@@ -1640,7 +1670,7 @@
 	
 			$parents.append($parentsTable);
 	
-			var $parentsComponent = $("<div>", { "id" : 'parentsToGenerateChildren'} );
+			var $parentsComponent = $("<div>", { "id" : 'parentsToGenerateChildren-' + _this._viewId} );
 			$parentsComponent.append($("<legend>").append("Parents ").append($selectAllButton))
 			$parentsComponent.append($parents);
 	
@@ -1657,7 +1687,7 @@
 				spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(this._sampleFormModel.sample.experimentIdentifierOrNull);
 			}
 	
-			var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector', true, null, null, spaceCode);
+			var $childrenTypeDropdown = FormUtil.getSampleTypeDropdown('childrenTypeSelector-'+ _this._viewId, true, null, null, spaceCode);
 			var $childrenTypeDropdownWithLabel = FormUtil.getFieldForComponentWithLabel($childrenTypeDropdown, 'Type');
 			$childrenComponent.append($childrenTypeDropdownWithLabel);
 	
@@ -1673,7 +1703,7 @@
 			// Preview
 			var $previewComponent = $("<div>");
 			$previewComponent.append($("<legend>").append("Preview"));
-			$previewComponent.append($("<div>", {"id" : "previewChildrenGenerator"}));
+			$previewComponent.append($("<div>", {"id" : "previewChildrenGenerator-"+_this._viewId}));
 	
 			// Mounting the widget with the components
 			var $childrenGenerator = $("<div>");
@@ -1751,26 +1781,27 @@
 
 		this._initTabHandling = function($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel) {
 			const _this = this;
-			
 			const $tabsContainer = $('<div class="tabs-container">');
 			const tabs = [
-				{ id: "detailsTab", label: "Details", href: "#sampleFormTab", active: true }
+				{ id: "detailsTab-"+_this._viewId, label: "Details", href: "#sampleFormTab-"+_this._viewId, active: true }
 			];
 			const $tabsContent = $('<div class="tab-content">');
-			const $sampleFormTab = $('<div id="sampleFormTab" class="tab-pane fade in active"></div>');
-			const $afsWidgetTab = $('<div id="afsWidgetTab" class="tab-pane fade"></div>');
+			const $sampleFormTab = $('<div id="sampleFormTab-'+_this._viewId+'" class="tab-pane fade in active"></div>');
+			const $afsWidgetTab = $('<div id="afsWidgetTab-'+_this._viewId+'" class="tab-pane fade"></div>');
 			
 			$tabsContent.append($sampleFormTab);
 			if (profile.isAFSAvailable()) {
 				$tabsContent.append($afsWidgetTab);
-				tabs.push({ id: "filesTab", label: "Files", href: "#afsWidgetTab", active: false });
+				tabs.push({ id: "filesTab-"+_this._viewId, label: "Files", href: "#afsWidgetTab-"+_this._viewId, active: false });
 			}
 			$tabsContainer.append($tabsContent);
 			
 			const tabsModel = {
-				containerId: "tabsContainer",
+				containerId: "tabsContainer-"+_this._viewId,
+				toolbarId: "toolbar-"+_this._viewId,
 				tabs
 			};
+
 			
 			const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyLeftToolbar");
 			const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyRightToolbar");
@@ -1790,48 +1821,50 @@
 			$sampleFormTab.append($form);
 			
 			if (this._sampleFormModel.activeTab) {
-				let $activeTabLink = $('a[data-toggle="tab"][href="' + this._sampleFormModel.activeTab + '"]');
+				let $activeTabLink = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"][href="' + this._sampleFormModel.activeTab + '"]');
 				if ($activeTabLink.length) {
 					$activeTabLink.tab('show');
 				}
 			} else {
-				let $initialActive = $('a[data-toggle="tab"].active');
+				let $initialActive = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"].active');
 				if ($initialActive.length) {
 					this._sampleFormModel.activeTab = $initialActive.attr('href');
 				}
 			}
 			
-			this._updateToolbarForTab(this._sampleFormModel.activeTab);
-
-			$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+			this._updateToolbarForTab(this._sampleFormModel.activeTab, _this._viewId);
+            $("body").on("shown.bs.tab", '#toolbar-' + _this._viewId + ' a[data-toggle="tab"]',  function(e) {
 				const target = $(e.target).attr("href");
 				_this._sampleFormModel.activeTab = target;
-				_this._updateToolbarForTab(target);
-				if (target === "#afsWidgetTab") {
-					if (!$("#afsWidgetTab").data("dssLoaded")) {
+				_this._updateToolbarForTab(target, _this._viewId);
+				if (target === "#afsWidgetTab-"+_this._viewId) {
+					if (!$("#afsWidgetTab-"+_this._viewId).data("dssLoaded")) {
 						_this._waitForExtOpenbisInitialization().then(()=> {
+						    $afsWidgetTab.empty()
 							_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
 						})
-						$("#afsWidgetTab").data("dssLoaded", true);
+						$("#afsWidgetTab-"+_this._viewId).data("dssLoaded", true);
 					}
 				}
 			});
 		};
 
-		this._updateToolbarForTab = function(activeTab) {
-			if (activeTab === "#afsWidgetTab") {
-				$(".normal-toolbar-container").hide();
-				$(".alternate-toolbar-container").show();
-				$(".normal-right-toolbar-container").hide();
-				$(".alternate-right-toolbar-container").show();
-				$(".extra-right-toolbar-container").show();
-			} else {
-				$(".normal-toolbar-container").show();
-				$(".alternate-toolbar-container").hide();
-				$(".normal-right-toolbar-container").show();
-				$(".alternate-right-toolbar-container").hide();
-				$(".extra-right-toolbar-container").hide();
-			}
+		this._updateToolbarForTab = function(activeTab, id) {
+            if (activeTab === "#afsWidgetTab-"+id) {
+                let container = $('#toolbar-' + id);
+                container.find(".normal-toolbar-container").hide();
+                container.find(".alternate-toolbar-container").show();
+                container.find(".normal-right-toolbar-container").hide();
+                container.find(".alternate-right-toolbar-container").show();
+                container.find(".extra-right-toolbar-container").show();
+            } else if(activeTab === "#sampleFormTab-"+id) {
+                let container = $('#toolbar-' + id);
+                container.find(".normal-toolbar-container").show();
+                container.find(".alternate-toolbar-container").hide();
+                container.find(".normal-right-toolbar-container").show();
+                container.find(".alternate-right-toolbar-container").hide();
+                container.find(".extra-right-toolbar-container").hide();
+            }
 		};
 
 		this._waitForExtOpenbisInitialization = function() {	

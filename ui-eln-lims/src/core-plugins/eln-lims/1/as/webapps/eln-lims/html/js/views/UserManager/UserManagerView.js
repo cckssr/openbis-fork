@@ -17,6 +17,7 @@
 function UserManagerView(userManagerController, userManagerModel) {
 	this._userManagerController = userManagerController;
 	this._userManagerModel = userManagerModel;
+	this._viewId = mainController.getNextId();
 	
 	this.repaint = function(views) {
 		var $header = views.header;
@@ -38,9 +39,9 @@ function UserManagerView(userManagerController, userManagerModel) {
 		// ToolBox
 		//
 		var $toolbox = $("<div>", { 'id' : 'toolBoxContainer', class : 'toolBox'});
-        var $createUser = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
-            _this._userManagerController.showCreateNewUserModal();
-        }, "New User", null, "createUser");
+         var $createUser = FormUtil.getToolbarButton("PLUS", function () {
+                         _this._userManagerController.showCreateNewUserModal();
+                    }, "New User", "New User", "create-user-btn-" + this._viewId);
 		$toolbox.append($createUser);
 		$header.append($toolbox);
 

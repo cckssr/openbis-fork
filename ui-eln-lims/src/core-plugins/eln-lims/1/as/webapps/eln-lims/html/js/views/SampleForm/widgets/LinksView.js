@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-function LinksView(linksController, linksModel) {
+function LinksView(linksController, linksModel, viewId) {
 	var linksController = linksController;
 	var linksModel = linksModel;
 	var linksView = this;
+	var viewId = viewId;
 	
 	var sampleGridContainerByType = {};
 	
@@ -434,7 +435,7 @@ function LinksView(linksController, linksModel) {
 
         var $closeBtn = FormUtil.getButtonWithIcon("glyphicon-remove", function() {
             $container.empty().hide();
-        });
+        }, null, null, 'close-sample-picker-'+viewId);
         var $closeBtnContainer = $("<div>").append($closeBtn).css({"text-align" : "right", "margin-bottom" : "5px"});
         $gridContainer.append($closeBtnContainer);
 
@@ -509,7 +510,7 @@ function LinksView(linksController, linksModel) {
 
         var $closeBtn = FormUtil.getButtonWithIcon("glyphicon-remove", function() {
             $container.empty().hide();
-        });
+        }, null, null, 'close-sample-paster-'+viewId);
         var $closeBtnContainer = $("<div>").append($closeBtn).css({"text-align" : "right", "margin-bottom" : "5px"});
         $gridContainer.append($closeBtnContainer);
 
@@ -601,7 +602,7 @@ function LinksView(linksController, linksModel) {
                     });
                 });
            });
-        }, "Add");
+        }, "Add", null, 'add-objects-'+viewId);
         $addObjectsBtn.css({"margin-top" : "5px"});
         $pasteContainer.append($addObjectsBtn);
 	}
@@ -611,7 +612,7 @@ function LinksView(linksController, linksModel) {
 			linksView.showSamplePicker($container, sampleTypeCode);
 		};
 
-		var id = "search-btn-" + sampleTableContainerLabel.toLowerCase().split(" ").join("-");
+		var id = "search-btn-" + sampleTableContainerLabel.toLowerCase().split(" ").join("-") + "-" + viewId;
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-search", (linksModel.isDisabled)?null:enabledFunction, "Search", null, id);
 		if(linksModel.isDisabled) {
 			return "";
@@ -638,6 +639,7 @@ function LinksView(linksController, linksModel) {
             id += linksModel.title.split(" ").join("-").toLowerCase();
             label = "Paste Any";
     	}
+    	id += "-" + viewId;
 
     	var $addBtn = FormUtil.getButtonWithIcon("glyphicon-paste", (linksModel.isDisabled)?null:enabledFunction, label, null, id);
     	if(linksModel.isDisabled) {
@@ -649,20 +651,20 @@ function LinksView(linksController, linksModel) {
 	
 	linksView.getAddSearchAnyBtn = function() {
 		var enabledFunction = function() {
-			var $sampleTypesDropdown = FormUtil.getSampleTypeDropdown("sampleTypeSelector", true, null, null, linksModel.spaceCode);
-			Util.showDropdownAndBlockUI("sampleTypeSelector", $sampleTypesDropdown);
+			var $sampleTypesDropdown = FormUtil.getSampleTypeDropdown("sampleTypeSelector-"+viewId, true, null, null, linksModel.spaceCode);
+			Util.showDropdownAndBlockUI("sampleTypeSelector-"+viewId, $sampleTypesDropdown);
 			
-			$("#sampleTypeSelector").on("change", function(event) {
+			$("#sampleTypeSelector-"+viewId).on("change", function(event) {
 				var sampleTypeCode = $(this).val();
 				linksView.showSamplePicker($samplePicker, sampleTypeCode);
 				Util.unblockUI();
 			});
 			
-			$("#sampleTypeSelectorCancel").on("click", function(event) { 
+			$("#sampleTypeSelector-"+viewId + 'Cancel').on("click", function(event) {
 				Util.unblockUI();
 			});
 		};
-		var id = "plus-btn-" + linksModel.title.split(" ").join("-").toLowerCase() + "-type-selector";
+		var id = "plus-btn-" + linksModel.title.split(" ").join("-").toLowerCase() + "-type-selector-"+viewId;
 		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-search", (linksModel.isDisabled)?null:enabledFunction, "Search Any", null, id);
 		
 		if(linksModel.isDisabled) {
@@ -673,8 +675,8 @@ function LinksView(linksController, linksModel) {
 	}
 
 	linksView.getAddAnyBarcode = function() {
-	    var $addBtn = FormUtil.getButtonWithIcon("glyphicon-barcode", null, null, "Scan Barcode/QR code");
-        $addBtn.click(function() {
+	    var $addBtn = FormUtil.getButtonWithIcon("glyphicon-barcode", null, null, "Scan Barcode/QR code", "get-add-any-barcode-"+viewId);
+        $("body").on('click', "#get-add-any-barcode-"+viewId, function() {
             BarcodeUtil.readBarcodeMulti("Add Objects", function(objects) {
                 for(var oIdx = 0; oIdx < objects.length; oIdx++) {
                     linksController.addSample({
