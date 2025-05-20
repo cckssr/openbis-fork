@@ -102,7 +102,9 @@ class ContentTabs extends React.PureComponent {
             style: {
               transition: 'none',
             }
-          }}>
+          }}
+          sx={this.props.sx}
+            >
           {this.props.tabs.map(tab => (
             <Tab
               key={tab.id}
