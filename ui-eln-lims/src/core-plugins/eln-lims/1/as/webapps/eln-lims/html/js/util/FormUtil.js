@@ -464,8 +464,8 @@ var FormUtil = new function() {
 		return $component;
 	}
 	
-	this.getDropdown = function(mapVals, placeHolder) {
-		$dropdown = this.getPlainDropdown(mapVals, placeHolder);
+	this.getDropdown = function(mapVals, placeHolder, id) {
+		$dropdown = this.getPlainDropdown(mapVals, placeHolder, id);
 		Select2Manager.add($dropdown);
 		return $dropdown;
 	}
@@ -486,11 +486,14 @@ var FormUtil = new function() {
 		}
 	};
 
-	this.getPlainDropdown = function(mapVals, placeHolder) {
+	this.getPlainDropdown = function(mapVals, placeHolder, id) {
 		var $component = $("<select>", {class : 'form-control'});
 		if (placeHolder) {
 			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
 		}
+		if(id) {
+            $component.attr("id", id);
+        }
 		this.setValuesToComponent($component, mapVals);
 		return $component;
 	};
@@ -676,8 +679,10 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
+            $("body").on("click", "#"+id, clickEvent)
+        } else if(clickEvent) {
+            $btn.click(clickEvent);
         }
-        $btn.click(clickEvent);
         return $btn;
 	}
 	
@@ -704,8 +709,10 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
+            $("body").on("click", "#"+id, clickEvent)
+        } else if(clickEvent) {
+            $btn.click(clickEvent);
         }
-        $btn.click(clickEvent);
         return $btn;
     }
 
@@ -979,39 +986,43 @@ var FormUtil = new function() {
 	}
 
 	this.getFieldForPropertyType = function(propertyType, timestampValue) {
-	    return this.getFieldForPropertyType(propertyType, timestampValue, false);
+	    return this.getFieldForPropertyType(propertyType, timestampValue, false, "-" + mainController.getNextId());
 	}
 	
-	this.getFieldForPropertyType = function(propertyType, timestampValue, isMultiValue) {
+	this.getFieldForPropertyType = function(propertyType, timestampValue, isMultiValue, idSuffix) {
 		var $component = null;
+		if(!idSuffix) {
+		    idSuffix = mainController.getNextId();
+		}
+
 		if (propertyType.dataType === "BOOLEAN") {
-			$component = this._getBoolean2Field(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getBoolean2Field(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "CONTROLLEDVOCABULARY") {
 			var vocabulary = profile.getVocabularyByCode(propertyType.vocabulary.code);
-			$component = this._getDropDownFieldForVocabulary(propertyType.code, vocabulary.terms, propertyType.description, propertyType.mandatory, isMultiValue);
+			$component = this._getDropDownFieldForVocabulary(propertyType.code + idSuffix, vocabulary.terms, propertyType.description, propertyType.mandatory, isMultiValue);
 		} else if (propertyType.dataType === "HYPERLINK") {
-			$component = this._getInputField("url", propertyType.code, propertyType.description, null, propertyType.mandatory);
+			$component = this._getInputField("url", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "INTEGER") {
-			$component = this._getNumberInputField(propertyType.code, propertyType.description, '1', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code + idSuffix, propertyType.description, '1', propertyType.mandatory);
 		} else if (propertyType.dataType === "MATERIAL") {
-			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+			$component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (["MULTILINE_VARCHAR", "JSON"].includes(propertyType.dataType)) {
-			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 			if(profile.isForcedMonospaceFont(propertyType)) {
 				$component.css("font-family", "Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace");
 			}
 		} else if (propertyType.dataType === "REAL") {
-			$component = this._getNumberInputField(propertyType.code, propertyType.description, 'any', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code + idSuffix, propertyType.description, 'any', propertyType.mandatory);
 		} else if (propertyType.dataType === "TIMESTAMP") {
-			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, false, timestampValue);
+			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, false, timestampValue);
 		} else if (propertyType.dataType === "DATE") {
-			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, true, timestampValue);
+			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, true, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
-            $component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
         } else if (['ARRAY_STRING', 'ARRAY_INTEGER', 'ARRAY_REAL', 'ARRAY_TIMESTAMP'].includes(propertyType.dataType)) {
-            $component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
         } else if (propertyType.dataType === "XML") {
-			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "SAMPLE") {
 		    var sampleTypeCode = propertyType.sampleTypeCode;
 		    var sampleTypePlaceholder = null;
@@ -1076,6 +1087,9 @@ var FormUtil = new function() {
 		    { code : "true", label : "true" },
 		    { code : "false", label : "false" }
 		], alt, isRequired);
+		$dropdown.refresh = function() {
+		    Select2Manager.add($dropdown);
+		}
 		return $dropdown;
 	}
 
@@ -1133,6 +1147,9 @@ var FormUtil = new function() {
 		}
 		$component.append($options);
 		Select2Manager.add($component);
+		$component.refresh = function() {
+		    Select2Manager.add($component);
+		}
 		return $component;
 	}
 	
@@ -1193,7 +1210,7 @@ var FormUtil = new function() {
     }
 
 	this._getDatePickerField = function(id, alt, isRequired, isDateOnly, value, excludeTimeZone) {
-		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt });
+		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt, 'id' : 'datetimepicker_parent_' + id });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
 		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'placeholder' : (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : (excludeTimeZone ? 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND)' : 'yyyy-MM-dd HH:mm:ss ZZ (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND TIMEZONE)')),
 			'data-format' : isDateOnly ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'});
@@ -1219,6 +1236,15 @@ var FormUtil = new function() {
         });
 
 		$component.append($subComponent);
+
+		$component.refresh = function() {
+		    $subComponent.datetimepicker({
+                format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
+                extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
+                useCurrent : false,
+                defaultDate : date
+            });
+		}
 
 		return $component;
 	}
@@ -1481,6 +1507,13 @@ var FormUtil = new function() {
 		if (propertyType && propertyType.mandatory) {
 			$component.attr('required', '');
 		}
+
+		$component.refresh = function() {
+		    var instance = CKEditorManager.getEditorById($component.attr("id"));
+            if(!instance) {
+                FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
+            }
+		}
 		return $component;
 	}
 	
@@ -1548,7 +1581,7 @@ var FormUtil = new function() {
 		if(!title) {
 			title = "More ... ";
 		}
-		var id = 'options-menu-btn';
+		var id = 'options-menu-btn-' + mainController.getNextId();
 		if (namespace) {
 		    id = id + "-" + namespace;
 		    id = id.toLowerCase();
@@ -1572,8 +1605,9 @@ var FormUtil = new function() {
 			} else {
 				var label = option.label;
 				var title = option.title ? option.title : label;
-				var id = _this.prepareId(title).toLowerCase();
+				var id = _this.prepareId(title).toLowerCase() + "-" +  + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
+				$("body").on("click", "#"+id, option.action)
 				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
@@ -1603,12 +1637,12 @@ var FormUtil = new function() {
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase();
+				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase() + '-' + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", { 'id' : id }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
-					var $section = event.data.section;
+					var $section = $(event.data.section);
 					$section.toggle(300, function() {
 						if ($section.css("display") === "none") {
 							$label.text("Show " + option.label);
@@ -1624,7 +1658,7 @@ var FormUtil = new function() {
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
 					});
 				};
-				$dropdownElement.click({option : option, label : $label, section : $section}, action);
+				$("body").on("click", "#"+id, {option : option, label : $label, section : $section}, action)
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		});
@@ -1673,6 +1707,7 @@ var FormUtil = new function() {
 		$alternateRightToolbar.css({ marginBottom: "0px" });	
 		
 		var containerId = tabsModel.containerId || "";
+		var toolbarId = tabsModel.toolbarId || "toolbar-id" + mainController.getNextId();
 		var tabs = tabsModel.tabs || [];
 		var tabsContainerOptions = { 
 		  class: "nav nav-tabs toolbar-tabs", 
@@ -1746,7 +1781,7 @@ var FormUtil = new function() {
 		  .append($alternateRightToolbarContainer)
 		  .append($tabsContainer);
 	  
-		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
+		var $combinedContainer = $("<div>", { id: toolbarId, class: "toolbar-with-tabs" }).css({
 		  display: "flex",
 		  alignItems: "center",
 		  justifyContent: "space-between",
@@ -1821,8 +1856,9 @@ var FormUtil = new function() {
 			mainController.changeView(view, arg, true);
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
-		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
-		link.click(click);
+		let idd = id + '-' + mainController.getNextId()
+		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : idd }).text(displayName);
+        $("body").on("click", "#"+idd, click)
 		return link;
 	}
 	
@@ -2780,6 +2816,7 @@ var FormUtil = new function() {
 			id = id[0] === '$' ? id.substring(1) : id;
 			id = id.split(".").join("");
 			id = id.split(" ").join("-").split("/").join("_");
+			id = id.split("(").join("_").split(")").join("_");
 		}
 		return id;
 	}

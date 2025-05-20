@@ -26,6 +26,7 @@ var BarcodeUtil = new function() {
                     if(action) {
                         action(results.objects[0]);
                     } else {
+                        mainController.tabContent.closeCurrentTab();
                         mainController.changeView('showViewSamplePageFromPermId', results.objects[0].permId.permId);
                     }
                 }
@@ -34,6 +35,7 @@ var BarcodeUtil = new function() {
     }
 
     this.readBarcodeFromScannerOrCamera = function($container, action) {
+        var viewId = mainController.getNextId();
         if(!$container) {
             mainController.changeView("showBlancPage", undefined, true);
             if(LayoutManager.isMobile()) {
@@ -42,12 +44,34 @@ var BarcodeUtil = new function() {
             var content = mainController.currentView.content;
             content.empty();
             $container = content;
+
+            var iconType = IconUtil.getNavigationIcon('BARCODE');
+            var icon = IconUtil.getIcon(iconType);
+
+             mainController.currentView.finalize = function() {
+                _this.disableAutomaticBarcodeReading();
+                _this.disableAutomaticBarcodeReadingFromCamera();
+                isCamera = false;
+                isScanner = false;
+            }
+
+            var tab = {
+                label: "SCAN_BARCODE",
+                changed: false,
+                icon: icon[0].outerHTML,
+                tree: "lab_notebook",
+                node: null,
+                finalize: mainController.currentView.finalize,
+            }
+            setTimeout(() => mainController.tabContent.updateCurrentTabInfo(tab), 100);
+
         }
 
         if(!action) {
             action = function(barcode, error) {
                 if(barcode) {
                     readSample(function(sample) {
+                        mainController.tabContent.closeCurrentTab();
                         mainController.changeView('showViewSamplePageFromPermId', sample.permId.permId);
                     });
                 }
@@ -65,7 +89,7 @@ var BarcodeUtil = new function() {
 
         var deviceInputs = [];
 
-        var $device = $("<div>", { class : "switch-toggle switch-candy-blue" });
+        var $device = $("<div>", { class : "switch-toggle switch-candy-blue", id : "devices-"+viewId });
         var $scannerInput = $("<input>", { id : "scanner", name : "device", type : "radio" });
         $device.append($scannerInput);
         deviceInputs.push($scannerInput);
@@ -144,7 +168,8 @@ var BarcodeUtil = new function() {
             isScanner = false;
         }
 
-        $device.change(onDeviceChange);
+//        $device.change(onDeviceChange);
+        $("body").on("change", "#devices-"+viewId, onDeviceChange);
 
         $container.append($form);
 
@@ -285,6 +310,7 @@ var BarcodeUtil = new function() {
     }
 
     this.preGenerateBarcodes = function(views, selectedBarcodes) {
+        var viewId = mainController.getNextId();
         views.header.append($("<h2>").append("Barcode/QR Code Generator"));
 
         var generateBarcodeText = null;
@@ -294,14 +320,16 @@ var BarcodeUtil = new function() {
             generateBarcodeText = "Update Custom Barcodes/QR Codes";
         }
 
-	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn-primary");
+        var generateBtnId = 'barcode-gen-btn-'+viewId;
+	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn-primary", generateBtnId);
         $generateBtn.css("margin-bottom", "14px");
 
         var $toolbar = $("<span>");
 
-        var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
+        var barcodeTypesDropdownId = "barcode-types-id-"+viewId;
+        var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes(), null, barcodeTypesDropdownId);
 
-        $barcodeTypesDropdown.on('change', function() {
+        $("body").on('change', '#'+barcodeTypesDropdownId, function() {
                    if(this.value === 'qrcode' || this.value === 'microqrcode') {
                         $height.val(50)
                         $width.val(50)
@@ -320,8 +348,11 @@ var BarcodeUtil = new function() {
                 numberDropdownModel[nIdx-1].selected = true;
             }
         }
-        var $numberDropdown = FormUtil.getDropdown(numberDropdownModel);
 
+        var numberDropdownId = "barcode-count-id-"+viewId;
+        var $numberDropdown = FormUtil.getDropdown(numberDropdownModel, null, numberDropdownId);
+
+        var widthId = "barcode-width-id-"+viewId;
         var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                             { label: '15 mm', value: 15 },
                                             { label: '20 mm', value: 20 },
@@ -331,8 +362,9 @@ var BarcodeUtil = new function() {
                                             { label: '40 mm', value: 40 },
                                             { label: '45 mm', value: 45 },
                                             { label: '50 mm', value: 50, selected: true }
-        ]);
+        ], null, widthId);
 
+        var heightId = "barcode-height-id-"+viewId;
         var $height = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
                                              { label: '15 mm', value: 15, selected: true },
                                              { label: '20 mm', value: 20 },
@@ -342,18 +374,20 @@ var BarcodeUtil = new function() {
                                              { label: '40 mm', value: 40 },
                                              { label: '45 mm', value: 45 },
                                              { label: '50 mm', value: 50 }
-        ]);
+        ], null, heightId);
 
+        var layoutId = "barcode-layout-id-"+viewId;
         var $layout = FormUtil.getDropdown([
                     { label: 'Split Layout',        value: 'split',         selected: true},
                     { label: 'Continuous Layout',   value: 'continuous' }
-                ]);
+                ], null, layoutId);
 
         var $layoutForPrinter = null;
 
         var pdf = null;
-		var $printButton = $("<a>", { 'class' : 'btn btn-default', style : 'margin-bottom:13px;' } ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
-        $printButton.click(function() {
+        var printButtonId = 'barcode-print-btn-'+viewId;
+		var $printButton = $("<a>", { 'id' : printButtonId, 'class' : 'btn btn-default', style : 'margin-bottom:13px;' } ).append($('<span>', { 'class' : 'glyphicon glyphicon-print' }));
+        $("body").on("click", "#"+printButtonId, function() {
             if(pdf !== null) {
                 pdf.save("barcodes.pdf");
             }
@@ -445,7 +479,7 @@ var BarcodeUtil = new function() {
         }
 
         if(selectedBarcodes === undefined) {
-            $generateBtn.click(function() {
+            $("body").on("click", "#"+generateBtnId, function() {
                 var value = parseInt($numberDropdown.val());
                 mainController.serverFacade.createPermIdStrings(value, function(newPermIds) {
                     addBarcodes(newPermIds);
@@ -453,13 +487,34 @@ var BarcodeUtil = new function() {
             });
             this.preloadLibrary();
         } else {
-            $generateBtn.click(function() {
+            $("body").on("click", "#"+generateBtnId, function() {
                 addBarcodes(selectedBarcodes);
             });
             this.preloadLibrary(function() {
                 $generateBtn.click();
             });
         }
+
+        var refreshController = new function() {
+            this.tabId = "BARCODE_GENERATOR-id";
+            this.refresh = function() {
+                var aa = viewId;
+                var barcodeTypesDropdown = $("#" + barcodeTypesDropdownId);
+                Select2Manager.add($("#" + barcodeTypesDropdownId));
+                Select2Manager.add($("#" + numberDropdownId));
+                Select2Manager.add($("#" + widthId));
+                Select2Manager.add($("#" + heightId));
+                Select2Manager.add($("#" + layoutId));
+
+
+//                barcodeTypesDropdown.attr("id", barcodeTypesDropdownId);
+
+            }
+
+
+        }
+        return refreshController;
+
     }
 
     this.preloadLibrary = function(doAfter) {
@@ -780,7 +835,13 @@ var BarcodeUtil = new function() {
 
         var $barcodeTypesDropdown = FormUtil.getDropdown(this.supportedBarcodes());
 
-        $barcodeTypesDropdown.on('change', function() {
+        var viewId = mainController.getNextId();
+
+        var barcodeTypesDropdownId = "barcode-types-"+viewId;
+        $barcodeTypesDropdown.attr("id", barcodeTypesDropdownId)
+
+        $("body").on('change', '#'+barcodeTypesDropdownId, function() {
+//        $barcodeTypesDropdown.on('change', function() {
                    if(this.value === 'qrcode' || this.value === 'microqrcode') {
                         $height.val(50)
                         $width.val(50)

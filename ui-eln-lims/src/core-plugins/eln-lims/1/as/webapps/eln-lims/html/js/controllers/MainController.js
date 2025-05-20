@@ -88,6 +88,11 @@ function MainController(profile) {
             }
 	    };
 	}();
+
+	this._counter = 1;
+	this.getNextId = function() {
+	    return this._counter++;
+	}
 	
 	// Views currently being displayed
 	this.views = {
@@ -95,6 +100,7 @@ function MainController(profile) {
 			mainHeader: null,
 			header : null,
 			content : null,
+			tabContent : null,
 			auxContent : null
 	}
 	
@@ -307,8 +313,14 @@ function MainController(profile) {
                                                     localReference.sideMenu = new SideMenuWidgetController(localReference);
                                                     localReference.mainHeader = new MainHeaderController(localReference);
                                                     localReference.views.mainHeader = $("<div>");
+
                                                     localReference.mainHeader.init(localReference.views.mainHeader, () => {});
                                                     localReference.views.menu = $("<div>");
+                                                    localReference.views.tabContent = $("<div>");
+                                                    localReference.tabContent = new TabContentController(localReference);
+
+                                                    localReference.tabContent.init(localReference.views.tabContent, () => {});
+//
                                                     localReference.sideMenu.init(localReference.views.menu, function() {
                                                         //Page reload using the URL info
                                                         var queryString = Util.queryString();
@@ -318,6 +330,7 @@ function MainController(profile) {
                                                         var hideMenu = queryString.hideMenu;
                                                         
                                                         LayoutManager.reloadView(localReference.views);
+//                                                        localReference.views.tabContent = LayoutManager.tabContent;
                                                         if(viewName && viewData) {
                                                             localReference.sideMenu.moveToNodeId(decodeURIComponent(menuUniqueId)).then(function(){
                                                                 localReference.changeView(viewName, viewData);
@@ -543,17 +556,17 @@ function MainController(profile) {
 
 				if(this.views.header) {
 					toPush.header = this.views.header;
-					toPush.header.detach();
+					//toPush.header.detach();
 				}
 
 				if(this.views.content) {
 					toPush.content = this.views.content;
-					toPush.content.detach();
+//					toPush.content.detach();
 				}
 
 				if(this.views.auxContent) {
 					toPush.auxContent = this.views.auxContent;
-					toPush.auxContent.detach();
+//					toPush.auxContent.detach();
 				}
 			}
 
@@ -575,172 +588,177 @@ function MainController(profile) {
 			switch (newViewChange) {
 			    case "showBarcodesGeneratorPage":
 			        document.title = "Barcodes Generator";
-			        var barcodesGeneratorViews = this._getNewViewModel(true, true, false);
-			        BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews);
-			        this.currentView = null;
 			        this.mainHeader.navigateToTab("TOOLS");
+			        var initialized = false;
+			        var barcodesGeneratorViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('BARCODE_GENERATOR'), () => {initialized=true});
+
+			        var controller = BarcodeUtil.preGenerateBarcodes(barcodesGeneratorViews);
+
+			        this.currentView = controller;
 			        break;
 				case "showJupyterWorkspace":
 					document.title = "Jupyter Workspace";
-					var views = this._getNewViewModel(false, true, false);
+					this.mainHeader.navigateToTab("TOOLS");
+					var views = this._getNewViewModel(false, true, false, TabContentUtil.getToolTabInfo('JUPYTER_WORKSPACE'));
 					var userId = this.serverFacade.getUserId();
 					var url = JupyterUtil.getJupyterURL();
 					views.content.append("Opening new tab/window with your Jupyter Workspace, please allow pop ups: " + url);
 					var win = window.open(url, '_blank');
 					win.focus(); 
 					this.currentView = null;
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showNewJupyterNotebookCreator":
+				    this.mainHeader.navigateToTab("TOOLS");
 					var jupyterNotebook = new JupyterNotebookController();
 					jupyterNotebook.init();
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showUserProfilePage":
 					document.title = "User Profile";
-					this._showUserProfilePage(FormMode.VIEW);
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showUserProfilePage(FormMode.VIEW);
 					break;
 				case "showEditUserProfilePage":
 					document.title = "Edit User Profile";
+					this.mainHeader.navigateToTab("TOOLS");
 					this._showUserProfilePage(FormMode.EDIT);
 					break;
 				case "showOtherToolsPage":
 					document.title = "Other Tools";
-					this._showOtherToolsPage();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showOtherToolsPage();
 					break;
 				case "showSettingsPage":
 				    document.title = "Settings";
-				    this._showSettingsPage(FormMode.VIEW, arg);
 				    this.mainHeader.navigateToTab("TOOLS");
+				    this._showSettingsPage(FormMode.VIEW, arg);
 				    break;
 				case "showEditSettingsPage":
 					document.title = "Edit Settings";
+					this.mainHeader.navigateToTab("TOOLS");
 					this._showSettingsPage(FormMode.EDIT, arg);
 					break;
                 case "showCustomImportPage":
                     document.title = "Custom Import";
-                    this._showCustomImportPage();
                     this.mainHeader.navigateToTab("TOOLS");
+                    this._showCustomImportPage();
                     break;
 				case "showExportTreePage":
 					document.title = "Export Builder";
+					this.mainHeader.navigateToTab("TOOLS");
 					var newExportView = new ExportTreeController(this);
-					var exportViews = this._getNewViewModel(true, true, false);
+					var exportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('EXPORT'));
 					newExportView.init(exportViews);
 					this.currentView = newExportView;
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showResearchCollectionExportPage":
 					document.title = "Research Collection Export Builder";
+					this.mainHeader.navigateToTab("TOOLS");
 					var newResearchCollectionExportView = new ResearchCollectionExportController(this);
-					var researchCollectionExportViews = this._getNewViewModel(true, true, false);
+					var researchCollectionExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('RESEARCH_COLLECTION'));
 					newResearchCollectionExportView.init(researchCollectionExportViews);
 					this.currentView = newResearchCollectionExportView;
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showZenodoExportPage":
 					document.title = "Zenodo Export Builder";
+					this.mainHeader.navigateToTab("TOOLS");
 					var newZenodoExportView = new ZenodoExportController(this);
-					var zenodoExportViews = this._getNewViewModel(true, true, false);
+					var zenodoExportViews = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('ZENODO_EXPORT'));
 					newZenodoExportView.init(zenodoExportViews);
 					this.currentView = newZenodoExportView;
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "showLabNotebookPage":
 					document.title = "Lab Notebook";
+					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
 					var newView = new LabNotebookController(this);
-					var views = this._getNewViewModel(true, true, false);
+					var views = this._getNewViewModel(true, true, false, TabContentUtil.getTopLevelTabInfo("LAB_NOTEBOOK"));
 					newView.init(views);
 					this.currentView = newView;
-					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
 					break;
 				case "showInventoryPage":
 					document.title = "Inventory";
+					this.mainHeader.navigateToTab("LIMS");
 					var newView = new InventoryController(this);
-					var views = this._getNewViewModel(true, true, false);
+					var views = this._getNewViewModel(true, true, false, TabContentUtil.getTopLevelTabInfo("INVENTORY"));
 					newView.init(views);
 					this.currentView = newView;
-					this.mainHeader.navigateToTab("LIMS");
 					break;
 				case "showAdvancedSearchPage":
 					document.title = "Advanced Search";
-					this._showAdvancedSearchPage(arg);
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showAdvancedSearchPage(arg);
 					break;
                 case "showDropboxMonitorPage":
                     document.title = "Dropbox Monitor";
-                    this._showDropboxMonitor();
                     this.mainHeader.navigateToTab("TOOLS");
+                    this._showDropboxMonitor();
                     break;
 				case "showArchivingHelperPage":
 					document.title = "Archiving Helper";
-					this._showArchivingHelper();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showArchivingHelper();
 					break;
 				case "showUnarchivingHelperPage":
 				    document.title = "Unarchiving Helper";
-				    this._showUnarchivingHelper();
 				    this.mainHeader.navigateToTab("TOOLS");
+				    this._showUnarchivingHelper();
 				    break;
 				case "showUserManagerPage":
 					document.title = "User Manager";
-					this._showUserManager();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showUserManager();
 					break;
                 case "showUserManagementConfigPage":
                     document.title = "User Management Config";
-                    this._showUserManagementConfig(arg);
                     this.mainHeader.navigateToTab("TOOLS");
+                    this._showUserManagementConfig(arg);
                     break;
 				case "showVocabularyManagerPage":
 					document.title = "Vocabulary Browser";
-					this._showVocabularyManager();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showVocabularyManager();
 					break;
 				case "showTrashcanPage":
 					document.title = "Trashcan";
-					this._showTrashcan();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showTrashcan();
 					break;
 				case "showStorageManager":
 					document.title = "Storage Manager";
-					this._showStorageManager();
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showStorageManager();
 					break;
 				case "showWelcomePage":
 					document.title = "Main Menu";
-					this._showWelcomePage();
 					this.mainHeader.navigateToTab("LAB_NOTEBOOK");
+					this._showWelcomePage();
 					break;
 				case "showBlancPage":
                     document.title = "Main Menu";
-                    this._showBlancPage();
                     this.mainHeader.navigateToTab("LAB_NOTEBOOK");
+                    this._showBlancPage();
                     break;
 				case "showStockPage":
 					document.title = "Stock";
+					this.mainHeader.navigateToTab("LIMS");
 					var newView = new StockController(this);
-					var views = this._getNewViewModel(true, true, false);
+					var views = this._getNewViewModel(true, true, false, TabContentUtil.getTopLevelTabInfo("STOCK"));
 					newView.init(views);
 					this.currentView = newView;
-					this.mainHeader.navigateToTab("LIMS");
 					break;
 				case "showSearchPage":
 					document.title = "Search";
 					var searchText = arg["searchText"];
 					var searchDomain = arg["searchDomain"];
 					var searchDomainLabel = arg["searchDomainLabel"];
-					this._showSearchPage(searchText, searchDomain, searchDomainLabel);
 					this.mainHeader.navigateToTab("TOOLS");
+					this._showSearchPage(searchText, searchDomain, searchDomainLabel);
 					break;
 				case "showSpacePage":
 					var _this = this;
 					this.serverFacade.getSpaceFromCode(arg, function(space) {
 						document.title = "Space " + space;
-						_this._showSpacePage(space);
 						_this.mainHeader.navigateToTabByEntity("SPACE", space, space);
+						_this._showSpacePage(space);
 					});
 					break;
                 case "showEditSpacePage":
@@ -754,16 +772,16 @@ function MainController(profile) {
 					var _this = this;
 					this.serverFacade.getProjectFromIdentifier(arg, function(project) {
 						document.title = "Project " + project.code;
-						_this._showProjectPage(project);
 						_this.mainHeader.navigateToTabByEntity("PROJECT", project.spaceCode, project.permId);
+						_this._showProjectPage(project);
 					});
 					break;
 				case "showProjectPageFromPermId":
 					var _this = this;
 					this.serverFacade.getProjectFromPermId(arg, function(project) {
 						document.title = "Project " + project.code;
-						_this._showProjectPage(project);
 						_this.mainHeader.navigateToTabByEntity("PROJECT", project.spaceCode, project.permId);
+						_this._showProjectPage(project);
 					});
 					break;
 				case "showEditProjectPageFromPermId":
@@ -800,9 +818,9 @@ function MainController(profile) {
 					var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : arg } };
 					var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
 					this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(data) {
+						_this.mainHeader.navigateToTabByEntity("COLLECTION", data);
 						mainController.changeView('showExperimentPageFromIdentifier', encodeURIComponent('["' +
 								data.objects[0].identifier.identifier + '",false]'));
-                        _this.mainHeader.navigateToTabByEntity("COLLECTION", data);
 					});
 					break;
 				case "showExperimentPageFromIdentifier":
@@ -811,9 +829,9 @@ function MainController(profile) {
 					if(typeof(argsArray) === 'string') {
 					    argsArray = [argsArray, false];
 					}
-					this._showExperimentView(argsArray[0], argsArray[1], "FORM_VIEW");
 					var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(argsArray[0])
-                    _this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
+					_this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
+					this._showExperimentView(argsArray[0], argsArray[1], "FORM_VIEW");
 					break;
 				case "showCreateDataSetPageFromExpPermId":
 					var _this = this;
@@ -855,13 +873,13 @@ function MainController(profile) {
 				case "showSamplesPage":
 					document.title = "" + ELNDictionary.Sample + " Browser";
 					var argsArray = arg ? arg : [null, null];
-                    this._showExperimentView(argsArray[0], argsArray[1], "LIST_VIEW");
                     if(arg) {
                         var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(argsArray[0])
                         this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
                     } else {
                         this.mainHeader.navigateToTab("TOOLS");
                     }
+                    this._showExperimentView(argsArray[0], argsArray[1], "LIST_VIEW");
 					break;
 				case "showSampleHierarchyPage":
 					document.title = "Hierarchy " + arg;
@@ -935,8 +953,8 @@ function MainController(profile) {
 						} else {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1 && _this.profile.inventorySpaces.length > 0;
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
 							_this.mainHeader.navigateToTabByEntity("OBJECT", data[0].spaceCode, data[0].permId);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo, activeTab);
 						}
 					});
 					break;
@@ -957,8 +975,8 @@ function MainController(profile) {
 						} else {
 							document.title = "" + Util.getDisplayNameFromCode(data[0].sampleTypeCode) + " " + data[0].code;
 							var isELNSubExperiment = $.inArray(data[0].spaceCode, _this.profile.inventorySpaces) === -1&& _this.profile.inventorySpaces.length > 0;
-							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
 							_this.mainHeader.navigateToTabByEntity("COLLECTION", data[0]);
+							_this._showViewSamplePage(data[0], isELNSubExperiment, paginationInfo);
 						}
 					});
 					break;
@@ -1005,9 +1023,9 @@ function MainController(profile) {
 								if(dataSetData.result[0].sampleIdentifierOrNull) {
 									_this.serverFacade.searchWithIdentifiers([dataSetData.result[0].sampleIdentifierOrNull], function(sampleData) {
 										document.title = "Data Set " + dataSetData.result[0].code;
-										_this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
 										var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].sampleIdentifierOrNull)
                                         _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
+                                        _this._showViewDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
 									_this.serverFacade.listExperimentsForIdentifiers([dataSetData.result[0].experimentIdentifier], function(experimentResults) {
@@ -1015,9 +1033,9 @@ function MainController(profile) {
 										var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
 										_this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(experimentData) {
 											document.title = "Data Set " + dataSetData.result[0].code;
-											_this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
 											var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(dataSetData.result[0].experimentIdentifier)
                                             _this.mainHeader.navigateToTabByEntity("DATASET", spaceCode, dataset.code);
+                                            _this._showViewDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
 										});
 									});
 								}
@@ -1074,22 +1092,23 @@ function MainController(profile) {
 					//window.scrollTo(0,0);
 					break;
 				case "showAbout":
+				    this.mainHeader.navigateToTab("TOOLS");
 					$.get('version.txt', function(data) {
 						Util.showInfo("Current Version: " + data);
 					}, 'text');
-					this.mainHeader.navigateToTab("TOOLS");
 					break;
 				case "EXTRA_PLUGIN_UTILITY":
 				    var uniqueViewName = arg;
+				    this.mainHeader.navigateToTab("TOOLS");
 				    var viewContainers = mainController._getNewViewModel(true, true, false);
                     var pluginUtility = profile.getPluginUtility(uniqueViewName);
                     pluginUtility.paintView(viewContainers.header, viewContainers.content);
-                    this.mainHeader.navigateToTab("TOOLS");
 				    break
 				default:
 					window.alert("The system tried to create a non existing view: " + newViewChange);
 					break;
 			}
+			mainController.tabContent.updateView(this.currentView)
 		} catch(err) {
 			Util.manageError(err);
 		}
@@ -1105,13 +1124,34 @@ function MainController(profile) {
 	//
 	// Functions that trigger view changes, should only be called from the main controller changeView method
 	//
-	this._getBackwardsCompatibleMainContainer = function(id) {
+	this._getBackwardsCompatibleMainContainer = function(id, navigationTabInfo) {
+	    var header = null;
 		var content = $("<div>");
 		content.css("padding", "10px");
 		
 		if(id) {
 			content.attr("id", id);
 		}
+
+		var navigationTab = navigationTabInfo;
+        if(!navigationTab) {
+            navigationTab = TabContentUtil.getCleanTab(" ", false, id);
+        }
+
+        if(navigationTab) {
+            let tabContentHeader = $("<div>", { id: "tab-content-header" });
+            let tabContentBody = $("<div>", { id: "tab-content-body" });
+
+            mainController.tabContent.openTab(navigationTab, function() {
+                tab = $("#" + navigationTab.id)
+                tab.empty()
+                tab.append(tabContentHeader);
+                tab.append(tabContentBody);
+            });
+            header = tabContentHeader;
+            tabContentBody.append(content);
+            content = tabContentBody;
+        }
 		
 		this.views.header = null;
 		this.views.content = content;
@@ -1121,13 +1161,38 @@ function MainController(profile) {
 		return content;
 	}
 	
-	this._getNewViewModel = function(withHeaderOrHeaderId, withContentOrContentId, withAuxContentOrAuxContentId) {
+	this._getNewViewModel = function(withHeaderOrHeaderId, withContentOrContentId, withAuxContentOrAuxContentId, navigationTabInfo, callback) {
 		var header = null;
 		var content = null;
 		var auxContent = null;
-		
+		var tab = null;
+
+		var navigationTab = navigationTabInfo;
+		if(!navigationTab) {
+		    navigationTab = TabContentUtil.getCleanTab();
+		}
+
+		if(navigationTab) {
+		    let tabContentHeader = $("<div>", { id: "tab-content-header" });
+		    let tabContentBody = $("<div>", { id: "tab-content-body" });
+
+            mainController.tabContent.openTab(navigationTab, function() {
+                tab = $("#" + navigationTab.id)
+                tab.empty()
+                tab.append(tabContentHeader);
+                tab.append(tabContentBody);
+                if(callback) {
+                    callback();
+                }
+            });
+            header = tabContentHeader;
+            content = tabContentBody;
+        }
+
 		if(withHeaderOrHeaderId) {
-			header = $("<div>");
+		    if(!header) {
+			    header = $("<div>");
+			}
 			header.css({ 
 				"padding" : "10px",
 				"height" : "100%",
@@ -1142,7 +1207,9 @@ function MainController(profile) {
 		}
 		
 		if(withContentOrContentId) {
-			content = $("<div>");
+		    if(!content) {
+			    content = $("<div>");
+			}
 			content.css({ 
 				"padding" : "10px"
 			});
@@ -1172,7 +1239,8 @@ function MainController(profile) {
 		var modificableViews = {
 				header : this.views.header,
 				content : this.views.content,
-				auxContent : this.views.auxContent
+				auxContent : this.views.auxContent,
+				tabId: navigationTab.id
 		};
 		
 		return modificableViews;
@@ -1180,7 +1248,7 @@ function MainController(profile) {
 
 	this._showUserProfilePage = function(mode) {
 		var newView = new UserProfileController(this, mode);
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('USER_PROFILE'));
 		newView.init(views);
 		this.currentView = newView;
 	}
@@ -1195,8 +1263,11 @@ function MainController(profile) {
 					window.alert("Settings object doesn't exist, settings can't be edited, this is not supposed to happen, contact your admin.");
 				} else {
 					var newView = new SettingsFormController(_this, data[0], mode);
-					var views = _this._getNewViewModel(true, true, false);
+					var tabInfo = TabContentUtil.getToolTabInfo('SETTINGS');
+					tabInfo.changed = mode === FormMode.EDIT;
+					var views = _this._getNewViewModel(true, true, false, tabInfo);
 					newView.init(views);
+					newView.tabId = tabInfo.id;
 					_this.currentView = newView;
 					if(mode === FormMode.EDIT) {
 					    _this.sideMenu.collapseSideMenu();
@@ -1208,12 +1279,12 @@ function MainController(profile) {
 	
     this._showCustomImportPage = function() {
         var newView = new CustomImportController(this);
-        var views = this._getNewViewModel(true, true, false);
+        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('IMPORT'));
         newView.init(views);
     }
 
     this._showOtherToolsPage = function() {
-        var views = this._getNewViewModel(true, true, false);
+        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('OTHER_TOOLS'));
         var $header = views.header;
         $header.append($("<h1>").append("Other Tools"));
         var $diskSpaceButton = FormUtil.getButtonWithIcon("glyphicon-hdd", function () {
@@ -1288,15 +1359,16 @@ function MainController(profile) {
 	}
 	
 	this._showStorageManager = function() {
-		var views = this._getNewViewModel(true, true, false);
-		
+	    var tabInfo = TabContentUtil.getToolTabInfo('STORAGE_MANAGER');
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		var storageManagerController = new StorageManagerController(this);
 		storageManagerController.init(views);
+		storageManagerController.tabId = tabInfo.id;
 		this.currentView = storageManagerController;
 	}
 	
 	this._showVocabularyManager = function() {
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('VOCABULARY_BROWSER'));
 		
 		var vocabularyManagerController = new VocabularyManagerController(this);
 		vocabularyManagerController.init(views);
@@ -1332,7 +1404,7 @@ function MainController(profile) {
     	}
 	
 	this._showDrawingBoard = function() {
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('DRAWING_BOARD'));
 		
 		var drawingBoardsController = new DrawingBoardsController(this);
 		drawingBoardsController.init(views);
@@ -1340,7 +1412,7 @@ function MainController(profile) {
 	}
 	
 	this._showUserManager = function() {
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('USER_MANAGER'));
 		
 		var userManagerController = new UserManagerController(this);
 		userManagerController.init(views);
@@ -1348,7 +1420,7 @@ function MainController(profile) {
 	}
 
 	this._showUserManagementConfig = function(arg) {
-        var views = this._getNewViewModel(true, true, false);
+        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('USER_MANAGEMENT_CONFIG'));
         
         var userManagementConfigController = new UserManagementConfigController(this, arg);
         userManagementConfigController.init(views);
@@ -1356,14 +1428,14 @@ function MainController(profile) {
     }
 
     this._showDropboxMonitor = function() {
-        var views = this._getNewViewModel(true, true, false);
+        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('DROPBOX_MONITOR'));
         var dropboxMonitorController = new DropboxMonitorController(this);
         dropboxMonitorController.init(views);
         this.currentView = dropboxMonitorController;
     }
     
     this._showArchivingHelper = function() {
-        var views = this._getNewViewModel(true, true, false);
+        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('ARCHIVING_HELPER'));
         
         var archivingHelperController = new ArchivingHelperController(this);
         archivingHelperController.init(views);
@@ -1371,7 +1443,7 @@ function MainController(profile) {
     }
     
 	this._showUnarchivingHelper = function() {
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('UNARCHAVING_HELPER'));
 		
 		var unarchivingHelperController = new UnarchivingHelperController(this);
 		unarchivingHelperController.init(views);
@@ -1379,7 +1451,6 @@ function MainController(profile) {
 	}
 	
 	this._showExperimentView = function(experimentIdentifier, forced, forcedView) {
-		var views = this._getNewViewModel(true, true, false);
         var _this = this;
 		if (experimentIdentifier) {
 			this.serverFacade.listExperimentsForIdentifiers([experimentIdentifier], function (data) {
@@ -1392,7 +1463,7 @@ function MainController(profile) {
 						if (experimentIdentifier === "null") { //Fix for reloads when there is text on the url
 							experimentIdentifier = null;
 						}
-
+                        var views = _this._getNewViewModel(true, true, false, TabContentUtil.getExperimentTabInfo(experiment, FormMode.VIEW));
 						var sampleTableController = new SampleTableController(_this,
                             Util.getDisplayNameFromCode(experiment.experimentTypeCode) + " " +
 							experimentIdentifier, experimentIdentifier, null, null, experiment);
@@ -1410,8 +1481,11 @@ function MainController(profile) {
 				}
 			});
 		} else {
+		var tabInfo = TabContentUtil.getToolTabInfo("OBJECT_BROWSER");
+		    var views = this._getNewViewModel(true, true, false, tabInfo);
 			sampleTableController = new SampleTableController(_this, "" + ELNDictionary.Sample +
 				" Browser", null, null);
+			sampleTableController.tabId = tabInfo.id;
 			sampleTableController.init(views);
 			_this.currentView = sampleTableController;
 		}
@@ -1421,10 +1495,24 @@ function MainController(profile) {
 		//Show View
 		var localInstance = this;
 		this.serverFacade.searchWithUniqueIdCompleteTree(permId, function(data) {
-			var views = localInstance._getNewViewModel(true, true, false);
-			var sampleHierarchy = new SampleHierarchy(localInstance.serverFacade, views, localInstance.profile, data[0]);
-			sampleHierarchy.init();
-			localInstance.currentView = sampleHierarchy;
+		    var sample = data[0];
+		    var initialized = false;
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW, "GRAPH"), () => {initialized=true} );
+			var sampleHierarchy = new SampleHierarchy(localInstance.serverFacade, views, localInstance.profile, sample);
+
+	        var counter = 50;
+	        var repeatUntilSet = function() {
+                if(initialized || counter <= 0) {
+                    sampleHierarchy.init();
+                    localInstance.currentView = sampleHierarchy;
+                    mainController.tabContent.updateView(sampleHierarchy)
+                } else {
+                    counter--;
+                   setTimeout(repeatUntilSet, 50);
+                }
+            }
+            repeatUntilSet();
+
 		});
 	}
 	
@@ -1440,10 +1528,11 @@ function MainController(profile) {
 					
 		this.serverFacade.searchForSamplesAdvanced(sCriteria, null, function(results) {
 			var sample = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW, "TABLE"));
 			var hierarchyTableController = new HierarchyTableController(this, sample);
 			hierarchyTableController.init(views);
 			localInstance.currentView = hierarchyTableController;
+			mainController.tabContent.updateView(hierarchyTableController)
 		});
 	}
 
@@ -1460,7 +1549,7 @@ function MainController(profile) {
 
 		this.serverFacade.searchForProjectsAdvanced(criteria, fetchOptions, function(results) {
 			var project = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getProjectTabInfo(project, FormMode.VIEW, "HISTORY"));
 			var historyController = new HistoryController(this, project);
 			historyController.init(views);
 			localInstance.currentView = historyController;
@@ -1481,7 +1570,7 @@ function MainController(profile) {
 
 		this.serverFacade.searchForExperimentsAdvanced(criteria, fetchOptions, function(results) {
 			var experiment = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getExperimentTabInfo(experiment, FormMode.VIEW, "HISTORY"));
 			var historyController = new HistoryController(this, experiment);
 			historyController.init(views);
 			localInstance.currentView = historyController;
@@ -1501,7 +1590,7 @@ function MainController(profile) {
 
 		this.serverFacade.searchForSamplesAdvanced(criteria, fetchOptions, function(results) {
 			var sample = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW, "HISTORY"));
 			var historyController = new HistoryController(this, sample);
 			historyController.init(views);
 			localInstance.currentView = historyController;
@@ -1521,7 +1610,7 @@ function MainController(profile) {
 
 		this.serverFacade.searchForDataSetsAdvanced(criteria, fetchOptions, function(results) {
 			var dataset = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW, "HISTORY"));
 			var historyController = new HistoryController(this, dataset);
 			historyController.init(views);
 			localInstance.currentView = historyController;
@@ -1540,10 +1629,11 @@ function MainController(profile) {
 					
 		this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
 			var dataset = results.objects[0];
-			var views = localInstance._getNewViewModel(true, true, false);
+			var views = localInstance._getNewViewModel(true, true, false, TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW, "TABLE"));
 			var hierarchyTableController = new HierarchyTableController(this, dataset);
 			hierarchyTableController.init(views);
 			localInstance.currentView = hierarchyTableController;
+			mainController.tabContent.updateView(hierarchyTableController)
 		});
 	}
 
@@ -1570,8 +1660,10 @@ function MainController(profile) {
 
         var sampleFormController = new SampleFormController(this, FormMode.CREATE, sample);
         this.currentView = sampleFormController;
-        var views = this._getNewViewModel(true, true, false);
+        var tabInfo = TabContentUtil.getCleanTab("CREATE_SAMPLE", true);
+        var views = this._getNewViewModel(true, true, false, tabInfo);
         sampleFormController.init(views);
+        sampleFormController.tabId = tabInfo.id;
         this.sideMenu.collapseSideMenu();
 	}
 	
@@ -1592,24 +1684,29 @@ function MainController(profile) {
 		}
 		var sampleFormController = new SampleFormController(this, FormMode.CREATE, sample);
 		this.currentView = sampleFormController;
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getCleanTab("CREATE_SAMPLE", true);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		sampleFormController.init(views);
+		sampleFormController.tabId = tabInfo.id;
 		this.sideMenu.collapseSideMenu();
 	}
 	
 	this._showTrashcan = function() {
 		var trashcanController = new TrashManagerController(this);
 		this.trashcanController = trashcanController;
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('TRASHCAN'));
 		trashcanController.init(views);
 	}
 	
 	this._showViewSamplePage = function(sample, isELNSubExperiment, paginationInfo, activeTab) {
 		//Show Form
 		var sampleFormController = new SampleFormController(this, FormMode.VIEW, sample, paginationInfo, activeTab);
-		this.currentView = sampleFormController;
-		var views = this._getNewViewModel(true, true, true);
+		var tabInfo = TabContentUtil.getSampleTabInfo(sample, FormMode.VIEW);
+		var views = this._getNewViewModel(true, true, true, tabInfo);
 		sampleFormController.init(views);
+		sampleFormController.tabId = tabInfo.id;
+		this.currentView = sampleFormController;
+		mainController.tabContent.updateView(this.currentView)
 	}
 	
 	this._showEditSamplePage = function(sample, isELNSubExperiment, paginationInfo) {
@@ -1618,8 +1715,10 @@ function MainController(profile) {
 		this.serverFacade.searchWithUniqueId(sample.permId, function(data) {
 			var sampleFormController = new SampleFormController(localInstance, FormMode.EDIT, data[0], paginationInfo);
 			localInstance.currentView = sampleFormController;
-			var views = localInstance._getNewViewModel(true, true, false);
+			var tabInfo = TabContentUtil.getSampleTabInfo(sample, FormMode.EDIT)
+			var views = localInstance._getNewViewModel(true, true, false, tabInfo);
 			sampleFormController.init(views);
+			sampleFormController.tabId = tabInfo.id;
 			localInstance.sideMenu.collapseSideMenu();
 		});
 	}
@@ -1627,8 +1726,10 @@ function MainController(profile) {
     this._showCreateSpacePage = function(isInventory) {
         //Show Form
         var spaceFormController = new SpaceFormController(this, FormMode.CREATE, isInventory);
-        var views = this._getNewViewModel(true, true, false);
+        var tabInfo = TabContentUtil.getCleanTab("CREATE_SPACE", true);
+        var views = this._getNewViewModel(true, true, false, tabInfo);
         spaceFormController.init(views);
+        spaceFormController.tabId = tabInfo.id;
         this.currentView = spaceFormController;
         this.sideMenu.collapseSideMenu();
     }
@@ -1637,16 +1738,20 @@ function MainController(profile) {
 	    var isRegularSpace = (SettingsManagerUtils.isInventorySpace(space) || SettingsManagerUtils.isStockSpace(space));
 		//Show Form
 		var spaceFormController = new SpaceFormController(this, FormMode.VIEW, isRegularSpace, space);
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getSpaceTabInfo(space, FormMode.VIEW));
 		spaceFormController.init(views);
 		this.currentView = spaceFormController;
+		this.currentView.tabId = views.tabId;
+        mainController.tabContent.updateView(this.currentView)
 	}
 	
     this._showEditSpacePage = function(space) {
         //Show Form
         var spaceFormController = new SpaceFormController(this, FormMode.EDIT, false, space);
-        var views = this._getNewViewModel(true, true, false);
+        var tabInfo = TabContentUtil.getSpaceTabInfo(space, FormMode.EDIT);
+        var views = this._getNewViewModel(true, true, false, tabInfo);
         spaceFormController.init(views);
+        spaceFormController.tabId = tabInfo.id;
         this.currentView = spaceFormController;
         this.sideMenu.collapseSideMenu();
     }
@@ -1654,8 +1759,10 @@ function MainController(profile) {
 	this._showCreateProjectPage = function(spaceCode) {
 		//Show Form
 		var projectFormController = new ProjectFormController(this, FormMode.CREATE, {spaceCode : spaceCode});
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getCleanTab("CREATE_PROJECT", true);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		projectFormController.init(views);
+		projectFormController.tabId = tabInfo.id;
 		this.currentView = projectFormController;
 		this.sideMenu.collapseSideMenu();
 	}
@@ -1663,7 +1770,7 @@ function MainController(profile) {
 	this._showProjectPage = function(project) {
 		//Show Form
 		var projectFormController = new ProjectFormController(this, FormMode.VIEW, project);
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getProjectTabInfo(project, FormMode.VIEW));
 		projectFormController.init(views);
 		this.currentView = projectFormController;
 	}
@@ -1671,8 +1778,10 @@ function MainController(profile) {
 	this._showEditProjectPage = function(project) {
 		//Show Form
 		var projectFormController = new ProjectFormController(this, FormMode.EDIT, project);
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getProjectTabInfo(project, FormMode.EDIT);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		projectFormController.init(views);
+		projectFormController.tabId = tabInfo.id;
 		this.currentView = projectFormController;
 		this.sideMenu.collapseSideMenu();
 	}
@@ -1680,9 +1789,12 @@ function MainController(profile) {
 	this._showExperimentPage = function(experiment, mode) {
 		//Show Form
 		var experimentFormController = new ExperimentFormController(this, mode, experiment);
-		var views = this._getNewViewModel(true, true, mode === FormMode.VIEW);
+
+		var views = this._getNewViewModel(true, true, undefined, TabContentUtil.getExperimentTabInfo(experiment, mode));
 		experimentFormController.init(views);
 		this.currentView = experimentFormController;
+		this.currentView.tabId = views.tabId;
+        mainController.tabContent.updateView(this.currentView)
 		if(mode !== FormMode.VIEW) {
 		    this.sideMenu.collapseSideMenu();
 		}
@@ -1691,8 +1803,10 @@ function MainController(profile) {
 	this._showCreateDataSetPage = function(entity) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.CREATE, entity, null);
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getDataSetTabInfo(null, FormMode.CREATE);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
+		newView.tabId = tabInfo.id;
 		this.currentView = newView;
 		this.sideMenu.collapseSideMenu();
 	}
@@ -1700,7 +1814,7 @@ function MainController(profile) {
 	this._showViewDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.VIEW, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
-		var views = this._getNewViewModel(true, true, false);
+		var views = this._getNewViewModel(true, true, false, TabContentUtil.getDataSetTabInfo(dataset, FormMode.VIEW));
 		newView.init(views);
 		this.currentView = newView;
 	}
@@ -1708,8 +1822,10 @@ function MainController(profile) {
 	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3) {
 		//Show Form
 		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3);
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.EDIT);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
+		newView.tabId = tabInfo.id;
 		this.currentView = newView;
 		this.sideMenu.collapseSideMenu();
 	}
@@ -1724,9 +1840,10 @@ function MainController(profile) {
 		} else {
 			newView = new AdvancedSearchController(this);
 		}
-		
-		var views = this._getNewViewModel(true, true, false);
+		var tabInfo = TabContentUtil.getToolTabInfo('SEARCH', freeText);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);
+		newView.tabId = tabInfo.id;
 		if(freeText) {
 		    setTimeout(function(){ newView.search(); }, 1000);
 		}
