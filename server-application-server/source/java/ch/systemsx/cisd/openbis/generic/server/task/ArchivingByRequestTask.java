@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
+import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
@@ -37,11 +40,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.PhysicalDataSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
+import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
@@ -94,12 +100,15 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
     {
         IApplicationServerInternalApi service = getService();
         String sessionToken = null;
-        try {
+        try
+        {
             sessionToken = service.loginAsSystem();
             execute(service, sessionToken);
             service.logout(sessionToken);
-        } catch (Exception exception) {
-            if (sessionToken != null) {
+        } catch (Exception exception)
+        {
+            if (sessionToken != null)
+            {
                 service.logout(sessionToken);
             }
             throw exception;
@@ -108,14 +117,45 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
 
     public void execute(IApplicationServerInternalApi service, String sessionToken)
     {
-        if (MaintenanceTaskUtils.areAllDataStoreServersRunning(service, sessionToken) == false)
+        // DSS
+        if (MaintenanceTaskUtils.areAllDataStoreServersRunning(service, sessionToken))
         {
-            operationLog.info("Not executed because DSS isn't running (yet).");
-            return;
+            List<DataSet> dssDataSets = getDataSetsToBeArchived(service, DataStoreKind.DSS, sessionToken);
+            List<ArchiveRequest> dssRequests = groupAndChunkDataSets(dssDataSets);
+
+            for (ArchiveRequest dssRequest : dssRequests)
+            {
+                service.archiveDataSets(sessionToken, dssRequest.dataSetPermIds, dssRequest.archiveOptions);
+            }
+        } else
+        {
+            operationLog.info("Archiving of DSS data sets was not executed because DSS isn't running (yet).");
         }
-        List<DataSet> dataSets = getDataSetsToBeArchived(service, sessionToken);
-        operationLog.info(dataSets.size() + " data sets to be archived.");
+
+        // AFS
+        List<DataSet> afsDataSets = getDataSetsToBeArchived(service, DataStoreKind.AFS, sessionToken);
+        List<ArchiveRequest> afsRequests = groupAndChunkDataSets(afsDataSets);
+        DatabaseConfigurationContext messagesDatabaseConfiguration = CommonServiceProvider.getMessagesDatabaseConfigurationContext();
+        MessagesDatabase messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
+
+        messagesDatabase.begin();
+        for (ArchiveRequest afsRequest : afsRequests)
+        {
+            List<String> dataSetCodes = afsRequest.getDataSetPermIds().stream().map(DataSetPermId::getPermId).collect(Collectors.toList());
+            ArchiveDataSetMessage archiveMessage = new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes,
+                    afsRequest.getArchiveOptions().isRemoveFromDataStore(),
+                    afsRequest.getArchiveOptions().getOptions());
+            messagesDatabase.getMessagesDAO().create(archiveMessage.serialize(JacksonObjectMapper.getInstance()));
+        }
+        messagesDatabase.commit();
+    }
+
+    private List<ArchiveRequest> groupAndChunkDataSets(List<DataSet> dataSets)
+    {
+        List<ArchiveRequest> result = new ArrayList<>();
+
         Map<String, List<DataSet>> dataSetsByGroups = getDataSetsByGroups(getGroups(), dataSets);
+
         for (Entry<String, List<DataSet>> entry : dataSetsByGroups.entrySet())
         {
             String groupKey = entry.getKey();
@@ -131,8 +171,8 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
                             + MAXIMUM_CONTAINER_SIZE_IN_BYTES + ": "
                             + chunk.get(0).getDataSet().getPhysicalData().getSize() + " > " + maximumContainerSize);
                 }
-                List<DataSetPermId> ids = chunk.stream().map(i -> i.getDataSet().getPermId()).collect(Collectors.toList());
-                if (ids.isEmpty() == false)
+                List<DataSetPermId> permIds = chunk.stream().map(i -> i.getDataSet().getPermId()).collect(Collectors.toList());
+                if (permIds.isEmpty() == false)
                 {
                     DataSetArchiveOptions archiveOptions = new DataSetArchiveOptions();
                     archiveOptions.setRemoveFromDataStore(keepInStore == false);
@@ -140,22 +180,27 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
                     {
                         archiveOptions.withOption(Constants.SUB_DIR_KEY, groupKey.toLowerCase());
                     }
-                    service.archiveDataSets(sessionToken, ids, archiveOptions);
+
+                    ArchiveRequest request = new ArchiveRequest();
+                    request.setDataSetPermIds(permIds);
+                    request.setArchiveOptions(archiveOptions);
                 }
             }
         }
+
+        return result;
     }
 
     static <T extends SizeHolder> List<List<T>> getChunks(List<T> items, long minChunkSize, long maxChunkSize)
     {
         Collections.sort(items, new SimpleComparator<T, Long>()
+        {
+            @Override
+            public Long evaluate(T item)
             {
-                @Override
-                public Long evaluate(T item)
-                {
-                    return -item.getSize();
-                }
-            });
+                return -item.getSize();
+            }
+        });
         List<List<T>> chunks = new ArrayList<>();
         List<T> currentChunk = new ArrayList<>();
         long currentChunkSize = 0;
@@ -193,9 +238,10 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
         return chunks;
     }
 
-    private List<DataSet> getDataSetsToBeArchived(IApplicationServerInternalApi service, String sessionToken)
+    private List<DataSet> getDataSetsToBeArchived(IApplicationServerInternalApi service, DataStoreKind dataStoreKind, String sessionToken)
     {
         DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
+        searchCriteria.withDataStore().withKind().thatIn(dataStoreKind);
         PhysicalDataSearchCriteria physicalSearchCriteria = searchCriteria.withPhysicalData();
         physicalSearchCriteria.withPresentInArchive().thatEquals(false);
         physicalSearchCriteria.withArchivingRequested().thatEquals(true);
@@ -224,6 +270,9 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
         {
             operationLog.warn("The size of the following data sets is unknown: " + CollectionUtils.abbreviate(dataSetsWithUnknownSize, 100));
         }
+
+        operationLog.info("Found " + dataSets.size() + " data sets to be archived at " + dataStoreKind + ".");
+
         return result;
     }
 
@@ -315,6 +364,34 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
             return dataSet;
         }
 
+    }
+
+    private static class ArchiveRequest
+    {
+
+        public List<DataSetPermId> dataSetPermIds;
+
+        public DataSetArchiveOptions archiveOptions;
+
+        public List<DataSetPermId> getDataSetPermIds()
+        {
+            return dataSetPermIds;
+        }
+
+        public void setDataSetPermIds(final List<DataSetPermId> dataSetPermIds)
+        {
+            this.dataSetPermIds = dataSetPermIds;
+        }
+
+        public DataSetArchiveOptions getArchiveOptions()
+        {
+            return archiveOptions;
+        }
+
+        public void setArchiveOptions(final DataSetArchiveOptions archiveOptions)
+        {
+            this.archiveOptions = archiveOptions;
+        }
     }
 
 }

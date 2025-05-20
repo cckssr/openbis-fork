@@ -27,6 +27,7 @@ configurations {
 dependencies {
     annotationProcessor 'lombok:lombok:1.18.22'
     implementation project(':lib-openbis-commonbase'),
+            project(':lib-openbis-messages'),
             project(':lib-data-store-commonbase'),
             project(':lib-data-store-common'),
             project(':lib-mail'),

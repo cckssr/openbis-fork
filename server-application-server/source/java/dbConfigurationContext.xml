@@ -46,4 +46,27 @@
         <property name="activeConnectionsLogIntervalProp" value="${database.active-connections-log-interval}" />
     </bean>
 
+    <bean id="messages-db-configuration-context"
+          class="ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext" init-method="init" autowire-candidate="false">
+        <property name="basicDatabaseName" value="messages" />
+        <property name="createFromScratchProp" value="${messages-database.create-from-scratch}" />
+        <property name="forceCreateWithInitialDataProp" value="${messages-database.force-create-with-initial-data}" />
+        <property name="scriptSingleStepModeProp" value="${messages-database.script-single-step-mode}" />
+        <property name="urlHostPart" value="${messages-database.url-host-part}" />
+        <property name="adminUser" value="${messages-database.admin-user}" />
+        <property name="owner" value="${messages-database.owner}" />
+        <property name="readOnlyGroup" value="openbis_readonly" />
+        <property name="password" value="${messages-database.owner-password}" />
+        <property name="adminPassword" value="${messages-database.admin-password}" />
+        <property name="databaseKind" value="${messages-database.kind}" />
+        <property name="databaseEngineCode" value="${messages-database.engine}" />
+        <property name="validVersions" value="${messages-database.validVersions}" />
+        <property name="scriptFolder" value="${messages-database.script-folder}" />
+        <property name="scriptFolders" value="${messages-database.script-folders}" />
+        <property name="maxWaitForConnectionProp" value="${messages-database.max-wait-for-connection}" />
+        <property name="maxActiveConnectionsProp" value="${messages-database.max-active-connections}" />
+        <property name="maxIdleConnectionsProp" value="${messages-database.max-idle-connections}" />
+        <property name="activeConnectionsLogIntervalProp" value="${messages-database.active-connections-log-interval}" />
+    </bean>
+
 </beans>

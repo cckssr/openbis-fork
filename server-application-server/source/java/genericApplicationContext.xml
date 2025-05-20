@@ -109,6 +109,21 @@
 		</constructor-arg>
 	</bean>
 
+	<bean id="messages-db-sql-script-provider" class="ch.systemsx.cisd.dbmigration.DBMigrationEngine"
+		  factory-method="createOrMigrateDatabaseAndGetScriptProvider">
+		<constructor-arg ref="messages-db-configuration-context" />
+		<constructor-arg>
+			<bean class="ch.ethz.sis.messages.db.MessagesDatabaseVersionHolder"
+				  factory-method="getDatabaseVersionStatic" />
+		</constructor-arg>
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+	</bean>
+
 	<bean id="dao-factory"
 		class="ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DAOFactory">
 		<constructor-arg ref="db-configuration-context" />
