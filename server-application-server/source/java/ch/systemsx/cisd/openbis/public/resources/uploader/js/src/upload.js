@@ -358,6 +358,14 @@ var Uploader = new function () {
     }
 
     this.init = function(opts) {
+             // Settings might be overwritten by init() parameters
+            settings = $.extend({}, settings, opts);
+            settings.smart_mode = settings.smart_mode && defaults.smart_mode;
+            var viewId = settings.viewId;
+
+            var uploadIconId = "upload-icon-" + viewId;
+            $("#upload-icon").attr("id", uploadIconId);
+
             // Checks whether the browser can show SVG, if not PNGs are used
             var svgSupported = (function() {
                 var svg;
@@ -368,16 +376,17 @@ var Uploader = new function () {
                     (navigator.userAgent.match(/(Safari|MSIE [5-9])/)
                      && !navigator.userAgent.match(/Chrome/));
             })();
+
             if (!svgSupported) {
-                $("#upload-icon").replaceWith("<img id=\"upload-icon\" src=\"img/upload-icon.png\" width=\"200\" height=\"140\">");
+                $("#"+uploadIconId).replaceWith("<img id=\""+uploadIconId+"\" src=\"img/upload-icon.png\" width=\"200\" height=\"140\">");
                 $("#play-button").replaceWith("<img id=\"play-button\" src=\"img/play-button.png\" width=\"12\" height=\"12\" class=\"mini-button\">");
                 $("#stop-button").replaceWith("<img id=\"stop-button\" src=\"img/stop-button.png\" width=\"12\" height=\"12\" class=\"mini-button\">");
                 $("#pause-button").replaceWith("<img id=\"pause-button\" src=\"img/pause-button.png\" width=\"12\" height=\"12\" class=\"mini-button\">");
             }
             // Site-spezifische Einstellungen aus Konfigurationsdatei lesen
-            
+
             /* pkupczyk: we don't need this
-             
+
             $.ajax("config.json", { async: false })
                 .done(function(data) {
                     settings = $.extend({}, settings, data);
@@ -386,11 +395,11 @@ var Uploader = new function () {
                     console.log([jqXHR, textStatus, errorThrown]);
                 });
             */
-            
-            // Settings might be overwritten by init() parameters
-            settings = $.extend({}, settings, opts);
-            settings.smart_mode = settings.smart_mode && defaults.smart_mode;
-            
+
+
+
+
+
             // pkupczyk: we do not provide listing of uploaded files yet
             //$("h2 > a").attr("href", settings.upload_dir);
             var fileOrFilesText = settings.singleFile ? "file" : "files";
@@ -400,16 +409,21 @@ var Uploader = new function () {
                 $("#fileinput").removeAttr("multiple");
             }
             if (settings.smart_mode) {
-                $("#filedrop-hint").html("Drag and drop the " + fileOrFilesText + " to upload here or click '" 
+                $("#filedrop-hint").html("Drag and drop the " + fileOrFilesText + " to upload here or click '"
                         + buttonLabel + "' to upload' button.");
+                var uploadFormId = "upload-div-" + viewId;
+                $("#upload-div").attr("id", uploadFormId);
+
                 $(settings.file_input)
                     .bind("change", function(event) {
-                        uploadFiles(event.target.files);
-                    });
-                $(settings.file_input_button)
-                    .click(function() {
-                        $(settings.file_input).trigger("click");
-                    });
+                    uploadFiles(event.target.files);
+                });
+                var fileInputButtonId = settings.file_input_button.substring(1) + "-" + viewId;
+                $(settings.file_input_button).attr("id", fileInputButtonId);
+                settings.file_input_button = "#" + fileInputButtonId;
+                $("body").on("click", "#"+fileInputButtonId ,function() {
+                    $(settings.file_input)[0].click();
+                });
                 $(settings.drop_area).bind(
                     {
                         dragover: function(event) {
