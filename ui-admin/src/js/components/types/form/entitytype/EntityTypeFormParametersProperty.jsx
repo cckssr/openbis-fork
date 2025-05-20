@@ -118,6 +118,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         {this.renderTransformation(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
+        <Header>{messages.get(messages.PROPERTY_ASSIGNMENT)}</Header>
         {this.renderDynamicPlugin(property)}
         {this.renderPatternType(property)}
         {this.renderPattern(property)}
