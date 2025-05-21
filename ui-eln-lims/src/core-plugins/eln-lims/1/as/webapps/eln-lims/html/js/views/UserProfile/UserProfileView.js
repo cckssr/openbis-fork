@@ -36,7 +36,7 @@ function UserProfileView(userProfileController, userProfileModel) {
             //Edit
             var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
                 mainController.changeView("showEditUserProfilePage");
-            }, "Edit");
+            }, "Edit", null, null, 'btn btn-default');
             toolbarModel.push({ component : $editButton });
         } else { //Create and Edit
             //Save

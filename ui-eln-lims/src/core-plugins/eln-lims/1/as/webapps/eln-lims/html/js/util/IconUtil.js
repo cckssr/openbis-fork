@@ -64,7 +64,7 @@ var IconUtil = new function() {
                         tempIcon.css("font-size", size+"px");
                     }
                 } else if(type === "img") {
-                    tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "middle");
+                    tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "bottom");
                 }
                 $icon.append(tempIcon);
             }
@@ -99,7 +99,6 @@ var IconUtil = new function() {
         } else if(type === "PROJECT") {
             icon.type = ["font", "img"];
             icon.url = [null, "./img/folder-with-settings.svg"];
-//            icon.url = [null, "./img/folder-with-key.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
         } else if(type === "OTHER") {
@@ -156,8 +155,11 @@ var IconUtil = new function() {
             icon.class = "fa fa-cubes";
         } else if(type === "STOCK") {
             icon.class = "fa fa-shopping-cart";
-        }  else if(type === "UTILITIES") {
+        } else if(type === "UTILITIES") {
             icon.class = "glyphicon glyphicon-wrench";
+        } else if(type === "FREEZE") {
+            icon.class = "material-icons";
+            icon.text = "ac_unit";
         }
         return icon;
     }

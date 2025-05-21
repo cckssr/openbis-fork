@@ -90,9 +90,10 @@ class GridColumnsConfig extends React.PureComponent {
         <Button
           id={id + '.columns-button-id'}
           label={messages.get(messages.COLUMNS)}
-          variant='outlined'
-          onClick={this.handleOpen} 
-          color='inherit'/>
+          onClick={this.handleOpen}
+//           color='inherit'
+          color='white'
+          />
         <Popover
           id={id + '.columns-popup-id'}
           open={Boolean(el)}
@@ -123,10 +124,12 @@ class GridColumnsConfig extends React.PureComponent {
           <Button
             label={messages.get(messages.SHOW_ALL)}
             onClick={this.handleShowAll}
+            color='white'
           />
           <Button
             label={messages.get(messages.HIDE_ALL)}
             onClick={this.handleHideAll}
+            color='white'
           />
         </div>
         <DragDropContext onDragEnd={this.handleDragEnd}>

@@ -244,9 +244,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
 		var $submitButton = FormUtil.getButtonWithIcon('glyphicon-search', function() {
 			_this._advancedSearchController.search();
-		}, null, null, "search-btn");
+		}, null, null, "search-btn", 'btn btn-primary btn-secondary');
 
-		$submitButton.css("margin-bottom", "-24px");
+		$submitButton.css("margin-bottom", "-22px");
 		var $submitButtonGroup = FormUtil.getFieldForComponentWithLabel($submitButton, "", null, true);
 
 		$submitButtonGroup.css("margin-left", "0px");
@@ -331,7 +331,10 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		var $fieldTypeDropdown = this._getNewFieldTypeDropdownComponent($newFieldNameContainer, $newFieldOperatorContainer, $newFieldValueContainer, this._advancedSearchModel.criteria.entityKind, uuidValue);
 
         if (!isGlobalSearch) {
-            $newRow.append($("<td>").append(this._getNegationOperatorDropdownComponent(uuidValue)));
+            var td = $("<td>");
+            td.css("align-content", "center")
+            $newRow.append(td.append(this._getNegationOperatorDropdownComponent(uuidValue)));
+
         }
 		$newRow.append($("<td>").append($fieldTypeDropdown))
                     .append($newFieldNameContainer)
@@ -627,6 +630,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
     this._getNegationOperatorDropdownComponent = function(uuid) {
         var _this = this;
         var $checkbox = $('<input>', {'type' : 'checkbox'})
+//        $checkbox.css("transform", "scale(1.3)")
         $checkbox.change(function() {
             _this._advancedSearchModel.criteria.rules[uuid].negate = $checkbox.is(":checked");
         });

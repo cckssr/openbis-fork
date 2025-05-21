@@ -109,41 +109,26 @@
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				// New
 				if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
-					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                         _this._sampleFormController.createObject("ENTRY");
-                     }, null, "New Entry", "create-entry-btn");
-                     toolbarModel.push({ component : $createEntry});
 
-                    if(!isInventorySample){
+				    if(!isInventorySample){
                          var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                               _this._sampleFormController.createObject("FOLDER");
-                         }, null, "New Folder", "create-folder-btn");
+                         }, "Folder", "New Folder", "create-folder-btn", 'btn btn-primary btn-secondary');
                          toolbarModel.push({ component : $createFolder});
                      }
-                     var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
-                           _this._sampleFormController.createObject();
-                      }, "Other", "Create different object", "create-btn");
-                      toolbarModel.push({ component : $createBtn});
+
+					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                         _this._sampleFormController.createObject("ENTRY");
+                     }, "Entry", "New Entry", "create-entry-btn", 'btn btn-primary btn-secondary');
+                     toolbarModel.push({ component : $createEntry});
+
+
+                    var $createBtn = FormUtil.getToolbarButton("ENTRY", function() {
+                          _this._sampleFormController.createObject();
+                     }, "Other", "Create different object", "create-btn", 'btn btn-primary btn-secondary');
+                    toolbarModel.push({ component : $createBtn});
 				}
 	
-				if (_this._allowedToEdit()) {
-					//Edit
-					if(this._sampleFormModel.mode === FormMode.VIEW) {
-						var $editButton = FormUtil.getToolbarButton("EDIT", function () {
-							Util.blockUI();
-							setTimeout(function() {
-								var args = {
-										permIdOrIdentifier : _this._sampleFormModel.sample.permId,
-										paginationInfo : _this._sampleFormModel.paginationInfo
-								};
-								mainController.changeView('showEditSamplePageFromPermId', args);
-							}, 100);
-						}, "Edit", "Edit object", "edit-btn");
-						if(toolbarConfig.EDIT) {
-							continuedToolbarModel.push({ component : $editButton, tooltip: null });
-						}
-					}
-				}
 				if (_this._allowedToMove()) {
 					//Move
 					if(toolbarConfig.MOVE) {
@@ -252,7 +237,7 @@
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-					}, "Dataset", "Upload dataset", "upload-btn");
+					}, "Dataset", "Upload dataset", "upload-btn", 'btn btn-primary btn-secondary');
 					if(toolbarConfig.UPLOAD_DATASET) {
 						toolbarModel.push({ component : $uploadBtn, tooltip: null });
 					}
@@ -283,6 +268,25 @@
 					}
 				}
 
+				if (_this._allowedToEdit()) {
+                    //Edit
+                    if(this._sampleFormModel.mode === FormMode.VIEW) {
+                        var $editButton = FormUtil.getToolbarButton("EDIT", function () {
+                            Util.blockUI();
+                            setTimeout(function() {
+                                var args = {
+                                        permIdOrIdentifier : _this._sampleFormModel.sample.permId,
+                                        paginationInfo : _this._sampleFormModel.paginationInfo
+                                };
+                                mainController.changeView('showEditSamplePageFromPermId', args);
+                            }, 100);
+                        }, "Edit", "Edit object", "edit-btn", 'btn btn-default');
+                        if(toolbarConfig.EDIT) {
+                            toolbarModel.push({ component : $editButton, tooltip: null });
+                        }
+                    }
+                }
+
 	            //Export
 				dropdownOptionsModel.push(FormUtil.getExportButtonModel("SAMPLE",_this._sampleFormModel.sample.permId));
 	
@@ -303,7 +307,7 @@
 					if(toolbarConfig.FREEZE) {
 						if(isEntityFrozen) {
 							var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-							continuedToolbarModel.push({ component : $freezeButton, tooltip: null });
+							toolbarModel.push({ component : $freezeButton, tooltip: null });
 						} else {
 							dropdownOptionsModel.push({
 								label : "Freeze Entity (Disable further modifications)",
@@ -330,10 +334,8 @@
 					if(!_this._wasSideMenuCollapsed) {
                         mainController.sideMenu.expandSideMenu();
                     }
-				}, "Save", "Save changes", "save-btn");
-				$saveBtn.removeClass("btn-default");
-				$saveBtn.addClass("btn-primary");
-				continuedToolbarModel.push({ component : $saveBtn });
+				}, "Save", "Save changes", "save-btn", 'btn btn-primary');
+				toolbarModel.push({ component : $saveBtn });
 	
 				// Templates
 				if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
@@ -404,7 +406,7 @@
 							});
 						});
 					}, "Templates", null);
-					continuedToolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
+					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
 				}
 			}
 	
@@ -623,13 +625,14 @@
 				dropdownOptionsModel = dropdownOptionsModel.concat(profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 			}
 	
-			FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, false);
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                                 mainController.openHelpPage();
-                                            }, null, "Help", "help-btn");
-            continuedToolbarModel.push({ component : $helpBtn });
+                                            }, null, "Help", "help-btn", 'btn btn-default help');
+            $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
+            toolbarModel.push({ component : $helpBtn });
 
 
             //

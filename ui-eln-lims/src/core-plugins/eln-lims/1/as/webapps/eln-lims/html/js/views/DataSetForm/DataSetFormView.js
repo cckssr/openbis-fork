@@ -279,7 +279,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
-				}, "Edit", "Edit data", "dataset-edit-btn");
+				}, "Edit", "Edit data", "dataset-edit-btn", 'btn btn-default');
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn });
 				}
@@ -453,7 +453,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                         mainController.openHelpPage();
-                                    }, null, "Help", "help-btn");
+                                    }, null, "Help", "help-btn", 'btn btn-default help');
+            $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
             toolbarModel.push({ component : $helpBtn });
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}

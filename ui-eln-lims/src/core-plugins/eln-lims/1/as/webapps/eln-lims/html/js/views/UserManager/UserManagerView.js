@@ -40,7 +40,7 @@ function UserManagerView(userManagerController, userManagerModel) {
 		var $toolbox = $("<div>", { 'id' : 'toolBoxContainer', class : 'toolBox'});
         var $createUser = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
             _this._userManagerController.showCreateNewUserModal();
-        }, "New User", null, "createUser");
+        }, "User", null, "createUser", 'btn btn-primary btn-secondary');
 		$toolbox.append($createUser);
 		$header.append($toolbox);
 

@@ -58,7 +58,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					//Edit
 					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-					}, "Edit", null, "edit-btn");
+					}, "Edit", null, "edit-btn", 'btn btn-default');
 					toolbarModel.push({ component : $editButton });
 				}
 			} else { //Create and Edit
@@ -188,7 +188,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
                 };
                 mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
             }, 100);
-		}, "New Storage");
+		}, "Storage", null, null, 'btn btn-primary btn-secondary');
 
 		$fieldset.append($("<p>").append($addBtn));
 
@@ -217,7 +217,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
         var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
                 FormUtil.createNewSample(experimentIdentifier);
-        }, "New Template");
+        }, "Template", null, null, 'btn btn-primary btn-secondary');
 
         $fieldset.append($("<p>").append($addBtn));
         var $gridContainer = $("<div>");
