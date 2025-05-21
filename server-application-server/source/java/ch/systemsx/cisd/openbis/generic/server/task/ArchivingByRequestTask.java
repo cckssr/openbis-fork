@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.task;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -243,10 +244,26 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
     {
         DataSetSearchCriteria searchCriteria = new DataSetSearchCriteria();
         searchCriteria.withDataStore().withKind().thatIn(dataStoreKind);
+
+        if (DataStoreKind.AFS.equals(dataStoreKind))
+        {
+            DataSetSearchCriteria ownerCriteria = searchCriteria.withSubcriteria();
+            ownerCriteria.withOrOperator();
+
+            DataSetSearchCriteria experimentOwnerCriteria = ownerCriteria.withSubcriteria();
+            experimentOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+            experimentOwnerCriteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+
+            DataSetSearchCriteria sampleOwnerCriteria = ownerCriteria.withSubcriteria();
+            sampleOwnerCriteria.withDataStore().withKind().thatIn(DataStoreKind.AFS);
+            sampleOwnerCriteria.withSample().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+        }
+
         PhysicalDataSearchCriteria physicalSearchCriteria = searchCriteria.withPhysicalData();
         physicalSearchCriteria.withPresentInArchive().thatEquals(false);
         physicalSearchCriteria.withArchivingRequested().thatEquals(true);
         physicalSearchCriteria.withStatus().thatEquals(ArchivingStatus.AVAILABLE);
+
         DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
         fetchOptions.withDataStore();
         fetchOptions.withPhysicalData();
