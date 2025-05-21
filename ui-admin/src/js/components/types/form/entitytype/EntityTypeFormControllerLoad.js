@@ -139,6 +139,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       internal: FormUtil.createField({
         value: internal
       }),
+      semanticAnnotations: FormUtil.createField({
+        value: _.get(loadedType, 'semanticAnnotations', []),
+        enabled: !internal
+      }),
       errors: 0
     }
     strategy.setTypeAttributes(type, loadedType)
@@ -267,6 +271,21 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       unique: FormUtil.createField({
         value: _.get(loadedAssignment, 'unique', false),
         enabled: false
+      }),
+      semanticAnnotations: FormUtil.createField({
+        value: _.get(propertyType, 'semanticAnnotations', []),
+        enabled:
+          !assignmentInternal || AppController.getInstance().isSystemUser()
+      }),
+      assignmentSemanticAnnotations: FormUtil.createField({
+        value: _.get(loadedAssignment, 'semanticAnnotations', []),
+        enabled:
+          !assignmentInternal || AppController.getInstance().isSystemUser()
+      }),
+      assignmentSemanticAnnotationsInherited: FormUtil.createField({
+        value: _.get(loadedAssignment, 'semanticAnnotationsInherited', false),
+        enabled:
+          !assignmentInternal || AppController.getInstance().isSystemUser()
       }),
       showRawValueInForms: FormUtil.createField({
         value: _.get(loadedAssignment, 'showRawValueInForms', false),
