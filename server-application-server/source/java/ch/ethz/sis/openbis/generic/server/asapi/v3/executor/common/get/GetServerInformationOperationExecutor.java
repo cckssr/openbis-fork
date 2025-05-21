@@ -66,6 +66,8 @@ public class GetServerInformationOperationExecutor
     }
 
     private String servicePropertiesString;
+    private long lastServicePropertiesUpdate;
+    private static final long FIVE_MINUTES = 1000L * 60L * 5L;
 
     @Override
     protected GetServerInformationOperationResult doExecute(IOperationContext context, GetServerInformationOperation operation)
@@ -87,7 +89,11 @@ public class GetServerInformationOperationExecutor
         info.put("openbis-version", BuildAndEnvironmentInfo.INSTANCE.getVersion());
 
         if(isInstanceAdmin(context)) {
-            if(servicePropertiesString == null) {
+            long currentTimeMillis = System.currentTimeMillis();
+            String expiryValueStr = configurer.getPropertyValue("server.information.expiry.duration.ms", String.valueOf(FIVE_MINUTES));
+            long expiry = parseLong(expiryValueStr, FIVE_MINUTES);
+            if(servicePropertiesString == null || lastServicePropertiesUpdate + expiry <= currentTimeMillis) {
+                lastServicePropertiesUpdate = currentTimeMillis;
                 Properties propertiesCopy = new Properties();
                 configurer.getResolvedProps().forEach((key, value) -> {
                     if(key.toString().toLowerCase().contains("password")) {
@@ -114,6 +120,17 @@ public class GetServerInformationOperationExecutor
 
 
         return new GetServerInformationOperationResult(info);
+    }
+
+    /**
+     * exception-save way to parse long value with default value
+     */
+    private long parseLong(String longValue, Long defaultValue) {
+        try {
+            return Long.parseLong(longValue);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     private Map<String, String> getPublicInformation(IOperationContext context)
