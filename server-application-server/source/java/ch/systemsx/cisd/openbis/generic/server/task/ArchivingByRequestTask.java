@@ -184,6 +184,7 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
                     ArchiveRequest request = new ArchiveRequest();
                     request.setDataSetPermIds(permIds);
                     request.setArchiveOptions(archiveOptions);
+                    result.add(request);
                 }
             }
         }
@@ -255,9 +256,11 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
         List<DataSet> dataSets = service.searchDataSets(sessionToken, searchCriteria, fetchOptions).getObjects();
         List<DataSet> result = new ArrayList<DataSet>();
         List<String> dataSetsWithUnknownSize = new ArrayList<String>();
+
         for (DataSet dataSet : dataSets)
         {
             Long size = dataSet.getPhysicalData().getSize();
+
             if (size == null)
             {
                 dataSetsWithUnknownSize.add(dataSet.getCode());
@@ -266,12 +269,13 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
                 result.add(dataSet);
             }
         }
+
         if (dataSetsWithUnknownSize.isEmpty() == false)
         {
             operationLog.warn("The size of the following data sets is unknown: " + CollectionUtils.abbreviate(dataSetsWithUnknownSize, 100));
         }
 
-        operationLog.info("Found " + dataSets.size() + " data sets to be archived at " + dataStoreKind + ".");
+        operationLog.info("Found " + result.size() + " data sets to be archived at " + dataStoreKind + ".");
 
         return result;
     }

@@ -175,7 +175,11 @@ public class PathInfoDatabaseFeedingTask extends AbstractPathInfoDatabaseFeeding
             Date maxImmutableDataTimestamp = null;
             for (SimpleDataSetInformationDTO dataSet : dataSets)
             {
-                feedPathInfoDatabase(dataSet, dataSet.isH5Folders(), dataSet.isH5ArFolders());
+                Long size = feedPathInfoDatabase(dataSet, dataSet.isH5Folders(), dataSet.isH5ArFolders());
+                if (dataSet.getDataSetSize() == null && size != null)
+                {
+                    service.updateSize(dataSet.getDataSetCode(), size);
+                }
                 processedDataSets.add(dataSet.getDataSetCode());
                 Date immutableDataTimestamp = dataSet.getImmutableDataDate();
                 if (maxImmutableDataTimestamp == null || maxImmutableDataTimestamp.getTime() < immutableDataTimestamp.getTime())
