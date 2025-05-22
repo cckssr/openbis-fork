@@ -1218,11 +1218,11 @@ function MainController(profile) {
         $header.append($("<h1>").append("Other Tools"));
         var $diskSpaceButton = FormUtil.getButtonWithIcon("glyphicon-hdd", function () {
             FormUtil.showDiskSpaceDialog();
-        }, "Show available storage space");
+        }, "Show available storage space", null, null, 'btn btn-primary btn-secondary');
         $header.append(FormUtil.getToolbar([{ component : $diskSpaceButton }]));
         var $downloadMetadataTemplateButton = FormUtil.getButtonWithIcon("glyphicon-export", function () {
             FormUtil.downloadMetadataTemplateDialog();
-        }, "Download metadata.json template");
+        }, "Download metadata.json template", null, null, 'btn btn-primary btn-secondary');
         $header.append(FormUtil.getToolbar([{ component : $downloadMetadataTemplateButton }]));
         if (profile.extraToolActions) {
             profile.extraToolActions.forEach(function(actionDefinition) {

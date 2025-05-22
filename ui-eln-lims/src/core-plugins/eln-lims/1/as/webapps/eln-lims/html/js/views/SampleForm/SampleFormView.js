@@ -280,7 +280,7 @@
                                 };
                                 mainController.changeView('showEditSamplePageFromPermId', args);
                             }, 100);
-                        }, "Edit", "Edit object", "edit-btn", 'btn btn-default');
+                        }, "Edit", "Edit object", "edit-btn", 'btn btn-primary btn-secondary');
                         if(toolbarConfig.EDIT) {
                             toolbarModel.push({ component : $editButton, tooltip: null });
                         }

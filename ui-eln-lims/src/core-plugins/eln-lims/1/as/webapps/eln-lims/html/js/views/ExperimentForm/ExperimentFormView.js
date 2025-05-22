@@ -268,7 +268,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                    var exp = _this._experimentFormModel.experiment;
                    var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
                    mainController.changeView("showEditExperimentPageFromIdentifier", args);
-              }, "Edit", "Edit collection", "edit-btn");
+              }, "Edit", "Edit collection", "edit-btn", 'btn btn-primary btn-secondary');
               toolbarModel.push({ component : $editBtn });
             }
 

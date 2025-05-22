@@ -93,7 +93,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					_this._projectFormController.enableEditing();
-				}, "Edit", "Edit project", "edit-btn", 'btn btn-default');
+				}, "Edit", "Edit project", "edit-btn", 'btn btn-primary btn-secondary');
 				toolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {

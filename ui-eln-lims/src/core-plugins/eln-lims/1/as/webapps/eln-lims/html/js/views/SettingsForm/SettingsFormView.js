@@ -58,7 +58,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					//Edit
 					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-					}, "Edit", null, "edit-btn", 'btn btn-default');
+					}, "Edit", null, "edit-btn", 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $editButton });
 				}
 			} else { //Create and Edit

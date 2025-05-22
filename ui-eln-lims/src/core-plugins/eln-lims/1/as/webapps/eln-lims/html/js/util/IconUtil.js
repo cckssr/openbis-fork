@@ -160,6 +160,28 @@ var IconUtil = new function() {
         } else if(type === "FREEZE") {
             icon.class = "material-icons";
             icon.text = "ac_unit";
+        } else if(type === "ARCHIVE_NOT_REQUESTED") {
+//            icon.class = "material-icons";
+//            icon.text = "archive";
+
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-not-requested-icon.png";
+        } else if(type === "ARCHIVE_REQUESTED") {
+//            icon.class = "material-icons";
+//            icon.text = "hourglass_empty";
+
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-requested-icon.png";
+
+        } else if(type === "ARCHIVED") {
+//            icon.class = "material-icons";
+//            icon.text = "inventory_2";
+
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-archived-icon.png";
         }
         return icon;
     }
