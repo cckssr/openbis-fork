@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpSession;
 
+import ch.systemsx.cisd.common.logging.LogInitializer;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;

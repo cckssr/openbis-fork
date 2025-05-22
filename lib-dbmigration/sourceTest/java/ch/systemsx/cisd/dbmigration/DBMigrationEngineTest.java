@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -102,6 +103,7 @@ public class DBMigrationEngineTest
         migrationStepExecutor = context.mock(IMigrationStepExecutor.class, "migrationStepExecutor");
         migrationStepExecutorAdmin =
                 context.mock(IMigrationStepExecutor.class, "migrationStepExecutorAdmin");
+        Logger.getRootLogger().setLevel(Level.DEBUG);
         logRecorder = new BufferedAppender("%-5p %c - %m%n", Level.DEBUG);
     }
 

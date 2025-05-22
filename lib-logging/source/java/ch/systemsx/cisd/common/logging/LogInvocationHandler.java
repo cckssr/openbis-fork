@@ -97,7 +97,7 @@ public final class LogInvocationHandler implements InvocationHandler
         } finally
         {
             final LogAnnotation logAnnotationOrNull = tryGetAnnotation(method);
-            if (onlyIfAnnotated == false || logAnnotationOrNull != null)
+            if (!onlyIfAnnotated || logAnnotationOrNull != null)
             {
                 final Level logLevel = getLogLevel(method, logAnnotationOrNull);
                 final Logger logger = createLogger(method, logAnnotationOrNull);

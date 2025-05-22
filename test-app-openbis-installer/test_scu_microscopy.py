@@ -26,7 +26,7 @@ import settings
 import systemtest.testcase
 import systemtest.util as util
 from systemtest.artifactrepository import GitArtifactRepository
-
+import urllib.request
 
 class TestCase(systemtest.testcase.TestCase):
 
@@ -51,8 +51,34 @@ class TestCase(systemtest.testcase.TestCase):
         self.setThumbnailResolutions(openbisController, ['256x256'])
         openbisController.setDssMaxHeapSize("4g")
         openbisController.createTestDatabase("openbis")
+        # copy the bioformats to lib folder test-app-openbis-installer/targets/playground/test_scu_microscopy/openbis/servers/core-plugins/microscopy/4/dss/drop-boxes/MicroscopyDropbox/lib
+        # download from the ivy
+        self.downloadBioformatsJar(openbisController)
         openbisController.allUp()
         return openbisController
+
+    def downloadBioformatsJar(self, openbisController, version="6.5.2"):
+        lib_dir = path = "%s/servers/core-plugins/microscopy/4/dss/drop-boxes/MicroscopyDropbox/lib" % openbisController.installPath
+        jar = f"bioformats-{version}.jar"
+        url = (
+            "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/bioformats/bioformats/"
+            f"{version}/{jar}"
+        )
+        dest = os.path.join(lib_dir, jar)
+
+        util.printAndFlush(f"Downloading Bio-Formats {version} → {dest}")
+        try:
+            urllib.request.urlretrieve(url, dest)
+        except Exception as e:
+            util.printAndFlush(f"Error downloading {jar}: {e}")
+            return None
+
+        if os.path.exists(dest) and os.path.getsize(dest) > 0:
+            util.printAndFlush("Download complete.")
+            return dest
+        util.printAndFlush("Download failed (file missing or empty).")
+        return None
+
 
     def setThumbnailResolutions(self, openbisController, resolutions):
         path = "%s/servers/core-plugins/microscopy/2/dss/drop-boxes/MicroscopyDropbox/GlobalSettings.py" % openbisController.installPath

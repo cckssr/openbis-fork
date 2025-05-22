@@ -18,8 +18,12 @@ dependencies {
             project(':lib-pathinfo'),
             'openhms:jackcess:1.2.2',
             'reveregroup:gwt-image-loader:1.1.4',
-            'imagej:ij:1.43u',
-            'bioformats:bioformats:6.5.1'
+            'imagej:ij:1.43u'
+            //'bioformats:bioformats:6.5.2'
+//      api ('ome:formats-gpl:6.5.1') {
+//            exclude group: 'ch.qos.logback', module: 'logback‑classic'
+//          }
+
 
     devRuntime project(path: ':server-application-server', configuration: 'devRuntime')
 
@@ -36,7 +40,8 @@ dependencies {
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
             'springframework:spring-test:5.0.17.RELEASE',
-            'startnet:apgdiff:2.3'
+            'startnet:apgdiff:2.3',
+            'bioformats:bioformats:6.5.2'
     testImplementation(project(path: ':server-application-server', configuration: 'tests')) {
         exclude group: 'google', module: 'gwt-user'
     }

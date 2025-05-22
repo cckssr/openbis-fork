@@ -36,7 +36,7 @@ public class LogUtils
         String[] lines = message.split("\n");
         for (String line : lines)
         {
-            if (line.startsWith("\tat ") == false)
+            if (!line.startsWith("\tat "))
             {
                 if (builder.length() > 0)
                 {

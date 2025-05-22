@@ -10,7 +10,6 @@ dependencies {
             'cisd:cisd-args4j:9.11.2',
             'python:jython:2.5.2',
             'python:jython27:2.7.2',
-            'apache:log4j:1.2.15',
             'apache:commons-text:1.11',
             'javax.annotation:javax.annotation-api:1.3.2',
             'javax.activation:activation:1.1.1',

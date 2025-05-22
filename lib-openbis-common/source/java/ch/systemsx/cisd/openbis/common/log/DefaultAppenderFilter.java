@@ -15,44 +15,35 @@
  */
 package ch.systemsx.cisd.openbis.common.log;
 
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
 
-/**
- * @author anttil
- */
-public class DefaultAppenderFilter extends Filter
-{
-    public DefaultAppenderFilter()
-    {
-        System.err.println("filter");
+public class DefaultAppenderFilter implements Filter {
+
+    public DefaultAppenderFilter() {
+        System.out.println("filter");
     }
 
     @Override
-    public int decide(LoggingEvent event)
-    {
-        String loggerName = event.getLoggerName();
-        Object message = event.getMessage();
-        if (message instanceof String)
-        {
-            return decide(loggerName, message.toString());
-        } else
-        {
-            return Filter.NEUTRAL;
+    public boolean isLoggable(LogRecord record) {
+        String loggerName = record.getLoggerName();
+        String message = record.getMessage();
+        if (message != null) {
+            return decide(loggerName, message);
+        } else {
+            // If the message is not a string, let it pass (neutral).
+            return true;
         }
     }
 
-    private int decide(String logger, String message)
-    {
+    private boolean decide(String logger, String message) {
         if (((logger.startsWith("ACCESS.") || logger.startsWith("TRACKING."))
                 && logger.endsWith("Logger")
                 && message.contains("(START)"))
-                || logger.equals("org.hibernate.orm.deprecation"))
-        {
-            return Filter.DENY;
-        } else
-        {
-            return Filter.NEUTRAL;
+                || logger.equals("org.hibernate.orm.deprecation")) {
+            return false;
+        } else {
+            return true;
         }
     }
 }

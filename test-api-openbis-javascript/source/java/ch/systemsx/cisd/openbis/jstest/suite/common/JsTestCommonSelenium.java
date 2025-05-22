@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.jstest.suite.common;
 import java.io.File;
 import java.util.List;
 
+import ch.systemsx.cisd.common.logging.LogInitializer;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -84,9 +85,9 @@ public class JsTestCommonSelenium extends SeleniumTest
     @Override
     protected String startApplicationServer() throws Exception
     {
-        File configurationFile = new File("etc/log4j1.xml");
-        System.setProperty("log4j.configuration", configurationFile.getAbsolutePath());
-        System.setProperty("log4j.configurationFile", configurationFile.getAbsolutePath());
+        File configurationFile = new File("etc/logging.properties");
+        //System.setProperty("java.util.logging.config.file", configurationFile.getAbsolutePath());
+        LogInitializer.configureFromFile(configurationFile);
         System.setProperty("org.eclipse.jetty.LEVEL", "INFO");
 
         JsTestCommonApplicationServer as = new JsTestCommonApplicationServer();

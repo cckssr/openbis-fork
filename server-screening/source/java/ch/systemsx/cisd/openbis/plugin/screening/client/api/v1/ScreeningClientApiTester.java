@@ -15,47 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.plugin.screening.client.api.v1;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
-import javax.swing.text.JTextComponent;
-
-import org.apache.log4j.PropertyConfigurator;
-
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.IDataSetDss;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.filter.TypeBasedDataSetFilter;
@@ -71,6 +32,23 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A test class which shows how to use API.
@@ -560,11 +538,11 @@ public class ScreeningClientApiTester
 
     private static void configureLogging()
     {
-        Properties props = new Properties();
-        props.put("log4j.appender.STDOUT", "org.apache.log4j.ConsoleAppender");
-        props.put("log4j.appender.STDOUT.layout", "org.apache.log4j.PatternLayout");
-        props.put("log4j.appender.STDOUT.layout.ConversionPattern", "%d %-5p [%t] %c - %m%n");
-        props.put("log4j.rootLogger", "INFO, STDOUT");
-        PropertyConfigurator.configure(props);
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.removeAllHandlers();
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new PatternFormatter("%d %-5p [%t] %c - %m%n"));
+        rootLogger.addHandler(handler);
     }
 }
