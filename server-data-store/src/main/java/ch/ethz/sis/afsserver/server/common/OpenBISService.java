@@ -609,6 +609,7 @@ public class OpenBISService implements IOpenBISService
         simpleDataSetsFetchOptions.withLinkedDataUsing(linkedDataFetchOptions);
 
         DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withDataStore();
         dataSetFetchOptions.withType().withPropertyAssignments().withPropertyType();
         dataSetFetchOptions.withProperties();
         dataSetFetchOptions.withTags();
