@@ -224,16 +224,13 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             _this._advancedSearchController.selectSavedSearch(i);
         });
 		$container.append(this._$savedSearchesDropdown);
-//		var height = '40px';
 		this._$savedSearchesDropdown.select2({
 			width: '400px',
-//			height: height,
 			theme: "bootstrap"
 		});
 		this._$savedSearchesDropdown.refresh = function() {
 		    _this._$savedSearchesDropdown.select2({
                 width: '400px',
-                height: height,
                 theme: "bootstrap"
             });
 		}
@@ -242,7 +239,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             var $buttonClear = FormUtil.getToolbarButton("CLEAR", function () {
                 _this._advancedSearchController.clearSelection();
             }, null, "Clear selection", "search-clear-selection-btn-"+_this._viewId);
-//			$buttonClear.css({ 'height': height, 'width': '40px', 'min-width': '40px'});
 			$container.append($buttonClear);
 		}
 
@@ -250,7 +246,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             _this._save();
         }, "Save", "Save search", "search-save-btn-"+_this._viewId);
 
-		$buttonSave.css({ 'margin-left': '8px', 'height': height});
+		$buttonSave.css({ 'margin-left': '8px'});
 		$buttonSave.removeClass("btn-default");
         $buttonSave.addClass("btn-primary");
 		$container.append($buttonSave);
@@ -261,7 +257,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                 _this._delete();
             }
         }, "Delete", "Delete search data", "search-delete-btn-"+_this._viewId);
-		$buttonDelete.css({ 'margin-left': '8px', 'height': height});
+		$buttonDelete.css({ 'margin-left': '8px'});
 		var i = this._advancedSearchModel.selcetedSavedSearchIndex;
 		if (i == null || i < 0) {
 			$buttonDelete.attr('disabled', '');
@@ -271,7 +267,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	}
 
 	this._paintTypeSelectionPanel = function($menuPanelContainer) {
-	    var height = "40px"
 	    var _this = this;
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
 		this._$entityTypeDropdown.refresh = function() {
@@ -295,7 +290,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
 		var $submitButton = FormUtil.getToolbarButton("SEARCH", function () {
             _this._advancedSearchController.search();
-        }, null, null, "search-btn-"+_this._viewId);
+        }, null, null, "search-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 
 		$submitButton.css("margin-bottom", "-22px");
 		var $submitButtonGroup = FormUtil.getFieldForComponentWithLabel($submitButton, "", null, true);
@@ -534,7 +529,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
     this._addTimestampField = function($container, uuid, isDateOnly) {
         var _this = this;
         var $dateField = FormUtil._getDatePickerField(uuid, "", false, isDateOnly, null, true);
-        $dateField.find("input").css("height", "40px")
         var $input = $dateField.find("#" + uuid);
         _refreshableFieldValues[uuid] = $dateField;
         this._setUpKeyHandling($input, uuid);
@@ -1064,7 +1058,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                 Util.showUserError("There must be at least one row of search criteria present.");
             }
         }, null, null, "minus-btn-"+uuid);
-        $minusButton.css("height", "40px")
 		return $minusButton;
 	}
 

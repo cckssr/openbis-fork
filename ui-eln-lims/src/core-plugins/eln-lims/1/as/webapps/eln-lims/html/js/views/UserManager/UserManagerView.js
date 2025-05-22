@@ -41,7 +41,7 @@ function UserManagerView(userManagerController, userManagerModel) {
 		var $toolbox = $("<div>", { 'id' : 'toolBoxContainer', class : 'toolBox'});
          var $createUser = FormUtil.getToolbarButton("PLUS", function () {
              _this._userManagerController.showCreateNewUserModal();
-        }, "New User", "New User", "create-user-btn-" + this._viewId, 'btn btn-primary btn-secondary');
+        }, "User", "New User", "create-user-btn-" + this._viewId, 'btn btn-primary btn-secondary');
 		$toolbox.append($createUser);
 		$header.append($toolbox);
 

@@ -478,8 +478,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "DATA-SET-VIEW");
 			var $helpBtn = FormUtil.getToolbarButton("?", function() {
-                                        mainController.openHelpPage();
-                                    }, null, "Help", "help-dataset-btn-"+this._viewId, 'btn btn-default help');
+                mainController.openHelpPage();
+            }, null, "Documentation", "help-dataset-btn-"+this._viewId, 'btn btn-default help');
             $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
             toolbarModel.push({ component : $helpBtn });
 			$header.append(FormUtil.getToolbar(toolbarModel));

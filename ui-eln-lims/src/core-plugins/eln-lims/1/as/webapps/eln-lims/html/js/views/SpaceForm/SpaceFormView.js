@@ -168,7 +168,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();
-                        }, null, "Help", "help-btn-space-" + this._viewId, 'btn btn-default help');
+                        }, null, "Documentation", "help-btn-space-" + this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 

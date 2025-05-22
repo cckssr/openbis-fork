@@ -87,13 +87,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 if(!isInventoryExperiment) {
                      var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                           _this._experimentFormController.createObject("FOLDER");
-                     }, null, "New Folder", "create-folder-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                     }, "Folder", "New Folder", "create-folder-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                      toolbarModel.push({ component : $createFolder});
                  }
 
 			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                      _this._experimentFormController.createObject("ENTRY");
-                 }, null, "New Entry", "create-entry-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                 }, "Entry", "New Entry", "create-entry-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                  toolbarModel.push({ component : $createEntry});
 
 
@@ -453,8 +453,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
-                                            mainController.openHelpPage();
-                                        }, null, "Help", "help-collection-btn-"+_this._viewId, 'btn btn-default help');
+            mainController.openHelpPage();
+        }, null, "Documentation", "help-collection-btn-"+_this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 
