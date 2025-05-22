@@ -46,7 +46,7 @@ java -jar rdf-lib-tool.jar [options]
 ### Options
 ```bash
 (mandatory) -i, --input-format <file>:  specifies the format of the input file (currently supports TTL).
-(mandatory) -o, --output-format <file>: specifies the format of the output (currently supports XLSX, OPENBIS, OPENBIS-DEV).
+(mandatory) -o, --output-format <file>: specifies the format of the output (currently supports XLSX, ZIP, OPENBIS, OPENBIS-DEV).
 (mandatory) -f, inputpaths <file>: Path to input files, has to be at least one. All files have to be of the same format.
 (mandatory) -r, resultfile <file>: Path to the resulting excel file. At the moment, this is always written out for troubleshooting purposes.
 -pid, --project: specifies the openBIS project identifier. Must be of the format '/{space}/{project}' e.g. '/DEFAULT/DEFAULT'
@@ -60,12 +60,18 @@ java -jar rdf-lib-tool.jar [options]
 
 Other mandatory parameters must be provided based on what output format has been chosen:
 
-1. **XLSX** requires `-i <input format> -o <output format> <path to input file> <path to output file>`
+1.**XLSX**
+requires `-i <input format> -o <output format> <path to input file> <path to output file>`
 
-2. **OPENBIS** requires `-i <input format> -o <output format> <path to input file> -u <yourUsername> -p <AS openBIS URL>`
+2.**ZIP**
+   requires `-i <input format> -o <output format> <path to input file> <path to output file>`, this
+   can handle longer string values
 
-3. **OPENBIS-DEV** requires `-i <input format> -o <output format> <path to input file> -u <yourUsername> -p <AS openBIS URL> <DSS openBIS URL>`
+3.**OPENBIS**
+requires `-i <input format> -o <output format> <path to input file> -u <yourUsername> -p <AS openBIS URL>`
 
+4.**OPENBIS-DEV**
+requires `-i <input format> -o <output format> <path to input file> -u <yourUsername> -p <AS openBIS URL> <DSS openBIS URL>`
 
 ## Examples
 

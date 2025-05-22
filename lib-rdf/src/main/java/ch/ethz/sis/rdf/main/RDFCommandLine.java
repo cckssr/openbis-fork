@@ -33,7 +33,7 @@ public class RDFCommandLine {
     private static final String dssURL = "http://localhost:8889/datastore_server";
 
     private static final String helperCommand =
-            "java -jar lib-rdf-tool.jar -i <TTL> -o <XLSX, OPENBIS, OPENBIS-DEV> -f <TTL input file path> -r [<XLSX output file path>] -a [additional files] -pid <project identifier> [[[-u <username> -p] <openBIS AS URL>] <openBIS DSS URL>]";
+            "java -jar lib-rdf-tool.jar -i <TTL> -o <XLSX, ZIP, OPENBIS, OPENBIS-DEV> -f <TTL input file path> -r [<XLSX/ZIP output file path>] -a [additional files] -pid <project identifier> [[[-u <username> -p] <openBIS AS URL>] <openBIS DSS URL>]";
 
     //!!! DEV_MODE is used only for pure dev turn it to FALSE for PRODUCTION !!!
     private static final boolean DEV_MODE = false;
@@ -216,6 +216,14 @@ public class RDFCommandLine {
                                     "Usage: java -jar lib-rdf-tool.jar -i <input format> -o XLSX <file path> <XLSX output file path> \n");
                 }
                 break;
+            case "ZIP":
+                if (!areFileSpecified)
+                {
+                    throw new IllegalArgumentException(
+                            "For XLSX output, specify the input and output file path. \n " +
+                                    "Usage: java -jar lib-rdf-tool.jar -i <input format> -o ZIP <file path> <ZIP output file path> \n");
+                }
+                break;
             case "OPENBIS":
                 if (!areFileSpecified && !cmd.hasOption("username") && !cmd.hasOption("password"))
                 {
@@ -268,13 +276,21 @@ public class RDFCommandLine {
 
         String[] remainingArgs = cmd.getArgs();
         //Arrays.stream(remainingArgs).forEach(System.out::println);
+        String outputFilePath = null;
         switch (outputFormatValue.toUpperCase())
         {
+
             case "XLSX":
-                String outputFilePath = cmd.getOptionValue(RESULT_FILE);
+                outputFilePath = cmd.getOptionValue(RESULT_FILE);
                 System.out.println("Handling: " + inputFormatValue + " -> " + outputFormatValue);
                 handleXlsxOutput(inputFormatValue, inputFilePaths, outputFilePath,
-                        projectIdentifier, verbose, additionalFiles);
+                        projectIdentifier, verbose, additionalFiles, ExcelWriter.Format.EXCEL);
+                break;
+            case "ZIP":
+                outputFilePath = cmd.getOptionValue(RESULT_FILE);
+                System.out.println("Handling: " + inputFormatValue + " -> " + outputFormatValue);
+                handleXlsxOutput(inputFormatValue, inputFilePaths, outputFilePath,
+                        projectIdentifier, verbose, additionalFiles, ExcelWriter.Format.ZIP_EXPORT);
                 break;
             case "OPENBIS":
                 username = cmd.getOptionValue("user");
@@ -304,7 +320,7 @@ public class RDFCommandLine {
 
     private static void handleXlsxOutput(String inputFormatValue, String[] inputFilePaths,
             String outputFilePath, String projectIdentifier, boolean verbose,
-            List<String> additionalFilePaths)
+            List<String> additionalFilePaths, ExcelWriter.Format format)
     {
 
         System.out.println(new Date());
@@ -338,7 +354,7 @@ public class RDFCommandLine {
         System.out.println("Writing XLSX file...");
         OpenBisModel openBisModel = RdfToOpenBisMapper.convert(modelRDF,
                 Optional.ofNullable(projectIdentifier).orElse("/DEFAULT/DEFAULT"));
-        byte[] xlsx = ExcelWriter.convert(ExcelWriter.Format.EXCEL, openBisModel);
+        byte[] xlsx = ExcelWriter.convert(format, openBisModel);
         try {
             Files.write(Path.of(outputFilePath), xlsx);
         } catch (IOException e) {
@@ -363,7 +379,7 @@ public class RDFCommandLine {
 
         System.out.println("Created temporary XLSX output file: " + tempFileOutput);
         handleXlsxOutput(inputFormatValue, inputFilePaths, tempFileOutput, projectIdentifier,
-                verbose, additionalPaths);
+                verbose, additionalPaths, ExcelWriter.Format.ZIP_EXPORT);
 
         System.out.println(
                 "Connect to openBIS instance " + openbisURL + " with username[" + username + "]"); //and password[" + new String(password) +"]");
@@ -387,7 +403,7 @@ public class RDFCommandLine {
         }
         System.out.println("Created temporary XLSX output file: " + tempFileOutput);
         handleXlsxOutput(inputFormatValue, inputFilePaths, tempFileOutput, projectIdentifier,
-                verbose, additionalFilePaths);
+                verbose, additionalFilePaths, ExcelWriter.Format.ZIP_EXPORT);
 
         System.out.println("Connect to openBIS-DEV instance AS[" + openbisASURL + "] DSS[" + openBISDSSURL + "] with username[" + username + "]"); //and password[" + new String(password) +"]");
 
