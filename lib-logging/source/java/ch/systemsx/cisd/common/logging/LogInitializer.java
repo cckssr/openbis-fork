@@ -27,6 +27,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Initializes the logging system. The {@link #init()} method needs to be called once at system startup.
@@ -254,12 +255,14 @@ public class LogInitializer
             return;
         }
         LogLog.info("[LogInitializer] Handlers to configure: " + handlersList);
-        String[] aliases = handlersList.split("\\s*,\\s*");
-        Set<String> handlerAliases = new HashSet<>(Arrays.asList(aliases));
+        String[] splitHandlerAliases = handlersList.split("\\s*,\\s*");
+        Set<String> handlerAliases = Arrays.stream(splitHandlerAliases)
+                .map(String::trim)
+                .collect(Collectors.toSet());
 
         removeAllHandlersBeforeInitialization();
         configureGlobalLoggingLevel(props);
-        for (String alias : aliases)
+        for (String alias : handlerAliases)
         {
             LogLog.info("[LogInitializer] Initializing handler: " + alias);
             try
@@ -490,7 +493,7 @@ public class LogInitializer
         LogLog.info("[LogInitializer] Handler class name=" + className);
         if (className == null)
         {
-            throw new IllegalArgumentException("No class defined for handler alias: " + alias);
+            throw new IllegalArgumentException("No class defined for handler alias: \"" + alias + "\"");
         }
         Class<?> hc = Class.forName(className);
         Handler handler;
