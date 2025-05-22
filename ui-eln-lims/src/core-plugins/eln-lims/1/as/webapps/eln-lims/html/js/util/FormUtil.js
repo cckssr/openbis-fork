@@ -657,9 +657,12 @@ var FormUtil = new function() {
 		return $("<i>", { 'class' : 'fa ' + iconClass });
 	}
 
-	this.getToolbarButton = function(toolbarButtonType, clickEvent, text, tooltip, id) {
+	this.getToolbarButton = function(toolbarButtonType, clickEvent, text, tooltip, id, customClass) {
 	    var $btn = null;
-        var buttonClass = 'btn btn-default';
+	    var buttonClass = 'btn btn-default';
+	    if(customClass) {
+	        buttonClass = customClass
+	    }
         $btn = $("<a>", { 'class' : buttonClass });
 
         if(IconUtil.hasToolbarIconType(toolbarButtonType)) {

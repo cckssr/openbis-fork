@@ -64,7 +64,7 @@ var IconUtil = new function() {
                         tempIcon.css("font-size", size+"px");
                     }
                 } else if(type === "img") {
-                    tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "middle");
+                    tempIcon = $("<img/>").attr("src", icon.url[i]).css("vertical-align", "bottom");
                 }
                 $icon.append(tempIcon);
             }
@@ -162,7 +162,7 @@ var IconUtil = new function() {
             icon.class = "fa fa-cubes";
         } else if(type === "STOCK") {
             icon.class = "fa fa-shopping-cart";
-        }  else if(type === "UTILITIES") {
+        } else if(type === "UTILITIES") {
             icon.class = "glyphicon glyphicon-wrench";
         } else if(type === "PLUS") {
             icon.class = "material-icons";
@@ -183,6 +183,9 @@ var IconUtil = new function() {
         } else if(type === "FULLSCREEN_CLOSE") {
             icon.class = "material-icons";
             icon.text = "close_fullscreen";
+        } else if(type === "FREEZE") {
+            icon.class = "material-icons";
+            icon.text = "ac_unit";
         }
         return icon;
     }

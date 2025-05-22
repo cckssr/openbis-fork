@@ -224,10 +224,10 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             _this._advancedSearchController.selectSavedSearch(i);
         });
 		$container.append(this._$savedSearchesDropdown);
-		var height = '40px';
+//		var height = '40px';
 		this._$savedSearchesDropdown.select2({
 			width: '400px',
-			height: height,
+//			height: height,
 			theme: "bootstrap"
 		});
 		this._$savedSearchesDropdown.refresh = function() {
@@ -242,7 +242,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             var $buttonClear = FormUtil.getToolbarButton("CLEAR", function () {
                 _this._advancedSearchController.clearSelection();
             }, null, "Clear selection", "search-clear-selection-btn-"+_this._viewId);
-			$buttonClear.css({ 'height': height, 'width': '40px', 'min-width': '40px'});
+//			$buttonClear.css({ 'height': height, 'width': '40px', 'min-width': '40px'});
 			$container.append($buttonClear);
 		}
 
@@ -297,8 +297,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             _this._advancedSearchController.search();
         }, null, null, "search-btn-"+_this._viewId);
 
-		$submitButton.css("margin-bottom", "-23px");
-		$submitButton.css("height", height);
+		$submitButton.css("margin-bottom", "-22px");
 		var $submitButtonGroup = FormUtil.getFieldForComponentWithLabel($submitButton, "", null, true);
 
 		$submitButtonGroup.css("margin-left", "0px");
@@ -508,7 +507,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 
     this._createValueField = function(uuid) {
         var $fieldValue = $("<input>", { class : "form-control", type: "text" });
-        $fieldValue.css({width : "100%", height : "40px" });
+        $fieldValue.css({width : "100%" });
 
         this._setUpKeyHandling($fieldValue, uuid);
         this._injectValue($fieldValue, uuid);
@@ -734,7 +733,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
     this._getNegationOperatorDropdownComponent = function(uuid) {
         var _this = this;
         var $checkbox = $('<input>', {'type' : 'checkbox'})
-        $checkbox.css("transform", "scale(1.3)")
         $checkbox.change(function() {
             _this._advancedSearchModel.criteria.rules[uuid].negate = $checkbox.is(":checked");
         });

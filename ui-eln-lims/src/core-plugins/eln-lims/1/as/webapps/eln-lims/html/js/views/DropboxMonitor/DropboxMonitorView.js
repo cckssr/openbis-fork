@@ -9,7 +9,7 @@ function DropboxMonitorView(dropboxMonitorController, dropboxMonitorModel) {
         $header.empty();
         $header.append($("<h1>").append("Dropbox Monitor"));
         var refreshBtnId =  "refresh-dropbox-btn-"+this._viewId;
-        var refreshBtn = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;", "id" : refreshBtnId}).append("Refresh");
+        var refreshBtn = $("<a>", { "class" : "btn btn-primary btn-secondary", "style" : "margin-top: 10px;", "id" : refreshBtnId}).append("Refresh");
         $("body").on("click", "#"+refreshBtnId, function() {
             _this._dropboxMonitorController.loadOverview(views);
         });

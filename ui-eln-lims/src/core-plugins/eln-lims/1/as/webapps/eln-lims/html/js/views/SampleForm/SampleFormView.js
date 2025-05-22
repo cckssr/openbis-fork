@@ -119,41 +119,25 @@
 			if(this._sampleFormModel.mode === FormMode.VIEW) {
 				// New
 				if(_this._allowedToCreateChild() && toolbarConfig.CREATE) {
-					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                         _this._sampleFormController.createObject("ENTRY");
-                     }, null, "New Entry", "create-entry-btn-sample-" + + _this._viewId);
-                     toolbarModel.push({ component : $createEntry});
-
-                    if(!isInventorySample){
+					if(!isInventorySample){
                          var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                               _this._sampleFormController.createObject("FOLDER");
-                         }, null, "New Folder", "create-folder-btn-sample-" + + _this._viewId);
+                         }, "Folder", "New Folder", "create-folder-btn-sample-" + + _this._viewId, 'btn btn-primary btn-secondary');
                          toolbarModel.push({ component : $createFolder});
                      }
-                     var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
+
+					var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                         _this._sampleFormController.createObject("ENTRY");
+                     }, "Entry", "New Entry", "create-entry-btn-sample-" + + _this._viewId, 'btn btn-primary btn-secondary');
+                     toolbarModel.push({ component : $createEntry});
+
+
+                     var $createBtn = FormUtil.getToolbarButton("ENTRY", function() {
                            _this._sampleFormController.createObject();
-                      }, "Other", "Create different object", "create-btn-sample-" + + _this._viewId);
+                      }, "Other", "Create different object", "create-btn-sample-" + + _this._viewId, 'btn btn-primary btn-secondary');
                       toolbarModel.push({ component : $createBtn});
 				}
-	
-				if (_this._allowedToEdit()) {
-					//Edit
-					if(this._sampleFormModel.mode === FormMode.VIEW) {
-						var $editButton = FormUtil.getToolbarButton("EDIT", function () {
-							Util.blockUI();
-							setTimeout(function() {
-								var args = {
-										permIdOrIdentifier : _this._sampleFormModel.sample.permId,
-										paginationInfo : _this._sampleFormModel.paginationInfo
-								};
-								mainController.changeView('showEditSamplePageFromPermId', args);
-							}, 100);
-						}, "Edit", "Edit object", "edit-btn-sample-" + _this._viewId);
-						if(toolbarConfig.EDIT) {
-							continuedToolbarModel.push({ component : $editButton, tooltip: null });
-						}
-					}
-				}
+
 				if (_this._allowedToMove()) {
 					//Move
 					if(toolbarConfig.MOVE) {
@@ -263,7 +247,7 @@
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
-					}, "Dataset", "Upload dataset", "upload-btn-sample-"  + mainController.getNextId());
+					}, "Dataset", "Upload dataset", "upload-btn-sample-"  + mainController.getNextId(), 'btn btn-primary btn-secondary');
 					if(toolbarConfig.UPLOAD_DATASET) {
 						toolbarModel.push({ component : $uploadBtn, tooltip: null });
 					}
@@ -294,6 +278,24 @@
 					}
 				}
 
+	            if (_this._allowedToEdit()) {
+                    //Edit
+                    if(this._sampleFormModel.mode === FormMode.VIEW) {
+                        var $editButton = FormUtil.getToolbarButton("EDIT", function () {
+                            Util.blockUI();
+                            setTimeout(function() {
+                                var args = {
+                                        permIdOrIdentifier : _this._sampleFormModel.sample.permId,
+                                        paginationInfo : _this._sampleFormModel.paginationInfo
+                                };
+                                mainController.changeView('showEditSamplePageFromPermId', args);
+                            }, 100);
+                        }, "Edit", "Edit object", "edit-btn-sample-" + _this._viewId);
+                        if(toolbarConfig.EDIT) {
+                            toolbarModel.push({ component : $editButton, tooltip: null });
+                        }
+                    }
+                }
 	            //Export
 				dropdownOptionsModel.push(FormUtil.getExportButtonModel("SAMPLE",_this._sampleFormModel.sample.permId));
 	
@@ -314,7 +316,7 @@
 					if(toolbarConfig.FREEZE) {
 						if(isEntityFrozen) {
 							var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
-							continuedToolbarModel.push({ component : $freezeButton, tooltip: null });
+							toolbarModel.push({ component : $freezeButton, tooltip: null });
 						} else {
 							dropdownOptionsModel.push({
 								label : "Freeze Entity (Disable further modifications)",
@@ -344,10 +346,8 @@
                     if(_this._sampleFormModel.mode === FormMode.CREATE) {
                         mainController.tabContent.closeCurrentTab();
                     }
-				}, "Save", "Save changes", "save-btn-sample-" + _this._viewId);
-				$saveBtn.removeClass("btn-default");
-				$saveBtn.addClass("btn-primary");
-				continuedToolbarModel.push({ component : $saveBtn });
+				}, "Save", "Save changes", "save-btn-sample-" + _this._viewId, 'btn btn-primary');
+				toolbarModel.push({ component : $saveBtn });
 	
 				// Templates
 				if(toolbarConfig.TEMPLATES && this._sampleFormModel.mode === FormMode.CREATE) {
@@ -418,7 +418,7 @@
 							});
 						});
 					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId());
-					continuedToolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
+					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
 				}
 			}
 	
@@ -488,7 +488,6 @@
 				var documentEditor = $("<div>", { class : "document-editor" });
 				if(!isReadOnly) {
 					documentEditorEditableToolbar = $("<div>", { class : "document-editor__toolbar" });
-
 				}
 	
 				var height = LayoutManager.secondColumnContent.outerHeight();
@@ -503,7 +502,6 @@
 				} else if(this._sampleFormModel.mode === FormMode.EDIT && value === "") {
 				    value = "<h2></h2><br><p></p>";
 				}
-
 				var documentEditorEditableFinal = FormUtil.activateRichTextProperties(documentEditorEditable, documentChangeEvent, documentPropertyType, value, isReadOnly, documentEditorEditableToolbar);
 	            _refreshableFields.push(documentEditorEditableFinal);
 
@@ -648,13 +646,14 @@
 				dropdownOptionsModel = dropdownOptionsModel.concat(profile.sampleTypeDefinitionsExtension[sampleType.code].extraToolbarDropdown(_this._sampleFormModel.mode, _this._sampleFormModel.sample));
 			}
 	
-			FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+			FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 					"SAMPLE-VIEW-" + _this._sampleFormModel.sample.sampleTypeCode, null, false);
 
 	        var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                                 mainController.openHelpPage();
-                                            }, null, "Help", "help-btn-sample-" + mainController.getNextId());
-            continuedToolbarModel.push({ component : $helpBtn });
+                                            }, null, "Help", "help-btn-sample-" + mainController.getNextId(), 'btn btn-default help');
+            $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
+            toolbarModel.push({ component : $helpBtn });
 
 
             //
@@ -1556,7 +1555,7 @@
 					}
 				}
 			}
-	
+
 			// Buttons
 			var generateButtonId = "btn-generate-children-"+_this._viewId;
 			var $generateButton = $("<a>", { "id" : generateButtonId, "class" : "btn btn-default" }).append("Generate!");
@@ -1802,7 +1801,7 @@
 				tabs
 			};
 
-			
+
 			const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyLeftToolbar");
 			const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._sampleFormModel.sample.permId, "onlyRightToolbar");
 			const $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);

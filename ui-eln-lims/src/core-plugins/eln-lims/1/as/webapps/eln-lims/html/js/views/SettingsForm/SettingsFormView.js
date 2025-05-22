@@ -213,7 +213,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
                 };
                 mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
             }, 100);
-		}, "New Storage", "New Storage", 'settings-new-storage-btn');
+		}, "Storage", "New Storage", 'settings-new-storage-btn', 'btn btn-primary btn-secondary');
 
 		$fieldset.append($("<p>").append($addBtn));
 
@@ -242,7 +242,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
         var $addBtn = FormUtil.getToolbarButton("PLUS", function() {
                 FormUtil.createNewSample(experimentIdentifier);
-        }, "New Template", "New Template", 'settings-new-template-btn');
+        }, "Template", "New Template", 'settings-new-template-btn', 'btn btn-primary btn-secondary');
 
         $fieldset.append($("<p>").append($addBtn));
         var $gridContainer = $("<div>");
@@ -1142,7 +1142,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		}
 		// remove row button if in edit mode
 		if (tableModel.dynamicRows) {
-		     $removeButton = FormUtil.getToolbarButton("MINUS");
+		    $removeButton = FormUtil.getToolbarButton("MINUS");
             $removeButton.children().css("font-size", '22px')
 			if (this._settingsFormModel.mode === FormMode.VIEW) {
 				$removeButton.addClass("disabled");

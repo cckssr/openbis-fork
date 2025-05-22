@@ -159,16 +159,10 @@ public class IntegrationSftpTest extends AbstractIntegrationTest
         test(INSTANCE_ADMIN, sftp ->
         {
             List<SftpClient.DirEntry> inventoryEntries = listDir(sftp, "/ELN-LIMS/Inventory");
-            assertDirEntries(inventoryEntries, ".", "..", "METHODS", "MATERIALS", "PUBLICATIONS");
+            assertDirEntries(inventoryEntries, ".", "..", "MATERIALS", "PUBLICATIONS");
 
             List<SftpClient.DirEntry> materialsEntries = listDir(sftp, "/ELN-LIMS/Inventory/MATERIALS");
             assertDirEntries(materialsEntries, ".", "..");
-
-            List<SftpClient.DirEntry> methodsEntries = listDir(sftp, "/ELN-LIMS/Inventory/METHODS");
-            assertDirEntries(methodsEntries, ".", "..", "PROTOCOLS");
-
-            List<SftpClient.DirEntry> protocolsEntries = listDir(sftp, "/ELN-LIMS/Inventory/METHODS/PROTOCOLS");
-            assertDirEntries(protocolsEntries, ".", "..", "General Protocols");
 
             List<SftpClient.DirEntry> publicationsEntries = listDir(sftp, "/ELN-LIMS/Inventory/PUBLICATIONS");
             assertDirEntries(publicationsEntries, ".", "..", "PUBLIC_REPOSITORIES");

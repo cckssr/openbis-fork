@@ -338,8 +338,8 @@ task testJar(type: Jar, dependsOn: testClasses) {
 }
 
 task sourcesJar(type: Jar) {
-    duplicatesStrategy 'include'
-    classifier = 'sources'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
 

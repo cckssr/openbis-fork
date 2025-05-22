@@ -168,7 +168,6 @@ var BarcodeUtil = new function() {
             isScanner = false;
         }
 
-//        $device.change(onDeviceChange);
         $("body").on("change", "#devices-"+viewId, onDeviceChange);
 
         $container.append($form);
@@ -321,7 +320,7 @@ var BarcodeUtil = new function() {
         }
 
         var generateBtnId = 'barcode-gen-btn-'+viewId;
-	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn-primary", generateBtnId);
+	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn btn-primary btn-secondary", generateBtnId);
         $generateBtn.css("margin-bottom", "14px");
 
         var $toolbar = $("<span>");
@@ -841,7 +840,6 @@ var BarcodeUtil = new function() {
         $barcodeTypesDropdown.attr("id", barcodeTypesDropdownId)
 
         $("body").on('change', '#'+barcodeTypesDropdownId, function() {
-//        $barcodeTypesDropdown.on('change', function() {
                    if(this.value === 'qrcode' || this.value === 'microqrcode') {
                         $height.val(50)
                         $width.val(50)

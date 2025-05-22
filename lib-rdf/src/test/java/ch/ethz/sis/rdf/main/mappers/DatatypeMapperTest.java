@@ -47,7 +47,7 @@ public class DatatypeMapperTest
 
         List<String> monthTypes = dataTypeMap.get("https://biomedit.ch/rdf/sphn-schema/sphn#hasMonth");
         assertEquals(1, monthTypes.size());
-        assertEquals("INTEGER", monthTypes.get(0));
+        assertEquals("VARCHAR", monthTypes.get(0));
     }
 
     @Test

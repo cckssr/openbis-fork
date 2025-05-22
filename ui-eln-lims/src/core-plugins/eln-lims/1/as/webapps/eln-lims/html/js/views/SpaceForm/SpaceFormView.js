@@ -27,7 +27,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
             field.refresh();
         }
     }
-	
+
 	this.repaint = function(views) {
 		var _this = this;
 		var $container = views.content;
@@ -56,27 +56,27 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
 		var dropdownOptionsModel = [];
         if (this._spaceFormModel.mode === FormMode.VIEW) {
 
-            var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                _this._spaceFormController.createObject("ENTRY");
-            }, null, "New Entry", "create-entry-btn-"+ this._viewId);
-            toolbarModel.push({ component : $createEntry});
-
-            if(!spaceFormModel.isInventory) {
-                var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
-                    _this._spaceFormController.createObject("FOLDER");
-                }, null, "New Folder", "create-folder-btn-"+ this._viewId);
-                toolbarModel.push({ component : $createFolder});
-            }
             if (_this._allowedToCreateProject()) {
                 var $createProj = FormUtil.getToolbarButton("PROJECT", function() {
                     _this._spaceFormController.createProject();
-                }, null, "New Project", "create-project-btn-"+ this._viewId);
+                }, "Project", "New Project", "create-project-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createProj});
             }
+            if(!spaceFormModel.isInventory) {
+                var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
+                    _this._spaceFormController.createObject("FOLDER");
+                }, "Folder", "New Folder", "create-folder-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
+                toolbarModel.push({ component : $createFolder});
+            }
 
-            var $createOther = FormUtil.getToolbarButton("OTHER", function() {
+            var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                _this._spaceFormController.createObject("ENTRY");
+            }, "Entry", "New Entry", "create-entry-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
+            toolbarModel.push({ component : $createEntry});
+
+            var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
                 _this._spaceFormController.createObject();
-            }, "Other", "Create different object", "create-object-btn-"+ this._viewId);
+            }, "Other", "Create different object", "create-object-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
             toolbarModel.push({ component : $createOther});
             
             if (this._allowedToEditSpace()) {
@@ -84,7 +84,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
                     _this._spaceFormController.enableEditing();
                 }, "Edit", "Edit space", "edit-space-btn-"+ this._viewId);
-                continuedToolbarModel.push({ component : $editBtn });
+                toolbarModel.push({ component : $editBtn });
             }
             
             if (this._allowedToDeleteSpace()) {
@@ -154,10 +154,8 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 if(_this._spaceFormModel.mode === FormMode.CREATE) {
                     mainController.tabContent.closeCurrentTab();
                 }
-            }, "Save", "Save changes", "save-space-btn-"+ this._viewId);
-            $saveBtn.removeClass("btn-default");
-            $saveBtn.addClass("btn-primary");
-            continuedToolbarModel.push({ component : $saveBtn });
+            }, "Save", "Save changes", "save-space-btn-"+ this._viewId, 'btn btn-primary');
+            toolbarModel.push({ component : $saveBtn });
         }
 
 		var $header = views.header;
@@ -166,12 +164,13 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         var hideShowOptionsModel = [];
         $formColumn.append(this._createIdentificationInfoSection(hideShowOptionsModel));
         $formColumn.append(this._createDescriptionSection(hideShowOptionsModel));
-        FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, false);
+        FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel, "SPACE-VIEW", null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                             mainController.openHelpPage();
-                        }, null, "Help", "help-btn-space-" + this._viewId);
-        continuedToolbarModel.push({ component : $helpBtn });
+                        }, null, "Help", "help-btn-space-" + this._viewId, 'btn btn-default help');
+        $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
+        toolbarModel.push({ component : $helpBtn });
 
         if(toolbarModel.length>0) {
             toolbarModel.push({ component : FormUtil.getToolbarSeparator() })

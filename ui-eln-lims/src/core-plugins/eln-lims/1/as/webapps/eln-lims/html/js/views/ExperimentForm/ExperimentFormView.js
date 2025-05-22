@@ -84,32 +84,24 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		    var toolbarConfig = profile.getExperimentTypeToolbarConfiguration(_this._experimentFormModel.experiment.experimentTypeCode);
 			if (_this._allowedToCreateSample() && toolbarConfig.CREATE) {
 
-			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
-                     _this._experimentFormController.createObject("ENTRY");
-                 }, null, "New Entry", "create-entry-btn-"+_this._viewId);
-                 toolbarModel.push({ component : $createEntry});
-
-                 if(!isInventoryExperiment) {
+                if(!isInventoryExperiment) {
                      var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                           _this._experimentFormController.createObject("FOLDER");
-                     }, null, "New Folder", "create-folder-btn-"+_this._viewId);
+                     }, null, "New Folder", "create-folder-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                      toolbarModel.push({ component : $createFolder});
                  }
-                 var $createBtn = FormUtil.getToolbarButton("OTHER", function() {
-                       _this._experimentFormController.createObject();
-                  }, "Other", "Create different object", "create-object-btn-"+_this._viewId);
-                  toolbarModel.push({ component : $createBtn});
 
-			}
-			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
-				//Edit
-				var $editBtn = FormUtil.getToolbarButton("EDIT", function() {
-                   Util.blockUI();
-                   var exp = _this._experimentFormModel.experiment;
-                   var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
-                   mainController.changeView("showEditExperimentPageFromIdentifier", args);
-              }, "Edit", "Edit collection", "edit-collection-btn-"+_this._viewId);
-              continuedToolbarModel.push({ component : $editBtn });
+			     var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
+                     _this._experimentFormController.createObject("ENTRY");
+                 }, null, "New Entry", "create-entry-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                 toolbarModel.push({ component : $createEntry});
+
+
+                 var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
+                       _this._experimentFormController.createObject();
+                  }, "Other", "Create different object", "create-object-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
+                  toolbarModel.push({ component : $createOther});
+
 			}
 			if (_this._allowedToMove() && toolbarConfig.MOVE) {
 				//Move
@@ -252,7 +244,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			        var $uploadBtn = FormUtil.getToolbarButton("DATA", function() {
                           Util.blockUI();
                           mainController.changeView('showCreateDataSetPageFromExpPermId',_this._experimentFormModel.experiment.permId);
-                     }, "Dataset", "Upload dataset", "upload-btn-"+_this._viewId);
+                     }, "Dataset", "Upload dataset", "upload-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
                      toolbarModel.push({ component : $uploadBtn});
 	            }
 
@@ -284,6 +276,16 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 }
 			}
 
+			if (_this._allowedToEdit() && toolbarConfig.EDIT) {
+                //Edit
+                var $editBtn = FormUtil.getToolbarButton("EDIT", function() {
+                   Util.blockUI();
+                   var exp = _this._experimentFormModel.experiment;
+                   var args = encodeURIComponent('["' + exp.identifier + '","' + exp.experimentTypeCode + '"]');
+                   mainController.changeView("showEditExperimentPageFromIdentifier", args);
+              }, "Edit", "Edit collection", "edit-collection-btn-"+_this._viewId);
+              toolbarModel.push({ component : $editBtn });
+            }
 			//Export
 			dropdownOptionsModel.push(FormUtil.getExportButtonModel("EXPERIMENT", _this._experimentFormModel.experiment.permId));
 
@@ -332,9 +334,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 if(_this._experimentFormModel.mode === FormMode.CREATE) {
                     mainController.tabContent.closeCurrentTab();
                 }
-			}, "Save", "Save changes", "save-collection-btn-"+_this._viewId);
-			$saveBtn.removeClass("btn-default");
-			$saveBtn.addClass("btn-primary");
+			}, "Save", "Save changes", "save-collection-btn-"+_this._viewId, 'btn btn-primary');
 			toolbarModel.push({ component : $saveBtn });
 		}
 
@@ -449,13 +449,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		    dropdownOptionsModel = dropdownOptionsModel.concat(profile.experimentTypeDefinitionsExtension[experimentTypeCode].extraToolbarDropdown(_this._experimentFormModel.mode, _this._experimentFormModel.experiment));
 		}
 
-		FormUtil.addOptionsToToolbar(continuedToolbarModel, dropdownOptionsModel, hideShowOptionsModel,
+		FormUtil.addOptionsToToolbar(toolbarModel, dropdownOptionsModel, hideShowOptionsModel,
 				"EXPERIMENT-VIEW-" + this._experimentFormModel.experiment.experimentTypeCode, null, false);
 
         var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                             mainController.openHelpPage();
-                                        }, null, "Help", "help-collection-btn-"+_this._viewId);
-        continuedToolbarModel.push({ component : $helpBtn });
+                                        }, null, "Help", "help-collection-btn-"+_this._viewId, 'btn btn-default help');
+        $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
+        toolbarModel.push({ component : $helpBtn });
 
         if(toolbarModel.length>0) {
             toolbarModel.push({ component : FormUtil.getToolbarSeparator() })
