@@ -294,7 +294,7 @@ var BarcodeUtil = new function() {
             generateBarcodeText = "Update Custom Barcodes/QR Codes";
         }
 
-	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn-primary");
+	    var $generateBtn = FormUtil.getButtonWithText(generateBarcodeText, function() {}, "btn btn-primary btn-secondary");
         $generateBtn.css("margin-bottom", "14px");
 
         var $toolbar = $("<span>");

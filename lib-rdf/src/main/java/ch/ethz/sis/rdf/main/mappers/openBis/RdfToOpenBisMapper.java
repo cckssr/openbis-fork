@@ -239,7 +239,8 @@ public class RdfToOpenBisMapper
 
                 sample.setProperties(proppies);
 
-                metadata.put(new SampleIdentifier(projectIdentifier, "DEFAULT", sampleObject.code),
+                metadata.put(new SampleIdentifier(projectIdentifier, "DEFAULT",
+                                sampleObject.code.toUpperCase()),
                         sample);
             }
 
@@ -266,7 +267,9 @@ public class RdfToOpenBisMapper
         String value = sampleObjectProperty.value;
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
-            return "/" + Stream.of(space, project, value).collect(Collectors.joining("/"));
+            return "/" + Stream.of(space, project, value).collect(Collectors.joining("/"))
+                    .toUpperCase(
+                            Locale.ROOT);
         }
 
         //System.out.println("MAPPED: " + sampleObjectProperty + ", CONTAINS: " + vocabularyOptionList.contains(sampleObjectProperty.value) + ", OBJ: " + sampleObjectProperty.value);

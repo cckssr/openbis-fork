@@ -45,7 +45,7 @@ function InventoryView(inventoryController, inventoryView) {
                 if (profile.isAdmin) {
                     var $createSpace = FormUtil.getToolbarButton("SPACE", function() {
                                  _this.inventoryController.createSpace();
-                             }, null, "New Inventory Space", "create-btn");
+                             }, "Space", "New Inventory Space", "create-btn", 'btn btn-primary btn-secondary');
                     toolbarModel.push({component : $createSpace});
                 }
 			

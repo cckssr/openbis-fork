@@ -432,8 +432,53 @@ body,
     cursor: pointer;
 }
 
+.btn-secondary {
+    color: #fff;
+    background-color: #039be5;
+    border-color: #ccc;
+
+    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    min-width: 64px;
+    min-height: 32px;
+    line-height: 1.75;
+    padding: 4px 10px;
+
+    box-sizing: border-box;
+
+    transition: background-color 250ms linear;
+    border: 0;
+    cursor: pointer;
+    margin: 0;
+    margin-bottom: 2px;
+    display: inline-flex;
+    outline: 0;
+    position: relative;
+    align-items: center;
+    align-content: center;
+    user-select: none;
+    vertical-align: middle;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.help {
+    background-color: initial;
+    box-shadow: initial;
+    min-width: 20px;
+    width: 20px;
+    border-radius: 15px;
+}
+
+.btn-secondary img {
+  filter: brightness(0) invert(1);
+  text-decoration: none;
+  cursor: pointer;
+  width: 21px;
+  padding-bottom: 2px;
+}
+
 .select2-container--bootstrap .select2-selection--single {
-  height: 40px;
+  height: 34px;
   line-height: 1.42857143;
   padding: 6px 24px 6px 12px;
   align-content: center;
@@ -441,12 +486,12 @@ body,
 
 .select2-container--bootstrap .select2-results__option {
     padding: 6px 12px;
-    min-height: 40px;
+    min-height: 45px;
     align-content: center;
 }
 
 .select2-container--bootstrap .select2-selection--multiple {
-  min-height: 40px;
+  min-height: 34px;
   padding: 0;
   height: auto;
 }

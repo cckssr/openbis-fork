@@ -67,16 +67,20 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
         if(result != null) {
             return result;
         }
+        operationLog.info(String.format("Property '%s' not found in the resolved properties, checking system properties", key));
 
         result = System.getProperty(key);
 
         if(result == null) {
+            operationLog.info(String.format("Property '%s' not found in the system properties, checking environment variables", key));
             result = System.getenv(key);
         }
 
         if(result != null) {
+            operationLog.info(String.format("Property '%s' found. Adding its value to resolved properties.", key));
             resolvedProps.put(key, result);
         } else {
+            operationLog.info(String.format("Property '%s' not found. Using default value", key));
             result = defaultValue;
         }
         return result;
