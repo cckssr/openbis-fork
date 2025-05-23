@@ -70,36 +70,37 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	handleAddSemanticAnnotation = (property) => {
-		let { semanticAnnotations } = property;
-
+		const { semanticAnnotations } = property;
+		
 		const newSemanticAnnotation = {
-			id: `${property.section}-${property.id}-${semanticAnnotations?.length > 0 ? semanticAnnotations.length : 0}`,
+			id: `${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}`,
 			predicateOntologyId: '',
 			predicateOntologyVersion: '',
 			predicateAccessionId: ''
 		};
 
-		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.length > 0) {
-			semanticAnnotations.push(newSemanticAnnotation);
+		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.value.length > 0) {
+			semanticAnnotations.value.push(newSemanticAnnotation);
 		} else {
-			semanticAnnotations = [newSemanticAnnotation];
+			semanticAnnotations.value = [newSemanticAnnotation];
 		}
 
 		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
 			id: property.id,
 			field: ANNOTATION_TYPES.PROPERTY,
-			value: semanticAnnotations
-		})
+			value: semanticAnnotations.value
+		});
 	};
 
 	handleRemoveSemanticAnnotation = (semanticAnnotationTripletId, index) => {
 		const property = this.getProperty(this.props);
 		let { semanticAnnotations } = property;
+		//it's already the list of semantic annotations
 		semanticAnnotations = semanticAnnotations.value.filter((semanticAnnotationTriplet, idx) => idx !== index);
 		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
 			id: property.id,
 			field: ANNOTATION_TYPES.PROPERTY,
-			value: semanticAnnotations.value
+			value: semanticAnnotations
 		});
 	};
 
@@ -115,7 +116,6 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, type) {
-		console.log('render semanticAnnotationTriplet: ', semanticAnnotationTriplet);
 		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
