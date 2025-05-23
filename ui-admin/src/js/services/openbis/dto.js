@@ -110,6 +110,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/property/search/PropertyTypeSearchCriteria',
   'as/dto/property/update/PropertyTypeUpdate',
   'as/dto/property/update/UpdatePropertyTypesOperation',
+  'as/dto/semanticannotation/create/SemanticAnnotationCreation',
+  'as/dto/semanticannotation/create/CreateSemanticAnnotationsOperation',
   'as/dto/query/Query',
   'as/dto/query/QueryType',
   'as/dto/query/create/CreateQueriesOperation',

@@ -35,6 +35,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
           operations.push(this._updatePropertyTypeOperation(property))
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
+        if (property.semanticAnnotations?.value?.length > 0) {
+          operations.push(this._createPropertySemanticAnnotationOperation(property))
+        }
       } else {
         operations.push(this._createPropertyTypeOperation(property))
         assignments.push(this._propertyAssignmentCreation(property, index))
@@ -59,6 +62,21 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     await this.facade.executeOperations(operations, options)
 
     return type.code.value
+  }
+
+  _createPropertySemanticAnnotationOperation(property) {
+    const { value } = property.semanticAnnotations;
+    const semanticAnnotationCreations = []
+    value.forEach((semanticAnnotation, index) => {
+      const semanticAnnotationCreation = new openbis.SemanticAnnotationCreation();
+      semanticAnnotationCreation.setPropertyTypeId(new openbis.PropertyTypePermId(property.code.value));
+      semanticAnnotationCreation.setPredicateOntologyId(semanticAnnotation.predicateOntologyId);
+      semanticAnnotationCreation.setPredicateOntologyVersion(semanticAnnotation.predicateOntologyVersion);
+      semanticAnnotationCreation.setPredicateAccessionId(semanticAnnotation.predicateAccessionId);
+      semanticAnnotationCreations.push(semanticAnnotationCreation);
+    })
+    //console.log("semanticAnnotationCreations: ", semanticAnnotationCreations);
+    return new openbis.CreateSemanticAnnotationsOperation(semanticAnnotationCreations);
   }
 
   _prepareType(type) {
@@ -234,10 +252,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     creation.setSection(property.section)
     creation.setUnique(property.unique.value);
     creation.setManagedInternally(property.assignmentInternal.value);
-    if(property.patternType.value != 'NONE')
-    {
-        creation.setPattern(property.pattern.value)
-        creation.setPatternType(property.patternType.value)
+    if (property.patternType.value != 'NONE') {
+      creation.setPattern(property.pattern.value)
+      creation.setPatternType(property.patternType.value)
     }
 
     if (property.code.value) {
@@ -340,7 +357,7 @@ class CollectionTypeStrategy {
     return new openbis.UpdateExperimentTypesOperation(updates)
   }
 
-  setTypeAttributes() {}
+  setTypeAttributes() { }
 }
 
 class DataSetTypeStrategy {
@@ -384,5 +401,5 @@ class MaterialTypeStrategy {
     return new openbis.UpdateMaterialTypesOperation(updates)
   }
 
-  setTypeAttributes() {}
+  setTypeAttributes() { }
 }

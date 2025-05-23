@@ -13,6 +13,7 @@ export default class EntityTypeFormFacade {
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
+    fo.withPropertyAssignments().withPropertyType().withSemanticAnnotations()
     fo.withPropertyAssignments().sortBy().ordinal()
 
     return strategy.getTypes([id], fo).then(map => {

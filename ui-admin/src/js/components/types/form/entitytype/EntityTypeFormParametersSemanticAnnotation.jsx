@@ -74,9 +74,9 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 
 		const newSemanticAnnotation = {
 			id: `${property.section}-${property.id}-${semanticAnnotations?.length > 0 ? semanticAnnotations.length : 0}`,
-			ontologyId: '',
-			ontologyVersion: '',
-			ontologyAnnotationId: ''
+			predicateOntologyId: '',
+			predicateOntologyVersion: '',
+			predicateAccessionId: ''
 		};
 
 		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.length > 0) {
@@ -116,19 +116,19 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 
 	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, type) {
 		console.log('render semanticAnnotationTriplet: ', semanticAnnotationTriplet);
-		const { id, ontologyId, ontologyVersion, ontologyAnnotationId } = semanticAnnotationTriplet;
+		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
 			<>
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ID)}
-						name={'ontologyId-' + index}
+						name={'predicateOntologyId-' + index}
 						mandatory={true}
 						//error={error}
-						value={ontologyId}
+						value={predicateOntologyId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'ontologyId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -136,12 +136,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_VERSION)}
-						name={'ontologyVersion' + index}
+						name={'predicateOntologyVersion' + index}
 						mandatory={true}
-						//error={annotationItem.errors?.ontologyVersion}
-						value={ontologyVersion}
+						//error={annotationItem.errors?.predicateOntologyVersion}
+						value={predicateOntologyVersion}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'ontologyVersion', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyVersion', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -149,12 +149,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ANNOTATION_ID)}
-						name={'ontologyAnnotationId' + index}
+						name={'predicateAccessionId' + index}
 						mandatory={true}
-						//error={annotationItem.errors?.ontologyAnnotationId}
-						value={ontologyAnnotationId}
+						//error={annotationItem.errors?.predicateAccessionId}
+						value={predicateAccessionId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'ontologyAnnotationId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateAccessionId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
