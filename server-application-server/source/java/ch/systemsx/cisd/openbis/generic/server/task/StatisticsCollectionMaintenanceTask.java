@@ -151,11 +151,13 @@ public class StatisticsCollectionMaintenanceTask implements IMaintenanceTask
     private boolean shouldExecute()
     {
         final String disableStatistics = System.getenv().get("DISABLE_OPENBIS_STATISTICS");
-        if (!"true".equals(disableStatistics))
+        boolean flag = true;
+        if (!"true".equalsIgnoreCase(disableStatistics))
         {
+            flag = false;
             final String collectStatistics = CommonServiceProvider.tryToGetProperty("collect-statistics");
             final boolean propertyIsMissing = collectStatistics == null || collectStatistics.isEmpty();
-            if ("true".equals(collectStatistics) || propertyIsMissing)
+            if ("true".equalsIgnoreCase(collectStatistics) || propertyIsMissing)
             {
                 if (propertyIsMissing)
                 {
@@ -173,6 +175,7 @@ public class StatisticsCollectionMaintenanceTask implements IMaintenanceTask
                 }
             }
         }
+        operationLog.info("Statistics collection has been disabled by " + (flag ? "'DISABLE_OPENBIS_STATISTICS' environment variable" : "'collect-statistics property'"));
         return false;
     }
 
