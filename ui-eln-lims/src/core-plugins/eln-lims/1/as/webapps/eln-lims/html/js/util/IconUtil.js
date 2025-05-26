@@ -260,6 +260,11 @@ var IconUtil = new function() {
             icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-not-requested-icon.png";
+            icon.css = { "width": "14px",
+                         "height": "16px",
+                         "vertical-align": "text-bottom",
+                         "margin-bottom": "-2px"
+                         };
         } else if(type === "UNARCHIVING_HELPER") {
             icon.class = "glyphicon glyphicon-open";
         } else if(type === "CUSTOM_IMPORT" || type === "IMPORT") {

@@ -2,6 +2,16 @@ function ArchivingHelperView(archivingHelperController, archivingHelperModel) {
     this._archivingHelperController = archivingHelperController;
     this._archivingHelperModel = archivingHelperModel;
     this._archivingCheckBoxes = [];
+    this._viewId = mainController.getNextId();
+
+    var _refreshableFields = [];
+
+    this.refresh = function() {
+
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 
     this.repaint = function(views) {
         var _this = this;
@@ -15,14 +25,22 @@ function ArchivingHelperView(archivingHelperController, archivingHelperModel) {
         $container.append(this._createStepExplanationElement("1. Search for the datasets you want to archive:"));
         
         searchController = this._advancedSearch($container, this._archivingHelperController._mainController);
-        $archiveButton.click(function() {
+        var clickFunction = function() {
             var dataSets = Object.values(_this._archivingHelperModel.dataSetsForArchiving);
             if (dataSets.length > 0) {
                 _this._archivingHelperController.archive(dataSets, function() {
                     searchController.search();
                 });
+            } else {
+                Util.showInfo("Please select datasets to archive!")
             }
-        });
+        }
+        $archiveButton.click(clickFunction);
+        $archiveButton.refresh = function() {
+            this.off('click')
+            this.click(clickFunction);
+        }
+        _refreshableFields.push($archiveButton)
     }
 
     this._addForArchiving = function(dataSet) {
@@ -41,6 +59,7 @@ function ArchivingHelperView(archivingHelperController, archivingHelperModel) {
         var $selectionPanel = $("<div>", { "class" : "form-inline", style : "width: 100%;" });
         $container.append($selectionPanel)
         var searchView = searchController._advancedSearchView;
+        _refreshableFields.push(searchView)
         searchView._paintTypeSelectionPanel($selectionPanel);
         var $rulesPanel = $("<div>", { "class" : "form-inline", style : "width: 100%;" });
         $container.append($rulesPanel)

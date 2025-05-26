@@ -1435,18 +1435,22 @@ function MainController(profile) {
     }
     
     this._showArchivingHelper = function() {
-        var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('ARCHIVING_HELPER'));
+        var tabInfo = TabContentUtil.getToolTabInfo('ARCHIVING_HELPER');
+        var views = this._getNewViewModel(true, true, false, tabInfo);
         
         var archivingHelperController = new ArchivingHelperController(this);
         archivingHelperController.init(views);
+        archivingHelperController.tabId = tabInfo.id;
         this.currentView = archivingHelperController;
     }
     
 	this._showUnarchivingHelper = function() {
-		var views = this._getNewViewModel(true, true, false, TabContentUtil.getToolTabInfo('UNARCHAVING_HELPER'));
+	    var tabInfo = TabContentUtil.getToolTabInfo('UNARCHIVING_HELPER');
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		
 		var unarchivingHelperController = new UnarchivingHelperController(this);
 		unarchivingHelperController.init(views);
+		unarchivingHelperController.tabId = tabInfo.id;
 		this.currentView = unarchivingHelperController;
 	}
 	
