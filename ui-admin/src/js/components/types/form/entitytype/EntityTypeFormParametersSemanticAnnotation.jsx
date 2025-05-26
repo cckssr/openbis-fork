@@ -39,7 +39,7 @@ const styles = theme => {
 			minWidth: 'auto', // Ensure button doesn't take too much space
 			padding: theme.spacing(0.5),
 		},
-        semanticAnnotationTripletContainer: baseSemanticAnnotationTripletContainer,
+		semanticAnnotationTripletContainer: baseSemanticAnnotationTripletContainer,
 		semanticAnnotationTripletContainerEdit: {
 			...baseSemanticAnnotationTripletContainer,
 			borderRight: 'unset',
@@ -55,6 +55,33 @@ const ANNOTATION_TYPES = {
 class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	constructor(props) {
 		super(props);
+		this.references = {};
+	}
+
+	componentDidMount() {
+		this.focus()
+	}
+
+	componentDidUpdate(prevProps) {
+		const prevSelection = prevProps.selection
+		const selection = this.props.selection
+
+		if (prevSelection !== selection) {
+			this.focus()
+		}
+	}
+
+	focus() {
+		const property = this.getProperty(this.props)
+		if (property) {
+			const { part } = this.props.selection.params
+			if (part) {
+				const reference = this.references[part]
+				if (reference && reference.current) {
+					reference.current.focus()
+				}
+			}
+		}
 	}
 
 	handleFocus(event) {
@@ -71,9 +98,9 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 
 	handleAddSemanticAnnotation = (property) => {
 		const { semanticAnnotations } = property;
-		
+
 		const newSemanticAnnotation = {
-			id: `${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}`,
+			tempPermId: {permId: `${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}`},
 			predicateOntologyId: '',
 			predicateOntologyVersion: '',
 			predicateAccessionId: ''
@@ -116,7 +143,7 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, type) {
-		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId } = semanticAnnotationTriplet;
+		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId, error } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
 			<>
@@ -125,7 +152,7 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 						label={messages.get(messages.ONTOLOGY_ID)}
 						name={'predicateOntologyId-' + index}
 						mandatory={true}
-						//error={error}
+						error={error?.predicateOntologyId}
 						value={predicateOntologyId}
 						mode={mode}
 						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyId', event.target.value)}
@@ -136,9 +163,9 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_VERSION)}
-						name={'predicateOntologyVersion' + index}
+						name={'predicateOntologyVersion-' + index}
 						mandatory={true}
-						//error={annotationItem.errors?.predicateOntologyVersion}
+						error={error?.predicateOntologyVersion}
 						value={predicateOntologyVersion}
 						mode={mode}
 						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyVersion', event.target.value)}
@@ -149,9 +176,9 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ANNOTATION_ID)}
-						name={'predicateAccessionId' + index}
+						name={'predicateAccessionId-' + index}
 						mandatory={true}
-						//error={annotationItem.errors?.predicateAccessionId}
+						error={error?.predicateAccessionId}
 						value={predicateAccessionId}
 						mode={mode}
 						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateAccessionId', event.target.value)}
@@ -186,7 +213,7 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	renderSemanticAnnotations(property) {
-		const { visible, value } = { ...property.semanticAnnotations }
+		const { visible, value, error } = { ...property.semanticAnnotations }
 
 		if (!visible) {
 			return null

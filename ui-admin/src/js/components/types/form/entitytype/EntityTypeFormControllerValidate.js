@@ -63,6 +63,13 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
       'description',
       messages.get(messages.DESCRIPTION)
     )
+    
+    validator.validateSemanticAnnotationsNotEmpty(
+      property,
+      'semanticAnnotations',
+      'Semantic Annotation fields'
+    )
+
     validator.validateNotEmpty(
       property,
       'dataType',

@@ -22,6 +22,14 @@ class FormValidator {
     return this.mode === FormValidator.MODE_FULL
   }
 
+  _isStringNotValide(value) {
+    return (
+      value === null ||
+      value === undefined ||
+      (_.isString(value) && value.trim() === '')
+    )
+  }
+
   validateNotEmpty(object, name, label) {
     if (!this.isFullMode()) {
       return
@@ -29,11 +37,7 @@ class FormValidator {
 
     const field = object[name]
 
-    if (
-      field.value === null ||
-      field.value === undefined ||
-      (_.isString(field.value) && field.value.trim() === '')
-    ) {
+    if (this._isStringNotValide(field.value)) {
       this.addError(
         object,
         name,
@@ -42,20 +46,49 @@ class FormValidator {
     }
   }
 
+  validateSemanticAnnotationsNotEmpty(object, name, label) {
+    if (!this.isFullMode()) return
+
+    const field = object[name]
+    const requiredFields = [
+      { key: 'predicateOntologyId', label: messages.get(messages.ONTOLOGY_ID) },
+      { key: 'predicateOntologyVersion', label: messages.get(messages.ONTOLOGY_VERSION) },
+      { key: 'predicateAccessionId', label: messages.get(messages.ONTOLOGY_ANNOTATION_ID) }
+    ]
+    const errors = []
+
+    field?.value.forEach(item => {
+      const errorMessages = {}
+      requiredFields.forEach(({ key, label }) => {
+        if (this._isStringNotValide(item[key])) {
+          errors.push(key);
+          errorMessages[key] = messages.get(messages.VALIDATION_CANNOT_BE_EMPTY, label);
+        }
+      })
+      if (Object.keys(errorMessages).length > 0) {
+        item.error = errorMessages
+      }
+    })
+
+    if (errors.length > 0) {
+      this.addError(object, name, messages.get(messages.VALIDATION_CANNOT_BE_EMPTY, label))
+    }
+  }
+
   validateBooleanNotSet(object, name, label) {
     const field = object[name]
     if (
-        field.value === null ||
-        field.value === undefined ||
-        field.value === true
-      ) {
-        this.addError(
-          object,
-          name,
-          messages.get(messages.VALIDATION_BOOLEAN_NOT_SET, label)
-        )
-      }
+      field.value === null ||
+      field.value === undefined ||
+      field.value === true
+    ) {
+      this.addError(
+        object,
+        name,
+        messages.get(messages.VALIDATION_BOOLEAN_NOT_SET, label)
+      )
     }
+  }
 
   validateDateNotEmpty(object, name, label) {
     if (!this.isFullMode()) {
