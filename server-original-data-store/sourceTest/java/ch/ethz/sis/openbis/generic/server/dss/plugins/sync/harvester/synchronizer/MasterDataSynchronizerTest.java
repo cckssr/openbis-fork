@@ -25,8 +25,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.spi.NOPLogger;
-import org.apache.log4j.spi.NOPLoggerRepository;
+import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.BeforeMethod;
@@ -105,7 +104,7 @@ public class MasterDataSynchronizerTest
         config.setHarvesterUser(USER_ID);
         config.setHarvesterPass(PASSWORD);
         synchronizer = new MasterDataSynchronizer(config, facade, server, v3api);
-        monitor = new Monitor("test", new NOPLogger(new NOPLoggerRepository(), "null"));
+        monitor = new Monitor("test", Logger.getLogger(Monitor.class));
     }
 
     @DataProvider

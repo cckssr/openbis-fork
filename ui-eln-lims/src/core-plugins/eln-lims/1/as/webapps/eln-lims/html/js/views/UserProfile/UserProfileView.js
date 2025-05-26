@@ -38,7 +38,7 @@ function UserProfileView(userProfileController, userProfileModel) {
             //Edit
             var $editButton = FormUtil.getToolbarButton("EDIT", function () {
                 mainController.changeView("showEditUserProfilePage");
-            }, "Edit", "Edit profile", "edit-btn-user-profile-" + _this._viewId);
+            }, "Edit", "Edit profile", "edit-btn-user-profile-" + _this._viewId, 'btn btn-primary btn-secondary');
             toolbarModel.push({ component : $editButton });
         } else { //Create and Edit
             //Save

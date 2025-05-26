@@ -42,7 +42,6 @@ dependencies {
             'jmock:jmock:2.5.1'
 
     runtimeOnly 'apache:commons-io:2.6',
-                'apache:log4j:1.2.15',
                 'sis:sis-base:23.06.0',
                 'postgresql:postgresql:42.5.0'
 

@@ -88,12 +88,12 @@ dependencies {
     blast_tar "blast:blast:2.2.30@tar.gz"
 
     server_original_data_store project(':server-screening'),
-            'bioformats:bioformats:6.5.1',
+            //'bioformats:bioformats:6.5.1',
             'imagej:ij:1.43u',
             'cisd:cisd-openbis-knime-server:13.6.0.r29301',
             'apache:xml-apis:1.3.03',
-            'slf4j:slf4j:1.6.2',
-            'slf4j:slf4j-log4j12:1.6.2',
+            'slf4j:slf4j-api:1.7.24',
+            'slf4j:slf4j-jdk14:1.7.24',
             'sybit:image-viewer:0.3.6'
 
     javadoc_sources project(path: ':lib-commonbase', configuration: 'archives'),
@@ -280,6 +280,8 @@ war {
                 || file.name.startsWith('server-original-data-store')
                 || file.name.startsWith('bioformats')
                 || file.name.startsWith('cisd-image-readers')
+                || file.name.startsWith('xalan')
+                || file.name.startsWith('serializer')
         ) {
             file.exclude()
         }
@@ -302,7 +304,7 @@ war {
 
     from('dist/server') {
         into("WEB-INF/classes")
-        include "etc/log.xml"
+        include "etc/logging.properties"
     }
 
     from('targets/dist') {
@@ -436,6 +438,8 @@ task zipDss(type: Zip, dependsOn: [copyJarsForWebStart,signWebStartJars]) {
         exclude '**/lucene*.jar'
         exclude '**/restrictions*.jar'
         exclude '**/testng*.jar'
+        exclude '**/serializer-*.jar'
+        exclude '**/xalan-*.jar'
         rename 'lib-common-.*jar', 'lib-common.jar'
         rename 'lib-commonbase-.*jar', 'lib-commonbase.jar'
     }
@@ -454,7 +458,7 @@ task zipDss(type: Zip, dependsOn: [copyJarsForWebStart,signWebStartJars]) {
         into 'datastore_server/etc';
     }
 
-    from(fileTree(dir: 'dist', includes: ['etc/service.properties', 'etc/log.xml'])) {
+    from(fileTree(dir: 'dist', includes: ['etc/service.properties', 'etc/logging.properties'])) {
         into 'datastore_server'
     }
 

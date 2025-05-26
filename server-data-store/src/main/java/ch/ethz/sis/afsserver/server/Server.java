@@ -97,7 +97,7 @@ public final class Server<CONNECTION, API>
 
         // Make the legacy code that bases on Apache Commons Logging or Log4j use the same logging mechanism as the rest of AFS
         ApacheCommonsLoggingConfiguration.reconfigureToUseAFSLogging();
-        ApacheLog4j1Configuration.reconfigureToUseAFSLogging();
+//        ApacheLog4j1Configuration.reconfigureToUseAFSLogging();
 
         logger.info("=== Server Bootstrap ===");
         logger.info("Running with java.version: " + System.getProperty("java.version"));

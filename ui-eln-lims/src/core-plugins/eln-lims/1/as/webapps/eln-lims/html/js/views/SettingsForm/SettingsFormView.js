@@ -83,7 +83,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					//Edit
 					var $editButton = FormUtil.getToolbarButton("EDIT", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-					}, "Edit", "Edit settings", "settings-edit-btn");
+					}, "Edit", "Edit settings", "settings-edit-btn", 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $editButton });
 				}
 			} else { //Create and Edit

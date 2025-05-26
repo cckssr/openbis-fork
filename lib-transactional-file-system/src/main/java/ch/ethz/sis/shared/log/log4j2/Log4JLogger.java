@@ -15,26 +15,42 @@
  */
 package ch.ethz.sis.shared.log.log4j2;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.spi.AbstractLogger;
-import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
-class Log4JLogger extends ExtendedLoggerWrapper implements ch.ethz.sis.shared.log.Logger
+import java.util.Arrays;
+
+class Log4JLogger extends Logger implements ch.ethz.sis.shared.log.Logger
 {
+    private static final String ENTRY_MARKER = "Enter ";
+    private static final String EXIT_MARKER = "Exit ";
 
     private final String FQCN;
 
-    Log4JLogger(final Logger logger)
-    {
-        super((AbstractLogger) logger, logger.getName(), logger.getMessageFactory());
+    public Log4JLogger(String name) {
+        super(name);
         FQCN = this.getClass().getName();
+//        Arrays.stream(Logger.getLogger(INTERNAL_LOGGER
+//        ).getHandlers()).forEach(this.logger::addHandler);
+//        this.logger.setUseParentHandlers(false);
+
+    }
+
+    /**
+     * Returns a Logger for the given name.
+     */
+    public static ch.ethz.sis.shared.log.Logger getLog4JLogger(String name) {
+        return new Log4JLogger(name);
+    }
+
+    public static ch.ethz.sis.shared.log.Logger getLog4JLogger(Class<?> clazz) {
+        return getLog4JLogger(clazz.getName());
     }
 
     @Override
     public void traceAccess(String message, Object... args)
     {
-        if(this.getLevel() == Level.TRACE)
+        if(this.getEffectiveLevel() == Level.TRACE)
         {
             traceAccess(message, null, args);
         }
@@ -42,26 +58,28 @@ class Log4JLogger extends ExtendedLoggerWrapper implements ch.ethz.sis.shared.lo
 
     @Override public void traceAccess(String message, Throwable ex, Object... args)
     {
-        if(this.getLevel() == Level.TRACE)
+        if(this.getEffectiveLevel() == Level.TRACE)
         {
-            this.logMessage(FQCN,
-                    Level.TRACE,
-                    ENTRY_MARKER,
-                    entryMsg(message, args),
-                    ex);
+            this.log(Level.TRACE, format(ENTRY_MARKER, message, args), ex);
+//            this.log(FQCN,
+//                    Level.TRACE,
+//                    ENTRY_MARKER,
+//                    entryMsg(message, args),
+//                    ex);
         }
     }
 
     @Override
     public <R> R traceExit(R result)
     {
-        if(this.getLevel() == Level.TRACE)
+        if(this.getEffectiveLevel() == Level.TRACE)
         {
-            this.logMessage(FQCN,
-                    Level.TRACE,
-                    EXIT_MARKER,
-                    exitMsg((String) null, result),
-                    (Throwable) null);
+            this.log(Level.TRACE, exitMsg( result), null);
+//            this.log(FQCN,
+//                    Level.TRACE,
+//                    EXIT_MARKER,
+//                    exitMsg((String) null, result),
+//                    (Throwable) null);
         }
         return result;
     }
@@ -69,33 +87,37 @@ class Log4JLogger extends ExtendedLoggerWrapper implements ch.ethz.sis.shared.lo
     @Override
     public void catching(Throwable ex)
     {
-        this.logMessage(FQCN,
-                Level.ERROR,
-                CATCHING_MARKER,
-                catchingMsg(ex),
-                ex);
+        String message = (ex.getMessage() != null) ? ex.getMessage() : "";
+        this.log(Level.ERROR, message, ex);
+        //        this.logMessage(FQCN,
+//                Level.ERROR,
+//                CATCHING_MARKER,
+//                catchingMsg(ex),
+//                ex);
     }
 
     @Override
     public <T extends Throwable> T throwing(T ex)
     {
-        this.logMessage(FQCN,
-                Level.ERROR,
-                THROWING_MARKER,
-                throwingMsg(ex),
-                ex);
+        this.log(Level.ERROR,  ex.getMessage(), ex);
+//        this.logMessage(FQCN,
+//                Level.ERROR,
+//                THROWING_MARKER,
+//                throwingMsg(ex),
+//                ex);
         return ex;
     }
 
-    @Override public void debug(String message, Object... args)
+    public void debug(String message, Object... args)
     {
-        if(this.getLevel() == Level.DEBUG || this.getLevel() == Level.TRACE)
+        if(this.getEffectiveLevel() == Level.DEBUG || this.getEffectiveLevel() == Level.TRACE)
         {
-            this.logMessage(FQCN,
-                    Level.DEBUG,
-                    null,
-                    logger.getMessageFactory().newMessage(message, args),
-                    (Throwable) null);
+            this.log(Level.DEBUG, format(message, args), null);
+//            this.logMessage(FQCN,
+//                    Level.DEBUG,
+//                    null,
+//                    logger.getMessageFactory().newMessage(message, args),
+//                    (Throwable) null);
         }
     }
 
@@ -107,22 +129,54 @@ class Log4JLogger extends ExtendedLoggerWrapper implements ch.ethz.sis.shared.lo
 
     @Override public void info(String message, Throwable ex, Object... args)
     {
-        this.logMessage(FQCN,
-                Level.INFO,
-                null,
-                logger.getMessageFactory().newMessage(message, args),
-                ex);
+        this.log(Level.INFO, format(message, args), null);
+//        this.logMessage(FQCN,
+//                Level.INFO,
+//                null,
+//                logger.getMessageFactory().newMessage(message, args),
+//                ex);
     }
 
-    @Override public void warn(String message, Object... args)
+     public void warn(String message, Object... args)
     {
-        if(this.getLevel() == Level.WARN || this.getLevel() == Level.INFO || this.getLevel() == Level.DEBUG || this.getLevel() == Level.TRACE)
+        if(this.getEffectiveLevel() == Level.WARN || this.getEffectiveLevel() == Level.INFO || this.getEffectiveLevel() == Level.DEBUG || this.getEffectiveLevel() == Level.TRACE)
         {
-            this.logMessage(FQCN,
-                    Level.WARN,
-                    null,
-                    logger.getMessageFactory().newMessage(message, args),
-                    (Throwable) null);
+            this.log(Level.WARN, format(message, args), null);
+//            this.logMessage(FQCN,
+//                    Level.WARN,
+//                    null,
+//                    logger.getMessageFactory().newMessage(message, args),
+//                    (Throwable) null);
         }
+    }
+    private String exitMsg(Object result) {
+        return "EXIT Returning " + result;
+    }
+
+    private String format(String message, Object... args) {
+        return format(null, message,args);
+    }
+
+    private String format(String markers, String message, Object... args) {
+        int count = args == null ? 0 : args.length;
+        String finalMessage = markers != null ? markers : "";
+        if (count == 0) {
+            finalMessage +=  message;
+        } else if (message != null) {
+            finalMessage +=  String.format(message, args);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("params(");
+            for (int i = 0; i < count; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                Object arg = args[i];
+                sb.append(String.valueOf(arg));
+            }
+            sb.append(")");
+            finalMessage +=  sb.toString();
+        }
+        return finalMessage;
     }
 }

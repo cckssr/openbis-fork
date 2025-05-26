@@ -983,6 +983,47 @@ span.fancytree-custom-icon {
 }
 
 /*
+ * PopUp table with sticky header
+ */
+
+.lock-header {
+    overflow-y: auto;
+    max-height: 150px;
+}
+
+.popup-table-sticky {
+  width: 100%;
+  text-align: left;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.popup-table-sticky th {
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
+
+.popup-table-sticky td {
+  border-bottom: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 4px;
+}
+
+.popup-table-sticky th:first-child,
+.popup-table-sticky td:first-child {
+  border-left: 1px solid #ddd;
+}
+
+.popup-table-sticky thead th {
+  padding: 3px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 9999;
+}
+
+/*
  *
  */
 

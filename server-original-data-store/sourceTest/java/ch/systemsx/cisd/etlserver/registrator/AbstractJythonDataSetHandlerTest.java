@@ -15,32 +15,13 @@
  */
 package ch.systemsx.cisd.etlserver.registrator;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
-
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.etlserver.DynamicTransactionQueryFactory;
@@ -64,6 +45,24 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.NewExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.dto.StorageFormat;
 import net.lemnik.eodsql.DynamicTransactionQuery;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Abstract superclass for tests that should run on jython data set handler code.
@@ -93,18 +92,23 @@ public abstract class AbstractJythonDataSetHandlerTest extends AbstractFileSyste
     public static void classSetUp()
     {
         Logger rootLogger = Logger.getRootLogger();
-        if (!rootLogger.getAllAppenders().hasMoreElements())
+        if (rootLogger.getHandlers() == null || rootLogger.getHandlers().length == 0)
         {
             rootLogger.setLevel(Level.INFO);
-            rootLogger.addAppender(new ConsoleAppender(new PatternLayout("%-5p [%t]: %m%n")));
+            ConsoleHandler handler1 = new ConsoleHandler();
+            handler1.setFormatter(new PatternFormatter("%-5p [%t]: %m%n"));
+            rootLogger.addHandler(handler1);
 
             // The TTCC_CONVERSION_PATTERN contains more info than
             // the pattern we used for the root logger
             Logger pkgLogger =
-                    rootLogger.getLoggerRepository().getLogger("robertmaldon.moneymachine");
+                    rootLogger.getLogger("robertmaldon.moneymachine");
             pkgLogger.setLevel(Level.DEBUG);
-            pkgLogger.addAppender(new ConsoleAppender(new PatternLayout(
-                    PatternLayout.TTCC_CONVERSION_PATTERN)));
+
+            ConsoleHandler handlerTTC = new ConsoleHandler();
+            handler1.setFormatter(new PatternFormatter("%r [%t] %p %c %x - %m%n"));
+            rootLogger.addHandler(handlerTTC);
+
         }
     }
 

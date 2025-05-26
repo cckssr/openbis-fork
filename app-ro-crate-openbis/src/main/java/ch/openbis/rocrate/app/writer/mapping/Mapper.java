@@ -225,10 +225,20 @@ public class Mapper
             if (val instanceof Sample sample)
             {
                 references.put(Constants.PROPERTY_SPACE, List.of(sample.getSpace().getCode()));
+                String projectIdentifier =
+                        Optional.ofNullable(sample.getProject()).map(x -> x.getIdentifier())
+                                .map(x -> x.getIdentifier()).orElse("/DEFAULT/DEFAULT");
+
                 references.put(Constants.PROPERTY_PROJECT,
-                        List.of(sample.getProject().getIdentifier().getIdentifier()));
+                        List.of(projectIdentifier));
+
+                String experimentIdentifier = Optional.ofNullable(sample.getExperiment())
+                        .map(x -> x.getIdentifier())
+                        .map(x -> x.getIdentifier())
+                        .orElse(sample.getType().getCode() + "_Collection");
+
                 references.put(Constants.PROPERTY_COLLECTION,
-                        List.of(sample.getExperiment().getIdentifier().getIdentifier()));
+                        List.of(experimentIdentifier));
 
                 Set<String> referenceTypeNames = openBisModel.getEntityTypes().values().stream()
                         .map(x -> x.getPropertyAssignments())

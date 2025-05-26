@@ -3,6 +3,8 @@ package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.CellWriter;
+import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.RowWriteResult;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -78,9 +80,10 @@ public class SampleHelper
         return rowNum;
     }
 
-    public int createResourceRows(Sheet sheet, int rowNum, Sample sampleObject,
+    public RowWriteResult createResourceRows(Sheet sheet, int rowNum, Sample sampleObject,
             OpenBisModel openBisModel, List<String> allColumnList)
     {
+
         String projectId = sampleObject.getProject().getIdentifier().getIdentifier();
         Row propertyRowValues = sheet.createRow(rowNum);
         //propertyRowValues.createCell(0).setCellValue(""); // $
@@ -97,7 +100,8 @@ public class SampleHelper
         //propertyRowValues.createCell(7).setCellValue(""); // Children
 
         int idxName = allColumnList.indexOf("Name");
-        if (idxName != -1) {
+        if (idxName != -1)
+        {
             propertyRowValues.createCell(idxName).setCellValue(sampleObject.getCode());
         }
 
@@ -107,21 +111,22 @@ public class SampleHelper
                 .collect(Collectors.toList());
 
         sampleObject.getType().getPropertyAssignments();
+        List<RowWriteResult.LongCell> longCells = new ArrayList<>();
 
         for (var property : sampleObject.getProperties().entrySet())
         {
 
-
             //propertyRowValues.createCell(1).setCellValue(projectId + "/" + sampleObject.code); // Identifier
             //propertyRowValues.createCell(5).setCellValue(projectId + "/" + sampleObject.type.toUpperCase(Locale.ROOT) + "_COLLECTION"); // Experiment
             int idx = allColumnList.indexOf(property.getKey());
-            if (idx != -1) {
-                propertyRowValues.createCell(idx).setCellValue(property.getValue().toString());
-                    }
+            if (idx != -1)
+            {
+                CellWriter.writeCell(propertyRowValues.createCell(idx),
+                        property.getValue().toString()).ifPresent(longCells::add);
+            }
 
         }
-
-        return rowNum + 1;  // Move to the next row for future entries
+        return new RowWriteResult(rowNum, longCells);  // Move to the next row for future entries
     }
 
 

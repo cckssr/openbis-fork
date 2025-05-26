@@ -18,8 +18,6 @@ package ch.systemsx.cisd.openbis.dss.client.admin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.helpers.LogLog;
-
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 /**
@@ -62,7 +60,7 @@ public class ShareManagerApplication
 
     public static void main(String[] args)
     {
-        LogLog.setQuietMode(true);
+        //LogLog.setQuietMode(true);
         ShareManagerApplication application =
                 new ShareManagerApplication(new ListSharesCommand(), new MoveDataSetsCommand());
         try

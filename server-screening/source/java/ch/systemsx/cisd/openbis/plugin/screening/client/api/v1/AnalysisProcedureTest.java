@@ -20,8 +20,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Handler;
 
-import org.apache.log4j.PropertyConfigurator;
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.FeatureVectorDatasetReference;
@@ -151,11 +155,11 @@ public class AnalysisProcedureTest
 
     private static void configureLogging()
     {
-        Properties props = new Properties();
-        props.put("log4j.appender.STDOUT", "org.apache.log4j.ConsoleAppender");
-        props.put("log4j.appender.STDOUT.layout", "org.apache.log4j.PatternLayout");
-        props.put("log4j.appender.STDOUT.layout.ConversionPattern", "%d %-5p [%t] %c - %m%n");
-        props.put("log4j.rootLogger", "INFO, STDOUT");
-        PropertyConfigurator.configure(props);
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.removeAllHandlers();
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new PatternFormatter("%d %-5p [%t] %c - %m%n"));
+        rootLogger.addHandler(handler);
     }
 }

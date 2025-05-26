@@ -290,7 +290,7 @@
                                 };
                                 mainController.changeView('showEditSamplePageFromPermId', args);
                             }, 100);
-                        }, "Edit", "Edit object", "edit-btn-sample-" + _this._viewId);
+                        }, "Edit", "Edit object", "edit-btn-sample-" + _this._viewId, 'btn btn-primary btn-secondary');
                         if(toolbarConfig.EDIT) {
                             toolbarModel.push({ component : $editButton, tooltip: null });
                         }
@@ -313,18 +313,41 @@
 				//Freeze
 				if(_this._sampleFormModel.v3_sample && _this._sampleFormModel.v3_sample.frozen !== undefined) { //Freezing available on the API
 					var isEntityFrozen = _this._sampleFormModel.v3_sample.frozen;
+					var isImmutableData = _this._sampleFormModel.v3_sample.immutableDataDate
 					if(toolbarConfig.FREEZE) {
+						// Entity metadata freezing
 						if(isEntityFrozen) {
-							var $freezeButton = FormUtil.getFreezeButton("SAMPLE", this._sampleFormModel.v3_sample.permId.permId, isEntityFrozen);
+						    var $freezeButton = FormUtil.getToolbarButton("LOCKED")
+                            $freezeButton.attr("disabled", "disabled");
+                            $freezeButton.append("Frozen");
 							toolbarModel.push({ component : $freezeButton, tooltip: null });
 						} else {
+						    if(profile.isAFSAvailable() && isImmutableData) {
+						        var $freezeButton = FormUtil.getToolbarButton("LOCKED_DATA")
+                                $freezeButton.attr("disabled", "disabled");
+                                $freezeButton.append("Frozen Data");
+						        toolbarModel.push({ component : $freezeButton, tooltip: null });
+						    }
 							dropdownOptionsModel.push({
-								label : "Freeze Entity (Disable further modifications)",
+								label : "Freeze Entity metadata (Disable further modifications)",
 								action : function () {
 									FormUtil.showFreezeForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
 								}
 							});
 						}
+
+
+					    // Entity data freezing
+                        if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
+                            //TODO implement freezing of afs data
+//                            dropdownOptionsModel.push({
+//                                label : "Freeze Entity data (Disable further data upload)",
+//                                action : function () {
+//                                    FormUtil.showFreezeAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
+//                                }
+//                            });
+                        }
+
 					}
 				}
 	

@@ -51,6 +51,8 @@ public class RdfToModel
         Map<String, IType> IdsToTypes =
                 types.stream().collect(Collectors.toMap(IType::getId, Function.identity()));
 
+        Map<String, EntityTypePermId> entityTypeToRdfIdentifier = new LinkedHashMap<>();
+
         Map<String, List<String>> typeToInheritanceChain = new LinkedHashMap<>();
 
         Map<SpacePermId, Space> spaces = new LinkedHashMap<>();
@@ -86,6 +88,8 @@ public class RdfToModel
                 sampleType.setCode(openBisifyCode(removePrefix(type.getId())));
                 sampleType.setFetchOptions(sampleTypeFetchOptions);
                 sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
+                entityTypeToRdfIdentifier.put(type.getId(), sampleType.getPermId());
+
                 sampleType.setPropertyAssignments(new ArrayList<>());
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
@@ -243,8 +247,7 @@ public class RdfToModel
                 for (String type : intersectionType)
                 {
 
-                    IEntityType entityType =
-                            schema.get(new EntityTypePermId(type, EntityKind.SAMPLE));
+                    IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
                     if (entityType == null)
                     {
                         continue;

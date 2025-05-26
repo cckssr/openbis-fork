@@ -70,7 +70,11 @@ var IconUtil = new function() {
             }
         }
 
-        $icon.css("vertical-align", "text-bottom");
+        if(icon.css) {
+            $icon.css(icon.css);
+        } else {
+            $icon.css("vertical-align", "text-bottom");
+        }
 
         return $icon;
     }
@@ -85,7 +89,8 @@ var IconUtil = new function() {
             type: "font",
             url: null,
             class: null,
-            text: null
+            text: null,
+            css: null,
         }
 
         //TODO logic for user-specific toolbar icons?
@@ -108,9 +113,11 @@ var IconUtil = new function() {
             icon.type = ["font", "font"]
             icon.class = ["material-icons", "fa fa-database"];
             icon.text = [materialPlusIcon, null];
+            icon.css = {"margin-top": "-2px"}
         } else if(type === "EDIT") {
             icon.class = "glyphicon glyphicon-edit";
-        } else if(type === "SAVE") {
+            icon.css = {"padding-top": "3px"}
+        }  else if(type === "SAVE") {
             icon.class = "material-icons";
             icon.text = "save";
         } else if(type === "DELETE") {
@@ -186,6 +193,27 @@ var IconUtil = new function() {
         } else if(type === "FREEZE") {
             icon.class = "material-icons";
             icon.text = "ac_unit";
+        } else if(type === "ARCHIVE_NOT_REQUESTED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-not-requested-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "ARCHIVE_REQUESTED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-requested-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "ARCHIVED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-archived-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "LOCKED") {
+            icon.class = "material-icons";
+            icon.text = "lock";
+        } else if(type === "LOCKED_DATA") {
+            icon.class = "material-icons";
+            icon.text = "lock_outline";
         }
         return icon;
     }
@@ -195,7 +223,8 @@ var IconUtil = new function() {
             type: "font",
             url: null,
             class: null,
-            text: null
+            text: null,
+            css: null,
         }
         //TODO add custom icons logic here ?
 

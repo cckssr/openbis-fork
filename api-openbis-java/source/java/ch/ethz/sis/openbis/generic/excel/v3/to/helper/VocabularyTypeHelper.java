@@ -2,10 +2,15 @@ package ch.ethz.sis.openbis.generic.excel.v3.to.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.CellWriter;
+import ch.ethz.sis.openbis.generic.excel.v3.to.helper.longvals.RowWriteResult;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind.VOCABULARY_TYPE;
 
@@ -80,10 +85,11 @@ public class VocabularyTypeHelper
         return rowNum;
     }
 
-    public int addVocabularyTypes(Sheet sheet, int rowNum, CellStyle headerStyle,
+    public List<RowWriteResult> addVocabularyTypes(Sheet sheet, int rowNum, CellStyle headerStyle,
             Vocabulary vocabularyType)
     {
 
+        List<RowWriteResult> rowWriteResults = new ArrayList<>();
         rowNum = addVocabularyTypeSection(sheet, rowNum, headerStyle, vocabularyType);
 
         Row vocabularyTypeRowHeaders = sheet.createRow(rowNum++);
@@ -99,15 +105,20 @@ public class VocabularyTypeHelper
         for (VocabularyTerm vto : vocabularyType.getTerms())
         {
             Row vocabularyTypeRowValues = sheet.createRow(rowNum++);
-            vocabularyTypeRowValues.createCell(0).setCellValue(vto.getCode()); //Code("Code", true),
-            vocabularyTypeRowValues.createCell(1)
-                    .setCellValue(vto.getLabel()); //Label("Label", true),
-            vocabularyTypeRowValues.createCell(2)
-                    .setCellValue(vto.getDescription()); //Description("Description", true),
+
+            List<RowWriteResult.LongCell> longCells = new ArrayList<>();
+            CellWriter.writeCell(vocabularyTypeRowValues.createCell(0), vto.getCode())
+                    .ifPresent(longCells::add);
+            CellWriter.writeCell(vocabularyTypeRowValues.createCell(1), vto.getLabel())
+                    .ifPresent(longCells::add);
+            CellWriter.writeCell(vocabularyTypeRowValues.createCell(2), vto.getDescription())
+                    .ifPresent(longCells::add);
+            rowWriteResults.add(new RowWriteResult(rowNum, longCells));
         }
 
         sheet.createRow(rowNum++);
+        rowWriteResults.add(new RowWriteResult(rowNum, new ArrayList<>()));
 
-        return rowNum;
+        return rowWriteResults;
     }
 }

@@ -19,6 +19,7 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.fail;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -75,6 +76,8 @@ public class CrowdAuthenticationServiceTest
         executor = context.mock(IRequestExecutor.class);
         authenticationService =
                 new CrowdAuthenticationService(URL, APPLICATION, APPLICATION_PASSWORD, executor);
+        // log4j defaulted to DEBUG and jul defaults to INFO
+        Logger.getRootLogger().setLevel(Level.DEBUG);
         logRecorder = new BufferedAppender("%-5p %c - %m%n", Level.DEBUG);
     }
 

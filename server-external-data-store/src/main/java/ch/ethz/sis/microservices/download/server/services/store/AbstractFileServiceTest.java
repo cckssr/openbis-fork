@@ -18,19 +18,12 @@ package ch.ethz.sis.microservices.download.server.services.store;
 import java.util.HashMap;
 import java.util.Map;
 
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.log4j.Log4J2LogFactory;
 import ch.ethz.sis.microservices.download.server.startup.HttpClient;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 
 public class AbstractFileServiceTest
 {
-    static
-    {
-        // Configuring Logging
-        LogManager.setLogFactory(new Log4J2LogFactory());
-    }
 
     public static void test(String openbisURL, String serviceURL, String user, String pass, Long offset) throws Exception
     {

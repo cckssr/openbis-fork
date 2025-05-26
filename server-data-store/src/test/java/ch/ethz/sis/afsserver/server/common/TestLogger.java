@@ -1,245 +1,153 @@
 package ch.ethz.sis.afsserver.server.common;
 
+import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.logging.ext.LoggingUtils;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Filter;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Marker;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.AbstractOutputStreamAppender;
-import org.apache.logging.log4j.core.appender.OutputStreamManager;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.filter.AbstractFilter;
-import org.apache.logging.log4j.core.filter.ThresholdFilter;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.apache.logging.log4j.message.Message;
-
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.log4j2.Log4J2LogFactory;
-
-public class TestLogger
-{
+public class TestLogger {
 
     public static String DEFAULT_LOG_LAYOUT_PATTERN = "%-5p %c - %m%n";
-
     public static String DEFAULT_LOGGER_NAME_REGEX = ".*";
 
-    private static LoggerContext loggerContext;
-
-    private static Appender recordingAppender;
-
     private static ByteArrayOutputStream recordedLog;
+    private static Handler recordingHandler;
 
-    public static void configure()
-    {
-        loggerContext = Configurator.initialize(null, "log.xml");
-        LogManager.setLogFactory(new Log4J2LogFactory());
+
+    public static void configure() {
+        LogInitializer.configureFromFile(new File("logging.properties"));
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        rootLogger.setLevel(Level.ALL);
+        // Optionally, you could reconfigure or remove existing handlers here.
     }
 
-    public static void startLogRecording(Level level)
-    {
+    public static void startLogRecording(org.apache.log4j.Level level) {
         startLogRecording(level, DEFAULT_LOG_LAYOUT_PATTERN, DEFAULT_LOGGER_NAME_REGEX);
     }
 
-    public static void startLogRecording(Level level, String logLayoutPattern, String loggerNameRegex)
-    {
-        if (loggerContext == null)
-        {
-            throw new RuntimeException("Test logger hasn't been configured yet.");
+    public static void startLogRecording(org.apache.log4j.Level level, String logLayoutPattern, String loggerNameRegex) {
+        if (recordingHandler != null) {
+            throw new RuntimeException("Test log recording has already been started.");
         }
-
-        if (recordingAppender != null)
-        {
-            throw new RuntimeException("Test log recording has been already started.");
-        }
-
         recordedLog = new ByteArrayOutputStream();
-        recordingAppender =
-                TestAppender.createAppender(recordedLog, level, PatternLayout.newBuilder().withPattern(logLayoutPattern).build(), loggerNameRegex);
-        recordingAppender.start();
-        loggerContext.getRootLogger().addAppender(recordingAppender);
+        // Create our custom handler using a simple formatter and a logger name filter.
+        recordingHandler = new TestHandler(recordedLog, new PatternFormatter(logLayoutPattern), new LoggerNameFilter(loggerNameRegex));
+        // Set the handler's level (this works as a threshold filter)
+        recordingHandler.setLevel(LoggingUtils.mapToJUL(level));
+
+        // Add our handler to the root logger so it receives log events.
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        rootLogger.addHandler(recordingHandler);
     }
 
-    public static void stopLogRecording()
-    {
-        if (loggerContext == null)
-        {
-            throw new RuntimeException("Test logger hasn't been configured yet.");
-        }
-
-        if (recordingAppender == null)
-        {
+    public static void stopLogRecording() {
+        if (recordingHandler == null) {
             throw new RuntimeException("Test log recording hasn't been started yet.");
         }
-
-        recordingAppender.stop();
-        loggerContext.getRootLogger().removeAppender(recordingAppender);
-        recordingAppender = null;
+        Logger rootLogger = LogManager.getLogManager().getLogger("");
+        rootLogger.removeHandler(recordingHandler);
+        recordingHandler.close();
+        recordingHandler = null;
         recordedLog = null;
     }
 
-    public static void resetRecordedLog()
-    {
-        if (recordingAppender == null)
-        {
+    public static void resetRecordedLog() {
+        if (recordingHandler == null) {
             throw new RuntimeException("Test log recording hasn't been started yet.");
         }
         recordedLog.reset();
     }
 
-    public static String getRecordedLog()
-    {
-        if (recordingAppender == null)
-        {
+    public static String getRecordedLog() {
+        if (recordingHandler == null) {
             throw new RuntimeException("Test log recording hasn't been started yet.");
         }
         return recordedLog.toString();
     }
 
-    private static class TestOutputStreamManager extends OutputStreamManager
-    {
+    /**
+     * A custom Handler that writes log output to a ByteArrayOutputStream.
+     */
+    private static class TestHandler extends Handler {
+        private final ByteArrayOutputStream output;
 
-        public TestOutputStreamManager(final OutputStream os, final String streamName, final Layout<?> layout, final boolean writeHeader)
-        {
-            super(os, streamName, layout, writeHeader);
-        }
-    }
-
-    private static class TestAppender extends AbstractOutputStreamAppender<OutputStreamManager>
-    {
-
-        private TestAppender(final String name, final Layout layout, final Filter filter, final boolean ignoreExceptions,
-                final boolean immediateFlush, final OutputStreamManager manager)
-        {
-            super(name, layout, filter, ignoreExceptions, immediateFlush, manager);
+        public TestHandler(ByteArrayOutputStream output, Formatter formatter, Filter filter) {
+            this.output = output;
+            setFormatter(formatter);
+            setFilter(filter);
         }
 
-        private static TestAppender createAppender(ByteArrayOutputStream output, Level logLevel, Layout logLayout, final String loggerNameRegex)
-        {
-            OutputStreamManager manager = OutputStreamManager.getManager("test-appender-stream-manager", (Object) null,
-                    (name, data) -> new TestOutputStreamManager(output, name, logLayout, true));
-
-            TestAppender appender = new TestAppender("test-appender", logLayout,
-                    ThresholdFilter.createFilter(logLevel, Filter.Result.NEUTRAL, Filter.Result.DENY), false, true, manager);
-            appender.addFilter(new LoggerNameFilter(loggerNameRegex));
-            return appender;
-        }
-    }
-
-    private static class LoggerNameFilter extends AbstractFilter
-    {
-
-        private final String loggerNameRegex;
-
-        public LoggerNameFilter(String loggerNameRegex)
-        {
-            this.loggerNameRegex = loggerNameRegex;
-        }
-
-        private Result filterByLoggerName(String loggerName)
-        {
-            if (loggerName.matches(loggerNameRegex))
-            {
-                return Result.NEUTRAL;
-            } else
-            {
-                return Result.DENY;
+        @Override
+        public void publish(LogRecord record) {
+            if (!isLoggable(record)) {
+                return;
+            }
+            String msg = getFormatter().format(record);
+            try {
+                output.write(msg.getBytes());
+            } catch (IOException e) {
+                // Handle the exception as needed.
+                e.printStackTrace();
             }
         }
 
-        @Override public Result filter(final LogEvent event)
-        {
-            return filterByLoggerName(event.getLoggerName());
+        @Override
+        public void flush() {
+            try {
+                output.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final Message msg, final Throwable t)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final Object msg, final Throwable t)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object... params)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4,
-                final Object p5)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4,
-                final Object p5, final Object p6)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4,
-                final Object p5, final Object p6, final Object p7)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4,
-                final Object p5, final Object p6, final Object p7, final Object p8)
-        {
-            return filterByLoggerName(logger.getName());
-        }
-
-        @Override public Result filter(final Logger logger, final Level level, final Marker marker, final String msg, final Object p0,
-                final Object p1, final Object p2, final Object p3, final Object p4,
-                final Object p5, final Object p6, final Object p7, final Object p8, final Object p9)
-        {
-            return filterByLoggerName(logger.getName());
+        @Override
+        public void close() throws SecurityException {
+            try {
+                output.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public static void main(String[] args)
-    {
-        TestLogger.configure();
+    /**
+     * A custom Filter that allows log records only if the logger name matches a given regex.
+     */
+    private static class LoggerNameFilter implements Filter {
+        private final String loggerNameRegex;
+
+        public LoggerNameFilter(String loggerNameRegex) {
+            this.loggerNameRegex = loggerNameRegex;
+        }
+
+        @Override
+        public boolean isLoggable(LogRecord record) {
+            String loggerName = record.getLoggerName();
+            return loggerName != null && loggerName.matches(loggerNameRegex);
+        }
     }
 
+    public static void main(String[] args) {
+        // Example usage:
+        configure();
+        startLogRecording(org.apache.log4j.Level.INFO);
+
+        Logger logger = Logger.getLogger(TestLogger.class.getName());
+        logger.info("This is a test log message.");
+
+        System.out.println("Recorded log:");
+        System.out.println(getRecordedLog());
+
+        stopLogRecording();
+    }
 }

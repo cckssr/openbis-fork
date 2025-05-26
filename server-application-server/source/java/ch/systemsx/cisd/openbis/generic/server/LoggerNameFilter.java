@@ -15,13 +15,15 @@
  */
 package ch.systemsx.cisd.openbis.generic.server;
 
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
+import java.util.logging.Filter;
+import java.util.logging.LogRecord;
+
+
 
 /**
  * @author anttil
  */
-public class LoggerNameFilter extends Filter
+public class LoggerNameFilter implements Filter
 {
 
     private String name;
@@ -31,17 +33,16 @@ public class LoggerNameFilter extends Filter
         this.name = name;
     }
 
-    @Override
-    public int decide(LoggingEvent event)
+
+    public boolean decide(LogRecord event)
     {
         String loggerName = event.getLoggerName();
-        if (loggerName.equals(name))
-        {
-            return Filter.DENY;
-        } else
-        {
-            return Filter.NEUTRAL;
-        }
+        return !loggerName.equals(name);
     }
 
+    @Override
+    public boolean isLoggable(LogRecord logRecord)
+    {
+        return decide(logRecord);
+    }
 }

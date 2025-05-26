@@ -83,7 +83,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 // edit
                 var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
                     _this._spaceFormController.enableEditing();
-                }, "Edit", "Edit space", "edit-space-btn-"+ this._viewId);
+                }, "Edit", "Edit space", "edit-space-btn-"+ this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $editBtn });
             }
             

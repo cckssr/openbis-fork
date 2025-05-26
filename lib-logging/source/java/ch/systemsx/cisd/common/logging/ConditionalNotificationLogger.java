@@ -23,7 +23,7 @@ import org.apache.log4j.Priority;
  * <p>
  * Note that this class sends one and only one notification email. To reset the state of this class, use {@link #reset(String)}.
  * </p>
- * 
+ *
  * @author Christian Ribeaud
  */
 public final class ConditionalNotificationLogger extends Log4jSimpleLogger
@@ -72,7 +72,7 @@ public final class ConditionalNotificationLogger extends Log4jSimpleLogger
      * As side effect, it sends a notification log to inform that we are "green" again (if and only if an email has already been sent to inform the
      * "bad" state and if log info is enabled).
      * </p>
-     * 
+     *
      * @param messageOrNull the info log message or <code>null</code>, if no message should be sent.
      */
     public final void reset(final String messageOrNull)

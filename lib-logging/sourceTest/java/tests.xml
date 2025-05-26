@@ -8,6 +8,7 @@
         </groups>
         <packages>
             <package name="ch.systemsx.cisd.common.logging.*"/>
+            <package name="ch.systemsx.cisd.common.logging.test.*"/>
         </packages>
     </test>
 </suite>

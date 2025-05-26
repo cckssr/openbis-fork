@@ -212,11 +212,15 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 		if (profile.showDatasetArchivingButton && physicalData) {
 
+
+            var archiveIcon = "ARCHIVE_NOT_REQUESTED";
 			var archiveImage = "./img/archive-not-requested-icon.png";
 			if (physicalData.presentInArchive) {
+			    archiveIcon = "ARCHIVED";
 				archiveImage = "./img/archive-archived-icon.png";
 			} else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
 				archiveImage = "./img/archive-requested-icon.png";
+				archiveIcon = "ARCHIVE_REQUESTED";
 			}
 
 			var archiveAction = null;
@@ -253,7 +257,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 					.append($("<p>").text("Archiving requested: " + physicalData.archivingRequested));
 			}
 
-			var $archivingRequestedBtn = FormUtil.getButtonWithImage(archiveImage, archiveAction, archiveTooltip);
+            var $archivingRequestedBtn = FormUtil.getToolbarButton(archiveIcon, archiveAction, archiveTooltip, archiveTooltip, "dataset-archiving-btn-", 'btn btn-primary btn-secondary');
 			if (archiveAction == null) {
 				$archivingRequestedBtn.attr("disabled", true);
 			}
@@ -301,7 +305,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
-				}, "Edit", "Edit data", "dataset-edit-btn-"+_this._viewId, 'btn btn-default');
+				}, "Edit", "Edit data", "dataset-edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn });
 				}

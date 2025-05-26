@@ -17,13 +17,15 @@ package ch.systemsx.cisd.openbis.dss.client.api.v1.impl;
 
 import java.util.Properties;
 
-import org.apache.log4j.PropertyConfigurator;
-
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DssComponentFactory;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.IDataSetDss;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.IDssComponent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 /**
  * @author Chandrasekhar Ramakrishnan
@@ -50,12 +52,12 @@ public class DssComponentTestClient
 
     private static void configureLogging()
     {
-        Properties props = new Properties();
-        props.put("log4j.appender.STDOUT", "org.apache.log4j.ConsoleAppender");
-        props.put("log4j.appender.STDOUT.layout", "org.apache.log4j.PatternLayout");
-        props.put("log4j.appender.STDOUT.layout.ConversionPattern", "%d %-5p [%t] %c - %m%n");
-        props.put("log4j.rootLogger", "INFO, STDOUT");
-        PropertyConfigurator.configure(props);
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.removeAllHandlers();
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new PatternFormatter("%d %-5p [%t] %c - %m%n"));
+        rootLogger.addHandler(handler);
     }
 
 }

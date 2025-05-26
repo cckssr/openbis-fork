@@ -26,6 +26,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'org.apache.jena:apache-jena-libs:5.0.0'
 
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
     testImplementation 'junit:junit:4.13.1'

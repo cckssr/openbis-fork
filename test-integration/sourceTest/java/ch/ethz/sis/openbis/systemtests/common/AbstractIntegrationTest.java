@@ -220,8 +220,7 @@ public abstract class AbstractIntegrationTest
 
     private void initLogging()
     {
-        System.setProperty("log4j.configuration", "etc/as/log4j1.xml");
-        System.setProperty("log4j.configurationFile", "etc/as/log4j1.xml");
+        System.setProperty("log4j.configuration", "etc/as/logging.properties");
     }
 
     private void cleanupApplicationServerFolders() throws Exception

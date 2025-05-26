@@ -15,20 +15,6 @@
  */
 package ch.systemsx.cisd.etlserver.postregistration;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Properties;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.Filter;
-import org.apache.log4j.spi.LoggingEvent;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
@@ -56,6 +42,19 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataStoreBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.Filter;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.logging.LogRecord;
 
 /**
  * @author Franz-Josef Elmer
@@ -109,7 +108,7 @@ public class SecondCopyPostRegistrationTaskTest extends AbstractFileSystemTestCa
         logRecorder.addFilter(new Filter()
         {
             @Override
-            public int decide(LoggingEvent event)
+            public int decide(LogRecord event)
             {
                 String loggerName = event.getLoggerName();
                 return loggerName.contains("RsyncCopier") ? Filter.DENY : Filter.ACCEPT;

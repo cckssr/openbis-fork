@@ -15,6 +15,18 @@
  */
 package ch.systemsx.cisd.openbis.plugin.screening.client.api.v1;
 
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import ch.systemsx.cisd.openbis.dss.screening.shared.api.v1.LoadImageConfiguration;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
+import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,17 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.log4j.PropertyConfigurator;
-
-import ch.systemsx.cisd.openbis.dss.screening.shared.api.v1.LoadImageConfiguration;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
-import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
 
 /**
  * A test class which downloads image for one well in a data set with and without the transformation. The images are placed on the desktop.
@@ -259,11 +260,11 @@ public class LoadImagesWithTransformationTest
 
     private static void configureLogging()
     {
-        Properties props = new Properties();
-        props.put("log4j.appender.STDOUT", "org.apache.log4j.ConsoleAppender");
-        props.put("log4j.appender.STDOUT.layout", "org.apache.log4j.PatternLayout");
-        props.put("log4j.appender.STDOUT.layout.ConversionPattern", "%d %-5p [%t] %c - %m%n");
-        props.put("log4j.rootLogger", "INFO, STDOUT");
-        PropertyConfigurator.configure(props);
+        Logger rootLogger = Logger.getRootLogger();
+        rootLogger.setLevel(Level.INFO);
+        rootLogger.removeAllHandlers();
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new PatternFormatter("%d %-5p [%t] %c - %m%n"));
+        rootLogger.addHandler(handler);
     }
 }
