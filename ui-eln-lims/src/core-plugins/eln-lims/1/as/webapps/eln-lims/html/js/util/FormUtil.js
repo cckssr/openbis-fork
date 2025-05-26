@@ -2422,8 +2422,8 @@ var FormUtil = new function() {
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
 		var _this = this;
-		var $freezeButton = FormUtil.getButtonWithIcon("glyphicon-lock");
-		
+		var $freezeButton = FormUtil.getToolbarButton("LOCKED")
+
 		if(isEntityFrozen) {
 			$freezeButton.attr("disabled", "disabled");
 			$freezeButton.append("Frozen");
@@ -2567,6 +2567,94 @@ var FormUtil = new function() {
     		});
     }
 
+    this.showFreezeAfsDataForm = function(entityType, permId, code) {
+        var _this = this;
+
+        Util.blockUI();
+
+        var $window = $('<form>', {
+        					'action' : 'javascript:void(0);'
+        				});
+
+        $window.append($('<legend>')
+        				    .append("Freeze Entity data of")
+        				    .append("&nbsp;")
+        				    .append(code)
+        				    .append("&nbsp;")
+        				    .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 26px; vertical-align: text-bottom;" }))
+                            .append($("<span>", { style : "color:red; font-size: large;" })
+                            .append(" This operation is irreversible!"))
+        				);
+
+        //todo list child entities?
+
+        //
+        // Warning
+        //
+        var operationMin = 0;
+        var operationMax = 100;
+        var operationNumberOne = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+        var operationNumberTwo = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+        var operationOperand = Math.random() < 0.5; // 50% provability of getting true
+        var operationResult = (operationOperand)?operationNumberOne+operationNumberTwo:operationNumberOne-operationNumberTwo;
+        var confirmationText = operationNumberOne + ' ' + ((operationOperand)?'+':'-') + ' ' + operationNumberTwo + ' = ?';
+
+        $window.append("<br>");
+        $window.append($("<p>")
+                .append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+                .append(" Write the result to '" + confirmationText + "' on the confirmation field, after data is frozen no more changes will be possible:"));
+
+        //
+        // Password
+        //
+        var $passField = FormUtil._getInputField('input', "CODE_FREEZE_FIELD", confirmationText , null, true);
+        var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Operation Result", null);
+        $window.append($passwordGroup);
+
+        //
+        // Buttons
+        //
+        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+
+        var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+        $btnCancel.click(function() {
+            Util.unblockUI();
+        });
+
+        $window.append($('<br>'));
+
+        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+        $window.submit(function() {
+
+            var password = $passField.val();
+            if(password != operationResult) {
+                Util.showUserError('The given result is not correct.');
+            } else {
+                Util.showSuccess("TODO: implement freezing data here");
+
+            }
+
+            Util.unblockUI();
+        });
+
+        var css = {
+                'text-align' : 'left',
+                'top' : '15%',
+                'width' : '70%',
+//                'height' : '400px',
+                'left' : '15%',
+                'right' : '20%',
+                'overflow' : 'none'
+        };
+
+        Util.blockUI($window, css, false, function() {
+            const myInput = document.getElementById("CODE_FREEZE_FIELD");
+            myInput.onpaste = e => e.preventDefault();
+        });
+
+    }
+
 	this.showFreezeForm = function(entityType, permId, code) {
 		var _this = this;
 		
@@ -2588,11 +2676,11 @@ var FormUtil = new function() {
 				});
 				
 				$window.append($('<legend>')
-				    .append("Freeze Entity")
+				    .append("Freeze Entity metadata of")
 				    .append("&nbsp;")
 				    .append(code)
 				    .append("&nbsp;")
-				    .append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
+				    .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 26px; vertical-align: text-bottom;" }))
                     .append($("<span>", { style : "color:red; font-size: large;" })
                     .append(" This operation is irreversible!"))
 				);
@@ -2600,11 +2688,15 @@ var FormUtil = new function() {
 				//
 				// List
 				//
+				var count = Object.keys(result.result).length;
+				var $selectedCount = $("<b>").text(count);
 				$window.append($("<p>")
-						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Choose the entities to freeze (all by default):"));
+						.append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+						.append(" Choose the entities to freeze (selected ")
+						.append($selectedCount)
+						.append(" out of " + Object.keys(result.result).length + "):"));
 
-				var $tableBody = $("<table>", { class : "popup-table" } );
+				var $tableBody = $("<tbody>" );
 				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
 				entityMap = result.result;
 				
@@ -2617,38 +2709,47 @@ var FormUtil = new function() {
 						return type;
 					}
 				}
-				
-				for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
-					for (key in entityMap) {
-						entity = entityMap[key];
-						if(entity.type == entityTypeOrder[typeOrder]) {
-							$tableBody.append($("<tr>")
-									.append($("<td>").append(_this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)))
-									.append($("<td>").append(getTypeDisplayName(entity.type)))
-									.append($("<td>").append(entity.permId))
-									.append($("<td>").append(entity.displayName))
-							);
-						}
-					}
-				}
 
-				var $tableHeader = $("<table>", { class : "popup-table" } )
-								.append($("<tr>")
-										.append($("<th>").append("Selected"))
-										.append($("<th>").append("Type"))
-										.append($("<th>").append("PermId"))
-										.append($("<th>").append("Name"))
-								);
+                var $table = $("<table>", { class : "popup-table-sticky" } )
+                                .append($("<thead>", { style : "z-index: 999" })
+                                .append($("<tr>")
+                                        .append($("<th>").append("Selected"))
+                                        .append($("<th>").append("Type"))
+                                        .append($("<th>").append("PermId"))
+                                        .append($("<th>").append("Name"))
+                                ));
 
-				var $tableContainer = $("<div>");
-				$tableContainer.css({
-				                'height' : '100px',
-                                'overflow' : 'auto'
-                                });
-				$tableContainer.append($tableBody);
+                for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
+                    for (key in entityMap) {
+                        entity = entityMap[key];
+                        if(entity.type == entityTypeOrder[typeOrder]) {
 
-				$window.append($tableHeader).append($tableContainer);
-				
+                            var $checkBoxField = _this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)
+                            $checkBoxField.find("input").click(function() {
+                                if(this.checked) {
+                                    count++;
+                                } else {
+                                    count--;
+                                }
+                                $selectedCount.text(count);
+                            })
+                            $checkBoxField.find("label").css("vertical-align", "text-bottom");
+                            $tableBody.append($("<tr>")
+                                    .append($("<td>").append($checkBoxField))
+                                    .append($("<td>").append(getTypeDisplayName(entity.type)))
+                                    .append($("<td>").append(entity.permId))
+                                    .append($("<td>").append(entity.displayName))
+                            );
+                        }
+                    }
+                }
+
+                $table.append($tableBody)
+
+				var $tableContainer = $("<div>", { class: "lock-header"});
+				$tableContainer.append($table);
+				$window.append($tableContainer);
+
 				//
 				// Warning
 				//
@@ -2662,7 +2763,7 @@ var FormUtil = new function() {
 
 				$window.append("<br>");
 				$window.append($("<p>")
-						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
+						.append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
 						.append(" Write the result to '" + confirmationText + "' on the confirmation field, after entities are frozen no more changes will be possible:"));
 				//
 				// Password
