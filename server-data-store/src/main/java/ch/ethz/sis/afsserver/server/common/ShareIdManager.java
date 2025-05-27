@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -117,7 +118,7 @@ public class ShareIdManager implements IShareIdManager
 
         while (System.currentTimeMillis() < startMillis + lockingTimeoutInSeconds * 1000L)
         {
-            List<Lock<UUID, String>> locks = filterLocksByDataSet(transactionManager.getLocks(), dataSet);
+            List<Lock<UUID, String>> locks = filterLocksByDataSets(transactionManager.getLocks(), List.of(dataSet));
 
             if (!locks.isEmpty())
             {
@@ -138,23 +139,30 @@ public class ShareIdManager implements IShareIdManager
 
     @Override public void releaseLock(final String dataSetCode)
     {
-        UUID ownerId = getThreadOwnerId();
-        DataSet dataSet = getDataSet(dataSetCode);
+        releaseLocks(List.of(dataSetCode));
+    }
 
-        if (dataSet == null)
+    @Override public void releaseLocks(final List<String> dataSetCodes)
+    {
+        UUID ownerId = getThreadOwnerId();
+        List<DataSet> dataSets = getDataSets(dataSetCodes);
+
+        if (dataSets.size() != dataSetCodes.size())
         {
-            throw new UnknownDataSetException(dataSetCode);
+            List<String> notFoundDataSetCodes = new ArrayList<>(dataSetCodes);
+            notFoundDataSetCodes.removeAll(dataSets.stream().map(DataSet::getCode).collect(Collectors.toSet()));
+            throw new UnknownDataSetException(notFoundDataSetCodes);
         }
 
         List<Lock<UUID, String>> locks = new ArrayList<>(transactionManager.getLocks());
         locks = filterLocksByOwnerId(locks, ownerId);
-        locks = filterLocksByDataSet(locks, dataSet);
+        locks = filterLocksByDataSets(locks, dataSets);
 
         boolean success = transactionManager.unlock(locks);
 
         if (!success)
         {
-            throw new UnlockingFailedException(List.of(dataSetCode));
+            throw new UnlockingFailedException(dataSetCodes);
         }
     }
 
@@ -234,10 +242,11 @@ public class ShareIdManager implements IShareIdManager
         return locks.stream().filter(lock -> Objects.equals(ownerId, lock.getOwner())).collect(Collectors.toList());
     }
 
-    private List<Lock<UUID, String>> filterLocksByDataSet(List<Lock<UUID, String>> locks, DataSet dataSet)
+    private List<Lock<UUID, String>> filterLocksByDataSets(List<Lock<UUID, String>> locks, List<DataSet> dataSets)
     {
-        Lock<UUID, String> dataSetLock = createLocks(null, List.of(dataSet), null).get(0);
-        return locks.stream().filter(lock -> Objects.equals(dataSetLock.getResource(), lock.getResource())).collect(Collectors.toList());
+        List<Lock<UUID, String>> dataSetLocks = createLocks(null, dataSets, null);
+        Set<String> dataSetsResources = dataSetLocks.stream().map(Lock::getResource).collect(Collectors.toSet());
+        return locks.stream().filter(lock -> dataSetsResources.contains(lock.getResource())).collect(Collectors.toList());
     }
 
     private static class UnknownDataSetException extends IllegalArgumentException
