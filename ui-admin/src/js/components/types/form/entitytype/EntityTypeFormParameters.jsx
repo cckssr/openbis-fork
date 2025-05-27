@@ -1,8 +1,9 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
 import EntityTypeFormParametersType from '@src/js/components/types/form/entitytype/EntityTypeFormParametersType.jsx'
+import EntityTypeFormParametersTypeSemanticAnnotation from '@src/js/components/types/form/entitytype/EntityTypeFormParametersTypeSemanticAnnotation.jsx';
 import EntityTypeFormParametersProperty from '@src/js/components/types/form/entitytype/EntityTypeFormParametersProperty.jsx'
-import EntityTypeFormParametersSemanticAnnotation from '@src/js/components/types/form/entitytype/EntityTypeFormParametersSemanticAnnotation.jsx';
+import EntityTypeFormParametersPropertySemanticAnnotation from '@src/js/components/types/form/entitytype/EntityTypeFormParametersPropertySemanticAnnotation.jsx';
 import EntityTypeFormParametersSection from '@src/js/components/types/form/entitytype/EntityTypeFormParametersSection.jsx'
 import logger from '@src/js/common/logger.js'
 import { Tab } from '@mui/material';
@@ -105,10 +106,19 @@ class EntityTypeFormParameters extends React.PureComponent {
           />
         </TabPanel>
         <TabPanel classes={{ root: classes.tabPanelRoot }} value={SEMANTIC_ANNOTATIONS_TAB_INDEX}>
-          <EntityTypeFormParametersSemanticAnnotation
+          <EntityTypeFormParametersPropertySemanticAnnotation
             controller={controller}
             type={type}
             properties={properties}
+            selection={selection}
+            mode={mode}
+            onChange={onChange}
+            onSelectionChange={onSelectionChange}
+            onBlur={onBlur}
+          />
+          <EntityTypeFormParametersTypeSemanticAnnotation
+            controller={controller}
+            type={type}
             selection={selection}
             mode={mode}
             onChange={onChange}

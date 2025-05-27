@@ -10,6 +10,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { Typography } from '@mui/material';
+import objectTypes from '@src/js/common/consts/objectType.js'
 
 const styles = theme => {
 	const baseSemanticAnnotationTripletContainer = {
@@ -47,12 +48,7 @@ const styles = theme => {
 	};
 };
 
-const ANNOTATION_TYPES = {
-	PROPERTY: 'semanticAnnotations',
-	ASSIGNMENT: 'assignmentSemanticAnnotations'
-};
-
-class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
+class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent {
 	constructor(props) {
 		super(props);
 		this.references = {};
@@ -72,8 +68,8 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	focus() {
-		const property = this.getProperty(this.props)
-		if (property) {
+		const type = this.getType(this.props)
+		if (type && this.props.selection) {
 			const { part } = this.props.selection.params
 			if (part) {
 				const reference = this.references[part]
@@ -85,9 +81,7 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 	}
 
 	handleFocus(event) {
-		const property = this.getProperty(this.props)
-		this.props.onSelectionChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
+		this.props.onSelectionChange(EntityTypeFormSelectionType.TYPE, {
 			part: event.target.name
 		})
 	}
@@ -96,53 +90,57 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 		this.props.onBlur()
 	}
 
-	handleAddSemanticAnnotation = (property) => {
-		const { semanticAnnotations } = property;
+	handleChange(event) {
+		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+			field: event.target.name,
+			value: event.target.value
+		})
+	}
+
+	handleAddSemanticAnnotation = (type) => {
+		const { semanticAnnotations } = type;
 
 		const newSemanticAnnotation = {
-			tempPermId: {permId: `${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}`},
+			tempPermId: { permId: `semantic-ann-${type.code.value}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}` },
 			predicateOntologyId: '',
 			predicateOntologyVersion: '',
 			predicateAccessionId: ''
 		};
 
-		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.value.length > 0) {
+		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.value?.length > 0) {
 			semanticAnnotations.value.push(newSemanticAnnotation);
 		} else {
 			semanticAnnotations.value = [newSemanticAnnotation];
 		}
 
-		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			field: ANNOTATION_TYPES.PROPERTY,
+		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+			field: 'semanticAnnotations',
 			value: semanticAnnotations.value
 		});
 	};
 
 	handleRemoveSemanticAnnotation = (semanticAnnotationTripletId, index) => {
-		const property = this.getProperty(this.props);
-		let { semanticAnnotations } = property;
+		const type = this.getType(this.props);
+		let { semanticAnnotations } = type;
 		//it's already the list of semantic annotations
 		semanticAnnotations = semanticAnnotations.value.filter((semanticAnnotationTriplet, idx) => idx !== index);
-		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			field: ANNOTATION_TYPES.PROPERTY,
+		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+			field: 'semanticAnnotations',
 			value: semanticAnnotations
 		});
 	};
 
-	handleSemanticAnnotationFieldChange(type, index, field, fieldValue) {
-		const property = this.getProperty(this.props);
-		let { semanticAnnotations } = property;
+	handleSemanticAnnotationFieldChange(index, field, fieldValue) {
+		const type = this.getType(this.props);
+		let { semanticAnnotations } = type;
 		semanticAnnotations.value[index][field] = fieldValue;
-		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			field: ANNOTATION_TYPES.PROPERTY,
+		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+			field: 'semanticAnnotations',
 			value: semanticAnnotations.value
 		});
 	}
 
-	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, type) {
+	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, selectionType) {
 		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId, error } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
@@ -150,12 +148,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ID)}
-						name={'predicateOntologyId-' + index}
+						name={selectionType + '-predicateOntologyId-' + index}
 						mandatory={true}
 						error={error?.predicateOntologyId}
 						value={predicateOntologyId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateOntologyId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -163,12 +161,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_VERSION)}
-						name={'predicateOntologyVersion-' + index}
+						name={selectionType + '-predicateOntologyVersion-' + index}
 						mandatory={true}
 						error={error?.predicateOntologyVersion}
 						value={predicateOntologyVersion}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateOntologyVersion', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateOntologyVersion', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -176,12 +174,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ANNOTATION_ID)}
-						name={'predicateAccessionId-' + index}
+						name={selectionType + '-predicateAccessionId-' + index}
 						mandatory={true}
 						error={error?.predicateAccessionId}
 						value={predicateAccessionId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(type, index, 'predicateAccessionId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateAccessionId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -190,12 +188,12 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 		);
 	}
 
-	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, type) {
+	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, selectionType) {
 		const { classes, mode } = this.props;
 		return (
-			<div key={`${type}-annotation-${index}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
+			<div key={`${selectionType}-annotation-${index}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
 				<div className={classes.semanticAnnotationFieldsWrapper}>
-					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, index, type)}
+					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, index, selectionType)}
 				</div>
 				{mode === 'edit' && (
 					<Button
@@ -204,7 +202,7 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 						className={classes.removeButton}
 						onClick={() => this.handleRemoveSemanticAnnotation(semanticAnnotationTriplet.id, index)}
 						label={<RemoveIcon />}
-						aria-label={`${messages.get(messages.REMOVE)} ${type} annotation ${index + 1}`}
+						aria-label={`${messages.get(messages.REMOVE)} ${selectionType} annotation ${index + 1}`}
 						tooltip={messages.get(messages.REMOVE)}
 					/>
 				)}
@@ -212,73 +210,77 @@ class EntityTypeFormParametersSemanticAnnotation extends React.PureComponent {
 		);
 	}
 
-	renderSemanticAnnotations(property) {
-		const { visible, value, error } = { ...property.semanticAnnotations }
+	renderSemanticAnnotations(type) {
+		const { visible, value } = { ...type.semanticAnnotations }
 
 		if (!visible) {
 			return null
 		}
-		console.log('render semanticAnnotations: ', property.semanticAnnotations);
+		console.log('render semanticAnnotations: ', type.semanticAnnotations);
 
 		if (value === undefined || value === null || value.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_ANNOTATIONS_DEFINED)}</Typography>
 		}
 
 		return value.map((semanticAnnotationTriplet, index) => {
-			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, ANNOTATION_TYPES.PROPERTY)
+			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, EntityTypeFormSelectionType.TYPE)
 		})
 	}
 
 	render() {
-		logger.log(logger.DEBUG, 'EntityTypeFormParametersSemanticAnnotation.render');
+		logger.log(logger.DEBUG, 'EntityTypeFormParametersTypeSemanticAnnotation.render');
 
-		const property = this.getProperty(this.props);
-		if (!property) {
-			return null;
+		const type = this.getType(this.props)
+		if (!type) {
+			return null
 		}
 
-		console.log('render EntityTypeFormParametersSemanticAnnotation property: ', property);
+		console.log('render EntityTypeFormParametersTypeSemanticAnnotation type: ', type);
 
 		return (
 			<Container>
-				{this.renderHeader(messages.get(messages.PROPERTY_SEMANTIC_ANNOTATIONS), property)}
+				{this.renderHeader(messages.get(messages.SEMANTIC_ANNOTATIONS), type)}
 
-				{this.renderSemanticAnnotations(property)}
-
-				{this.renderHeader(messages.get(messages.PROPERTY_ASSIGNMENT_SEMANTIC_ANNOTATIONS), property)}
+				{this.renderSemanticAnnotations(type)}
 
 			</Container>
 		)
 	}
 
-	renderHeader(title, property) {
+	renderHeader(title, type) {
 		const { mode, classes } = this.props
-
+		const map = {
+			[objectTypes.OBJECT_TYPE]: messages.OBJECT_TYPE,
+			[objectTypes.COLLECTION_TYPE]: messages.COLLECTION_TYPE,
+			[objectTypes.DATA_SET_TYPE]: messages.DATA_SET_TYPE,
+			[objectTypes.MATERIAL_TYPE]: messages.MATERIAL_TYPE,
+			[objectTypes.NEW_OBJECT_TYPE]: messages.NEW_OBJECT_TYPE,
+			[objectTypes.NEW_COLLECTION_TYPE]: messages.NEW_COLLECTION_TYPE,
+			[objectTypes.NEW_DATA_SET_TYPE]: messages.NEW_DATA_SET_TYPE,
+			[objectTypes.NEW_MATERIAL_TYPE]: messages.NEW_MATERIAL_TYPE
+		}
 		return (
 			<div className={classes.headerContainer}>
-				<Header>{title}</Header>
+				<Header>{messages.get(map[type.objectType.value])} {title}</Header>
 				{mode === 'edit' &&
 					<Button variant='contained'
 						color='white'
-						onClick={() => this.handleAddSemanticAnnotation(property)}
+						onClick={() => this.handleAddSemanticAnnotation(type)}
 						label={<AddIcon />}
 						sx={{ marginRight: '8px' }} />}
 			</div>
 		)
 	}
 
-	getProperty(props) {
-		let { properties, selection } = props
+	getType(props) {
+		let { type, selection } = props
 
-		if (selection && selection.type === EntityTypeFormSelectionType.PROPERTY) {
-			let [property] = properties.filter(
-				property => property.id === selection.params.id
-			)
-			return property
+		if (!selection || selection.type === EntityTypeFormSelectionType.TYPE) {
+			return type
 		} else {
 			return null
 		}
 	}
 }
 
-export default withStyles(styles)(EntityTypeFormParametersSemanticAnnotation)
+export default withStyles(styles)(EntityTypeFormParametersTypeSemanticAnnotation)
