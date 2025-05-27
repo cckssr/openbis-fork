@@ -26,7 +26,9 @@ function TabContentController(controller) {
         let openTabs = state.openTabs;
         if(openTabs) {
             this._model.currentTab = openTabs.filter(state.selectedTab)[0]
-            this._updateView(this._model.currentTab)
+            if(this._model.currentTab) {
+                this._updateView(this._model.currentTab)
+            }
         }
     }
 
@@ -63,21 +65,24 @@ function TabContentController(controller) {
     }
 
     this._updateView = function(tab) {
-        var tabHeader = $("#" + tab.id + " #tab-content-header")
-        var tabBody = $("#" + tab.id + " #tab-content-body")
+        if(tab) {
+            var tabHeader = $("#" + tab.id + " #tab-content-header")
+            var tabBody = $("#" + tab.id + " #tab-content-body")
 
-        mainController.views.header = tabHeader;
-        mainController.views.content = tabBody;
-        mainController.currentView = _this._model.views[tab.id];
+            mainController.views.header = tabHeader;
+            mainController.views.content = tabBody;
+            mainController.currentView = _this._model.views[tab.id];
 
-        if(tab.url) {
-        //todo
-            history.pushState({}, null, tab.url)
-        }
+            if(tab.url) {
+                history.pushState({}, null, tab.url)
+            }
 
-        mainController.sideMenu.removeSubSideMenu();
-        if(mainController.currentView && mainController.currentView.refresh) {
-            mainController.currentView.refresh(mainController.views)
+            mainController.sideMenu.removeSubSideMenu();
+            if(mainController.currentView && mainController.currentView.refresh) {
+                mainController.currentView.refresh(mainController.views)
+            }
+        } else {
+            //todo
         }
 
     }

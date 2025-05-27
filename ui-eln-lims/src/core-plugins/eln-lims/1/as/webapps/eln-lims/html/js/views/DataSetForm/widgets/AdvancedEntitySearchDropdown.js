@@ -275,7 +275,7 @@ function AdvancedEntitySearchDropdown(isMultiple,
 		
 		var _this = this;
 		if(onChangeCallback) {
-		    $("body").on('select2:select', selectId, function (e) {
+		    $("body").on('select2:select', "#" + selectId, function (e) {
     				onChangeCallback(_this.getSelected());
 			});
 		}
