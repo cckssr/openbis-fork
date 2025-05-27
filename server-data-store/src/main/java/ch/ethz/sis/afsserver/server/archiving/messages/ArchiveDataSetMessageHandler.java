@@ -153,6 +153,9 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
             archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
         } catch (Exception e)
         {
+            operationLog.error(
+                    "Archiving failed for data sets " + CollectionUtils.abbreviate(codesList(availableDataSets), CollectionUtils.DEFAULT_MAX_LENGTH),
+                    e);
             ServiceProvider.getInstance().getDataSetStatusUpdater()
                     .scheduleUpdate(codesList(availableDataSets), DataSetArchivingStatus.AVAILABLE, null);
         }
