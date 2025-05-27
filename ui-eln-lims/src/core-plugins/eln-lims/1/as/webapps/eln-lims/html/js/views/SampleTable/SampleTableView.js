@@ -70,7 +70,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			
 			//Add Sample Type
 			if(sampleTypeCodeToUse !== null & _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
-				var $createButton = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+				var $createButton = FormUtil.getToolbarButton("ENTRY", function() {
 					Util.blockUI();
                     setTimeout(function() {
                         var argsMap = {
@@ -79,7 +79,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
                         };
                         mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
                     }, 100);
-				}, "New " + Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn");
+				}, Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				
 				toolbarModel.push({ component : $createButton });
 			}

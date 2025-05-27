@@ -82,7 +82,7 @@ function CommentsView(commentsController, commentsModel) {
 			var commentNumber = 0;
 			var buttonPlusOneId = "add-comment-btn-"+this._viewId;
 			var $buttonPlusOne = $("<a>", {"class" : "btn btn-default", "id" : buttonPlusOneId});
-			$buttonPlusOne.append($("<span>", { "class" : "glyphicon glyphicon-plus-sign"}));
+			$buttonPlusOne.append($("<span>", { "class" : "material-icons", "text" : "control_point", "style" : "font-size: 18px;"}));
 			$("body").on("click", "#"+buttonPlusOneId, function() {
 				_this.addNewComment(commentNumber);
 				commentNumber++;
