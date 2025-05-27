@@ -226,6 +226,18 @@ function GridView(gridModel) {
 							}
 						};
 					}
+
+					var dragCopyFuncSerialized = function(object, origX, origY) {
+                        return function(event) {
+                            event.originalEvent.dataTransfer.setData('origX', origX);
+                            event.originalEvent.dataTransfer.setData('origY', origY);
+                            event.originalEvent.dataTransfer.setData('tagId', this.id);
+                            event.originalEvent.dataTransfer.setData('object', object);
+                            if(_this._extraDragData) {
+                                event.originalEvent.dataTransfer.setData("extraDragData", JSON.stringify(_this._extraDragData));
+                            }
+                        };
+                    }
 					
 					//The original position where the label was is stored and not changed between drags
 					//This is used by multiple position samples
@@ -233,6 +245,10 @@ function GridView(gridModel) {
 					
 					if(this._gridModel.isDragable) {
 						labelContainer.attr('draggable', 'true');
+						labelContainer.attr('posX', posX);
+						labelContainer.attr('posY', posY);
+						labelContainer.attr('data', JSON.stringify(labels[i].data));
+						labelContainer.attr('displayName', labels[i].displayName);
 						labelContainer.on({
 						    dragstart: dragFunc
 						});
@@ -248,6 +264,27 @@ function GridView(gridModel) {
 					if(!this._gridModel.isDisabled) {
 						labelContainer.click(clickEvent(posX, posY, labels[i].displayName, labels[i].data));
 					}
+
+					labelContainer.refresh = function() {
+					    this.unbind();
+					    if(_this._gridModel.isDragable) {
+                            var x = parseInt(this.attr("posX"));
+                            var y = parseInt(this.attr("posY"));
+                            var data = this.attr("data");
+                            this.on({
+                                dragstart: dragCopyFuncSerialized(data, posX, posY)
+                            });
+                        }
+                        if(!_this._gridModel.isDisabled) {
+                            var x = parseInt(this.attr("posX"));
+                            var y = parseInt(this.attr("posY"));
+                            var objectAsString = this.attr("data");
+                            var data = JSON.parse(objectAsString);
+                            var displayName = this.attr("displayName")
+                            this.click(clickEvent(x, y, displayName, data));
+                        }
+					}
+					_refreshableFields.push(labelContainer);
 					
 					$component.append(labelContainer);
 				}
