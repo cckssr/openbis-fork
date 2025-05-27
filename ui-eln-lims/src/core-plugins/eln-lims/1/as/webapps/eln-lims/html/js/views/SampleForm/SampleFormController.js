@@ -24,9 +24,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             mainController.sideMenu.addSubSideMenu(this._sampleFormView._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
             this._sampleFormModel.dataSetViewer.init();
         }
-        if(this._sampleFormModel.mode !== FormMode.VIEW) {
-            this._sampleFormView.refresh();
-        }
+        this._sampleFormView.refresh();
     }
 	
 	this.init = function(views, loadFromTemplate) {

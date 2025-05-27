@@ -1843,7 +1843,7 @@ var FormUtil = new function() {
 		}
 		
 		var href = Util.getURLFor(mainController.sideMenu.getCurrentNodeId(), view, permIdOrIdentifier);
-		var click = function(event) {
+		var clickFunction = function(event) {
 		    event.preventDefault(); // Prevent default link behavior
 			var arg = null;
 			if(paginationInfo) {
@@ -1859,9 +1859,19 @@ var FormUtil = new function() {
 			mainController.changeView(view, arg, true);
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
-		let idd = id + '-' + mainController.getNextId()
-		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : idd }).text(displayName);
-        $("body").on("click", "#"+idd, click)
+		if(!id) {
+		    id = 'link-id-' + mainController.getNextId()
+		}
+
+		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
+        $("body").on("click", "#"+id, clickFunction)
+
+        //this is workaround for links in DataGrids to work in tabs
+        link.click(clickFunction)
+        link.refresh = function() {
+            this.unbind();
+            this.click(clickFunction);
+        }
 		return link;
 	}
 	
@@ -2667,10 +2677,45 @@ var FormUtil = new function() {
             if(password != operationResult) {
                 Util.showUserError('The given result is not correct.');
             } else {
-                Util.showSuccess("TODO: implement freezing data here");
-
+                require([ "as/dto/experiment/update/ExperimentUpdate", "as/dto/experiment/id/ExperimentPermId",
+                              "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId"],
+                    function(ExperimentUpdate, ExperimentPermId, SampleUpdate, SamplePermId) {
+                        var doneFunction = function() {
+                            Util.showSuccess("Freezing data succeeded.", function() {
+                                Util.unblockUI();
+                                switch(entityType) {
+                                    case "SAMPLE":
+                                        mainController.changeView('showViewSamplePageFromPermId', permId);
+                                        break;
+                                    case "EXPERIMENT":
+                                        mainController.changeView('showExperimentPageFromPermId', permId);
+                                        break;
+                                }
+                            });
+                        }
+                        var failFunction = function() {
+                           Util.showUserError('Freezing data failed.', function() {
+                               Util.unblockUI();
+                           });
+                        }
+                        switch(entityType) {
+                            case "SAMPLE":
+                               var sampleUpdate = new SampleUpdate();
+                               sampleUpdate.setSampleId(new SamplePermId(permId));
+                               sampleUpdate.makeDataImmutable();
+                               mainController.openbisV3.updateSamples( sampleUpdate ).done(doneFunction).fail(failFunction);
+                               break;
+                            case "EXPERIMENT":
+                                var experimentUpdate = new ExperimentUpdate();
+                                experimentUpdate.setExperimentId(new ExperimentPermId(permId))
+                                experimentUpdate.makeDataImmutable();
+                                mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(doneFunction).fail(failFunction);
+                                break;
+                            default:
+                                Util.showError("Unsupported entity type for this operation: " + entityType);
+                        }
+                    });
             }
-
             Util.unblockUI();
         });
 

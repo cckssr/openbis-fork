@@ -338,17 +338,25 @@
 
 
 					    // Entity data freezing
-                        if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
-                            //TODO implement freezing of afs data
+//                        if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
 //                            dropdownOptionsModel.push({
 //                                label : "Freeze Entity data (Disable further data upload)",
 //                                action : function () {
 //                                    FormUtil.showFreezeAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
 //                                }
 //                            });
-                        }
+//                        }
 
 					}
+//					if(isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) {
+//					    //todo archive?
+//					    dropdownOptionsModel.push({
+//                            label : "Archive attached data",
+//                            action : function () {
+//
+//                            }
+//                        });
+//					}
 				}
 	
 				//History
@@ -1247,6 +1255,7 @@
 																				},
 																				this._viewId,
 																				);
+			_refreshableFields.push(this._sampleFormModel.sampleLinksParents);
 			var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
 	
 			if (
@@ -1337,6 +1346,7 @@
 																},
 																this._viewId,
 																);
+            _refreshableFields.push(this._sampleFormModel.sampleLinksChildren);
 			if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
 				this._sampleFormModel.sampleLinksChildren.init($sampleChildrenWidget);
 	
@@ -1412,7 +1422,7 @@
 						component += "</div>";
 						component += "</div>";
 	
-					Util.blockUI(component + "<a class='btn btn-default' id='copyAccept'>Accept</a> <a class='btn btn-default' id='copyCancel'>Cancel</a>", FormUtil.getDialogCss());
+					Util.blockUI(component + "<a class='btn btn-primary' id='copyAccept'>Accept</a> <a class='btn btn-default' id='copyCancel'>Cancel</a>", FormUtil.getDialogCss());
 	
 					$("#newSampleCodeForCopy").on("keyup", function(event) {
 						$(this).val($(this).val().toUpperCase());
@@ -1420,7 +1430,7 @@
 	
 					$("#newSampleCodeForCopy").val(defaultCode);
 	
-					$("#copyAccept").on("click", function(event) {
+					$("body").on("click", "#copyAccept", function(event) {
 						var newSampleCodeForCopy = $("#newSampleCodeForCopy");
 						var linkParentsOnCopy = $("#linkParentsOnCopy")[0].checked;
 						var copyChildrenOnCopy = $("input[name=copyChildrenOnCopy]:checked").val();
@@ -1439,7 +1449,7 @@
 						}
 					});
 	
-					$("#copyCancel").on("click", function(event) {
+					$("body").on("click", "#copyCancel", function(event) {
 						Util.unblockUI();
 					});
 				};

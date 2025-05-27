@@ -1467,12 +1467,15 @@ function MainController(profile) {
 						if (experimentIdentifier === "null") { //Fix for reloads when there is text on the url
 							experimentIdentifier = null;
 						}
-                        var views = _this._getNewViewModel(true, true, false, TabContentUtil.getExperimentTabInfo(experiment, FormMode.VIEW));
+						var tabInfo = TabContentUtil.getExperimentTabInfo(experiment, FormMode.VIEW);
+                        var views = _this._getNewViewModel(true, true, false, tabInfo);
 						var sampleTableController = new SampleTableController(_this,
                             Util.getDisplayNameFromCode(experiment.experimentTypeCode) + " " +
 							experimentIdentifier, experimentIdentifier, null, null, experiment);
 						sampleTableController.init(views);
+						sampleTableController.tabId = tabInfo.id;
 						_this.currentView = sampleTableController;
+						mainController.tabContent.updateView(_this.currentView)
 						break;
 					}
 					case "FORM_VIEW":
@@ -1774,9 +1777,12 @@ function MainController(profile) {
 	this._showProjectPage = function(project) {
 		//Show Form
 		var projectFormController = new ProjectFormController(this, FormMode.VIEW, project);
-		var views = this._getNewViewModel(true, true, false, TabContentUtil.getProjectTabInfo(project, FormMode.VIEW));
+		var tabInfo = TabContentUtil.getProjectTabInfo(project, FormMode.VIEW);
+		var views = this._getNewViewModel(true, true, false, tabInfo);
 		projectFormController.init(views);
+		projectFormController.tabId = tabInfo.id;
 		this.currentView = projectFormController;
+		mainController.tabContent.updateView(this.currentView)
 	}
 	
 	this._showEditProjectPage = function(project) {
@@ -1793,12 +1799,12 @@ function MainController(profile) {
 	this._showExperimentPage = function(experiment, mode) {
 		//Show Form
 		var experimentFormController = new ExperimentFormController(this, mode, experiment);
-
-		var views = this._getNewViewModel(true, true, undefined, TabContentUtil.getExperimentTabInfo(experiment, mode));
+        var tabInfo = TabContentUtil.getExperimentTabInfo(experiment, mode);
+		var views = this._getNewViewModel(true, true, undefined, tabInfo);
 		experimentFormController.init(views);
 		this.currentView = experimentFormController;
-		this.currentView.tabId = views.tabId;
-        mainController.tabContent.updateView(this.currentView)
+		this.currentView.tabId = tabInfo.id;
+		mainController.tabContent.updateView(this.currentView)
 		if(mode !== FormMode.VIEW) {
 		    this.sideMenu.collapseSideMenu();
 		}

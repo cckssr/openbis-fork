@@ -585,6 +585,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		}
 		var sampleList = new SampleTableController(this._experimentFormController, null, this._experimentFormModel.experiment.identifier, null, null, this._experimentFormModel.experiment);
 		sampleList.init(views);
+		_refreshableFields.push(sampleList);
 		$samples.hide();
 		hideShowOptionsModel.push({
 			label : ELNDictionary.Samples,

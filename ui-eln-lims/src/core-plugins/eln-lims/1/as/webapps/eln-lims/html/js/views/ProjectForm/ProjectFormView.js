@@ -341,12 +341,14 @@ function ProjectFormView(projectFormController, projectFormModel) {
         
         var experimentTableController = new ExperimentTableController(this._projectFormController, null, jQuery.extend(true, {}, this._projectFormModel.project), true);
         experimentTableController.init($experimentsOverview);
+        _refreshableFields.push(experimentTableController)
         var sampleTableController = new SampleTableController(this._projectFormController, null, null, this._projectFormModel.project.permId, true, null, 40);
         var views = {
             header : $header,
             content : $samplesOverview
         }
         sampleTableController.init(views);
+        _refreshableFields.push(sampleTableController)
 
         $overview.hide();
         hideShowOptionsModel.push({
@@ -394,6 +396,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				experimentTableController.refresh();
 			}
 		});
+		_refreshableFields.push(experimentTableController)
 		return $experiments;
 	}
 

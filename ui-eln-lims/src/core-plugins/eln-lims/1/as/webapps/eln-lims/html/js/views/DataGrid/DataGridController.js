@@ -36,6 +36,8 @@ function DataGridController(
 
     var _this = this
 
+    this._refreshableFields = [];
+
     this.init = function ($container, extraOptions) {
         let $element = $("<div>")
 
@@ -146,6 +148,9 @@ function DataGridController(
                                         value: params.value,
                                         displayValues: result
                                     });
+                                if(renderedValue && renderedValue.refresh) {
+                                    _this._refreshableFields.push(renderedValue);
+                                }
                                 $(params.container).empty().append(renderedValue);
                                 });
                             });
@@ -165,6 +170,10 @@ function DataGridController(
                     if (value === null || value === undefined || value === "") {
                         return
                     } else {
+                        if(value.refresh) {
+                            _this._refreshableFields.push(value);
+                        }
+
                         if (_.isString(value)) {
                             $(params.container).empty().text(value)
                         } else {
@@ -306,5 +315,12 @@ function DataGridController(
         if (_this.controller) {
             _this.controller.load()
         }
+
+        if(this._refreshableFields) {
+            for(var field of this._refreshableFields) {
+                field.refresh();
+            }
+        }
+
     }
 }

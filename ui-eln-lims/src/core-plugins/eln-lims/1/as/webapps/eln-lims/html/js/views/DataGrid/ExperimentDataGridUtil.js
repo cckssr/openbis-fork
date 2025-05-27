@@ -180,7 +180,7 @@ var ExperimentDataGridUtil = new function() {
             filePrefix: 'collections',
             fileContent: DataGridExportOptions.FILE_CONTENT.ENTITIES
         }, heightPercentage);
-		dataGridController.setId("experiment-grid")
+		dataGridController.setId("experiment-grid-" + mainController.getNextId())
 		return dataGridController;
 	}
 

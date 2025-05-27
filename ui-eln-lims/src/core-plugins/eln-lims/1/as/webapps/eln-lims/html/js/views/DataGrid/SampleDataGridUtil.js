@@ -388,7 +388,7 @@ var SampleDataGridUtil = new function() {
 			filePrefix: 'objects',
 			fileContent: DataGridExportOptions.FILE_CONTENT.ENTITIES
 		}, heightPercentage);
-		dataGridController.setId("sample-grid")
+		dataGridController.setId("sample-grid-" + mainController.getNextId())
 		return dataGridController;
 	}
 

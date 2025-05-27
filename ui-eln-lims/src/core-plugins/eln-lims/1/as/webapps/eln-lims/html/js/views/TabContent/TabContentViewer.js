@@ -10,18 +10,10 @@ function TabContentViewer(controller) {
 
         $container.append(this._$lab).append(this._$inv).append(this._$tools)
 
-//        this._tabControllerMap = {
-//                "lab_notebook": new TabController(),
-//                "inventory": new TabController(),
-//                "tools": new TabController()
-//            }
-
         let props = {
-//            controller: this._controller._tabController,
             controller: this._controller._tabControllerMap["lab_notebook"],
             openTabs: [],
             selectedTab: (x) => false,
-//            page: mainController.sideMenu.getCurrentTree(),
             page: '',
             style: {
                 height: '50px',
@@ -32,8 +24,6 @@ function TabContentViewer(controller) {
         }
 
         let SimpleContentLabNotebook = React.createElement(window.NgComponents.default.ElnContent, props)
-//        NgComponentsManager.renderComponent(SimpleContent, $container.get(0));
-
 
         NgComponentsManager.renderComponent(SimpleContentLabNotebook, this._$lab.get(0));
         if(mainController.sideMenu.getCurrentTree() !== "lab_notebook") {
