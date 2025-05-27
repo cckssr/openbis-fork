@@ -403,7 +403,7 @@ public class PathInfoDatabaseRefreshingTaskTest extends AbstractFileSystemTestCa
                 ));
                 will(returnValue(file));
 
-                one(shareIdManager).releaseLocks();
+                one(shareIdManager).releaseLock(dataSetCode);
             }
         });
     }
