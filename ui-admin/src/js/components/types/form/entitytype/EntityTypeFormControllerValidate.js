@@ -41,6 +41,11 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
     const strategy = this._getStrategy()
     validator.validateNotEmpty(type, 'code', messages.get(messages.CODE))
     validator.validateCode(type, 'code', messages.get(messages.CODE))
+    validator.validateSemanticAnnotationsNotEmpty(
+      type,
+      'semanticAnnotations',
+      'Semantic Annotation fields'
+    )
     strategy.validateTypeAttributes(validator, type)
     return validator.withErrors(type)
   }

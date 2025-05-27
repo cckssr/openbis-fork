@@ -77,6 +77,9 @@ export default class EntityTypeFormControllerAddProperty {
       unique: FormUtil.createField({
         value: false
       }),
+      semanticAnnotations: FormUtil.createField({ value: [] }),
+      assignmentSemanticAnnotations: FormUtil.createField({ value: [] }),
+      assignmentSemanticAnnotationsInherited: FormUtil.createField({ value: false }),
       showRawValueInForms: FormUtil.createField({
         value: false
       }),
