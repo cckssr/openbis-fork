@@ -225,8 +225,6 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 				this._userIdDropdown.append($('<option>', { 'value' : contents[i] , 'selected' : ''}).html(contents[i]));
 			}
 		}
-		this._userIdDropdown.append($('<option>', { 'value' : 'testaaaaa1' , 'selected' : 'false'}).html('testaaaaa1'));
-        this._userIdDropdown.append($('<option>', { 'value' : 'testaaaaa2' , 'selected' : ''}).html('testaaaaa2'));
 		this._userIdDropdown.multiselect('rebuild');
 	}
 	
