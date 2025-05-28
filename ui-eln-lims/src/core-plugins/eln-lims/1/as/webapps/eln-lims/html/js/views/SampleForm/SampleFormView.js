@@ -597,10 +597,11 @@
 	
 				var storageListController = new StorageListController(this._sampleFormModel.sample, this._sampleFormModel.mode === FormMode.VIEW);
 				storageListController.init(storageListContainer);
+				_refreshableFields.push(storageListController);
 			}
 	
 			// Data sets section
-			$formColumn.append($("<div>", {'id':'data-sets-section'}))
+			$formColumn.append($("<div>", {'id':'data-sets-section-'+_this._viewId}))
 	
 			//
 			// Extra Content
@@ -660,6 +661,7 @@
 				this._dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer-" + this._viewId, style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
 				this._sampleFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer-" + this._viewId, profile, this._sampleFormModel.sample, mainController.serverFacade,
 				        profile.getDefaultDataStoreURL(), this._sampleFormModel.datasets, false, true, this._sampleFormModel.mode);
+                this._sampleFormModel.dataSetViewer.setViewId(this._viewId);
 				mainController.sideMenu.addSubSideMenu(this._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
                 this._sampleFormModel.dataSetViewer.init();
 			}

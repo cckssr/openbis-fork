@@ -18,6 +18,18 @@ function StorageListView(storageListController, storageListModel) {
 	this._storageListModel = storageListModel;
 	this._dataGrid = null; //TO-DO This is a controller, should not be here
 	this._viewId = mainController.getNextId();
+
+	this._refreshableFields = []
+
+	this.refresh = function () {
+
+        if(this._refreshableFields) {
+            for(var field of this._refreshableFields) {
+                field.refresh();
+            }
+        }
+
+    }
 	
 	this.repaint = function($container) {
 		var _this = this;

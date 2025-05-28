@@ -433,6 +433,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                 this._dataSetViewerContainer = new $('<div>', { id : "dataSetViewerContainer-"+this._viewId, style: "overflow: scroll; margin-top: 5px; padding-top: 5px; border-top: 1px dashed #ddd; " });
                 this._experimentFormModel.dataSetViewer = new DataSetViewerController("dataSetViewerContainer-"+this._viewId, profile, this._experimentFormModel.v3_experiment, mainController.serverFacade,
                         profile.getDefaultDataStoreURL(), null, false, true, this._experimentFormModel.mode);
+                this._experimentFormModel.dataSetViewer.setViewId(this._viewId);
                 mainController.sideMenu.addSubSideMenu(this._dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
                 this._experimentFormModel.dataSetViewer.init();
         }

@@ -20,6 +20,10 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	this._level = 3;
 	this._imagePreviewIconLoader = new ImagePreviewIconLoader();
 
+	this.setViewId = function(viewId) {
+	    this.viewId = viewId;
+	}
+
 	this.repaintDatasets = function() {
         if (this._dataSetViewerModel.formMode == FormMode.VIEW) {
             this._paintDataSetTable();
@@ -82,7 +86,14 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
 	}
 
     this._paintDataSetTable = function() {
-        var $dataSetsSection = $("#data-sets-section");
+
+        var $dataSetsSection = null;
+        if(this.viewId) {
+            $dataSetsSection = $("#data-sets-section-"+this.viewId);
+        } else {
+            $dataSetsSection = $("#data-sets-section");
+        }
+
         var $legend = $("<legend>").append("Data Sets");
         var $dataSetContainer = $("<div>", { 'id' : 'data-set-table' });
         $dataSetsSection.empty()

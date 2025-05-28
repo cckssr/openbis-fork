@@ -21,8 +21,9 @@ function ExperimentFormController(mainController, mode, experiment) {
 
 	this.refresh = function(views) {
         if(this._experimentFormModel.dataSetViewer) {
+            mainController.sideMenu.removeSubSideMenu();
             mainController.sideMenu.addSubSideMenu(this._experimentFormView._dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
-            this._experimentFormModel.dataSetViewer.init();
+            this._experimentFormModel.dataSetViewer.refresh();
         }
         this._experimentFormView.refresh();
     }
