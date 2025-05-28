@@ -19,6 +19,7 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -213,7 +214,6 @@ public class TerminableCallableTest
         assertTrue(milestoneLatch.await(0, TimeUnit.MILLISECONDS));
         assertNull(sensor.cause);
         assertEquals(0, sensor.cleanUpCount);
-        t.stop();
     }
 
     @Test(invocationCount = 10)

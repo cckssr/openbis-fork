@@ -18,6 +18,7 @@ package ch.ethz.sis.shared.log.log4j2;
 import ch.ethz.sis.shared.log.LogFactory;
 import ch.ethz.sis.shared.log.Logger;
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.logging.LogLog;
 
 import java.io.File;
 import java.util.List;
@@ -36,13 +37,15 @@ public class Log4J2LogFactory implements LogFactory {
 
     @Override
     public void configure(String pathToConfigurationFile) {
-        if (pathToConfigurationFile != null) {
+        if (pathToConfigurationFile != null && !pathToConfigurationFile.isBlank()) {
             try { //FileInputStream fis = new FileInputStream(pathToConfigurationFile)) {
 
                 LogInitializer.configureFromFile(new File(pathToConfigurationFile));
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        } else {
+            LogLog.info("[Log4J2LogFactory] No configuration file provided, skipping initialization!");
         }
     }
 }

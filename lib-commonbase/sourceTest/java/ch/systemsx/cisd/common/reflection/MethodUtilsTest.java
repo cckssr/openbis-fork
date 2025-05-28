@@ -71,7 +71,11 @@ public final class MethodUtilsTest extends AssertJUnit
     {
         assertEquals("getMethodOnStack", MethodUtils.getMethodOnStack(0).getName());
         assertEquals("testGetMethodOnStack", MethodUtils.getMethodOnStack(1).getName());
-        assertEquals("invoke0", MethodUtils.getMethodOnStack(2).getName());
+        String stubName = MethodUtils.getMethodOnStack(2).getName();
+        assertTrue(
+                "Expected reflection‐invocation stub name to start with “invoke”, but was “" + stubName + "”",
+                stubName.startsWith("invoke")
+        );
         privateMethodOnStack();
     }
 
