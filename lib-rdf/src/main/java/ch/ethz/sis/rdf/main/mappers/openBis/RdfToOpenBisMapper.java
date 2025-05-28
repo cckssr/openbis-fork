@@ -38,7 +38,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RdfToOpenBisMapper
 {
@@ -267,7 +266,7 @@ public class RdfToOpenBisMapper
         String value = sampleObjectProperty.value;
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
-            return "/" + Stream.of(project, value).collect(Collectors.joining("/"))
+            return String.join("/", project, value)
                     .toUpperCase(
                             Locale.ROOT);
         }
