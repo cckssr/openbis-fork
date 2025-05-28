@@ -19,13 +19,28 @@ repositories {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
+    mavenCentral()
 }
 
 dependencies {
-    compileOnly 'lombok:lombok:1.18.22'
-    annotationProcessor 'lombok:lombok:1.18.22'
+    compileOnly 'lombok:lombok:1.18.38'
+    annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-json'),
-            'lombok:lombok:1.18.22'
+            'lombok:lombok:1.18.38'
     testImplementation 'junit:junit:4.10',
             'hamcrest:hamcrest-core:1.3'
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'lombok' && details.requested.name == 'lombok') {
+            // preserve whatever version they asked for
+            details.useTarget(
+                    group:   'org.projectlombok',
+                    name:    'lombok',
+                    version: details.requested.version
+            )
+            details.because("map shorthand lombok:lombok → org.projectlombok:lombok")
+        }
+    }
 }

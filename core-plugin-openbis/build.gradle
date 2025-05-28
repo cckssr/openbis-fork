@@ -141,7 +141,11 @@ def gwtCacheBuildDir = "${project.buildDir}/gwt-unitCache"
 def gwtModuleName = 'ch.systemsx.cisd.openbis.OpenBIS'
 def gwtModuleBuildDir = "${gwtBuildDir}/${gwtModuleName}"
 def gwtArchivePath = 'resource'
-def gwtArchiveFileName = 'gwt.tar.gz'
+def javaVersion = System.getProperty("java.version")
+def isJdk21 = javaVersion.startsWith("21")
+def gwtArchiveFileName = isJdk21
+        ? 'gwtJDK21.tar.gz'
+        : 'gwt.tar.gz'
 
 task compileGwt(dependsOn: classes, type: JavaExec) {
     ext.buildDir = gwtBuildDir
