@@ -498,6 +498,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 	this._createUpdateCopySampleCallbackOld = function(_this, isCopyWithNewCode, response, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy) {
 		if(response.error) { //Error Case 1
 			Util.showError(response.error.message, function() {Util.unblockUI();});
+            this._sampleFormView.refresh();
 		} else if (response.result.columns[1].title === "Error") { //Error Case 2
 			var stacktrace = response.result.rows[0][1].value;
 			Util.showStacktraceAsError(stacktrace);
@@ -508,7 +509,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 			}
             _this._createUpdateCopySampleCallback(_this, isCopyWithNewCode, permId, samplesToDelete, parentsAnnotationsState, childrenAnnotationsState, copyChildrenOnCopy)
         } else { //This should never happen
-            Util.showError("Unknown Error.", function() {Util.unblockUI();});           
+            Util.showError("Unknown Error.", function() {Util.unblockUI();});
+            this._sampleFormView.refresh();
         }
 	}
 	
@@ -534,6 +536,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     _this._createUpdateSampleStepPerformCreationsAndUpdates(parameters, existingSamples);
                 }).fail(function(result) {
                     Util.showFailedServerCallError(result);
+                    _this._sampleFormView.refresh();
                 });
             });
         } else {
@@ -832,6 +835,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                         parameters["childrenAnnotationsState"], parameters["copyChildrenOnCopy"], sampleParentsChanges, sampleChildrenChanges);
             }).fail(function(result) {
                 Util.showFailedServerCallError(result);
+                _this._sampleFormView.refresh();
             });
         });
     }

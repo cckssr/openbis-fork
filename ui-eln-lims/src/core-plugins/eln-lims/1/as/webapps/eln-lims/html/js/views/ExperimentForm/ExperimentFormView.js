@@ -808,7 +808,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                                     _refreshableFields.push($component);
                     		    } else {
                     		        alert("Spreadsheet only works with XML data type.");
-//                    		        $component.change(changeEvent(propertyType));
                     		        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
                     		    }
                     		    break;
