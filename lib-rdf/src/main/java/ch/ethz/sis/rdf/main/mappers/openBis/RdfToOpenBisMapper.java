@@ -267,7 +267,7 @@ public class RdfToOpenBisMapper
         String value = sampleObjectProperty.value;
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
-            return "/" + Stream.of(space, project, value).collect(Collectors.joining("/"))
+            return "/" + Stream.of(project, value).collect(Collectors.joining("/"))
                     .toUpperCase(
                             Locale.ROOT);
         }
