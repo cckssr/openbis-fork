@@ -125,7 +125,12 @@ var LayoutManager = {
 				"overflow-y" : "auto"
 			});
 
+            //if not mobile
 			this.secondColumn.append(this.tabContent);
+
+			//if mobile
+			this.secondColumn.append(this.secondColumnHeader);
+            this.secondColumn.append(this.secondColumnContent);
 
 			// Set up MutationObserver to replace DOMNodeInserted and DOMNodeRemoved
             this.mutationObserver = new MutationObserver(this.secondColumnContentResize);
@@ -390,7 +395,13 @@ var LayoutManager = {
     },
 	_setMobileLayout : function(view, isFirstTime) {
 		var width = $( window ).width();
-		var height = $( window ).height() - this.MAIN_HEADER_HEIGHT;
+		var height = $( window ).height();
+
+		if(this.tabContent) {
+            this.tabContent.children().detach();
+            this.tabContent.remove();
+		    this.tabContent = null;
+		}
 
 		//
 		// Set screen size
@@ -399,7 +410,7 @@ var LayoutManager = {
 			display : "block",
 			height : height,
 			"overflow-y" : "auto",
-			"width" : "100%"
+			"width" : width
 		});
 		this.secondColumn.css({ display : "none" });
 		this.thirdColumn.css({ display : "none" });
@@ -547,7 +558,7 @@ var LayoutManager = {
             view.mainHeader.css('width', $( window ).width());
 		}
 
-		if(view.tabContent) {
+		if(view.tabContent && _this.tabContent) {
 		    _this.tabContent.empty();
             _this.tabContent.append(view.tabContent);
 		}
