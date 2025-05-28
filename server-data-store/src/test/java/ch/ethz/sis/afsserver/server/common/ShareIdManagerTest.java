@@ -74,6 +74,109 @@ public class ShareIdManagerTest extends AbstractTest
     }
 
     @Test
+    public void testLockTheSameDataSetMultipleTimesInTheSameThread() throws Exception
+    {
+        DataSet dataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
+        context.checking(new Expectations()
+        {
+            {
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet.getCode())), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet)));
+            }
+        });
+
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
+        MessageChannel channel1 = new MessageChannel();
+        MessageChannel channel2 = new MessageChannel();
+
+        AtomicReference<Throwable> exception1 = new AtomicReference<Throwable>(null);
+        Thread thread1 = new Thread(() ->
+        {
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked the first time");
+
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked the second time");
+
+                channel2.assertNextMessage("first attempt");
+
+                shareIdManager.releaseLock(dataSet.getCode());
+                channel1.send("released the first time");
+
+                channel2.assertNextMessage("second attempt");
+
+                shareIdManager.releaseLock(dataSet.getCode());
+                channel1.send("released the second time");
+            } catch (Throwable e)
+            {
+                logger.info("Thread 1 exception", e);
+                exception1.set(e);
+            }
+        });
+
+        AtomicReference<Throwable> exception2a = new AtomicReference<Throwable>(null);
+        AtomicReference<Throwable> exception2b = new AtomicReference<Throwable>(null);
+        AtomicReference<Throwable> exception2c = new AtomicReference<Throwable>(null);
+        Thread thread2 = new Thread(() ->
+        {
+            channel1.assertNextMessage("locked the first time");
+            channel1.assertNextMessage("locked the second time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2a exception", e);
+                exception2a.set(e);
+            }
+
+            channel2.send("first attempt");
+            channel1.assertNextMessage("released the first time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2b exception", e);
+                exception2b.set(e);
+            }
+
+            channel2.send("second attempt");
+            channel1.assertNextMessage("released the second time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2c exception", e);
+                exception2c.set(e);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        assertNull(exception1.get());
+        assertEquals("Locking of data sets: [data-set-1] failed.", exception2a.get() != null ? exception2a.get().getMessage() : null);
+        assertEquals("Locking of data sets: [data-set-1] failed.", exception2b.get() != null ? exception2b.get().getMessage() : null);
+        assertEquals(null, exception2c.get() != null ? exception2c.get().getMessage() : null);
+
+        context.assertIsSatisfied();
+    }
+
+    @Test
     public void testLockTheSameDataSetInDifferentThreads() throws Exception
     {
         // exclusive lock
