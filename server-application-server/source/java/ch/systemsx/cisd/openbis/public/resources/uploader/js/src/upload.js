@@ -410,18 +410,15 @@ var Uploader = new function () {
             }
             if (settings.smart_mode) {
                 $("#filedrop-hint").html("Drag and drop the " + fileOrFilesText + " to upload here or click '"
-                        + buttonLabel + "' to upload' button.");
-                var uploadFormId = "upload-div-" + viewId;
-                $("#upload-div").attr("id", uploadFormId);
+                                        + buttonLabel + "' to upload' button.");
 
-                $(settings.file_input)
-                    .bind("change", function(event) {
+                $("body").off("change", settings.file_input)
+                $("body").on("change", settings.file_input, function(event) {
                     uploadFiles(event.target.files);
                 });
-                var fileInputButtonId = settings.file_input_button.substring(1) + "-" + viewId;
-                $(settings.file_input_button).attr("id", fileInputButtonId);
-                settings.file_input_button = "#" + fileInputButtonId;
-                $("body").on("click", "#"+fileInputButtonId ,function() {
+
+                $("body").off("click", settings.file_input_button)
+                $("body").on("click", settings.file_input_button, function() {
                     $(settings.file_input)[0].click();
                 });
                 $(settings.drop_area).bind(
