@@ -47,7 +47,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 public class PathInfoProviderBasedHierarchicalContentTest extends AbstractFileSystemTestCase
 {
     private static final File TEST_HDF5_EXAMPLE = new File(
-            "../lib-hierarchical-content/resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
+            "./resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
 
     private File rootDir;
 

@@ -136,36 +136,40 @@ public class ShareIdManager implements IShareIdManager
             throw new UnknownDataSetException(dataSetCode);
         }
 
-        long startMillis = System.currentTimeMillis();
+        ThreadLocks threadLocks = getThreadLocks();
         String dataSetResource = getResource(dataSet);
+        long startMillis = System.currentTimeMillis();
 
         while (System.currentTimeMillis() < startMillis + lockingTimeoutInSeconds * 1000L)
         {
-            boolean dataSetLocked = false;
+            boolean lockedByOthers = false;
 
             for (Lock<UUID, String> lock : transactionManager.getLocks())
             {
-                if (Objects.equals(dataSetResource, lock.getResource()))
+                if (Objects.equals(dataSetResource, lock.getResource()) && !Objects.equals(threadLocks.getOwnerId(), lock.getOwner()))
                 {
-                    dataSetLocked = true;
+                    lockedByOthers = true;
                     break;
                 }
             }
 
-            if (dataSetLocked)
+            if (lockedByOthers)
             {
                 try
                 {
-                    // Unfortunately, we don't have a mechanism in AFS that would notify
-                    // us when all the locks are released, therefore, we need to do the waiting here.
                     Thread.sleep(lockingWaitingIntervalInMillis);
                 } catch (InterruptedException e)
                 {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException(e);
                 }
+            } else
+            {
+                return;
             }
         }
+
+        throw new LockingFailedException(List.of(dataSetCode));
     }
 
     @Override public void releaseLock(final String dataSetCode)
