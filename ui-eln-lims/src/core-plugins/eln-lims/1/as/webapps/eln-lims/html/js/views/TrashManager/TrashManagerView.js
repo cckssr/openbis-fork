@@ -37,7 +37,7 @@ function TrashManagerView(trashManagerController, trashManagerModel) {
 			}, true);
 		});
 		
-		$header.append($("<h1>").append("Trashcan"));
+		$header.append($("<h2>").append("Trashcan"));
 		$header.append(deleteAllBtn);
 		
 		//

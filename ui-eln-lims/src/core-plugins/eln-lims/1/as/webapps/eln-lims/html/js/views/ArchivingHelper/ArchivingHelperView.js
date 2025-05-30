@@ -16,7 +16,7 @@ function ArchivingHelperView(archivingHelperController, archivingHelperModel) {
     this.repaint = function(views) {
         var _this = this;
         var $header = views.header;
-        $header.append($("<h1>").append("Archiving Helper"));
+        $header.append($("<h2>").append("Archiving Helper"));
         var $archiveButton = $("<a>", { "class" : "btn btn-primary", "style" : "margin-top: 10px;"}).append("Request archiving");
         $header.append($archiveButton);
 
