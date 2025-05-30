@@ -35,13 +35,31 @@ function TabContentController(controller) {
     this.openTab = function(tabInfo, callBack) {
         this._tabController.openTab(tabInfo, (currentTab) => {
             _this._model.currentTab = currentTab
-            callBack();
+            if(callBack) {
+                callBack();
+            }
+        });
+    }
+
+    this.replaceTabs = function(oldTabId, newTabId, callBack) {
+        this._tabController.replaceTabs(oldTabId, newTabId, (currentTab) => {
+            _this._model.currentTab = currentTab
+            if(callBack) {
+                callBack();
+            }
         });
     }
 
     this.closeCurrentTab = function() {
         var tab = this._model.currentTab;
         this._tabController.component.handleTabClose(tab);
+    }
+
+    this.refreshCurrentPage = function() {
+        var tab = _this._model.currentTab;
+        if(mainController.currentView && mainController.currentView.refresh) {
+            mainController.currentView.refresh(mainController.views)
+        }
     }
 
     this.updateCurrentTabInfo = function(tabInfo) {
