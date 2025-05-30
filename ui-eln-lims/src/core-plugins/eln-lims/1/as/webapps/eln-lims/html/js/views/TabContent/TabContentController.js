@@ -119,6 +119,7 @@ function TabContentController(controller) {
 
     this.handleTabClose = function(tab, newSelectedTab) {
         if(newSelectedTab) {
+            _this._updateView(newSelectedTab)
             if(mainController.sideMenu.getCurrentTree() !== newSelectedTab.tree) {
                 mainController.mainHeader.navigateToTab(newSelectedTab.tree.toUpperCase());
                 mainController.sideMenu.changeCurrentTree(newSelectedTab.tree, JSON.parse(newSelectedTab.node));

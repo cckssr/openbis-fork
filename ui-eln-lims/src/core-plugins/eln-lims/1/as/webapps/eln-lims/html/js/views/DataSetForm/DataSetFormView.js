@@ -26,14 +26,20 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
     this.refresh = function() {
         if(this._dataSetFormModel.mode === FormMode.CREATE) {
             var $datasetDropdown = $("#DATASET_TYPE");
-            Select2Manager.add($datasetDropdown);
+            if($datasetDropdown.length > 0) {
+                Select2Manager.add($datasetDropdown);
+            }
         }
 
         if(this._dataSetFormModel.datasetParentsComponent) {
             this._dataSetFormModel.datasetParentsComponent.initSelect2()
         }
 
-        Select2Manager.add($("#metadataContainer-"+this._viewId+" select:not([id^=sample-field-id])"));
+        var $metadataContainer = $("#metadataContainer-"+this._viewId+" select:not([id^=sample-field-id])");
+        if($metadataContainer.length > 0) {
+            Select2Manager.add($metadataContainer);
+        }
+
 
         for(var field of _refreshableFields) {
             field.refresh();
@@ -598,8 +604,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		if (this._dataSetFormModel.mode === FormMode.CREATE) {
             var dataSetTypes = profile.filterDataSetTypesForDropdowns(_this._dataSetFormModel.dataSetTypes);
             $dataSetTypeSelector = FormUtil.getDataSetsDropDown('DATASET_TYPE', dataSetTypes);
+            $dataSetTypeSelector.refresh = function() {
+                Select2Manager.add(this);
+            }
+            _refreshableFields.push($dataSetTypeSelector)
 			$("body").on("change", "#DATASET_TYPE", function() {
-//			$dataSetTypeSelector.change(function() {
 				if (!_this._dataSetFormModel.isMini) {
 					_this._repaintMetadata(
 							_this._dataSetFormController._getDataSetType($('#DATASET_TYPE').val())
