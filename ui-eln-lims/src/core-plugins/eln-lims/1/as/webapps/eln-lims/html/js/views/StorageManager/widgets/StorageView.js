@@ -34,11 +34,21 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
 	}
 
 	this.refresh = function() {
-        this._defaultStoragesDropDown.refresh();
-        this._userIdDropdown.refresh();
-        this._boxSizeDropDown.refresh()
-        this._gridViewRack.refresh();
-        this._gridViewPosition.refresh();
+	    if(this._defaultStoragesDropDown && this._defaultStoragesDropDown.refresh) {
+	        this._defaultStoragesDropDown.refresh();
+	    }
+        if(this._userIdDropdown && this._userIdDropdown.refresh) {
+	        this._userIdDropdown.refresh();
+	    }
+        if(this._boxSizeDropDown && this._boxSizeDropDown.refresh) {
+	        this._boxSizeDropDown.refresh();
+	    }
+        if(this._gridViewRack && this._gridViewRack.refresh) {
+	        this._gridViewRack.refresh();
+	    }
+        if(this._gridViewPosition && this._gridViewPosition.refresh) {
+	        this._gridViewPosition.refresh();
+	    }
 	}
 
 	this.repaint = function($container, callbackFunction) {

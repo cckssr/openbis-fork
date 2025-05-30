@@ -85,7 +85,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			if (_this._allowedToCreateExperiments()) {
 			    //Create Experiment
 			    var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
-                    FormUtil.createNewCollection(IdentifierUtil.getProjectIdentifier(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code));
+                    FormUtil.createNewCollectionOrObject(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code, null, null);
                 }, "Other", "Create different object", "create-collection-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createOther});
 			}

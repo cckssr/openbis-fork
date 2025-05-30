@@ -338,22 +338,22 @@
 
 
 					    // Entity data freezing
-//                        if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
-//                            dropdownOptionsModel.push({
-//                                label : "Freeze Entity data (Disable further data upload)",
-//                                action : function () {
-//                                    FormUtil.showFreezeAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
-//                                }
-//                            });
-//                        }
+                        if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
+                            dropdownOptionsModel.push({
+                                label : "Freeze Entity data (Disable further data upload)",
+                                action : function () {
+                                    FormUtil.showFreezeAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
+                                }
+                            });
+                        }
 
 					}
-//					if(isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) {
+//					if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
 //					    //todo archive?
 //					    dropdownOptionsModel.push({
-//                            label : "Archive attached data",
+//                            label : "Data archiving",
 //                            action : function () {
-//
+//                                FormUtil.showArchiveAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
 //                            }
 //                        });
 //					}
@@ -694,6 +694,9 @@
             //
             if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
             var moveToIndex = function(index) {
+                if(index < 0 || _this._sampleFormModel.paginationInfo.totalCount == index) {
+                    return;
+                }
                 var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
                 pagOptionsToSend.pageIndex = index;
                 pagOptionsToSend.pageSize = 1;
@@ -708,6 +711,11 @@
                                 paginationInfo : paginationInfo,								
                         }
                         mainController.changeView('showViewSamplePageFromPermId', arg, true);
+                        mainController.tabContent.replaceTabs(_this._sampleFormModel.sample.permId, result.objects[0].permId)
+                        var objectId = { type: "SAMPLE", id: result.objects[0].permId };
+                        if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
+                            mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
+                        }
                     } else {
                         window.alert("The item to go to is no longer available.");
                     }

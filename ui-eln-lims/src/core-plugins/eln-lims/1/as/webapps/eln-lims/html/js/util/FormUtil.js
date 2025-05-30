@@ -366,6 +366,72 @@ var FormUtil = new function() {
         return visibleObjectTypesForSpace;
     }
 
+    this.getSampleOrCollectionTypesDropdown = function(id, isRequired, showEvenIfHidden, showOnly, spaceCode, defaultValue) {
+        var visibleObjectTypeCodesForSpace = null;
+        if (spaceCode) {
+            visibleObjectTypeCodesForSpace = SettingsManagerUtils.getVisibleObjectTypesForSpace(spaceCode, SettingsManagerUtils.ShowInSpaceSetting.showOnDropdowns);
+        }
+        var sampleTypes = this.profile.getAllSampleTypes();
+
+        var $component = $("<select>", {"id" : id, class : 'form-control'});
+        if (isRequired) {
+            $component.attr('required', '');
+        }
+
+        $component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text("Select an " + ELNDictionary.Sample + " or " + ELNDictionary.getExperimentDualName() + " type"));
+
+        var $optGroup = $("<optgroup>").attr('label', ELNDictionary.Sample+' Types');
+        for(var i = 0; i < sampleTypes.length; i++) {
+            var sampleType = sampleTypes[i];
+
+            if(showOnly && ($.inArray(sampleType.code, showOnly) !== -1)) {
+                //Show
+            } else if(showOnly) {
+                continue;
+            }
+
+            if(showEvenIfHidden && ($.inArray(sampleType.code, showEvenIfHidden) !== -1)) {
+                // Show even if hidden
+            } else if (visibleObjectTypeCodesForSpace && !($.inArray(sampleType.code, visibleObjectTypeCodesForSpace) !== -1)) {
+                continue;
+            }
+
+            var label = Util.getDisplayLabelFromCodeAndDescription(sampleType);
+
+            var $option = $("<option>").attr('value', ['OBJECT',sampleType.code]).text(label);
+            $optGroup.append($option);
+        }
+        $component.append($optGroup);
+
+        var experimentTypes = this.profile.allExperimentTypes;
+
+        var $optGroup = $("<optgroup>").attr('label', ELNDictionary.getExperimentDualName() +' Types');
+        for(var i = 0; i < experimentTypes.length; i++) {
+            var experimentType = experimentTypes[i];
+            if(profile.isExperimentTypeHidden(experimentType.code)) {
+                continue;
+            }
+
+            var label = Util.getDisplayNameFromCode(experimentType.code);
+            var description = Util.getEmptyIfNull(experimentType.description);
+            if(description !== "") {
+                label += " (" + description + ")";
+            }
+
+            var $option = $("<option>").attr("value", ['COLLECTION',experimentType.code]).text(label);
+            if (experimentType.code === defaultValue) {
+                $option.attr("selected", "");
+            }
+
+
+            $optGroup.append($option);
+        }
+        $component.append($optGroup);
+
+        Select2Manager.add($component);
+        return $component;
+    }
+
 	this.getSampleTypeDropdown = function(id, isRequired, showEvenIfHidden, showOnly, spaceCode, withEmptyOption) {
 	    var visibleObjectTypeCodesForSpace = null;
 	    if (spaceCode) {
@@ -1845,7 +1911,7 @@ var FormUtil = new function() {
 				view = "showViewDataSetPageFromPermId";
 				break;
 		}
-		
+
 		var href = Util.getURLFor(mainController.sideMenu.getCurrentNodeId(), view, permIdOrIdentifier);
 		var clickFunction = function(event) {
 		    event.preventDefault(); // Prevent default link behavior
@@ -1861,6 +1927,10 @@ var FormUtil = new function() {
 				arg = permIdOrIdentifier;
 			}
 			mainController.changeView(view, arg, true);
+			var objectId = {type: entityKind.toUpperCase(), id: permIdOrIdentifier};
+			if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
+                mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
+			}
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
 		if(!id) {
@@ -2512,6 +2582,70 @@ var FormUtil = new function() {
 	    repeatUntilSet();
     }
 
+    /**
+        Creates modal window with Object type / Collection type selection
+        spaceCode - code of space where to create new entity
+        projectCode - code of project where to create new entity (optional for collection type selection flow)
+        experimentIdentifier - identifier of collection where to create entity (optional for collection type selection flow)
+        optionalParentSample - sample to set as a parent (optional)
+    */
+    this.createNewCollectionOrObject = function(spaceCode, projectCode, experimentIdentifier, optionalParentSample) {
+        var _this = this;
+        var $dropdown = FormUtil.getSampleOrCollectionTypesDropdown("sampleCollectionTypeDropdown", true, null, null, spaceCode);
+        Util.showDropdownAndBlockUI("sampleCollectionTypeDropdown", $dropdown, null);
+
+        $("#sampleCollectionTypeDropdown").on("change", function(event) {
+            var value = $("#sampleCollectionTypeDropdown")[0].value.split(',');
+            var typeValue = value[0];
+            var typeCode = value[1];
+            Util.blockUI();
+            setTimeout(function() {
+                switch(typeValue) {
+                    case "OBJECT":
+                        var argsMap = {
+                            "sampleTypeCode" : typeCode,
+                            "spaceCode" : spaceCode,
+                            "projectCode": projectCode,
+                            "experimentIdentifier": experimentIdentifier
+                        };
+                        mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+                        if(optionalParentSample) {
+                            var setParent = function() {
+                                mainController.currentView._sampleFormModel.sampleLinksParents.addSample(optionalParentSample);
+                                Util.unblockUI();
+                            }
+
+                            var repeatUntilSet = function() {
+                               if(mainController.currentView.isLoaded()) {
+                                   setParent();
+                               } else {
+                                   setTimeout(repeatUntilSet, 100);
+                               }
+                            }
+                           repeatUntilSet();
+                        }
+                        break;
+                    case "COLLECTION":
+                         var projectIdentifier = IdentifierUtil.getProjectIdentifier(spaceCode, projectCode)
+                         var argsMap = {
+                            "experimentTypeCode" : typeCode,
+                            "projectIdentifier" : projectIdentifier
+                         };
+                         mainController.changeView("showCreateExperimentPage", JSON.stringify(argsMap));
+                        break;
+
+                }
+
+
+                Util.unblockUI();
+            }, 100);
+        });
+
+        $("#sampleCollectionTypeDropdownCancel").on("click", function(event) {
+            Util.unblockUI();
+        });
+    }
+
     this.createNewCollection = function(projectIdentifier) {
         var _this = this;
         var $dropdown = FormUtil.getInlineExperimentTypeDropdown("collectionTypeDropdown", true, null);
@@ -2616,6 +2750,151 @@ var FormUtil = new function() {
     		$("#sampleTypeDropdownCancel").on("click", function(event) {
     			Util.unblockUI();
     		});
+    }
+
+    this.showArchiveAfsDataForm = function(entityType, permId, code) {
+        var _this = this;
+
+        var fileList = mainController.openbisV3.getAfsServerFacade().list(permId, "", false).then(x => console.log(x))
+
+        var _this = this;
+
+        //TODO get this data
+        var physicalData = {
+            presentInArchive: false,
+            archivingRequested: false,
+            status: "AVAILABLE",
+        };
+//        var physicalData = null;
+
+        var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+        $window.append($('<legend>').append("Data archiving of")
+                                    .append("&nbsp;")
+                				    .append(code));
+        var css = {
+            'top' : '35%',
+            'width' : '50%',
+            'left' : '30%',
+            'right' : '20%',
+            'text-align' : 'left',
+            'overflow' : 'hidden',
+        };
+
+        if(physicalData) {
+            var archiveIcon = "ARCHIVE_NOT_REQUESTED";
+            var archiveImage = "./img/archive-not-requested-icon.png";
+            var archiveStatus = physicalData.status;
+            if (physicalData.presentInArchive) {
+                archiveIcon = "ARCHIVED";
+                archiveImage = "./img/archive-archived-icon.png";
+                archiveStatus = "ARCHIVED";
+            } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+                archiveImage = "./img/archive-requested-icon.png";
+                archiveIcon = "ARCHIVE_REQUESTED";
+                if(physicalData.archivingRequested) {
+                    archiveStatus = "ARCHIVE REQUESTED";
+                } else {
+                    archiveStatus = "ARCHIVE PENDING";
+                }
+            }
+
+            var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+
+            //todo implement archiving calls
+            var archiveTooltip = null;
+            if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+                if (physicalData.archivingRequested) {
+                    var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Revoke archiving request', 'id' : 'revoke-archiving-btn'});
+                    $revokeButton.click(function() {
+//                        _this._dataSetFormController.setArchivingRequested(false);
+                    });
+                    $buttons.append($revokeButton).append('&nbsp;')
+                    archiveTooltip = "Revoke archiving request";
+                } else {
+                    var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Request archiving', 'id' : 'request-archiving-btn'});
+//                    var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'request-archiving-btn'});
+//                    $requestButton.append(IconUtil.getIcon(IconUtil.getToolbarIconType(archiveIcon)))
+//                            .append("&nbsp;")
+//                            .append("Request archiving");
+                    $requestButton.click(function() {
+//                        Util.requestArchiving([_this._dataSetFormModel.dataSetV3], Util.unblockUI);
+                    });
+                    var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Disallow archiving', 'id' : 'lock-archiving-btn'});
+                    $lockButton.click(function() {
+//                        _this.lockArchiving();
+                    });
+                    $buttons.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;')
+                    archiveTooltip = "Request or disallow archiving";
+                }
+            } else if (physicalData.status == "LOCKED") {
+                var $allowArchivingButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Allow archiving', 'id' : 'unlock-archiving-btn'});
+                $allowArchivingButton.click(function() {
+//                        _this._dataSetFormController.setArchivingLock(false);
+                });
+                $buttons.append($allowArchivingButton).append('&nbsp;')
+                archiveTooltip = "Allow archiving";
+            } else if (physicalData.status == "ARCHIVED") {
+                 var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Unarchive', 'id' : 'unarchive-btn'});
+                $unarchiveButton.click(function() {
+//                       _this._dataSetFormController.unarchive();
+                });
+                $buttons.append($unarchiveButton).append('&nbsp;')
+                archiveTooltip = "Unarchive";
+            }
+
+
+             $window.append($("<p>")
+                        .append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+                        .append(archiveTooltip) );
+
+                var $table = $("<table>", { class : "popup-table" } )
+                var $tableBody = $("<tbody>" );
+                $tableBody.append($("<tr>")
+                        .append($("<td>", {style : "width:20%"}).append('Status'))
+                        .append($("<td>").append($("<b>", { text: archiveStatus}))));
+
+                $tableBody.append($("<tr>")
+                        .append($("<td>").append('Present in archive'))
+                        .append($("<td>").append($("<b>", { text: physicalData.presentInArchive}))));
+
+                $tableBody.append($("<tr>")
+                        .append($("<td>").append('Archiving requested'))
+                        .append($("<td>").append($("<b>", { text: physicalData.archivingRequested}))));
+                $table.append($tableBody)
+                $window.append($table);
+
+
+
+            $window.append("<br>");
+            $window.append($buttons);
+
+
+            var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel'});
+            $cancelButton.click(function() {
+                Util.unblockUI();
+            });
+            $buttons.append($cancelButton);
+
+//            css['text-align'] = 'left';
+//            css['overflow'] = 'hidden';
+
+        } else {
+            $window.append($("<p>")
+                            .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 20px; vertical-align: text-bottom;" }))
+                            .append($("<span>", { style : "color:red; font-size: large;" })
+                            .append(" No data to archive has been detected!")) );
+
+            var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+            $window.append($buttons);
+
+            var $acceptButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Accept', 'id' : 'cancel'});
+            $acceptButton.click(function() {
+                Util.unblockUI();
+            });
+            $buttons.append($acceptButton);
+        }
+
+        Util.blockUI($window, css);
     }
 
     this.showFreezeAfsDataForm = function(entityType, permId, code) {

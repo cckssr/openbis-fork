@@ -491,6 +491,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 
 		if(this._dataSetFormModel.mode !== FormMode.CREATE && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
             var moveToIndex = function(index) {
+                if(index < 0 || _this._dataSetFormModel.paginationInfo.totalCount == index) {
+                    return;
+                }
                 var pagOptionsToSend = $.extend(true, {}, _this._dataSetFormModel.paginationInfo.pagOptions);
                 pagOptionsToSend.pageIndex = index;
                 pagOptionsToSend.pageSize = 1;
@@ -504,6 +507,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                 paginationInfo : paginationInfo
                         }
                         mainController.changeView('showViewDataSetPageFromPermId', arg, true);
+                        mainController.tabContent.replaceTabs(_this._dataSetFormModel.dataSetV3.code, result[0].permId.permId)
+                        var objectId = { type: "DATASET", id: result[0].permId.permId };
+                        if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
+                            mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
+                        }
                     } else {
                         window.alert("The item to go to is no longer available.");
                     }
@@ -1115,11 +1123,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		var $buttons = $('<div>', {'id' : 'rol_archving_buttons'});
 		$window.append($buttons);
 		
-		var $requestButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Request archiving', 'id' : 'request_archiving'});
+		var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Request archiving', 'id' : 'request_archiving'});
 		$requestButton.click(function() {
 			Util.requestArchiving([_this._dataSetFormModel.dataSetV3], Util.unblockUI);
 		});
-		var $lockButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Disallow archiving', 'id' : 'lock_archiving'});
+		var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Disallow archiving', 'id' : 'lock_archiving'});
 		$lockButton.click(function() {
 			_this.lockArchiving();
 		});
