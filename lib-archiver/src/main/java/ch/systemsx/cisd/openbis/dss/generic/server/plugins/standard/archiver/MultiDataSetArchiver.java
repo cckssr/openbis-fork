@@ -781,8 +781,15 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
             }
             // Get the size from pathinfo database
             IHierarchicalContentProvider contentProvider = ArchiverServiceProviderFactory.getInstance().getHierarchicalContentProvider();
-            IHierarchicalContentNode rootNode = contentProvider.asContent(dataSet.getDataSetCode()).getRootNode();
-            return rootNode.getFileLength();
+            IHierarchicalContent content = contentProvider.asContent(dataSet.getDataSetCode());
+            try
+            {
+                IHierarchicalContentNode rootNode = content.getRootNode();
+                return rootNode.getFileLength();
+            } finally
+            {
+                content.close();
+            }
         }
     }
 
@@ -850,8 +857,14 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
         for (String dataSetCode : dataSetCodes)
         {
             IHierarchicalContent content = contentProvider.asContentWithoutModifyingAccessTimestamp(dataSetCode);
-            IHierarchicalContentNode rootNode = content.getRootNode();
-            assertFilesExists(dataSetCode, rootNode);
+            try
+            {
+                IHierarchicalContentNode rootNode = content.getRootNode();
+                assertFilesExists(dataSetCode, rootNode);
+            } finally
+            {
+                content.close();
+            }
         }
 
         for (String dataSetCode : dataSetCodes)
