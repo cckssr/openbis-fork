@@ -1174,6 +1174,8 @@ function MainController(profile) {
 
 		if(navigationTab) {
 		    let tabContentHeader = $("<div>", { id: "tab-content-header" });
+		    tabContentHeader.css("position", "sticky");
+		    tabContentHeader.css("top", "0");
 		    let tabContentBody = $("<div>", { id: "tab-content-body" });
 
             mainController.tabContent.openTab(navigationTab, function() {
@@ -1197,7 +1199,6 @@ function MainController(profile) {
 				"padding" : "10px",
 				"height" : "100%",
 				"background-color" : "rgb(248, 248, 248)",
-				"position" : "relative",
                 "z-index" : 500
 			});
 			
