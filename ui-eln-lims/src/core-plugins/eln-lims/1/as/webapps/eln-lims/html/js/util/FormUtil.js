@@ -1680,7 +1680,6 @@ var FormUtil = new function() {
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
 				$("body").off("click", "#"+id)
 				$("body").on("click", "#"+id, option.action)
-				$dropdownElement.click(option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
@@ -2754,147 +2753,161 @@ var FormUtil = new function() {
 
     this.showArchiveAfsDataForm = function(entityType, permId, code) {
         var _this = this;
+        var archiveForm = function(dataset) {
 
-        var fileList = mainController.openbisV3.getAfsServerFacade().list(permId, "", false).then(x => console.log(x))
-
-        var _this = this;
-
-        //TODO get this data
-        var physicalData = {
-            presentInArchive: false,
-            archivingRequested: false,
-            status: "AVAILABLE",
-        };
-//        var physicalData = null;
-
-        var $window = $('<form>', { 'action' : 'javascript:void(0);' });
-        $window.append($('<legend>').append("Data archiving of")
-                                    .append("&nbsp;")
-                				    .append(code));
-        var css = {
-            'top' : '35%',
-            'width' : '50%',
-            'left' : '30%',
-            'right' : '20%',
-            'text-align' : 'left',
-            'overflow' : 'hidden',
-        };
-
-        if(physicalData) {
-            var archiveIcon = "ARCHIVE_NOT_REQUESTED";
-            var archiveImage = "./img/archive-not-requested-icon.png";
-            var archiveStatus = physicalData.status;
-            if (physicalData.presentInArchive) {
-                archiveIcon = "ARCHIVED";
-                archiveImage = "./img/archive-archived-icon.png";
-                archiveStatus = "ARCHIVED";
-            } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
-                archiveImage = "./img/archive-requested-icon.png";
-                archiveIcon = "ARCHIVE_REQUESTED";
-                if(physicalData.archivingRequested) {
-                    archiveStatus = "ARCHIVE REQUESTED";
-                } else {
-                    archiveStatus = "ARCHIVE PENDING";
-                }
+            var physicalData = null;
+            if(dataset) {
+                physicalData = dataset.physicalData;
             }
 
-            var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+            var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+            $window.append($('<legend>').append("Data archiving of")
+                                        .append("&nbsp;")
+                                        .append(code));
+            var css = {
+                'top' : '35%',
+                'width' : '50%',
+                'left' : '30%',
+                'right' : '20%',
+                'text-align' : 'left',
+                'overflow' : 'hidden',
+            };
 
-            //todo implement archiving calls
-            var archiveTooltip = null;
-            if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
-                if (physicalData.archivingRequested) {
-                    var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Revoke archiving request', 'id' : 'revoke-archiving-btn'});
-                    $revokeButton.click(function() {
-//                        _this._dataSetFormController.setArchivingRequested(false);
-                    });
-                    $buttons.append($revokeButton).append('&nbsp;')
-                    archiveTooltip = "Revoke archiving request";
-                } else {
-                    var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Request archiving', 'id' : 'request-archiving-btn'});
-//                    var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'request-archiving-btn'});
-//                    $requestButton.append(IconUtil.getIcon(IconUtil.getToolbarIconType(archiveIcon)))
-//                            .append("&nbsp;")
-//                            .append("Request archiving");
-                    $requestButton.click(function() {
-//                        Util.requestArchiving([_this._dataSetFormModel.dataSetV3], Util.unblockUI);
-                    });
-                    var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Disallow archiving', 'id' : 'lock-archiving-btn'});
-                    $lockButton.click(function() {
-//                        _this.lockArchiving();
-                    });
-                    $buttons.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;')
-                    archiveTooltip = "Request or disallow archiving";
-                }
-            } else if (physicalData.status == "LOCKED") {
-                var $allowArchivingButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Allow archiving', 'id' : 'unlock-archiving-btn'});
-                $allowArchivingButton.click(function() {
-//                        _this._dataSetFormController.setArchivingLock(false);
-                });
-                $buttons.append($allowArchivingButton).append('&nbsp;')
-                archiveTooltip = "Allow archiving";
-            } else if (physicalData.status == "ARCHIVED") {
-                 var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Unarchive', 'id' : 'unarchive-btn'});
-                $unarchiveButton.click(function() {
-//                       _this._dataSetFormController.unarchive();
-                });
-                $buttons.append($unarchiveButton).append('&nbsp;')
-                archiveTooltip = "Unarchive";
-            }
+            if(physicalData) {
+
+                    var archiveIcon = "ARCHIVE_NOT_REQUESTED";
+                    var archiveImage = "./img/archive-not-requested-icon.png";
+                    var archiveStatus = physicalData.status;
+                    if (physicalData.presentInArchive) {
+                        archiveIcon = "ARCHIVED";
+                        archiveImage = "./img/archive-archived-icon.png";
+                        archiveStatus = "ARCHIVED";
+                    } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+                        archiveImage = "./img/archive-requested-icon.png";
+                        archiveIcon = "ARCHIVE_REQUESTED";
+                        if(physicalData.archivingRequested) {
+                            archiveStatus = "ARCHIVE REQUESTED";
+                        } else {
+                            archiveStatus = "ARCHIVE PENDING";
+                        }
+                    }
+
+                    var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+
+                    var archiveTooltip = null;
+                    if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+                        if (physicalData.archivingRequested) {
+                            var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Revoke archiving request', 'id' : 'revoke-archiving-btn'});
+                            $revokeButton.click(function() {
+                                var physicalDataUpdate = { archivingRequested : false }
+                                mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                    Util.unblockUI();
+                                    Util.showSuccess("Archive request revoked");
+                                });
+                            });
+                            $buttons.append($revokeButton).append('&nbsp;')
+                            archiveTooltip = "Revoke archiving request";
+                        } else {
+                            var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Request archiving', 'id' : 'request-archiving-btn'});
+                            $requestButton.click(function() {
+                                Util.requestArchiving([dataset], Util.unblockUI);
+                            });
+                            var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Disallow archiving', 'id' : 'lock-archiving-btn'});
+                            $lockButton.click(function() {
+                                  var physicalDataUpdate = { status : "LOCKED" }
+                                  mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                      Util.unblockUI();
+                                      Util.showSuccess("Archiving Locked");
+                                  });
+                            });
+                            $buttons.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;')
+                            archiveTooltip = "Request or disallow archiving";
+                        }
+                    } else if (physicalData.status == "LOCKED") {
+                        var $allowArchivingButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Allow archiving', 'id' : 'unlock-archiving-btn'});
+                        $allowArchivingButton.click(function() {
+                          var physicalDataUpdate = { status : "AVAILABLE" }
+                          mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                              Util.unblockUI();
+                              Util.showSuccess("Archiving Unlocked");
+                          });
+                        });
+                        $buttons.append($allowArchivingButton).append('&nbsp;')
+                        archiveTooltip = "Allow archiving";
+                    } else if (physicalData.status == "ARCHIVED") {
+                         var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Unarchive', 'id' : 'unarchive-btn'});
+                        $unarchiveButton.click(function() {
+                            //todo wait until unarchive flow will work for AFS datasets
+                            Util.showSuccess("Work in progress");
+//                            mainController.serverFacade.unarchiveDataSets([permId], function() {
+//                                Util.unblockUI();
+//                            });
+                        });
+                        $buttons.append($unarchiveButton).append('&nbsp;')
+                        archiveTooltip = "Unarchive";
+                    }
 
 
-             $window.append($("<p>")
+                    $window.append($("<p>")
                         .append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
                         .append(archiveTooltip) );
 
-                var $table = $("<table>", { class : "popup-table" } )
-                var $tableBody = $("<tbody>" );
-                $tableBody.append($("<tr>")
-                        .append($("<td>", {style : "width:20%"}).append('Status'))
-                        .append($("<td>").append($("<b>", { text: archiveStatus}))));
+                    var $table = $("<table>", { class : "popup-table" } )
+                    var $tableBody = $("<tbody>" );
+                    $tableBody.append($("<tr>")
+                            .append($("<td>", {style : "width:20%"}).append('Status'))
+                            .append($("<td>").append($("<b>", { text: archiveStatus}))));
 
-                $tableBody.append($("<tr>")
-                        .append($("<td>").append('Present in archive'))
-                        .append($("<td>").append($("<b>", { text: physicalData.presentInArchive}))));
+                    $tableBody.append($("<tr>")
+                            .append($("<td>").append('Present in archive'))
+                            .append($("<td>").append($("<b>", { text: physicalData.presentInArchive}))));
 
-                $tableBody.append($("<tr>")
-                        .append($("<td>").append('Archiving requested'))
-                        .append($("<td>").append($("<b>", { text: physicalData.archivingRequested}))));
-                $table.append($tableBody)
-                $window.append($table);
-
-
-
-            $window.append("<br>");
-            $window.append($buttons);
+                    $tableBody.append($("<tr>")
+                            .append($("<td>").append('Archiving requested'))
+                            .append($("<td>").append($("<b>", { text: physicalData.archivingRequested}))));
+                    $table.append($tableBody)
+                    $window.append($table);
 
 
-            var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel'});
-            $cancelButton.click(function() {
-                Util.unblockUI();
-            });
-            $buttons.append($cancelButton);
 
-//            css['text-align'] = 'left';
-//            css['overflow'] = 'hidden';
+                    $window.append("<br>");
+                    $window.append($buttons);
 
-        } else {
-            $window.append($("<p>")
-                            .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 20px; vertical-align: text-bottom;" }))
-                            .append($("<span>", { style : "color:red; font-size: large;" })
-                            .append(" No data to archive has been detected!")) );
 
-            var $buttons = $('<div>', {'id' : 'archiving_buttons'});
-            $window.append($buttons);
+                    var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel'});
+                    $cancelButton.click(function() {
+                        Util.unblockUI();
+                    });
+                    $buttons.append($cancelButton);
+            } else {
+                $window.append($("<p>")
+                                .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 20px; vertical-align: text-bottom;" }))
+                                .append($("<span>", { style : "color:red; font-size: large;" })
+                                .append(" No data to archive has been detected!")) );
 
-            var $acceptButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Accept', 'id' : 'cancel'});
-            $acceptButton.click(function() {
-                Util.unblockUI();
-            });
-            $buttons.append($acceptButton);
+                var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+                $window.append($buttons);
+
+                var $acceptButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Accept', 'id' : 'cancel'});
+                $acceptButton.click(function() {
+                    Util.unblockUI();
+                });
+                $buttons.append($acceptButton);
+            }
+            Util.blockUI($window, css);
         }
 
-        Util.blockUI($window, css);
+
+        require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+            function(DataSetPermId, DataSetFetchOptions) {
+                var ids = [new DataSetPermId(permId)];
+                var fetchOptions = new DataSetFetchOptions();
+                fetchOptions.withPhysicalData();
+                mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                    var datasets = Util.mapValuesToList(map);
+                    archiveForm(datasets.length > 0 ? datasets[0] : null)
+                });
+        });
     }
 
     this.showFreezeAfsDataForm = function(entityType, permId, code) {

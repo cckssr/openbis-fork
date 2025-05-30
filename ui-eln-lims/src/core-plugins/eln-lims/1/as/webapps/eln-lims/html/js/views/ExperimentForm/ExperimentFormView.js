@@ -303,14 +303,43 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             //Freeze
             if(_this._experimentFormModel.v3_experiment && _this._experimentFormModel.v3_experiment.frozen !== undefined && toolbarConfig.FREEZE) { //Freezing available on the API
                 var isEntityFrozen = _this._experimentFormModel.v3_experiment.frozen;
+                var isImmutableData = _this._experimentFormModel.v3_experiment.immutableDataDate
                 if(isEntityFrozen) {
-                    var $freezeButton = FormUtil.getFreezeButton("EXPERIMENT", this._experimentFormModel.v3_experiment.permId.permId, isEntityFrozen);
-                    toolbarModel.push({ component : $freezeButton, tooltip: "Entity Frozen" });
+                    var $freezeButton = FormUtil.getToolbarButton("LOCKED")
+                    $freezeButton.attr("disabled", "disabled");
+                    $freezeButton.append("Frozen");
+                    toolbarModel.push({ component : $freezeButton, tooltip: null });
                 } else {
+                    if(profile.isAFSAvailable() && isImmutableData) {
+                        var $freezeButton = FormUtil.getToolbarButton("LOCKED_DATA")
+                        $freezeButton.attr("disabled", "disabled");
+                        $freezeButton.append("Frozen Data");
+                        toolbarModel.push({ component : $freezeButton, tooltip: null });
+                    }
                     dropdownOptionsModel.push({
-                        label : "Freeze Entity (Disable further modifications)",
+                        label : "Freeze Entity metadata (Disable further modifications)",
                         action : function () {
                             FormUtil.showFreezeForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
+                        }
+                    });
+                }
+
+                // Entity data freezing
+                if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
+                    dropdownOptionsModel.push({
+                        label : "Freeze Entity data (Disable further data upload)",
+                        action : function () {
+                            FormUtil.showFreezeAfsDataForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
+                        }
+                    });
+                }
+
+
+                if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
+                    dropdownOptionsModel.push({
+                        label : "Data archiving",
+                        action : function () {
+                            FormUtil.showArchiveAfsDataForm("EXPERIMENT",  _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
                         }
                     });
                 }

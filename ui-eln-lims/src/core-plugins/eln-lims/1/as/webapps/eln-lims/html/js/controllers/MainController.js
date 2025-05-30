@@ -818,7 +818,8 @@ function MainController(profile) {
 					var experimentRules = { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : arg } };
 					var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
 					this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(data) {
-						_this.mainHeader.navigateToTabByEntity("COLLECTION", data);
+					    var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(data.objects[0].identifier.identifier)
+						_this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
 						mainController.changeView('showExperimentPageFromIdentifier', encodeURIComponent('["' +
 								data.objects[0].identifier.identifier + '",false]'));
 					});

@@ -348,15 +348,14 @@
                         }
 
 					}
-//					if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
-//					    //todo archive?
-//					    dropdownOptionsModel.push({
-//                            label : "Data archiving",
-//                            action : function () {
-//                                FormUtil.showArchiveAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
-//                            }
-//                        });
-//					}
+					if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
+					    dropdownOptionsModel.push({
+                            label : "Data archiving",
+                            action : function () {
+                                FormUtil.showArchiveAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
+                            }
+                        });
+					}
 				}
 	
 				//History
