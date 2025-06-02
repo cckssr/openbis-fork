@@ -27,6 +27,9 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.core.IsAnything;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -34,25 +37,35 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.PermIdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.PhysicalData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.logging.BufferedAppender;
 import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 import ch.systemsx.cisd.common.test.AssertionUtil;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PlaceholderDataSet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.DataSetBuilder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.builders.ExperimentBuilder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer
@@ -101,7 +114,11 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
 
     private Mockery context;
 
-    private IEncapsulatedOpenBISService service;
+    private IConfigProvider configProvider;
+
+    private IOpenBISService service;
+
+    private IApplicationServerApi applicationServerApi;
 
     private IFreeSpaceProvider freeSpaceProvider;
 
@@ -117,48 +134,62 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
 
     private Experiment e3;
 
-    private PhysicalDataSet lockedDataSet;
+    private DataSet lockedDataSet;
 
-    private AbstractExternalData notARealDataSet;
+    private DataSet dataSetOfIgnoredType;
 
-    private PhysicalDataSet dataSetOfIgnoredType;
+    private DataSet dataSetWithNoModificationDate;
 
-    private PhysicalDataSet dataSetWithNoModificationDate;
+    private DataSet oldDataSet;
 
-    private PhysicalDataSet oldDataSet;
+    private DataSet middleOldDataSet;
 
-    private PhysicalDataSet middleOldDataSet;
+    private DataSet youngDataSet;
 
-    private PhysicalDataSet youngDataSet;
-
-    private PhysicalDataSet veryYoungDataSet;
+    private DataSet veryYoungDataSet;
 
     @BeforeMethod
     public void before()
     {
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         context = new Mockery();
-        service = context.mock(IEncapsulatedOpenBISService.class);
+        configProvider = context.mock(IConfigProvider.class);
+        service = context.mock(IOpenBISService.class);
+        applicationServerApi = context.mock(IApplicationServerApi.class);
         freeSpaceProvider = context.mock(IFreeSpaceProvider.class);
         MockFreeSpaceProvider.mock = freeSpaceProvider;
 
-        task = new ExperimentBasedArchivingTask(service);
+        context.checking(new Expectations()
+        {
+            {
+                allowing(configProvider).getDataStoreKind();
+                will(returnValue(DataStoreKind.DSS));
+
+                allowing(service).getSessionToken();
+                will(returnValue("test-session-token"));
+            }
+        });
+
+        task = new ExperimentBasedArchivingTask(configProvider, service, applicationServerApi);
         assertEquals(true, task.requiresDataStoreLock());
 
-        e1 = new ExperimentBuilder().id(41).identifier("/S/P/E1").getExperiment();
-        e2 = new ExperimentBuilder().id(42).identifier("/S/P/E2").getExperiment();
-        e3 = new ExperimentBuilder().id(42).identifier("/S/P/E3").getExperiment();
-        notARealDataSet = new PlaceholderDataSet();
-        lockedDataSet =
-                dataSet("lockedDataSet").modificationDate(new Date(100))
-                        .status(DataSetArchivingStatus.LOCKED).getDataSet();
-        dataSetOfIgnoredType = dataSet("dataSetOfIgnoredType").type("ABC").getDataSet();
-        dataSetWithNoModificationDate = dataSet("dataSetWithNoModificationDate").getDataSet();
-        oldDataSet = dataSet("oldDataSet").modificationDate(new Date(300)).getDataSet();
-        middleOldDataSet = dataSet("middleOldDataSet").modificationDate(new Date(400)).getDataSet();
-        youngDataSet = dataSet("youngDataSet").modificationDate(new Date(1000)).getDataSet();
-        veryYoungDataSet =
-                dataSet("veryYoungDataSet").modificationDate(new Date(2000)).getDataSet();
+        e1 = new Experiment();
+        e1.setPermId(new ExperimentPermId("E1"));
+        e1.setIdentifier(new ExperimentIdentifier("/S/P/E1"));
+        e2 = new Experiment();
+        e2.setPermId(new ExperimentPermId("E2"));
+        e2.setIdentifier(new ExperimentIdentifier("/S/P/E2"));
+        e3 = new Experiment();
+        e3.setPermId(new ExperimentPermId("E3"));
+        e3.setIdentifier(new ExperimentIdentifier("/S/P/E3"));
+
+        lockedDataSet = dataSet("A", "lockedDataSet", new Date(100), ArchivingStatus.LOCKED);
+        dataSetOfIgnoredType = dataSet("ABC", "dataSetOfIgnoredType", new Date(100), ArchivingStatus.AVAILABLE);
+        dataSetWithNoModificationDate = dataSet("A", "dataSetWithNoModificationDate", null, ArchivingStatus.AVAILABLE);
+        oldDataSet = dataSet("A", "oldDataSet", new Date(300), ArchivingStatus.AVAILABLE);
+        middleOldDataSet = dataSet("A", "middleOldDataSet", new Date(400), ArchivingStatus.AVAILABLE);
+        youngDataSet = dataSet("A", "youngDataSet", new Date(1000), ArchivingStatus.AVAILABLE);
+        veryYoungDataSet = dataSet("A", "veryYoungDataSet", new Date(2000), ArchivingStatus.AVAILABLE);
 
         properties = new Properties();
         properties.setProperty(ExperimentBasedArchivingTask.MINIMUM_FREE_SPACE_KEY, "100");
@@ -171,10 +202,28 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
                 MockFreeSpaceProvider.class.getName());
     }
 
-    private DataSetBuilder dataSet(String code)
+    private DataSet dataSet(String typeCode, String code, Date modificationDate, ArchivingStatus status)
     {
-        return new DataSetBuilder().code(code).type("A").location(LOCATION_PREFIX + code)
-                .status(DataSetArchivingStatus.AVAILABLE).registrationDate(new Date(100));
+        DataSetType type = new DataSetType();
+        type.setCode(typeCode);
+
+        PhysicalData physicalData = new PhysicalData();
+        physicalData.setStatus(status);
+        physicalData.setLocation(LOCATION_PREFIX + code);
+
+        DataSet dataSet = new DataSet();
+        dataSet.setCode(code);
+        dataSet.setType(type);
+        dataSet.setPhysicalData(physicalData);
+        dataSet.setRegistrationDate(new Date(100));
+        dataSet.setModificationDate(modificationDate);
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withPhysicalData();
+        dataSet.setFetchOptions(fetchOptions);
+
+        return dataSet;
     }
 
     @AfterMethod
@@ -216,21 +265,6 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         task.execute();
 
         checkLog(logEntry(e1, oldDataSet, youngDataSet));
-        context.assertIsSatisfied();
-    }
-
-    @Test
-    public void testArchiveExperimentContainingNotARealDataSet()
-    {
-        prepareListPhysicalDataSetsInStatusArchivingPending(0);
-        prepareFreeSpaceProvider(99L);
-        prepareListExperiments(e1);
-        prepareListDataSetsOf(e1, notARealDataSet);
-
-        task.setUp("", properties);
-        task.execute();
-
-        checkLog();
         context.assertIsSatisfied();
     }
 
@@ -294,8 +328,8 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         prepareListExperiments(e1, e2);
         prepareListDataSetsOf(e1, oldDataSet, youngDataSet, veryYoungDataSet);
         prepareTypeBySize(oldDataSet, 10L);
-        youngDataSet.setStatus(DataSetArchivingStatus.ARCHIVE_PENDING);
-        veryYoungDataSet.setStatus(DataSetArchivingStatus.ARCHIVED);
+        youngDataSet.getPhysicalData().setStatus(ArchivingStatus.ARCHIVE_PENDING);
+        veryYoungDataSet.getPhysicalData().setStatus(ArchivingStatus.ARCHIVED);
         prepareListDataSetsOf(e2, middleOldDataSet);
         prepareTypeBySize(middleOldDataSet, 10L);
         prepareArchivingDataSets(oldDataSet);
@@ -336,7 +370,7 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         prepareListDataSetsOf(e3, lockedDataSet, dataSetWithNoModificationDate);
         prepareListDataSetsOf(e1, veryYoungDataSet);
         prepareListDataSetsOf(e2, oldDataSet, youngDataSet);
-        lockedDataSet.setSize(1000L);
+        lockedDataSet.getPhysicalData().setSize(1000L);
         prepareTypeBySize(dataSetWithNoModificationDate, 100L);
         prepareTypeBySize(oldDataSet, 500L);
         prepareTypeBySize(youngDataSet, 700L);
@@ -360,9 +394,9 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         prepareFreeSpaceProvider(90L);
         prepareListExperiments(e1);
         prepareListDataSetsOf(e1, veryYoungDataSet, oldDataSet, youngDataSet);
-        lockedDataSet.setSize(1000L);
+        lockedDataSet.getPhysicalData().setSize(1000L);
         prepareTypeBySize(oldDataSet, 500L);
-        youngDataSet.setSize(700L);
+        youngDataSet.getPhysicalData().setSize(700L);
         prepareArchivingDataSets(veryYoungDataSet, oldDataSet, youngDataSet);
 
         task.setUp("", properties);
@@ -381,8 +415,8 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         prepareListDataSetsOf(e1, veryYoungDataSet);
         prepareListDataSetsOf(e2, oldDataSet, youngDataSet);
         prepareTypeBySize(oldDataSet, 500L);
-        youngDataSet.setDataSetType(oldDataSet.getDataSetType());
-        youngDataSet.setSize(100 * FileUtils.ONE_MB);
+        youngDataSet.setType(oldDataSet.getType());
+        youngDataSet.getPhysicalData().setSize(100 * FileUtils.ONE_MB);
         prepareArchivingDataSets(oldDataSet, youngDataSet);
 
         task.setUp("", properties);
@@ -419,7 +453,7 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
 
     private void checkLog(boolean noDefault, boolean free90mb, String... archivingEntries)
     {
-        checkLog(noDefault, free90mb, Arrays.<String> asList(), archivingEntries);
+        checkLog(noDefault, free90mb, Arrays.<String>asList(), archivingEntries);
     }
 
     private void checkLog(boolean noDefault, boolean free90mb,
@@ -464,7 +498,7 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
         AssertionUtil.assertContainsLines(operationLogBuilder.toString(), logRecorder.getLogContent());
     }
 
-    private String logEntry(Experiment experiment, PhysicalDataSet... dataSets)
+    private String logEntry(Experiment experiment, DataSet... dataSets)
     {
         List<String> dataSetCodes = getDataSetCodes(dataSets);
         return "Starting archiving #" + dataSetCodes.size() + " data sets of experiment "
@@ -479,59 +513,91 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
     private void prepareFreeSpaceProvider(final File dir, final long freeSpace)
     {
         context.checking(new Expectations()
+        {
             {
+                try
                 {
-                    try
-                    {
-                        File absoluteFile = new File(dir.getAbsolutePath());
-                        one(freeSpaceProvider).freeSpaceKb(new HostAwareFile(absoluteFile));
-                        will(returnValue(FileUtils.ONE_KB * freeSpace));
-                    } catch (IOException ex)
-                    {
-                        throw CheckedExceptionTunnel.wrapIfNecessary(ex);
-                    }
-
+                    File absoluteFile = new File(dir.getAbsolutePath());
+                    one(freeSpaceProvider).freeSpaceKb(new HostAwareFile(absoluteFile));
+                    will(returnValue(FileUtils.ONE_KB * freeSpace));
+                } catch (IOException ex)
+                {
+                    throw CheckedExceptionTunnel.wrapIfNecessary(ex);
                 }
-            });
+
+            }
+        });
     }
 
     private void prepareListExperiments(final Experiment... experiments)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).listProjects();
-                    Project project = new Project();
-                    project.setIdentifier("/S/P");
-                    will(returnValue(Arrays.asList(project)));
-
-                    one(service).listExperiments(getProjectIdentifier(e1));
-                    will(returnValue(Arrays.asList(experiments)));
-                }
-            });
+                SearchResult<Experiment> searchResult = new SearchResult<>(List.of(experiments), experiments.length);
+                one(applicationServerApi).searchExperiments(with(any(String.class)), with(any(ExperimentSearchCriteria.class)), with(any(
+                        ExperimentFetchOptions.class)));
+                will(returnValue(searchResult));
+            }
+        });
     }
 
-    private void prepareListDataSetsOf(final Experiment experiment, final AbstractExternalData... dataSets)
+    private void prepareListDataSetsOf(final Experiment experiment, final DataSet... dataSets)
     {
-        context.checking(new Expectations()
+        Matcher<DataSetSearchCriteria> experimentPermIdMatcher = new BaseMatcher<DataSetSearchCriteria>()
+        {
+            @Override public boolean matches(final Object object)
             {
+                if (object instanceof DataSetSearchCriteria)
                 {
-                    one(service).listDataSetsByExperimentID(experiment.getId());
-                    will(returnValue(Arrays.asList(dataSets)));
+                    for (ISearchCriteria dataSetCriterion : ((DataSetSearchCriteria) object).getCriteria())
+                    {
+                        if (dataSetCriterion instanceof ExperimentSearchCriteria)
+                        {
+                            for (ISearchCriteria experimentCriterion : ((ExperimentSearchCriteria) dataSetCriterion).getCriteria())
+                            {
+                                if (experimentCriterion instanceof PermIdSearchCriteria)
+                                {
+                                    String permIdValue = ((PermIdSearchCriteria) experimentCriterion).getFieldValue().getValue();
+                                    if (permIdValue.equals(experiment.getPermId().getPermId()))
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            });
+
+                return false;
+            }
+
+            @Override public void describeTo(final Description description)
+            {
+            }
+        };
+
+        context.checking(new Expectations()
+        {
+            {
+                SearchResult<DataSet> searchResult = new SearchResult<>(List.of(dataSets), dataSets.length);
+                one(applicationServerApi).searchDataSets(with(any(String.class)), with(experimentPermIdMatcher),
+                        with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult));
+            }
+        });
     }
 
     private void prepareListPhysicalDataSetsInStatusArchivingPending(int numberOfArchivePending)
     {
         context.checking(new Expectations()
+        {
             {
-                {
-                    SimpleDataSetInformationDTO dataSet = new SimpleDataSetInformationDTO();
-                    one(service).listPhysicalDataSetsByArchivingStatus(DataSetArchivingStatus.ARCHIVE_PENDING, null);
-                    will(returnValue(Collections.nCopies(numberOfArchivePending, dataSet)));
-                }
-            });
+                SimpleDataSetInformationDTO dataSet = new SimpleDataSetInformationDTO();
+                one(service).listPhysicalDataSetsByArchivingStatus(DataSetArchivingStatus.ARCHIVE_PENDING, null);
+                will(returnValue(Collections.nCopies(numberOfArchivePending, dataSet)));
+            }
+        });
     }
 
     private void prepareDefaultDataSetSize(long defaultSize)
@@ -540,29 +606,29 @@ public class ExperimentBasedArchivingTaskTest extends AbstractFileSystemTestCase
                 + ExperimentBasedArchivingTask.DEFAULT_DATA_SET_TYPE, "" + defaultSize);
     }
 
-    private void prepareTypeBySize(PhysicalDataSet dataSet, long dataSetSize)
+    private void prepareTypeBySize(DataSet dataSet, long dataSetSize)
     {
         String dataSetType = "DS_TYPE_" + dataSetSize;
-        dataSet.getDataSetType().setCode(dataSetType);
+        dataSet.getType().setCode(dataSetType);
         properties.put(ExperimentBasedArchivingTask.DATA_SET_SIZE_PREFIX + dataSetType,
                 String.valueOf(dataSetSize));
     }
 
-    private void prepareArchivingDataSets(AbstractExternalData... dataSets)
+    private void prepareArchivingDataSets(DataSet... dataSets)
     {
         final List<String> dataSetCodes = getDataSetCodes(dataSets);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(service).archiveDataSets(with(dataSetCodes), with(true), with(new IsAnything<Map<String, String>>()));
-                }
-            });
+                one(service).archiveDataSets(with(dataSetCodes), with(true), with(new IsAnything<Map<String, String>>()));
+            }
+        });
     }
 
-    private List<String> getDataSetCodes(AbstractExternalData... dataSets)
+    private List<String> getDataSetCodes(DataSet... dataSets)
     {
         final List<String> dataSetCodes = new ArrayList<String>();
-        for (AbstractExternalData dataSet : dataSets)
+        for (DataSet dataSet : dataSets)
         {
             dataSetCodes.add(dataSet.getCode());
         }

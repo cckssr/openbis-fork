@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -57,6 +58,7 @@ import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
 
@@ -67,6 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
  */
 public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanceTask
 {
+
     private static final class NotificationMessageBuilder
     {
         private final StringBuilder archivingMessages = new StringBuilder();
@@ -134,7 +137,11 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
     private static final EnumSet<ArchivingStatus> ARCHIVE_STATES = EnumSet.of(
             ArchivingStatus.ARCHIVE_PENDING, ArchivingStatus.ARCHIVED);
 
+    private final IConfigProvider configProvider;
+
     private final IOpenBISService service;
+
+    private final IApplicationServerApi applicationServerApi;
 
     private IFreeSpaceProvider freeSpaceProvider;
 
@@ -148,12 +155,15 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     public ExperimentBasedArchivingTask()
     {
-        this(ArchiverServiceProviderFactory.getInstance().getOpenBISService());
+        this(ArchiverServiceProviderFactory.getInstance().getConfigProvider(), ArchiverServiceProviderFactory.getInstance().getOpenBISService(),
+                ArchiverServiceProviderFactory.getInstance().getV3ApplicationService());
     }
 
-    ExperimentBasedArchivingTask(IOpenBISService service)
+    ExperimentBasedArchivingTask(IConfigProvider configProvider, IOpenBISService service, IApplicationServerApi applicationServerApi)
     {
+        this.configProvider = configProvider;
         this.service = service;
+        this.applicationServerApi = applicationServerApi;
     }
 
     @Override
@@ -310,24 +320,23 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     private List<Experiment> listExperiments()
     {
-        String sessionToken = ArchiverServiceProviderFactory.getInstance().getOpenBISService().getSessionToken();
+        String sessionToken = service.getSessionToken();
         ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.sortBy().registrationDate().asc();
-        return ArchiverServiceProviderFactory.getInstance().getV3ApplicationService().searchExperiments(sessionToken, criteria, fetchOptions)
-                .getObjects();
+        return applicationServerApi.searchExperiments(sessionToken, criteria, fetchOptions).getObjects();
     }
 
     private List<DataSet> listDataSetsByExperimentPermId(final String experimentPermId)
     {
-        String sessionToken = ArchiverServiceProviderFactory.getInstance().getOpenBISService().getSessionToken();
+        String sessionToken = service.getSessionToken();
 
         DataSetSearchCriteria criteria = new DataSetSearchCriteria();
-        criteria.withDataStore().withKind().thatIn(ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreKind());
+        criteria.withDataStore().withKind().thatIn(configProvider.getDataStoreKind());
         criteria.withExperiment().withPermId().thatEquals(experimentPermId);
         criteria.withPhysicalData();
 
-        if (DataStoreKind.AFS.equals(ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreKind()))
+        if (DataStoreKind.AFS.equals(configProvider.getDataStoreKind()))
         {
             criteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
             criteria.withPhysicalData().withSize().thatIsGreaterThanOrEqualTo(0);
@@ -338,8 +347,7 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
         fetchOptions.withPhysicalData();
         fetchOptions.sortBy().registrationDate().asc();
 
-        return ArchiverServiceProviderFactory.getInstance().getV3ApplicationService().searchDataSets(sessionToken, criteria, fetchOptions)
-                .getObjects();
+        return applicationServerApi.searchDataSets(sessionToken, criteria, fetchOptions).getObjects();
     }
 
     private long getFreeSpace()
