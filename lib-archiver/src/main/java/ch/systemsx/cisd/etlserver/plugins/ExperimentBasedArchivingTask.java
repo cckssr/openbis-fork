@@ -34,6 +34,14 @@ import java.util.TreeSet;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.search.ExperimentSearchCriteria;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
@@ -48,19 +56,13 @@ import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IEncapsulatedOpenBISService;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetArchivingStatus;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Experiment;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Project;
-import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifier;
-import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ProjectIdentifierFactory;
 
 /**
  * Archiving maintenance task which archives all data sets of experiments starting with the oldest experiment if free disk space is below a threshold.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanceTask
@@ -129,10 +131,10 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     static final String DEFAULT_DATA_SET_TYPE = "DEFAULT";
 
-    private static final EnumSet<DataSetArchivingStatus> ARCHIVE_STATES = EnumSet.of(
-            DataSetArchivingStatus.ARCHIVE_PENDING, DataSetArchivingStatus.ARCHIVED);
+    private static final EnumSet<ArchivingStatus> ARCHIVE_STATES = EnumSet.of(
+            ArchivingStatus.ARCHIVE_PENDING, ArchivingStatus.ARCHIVED);
 
-    private final IEncapsulatedOpenBISService service;
+    private final IOpenBISService service;
 
     private IFreeSpaceProvider freeSpaceProvider;
 
@@ -146,10 +148,10 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     public ExperimentBasedArchivingTask()
     {
-        this(ServiceProvider.getOpenBISService());
+        this(ArchiverServiceProviderFactory.getInstance().getOpenBISService());
     }
 
-    ExperimentBasedArchivingTask(IEncapsulatedOpenBISService service)
+    ExperimentBasedArchivingTask(IOpenBISService service)
     {
         this.service = service;
     }
@@ -269,18 +271,16 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
         {
             operationLog.info("Free space is below threshold, searching for datasets to archive.");
         }
-        List<ExperimentDataSetsInfo> infos = new ArrayList<ExperimentDataSetsInfo>();
-        for (Project project : service.listProjects())
+        List<ExperimentDataSetsInfo> infos = new ArrayList<>();
+        List<Experiment> experiments = listExperiments();
+
+        for (Experiment experiment : experiments)
         {
-            ProjectIdentifier projectIdentifier =
-                    new ProjectIdentifierFactory(project.getIdentifier()).createIdentifier();
-            for (Experiment experiment : service.listExperiments(projectIdentifier))
-            {
-                List<AbstractExternalData> dataSets =
-                        service.listDataSetsByExperimentID(experiment.getId());
-                infos.add(new ExperimentDataSetsInfo(experiment.getIdentifier(), dataSets));
-            }
+            List<DataSet> dataSets =
+                    listDataSetsByExperimentPermId(experiment.getPermId().getPermId());
+            infos.add(new ExperimentDataSetsInfo(experiment.getIdentifier().getIdentifier(), dataSets));
         }
+
         Collections.sort(infos, new ExperimentDataSetsInfoComparator());
         NotificationMessageBuilder notificationMessageBuilder = new NotificationMessageBuilder();
 
@@ -308,6 +308,40 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
         }
     }
 
+    private List<Experiment> listExperiments()
+    {
+        String sessionToken = ArchiverServiceProviderFactory.getInstance().getOpenBISService().getSessionToken();
+        ExperimentSearchCriteria criteria = new ExperimentSearchCriteria();
+        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
+        fetchOptions.sortBy().registrationDate().asc();
+        return ArchiverServiceProviderFactory.getInstance().getV3ApplicationService().searchExperiments(sessionToken, criteria, fetchOptions)
+                .getObjects();
+    }
+
+    private List<DataSet> listDataSetsByExperimentPermId(final String experimentPermId)
+    {
+        String sessionToken = ArchiverServiceProviderFactory.getInstance().getOpenBISService().getSessionToken();
+
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreKind());
+        criteria.withExperiment().withPermId().thatEquals(experimentPermId);
+        criteria.withPhysicalData();
+
+        if (DataStoreKind.AFS.equals(ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreKind()))
+        {
+            criteria.withExperiment().withImmutableDataDate().thatIsLaterThanOrEqualTo(new Date(0));
+            criteria.withPhysicalData().withSize().thatIsGreaterThanOrEqualTo(0);
+        }
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withType();
+        fetchOptions.withPhysicalData();
+        fetchOptions.sortBy().registrationDate().asc();
+
+        return ArchiverServiceProviderFactory.getInstance().getV3ApplicationService().searchDataSets(sessionToken, criteria, fetchOptions)
+                .getObjects();
+    }
+
     private long getFreeSpace()
     {
         try
@@ -322,13 +356,13 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     private boolean archive(ExperimentDataSetsInfo info, NotificationMessageBuilder builder)
     {
-        List<PhysicalDataSet> dataSets = info.getDataSetsToBeArchived();
+        List<DataSet> dataSets = info.getDataSetsToBeArchived();
         if (dataSets.isEmpty())
         {
             return false;
         }
         List<String> dataSetCodes = new ArrayList<String>();
-        for (PhysicalDataSet dataSet : dataSets)
+        for (DataSet dataSet : dataSets)
         {
             dataSetCodes.add(dataSet.getCode());
         }
@@ -345,26 +379,25 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
     {
         private Date lastModificationDate;
 
-        private List<PhysicalDataSet> dataSetsToBeArchived = new ArrayList<PhysicalDataSet>();
+        private final List<DataSet> dataSetsToBeArchived = new ArrayList<>();
 
         private final String experimentIdentifier;
 
-        ExperimentDataSetsInfo(String experimentIdentifier, List<AbstractExternalData> dataSets)
+        ExperimentDataSetsInfo(String experimentIdentifier, List<DataSet> dataSets)
         {
             this.experimentIdentifier = experimentIdentifier;
-            for (AbstractExternalData dataSet : dataSets)
+            for (DataSet dataSet : dataSets)
             {
-                if (dataSet instanceof PhysicalDataSet == false)
+                if (dataSet.getPhysicalData() == null)
                 {
                     continue;
                 }
-                PhysicalDataSet realDataSet = (PhysicalDataSet) dataSet;
-                if (excludedDataSetTypes.contains(realDataSet.getDataSetType().getCode()))
+                if (excludedDataSetTypes.contains(dataSet.getType().getCode()))
                 {
                     continue;
                 }
-                DataSetArchivingStatus status = realDataSet.getStatus();
-                if (DataSetArchivingStatus.LOCKED.equals(status))
+                ArchivingStatus status = dataSet.getPhysicalData().getStatus();
+                if (ArchivingStatus.LOCKED.equals(status))
                 {
                     continue;
                 }
@@ -372,7 +405,7 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
                 {
                     continue;
                 }
-                dataSetsToBeArchived.add(realDataSet);
+                dataSetsToBeArchived.add(dataSet);
                 Date modificationDate = dataSet.getModificationDate();
                 if (modificationDate == null)
                 {
@@ -388,21 +421,21 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
         public long estimateSize(NotificationMessageBuilder builder)
         {
             long sum = 0L;
-            for (PhysicalDataSet dataSetToBeArchived : getDataSetsToBeArchived())
+            for (DataSet dataSetToBeArchived : getDataSetsToBeArchived())
             {
                 sum += getOrEstimateSize(dataSetToBeArchived, builder);
             }
             return sum;
         }
 
-        private long getOrEstimateSize(PhysicalDataSet dataSet, NotificationMessageBuilder builder)
+        private long getOrEstimateSize(DataSet dataSet, NotificationMessageBuilder builder)
         {
-            Long size = dataSet.getSize();
+            Long size = dataSet.getPhysicalData().getSize();
             if (size != null)
             {
                 return size;
             }
-            String dataSetType = dataSet.getDataSetType().getCode().toUpperCase();
+            String dataSetType = dataSet.getType().getCode().toUpperCase();
             Long estimatedDataSetSize = estimatedDataSetSizes.get(dataSetType);
             if (estimatedDataSetSize == null)
             {
@@ -426,7 +459,7 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
             return lastModificationDate;
         }
 
-        public List<PhysicalDataSet> getDataSetsToBeArchived()
+        public List<DataSet> getDataSetsToBeArchived()
         {
             return dataSetsToBeArchived;
         }
