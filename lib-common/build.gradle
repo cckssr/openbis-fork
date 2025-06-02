@@ -4,8 +4,8 @@ apply from: '../build/javaproject.gradle'
 
 dependencies {
     api project(':lib-commonbase'),
-            'springframework:spring-webmvc:5.0.1.RELEASE',
-            'springframework:spring-aop:5.0.1.RELEASE',
+            'springframework:spring-webmvc:5.3.39',
+            'springframework:spring-aop:5.3.39',
             'javax:servlet-api:3.1.0',
             'cisd:cisd-args4j:9.11.2',
             'python:jython:2.5.2',

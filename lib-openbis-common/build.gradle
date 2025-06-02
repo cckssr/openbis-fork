@@ -15,7 +15,8 @@ dependencies {
             'fasterxml:jackson-databind:2.9.10.8',
             'reflections:reflections:0.9.10',
             'lemnik:eodsql:2.2-CISD',
-            'springframework:spring-jdbc:5.0.1.RELEASE',
+            'springframework:spring-jdbc:5.3.39',
+            'springframework:spring-tx:5.3.39',
             'apache:commons-collections4:4.1',
             'truezip:truezip:6.8.1'
 

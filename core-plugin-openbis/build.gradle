@@ -118,7 +118,7 @@ dependencies {
             project(path: ':server-original-data-store', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
-            'springframework:spring-test:5.0.17.RELEASE'
+            'springframework:spring-test:5.3.39'
     testImplementation(project(path: ':server-application-server', configuration: 'tests')) {
         exclude group: 'google', module: 'gwt-user'
     }
