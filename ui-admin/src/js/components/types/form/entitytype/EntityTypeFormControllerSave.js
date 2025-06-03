@@ -51,7 +51,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
           original.semanticAnnotations.value,
         )
       } else {
-        //operations.push(this._createPropertySemanticAnnotationOperation(property.code.value)) check on new property creation
+        operations.push(this._createPropertySemanticAnnotationOperation(null, property.code.value, property.semanticAnnotations.value, []))
         operations.push(this._createPropertyTypeOperation(property))
         assignments.push(this._propertyAssignmentCreation(property, index))
       }
@@ -61,6 +61,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       operations.push(this._updateTypeOperation(type, assignments))
     } else {
       operations.push(this._createTypeOperation(type, assignments))
+      operations.push(this._createPropertySemanticAnnotationOperation(type.code.value, null, type.semanticAnnotations.value, []))
     }
 
     const deleteUnusedPropertyTypesOperation =

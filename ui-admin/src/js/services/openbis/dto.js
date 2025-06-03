@@ -116,6 +116,8 @@ const CLASS_FULL_NAMES = [
   'as/dto/semanticannotation/delete/DeleteSemanticAnnotationsOperation',
   'as/dto/semanticannotation/update/SemanticAnnotationUpdate',
   'as/dto/semanticannotation/update/UpdateSemanticAnnotationsOperation',
+  'as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions',
+  'as/dto/semanticannotation/search/SemanticAnnotationSearchCriteria',
   'as/dto/query/Query',
   'as/dto/query/QueryType',
   'as/dto/query/create/CreateQueriesOperation',

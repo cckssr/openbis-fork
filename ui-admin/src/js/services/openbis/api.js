@@ -247,6 +247,10 @@ class Facade {
     return this.promise(this.v3.searchMaterialTypes(criteria, fo))
   }
 
+  searchSemanticAnnotations(criteria, fo) {
+    return this.promise(this.v3.searchSemanticAnnotations(criteria, fo))
+  }
+
   deleteSampleTypes(ids, options) {
     return this.promise(this.v3.deleteSampleTypes(ids, options))
   }
