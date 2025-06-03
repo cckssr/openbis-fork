@@ -12,6 +12,7 @@ var LayoutManager = {
 	body : null,
 	mainContainer : null,
 	mainHeader : null,
+	tabContent: null,
 	MAIN_HEADER_HEIGHT: 48,
 	currentContainer : null,
 	containers : null,
@@ -71,12 +72,8 @@ var LayoutManager = {
 
 			if(this.secondColumn !== null) {
 				this.secondColumn.resizable("destroy");
-				this.secondColumn.children().detach();
 				this.secondColumn.remove();
 				this.secondColumn = null;
-
-				this.secondColumnHeader = null;
-				this.secondColumnContent = null;
 			}
 
 			if(this.thirdColumn !== null) {
@@ -95,6 +92,17 @@ var LayoutManager = {
 				"float" : "left"
 			});
 		}
+
+		if(this.tabContent === null) {
+            this.tabContent = $("<div>", {
+                id: "tabContent"
+            });
+            var height = $( window ).height() - _this.MAIN_HEADER_HEIGHT;
+            this.tabContent.css({
+                "overflow-y": "hidden",
+                "height": height,
+            });
+        }
 
 		if(this.secondColumn == null) {
 			this.secondColumn = $("<div>");
@@ -117,8 +125,13 @@ var LayoutManager = {
 				"overflow-y" : "auto"
 			});
 
+            //if not mobile
+			this.secondColumn.append(this.tabContent);
+
+			//if mobile
 			this.secondColumn.append(this.secondColumnHeader);
-			this.secondColumn.append(this.secondColumnContent);
+            this.secondColumn.append(this.secondColumnContent);
+
 			// Set up MutationObserver to replace DOMNodeInserted and DOMNodeRemoved
             this.mutationObserver = new MutationObserver(this.secondColumnContentResize);
             this.mutationObserver.observe(this.secondColumnHeader[0], { childList: true });
@@ -144,7 +157,8 @@ var LayoutManager = {
 			if($("#sideMenuTopContainer").length !== 1) {
 			    this.mainContainer.append(this.firstColumn);
 			}
-			this.mainContainer.append(this.secondColumn).append(this.thirdColumn);
+			this.mainContainer.append(this.secondColumn);
+			this.mainContainer.append(this.thirdColumn);
 
 			//
 			// Columns drag functionality
@@ -352,10 +366,7 @@ var LayoutManager = {
 
         if (view.header) {
             headerHeight = _this.MIN_HEADER_HEIGHT;
-            if(isFirstTime) {
-                _this.secondColumnHeader.append(view.header);
-            }
-            _this.secondColumnHeader.css({
+             view.header.css({
                 display : "block",
                 "min-height" : headerHeight,
                 "height" : "auto"
@@ -365,14 +376,11 @@ var LayoutManager = {
         }
 
         if (view.content) {
-            _this.secondColumnContent.css({
+            view.content.css({
                 display : "block",
                 height : height - headerHeight
             });
 
-            if(isFirstTime) {
-                _this.secondColumnContent.append(view.content);
-            }
         } else {
             _this.secondColumnContent.css({ display : "none" });
         }
@@ -387,7 +395,13 @@ var LayoutManager = {
     },
 	_setMobileLayout : function(view, isFirstTime) {
 		var width = $( window ).width();
-		var height = $( window ).height() - this.MAIN_HEADER_HEIGHT;
+		var height = $( window ).height();
+
+		if(this.tabContent) {
+            this.tabContent.children().detach();
+            this.tabContent.remove();
+		    this.tabContent = null;
+		}
 
 		//
 		// Set screen size
@@ -396,7 +410,7 @@ var LayoutManager = {
 			display : "block",
 			height : height,
 			"overflow-y" : "auto",
-			"width" : "100%"
+			"width" : width
 		});
 		this.secondColumn.css({ display : "none" });
 		this.thirdColumn.css({ display : "none" });
@@ -542,6 +556,11 @@ var LayoutManager = {
 		if(view.mainHeader) {
             _this.mainHeader.append(view.mainHeader);
             view.mainHeader.css('width', $( window ).width());
+		}
+
+		if(view.tabContent && _this.tabContent) {
+		    _this.tabContent.empty();
+            _this.tabContent.append(view.tabContent);
 		}
 
 		// sideMenuBody scroll fix

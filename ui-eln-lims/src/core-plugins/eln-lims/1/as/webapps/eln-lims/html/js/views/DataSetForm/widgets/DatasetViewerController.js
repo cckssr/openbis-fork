@@ -30,6 +30,15 @@
 function DataSetViewerController(containerId, profile, entity, serverFacade, datastoreDownloadURL, datasets, enableUpload, enableDeepUnfolding, formMode) {
     this._datasetViewerModel = new DataSetViewerModel(containerId, profile, entity, serverFacade, datastoreDownloadURL, datasets, enableUpload, enableDeepUnfolding, formMode);
 	this._datasetViewerView = new DataSetViewerView(this, this._datasetViewerModel);
+
+	this.setViewId = function(viewId) {
+	    this.viewId = viewId;
+	    this._datasetViewerView.setViewId(viewId);
+	}
+
+	this.refresh = function() {
+	    this._datasetViewerView.repaintDatasets();
+	}
 	
 	this.init = function() {
 		var _this = this;
@@ -184,7 +193,7 @@ function DataSetViewerController(containerId, profile, entity, serverFacade, dat
 						// TODO : Legacy list to be removed
 						_this._datasetViewerModel.datasets = v1Standard; //In case they are loaded after the model is already created.
 					
-		            		_this._datasetViewerView.repaintDatasets();
+                        _this._datasetViewerView.repaintDatasets();
 		            });
 		});
 		

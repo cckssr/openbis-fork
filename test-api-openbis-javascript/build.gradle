@@ -3,6 +3,7 @@ plugins {
 }
 
 evaluationDependsOn(':lib-commonbase')
+evaluationDependsOn(':lib-logging')
 evaluationDependsOn(':lib-common')
 evaluationDependsOn(':api-openbis-java')
 evaluationDependsOn(':api-openbis-javascript')
@@ -136,7 +137,7 @@ test {
             '-Xdebug', '-Xrunjdwp:transport=dt_socket,address=20010,server=y,suspend=n',
             '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED'
 
-    testLogging.showStandardStreams = true
+    testLogging.showStandardStreams = false
     ignoreFailures = false
     systemProperty 'selenium.dss-runtime-classpath', configurations.externalDss.asPath
     systemProperty 'jetty.home', '../../../targets/gradle'

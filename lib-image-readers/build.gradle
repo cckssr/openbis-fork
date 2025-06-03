@@ -6,9 +6,9 @@ apply from: '../build/javaproject.gradle'
 dependencies {
     api project(':lib-common'),
             'imagej:ij:1.43u',
-            'bioformats:bioformats:6.5.1',
-            'slf4j:slf4j:1.6.2',
-            'slf4j:slf4j-log4j12:1.6.2'
+            'bioformats:bioformats:6.5.2',
+            'slf4j:slf4j-api:1.7.24',
+            'slf4j:slf4j-jdk14:1.7.24'
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),

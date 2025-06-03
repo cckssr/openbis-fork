@@ -24,7 +24,9 @@ function SampleField(isRequired,
 	var isRequired = isRequired;
 	var placeholder = placeholder;
 	var sampleTypeCode = sampleTypeCode;
-	var $plainSelect = FormUtil.getPlainDropdown({}, "");
+	var selectId = "sample-field-id-" + Util.guid();
+	var $plainSelect = FormUtil.getPlainDropdown({}, "", selectId);
+	var selectOptions = null;
 
     var initialised = false;
 	var storedParams = null;
@@ -176,7 +178,7 @@ function SampleField(isRequired,
 
     Util.onIsInPage($plainSelect[0], function() {
 
-            var selectOptions = {
+            selectOptions = {
                 width: '100%',
                 theme: "bootstrap",
                 minimumInputLength: 2,
@@ -264,12 +266,12 @@ function SampleField(isRequired,
 
             $plainSelect.select2(selectOptions);
 
-            $plainSelect.on('select2:select', function (e) {
+            $("body").on('select2:select', '#'+selectId, function (e) {
                 if(changeListener) {
                     changeListener(null, _this.val());
                 }
             });
-            $plainSelect.on('select2:unselect', function (e) {
+            $("body").on('select2:unselect', '#'+selectId, function (e) {
                 if(changeListener) {
                     changeListener(null, _this.val() ?? "");
                 }
@@ -279,6 +281,10 @@ function SampleField(isRequired,
                 _this.val(initialValue);
             }
     });
+
+    $plainSelect.refresh = function() {
+        $plainSelect.select2(selectOptions);
+    }
 
 	return $plainSelect;
 }

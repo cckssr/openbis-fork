@@ -18,9 +18,14 @@ function HierarchyTableController(parentController, entity) {
 	this._parentController = parentController;
 	this._model = new HierarchyTableModel(entity);
 	this._view = new HierarchyTableView(this, this._model);
+	this.tabId = "TABLE-" + entity.permId;
 	
 	this.init = function(views) {
 		this._view.repaint(views);
 	}
+
+	this.refresh = function(views) {
+        this._view.refresh(views);
+    }
 
 }

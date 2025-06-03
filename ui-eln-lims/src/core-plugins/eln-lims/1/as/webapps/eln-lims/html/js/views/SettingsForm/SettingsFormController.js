@@ -21,6 +21,12 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	this._settingsManager = new SettingsManager(this._mainController.serverFacade);
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
 
+	this.refresh = function(views) {
+        if(this._settingsFormView.mode !== FormMode.VIEW) {
+            this._settingsFormView.refresh();
+        }
+    }
+
 	this.init = function(views) {
 	    var _this = this;
 	    mainController.serverFacade.getCustomWidgetSettings(function(customWidgetSettings) {

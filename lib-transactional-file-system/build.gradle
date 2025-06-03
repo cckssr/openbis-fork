@@ -16,11 +16,11 @@ repositories {
 }
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.22'
+    annotationProcessor 'lombok:lombok:1.18.38'
     implementation  project(':lib-json'),
+                    project(':lib-logging'),
+                    'lombok:lombok:1.18.38',
                     'lombok:lombok:1.18.22',
-                    'log4j:log4j-api:2.10.0',
-                    'log4j:log4j-core:2.10.0',
                     'fasterxml:jackson-annotations:2.9.10',
                     'fasterxml:jackson-core:2.9.10',
                     'fasterxml:jackson-databind:2.9.10.8',

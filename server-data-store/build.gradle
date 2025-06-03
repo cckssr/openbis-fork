@@ -25,7 +25,7 @@ configurations {
 }
 
 dependencies {
-    annotationProcessor 'lombok:lombok:1.18.22'
+    annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-openbis-commonbase'),
             project(':lib-data-store-commonbase'),
             project(':lib-data-store-common'),
@@ -43,12 +43,10 @@ dependencies {
             project(':lib-transactional-file-system'),
             project(':api-data-store-server-java'),
             project(':api-openbis-java'),
-            'lombok:lombok:1.18.22',
+            'lombok:lombok:1.18.38',
             'io.netty:netty-all:4.1.68.Final',
-            'shriop:javacsv:2.0',
-            'log4j:log4j-api:2.10.0',
-            'log4j:log4j-core:2.10.0'
-
+            'slf4j:slf4j-jdk14:1.6.2',
+            'shriop:javacsv:2.0'
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             'junit:junit:4.10',
             'hamcrest:hamcrest-core:1.3',

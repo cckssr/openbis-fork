@@ -70,7 +70,11 @@ var IconUtil = new function() {
             }
         }
 
-        $icon.css("vertical-align", "text-bottom");
+        if(icon.css) {
+            $icon.css(icon.css);
+        } else {
+            $icon.css("vertical-align", "text-bottom");
+        }
 
         return $icon;
     }
@@ -85,7 +89,8 @@ var IconUtil = new function() {
             type: "font",
             url: null,
             class: null,
-            text: null
+            text: null,
+            css: null,
         }
 
         //TODO logic for user-specific toolbar icons?
@@ -108,11 +113,21 @@ var IconUtil = new function() {
             icon.type = ["font", "font"]
             icon.class = ["material-icons", "fa fa-database"];
             icon.text = [materialPlusIcon, null];
+            icon.css = {"margin-top": "-2px"}
         } else if(type === "EDIT") {
             icon.class = "glyphicon glyphicon-edit";
+            icon.css = {"padding-top": "3px"}
         }  else if(type === "SAVE") {
             icon.class = "material-icons";
             icon.text = "save";
+        } else if(type === "DELETE") {
+            icon.class = "glyphicon glyphicon-trash";
+        } else if(type === "CLEAR") {
+            icon.class = "glyphicon glyphicon-remove";
+        }  else if(type === "SEARCH") {
+            icon.class = "glyphicon glyphicon-search";
+            icon.class = "material-icons";
+            icon.text = "search";
         } else if(type === "?") {
             icon.class = "material-icons";
             icon.text = "help";
@@ -128,7 +143,6 @@ var IconUtil = new function() {
         } else if(type === "SPACE") {
             icon.type = ["font", "img"];
             icon.url = [null, "./img/folder-with-key.svg"];
-//            icon.url = [null, "./img/folder-with-key.svg"];
             icon.class = ["material-icons", null];
             icon.text = [materialPlusIcon, null];
         } else if(type === "HIDE") {
@@ -157,9 +171,49 @@ var IconUtil = new function() {
             icon.class = "fa fa-shopping-cart";
         } else if(type === "UTILITIES") {
             icon.class = "glyphicon glyphicon-wrench";
+        } else if(type === "PLUS") {
+            icon.class = "material-icons";
+            icon.text = "add";
+        } else if(type === "MINUS") {
+            icon.class = "material-icons";
+            icon.text = "remove";
+        } else if(type === "EYE_OPEN") {
+            icon.class = "material-icons";
+            icon.text = "visibility";
+        } else if(type === "EYE_CLOSED") {
+            icon.class = "material-icons";
+            icon.text = "visibility_off";
+        } else if(type === "FULLSCREEN") {
+            icon.class = "glyphicon glyphicon-resize-full";
+            icon.class = "material-icons";
+            icon.text = "open_in_full";
+        } else if(type === "FULLSCREEN_CLOSE") {
+            icon.class = "material-icons";
+            icon.text = "close_fullscreen";
         } else if(type === "FREEZE") {
             icon.class = "material-icons";
             icon.text = "ac_unit";
+        } else if(type === "ARCHIVE_NOT_REQUESTED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-not-requested-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "ARCHIVE_REQUESTED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-requested-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "ARCHIVED") {
+            icon.type = "img_with_class";
+            icon.class = "fancytree-icon";
+            icon.url = "./img/archive-archived-icon.png";
+            icon.css = { "height": "21px", "margin-top": "4px"}
+        } else if(type === "LOCKED") {
+            icon.class = "material-icons";
+            icon.text = "lock";
+        } else if(type === "LOCKED_DATA") {
+            icon.class = "material-icons";
+            icon.text = "lock_outline";
         }
         return icon;
     }
@@ -169,7 +223,8 @@ var IconUtil = new function() {
             type: "font",
             url: null,
             class: null,
-            text: null
+            text: null,
+            css: null,
         }
         //TODO add custom icons logic here ?
 
@@ -191,13 +246,13 @@ var IconUtil = new function() {
             icon.class = "glyphicon glyphicon-file";
         } else if(type === "USER_PROFILE") {
             icon.class = "glyphicon glyphicon-user";
-        } else if(type === "GENERATE_BARCODES") {
+        } else if(type === "GENERATE_BARCODES" || type === "BARCODE_GENERATOR" || type === "BARCODE") {
             icon.class = "glyphicon glyphicon-barcode";
-        } else if(type === "SAMPLE_BROWSER") {
+        } else if(type === "SAMPLE_BROWSER" || type === "OBJECT_BROWSER") {
             icon.class = "glyphicon glyphicon-list-alt";
         } else if(type === "VOCABULARY_BROWSER") {
             icon.class = "glyphicon glyphicon-list-alt";
-        } else if(type === "ADVANCED_SEARCH") {
+        } else if(type === "ADVANCED_SEARCH" || type === "SEARCH") {
             icon.class = "glyphicon glyphicon-search";
         } else if(type === "DROPBOX_MONITOR") {
             icon.class = "glyphicon glyphicon-info-sign";
@@ -205,9 +260,14 @@ var IconUtil = new function() {
             icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-not-requested-icon.png";
+            icon.css = { "width": "14px",
+                         "height": "16px",
+                         "vertical-align": "text-bottom",
+                         "margin-bottom": "-2px"
+                         };
         } else if(type === "UNARCHIVING_HELPER") {
             icon.class = "glyphicon glyphicon-open";
-        } else if(type === "CUSTOM_IMPORT") {
+        } else if(type === "CUSTOM_IMPORT" || type === "IMPORT") {
             icon.class = "glyphicon glyphicon-import";
         } else if(type === "USER_MANAGER") {
             icon.class = "fa fa-users";
@@ -217,7 +277,7 @@ var IconUtil = new function() {
             icon.class = "glyphicon glyphicon-trash";
         } else if(type === "SETTINGS") {
             icon.class = "glyphicon glyphicon-cog";
-        } else if(type === "OTHERTOOLS") {
+        } else if(type === "OTHERTOOLS" || type === "OTHER_TOOLS") {
             icon.class = "glyphicon glyphicon-wrench";
         } else if(type === "EXPORT_TO_ZIP") {
             icon.class = "glyphicon glyphicon-export";
@@ -231,19 +291,13 @@ var IconUtil = new function() {
             icon.class = "glyphicon glyphicon-info-sign";
         } else if(type === "DATASET") {
             icon.class = "fa fa-database";
-//            icon.class = "material-icons-outlined";
-//            icon.text = "dns";
         } else if(type === "SPACE") {
             if(optionalParameters && optionalParameters.isHomeSpace) {
-//                icon.class = "material-icons";
-//                icon.class = "material-icons-outlined";
-//                icon.text = "folder_shared";
                 icon.type = "img";
                 icon.url = "./img/folder-with-home.svg";
             }
             else {
                 icon.type = "img";
-//                icon.url = "./img/folder-with-key-outlined.svg";
                 icon.url = "./img/folder-with-key.svg";
 
             }
@@ -251,7 +305,6 @@ var IconUtil = new function() {
             if(optionalParameters && optionalParameters.sampleTypeCode) {
                 var sampleTypeCode = optionalParameters.sampleTypeCode;
                 if(sampleTypeCode === 'FOLDER') {
-//                    icon.class = "material-icons-outlined";
                     icon.class = "material-icons";
                     icon.text = "folder";
                 } else {
@@ -280,13 +333,9 @@ var IconUtil = new function() {
                     }
 
                 }
-//                if(sampleTypeCode.indexOf("EXPERIMENT") > -1) {
-//                    icon.class = "fa fa-flask";
-//                } else if(sampleTypeCode === "ENTRY") {
-//                    icon.class = "fa fa-file-text";
-//                } else {
-//                    icon.class = "fa fa-file";
-//                }
+            } else {
+                icon.class = "material-icons";
+                icon.text = "subject";
             }
         } else if(type === "EXPERIMENT") {
             if(optionalParameters) {
@@ -312,17 +361,13 @@ var IconUtil = new function() {
                         icon.text = "subject";
                     }
                 }
+            } else {
+                icon.class = "material-icons";
+                icon.text = "subject";
             }
         } else if(type === "PROJECT") {
             icon.type = "img";
-//            icon.url = "./img/folder-with-key.svg";
-//            icon.url = "./img/folder-with-key-inverted.svg";
             icon.url = "./img/folder-with-settings.svg";
-//            icon.class = "fa fa-flask";
-
-//            icon.type = "font";
-//            icon.class = "material-icons";
-//            icon.text = "fact_check"
 
         }
 

@@ -18,6 +18,7 @@ package ch.systemsx.cisd.common.properties;
 import java.util.Properties;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -41,7 +42,8 @@ public final class PropertyUtilsTest extends AbstractFileSystemTestCase
     @BeforeMethod
     public final void beforeMethod()
     {
-        appender = new BufferedAppender();
+        Logger.getRootLogger().setLevel(Level.DEBUG);
+        appender = new BufferedAppender("%m%n", Level.DEBUG);
         appender.resetLogContent();
     }
 

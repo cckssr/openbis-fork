@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -135,8 +135,8 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
 
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
 
-        MessageChannel toShuffling = new MessageChannel();
-        MessageChannel fromShuffling = new MessageChannel();
+        MessageChannel toShuffling = new MessageChannel(2000);
+        MessageChannel fromShuffling = new MessageChannel(2000);
 
         Thread shufflingThread = new Thread(() ->
         {
@@ -221,7 +221,7 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
                         + " before shuffling.\n"
                         + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
+                        + "ERROR OPERATION.EagerShufflingTask - Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
                         + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
                         + " to be unlocked.\n",
                 TestLogger.getRecordedLog());
@@ -268,7 +268,7 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
                         + " before shuffling.\n"
                         + "INFO  OPERATION.EagerShufflingTask - Unlocked data set " + sample.getPermId().getPermId()
                         + " after shuffling.\n"
-                        + "java.lang.RuntimeException: Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
+                        + "ERROR OPERATION.EagerShufflingTask - Couldn't move data set " + sample.getPermId().getPermId() + " to share 2.\n"
                         + "INFO  OPERATION.SimpleShuffling - Await for data set " + sample.getPermId().getPermId()
                         + " to be unlocked.\n",
                 TestLogger.getRecordedLog());

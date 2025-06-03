@@ -362,6 +362,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
             LayoutManager._saveSettings();
             _this._sideMenuWidgetController._browserController._saveSettings();
             _this._collapsedSideMenu(_this._$container)
+            mainController.tabContent.refreshCurrentPage();
         });
 
         var $toolbarContainer = $("<span>").append($btn);
@@ -411,6 +412,7 @@ function SideMenuWidgetView(sideMenuWidgetController, sideMenuWidgetModel) {
                     _this.repaint(_this._$container, false);
                     LayoutManager._saveSettings();
                     _this._sideMenuWidgetController._browserController._saveSettings();
+                    mainController.tabContent.refreshCurrentPage();
             });
 
             var $toolbarContainer = $("<span>").append($btn);

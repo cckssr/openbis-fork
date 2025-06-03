@@ -15,18 +15,21 @@
  */
 package ch.systemsx.cisd.common.test;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.log4j.AppenderSkeleton;
+
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
+
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.IToStringConverter;
@@ -38,7 +41,7 @@ import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
  * 
  * @author Bernd Rinn
  */
-public final class LogMonitoringAppender extends AppenderSkeleton
+public final class LogMonitoringAppender extends Handler
 {
 
     private static Map<LogMonitoringAppender, String> appenderMap =
@@ -92,7 +95,7 @@ public final class LogMonitoringAppender extends AppenderSkeleton
     {
         final LogMonitoringAppender appender = new LogMonitoringAppender(regex);
         final String loggerName = category.name();
-        Logger.getLogger(loggerName).addAppender(appender);
+        Logger.getLogger(loggerName).addHandler(appender);
         appenderMap.put(appender, loggerName);
         return appender;
     }
@@ -105,7 +108,7 @@ public final class LogMonitoringAppender extends AppenderSkeleton
         final String loggerName = appenderMap.get(appender);
         if (loggerName != null)
         {
-            Logger.getLogger(loggerName).removeAppender(appender);
+            Logger.getLogger(loggerName).removeHandler(appender);
             appenderMap.remove(appender);
         } else
         {
@@ -114,17 +117,18 @@ public final class LogMonitoringAppender extends AppenderSkeleton
         }
     }
 
-    private final String getThrowableStr(final LoggingEvent event)
-    {
-        final ThrowableInformation info = event.getThrowableInformation();
-        if (info == null)
-        {
-            return StringUtils.EMPTY;
-        } else
-        {
-            return StringUtils.join(info.getThrowableStrRep(), "\n");
+    private String getThrowableStr(LogRecord record) {
+        Throwable thrown = record.getThrown();
+        if (thrown == null) {
+            return "";
+        } else {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            thrown.printStackTrace(pw);
+            return sw.toString();
         }
     }
+
 
     private final String describePatterns()
     {
@@ -180,7 +184,7 @@ public final class LogMonitoringAppender extends AppenderSkeleton
     //
 
     @Override
-    protected final void append(final LoggingEvent event)
+    public final void publish(final LogRecord event)
     {
         final String eventMessage = event.getMessage().toString();
         eventRecorder.append("event message: ").append(eventMessage).append('\n');
@@ -202,15 +206,21 @@ public final class LogMonitoringAppender extends AppenderSkeleton
     }
 
     @Override
+    public void flush()
+    {
+
+    }
+
+    @Override
     public final void close()
     {
     }
 
-    @Override
-    public final boolean requiresLayout()
-    {
-        return false;
-    }
+//    @Override
+//    public final boolean requiresLayout()
+//    {
+//        return false;
+//    }
 
     //
     // Helper classes

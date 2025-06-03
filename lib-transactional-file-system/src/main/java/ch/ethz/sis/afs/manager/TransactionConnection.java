@@ -26,8 +26,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.logging.log4j.util.Strings;
-
 import ch.ethz.sis.afs.api.TransactionalFileSystem;
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
@@ -377,7 +375,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         validateOperationAndPaths(OperationName.Free, source, null);
         validateWritten(OperationName.Free, source);
         String safeExistingSource = source;
-        while (Strings.isNotEmpty(safeExistingSource) && !IOUtils.exists(safeExistingSource))
+        while (safeExistingSource != null && !safeExistingSource.isEmpty()
+                && !IOUtils.exists(safeExistingSource))
         {
             safeExistingSource = IOUtils.getParentPath(safeExistingSource);
         }

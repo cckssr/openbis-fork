@@ -31,6 +31,31 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	this._sampleTypeDefinitionsHintsTableModels = {}; // key: sample type; value: table model
 	this._miscellaneousTableModel = null;
 
+	var _refreshableFields = [];
+
+    this.refresh = function() {
+        Select2Manager.add($("[id='SETTINGS-id'] select"));
+
+        var _isInDom = function(element) {
+        		var el = element[0];
+        		while (el = el.parentNode) {
+        			if (el === document) {
+        				return true;
+        			}
+        		}
+        		return false;
+        	}
+        var temp = [];
+        for(let i=0; i<_refreshableFields.length; i++) {
+            var field = _refreshableFields[i];
+            if(_isInDom(field)) {
+                field.refresh();
+                temp.push(field);
+            }
+        }
+        _refreshableFields = temp;
+    }
+
 	this.repaint = function(views, profileToEdit) {
 		var _this = this;
 		this._profileToEdit = profileToEdit;
@@ -56,20 +81,20 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			if(this._settingsFormModel.mode === FormMode.VIEW) {
 				if (this._settingsFormModel.sampleRights.rights.indexOf("UPDATE") >= 0) {
 					//Edit
-					var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+					var $editButton = FormUtil.getToolbarButton("EDIT", function () {
 						mainController.changeView("showEditSettingsPage", _this._settingsFormModel.settingsSample.identifier);
-					}, "Edit", null, "edit-btn", 'btn btn-default');
+					}, "Edit", "Edit settings", "settings-edit-btn", 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $editButton });
 				}
 			} else { //Create and Edit
 				//Save
-				var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", (function() {
+				var $saveBtn = FormUtil.getToolbarButton("SAVE", (function() {
 				    var widgetSettings = null;
 				    if(this._settingsFormModel.settingsSample.code === "GENERAL_ELN_SETTINGS") {
 				        widgetSettings = this._customWidgetsTableModel.getValues();
 				    }
 					this._settingsFormController.save(this._getSettings(), widgetSettings);
-				}).bind(this), "Save", null, "save-btn");
+				}).bind(this), "Save", null, "settings-save-btn");
 				$saveBtn.removeClass("btn-default");
 				$saveBtn.addClass("btn-primary");
 				toolbarModel.push({ component : $saveBtn });
@@ -179,7 +204,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
 		var experimentIdentifier = profile.getStorageConfigCollectionForConfigSample(this._settingsFormModel.settingsSample); //"/ELN_SETTINGS/STORAGES/STORAGES_COLLECTION";
 
-		var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+		var $addBtn = FormUtil.getToolbarButton("PLUS", function() {
             Util.blockUI();
             setTimeout(function() {
                 var argsMap = {
@@ -188,7 +213,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
                 };
                 mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
             }, 100);
-		}, "Storage", null, null, 'btn btn-primary btn-secondary');
+		}, "Storage", "New Storage", 'settings-new-storage-btn', 'btn btn-primary btn-secondary');
 
 		$fieldset.append($("<p>").append($addBtn));
 
@@ -215,9 +240,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 
 		var experimentIdentifier = profile.getTemplateConfigCollectionForConfigSample(this._settingsFormModel.settingsSample); //"/ELN_SETTINGS/TEMPLATES/TEMPLATES_COLLECTION";
 
-        var $addBtn = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+        var $addBtn = FormUtil.getToolbarButton("PLUS", function() {
                 FormUtil.createNewSample(experimentIdentifier);
-        }, "Template", null, null, 'btn btn-primary btn-secondary');
+        }, "Template", "New Template", 'settings-new-template-btn', 'btn btn-primary btn-secondary');
 
         $fieldset.append($("<p>").append($addBtn));
         var $gridContainer = $("<div>");
@@ -1008,8 +1033,9 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
         }
 		// add row button
 		if (tableModel.dynamicRows) {
-			var $addButton = $("<a>", { class : "btn btn-default" })
-						.append($("<span>", { class : "glyphicon glyphicon-plus" } ));
+		    var _this = this;
+		    var $addButton = FormUtil.getToolbarButton("PLUS");
+		    $addButton.children().css("font-size", '22px')
 			if (this._settingsFormModel.mode === FormMode.VIEW) {
 				$addButton.addClass("disabled");
 			} else {
@@ -1017,12 +1043,25 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					var rowWidgets = tableModel.addRow({});
 					if (tableModel.rowExtraBuilder) {
 						var $extra = tableModel.rowExtras[tableModel.rowExtras.length-1];
-						this._addRow($tbody, tableModel, rowWidgets, $extra);
+						_this._addRow($tbody, tableModel, rowWidgets, $extra);
 					} else {
-						this._addRow($tbody, tableModel, rowWidgets);
+						_this._addRow($tbody, tableModel, rowWidgets);
 					}
-				}).bind(this))
+				}).bind(_this))
 			}
+			$addButton.refresh = function() {
+			    this.off("click");
+			    this.on("click", (function() {
+                    var rowWidgets = tableModel.addRow({});
+                    if (tableModel.rowExtraBuilder) {
+                        var $extra = tableModel.rowExtras[tableModel.rowExtras.length-1];
+                        _this._addRow($tbody, tableModel, rowWidgets, $extra);
+                    } else {
+                        _this._addRow($tbody, tableModel, rowWidgets);
+                    }
+                }).bind(_this))
+			}
+			_refreshableFields.push($addButton);
 			$trHead.append($("<th>").css("width", "80px").append($addButton));
 		}
 		$thead.append($trHead);
@@ -1073,6 +1112,20 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 					$expandCollapse.removeClass("glyphicon-minus-sign").addClass("glyphicon-plus-sign");
 				}
 			}).bind(this, $extraRow, $expandCollapse));
+			var _this = this;
+			$expandCollapse.refresh = function() {
+			    this.off("click");
+			    this.on("click", (function($extraRow, $expandCollapse) {
+                    $extraRow.toggle();
+                    if ($extraRow.is(":visible")) {
+                        $expandCollapse.removeClass("glyphicon-plus-sign").addClass("glyphicon-minus-sign");
+                    } else {
+                        $expandCollapse.removeClass("glyphicon-minus-sign").addClass("glyphicon-plus-sign");
+                    }
+                }).bind(_this, $extraRow, $expandCollapse))
+			}
+			_refreshableFields.push($expandCollapse);
+
 			$tr.append($td);
 			$td.append($expandCollapse);
 		}
@@ -1089,12 +1142,13 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 		}
 		// remove row button if in edit mode
 		if (tableModel.dynamicRows) {
-			$removeButton = $("<a>", { class : "btn btn-default" })
-						.append($("<span>", { class : "glyphicon glyphicon-minus" }));
+		    $removeButton = FormUtil.getToolbarButton("MINUS");
+            $removeButton.children().css("font-size", '22px')
 			if (this._settingsFormModel.mode === FormMode.VIEW) {
 				$removeButton.addClass("disabled");
 			} else {
 			    if(!canRemoveFunction || canRemoveFunction(tableModel.rows[rowIndex])) {
+			        var _this = this;
                     $removeButton.on("click", function() {
                         $tr.remove();
                         if ($extraRow) {
@@ -1106,6 +1160,21 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
                             tableModel.rowExtraModels.splice(rowIndex, 1);
                         }
                     });
+                    $removeButton.refresh = function() {
+                        this.off("click");
+                        this.on("click", (function() {
+                            $tr.remove();
+                            if ($extraRow) {
+                                $extraRow.remove();
+                            }
+                            var rowIndex = tableModel.rows.indexOf(tableModelRow);
+                            tableModel.rows.splice(rowIndex, 1);
+                            if (tableModel.rowExtraModels) {
+                                tableModel.rowExtraModels.splice(rowIndex, 1);
+                            }
+                        }))
+                    }
+                    _refreshableFields.push($removeButton);
 			    } else {
 			        $removeButton.addClass("disabled");
 			    }

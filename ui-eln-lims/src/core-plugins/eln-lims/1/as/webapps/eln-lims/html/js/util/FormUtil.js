@@ -366,6 +366,72 @@ var FormUtil = new function() {
         return visibleObjectTypesForSpace;
     }
 
+    this.getSampleOrCollectionTypesDropdown = function(id, isRequired, showEvenIfHidden, showOnly, spaceCode, defaultValue) {
+        var visibleObjectTypeCodesForSpace = null;
+        if (spaceCode) {
+            visibleObjectTypeCodesForSpace = SettingsManagerUtils.getVisibleObjectTypesForSpace(spaceCode, SettingsManagerUtils.ShowInSpaceSetting.showOnDropdowns);
+        }
+        var sampleTypes = this.profile.getAllSampleTypes();
+
+        var $component = $("<select>", {"id" : id, class : 'form-control'});
+        if (isRequired) {
+            $component.attr('required', '');
+        }
+
+        $component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text("Select an " + ELNDictionary.Sample + " or " + ELNDictionary.getExperimentDualName() + " type"));
+
+        var $optGroup = $("<optgroup>").attr('label', ELNDictionary.Sample+' Types');
+        for(var i = 0; i < sampleTypes.length; i++) {
+            var sampleType = sampleTypes[i];
+
+            if(showOnly && ($.inArray(sampleType.code, showOnly) !== -1)) {
+                //Show
+            } else if(showOnly) {
+                continue;
+            }
+
+            if(showEvenIfHidden && ($.inArray(sampleType.code, showEvenIfHidden) !== -1)) {
+                // Show even if hidden
+            } else if (visibleObjectTypeCodesForSpace && !($.inArray(sampleType.code, visibleObjectTypeCodesForSpace) !== -1)) {
+                continue;
+            }
+
+            var label = Util.getDisplayLabelFromCodeAndDescription(sampleType);
+
+            var $option = $("<option>").attr('value', ['OBJECT',sampleType.code]).text(label);
+            $optGroup.append($option);
+        }
+        $component.append($optGroup);
+
+        var experimentTypes = this.profile.allExperimentTypes;
+
+        var $optGroup = $("<optgroup>").attr('label', ELNDictionary.getExperimentDualName() +' Types');
+        for(var i = 0; i < experimentTypes.length; i++) {
+            var experimentType = experimentTypes[i];
+            if(profile.isExperimentTypeHidden(experimentType.code)) {
+                continue;
+            }
+
+            var label = Util.getDisplayNameFromCode(experimentType.code);
+            var description = Util.getEmptyIfNull(experimentType.description);
+            if(description !== "") {
+                label += " (" + description + ")";
+            }
+
+            var $option = $("<option>").attr("value", ['COLLECTION',experimentType.code]).text(label);
+            if (experimentType.code === defaultValue) {
+                $option.attr("selected", "");
+            }
+
+
+            $optGroup.append($option);
+        }
+        $component.append($optGroup);
+
+        Select2Manager.add($component);
+        return $component;
+    }
+
 	this.getSampleTypeDropdown = function(id, isRequired, showEvenIfHidden, showOnly, spaceCode, withEmptyOption) {
 	    var visibleObjectTypeCodesForSpace = null;
 	    if (spaceCode) {
@@ -464,8 +530,8 @@ var FormUtil = new function() {
 		return $component;
 	}
 	
-	this.getDropdown = function(mapVals, placeHolder) {
-		$dropdown = this.getPlainDropdown(mapVals, placeHolder);
+	this.getDropdown = function(mapVals, placeHolder, id) {
+		$dropdown = this.getPlainDropdown(mapVals, placeHolder, id);
 		Select2Manager.add($dropdown);
 		return $dropdown;
 	}
@@ -486,11 +552,14 @@ var FormUtil = new function() {
 		}
 	};
 
-	this.getPlainDropdown = function(mapVals, placeHolder) {
+	this.getPlainDropdown = function(mapVals, placeHolder, id) {
 		var $component = $("<select>", {class : 'form-control'});
 		if (placeHolder) {
 			$component.append($("<option>").attr('value', '').attr('selected', '').attr('disabled', '').text(placeHolder));
 		}
+		if(id) {
+            $component.attr("id", id);
+        }
 		this.setValuesToComponent($component, mapVals);
 		return $component;
 	};
@@ -679,8 +748,11 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
+            $("body").off("click", "#"+id)
+            $("body").on("click", "#"+id, clickEvent)
+        } else if(clickEvent) {
+            $btn.click(clickEvent);
         }
-        $btn.click(clickEvent);
         return $btn;
 	}
 	
@@ -707,8 +779,11 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
+            $("body").off("click", "#"+id);
+            $("body").on("click", "#"+id, clickEvent)
+        } else if(clickEvent) {
+            $btn.click(clickEvent);
         }
-        $btn.click(clickEvent);
         return $btn;
     }
 
@@ -982,39 +1057,43 @@ var FormUtil = new function() {
 	}
 
 	this.getFieldForPropertyType = function(propertyType, timestampValue) {
-	    return this.getFieldForPropertyType(propertyType, timestampValue, false);
+	    return this.getFieldForPropertyType(propertyType, timestampValue, false, "-" + mainController.getNextId());
 	}
 	
-	this.getFieldForPropertyType = function(propertyType, timestampValue, isMultiValue) {
+	this.getFieldForPropertyType = function(propertyType, timestampValue, isMultiValue, idSuffix) {
 		var $component = null;
+		if(!idSuffix) {
+		    idSuffix = mainController.getNextId();
+		}
+
 		if (propertyType.dataType === "BOOLEAN") {
-			$component = this._getBoolean2Field(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getBoolean2Field(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "CONTROLLEDVOCABULARY") {
 			var vocabulary = profile.getVocabularyByCode(propertyType.vocabulary.code);
-			$component = this._getDropDownFieldForVocabulary(propertyType.code, vocabulary.terms, propertyType.description, propertyType.mandatory, isMultiValue);
+			$component = this._getDropDownFieldForVocabulary(propertyType.code + idSuffix, vocabulary.terms, propertyType.description, propertyType.mandatory, isMultiValue);
 		} else if (propertyType.dataType === "HYPERLINK") {
-			$component = this._getInputField("url", propertyType.code, propertyType.description, null, propertyType.mandatory);
+			$component = this._getInputField("url", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (propertyType.dataType === "INTEGER") {
-			$component = this._getNumberInputField(propertyType.code, propertyType.description, '1', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code + idSuffix, propertyType.description, '1', propertyType.mandatory);
 		} else if (propertyType.dataType === "MATERIAL") {
-			$component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+			$component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
 		} else if (["MULTILINE_VARCHAR", "JSON"].includes(propertyType.dataType)) {
-			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 			if(profile.isForcedMonospaceFont(propertyType)) {
 				$component.css("font-family", "Consolas, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace");
 			}
 		} else if (propertyType.dataType === "REAL") {
-			$component = this._getNumberInputField(propertyType.code, propertyType.description, 'any', propertyType.mandatory);
+			$component = this._getNumberInputField(propertyType.code + idSuffix, propertyType.description, 'any', propertyType.mandatory);
 		} else if (propertyType.dataType === "TIMESTAMP") {
-			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, false, timestampValue);
+			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, false, timestampValue);
 		} else if (propertyType.dataType === "DATE") {
-			$component = this._getDatePickerField(propertyType.code, propertyType.description, propertyType.mandatory, true, timestampValue);
+			$component = this._getDatePickerField(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory, true, timestampValue);
 		} else if (propertyType.dataType === "VARCHAR") {
-            $component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
         } else if (['ARRAY_STRING', 'ARRAY_INTEGER', 'ARRAY_REAL', 'ARRAY_TIMESTAMP'].includes(propertyType.dataType)) {
-            $component = this._getInputField("text", propertyType.code, propertyType.description, null, propertyType.mandatory);
+            $component = this._getInputField("text", propertyType.code + idSuffix, propertyType.description, null, propertyType.mandatory);
         } else if (propertyType.dataType === "XML") {
-			$component = this._getTextBox(propertyType.code, propertyType.description, propertyType.mandatory);
+			$component = this._getTextBox(propertyType.code + idSuffix, propertyType.description, propertyType.mandatory);
 		} else if (propertyType.dataType === "SAMPLE") {
 		    var sampleTypeCode = propertyType.sampleTypeCode;
 		    var sampleTypePlaceholder = null;
@@ -1079,6 +1158,9 @@ var FormUtil = new function() {
 		    { code : "true", label : "true" },
 		    { code : "false", label : "false" }
 		], alt, isRequired);
+		$dropdown.refresh = function() {
+		    Select2Manager.add($dropdown);
+		}
 		return $dropdown;
 	}
 
@@ -1136,6 +1218,9 @@ var FormUtil = new function() {
 		}
 		$component.append($options);
 		Select2Manager.add($component);
+		$component.refresh = function() {
+		    Select2Manager.add($component);
+		}
 		return $component;
 	}
 	
@@ -1196,7 +1281,7 @@ var FormUtil = new function() {
     }
 
 	this._getDatePickerField = function(id, alt, isRequired, isDateOnly, value, excludeTimeZone) {
-		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt });
+		var $component = $('<div>', {'class' : 'form-group', 'style' : 'margin-left: 0px;', 'placeholder' : alt, 'id' : 'datetimepicker_parent_' + id });
 		var $subComponent = $('<div>', {'class' : 'input-group date', 'id' : 'datetimepicker_' + id });
 		var $input = $('<input>', {'class' : 'form-control', 'type' : 'text', 'id' : id, 'placeholder' : (isDateOnly ? 'yyyy-MM-dd (YEAR-MONTH-DAY)' : (excludeTimeZone ? 'yyyy-MM-dd HH:mm:ss (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND)' : 'yyyy-MM-dd HH:mm:ss ZZ (YEAR-MONTH-DAY : HOUR-MINUTE-SECOND TIMEZONE)')),
 			'data-format' : isDateOnly ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm:ss'});
@@ -1222,6 +1307,15 @@ var FormUtil = new function() {
         });
 
 		$component.append($subComponent);
+
+		$component.refresh = function() {
+		    $subComponent.datetimepicker({
+                format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
+                extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
+                useCurrent : false,
+                defaultDate : date
+            });
+		}
 
 		return $component;
 	}
@@ -1484,6 +1578,13 @@ var FormUtil = new function() {
 		if (propertyType && propertyType.mandatory) {
 			$component.attr('required', '');
 		}
+
+		$component.refresh = function() {
+		    var instance = CKEditorManager.getEditorById($component.attr("id"));
+            if(!instance) {
+                FormUtil.createCkeditor($component, componentOnChange, value, placeholder, isReadOnly, toolbarContainer);
+            }
+		}
 		return $component;
 	}
 	
@@ -1551,7 +1652,7 @@ var FormUtil = new function() {
 		if(!title) {
 			title = "More ... ";
 		}
-		var id = 'options-menu-btn';
+		var id = 'options-menu-btn-' + mainController.getNextId();
 		if (namespace) {
 		    id = id + "-" + namespace;
 		    id = id.toLowerCase();
@@ -1575,9 +1676,10 @@ var FormUtil = new function() {
 			} else {
 				var label = option.label;
 				var title = option.title ? option.title : label;
-				var id = _this.prepareId(title).toLowerCase();
+				var id = _this.prepareId(title).toLowerCase() + "-" +  + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
-				$dropdownElement.click(option.action);
+				$("body").off("click", "#"+id)
+				$("body").on("click", "#"+id, option.action)
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
@@ -1606,12 +1708,12 @@ var FormUtil = new function() {
 				var $section = $(option.section);
 				$section.toggle(shown);
 				var $label = $("<span>").append((shown ? "Hide " : "Show ") + option.label);
-				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase();
+				var id = 'options-menu-btn-' + _this.prepareId(option.label).toLowerCase() + '-' + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", { 'id' : id }).append($label));
 				var action = function(event) {
 					var option = event.data.option;
 					var $label = event.data.label;
-					var $section = event.data.section;
+					var $section = $(event.data.section);
 					$section.toggle(300, function() {
 						if ($section.css("display") === "none") {
 							$label.text("Show " + option.label);
@@ -1627,7 +1729,8 @@ var FormUtil = new function() {
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
 					});
 				};
-				$dropdownElement.click({option : option, label : $label, section : $section}, action);
+				$("body").off("click", "#"+id)
+				$("body").on("click", "#"+id, {option : option, label : $label, section : $section}, action)
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		});
@@ -1676,6 +1779,7 @@ var FormUtil = new function() {
 		$alternateRightToolbar.css({ marginBottom: "0px" });	
 		
 		var containerId = tabsModel.containerId || "";
+		var toolbarId = tabsModel.toolbarId || "toolbar-id" + mainController.getNextId();
 		var tabs = tabsModel.tabs || [];
 		var tabsContainerOptions = { 
 		  class: "nav nav-tabs toolbar-tabs", 
@@ -1749,7 +1853,7 @@ var FormUtil = new function() {
 		  .append($alternateRightToolbarContainer)
 		  .append($tabsContainer);
 	  
-		var $combinedContainer = $("<div>", { class: "toolbar-with-tabs" }).css({
+		var $combinedContainer = $("<div>", { id: toolbarId, class: "toolbar-with-tabs" }).css({
 		  display: "flex",
 		  alignItems: "center",
 		  justifyContent: "space-between",
@@ -1806,9 +1910,9 @@ var FormUtil = new function() {
 				view = "showViewDataSetPageFromPermId";
 				break;
 		}
-		
+
 		var href = Util.getURLFor(mainController.sideMenu.getCurrentNodeId(), view, permIdOrIdentifier);
-		var click = function(event) {
+		var clickFunction = function(event) {
 		    event.preventDefault(); // Prevent default link behavior
 			var arg = null;
 			if(paginationInfo) {
@@ -1822,10 +1926,26 @@ var FormUtil = new function() {
 				arg = permIdOrIdentifier;
 			}
 			mainController.changeView(view, arg, true);
+			var objectId = {type: entityKind.toUpperCase(), id: permIdOrIdentifier};
+			if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
+                mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
+			}
 		}
 		displayName = String(displayName).replace(/<(?:.|\n)*?>/gm, ''); //Clean any HTML tags
+		if(!id) {
+		    id = 'link-id-' + mainController.getNextId()
+		}
+
 		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
-		link.click(click);
+		$("body").off("click", "#"+id)
+        $("body").on("click", "#"+id, clickFunction)
+
+        //this is workaround for links in DataGrids to work in tabs
+        link.click(clickFunction)
+        link.refresh = function() {
+            this.unbind();
+            this.click(clickFunction);
+        }
 		return link;
 	}
 	
@@ -2422,8 +2542,8 @@ var FormUtil = new function() {
 	
 	this.getFreezeButton = function(entityType, permId, isEntityFrozen) {
 		var _this = this;
-		var $freezeButton = FormUtil.getButtonWithIcon("glyphicon-lock");
-		
+		var $freezeButton = FormUtil.getToolbarButton("LOCKED")
+
 		if(isEntityFrozen) {
 			$freezeButton.attr("disabled", "disabled");
 			$freezeButton.append("Frozen");
@@ -2459,6 +2579,70 @@ var FormUtil = new function() {
 	    }
 
 	    repeatUntilSet();
+    }
+
+    /**
+        Creates modal window with Object type / Collection type selection
+        spaceCode - code of space where to create new entity
+        projectCode - code of project where to create new entity (optional for collection type selection flow)
+        experimentIdentifier - identifier of collection where to create entity (optional for collection type selection flow)
+        optionalParentSample - sample to set as a parent (optional)
+    */
+    this.createNewCollectionOrObject = function(spaceCode, projectCode, experimentIdentifier, optionalParentSample) {
+        var _this = this;
+        var $dropdown = FormUtil.getSampleOrCollectionTypesDropdown("sampleCollectionTypeDropdown", true, null, null, spaceCode);
+        Util.showDropdownAndBlockUI("sampleCollectionTypeDropdown", $dropdown, null);
+
+        $("#sampleCollectionTypeDropdown").on("change", function(event) {
+            var value = $("#sampleCollectionTypeDropdown")[0].value.split(',');
+            var typeValue = value[0];
+            var typeCode = value[1];
+            Util.blockUI();
+            setTimeout(function() {
+                switch(typeValue) {
+                    case "OBJECT":
+                        var argsMap = {
+                            "sampleTypeCode" : typeCode,
+                            "spaceCode" : spaceCode,
+                            "projectCode": projectCode,
+                            "experimentIdentifier": experimentIdentifier
+                        };
+                        mainController.changeView("showCreateSamplePage", JSON.stringify(argsMap));
+                        if(optionalParentSample) {
+                            var setParent = function() {
+                                mainController.currentView._sampleFormModel.sampleLinksParents.addSample(optionalParentSample);
+                                Util.unblockUI();
+                            }
+
+                            var repeatUntilSet = function() {
+                               if(mainController.currentView.isLoaded()) {
+                                   setParent();
+                               } else {
+                                   setTimeout(repeatUntilSet, 100);
+                               }
+                            }
+                           repeatUntilSet();
+                        }
+                        break;
+                    case "COLLECTION":
+                         var projectIdentifier = IdentifierUtil.getProjectIdentifier(spaceCode, projectCode)
+                         var argsMap = {
+                            "experimentTypeCode" : typeCode,
+                            "projectIdentifier" : projectIdentifier
+                         };
+                         mainController.changeView("showCreateExperimentPage", JSON.stringify(argsMap));
+                        break;
+
+                }
+
+
+                Util.unblockUI();
+            }, 100);
+        });
+
+        $("#sampleCollectionTypeDropdownCancel").on("click", function(event) {
+            Util.unblockUI();
+        });
     }
 
     this.createNewCollection = function(projectIdentifier) {
@@ -2567,6 +2751,288 @@ var FormUtil = new function() {
     		});
     }
 
+    this.showArchiveAfsDataForm = function(entityType, permId, code) {
+        var _this = this;
+        var archiveForm = function(dataset) {
+
+            var physicalData = null;
+            if(dataset) {
+                physicalData = dataset.physicalData;
+            }
+
+            var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+            $window.append($('<legend>').append("Data archiving of")
+                                        .append("&nbsp;")
+                                        .append(code));
+            var css = {
+                'top' : '35%',
+                'width' : '50%',
+                'left' : '30%',
+                'right' : '20%',
+                'text-align' : 'left',
+                'overflow' : 'hidden',
+            };
+
+            if(physicalData) {
+
+                    var archiveIcon = "ARCHIVE_NOT_REQUESTED";
+                    var archiveImage = "./img/archive-not-requested-icon.png";
+                    var archiveStatus = physicalData.status;
+                    if (physicalData.presentInArchive) {
+                        archiveIcon = "ARCHIVED";
+                        archiveImage = "./img/archive-archived-icon.png";
+                        archiveStatus = "ARCHIVED";
+                    } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+                        archiveImage = "./img/archive-requested-icon.png";
+                        archiveIcon = "ARCHIVE_REQUESTED";
+                        if(physicalData.archivingRequested) {
+                            archiveStatus = "ARCHIVE REQUESTED";
+                        } else {
+                            archiveStatus = "ARCHIVE PENDING";
+                        }
+                    }
+
+                    var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+
+                    var archiveTooltip = null;
+                    if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+                        if (physicalData.archivingRequested) {
+                            var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Revoke archiving request', 'id' : 'revoke-archiving-btn'});
+                            $revokeButton.click(function() {
+                                var physicalDataUpdate = { archivingRequested : false }
+                                mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                    Util.unblockUI();
+                                    Util.showSuccess("Archive request revoked");
+                                });
+                            });
+                            $buttons.append($revokeButton).append('&nbsp;')
+                            archiveTooltip = "Revoke archiving request";
+                        } else {
+                            var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Request archiving', 'id' : 'request-archiving-btn'});
+                            $requestButton.click(function() {
+                                Util.requestArchiving([dataset], Util.unblockUI);
+                            });
+                            var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Disallow archiving', 'id' : 'lock-archiving-btn'});
+                            $lockButton.click(function() {
+                                  var physicalDataUpdate = { status : "LOCKED" }
+                                  mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                      Util.unblockUI();
+                                      Util.showSuccess("Archiving Locked");
+                                  });
+                            });
+                            $buttons.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;')
+                            archiveTooltip = "Request or disallow archiving";
+                        }
+                    } else if (physicalData.status == "LOCKED") {
+                        var $allowArchivingButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Allow archiving', 'id' : 'unlock-archiving-btn'});
+                        $allowArchivingButton.click(function() {
+                          var physicalDataUpdate = { status : "AVAILABLE" }
+                          mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                              Util.unblockUI();
+                              Util.showSuccess("Archiving Unlocked");
+                          });
+                        });
+                        $buttons.append($allowArchivingButton).append('&nbsp;')
+                        archiveTooltip = "Allow archiving";
+                    } else if (physicalData.status == "ARCHIVED") {
+                         var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Unarchive', 'id' : 'unarchive-btn'});
+                        $unarchiveButton.click(function() {
+                            //todo wait until unarchive flow will work for AFS datasets
+                            Util.showSuccess("Work in progress");
+//                            mainController.serverFacade.unarchiveDataSets([permId], function() {
+//                                Util.unblockUI();
+//                            });
+                        });
+                        $buttons.append($unarchiveButton).append('&nbsp;')
+                        archiveTooltip = "Unarchive";
+                    }
+
+
+                    $window.append($("<p>")
+                        .append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+                        .append(archiveTooltip) );
+
+                    var $table = $("<table>", { class : "popup-table" } )
+                    var $tableBody = $("<tbody>" );
+                    $tableBody.append($("<tr>")
+                            .append($("<td>", {style : "width:20%"}).append('Status'))
+                            .append($("<td>").append($("<b>", { text: archiveStatus}))));
+
+                    $tableBody.append($("<tr>")
+                            .append($("<td>").append('Present in archive'))
+                            .append($("<td>").append($("<b>", { text: physicalData.presentInArchive}))));
+
+                    $tableBody.append($("<tr>")
+                            .append($("<td>").append('Archiving requested'))
+                            .append($("<td>").append($("<b>", { text: physicalData.archivingRequested}))));
+                    $table.append($tableBody)
+                    $window.append($table);
+
+
+
+                    $window.append("<br>");
+                    $window.append($buttons);
+
+
+                    var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel'});
+                    $cancelButton.click(function() {
+                        Util.unblockUI();
+                    });
+                    $buttons.append($cancelButton);
+            } else {
+                $window.append($("<p>")
+                                .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 20px; vertical-align: text-bottom;" }))
+                                .append($("<span>", { style : "color:red; font-size: large;" })
+                                .append(" No data to archive has been detected!")) );
+
+                var $buttons = $('<div>', {'id' : 'archiving_buttons'});
+                $window.append($buttons);
+
+                var $acceptButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Accept', 'id' : 'cancel'});
+                $acceptButton.click(function() {
+                    Util.unblockUI();
+                });
+                $buttons.append($acceptButton);
+            }
+            Util.blockUI($window, css);
+        }
+
+
+        require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+            function(DataSetPermId, DataSetFetchOptions) {
+                var ids = [new DataSetPermId(permId)];
+                var fetchOptions = new DataSetFetchOptions();
+                fetchOptions.withPhysicalData();
+                mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                    var datasets = Util.mapValuesToList(map);
+                    archiveForm(datasets.length > 0 ? datasets[0] : null)
+                });
+        });
+    }
+
+    this.showFreezeAfsDataForm = function(entityType, permId, code) {
+        var _this = this;
+
+        Util.blockUI();
+
+        var $window = $('<form>', {
+        					'action' : 'javascript:void(0);'
+        				});
+
+        $window.append($('<legend>')
+        				    .append("Freeze Entity data of")
+        				    .append("&nbsp;")
+        				    .append(code)
+        				    .append("&nbsp;")
+        				    .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 26px; vertical-align: text-bottom;" }))
+                            .append($("<span>", { style : "color:red; font-size: large;" })
+                            .append(" This operation is irreversible!"))
+        				);
+
+        //todo list child entities?
+
+        //
+        // Warning
+        //
+        var operationMin = 0;
+        var operationMax = 100;
+        var operationNumberOne = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+        var operationNumberTwo = Math. floor(Math. random() * (operationMax - operationMin + 1)) + operationMin;
+        var operationOperand = Math.random() < 0.5; // 50% provability of getting true
+        var operationResult = (operationOperand)?operationNumberOne+operationNumberTwo:operationNumberOne-operationNumberTwo;
+        var confirmationText = operationNumberOne + ' ' + ((operationOperand)?'+':'-') + ' ' + operationNumberTwo + ' = ?';
+
+        $window.append("<br>");
+        $window.append($("<p>")
+                .append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+                .append(" Write the result to '" + confirmationText + "' on the confirmation field, after data is frozen no more changes will be possible:"));
+
+        //
+        // Password
+        //
+        var $passField = FormUtil._getInputField('input', "CODE_FREEZE_FIELD", confirmationText , null, true);
+        var $passwordGroup = FormUtil.getFieldForComponentWithLabel($passField, "Operation Result", null);
+        $window.append($passwordGroup);
+
+        //
+        // Buttons
+        //
+        var $btnAccept = $('<input>', { 'type': 'submit', 'class' : 'btn btn-primary', 'value' : 'Accept' });
+
+        var $btnCancel = $('<a>', { 'class' : 'btn btn-default' }).append('Cancel');
+        $btnCancel.click(function() {
+            Util.unblockUI();
+        });
+
+        $window.append($('<br>'));
+
+        $window.append($btnAccept).append('&nbsp;').append($btnCancel);
+
+        $window.submit(function() {
+
+            var password = $passField.val();
+            if(password != operationResult) {
+                Util.showUserError('The given result is not correct.');
+            } else {
+                require([ "as/dto/experiment/update/ExperimentUpdate", "as/dto/experiment/id/ExperimentPermId",
+                              "as/dto/sample/update/SampleUpdate", "as/dto/sample/id/SamplePermId"],
+                    function(ExperimentUpdate, ExperimentPermId, SampleUpdate, SamplePermId) {
+                        var doneFunction = function() {
+                            Util.showSuccess("Freezing data succeeded.", function() {
+                                Util.unblockUI();
+                                switch(entityType) {
+                                    case "SAMPLE":
+                                        mainController.changeView('showViewSamplePageFromPermId', permId);
+                                        break;
+                                    case "EXPERIMENT":
+                                        mainController.changeView('showExperimentPageFromPermId', permId);
+                                        break;
+                                }
+                            });
+                        }
+                        var failFunction = function() {
+                           Util.showUserError('Freezing data failed.', function() {
+                               Util.unblockUI();
+                           });
+                        }
+                        switch(entityType) {
+                            case "SAMPLE":
+                               var sampleUpdate = new SampleUpdate();
+                               sampleUpdate.setSampleId(new SamplePermId(permId));
+                               sampleUpdate.makeDataImmutable();
+                               mainController.openbisV3.updateSamples( sampleUpdate ).done(doneFunction).fail(failFunction);
+                               break;
+                            case "EXPERIMENT":
+                                var experimentUpdate = new ExperimentUpdate();
+                                experimentUpdate.setExperimentId(new ExperimentPermId(permId))
+                                experimentUpdate.makeDataImmutable();
+                                mainController.openbisV3.updateExperiments([ experimentUpdate ]).done(doneFunction).fail(failFunction);
+                                break;
+                            default:
+                                Util.showError("Unsupported entity type for this operation: " + entityType);
+                        }
+                    });
+            }
+            Util.unblockUI();
+        });
+
+        var css = {
+                'text-align' : 'left',
+                'top' : '15%',
+                'width' : '70%',
+//                'height' : '400px',
+                'left' : '15%',
+                'right' : '20%',
+                'overflow' : 'none'
+        };
+
+        Util.blockUI($window, css, false, function() {
+            const myInput = document.getElementById("CODE_FREEZE_FIELD");
+            myInput.onpaste = e => e.preventDefault();
+        });
+
+    }
+
 	this.showFreezeForm = function(entityType, permId, code) {
 		var _this = this;
 		
@@ -2588,11 +3054,11 @@ var FormUtil = new function() {
 				});
 				
 				$window.append($('<legend>')
-				    .append("Freeze Entity")
+				    .append("Freeze Entity metadata of")
 				    .append("&nbsp;")
 				    .append(code)
 				    .append("&nbsp;")
-				    .append($("<span>", { class: "glyphicon glyphicon-warning-sign" }))
+				    .append($("<span>", { class: "material-icons", text: "warning_amber", style: "font-size: 26px; vertical-align: text-bottom;" }))
                     .append($("<span>", { style : "color:red; font-size: large;" })
                     .append(" This operation is irreversible!"))
 				);
@@ -2600,11 +3066,15 @@ var FormUtil = new function() {
 				//
 				// List
 				//
+				var count = Object.keys(result.result).length;
+				var $selectedCount = $("<b>").text(count);
 				$window.append($("<p>")
-						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
-						.append(" Choose the entities to freeze (all by default):"));
+						.append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
+						.append(" Choose the entities to freeze (selected ")
+						.append($selectedCount)
+						.append(" out of " + Object.keys(result.result).length + "):"));
 
-				var $tableBody = $("<table>", { class : "popup-table" } );
+				var $tableBody = $("<tbody>" );
 				entityTypeOrder = ["Space", "Project", "Experiment", "Sample", "DataSet"];
 				entityMap = result.result;
 				
@@ -2617,38 +3087,47 @@ var FormUtil = new function() {
 						return type;
 					}
 				}
-				
-				for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
-					for (key in entityMap) {
-						entity = entityMap[key];
-						if(entity.type == entityTypeOrder[typeOrder]) {
-							$tableBody.append($("<tr>")
-									.append($("<td>").append(_this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)))
-									.append($("<td>").append(getTypeDisplayName(entity.type)))
-									.append($("<td>").append(entity.permId))
-									.append($("<td>").append(entity.displayName))
-							);
-						}
-					}
-				}
 
-				var $tableHeader = $("<table>", { class : "popup-table" } )
-								.append($("<tr>")
-										.append($("<th>").append("Selected"))
-										.append($("<th>").append("Type"))
-										.append($("<th>").append("PermId"))
-										.append($("<th>").append("Name"))
-								);
+                var $table = $("<table>", { class : "popup-table-sticky" } )
+                                .append($("<thead>", { style : "z-index: 999" })
+                                .append($("<tr>")
+                                        .append($("<th>").append("Selected"))
+                                        .append($("<th>").append("Type"))
+                                        .append($("<th>").append("PermId"))
+                                        .append($("<th>").append("Name"))
+                                ));
 
-				var $tableContainer = $("<div>");
-				$tableContainer.css({
-				                'height' : '100px',
-                                'overflow' : 'auto'
-                                });
-				$tableContainer.append($tableBody);
+                for(var typeOrder = 0 ; typeOrder < entityTypeOrder.length ; typeOrder++) {
+                    for (key in entityMap) {
+                        entity = entityMap[key];
+                        if(entity.type == entityTypeOrder[typeOrder]) {
 
-				$window.append($tableHeader).append($tableContainer);
-				
+                            var $checkBoxField = _this._getBooleanField(_this._createFormFieldId(key), entity.displayName, true)
+                            $checkBoxField.find("input").click(function() {
+                                if(this.checked) {
+                                    count++;
+                                } else {
+                                    count--;
+                                }
+                                $selectedCount.text(count);
+                            })
+                            $checkBoxField.find("label").css("vertical-align", "text-bottom");
+                            $tableBody.append($("<tr>")
+                                    .append($("<td>").append($checkBoxField))
+                                    .append($("<td>").append(getTypeDisplayName(entity.type)))
+                                    .append($("<td>").append(entity.permId))
+                                    .append($("<td>").append(entity.displayName))
+                            );
+                        }
+                    }
+                }
+
+                $table.append($tableBody)
+
+				var $tableContainer = $("<div>", { class: "lock-header"});
+				$tableContainer.append($table);
+				$window.append($tableContainer);
+
 				//
 				// Warning
 				//
@@ -2662,7 +3141,7 @@ var FormUtil = new function() {
 
 				$window.append("<br>");
 				$window.append($("<p>")
-						.append($("<span>", { class: "glyphicon glyphicon-info-sign" }))
+						.append($("<span>", { class: "material-icons", text: "info_outline", style: "font-size: 20px; vertical-align: bottom;" }))
 						.append(" Write the result to '" + confirmationText + "' on the confirmation field, after entities are frozen no more changes will be possible:"));
 				//
 				// Password
@@ -2783,6 +3262,7 @@ var FormUtil = new function() {
 			id = id[0] === '$' ? id.substring(1) : id;
 			id = id.split(".").join("");
 			id = id.split(" ").join("-").split("/").join("_");
+			id = id.split("(").join("_").split(")").join("_");
 		}
 		return id;
 	}

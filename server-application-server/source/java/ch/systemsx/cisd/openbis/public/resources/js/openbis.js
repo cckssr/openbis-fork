@@ -259,6 +259,12 @@ _openbisInternal.prototype.getDataStoreHostForDataStoreCode = function(dataStore
 	});
 }
 
+_openbisInternal.prototype._counter = 1;
+
+_openbisInternal.prototype.getNextId = function() {
+    return this._counter++;
+}
+
 /**
  * ===============
  * OpenBIS facade
@@ -1800,7 +1806,8 @@ openbis.prototype.createSessionWorkspaceUploaderForDataStore = function(uploader
 				       form_upload_url: dataStoreUrl + "/session_workspace_form_upload",
 				       file_download_url: dataStoreUrl + "/session_workspace_file_download",
 				       oncomplete: oncomplete,
-				       sessionID: $this.getSession()
+				       sessionID: $this.getSession(),
+				       viewId: $this._internal.getNextId(),
 			};
 			
 			if(uploaderSettings) {
@@ -1808,7 +1815,6 @@ openbis.prototype.createSessionWorkspaceUploaderForDataStore = function(uploader
 					finalSettings[key] = uploaderSettings[key];
 				}
 			}
-			
 			Uploader.init(finalSettings);
 		});
 	});

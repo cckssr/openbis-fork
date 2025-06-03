@@ -24,6 +24,7 @@ dependencies {
             project(':server-original-data-store'),
             project(':server-data-store'),
             project(path: ':server-data-store', configuration: 'tests'),
-            'eclipse:jetty-proxy:9.4.44.v20210927',
-            'log4j:log4j-api:2.10.0'
+            'eclipse:jetty-proxy:9.4.44.v20210927'
+            'slf4j:slf4j-api:2.0.6'
+
 }

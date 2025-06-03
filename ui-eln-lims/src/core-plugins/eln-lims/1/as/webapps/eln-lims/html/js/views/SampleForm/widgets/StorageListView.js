@@ -17,6 +17,19 @@ function StorageListView(storageListController, storageListModel) {
 	this._storageListController = storageListController;
 	this._storageListModel = storageListModel;
 	this._dataGrid = null; //TO-DO This is a controller, should not be here
+	this._viewId = mainController.getNextId();
+
+	this._refreshableFields = []
+
+	this.refresh = function () {
+
+        if(this._refreshableFields) {
+            for(var field of this._refreshableFields) {
+                field.refresh();
+            }
+        }
+
+    }
 	
 	this.repaint = function($container) {
 		var _this = this;
@@ -152,13 +165,16 @@ function StorageListView(storageListController, storageListModel) {
 
 		var $dataGridContainer = $("<div>");
 		this._dataGrid.init($dataGridContainer, extraOptions);
+
+		var storageAddButtonId = "add-storage-btn-"+this._viewId;
 		
-		var $storageAddButton = $("<a id='add-storage-btn'>");
+		var $storageAddButton = $("<a id='"+storageAddButtonId+"'>");
 		$storageAddButton.addClass("btn");
-		$storageAddButton.addClass("btn-default");
-		$storageAddButton.append($("<i>", { class : "glyphicon glyphicon-plus" } )).append(" New Storage Position");
-		
-		$storageAddButton.on("click", function(event) {
+		$storageAddButton.addClass("btn-primary");
+		$storageAddButton.addClass("btn-secondary");
+		$storageAddButton.append($("<i>", { class : "material-icons", text: "add" } )).append(" Storage Position");
+
+		$("body").on("click", "#"+storageAddButtonId, function(event) {
 			var uuid = Util.guid();
 			var newChildSample = {
 					newSample : true,

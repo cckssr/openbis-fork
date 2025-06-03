@@ -18,7 +18,16 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	this._projectFormController = projectFormController;
 	this._projectFormModel = projectFormModel;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
-	
+	this._viewId = mainController.getNextId();
+
+	var _refreshableFields = [];
+
+    this.refresh = function() {
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
+
 	this.repaint = function(views) {
 		var $container = views.content;
         mainController.profile.beforeViewPaint(ViewType.PROJECT_FORM, this._projectFormModel, $container);
@@ -62,20 +71,22 @@ function ProjectFormView(projectFormController, projectFormModel) {
             if(!isInventoryProject) {
                  var $createFolder = FormUtil.getToolbarButton("FOLDER", function() {
                       _this._projectFormController.createObject("FOLDER");
-                 }, "Folder", "New Folder", "create-folder-btn", 'btn btn-primary btn-secondary');
+                 }, "Folder", "New Folder", "create-folder-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
                  toolbarModel.push({ component : $createFolder});
             }
 
 		    var $createEntry = FormUtil.getToolbarButton("ENTRY", function() {
                 _this._projectFormController.createObject("ENTRY");
-            }, "Entry", "New Entry", "create-entry-btn", 'btn btn-primary btn-secondary');
+            }, "Entry", "New Entry", "create-entry-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
             toolbarModel.push({ component : $createEntry});
+
+
 
 			if (_this._allowedToCreateExperiments()) {
 			    //Create Experiment
 			    var $createOther = FormUtil.getToolbarButton("ENTRY", function() {
-                    FormUtil.createNewCollection(IdentifierUtil.getProjectIdentifier(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code));
-                }, "Other", "Create different object", "create-btn", 'btn btn-primary btn-secondary');
+                    FormUtil.createNewCollectionOrObject(_this._projectFormModel.project.spaceCode, _this._projectFormModel.project.code, null, null);
+                }, "Other", "Create different object", "create-collection-btn-" + _this._viewId, 'btn btn-primary btn-secondary');
                 toolbarModel.push({ component : $createOther});
 			}
 			if (_this._allowedToMove()) {
@@ -93,7 +104,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
 					_this._projectFormController.enableEditing();
-				}, "Edit", "Edit project", "edit-btn", 'btn btn-default');
+				}, "Edit", "Edit project", "edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				toolbarModel.push({ component : $editBtn });
 			}
 			if(_this._allowedToDelete()) {
@@ -165,7 +176,10 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-			}, "Save", "Save changes", "save-btn");
+                if(_this._projectFormModel.mode === FormMode.CREATE) {
+                    mainController.tabContent.closeCurrentTab();
+                }
+			}, "Save", "Save changes", "save-btn-project-" + _this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");
 			toolbarModel.push({ component : $saveBtn });
@@ -193,7 +207,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 		var $helpBtn = FormUtil.getToolbarButton("?", function() {
                                     mainController.openHelpPage();
-                                }, null, "Help", "help-btn", 'btn btn-default help');
+                                }, null, "Documentation", "help-btn-project-" + _this._viewId, 'btn btn-default help');
         $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
         toolbarModel.push({ component : $helpBtn });
 
@@ -214,11 +228,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		hideShowOptionsModel.push({
 			forceToShow : this._projectFormModel.mode === FormMode.CREATE,
 			label : "Identification Info",
-			section : "#project-identification-info"
+			section : "#project-identification-info-" + this._viewId
 		});
 		
 		var _this = this;
-		var $identificationInfo = $("<div>", { id : "project-identification-info" });
+		var $identificationInfo = $("<div>", { id : "project-identification-info-" + _this._viewId });
 
         $identificationInfo.append($("<legend>").append("Identification Info"));
         if (this._projectFormModel.mode !== FormMode.CREATE) {
@@ -237,8 +251,9 @@ function ProjectFormView(projectFormController, projectFormModel) {
         }
 
 		if (this._projectFormModel.mode === FormMode.CREATE) {
-			var $textField = FormUtil._getInputField('text', "project-code-id", "Project Code", null, true);
-			$textField.keyup(function(event){
+		    var textFieldId = "project-code-id-" + _this._viewId;
+			var $textField = FormUtil._getInputField('text', textFieldId, "Project Code", null, true);
+			$("body").on("keyup", "#"+textFieldId, function(event){
 				var textField = $(this);
 				var caretPosition = this.selectionStart;
 				textField.val(textField.val().toUpperCase());
@@ -276,11 +291,11 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			forceToShow : this._projectFormModel.mode === FormMode.CREATE,
 			showByDefault : true,
 			label : "Description",
-			section : "#project-description"
+			section : "#project-description-" + this._viewId
 		});
 		
 		var _this = this;
-		var $description = $("<div>", { id : "project-description" });
+		var $description = $("<div>", { id : "project-description-" + _this._viewId });
 		$description.append($("<legend>").append("General"));
 		var description = Util.getEmptyIfNull(this._projectFormModel.project.description);
 		if(this._projectFormModel.mode !== FormMode.VIEW) {
@@ -297,10 +312,12 @@ function ProjectFormView(projectFormController, projectFormModel) {
 			};
 			$textBox.val(description);
 			$textBox = FormUtil.activateRichTextProperties($textBox, textBoxEvent, null, description, false);
+			_refreshableFields.push($textBox);
 			$description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		} else {
 			var $textBox = FormUtil._getTextBox(null, "Description", false);
 			$textBox = FormUtil.activateRichTextProperties($textBox, undefined, null, description, true);
+			_refreshableFields.push($textBox);
 			$description.append(FormUtil.getFieldForComponentWithLabel($textBox, "Description"));
 		}
 		$description.hide();
@@ -308,7 +325,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 	}
 
     this._createOverviewSection = function(projectIdentifier, hideShowOptionsModel) {
-        var $overview = $("<div>", { id : "project-overview" });
+        var $overview = $("<div>", { id : "project-overview-" + this._viewId });
         $overview.append($("<legend>").append("Overview"));
         var $overviewContainer = $("<div>");
         $overview.append($overviewContainer);
@@ -324,17 +341,19 @@ function ProjectFormView(projectFormController, projectFormModel) {
         
         var experimentTableController = new ExperimentTableController(this._projectFormController, null, jQuery.extend(true, {}, this._projectFormModel.project), true);
         experimentTableController.init($experimentsOverview);
+        _refreshableFields.push(experimentTableController)
         var sampleTableController = new SampleTableController(this._projectFormController, null, null, this._projectFormModel.project.permId, true, null, 40);
         var views = {
             header : $header,
             content : $samplesOverview
         }
         sampleTableController.init(views);
+        _refreshableFields.push(sampleTableController)
 
         $overview.hide();
         hideShowOptionsModel.push({
             label : "Overview",
-            section : "#project-overview",
+            section : "#project-overview-" + this._viewId,
             beforeShowingAction : function() {
                 experimentTableController.refresh();
                 sampleTableController.refresh();
@@ -345,7 +364,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
 
 	this._createExperimentsSection = function(projectIdentifier, hideShowOptionsModel) {
 		var entityKindName = ELNDictionary.getExperimentsDualName();
-		var $experiments = $("<div>", { id : "project-experiments" });
+		var $experiments = $("<div>", { id : "project-experiments-" + this._viewId });
 		var $experimentsContainer = $("<div>");
 		$experiments.append($("<legend>").append(entityKindName));
 		$experiments.append($experimentsContainer);
@@ -372,11 +391,12 @@ function ProjectFormView(projectFormController, projectFormModel) {
 		$experiments.hide();
 		hideShowOptionsModel.push({
 			label : entityKindName,
-			section : "#project-experiments",
+			section : "#project-experiments-" + _this._viewId,
 			beforeShowingAction : function() {
 				experimentTableController.refresh();
 			}
 		});
+		_refreshableFields.push(experimentTableController)
 		return $experiments;
 	}
 
@@ -499,6 +519,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
                 $component.append($warning);
                 var deleteEntityController = new DeleteEntityController(function(reason) {
                     _this._projectFormController.deleteDependentEntities(reason, experiments, samples);
+                    mainController.tabContent.closeCurrentTab();
                 }, true, null, $component);
                 deleteEntityController.setNumberOfEntities(numberOfExperiments + numberOfSamples);
                 deleteEntityController.setAdditionalTest("After removal of the entities from the Trashcan, you will be able to delete this Project.");
@@ -506,6 +527,7 @@ function ProjectFormView(projectFormController, projectFormModel) {
             } else {
                 var modalView = new DeleteEntityController(function(reason) {
                     _this._projectFormController.deleteProject(reason);
+                    mainController.tabContent.closeCurrentTab();
                 }, true, null, $component, true);
                 modalView.init();
             }

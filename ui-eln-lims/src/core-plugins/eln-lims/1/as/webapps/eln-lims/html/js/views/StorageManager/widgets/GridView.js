@@ -20,10 +20,19 @@ function GridView(gridModel) {
 	this._posClickedEventHandler = null;
 	this._labelClickedEventHandler = null;
 	this._posDropEventHandler = null;
-	
+
+	var _refreshableFields = []
+
+	this.refresh = function() {
+	     for(var field of _refreshableFields) {
+            field.refresh();
+         }
+	}
+
 	this.repaint = function($container) {
 		$container.empty();
 		if(this._gridModel.isValid()) {
+		    _refreshableFields = [];
 			this._gridTable = this._getGridTable();
 			$container.append(this._gridTable);
 		} else {
@@ -68,42 +77,42 @@ function GridView(gridModel) {
 			$numberCell.css('text-align', 'center');
 			$numberCell.css('vertical-align', 'middle');
 			$newRow.append($numberCell);
+
+			var dropEventFuncCopyPos = function(newX,newY) {
+                return function(event) {
+                    event.preventDefault();
+                    var origX = event.originalEvent.dataTransfer.getData("origX");
+                    var origY = event.originalEvent.dataTransfer.getData("origY");
+                    var tagId = event.originalEvent.dataTransfer.getData("tagId");
+                    var objectAsString = event.originalEvent.dataTransfer.getData("object");
+                    var extraDragDataString = event.originalEvent.dataTransfer.getData("extraDragData");
+
+                    if(event.target.nodeName === "TD") {
+                        if(_this._posDropEventHandler) {
+                            var object = JSON.parse(objectAsString);
+                            var extraDragDataObject = null;
+                            if(extraDragDataString) {
+                                extraDragDataObject = JSON.parse(extraDragDataString);
+                            }
+                            _this._posDropEventHandler(origX,origY, newX, newY, object, event.target, extraDragDataObject);
+                        }
+                        var $targetDrop = $(event.target);
+                        var $elementToDrop = $("#" + tagId);
+                        $targetDrop.append($elementToDrop);
+                    }
+                };
+            };
 			
 			for(var j = 0; j < this._gridModel.numColumns; j++) {
 			    var id = this._gridModel.gridId + "-" + rowLabel + "-" + (j+1);
 				var $newColumn = $("<td id = '" + id + "'>");
+
 				if(this._gridModel.isDragable) {
-					var dropEventFuncCopyPos = function(newX,newY) {
-						return function(event) {
-					    	event.preventDefault();
-					    	var origX = event.originalEvent.dataTransfer.getData("origX");
-					    	var origY = event.originalEvent.dataTransfer.getData("origY");
-					        var tagId = event.originalEvent.dataTransfer.getData("tagId");
-					        var objectAsString = event.originalEvent.dataTransfer.getData("object");
-					        var extraDragDataString = event.originalEvent.dataTransfer.getData("extraDragData");
-					        
-					        if(event.target.nodeName === "TD") {
-					        	if(_this._posDropEventHandler) {
-					        		var object = JSON.parse(objectAsString);
-					        		var extraDragDataObject = null;
-					        		if(extraDragDataString) {
-					        			extraDragDataObject = JSON.parse(extraDragDataString);
-					        		}
-					        		_this._posDropEventHandler(origX,origY, newX, newY, object, event.target, extraDragDataObject);
-					        	}
-					        	var $targetDrop = $(event.target);
-						        var $elementToDrop = $("#" + tagId);
-						        $targetDrop.append($elementToDrop);
-					        }
-					    };
-					};
-					var dropEventFunc = dropEventFuncCopyPos(i+1, j+1);
-					
 					$newColumn.on({
 					    dragover: function(e) {
 					        e.preventDefault();
 					    },
-					    drop: dropEventFunc
+					    drop: dropEventFuncCopyPos(i+1, j+1)
 					});
 				}
 				
@@ -117,12 +126,33 @@ function GridView(gridModel) {
 				if(!this._gridModel.isDisabled) {
 					$newColumn.click(clickEvent(i, j));
 				}
+
+				$newColumn.refresh = function() {
+				    this.unbind();
+				    var i = parseInt(this.attr("i"));
+				    var j = parseInt(this.attr("j"));
+				    if(_this._gridModel.isDragable) {
+				        this.on({
+                            dragover: function(e) {
+                                e.preventDefault();
+                            },
+                            drop: dropEventFuncCopyPos(i+1, j+1)
+                        });
+				    }
+
+				    if(!_this._gridModel.isDisabled) {
+                        this.click(clickEvent(i, j));
+                    }
+				}
+				_refreshableFields.push($newColumn);
 				
 				this._addLabels($newColumn, i + 1, j + 1);
 				$newColumn.css('width', cellWidth +'px');
 				$newColumn.css('min-height', minHeight +'px');
 				$newColumn.css('padding', '0px');
 				$newColumn.css('overflow', 'hidden');
+				$newColumn.attr("i", i)
+				$newColumn.attr("j", j)
 				$newRow.append($newColumn);
 			}
 			gridTable.append($newRow);
@@ -196,6 +226,18 @@ function GridView(gridModel) {
 							}
 						};
 					}
+
+					var dragCopyFuncSerialized = function(object, origX, origY) {
+                        return function(event) {
+                            event.originalEvent.dataTransfer.setData('origX', origX);
+                            event.originalEvent.dataTransfer.setData('origY', origY);
+                            event.originalEvent.dataTransfer.setData('tagId', this.id);
+                            event.originalEvent.dataTransfer.setData('object', object);
+                            if(_this._extraDragData) {
+                                event.originalEvent.dataTransfer.setData("extraDragData", JSON.stringify(_this._extraDragData));
+                            }
+                        };
+                    }
 					
 					//The original position where the label was is stored and not changed between drags
 					//This is used by multiple position samples
@@ -203,6 +245,10 @@ function GridView(gridModel) {
 					
 					if(this._gridModel.isDragable) {
 						labelContainer.attr('draggable', 'true');
+						labelContainer.attr('posX', posX);
+						labelContainer.attr('posY', posY);
+						labelContainer.attr('data', JSON.stringify(labels[i].data));
+						labelContainer.attr('displayName', labels[i].displayName);
 						labelContainer.on({
 						    dragstart: dragFunc
 						});
@@ -218,6 +264,27 @@ function GridView(gridModel) {
 					if(!this._gridModel.isDisabled) {
 						labelContainer.click(clickEvent(posX, posY, labels[i].displayName, labels[i].data));
 					}
+
+					labelContainer.refresh = function() {
+					    this.unbind();
+					    if(_this._gridModel.isDragable) {
+                            var x = parseInt(this.attr("posX"));
+                            var y = parseInt(this.attr("posY"));
+                            var data = this.attr("data");
+                            this.on({
+                                dragstart: dragCopyFuncSerialized(data, posX, posY)
+                            });
+                        }
+                        if(!_this._gridModel.isDisabled) {
+                            var x = parseInt(this.attr("posX"));
+                            var y = parseInt(this.attr("posY"));
+                            var objectAsString = this.attr("data");
+                            var data = JSON.parse(objectAsString);
+                            var displayName = this.attr("displayName")
+                            this.click(clickEvent(x, y, displayName, data));
+                        }
+					}
+					_refreshableFields.push(labelContainer);
 					
 					$component.append(labelContainer);
 				}

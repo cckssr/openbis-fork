@@ -15,48 +15,9 @@
  */
 package ch.systemsx.cisd.openbis.uitest.dsl;
 
-import static org.hamcrest.CoreMatchers.not;
-
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
-import org.hamcrest.Matcher;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
-
+import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
+import ch.systemsx.cisd.common.logging.ext.CustomWriterHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.dto.MaterialIdentifier;
 import ch.systemsx.cisd.openbis.plugin.query.shared.api.v1.dto.QueryTableModel;
 import ch.systemsx.cisd.openbis.uitest.dsl.matcher.CellContentMatcher;
@@ -154,6 +115,44 @@ import ch.systemsx.cisd.openbis.uitest.uid.DictionaryUidGenerator;
 import ch.systemsx.cisd.openbis.uitest.uid.UidGenerator;
 import ch.systemsx.cisd.openbis.uitest.webdriver.Pages;
 import ch.systemsx.cisd.openbis.uitest.widget.Widget;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.hamcrest.Matcher;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import static org.hamcrest.CoreMatchers.not;
 
 public abstract class SeleniumTest
 {
@@ -299,18 +298,23 @@ public abstract class SeleniumTest
     private void initializeLogging()
     {
         Logger rootLogger = Logger.getRootLogger();
-        if (rootLogger.getAllAppenders().hasMoreElements())
+        // TODO check why it expects no handlers
+        rootLogger.removeAllHandlers();
+        if (rootLogger.getHandlers().length > 0)
         {
             throw new IllegalStateException("log4j has appenders!");
         }
         rootLogger.setLevel(Level.INFO);
-        rootLogger.addAppender(new ConsoleAppender(new PatternLayout(
-                "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t]: %m%n")));
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new PatternFormatter(
+                "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t]: %m%n"));
+        rootLogger.addHandler(handler);
 
-        WriterAppender appender =
-                new WriterAppender(
-                        new PatternLayout("%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t]: %m%n"), console);
-        rootLogger.addAppender(appender);
+        CustomWriterHandler appender =
+                new CustomWriterHandler(console);
+        appender.setFormatter(new PatternFormatter(
+                "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t]: %m%n"));
+        rootLogger.addHandler(appender);
     }
 
     @AfterSuite

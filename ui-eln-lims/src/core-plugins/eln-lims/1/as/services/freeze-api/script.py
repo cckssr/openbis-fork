@@ -202,6 +202,20 @@ def getFreezeList(service, sessionToken, entity, spaceCode):
 				projectFetchOptions = ProjectFetchOptions();
 				projectFetchOptions.withSpace();
 				searchResults = service.searchProjects(sessionToken, projectSearchCriteria, projectFetchOptions).getObjects();
+
+				sampleSearchCriteria = SampleSearchCriteria();
+				sampleSearchCriteria.withSpace().withCode().thatEquals(id);
+				sampleSearchCriteria.withoutExperiment();
+				sampleSearchCriteria.withoutProject();
+
+				sampleFetchOptions = SampleFetchOptions();
+				sampleFetchOptions.withSpace();
+				sampleFetchOptions.withProperties();
+				searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+
+				searchResults3 = ArrayList(searchResults)
+				searchResults3.addAll(searchResults2)
+				searchResults = searchResults3;
 			if isinstance(entityToExpand, Project):
 				experimentSearchCriteria = ExperimentSearchCriteria();
 				experimentSearchCriteria.withProject().withPermId().thatEquals(id);
@@ -209,6 +223,20 @@ def getFreezeList(service, sessionToken, entity, spaceCode):
 				experimentFetchOptions.withProject().withSpace();
 				experimentFetchOptions.withProperties();
 				searchResults = service.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions).getObjects();
+
+				sampleSearchCriteria = SampleSearchCriteria();
+				sampleSearchCriteria.withProject().withPermId().thatEquals(id);
+				sampleSearchCriteria.withoutExperiment();
+
+				sampleFetchOptions = SampleFetchOptions();
+				sampleFetchOptions.withSpace();
+				sampleFetchOptions.withProperties();
+				searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+
+				searchResults3 = ArrayList(searchResults)
+				searchResults3.addAll(searchResults2)
+				searchResults = searchResults3;
+
 			if isinstance(entityToExpand, Experiment):
 				sampleSearchCriteria = SampleSearchCriteria();
 				sampleSearchCriteria.withExperiment().withPermId().thatEquals(id);

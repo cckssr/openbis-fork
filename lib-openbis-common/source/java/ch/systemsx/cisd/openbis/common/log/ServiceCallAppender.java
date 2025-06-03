@@ -15,19 +15,26 @@
  */
 package ch.systemsx.cisd.openbis.common.log;
 
-import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.spi.LoggingEvent;
+import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
+
+import java.io.IOException;
+import java.util.logging.LogRecord;
 
 /**
  * @author anttil
  */
-public class ServiceCallAppender extends DailyRollingFileAppender
+public class ServiceCallAppender extends DailyRollingFileHandler
 {
 
     int count = 0;
 
+    public ServiceCallAppender(String baseFileName) throws IOException
+    {
+        super(baseFileName);
+    }
+
     @Override
-    public void append(LoggingEvent event)
+    public void publish(LogRecord event)
     {
         String message = event.getMessage().toString();
 
@@ -52,6 +59,6 @@ public class ServiceCallAppender extends DailyRollingFileAppender
             return;
         }
 
-        super.append(event);
+        super.publish(event);
     }
 }

@@ -18,6 +18,11 @@ import Menu from '@src/js/components/common/menu/Menu.jsx'
 import MenuController from '@src/js/components/common/menu/MenuController.js'
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx"
 import Login from '@src/js/components/login/Login.jsx'
+import Content from '@src/js/components/common/content/Content.jsx'
+import ElnContent from '@src/js/components/common/content/ElnContent.jsx'
+import ContentTabs from '@src/js/components/common/content/ContentTabs.jsx'
+import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
+import ContentController from '@src/js/components/common/content/ContentController.js'
 import openbis from '@src/js/services/openbis.js'
 
 export default {
@@ -41,5 +46,9 @@ export default {
   MenuController,
   LoadingDialog,
   Login,
+  ElnContent,
+  ContentTabs,
+  ContentTab,
+  ContentController,
   openbis
 }

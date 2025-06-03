@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
+import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertNull;
@@ -73,7 +74,7 @@ public final class SampleTypeDAOTest extends AbstractDAOTest
         logRecorder = LogRecordingUtils.createRecorder("%m%n", Level.DEBUG);
         final Logger sampleTypeLogger = SampleTypeDAO.operationLog;
         previousLevel = sampleTypeLogger.getLevel();
-        assertNull(previousLevel);
+        assertEquals(Level.INFO, previousLevel);
         sampleTypeLogger.setLevel(Level.DEBUG);
     }
 

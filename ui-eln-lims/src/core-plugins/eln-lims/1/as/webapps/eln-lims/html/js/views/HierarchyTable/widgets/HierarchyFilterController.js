@@ -14,36 +14,36 @@
  * limitations under the License.
  */
 function HierarchyFilterController(entity, action) {
+    this._viewId = mainController.getNextId();
 	this._model = new HierarchyFilterModel(entity, action);
-	this._view = new HierarchyFilterView(this, this._model);
-	
+	this._view = new HierarchyFilterView(this, this._model, this._viewId);
+	this._container;
+
 	this.init = function(container) {
 		this._view.init(container);
-		$('#childrenLimit').slider().on('slideStop', function(event){
-			action();
-		});
-		
-		$('#parentsLimit').slider().on('slideStop', function(event){
-			action();
-		});
-		
-		$('#entityTypesSelector').multiselect();
-		$('#entityTypesSelector').change(function(event){
-			action();
-		});
+		this._container = container;
+		var act = function(event){
+            action();
+        }
+
+		this._container.find('#childrenLimit-' + this._viewId).slider().on('slideStop', act);
+		this._container.find('#parentsLimit-' + this._viewId).slider().on('slideStop', act);
+		this._container.find('#entityTypesSelector-' + this._viewId).multiselect();
+		this._container.find('#entityTypesSelector-' + this._viewId).change(act);
+
 	}
-	
+
 	this.getParentsLimit = function() {
-		return getSliderValue("parentsLimit");
+		return getSliderValue("parentsLimit-" + this._viewId);
 	}
 	
 	this.getChildrenLimit = function() {
-		return getSliderValue("childrenLimit");
+		return getSliderValue("childrenLimit-" + this._viewId);
 	}
 	
 	this.getSelectedEntityTypes = function() {
-		var selectedEntityTypes = $('#entityTypesSelector').val();
-		if(selectedEntityTypes === null) {
+		var selectedEntityTypes = $('#entityTypesSelector-' + this._viewId).val();
+		if(!selectedEntityTypes) {
 			selectedEntityTypes = [];
 		}
 		return selectedEntityTypes;
@@ -51,7 +51,12 @@ function HierarchyFilterController(entity, action) {
 	
 	var getSliderValue = function(id) {
 		var element = $('#' + id)
-		return  element.length > 0 ? element.data('slider').getValue() : 0;
+		if(element.length > 0) {
+		    if(element.data('slider')) {
+		        return element.data('slider').getValue();
+		    }
+		}
+		return  0;
 	}
 
 }

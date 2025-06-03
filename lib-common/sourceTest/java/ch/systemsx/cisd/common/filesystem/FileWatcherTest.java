@@ -73,7 +73,7 @@ public class FileWatcherTest
         createNewFile(tmpFile2);
         workingDirectory.deleteOnExit();
         Logger.getRootLogger().setLevel(Level.TRACE);
-        testAppender = new BufferedAppender(Level.TRACE);
+        testAppender = new BufferedAppender( "%m%n", Level.TRACE);
     }
 
     @AfterMethod(alwaysRun = true)

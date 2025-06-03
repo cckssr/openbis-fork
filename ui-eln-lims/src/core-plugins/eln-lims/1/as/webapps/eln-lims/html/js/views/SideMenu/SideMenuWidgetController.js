@@ -190,6 +190,18 @@ function SideMenuWidgetController(mainController) {
         return this._browserController.getNodeSetAsRoot();
     }
 
+    this.hasNodeWithObjectId = function(nodeId) {
+        var _this = this
+        var nodes = this._browserController.getNodes()
+        for(var i = 0; i < nodes.length; i++){
+            var node = nodes[i];
+            if (node.object && nodeId.type === node.object.type && nodeId.id === node.object.id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     this.setAsRootById = function (code) {
             var nodes = this._browserController.getNodes();
             var node = nodes.find(x => x.object.id === code);
@@ -225,6 +237,7 @@ function SideMenuWidgetController(mainController) {
             if(reRender) {
                 this._sideMenuWidgetView.repaintTreeMenu = true;
             }
+            mainController.tabContent.refreshCurrentPage();
         } else {
             if(!LayoutManager.fullScreenFlag) {
                 LayoutManager.fullScreen();
@@ -238,6 +251,7 @@ function SideMenuWidgetController(mainController) {
         this.isCollapsed = false;
         if(!LayoutManager.isMobile()) {
             this._sideMenuWidgetView.repaint(this._sideMenuWidgetModel.$container, false);
+            mainController.tabContent.refreshCurrentPage();
         } else {
             if(LayoutManager.fullScreenFlag) {
                 LayoutManager.restoreStandardSize();

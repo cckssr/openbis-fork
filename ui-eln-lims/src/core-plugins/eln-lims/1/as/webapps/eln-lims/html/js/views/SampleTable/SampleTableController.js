@@ -20,6 +20,14 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 	this._sampleTableView = new SampleTableView(this, this._sampleTableModel);
 	this.typeAndFileController = null;
 
+
+    this.refresh = function() {
+        if (this._dataGridController) {
+            this._dataGridController.refresh();
+        }
+        this._sampleTableView.refresh();
+    }
+
 	this.init = function(views) {
 		var _this = this;
 		Util.blockUI();
@@ -148,12 +156,6 @@ function SampleTableController(parentController, title, experimentIdentifier, pr
 			}
 			
 			this._dataGridController.init(this._sampleTableView.getTableContainer(), extraOptions);
-	}
-	
-	this.refresh = function() {
-		if (this._dataGridController) {
-			this._dataGridController.refresh();
-		}
 	}
 
     this.registerSamples = function(experimentIdentifier) {

@@ -35,15 +35,17 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
+import ch.systemsx.cisd.common.logging.ext.NamedFileHandler;
+import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
@@ -170,7 +172,7 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
                     logger.error("Sync " + dryRunNote + "failed: ", e);
                     sendErrorEmail(config, "Synchronization " + dryRunNote + "failed");
                 }
-                logger.removeAllAppenders();
+                logger.removeAllHandlers();
             }
         } catch (Exception e)
         {
@@ -263,21 +265,31 @@ public class HarvesterMaintenanceTask<T extends DataSetInformation> implements I
         }
     }
 
+
+
+
     private Logger createLogger(SyncConfig config)
     {
         Logger logger = Logger.getLogger(LogFactory.getLoggerName(LogCategory.OPERATION, EntitySynchronizer.class)
                 + "." + config.getDataSourceAlias());
         String name = "bdfile";
-        if (logger.getAppender(name) == null)
-        {
-            // configure the appender
-            FileAppender appender = new FileAppender(); // create appender
-            appender.setName(name);
-            appender.setLayout(new PatternLayout("%d %-5p %m%n"));
-            appender.setFile(config.getLogFilePath());
-            appender.activateOptions();
-            logger.addAppender(appender);
-            logger.setAdditivity(false);
+
+        boolean exists = false;
+        for (Handler h : logger.getHandlers()) {
+            if (h instanceof NamedFileHandler && ((NamedFileHandler) h).getName().equals(name)) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            try {
+                NamedFileHandler handler = new NamedFileHandler(name, config.getLogFilePath(), true);
+                handler.setFormatter(new PatternFormatter("%d %-5p %m%n"));
+                logger.addHandler(handler);
+                logger.getJulLogger().setUseParentHandlers(false);
+            } catch (IOException | SecurityException e) {
+                logger.error("Failed to initialize file handler: " + e.getMessage());
+            }
         }
         return logger;
     }

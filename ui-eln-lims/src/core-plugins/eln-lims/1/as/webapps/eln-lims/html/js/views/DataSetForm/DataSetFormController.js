@@ -20,6 +20,12 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._dataSetFormView = new DataSetFormView(this, this._dataSetFormModel);
 	this._commentsController = null;
 	this._wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
+
+	this.refresh = function() {
+	    if(this._dataSetFormModel.mode !== FormMode.VIEW) {
+	        this._dataSetFormView.refresh();
+	    }
+    }
 	
 	this.init = function(views) {
 		var _this = this;
@@ -131,6 +137,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 	this._showError = function(errorMessage) {
 		Util.blockUI();
 		Util.showUserError(errorMessage, function() { Util.unblockUI(); });
+		this._dataSetFormView.refresh();
 	}
 	//
 	// Form Submit
@@ -232,9 +239,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 			mainController.serverFacade.createReportFromAggregationService(profile.allDataStores[0].code, parameters, function(response) {
 				if(response.error) { //Error Case 1
 					Util.showError(response.error.message, function() {Util.unblockUI();});
+					_this._dataSetFormView.refresh();
 				} else if (response.result.columns[1].title === "Error") { //Error Case 2
 					var stacktrace = response.result.rows[0][1].value;
 					Util.showStacktraceAsError(stacktrace);
+					_this._dataSetFormView.refresh();
 				} else if (response.result.columns[0].title === "STATUS" && response.result.rows[0][0].value === "OK") { //Success Case
 					var callbackOk = function() {
 						_this._dataSetFormModel.isFormDirty = false;

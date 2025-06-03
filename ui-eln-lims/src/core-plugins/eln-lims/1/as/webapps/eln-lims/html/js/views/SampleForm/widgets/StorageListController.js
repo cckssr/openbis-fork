@@ -17,6 +17,10 @@
 function StorageListController(sample, isDisabled) {
 	this._storageListModel = new StorageListModel(sample, isDisabled);
 	this._storageListView = new StorageListView(this, this._storageListModel);
+
+	this.refresh = function () {
+	    this._storageListView.refresh();
+	}
 	
 	this.init = function($container) {
 		var _this = this;

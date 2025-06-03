@@ -46,7 +46,7 @@ function UserManagementConfigView(userManagementConfigController, userManagement
             //Edit
             var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
                 mainController.changeView("showUserManagementConfigPage", FormMode.EDIT);
-            }, "Edit", null, "edit-btn");
+            }, "Edit", null, "edit-btn", 'btn btn-primary btn-secondary');
             toolbarModel.push({ component : $editButton });
         }
         $header.append(FormUtil.getToolbar(toolbarModel));

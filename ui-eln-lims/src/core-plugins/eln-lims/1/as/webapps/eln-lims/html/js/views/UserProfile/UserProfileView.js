@@ -17,6 +17,7 @@
 function UserProfileView(userProfileController, userProfileModel) {
 	this._userProfileController = userProfileController;
 	this._userProfileModel = userProfileModel;
+	this._viewId = mainController.getNextId();
 
     this._$firstNameInput = null;
     this._$lastNameInput = null;
@@ -29,20 +30,21 @@ function UserProfileView(userProfileController, userProfileModel) {
         var $header = views.header;
         var typeTitle = "User Profile";
         var $formTitle = $("<h2>").append(typeTitle);
+        var _this = this;
         $header.append($formTitle);
 
         var toolbarModel = [];		
         if(this._userProfileModel.mode === FormMode.VIEW) {
             //Edit
-            var $editButton = FormUtil.getButtonWithIcon("glyphicon-edit", function () {
+            var $editButton = FormUtil.getToolbarButton("EDIT", function () {
                 mainController.changeView("showEditUserProfilePage");
-            }, "Edit", null, null, 'btn btn-default');
+            }, "Edit", "Edit profile", "edit-btn-user-profile-" + _this._viewId, 'btn btn-primary btn-secondary');
             toolbarModel.push({ component : $editButton });
         } else { //Create and Edit
             //Save
-            var $saveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", (function() {
-                this._userProfileController.save(this._getUserInformation());
-            }).bind(this), "Save");
+            var $saveBtn = FormUtil.getToolbarButton("SAVE", (function() {
+               this._userProfileController.save(this._getUserInformation());
+            }).bind(this), "Save", "Save changes", "save-btn-user-profile-" + _this._viewId);
             $saveBtn.removeClass("btn-default");
             $saveBtn.addClass("btn-primary");
             toolbarModel.push({ component : $saveBtn });

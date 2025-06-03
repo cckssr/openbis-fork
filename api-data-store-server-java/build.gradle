@@ -22,10 +22,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'lombok:lombok:1.18.22'
-    annotationProcessor 'lombok:lombok:1.18.22'
+    compileOnly 'lombok:lombok:1.18.38'
+    annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-json'),
-            'lombok:lombok:1.18.22'
+            'lombok:lombok:1.18.38'
     testImplementation 'junit:junit:4.10',
             'hamcrest:hamcrest-core:1.3'
 }

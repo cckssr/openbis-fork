@@ -22,23 +22,36 @@ function StorageManagerView(storageManagerController, storageManagerModel, stora
 	this._storageToView = storageToView;
 	this._changeLogContainer = $("<div id = 'change-log-container-id'>").append("None");
 	
-	this._moveBtn = FormUtil.getButtonWithIcon("glyphicon-floppy-disk", null, "Save Changes", null, "save-changes-btn");
-	this._showHideStorageToBtn = FormUtil.getButtonWithIcon("glyphicon-eye-open", null, "Toggle Storage B", null, 'toggle-storage-b-id');
-	this._showHideMenuBtn = FormUtil.getButtonWithIcon("glyphicon-resize-full", function() {
-			var iconSpan = $(this.children[0]);
-			if(iconSpan.hasClass("glyphicon-resize-full")) {
-				iconSpan.removeClass("glyphicon-resize-full");
-				iconSpan.addClass("glyphicon-resize-small");
-				LayoutManager.fullScreen();
-			} else if(iconSpan.hasClass("glyphicon-resize-small")) {
-				iconSpan.removeClass("glyphicon-resize-small");
-				iconSpan.addClass("glyphicon-resize-full");
-				LayoutManager.restoreStandardSize();
-			}
-	}, "Toggle Full Screen");
+	this._viewId = mainController.getNextId();
+	this._moveBtn  = FormUtil.getToolbarButton("SAVE", null, "Save Changes", "Save Changes", "search-save-btn-"+this._viewId);
+
+	this._showHideStorageToBtn = FormUtil.getToolbarButton("EYE_OPEN", null, "Toggle Storage B", null, 'toggle-storage-b-id');
+
+    this._showHideMenuBtn = FormUtil.getToolbarButton("FULLSCREEN", function() {
+            var iconSpan = $(this.children[0]);
+            if(iconSpan.text() === "open_in_full") {
+               iconSpan.text("close_fullscreen")
+               mainController.sideMenu.collapseSideMenu();
+           } else if(iconSpan.text() === "close_fullscreen") {
+               iconSpan.text("open_in_full")
+               mainController.sideMenu.expandSideMenu();
+           }
+    }, "Toggle Full Screen", "Toggle Full Screen", 'fullscreen-btn-'+this._viewId);
 		
 	this._moveBtn.removeClass("btn-default");
 	this._moveBtn.addClass("btn-primary");
+
+
+
+    this.refresh = function() {
+
+        this._showHideStorageToBtn.unbind();
+        this._showHideStorageToBtn.click(this._showHideStorageChangeFunction);
+
+        this._storageFromView.refresh();
+        this._storageToView.refresh();
+
+    }
 	
 	this.repaint = function(views) {
 	    var _this = this;
@@ -67,17 +80,16 @@ function StorageManagerView(storageManagerController, storageManagerModel, stora
 		this._$storageToContainer = $("<div>", {"id" : "storageToContainer", "class" : "col-md-12"});
 		this._$storageToContainer.hide();
 
-		this._showHideStorageToBtn.click(function() {
-			var iconSpan = $(_this._showHideStorageToBtn.children()[0]);
-			if(iconSpan.hasClass("glyphicon-eye-open")) {
-				iconSpan.removeClass("glyphicon-eye-open");
-				iconSpan.addClass("glyphicon-eye-close");
-			} else if(iconSpan.hasClass("glyphicon-eye-close")) {
-				iconSpan.removeClass("glyphicon-eye-close");
-				iconSpan.addClass("glyphicon-eye-open");
-			}
-			_this._$storageToContainer.toggle();
-		});
+        this._showHideStorageChangeFunction = function() {
+            var iconSpan = $(_this._showHideStorageToBtn.children()[0]);
+               if(iconSpan.text() === "visibility") {
+                   iconSpan.text("visibility_off")
+               } else if(iconSpan.text() === "visibility_off") {
+                   iconSpan.text("visibility")
+               }
+            _this._$storageToContainer.toggle();
+        }
+		this._showHideStorageToBtn.click(this._showHideStorageChangeFunction);
 		
 		this._storageToView.repaint(this._$storageToContainer, function() {
 			_this._storageToViewInitialised = true;

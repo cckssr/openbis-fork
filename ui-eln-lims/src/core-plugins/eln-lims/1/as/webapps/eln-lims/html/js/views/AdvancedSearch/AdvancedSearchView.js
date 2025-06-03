@@ -35,6 +35,34 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this.resultsTitle = "Results";
 	this.beforeRenderingHook = null;
 	this.extraOptions = null;
+	this._viewId = mainController.getNextId();
+
+
+    var _refreshableFieldTypes = {};
+    var _refreshableFieldNames = {};
+    var _refreshableFieldOperators = {};
+    var _refreshableFieldValues = {};
+
+    this.refresh = function() {
+        if(this._$savedSearchesDropdown) {
+            this._$savedSearchesDropdown.refresh();
+        }
+        this._$entityTypeDropdown.refresh();
+        this._$andOrDropdownComponent.refresh();
+
+        for(var field in _refreshableFieldTypes) {
+            _refreshableFieldTypes[field].refresh();
+        }
+        for(var field in _refreshableFieldNames) {
+            _refreshableFieldNames[field].refresh();
+        }
+        for(var field in _refreshableFieldOperators) {
+            _refreshableFieldOperators[field].refresh();
+        }
+        for(var field in _refreshableFieldValues) {
+            _refreshableFieldValues[field].refresh();
+        }
+    }
 
 	//
 	// Main Repaint Method
@@ -191,7 +219,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		}
 		this._$savedSearchesDropdown = FormUtil.getPlainDropdown(savedSearchOptions);
 		this._$savedSearchesDropdown.attr("id", "saved-search-dropdown-id");
-		this._$savedSearchesDropdown.on("select2:select", function () {
+		$("body").on("select2:select", "#saved-search-dropdown-id", function () {
             var i = _this._$savedSearchesDropdown.val();
             _this._advancedSearchController.selectSavedSearch(i);
         });
@@ -200,23 +228,35 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			width: '400px',
 			theme: "bootstrap"
 		});
+		this._$savedSearchesDropdown.refresh = function() {
+		    _this._$savedSearchesDropdown.select2({
+                width: '400px',
+                theme: "bootstrap"
+            });
+		}
 
 		if (_this._advancedSearchModel.selcetedSavedSearchIndex > -1) {
-			var $buttonClear = FormUtil.getButtonWithIcon('glyphicon-remove', function() {
-				_this._advancedSearchController.clearSelection();
-			}, null, 'Clear selection');
+            var $buttonClear = FormUtil.getToolbarButton("CLEAR", function () {
+                _this._advancedSearchController.clearSelection();
+            }, null, "Clear selection", "search-clear-selection-btn-"+_this._viewId);
 			$container.append($buttonClear);
 		}
 
-		var $buttonSave = FormUtil.getButtonWithIcon('glyphicon-floppy-disk', function() {
-			_this._save();
-		}, 'Save', null, "save-btn");
+        var $buttonSave = FormUtil.getToolbarButton("SAVE", function () {
+            _this._save();
+        }, "Save", "Save search", "search-save-btn-"+_this._viewId);
+
 		$buttonSave.css({ 'margin-left': '8px'});
+		$buttonSave.removeClass("btn-default");
+        $buttonSave.addClass("btn-primary");
 		$container.append($buttonSave);
 
-		var $buttonDelete = FormUtil.getButtonWithIcon('glyphicon-trash', function() {
-			_this._delete();
-		}, 'Delete');
+        var $buttonDelete = FormUtil.getToolbarButton("DELETE", function () {
+            var selectedSearchIndex = _this._advancedSearchModel.selcetedSavedSearchIndex;
+            if (selectedSearchIndex !== null && selectedSearchIndex > -1 ) {
+                _this._delete();
+            }
+        }, "Delete", "Delete search data", "search-delete-btn-"+_this._viewId);
 		$buttonDelete.css({ 'margin-left': '8px'});
 		var i = this._advancedSearchModel.selcetedSavedSearchIndex;
 		if (i == null || i < 0) {
@@ -227,24 +267,30 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	}
 
 	this._paintTypeSelectionPanel = function($menuPanelContainer) {
+	    var _this = this;
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
+		this._$entityTypeDropdown.refresh = function() {
+		    Select2Manager.add(_this._$entityTypeDropdown);
+		}
 		var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true);
 		entityTypeDropdownFormGroup.css("width","50%");
 		$menuPanelContainer.append(entityTypeDropdownFormGroup);
 
 		var andOrOptions = [{value : "AND", label : "AND", selected : true}, {value : "OR", label : "OR"}];
-		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator");
-		var _this = this;
-
-		this._$andOrDropdownComponent.change(function() {
+		andOrDropdownId = 'logical-operator-dropdown-'+_this._viewId;
+		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator", andOrDropdownId);
+        this._$andOrDropdownComponent.refresh = function() {
+            Select2Manager.add(_this._$andOrDropdownComponent);
+        }
+		$("body").on("change", "#"+andOrDropdownId, function() {
 			_this._advancedSearchModel.criteria.logicalOperator = $(this).val();
 		});
 
 		$menuPanelContainer.append(FormUtil.getFieldForComponentWithLabel(this._$andOrDropdownComponent, "Using", null, true));
 
-		var $submitButton = FormUtil.getButtonWithIcon('glyphicon-search', function() {
-			_this._advancedSearchController.search();
-		}, null, null, "search-btn", 'btn btn-primary btn-secondary');
+		var $submitButton = FormUtil.getToolbarButton("SEARCH", function () {
+            _this._advancedSearchController.search();
+        }, null, null, "search-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 
 		$submitButton.css("margin-bottom", "-22px");
 		var $submitButtonGroup = FormUtil.getFieldForComponentWithLabel($submitButton, "", null, true);
@@ -266,7 +312,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	}
 
 
-    this._paintRulesPanel = function($container, isGlobalSearch) {
+    this._paintRulesPanel = function($container, isGlobalSearch2) {
 		$container.empty();
 		var _this = this;
 		var $table = $("<table>", { class : "table table-bordered"});
@@ -274,10 +320,16 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		$thead = $("<thead>");
 		this._$tbody = $("<tbody>");
 
+        var isGlobalSearch = _this._advancedSearchModel.criteria.entityKind.startsWith("ALL");
+
 		//todo there should be ONE add button at the top! (?)
-		this._$addButton = FormUtil.getButtonWithIcon('glyphicon-plus', function() {
-            _this._paintInputRow(isGlobalSearch);
-		});
+		if(!this._$addButton) {
+		    this._$addButton = FormUtil.getToolbarButton("PLUS", function () {
+		        var isSearchGlobal = _this._advancedSearchModel.criteria.entityKind.startsWith("ALL");
+                _this._paintInputRow(isSearchGlobal);
+            }, null, null, "plus-btn-"+_this._viewId);
+		}
+
 
 		$table
 			.append($thead)
@@ -313,7 +365,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	//
 
 	// paints a row for the given ruleKey or a new empty row if no ruleKey is given
-    this._paintInputRow = function(isGlobalSearch, ruleKey) {
+    this._paintInputRow = function(isGlobalSearch2, ruleKey) {
 		var _this = this;
 
 		var uuidValue = null;
@@ -323,6 +375,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			var uuidValue = Util.guid();
 			this._advancedSearchModel.criteria.rules[uuidValue] = { };
 		}
+
+		var isGlobalSearch = this._advancedSearchModel.criteria.entityKind.startsWith("ALL")
 
 		var $newFieldNameContainer = $("<td>");
 		var $newFieldOperatorContainer = $("<td>");
@@ -334,13 +388,12 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             var td = $("<td>");
             td.css("align-content", "center")
             $newRow.append(td.append(this._getNegationOperatorDropdownComponent(uuidValue)));
-
         }
 		$newRow.append($("<td>").append($fieldTypeDropdown))
                     .append($newFieldNameContainer)
                     .append($newFieldOperatorContainer)
                     .append($newFieldValueContainer)
-					.append($("<td>").append(this._getMinusButtonComponentForRow(this._$tbody, $newRow)));
+					.append($("<td>").append(this._getMinusButtonComponentForRow($newRow)));
 
 		this._$tbody.append($newRow);
 
@@ -413,14 +466,22 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             }
 
             if (operatorOptions && operatorOptions.length > 1) {
-                var comparisonDropdown = FormUtil.getDropdown(operatorOptions, "Select Comparison operator");
+                var comparisonDropdownId = 'comparison-dropdown-' + uuid;
+                var comparisonDropdown = FormUtil.getDropdown(operatorOptions, "Select Comparison operator", comparisonDropdownId);
 
-                comparisonDropdown.change(function() {
-                    var $thisComponent = $(this);
-                    var selectedValue = $thisComponent.val();
-                    _this._advancedSearchModel.criteria.rules[uuid].operator = selectedValue; //Update model
-                    _this._injectValueField($newFieldValueContainer, uuid);
-                });
+                var changeFunction = function() {
+                     var $thisComponent = $(this);
+                     var selectedValue = $thisComponent.val();
+                     _this._advancedSearchModel.criteria.rules[uuid].operator = selectedValue; //Update model
+                     _this._injectValueField($newFieldValueContainer, uuid);
+                 }
+                comparisonDropdown.change(changeFunction);
+                comparisonDropdown.refresh = function() {
+                    Select2Manager.add(this);
+                    comparisonDropdown.unbind();
+                    comparisonDropdown.change(changeFunction);
+                }
+                _refreshableFieldOperators[uuid] = comparisonDropdown;
                 var operator = _this._getOperator(uuid);
                 if (operator) {
                     comparisonDropdown.val(operator);
@@ -469,6 +530,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
         var _this = this;
         var $dateField = FormUtil._getDatePickerField(uuid, "", false, isDateOnly, null, true);
         var $input = $dateField.find("#" + uuid);
+        _refreshableFieldValues[uuid] = $dateField;
         this._setUpKeyHandling($input, uuid);
         $input.blur(function() {
             _this._advancedSearchModel.criteria.rules[uuid].value = $input.val();
@@ -486,9 +548,16 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                 types.push({value:type.getCode(), label:label});
             });
             var $valueDropdown = FormUtil.getDropdown(types, "Select a type");
-            $valueDropdown.change(function() {
-                _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
-            });
+            var changeFunction = function() {
+                 _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
+             }
+            $valueDropdown.change(changeFunction);
+            $valueDropdown.refresh = function() {
+                Select2Manager.add(this);
+                $valueDropdown.unbind();
+                $valueDropdown.change(changeFunction);
+            }
+            _refreshableFieldValues[uuid] = $valueDropdown;
             _this._injectValue($valueDropdown, uuid);
             $container.append($valueDropdown);
         }
@@ -517,10 +586,17 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
         var _this = this;
         var terms = [{value:false, label:"false"}, {value:true, label:"true"}];
         var $valueDropdown = FormUtil.getDropdown(terms, "Select a value");
-        $valueDropdown.change(function() {
-            _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
-            _this._advancedSearchModel.criteria.rules[uuid].operator = "thatEqualsBoolean";
-        });
+        var changeFunction = function() {
+             _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
+             _this._advancedSearchModel.criteria.rules[uuid].operator = "thatEqualsBoolean";
+         }
+        $valueDropdown.change(changeFunction);
+        $valueDropdown.refresh = function() {
+            Select2Manager.add(this);
+            $valueDropdown.unbind();
+            $valueDropdown.change(changeFunction);
+        }
+        _refreshableFieldValues[uuid] = $valueDropdown;
         _this._injectValue($valueDropdown, uuid);
         $container.append($valueDropdown);
     }
@@ -536,11 +612,18 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             {value : "BACKUP_PENDING", label: "BACKUP_PENDING"},
         ];
         var $valueDropdown = FormUtil.getDropdown(statuses, "Select a value");
-        $valueDropdown.change(function() {
-            _this._advancedSearchModel.criteria.rules[uuid].type = "Attribute";
-            _this._advancedSearchModel.criteria.rules[uuid].name = "PHYSICAL_STATUS";
-            _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
-        });
+        var changeFunction = function() {
+             _this._advancedSearchModel.criteria.rules[uuid].type = "Attribute";
+             _this._advancedSearchModel.criteria.rules[uuid].name = "PHYSICAL_STATUS";
+             _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
+         }
+        $valueDropdown.change(changeFunction);
+        $valueDropdown.refresh = function() {
+            Select2Manager.add(this);
+            $valueDropdown.unbind();
+            $valueDropdown.change(changeFunction);
+        }
+        _refreshableFieldValues[uuid] = $valueDropdown;
         _this._injectValue($valueDropdown, uuid);
         $container.append($valueDropdown);
     }
@@ -558,9 +641,16 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                     terms.push({value:term.getCode(), label:term.getLabel()});
                 });
                 var $valueDropdown = FormUtil.getDropdown(terms, "Select a term");
-                $valueDropdown.change(function() {
-                    _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
-                });
+                var changeFunction = function() {
+                     _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
+                 }
+                $valueDropdown.change(changeFunction);
+                $valueDropdown.refresh = function() {
+                    Select2Manager.add(this);
+                    $valueDropdown.unbind();
+                    $valueDropdown.change(changeFunction);
+                }
+                _refreshableFieldValues[uuid] = $valueDropdown;
                 _this._injectValue($valueDropdown, uuid);
                 $container.append($valueDropdown);
             });
@@ -585,9 +675,16 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
                     users.push({value:userId, label:label});
                 });
                 var $valueDropdown = FormUtil.getDropdown(users, "Select a person");
-                $valueDropdown.change(function() {
-                    _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
-                });
+                var changeFunction = function() {
+                     _this._advancedSearchModel.criteria.rules[uuid].value = $valueDropdown.val();
+                 }
+                $valueDropdown.change(changeFunction);
+                $valueDropdown.refresh = function() {
+                    Select2Manager.add(this);
+                    $valueDropdown.unbind();
+                    $valueDropdown.change(changeFunction);
+                }
+                _refreshableFieldValues[uuid] = $valueDropdown;
                 _this._injectValue($valueDropdown, uuid);
                 $container.append($valueDropdown);
             });
@@ -630,7 +727,6 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
     this._getNegationOperatorDropdownComponent = function(uuid) {
         var _this = this;
         var $checkbox = $('<input>', {'type' : 'checkbox'})
-//        $checkbox.css("transform", "scale(1.3)")
         $checkbox.change(function() {
             _this._advancedSearchModel.criteria.rules[uuid].negate = $checkbox.is(":checked");
         });
@@ -687,8 +783,9 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				break;
 		}
 
-		var $fieldTypeComponent = FormUtil.getDropdown(fieldTypeOptions, "Select Field Type");
-		$fieldTypeComponent.change(function() {
+        var fieldTypeDropdownId = 'field-type-'+uuid;
+		var $fieldTypeComponent = FormUtil.getDropdown(fieldTypeOptions, "Select Field Type", fieldTypeDropdownId);
+		var changeFunction = function() {
 			var $thisComponent = $(this);
 
 			//Get uuid and value and update model (type only)
@@ -697,7 +794,14 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			_this._advancedSearchModel.criteria.rules[uuid].type = selectedValue; //Update model
             _this._advancedSearchModel.criteria.rules[uuid].name = null;
             _this._injectNameField($newFieldNameContainer, $newFieldOperatorContainer, $newFieldValueContainer, uuid);
-		});
+		}
+		$fieldTypeComponent.change(changeFunction);
+		$fieldTypeComponent.refresh = function() {
+		    Select2Manager.add(this);
+		    $fieldTypeComponent.unbind();
+		    $fieldTypeComponent.change(changeFunction);
+		}
+		_refreshableFieldTypes[uuid] = $fieldTypeComponent;
 
 		if(!this._advancedSearchModel.forceLoadCriteria) {
 			this._advancedSearchModel.criteria.rules[uuid].type = "All"; //Update model with defaults
@@ -720,8 +824,11 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		attributesModel.push({ value : "", label : "-------------------------", disabled : true });
 		var propertiesModel = this._getFieldNameProperties();
 		var model = attributesModel.concat(propertiesModel);
-		var $dropdown = FormUtil.getDropdown(model, "Select a property");
-		$dropdown.change(function() {
+		var dropdownId = 'merged-dropdown-' + uuid;
+		var $dropdown = FormUtil.getDropdown(model, "Select a property", dropdownId);
+
+		_refreshableFieldNames[uuid] = $dropdown;
+		var changeFunction = function() {
 			var $thisComponent = $(this);
 			//Get uuid and value and update model (type only)
 			var uuid = $($($thisComponent.parent()).parent()).attr("id");
@@ -730,7 +837,13 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             _this._advancedSearchModel.criteria.rules[uuid].operator = null;
             _this._injectOperatorField($newFieldOperatorContainer, $newFieldValueContainer, uuid);
             _this._injectValueField($newFieldValueContainer, uuid);
-        });
+        }
+        $dropdown.change(changeFunction);
+        $dropdown.refresh = function() {
+            Select2Manager.add(this);
+            $dropdown.unbind();
+            $dropdown.change(changeFunction);
+        }
         $newFieldOperatorContainer.empty();
         $newFieldValueContainer.empty();
 		return $dropdown;
@@ -884,9 +997,10 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
             this._advancedSearchModel.resetModel(globalSearchDefault);
         }
 
-        var $dropdown = FormUtil.getDropdown(model, 'Select Entity Type to search for');
+        var dropdownId = 'entity-type-dropdown-'+_this._viewId;
+        var $dropdown = FormUtil.getDropdown(model, 'Select Entity Type to search for', dropdownId);
 
-        $dropdown.change(function() {
+        $("body").on("change", "#"+dropdownId, function() {
             var value = $(this).val();
             var isGlobalSearch = value.startsWith('ALL');
             if (isGlobalSearch) {
@@ -929,17 +1043,21 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		return $dropdown;
 	}
 
-	this._getMinusButtonComponentForRow = function($tbody, $row) {
+	this._getMinusButtonComponentForRow = function($row) {
 		var _this = this;
-		var $minusButton = FormUtil.getButtonWithIcon('glyphicon-minus', function() {
-			if($tbody.children().length > 1) {
-				var uuid = $row.attr("id");
-				delete _this._advancedSearchModel.criteria.rules[uuid];
-				$row.remove();
-			} else {
-				Util.showUserError("There must be at least one row of search criteria present.");
-			}
-		});
+		var uuid = $row.attr("id")
+		var $minusButton = FormUtil.getToolbarButton("MINUS", function () {
+            if(_this._$tbody.children().length > 1) {
+                delete _this._advancedSearchModel.criteria.rules[uuid];
+                delete _refreshableFieldTypes[uuid];
+                delete _refreshableFieldNames[uuid];
+                delete _refreshableFieldOperators[uuid];
+                delete _refreshableFieldValues[uuid];
+                $row.remove();
+            } else {
+                Util.showUserError("There must be at least one row of search criteria present.");
+            }
+        }, null, null, "minus-btn-"+uuid);
 		return $minusButton;
 	}
 

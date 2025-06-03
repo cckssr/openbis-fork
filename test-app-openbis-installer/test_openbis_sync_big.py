@@ -492,7 +492,9 @@ class TestCase(systemtest.testcase.TestCase):
         synclogfiles = None
 
         while time.time() < timeoutTime:
-            synclogfiles = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))
+            all_logs = sorted(glob.glob("%s/synch*" % openbis_harvester.installPath))
+            # …but ignore the .lck lock-files
+            synclogfiles = [f for f in all_logs if not f.endswith('.lck')]
             if synclogfiles:
                 break
             else:

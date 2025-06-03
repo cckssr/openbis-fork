@@ -19,6 +19,12 @@ function SpaceFormController(mainController, mode, isInventory, space) {
 	this._spaceFormModel = new SpaceFormModel(mode, isInventory, space);
 	this._spaceFormView = new SpaceFormView(this, this._spaceFormModel);
 
+	this.refresh = function() {
+        if(this._spaceFormModel.mode !== FormMode.VIEW) {
+            this._spaceFormView.refresh();
+        }
+    }
+
 	this.init = function(views) {
 		var _this = this;
         if (space) {

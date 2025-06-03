@@ -18,6 +18,16 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this._sampleTableModel = sampleTableModel;
 	this._tableContainer = $("<div>").css("margin-top", "-10px").css("margin-left", "-10px");
 	this.sampleTypeSelector = null;
+	this._viewId = mainController.getNextId();
+
+	this.refresh = function() {
+	    var dropdownId = '#all-sample-types-' + this._viewId;
+	    var allTypesDropdown = $(dropdownId);
+	    if(allTypesDropdown.length !== 0) {
+	        Select2Manager.add(allTypesDropdown);
+	    }
+
+	}
 	
 	this.repaint = function(views) {
 		var $container = views.content;
@@ -60,7 +70,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 			
 			//Add Sample Type
 			if(sampleTypeCodeToUse !== null & _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
-				var $createButton = FormUtil.getButtonWithIcon("glyphicon-plus", function() {
+				var $createButton = FormUtil.getToolbarButton("ENTRY", function() {
 					Util.blockUI();
                     setTimeout(function() {
                         var argsMap = {
@@ -69,7 +79,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
                         };
                         mainController.changeView("showCreateSubExperimentPage", JSON.stringify(argsMap));
                     }, 100);
-				}, "New " + Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn");
+				}, Util.getDisplayNameFromCode(sampleTypeCodeToUse), null, "create-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				
 				toolbarModel.push({ component : $createButton });
 			}
@@ -112,7 +122,8 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this._getOptionsMenu = function() {
 		var _this = this;
 		var $dropDownMenu = $("<span>", { class : 'dropdown' });
-		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'sample-options-menu-btn'}).append("More ... ").append($("<b>", { class : 'caret' }));
+		var $caret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : 'sample-options-menu-btn'})
+		$caret.append("More ... ").append($("<b>", { class : 'caret' }));
 		var $list = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'aria-labelledby' :'sampleTableDropdown' });
 		$dropDownMenu.append($caret);
 		$dropDownMenu.append($list);
@@ -180,9 +191,9 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this._getAllSampleTypesDropdown = function() {
 		var _this = this;
 
-		var $sampleTypesSelector = $sampleTypesSelector = FormUtil.getSampleTypeDropdown(null, false, ["STORAGE", "STORAGE_POSITION"], null, "*"); // This should return all types allowed by all *_ELN_SETTINGS
+		var $sampleTypesSelector = $sampleTypesSelector = FormUtil.getSampleTypeDropdown('all-sample-types-'+_this._viewId, false, ["STORAGE", "STORAGE_POSITION"], null, "*"); // This should return all types allowed by all *_ELN_SETTINGS
 
-		$sampleTypesSelector.change(function() {
+        $("body").on("change", '#all-sample-types-'+_this._viewId, function() {
 			var sampleTypeToShow = $(this).val();
 			
 			var advancedSampleSearchCriteria = {

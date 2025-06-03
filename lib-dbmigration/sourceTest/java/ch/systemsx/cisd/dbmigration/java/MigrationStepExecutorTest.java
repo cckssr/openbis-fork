@@ -23,6 +23,7 @@ import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -50,6 +51,7 @@ public final class MigrationStepExecutorTest
     {
         dbContext = new DatabaseConfigurationContext();
         dbContext.setDatabaseEngineCode("postgresql");
+        Logger.getRootLogger().setLevel(Level.DEBUG);
         logRecorder = new BufferedAppender("%m%n", Level.DEBUG);
     }
 

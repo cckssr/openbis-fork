@@ -17,24 +17,35 @@ package ch.ethz.sis.shared.log.log4j2;
 
 import ch.ethz.sis.shared.log.LogFactory;
 import ch.ethz.sis.shared.log.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.config.Configurator;
+import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.common.logging.LogLog;
+
+import java.io.File;
+import java.util.List;
 
 public class Log4J2LogFactory implements LogFactory {
+
     @Override
     public <T> Logger getLogger(Class<T> clazz) {
-        return new Log4JLogger(LogManager.getLogger(clazz));
+        return Log4JLogger.getLog4JLogger(clazz);
     }
 
     @Override public Logger getLogger(String name)
     {
-        return new Log4JLogger(LogManager.getLogger(name));
+        return Log4JLogger.getLog4JLogger(name);
     }
 
     @Override
     public void configure(String pathToConfigurationFile) {
-        if (pathToConfigurationFile != null) {
-            Configurator.initialize(null, pathToConfigurationFile);
+        if (pathToConfigurationFile != null && !pathToConfigurationFile.isBlank()) {
+            try { //FileInputStream fis = new FileInputStream(pathToConfigurationFile)) {
+
+                LogInitializer.configureFromFile(new File(pathToConfigurationFile));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            LogLog.info("[Log4J2LogFactory] No configuration file provided, skipping initialization!");
         }
     }
 }

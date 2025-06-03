@@ -38,6 +38,8 @@ public class Console extends Writer
 
     private String error;
 
+    private final StringBuilder lineBuffer = new StringBuilder();
+
     public Console()
     {
         buffering = false;
@@ -56,18 +58,22 @@ public class Console extends Writer
     }
 
     @Override
-    public void write(char[] cbuf, int off, int len) throws IOException
+    public synchronized void write(char[] cbuf, int off, int len) throws IOException
     {
+        if (!buffering) return;
 
-        char[] buf = new char[len];
         for (int i = off; i < off + len; i++)
         {
-            buf[i - off] = cbuf[i];
-        }
-
-        if (buffering)
-        {
-            queue.offer(new String(buf));
+            char c = cbuf[i];
+            if (c == '\n')
+            {
+                queue.offer(lineBuffer.toString());
+                lineBuffer.setLength(0); // Clear the buffer
+            }
+            else if (c != '\r') // Ignore carriage return
+            {
+                lineBuffer.append(c);
+            }
         }
     }
 

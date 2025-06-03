@@ -2,7 +2,11 @@ function ArchivingHelperController(mainController) {
     this._mainController = mainController;
     this._archivingHelperModel = new ArchivingHelperModel();
     this._archivingHelperView = new ArchivingHelperView(this, this._archivingHelperModel);
-    
+
+    this.refresh = function() {
+        this._archivingHelperView.refresh();
+    }
+
     this.init = function(views) {
         var _this = this;
         _this._archivingHelperView.repaint(views);

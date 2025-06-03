@@ -17,20 +17,14 @@ package ch.ethz.sis.microservices.download.server.startup;
 
 import ch.ethz.sis.microservices.download.api.configuration.Config;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
-import ch.ethz.sis.microservices.download.server.logging.log4j.Log4J2LogFactory;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
 
 public class Main
 {
-    static
-    {
-        // Configuring Logging
-        LogManager.setLogFactory(new Log4J2LogFactory());
-    }
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 

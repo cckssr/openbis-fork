@@ -2,6 +2,16 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 	this._unarchivingHelperController = unarchivingHelperController;
 	this._unarchivingHelperModel = unarchivingHelperModel;
 	this._unarchivingCheckBoxes = [];
+	this._viewId = mainController.getNextId();
+
+    var _refreshableFields = [];
+
+    this.refresh = function() {
+
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 	
 	this.repaint = function(views) {
 		var _this = this;
@@ -24,18 +34,26 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		$container.append(this._createStepExplanationElement("1. Search for the datasets you want to unarchive:"));
 		
 		searchController = this._advancedSearch($container, $infoSummary, this._unarchivingHelperController._mainController);
-		$unarchiveButton.click(function() {
-			var dataSetCodes = Object.keys(_this._unarchivingHelperModel.dataSetsForUnarchiving);
-			if (dataSetCodes.length > 0) {
-				_this._unarchivingHelperController.unarchive(dataSetCodes, function(success) {
-					if (success) {
-						Util.showSuccess("Unarchiving has been triggered.", function() {
+		var clickFunction = function() {
+            var dataSetCodes = Object.keys(_this._unarchivingHelperModel.dataSetsForUnarchiving);
+            if (dataSetCodes.length > 0) {
+                _this._unarchivingHelperController.unarchive(dataSetCodes, function(success) {
+                    if (success) {
+                        Util.showSuccess("Unarchiving has been triggered.", function() {
                             searchController.search();
-						});
-					}
-				});
-			}
-		});
+                        });
+                    }
+                });
+            } else {
+                Util.showInfo("Please select datasets to unarchive!")
+            }
+        }
+		$unarchiveButton.click(clickFunction);
+		$unarchiveButton.refresh = function() {
+		    this.off('click');
+		    this.click(clickFunction);
+		}
+		_refreshableFields.push($unarchiveButton)
 	}
 	
 	this._updateInfoSummary = function($infoSummary) {
@@ -78,6 +96,7 @@ function UnarchivingHelperView(unarchivingHelperController, unarchivingHelperMod
 		var $selectionPanel = $("<div>", { "class" : "form-inline", style : "width: 100%;" });
 		$container.append($selectionPanel)
 		var searchView = searchController._advancedSearchView;
+		_refreshableFields.push(searchView)
 		searchView._paintTypeSelectionPanel($selectionPanel);
 		var $rulesPanel = $("<div>", { "class" : "form-inline", style : "width: 100%;" });
 		$container.append($rulesPanel)

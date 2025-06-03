@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function HierarchyFilterView(controller, model) {
+function HierarchyFilterView(controller, model, viewId) {
 	this._controller = controller;
 	this._model = model;
+	this._viewId = viewId;
 	
 	this.init = function(container) {
-		var $filtersForm = $('<form>' , { class : 'form-inline'});
+		var $filtersForm = $('<form>' , { id : 'hierarchy-filter-' + this._viewId, class : 'form-inline'});
 		container.append($filtersForm);
-		$filtersForm.submit(function(event) {this._model.action(); event.preventDefault();});
-		
+        var action = function(event) {
+            this._model.action(); event.preventDefault();
+        }
+        $("body").on("submit", "#hierarchy-filter-" + this._viewId, action)
+
 		var maxChildren = this._model.getMaxChildrenDepth();
 		var $filtersFormSliderChildren = null;
 		if(maxChildren > 0) {
-			$filtersFormSliderChildren = $('<input>' , { 'id' : 'childrenLimit' , 'type' : 'text' , 'class' : 'span2', 'value' : '' , 'data-slider-max' : maxChildren , 'data-slider-value' : maxChildren});
+			$filtersFormSliderChildren = $('<input>' , { 'id' : 'childrenLimit-' + this._viewId , 'type' : 'text' , 'class' : 'span2', 'value' : '' , 'data-slider-max' : maxChildren , 'data-slider-value' : maxChildren, 'width' : '100px'});
 		} else {
 			$filtersFormSliderChildren = 'No Children';
 		}
@@ -33,13 +37,13 @@ function HierarchyFilterView(controller, model) {
 		var maxParents = this._model.getMaxParentsDepth();
 		var $filtersFormSliderParents = null;
 		if(maxParents > 0) {
-			$filtersFormSliderParents = $('<input>' , { 'id' : 'parentsLimit' , 'type' : 'text' , 'class' : 'span2', 'value' : '' , 'data-slider-max' : maxParents , 'data-slider-value' : maxParents});
+			$filtersFormSliderParents = $('<input>' , { 'id' : 'parentsLimit-' + this._viewId , 'type' : 'text' , 'class' : 'span2', 'value' : '' , 'data-slider-max' : maxParents , 'data-slider-value' : maxParents, 'width' : '100px'});
 		} else {
 			$filtersFormSliderParents = 'No Parents';
 		}
 		
 		var types = this._model.getTypes();
-		var $filtersFormEntityTypes = $('<select>', { 'id' : 'entityTypesSelector' , class : 'multiselect' , 'multiple' : 'multiple'});
+		var $filtersFormEntityTypes = $('<select>', { 'id' : 'entityTypesSelector-' + this._viewId , class : 'multiselect' , 'multiple' : 'multiple'});
 		for (var type in types) {
 			$filtersFormEntityTypes.append($('<option>', { 'value' : type , 'selected' : ''}).html(Util.getDisplayNameFromCode(type)));
 		}

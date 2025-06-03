@@ -284,8 +284,9 @@ compileJava {
                 executable = 'java'
                 jvmArgs = createEclipseJDK8Args()
             }
-        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")) {
-            // Use modern openJDK 11 or 17 Compiler
+        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")
+                || System.getProperty("java.version").startsWith("21.")) {
+            // Use modern openJDK 11 or 17 or 21 Compiler
         } else {
             throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8, JDK11 or JDK17");
         }
@@ -302,7 +303,8 @@ compileTestJava {
                 executable = 'java'
                 jvmArgs = createEclipseJDK8Args()
             }
-        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")) {
+        } else if(System.getProperty("java.version").startsWith("11.") || System.getProperty("java.version").startsWith("17.")
+                || System.getProperty("java.version").startsWith("21.")) {
             // Use modern openJDK 11 or 17 Compiler
         } else {
             throw new Exception("Unsupported Java version found: '" + System.getProperty("java.version") + "', please use JDK8, JDK11 or JDK17");
@@ -434,4 +436,6 @@ tasks.withType(JavaExec).configureEach { je ->
             "--add-opens", "java.base/java.io=ALL-UNNAMED",
             "--add-opens", "java.base/java.util=ALL-UNNAMED"
     ]
+
+
 }

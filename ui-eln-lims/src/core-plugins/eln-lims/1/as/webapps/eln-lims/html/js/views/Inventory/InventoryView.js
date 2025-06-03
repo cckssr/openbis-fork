@@ -17,7 +17,8 @@
 function InventoryView(inventoryController, inventoryView) {
 	this.inventoryController = inventoryController;
 	this.inventoryView = inventoryView;
-	
+	this._viewId = mainController.getNextId();
+
 	this.repaint = function(views) {
         var _this = this;
 		var $form = $("<div>");
@@ -45,7 +46,7 @@ function InventoryView(inventoryController, inventoryView) {
                 if (profile.isAdmin) {
                     var $createSpace = FormUtil.getToolbarButton("SPACE", function() {
                                  _this.inventoryController.createSpace();
-                             }, "Space", "New Inventory Space", "create-btn", 'btn btn-primary btn-secondary');
+                             }, "Space", "New Inventory Space", "create-btn-" + this._viewId, 'btn btn-primary btn-secondary');
                     toolbarModel.push({component : $createSpace});
                 }
 			

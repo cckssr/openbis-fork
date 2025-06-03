@@ -18,6 +18,15 @@ function ExperimentFormController(mainController, mode, experiment) {
 	this._mainController = mainController;
 	this._experimentFormModel = new ExperimentFormModel(mode, experiment);
 	this._experimentFormView = new ExperimentFormView(this, this._experimentFormModel);
+
+	this.refresh = function(views) {
+        if(this._experimentFormModel.dataSetViewer) {
+            mainController.sideMenu.removeSubSideMenu();
+            mainController.sideMenu.addSubSideMenu(this._experimentFormView._dataSetViewerContainer, this._experimentFormModel.dataSetViewer);
+            this._experimentFormModel.dataSetViewer.refresh();
+        }
+        this._experimentFormView.refresh();
+    }
 	
 	this.init = function(views) {
 		var _this = this;
@@ -159,9 +168,11 @@ function ExperimentFormController(mainController, mode, experiment) {
 			this._mainController.serverFacade.createReportFromAggregationService(this._mainController.profile.allDataStores[0].code, parameters, function(response) {
 				if(response.error) { //Error Case 1
 					Util.showError(response.error.message, function() {Util.unblockUI();});
+					_this._experimentFormView.refresh();
 				} else if (response.result.columns[1].title === "Error") { //Error Case 2
 					var stacktrace = response.result.rows[0][1].value;
 					Util.showStacktraceAsError(stacktrace);
+					_this._experimentFormView.refresh();
 				} else if (response.result.columns[0].title === "STATUS" && response.result.rows[0][0].value === "OK") { //Success Case
 					var experimentType = _this._mainController.profile.getExperimentTypeForExperimentTypeCode(_this._experimentFormModel.experiment.experimentTypeCode);
 					var experimentTypeDisplayName = experimentType.description;

@@ -20,6 +20,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageTypeSpecifier;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
@@ -218,6 +224,56 @@ public class ImageUtil
                     "ffd8ff"), new MagicNumber(PNG_FILE, "89504e470d0a1a0a"), new MagicNumber(
                     TIFF_FILE, "49492a00", "4d4d002a"));
 
+    private static class RAFImageInputStream extends ImageInputStreamImpl
+    {
+        private final IRandomAccessFile raf;
+
+        public RAFImageInputStream(IRandomAccessFile raf) {
+            this.raf = raf;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int b = raf.read();
+            if (b >= 0) {
+                streamPos++;
+            }
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int n = raf.read(b, off, len);
+            if (n > 0) {
+                streamPos += n;
+            }
+            return n;
+        }
+
+        @Override
+        public long length() {
+            return raf.length();
+        }
+
+        @Override
+        public void seek(long pos) throws IOException {
+            raf.seek(pos);
+            streamPos = pos;
+            bitOffset = 0;
+            flushedPos = pos;
+        }
+
+        @Override
+        public long getStreamPosition() {
+            return streamPos;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+        }
+    }
+
     private static final class TiffImageLoader implements ImageLoader
     {
         private final static int MAX_READ_AHEAD = 30000000;
@@ -228,8 +284,14 @@ public class ImageUtil
             handle.mark(MAX_READ_AHEAD);
             try
             {
-                return loadWithBioFormats(handle, imageID);
-            } catch (RuntimeException ex1)
+                ImageInputStream iis = new RAFImageInputStream(handle);
+                BufferedImage image = ImageIO.read(iis);
+                if (image == null) {
+                    throw new RuntimeException("ImageIO.read() returned null");
+                }
+                return image;
+                //return loadWithBioFormats(handle, imageID);
+            } catch (RuntimeException | IOException ex1)
             {
                 try
                 {
@@ -256,8 +318,9 @@ public class ImageUtil
             handle.mark(MAX_READ_AHEAD);
             try
             {
-                return loadDimensionWithBioFormats(handle, imageID);
-            } catch (RuntimeException ex1)
+                return loadDimensions(handle);
+                //return loadDimensionWithBioFormats(handle, imageID);
+            } catch (RuntimeException | IOException ex1)
             {
                 try
                 {
@@ -284,8 +347,9 @@ public class ImageUtil
             handle.mark(MAX_READ_AHEAD);
             try
             {
-                return loadColorDepthWithBioFormats(handle, imageID);
-            } catch (RuntimeException ex1)
+                return loadColorDepth(handle);
+                //return loadColorDepthWithBioFormats(handle, imageID);
+            } catch (RuntimeException | IOException ex1)
             {
                 try
                 {
@@ -324,24 +388,73 @@ public class ImageUtil
                 "tiff");
     }
 
-    private static BufferedImage loadWithBioFormats(IRandomAccessFile handle, ImageID imageID)
-    {
-        return loadWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
-                "TiffDelegateReader");
-    }
+//    private static BufferedImage loadWithBioFormats(IRandomAccessFile handle, ImageID imageID)
+//    {
+//        return loadWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
+//                "TiffDelegateReader");
+//    }
 
-    private static Dimension loadDimensionWithBioFormats(IRandomAccessFile handle, ImageID imageID)
-    {
-        return loadDimensionWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
-                "TiffDelegateReader");
-    }
+//    private static Dimension loadDimensionWithBioFormats(IRandomAccessFile handle, ImageID imageID)
+//    {
+//        return loadDimensionWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
+//                "TiffDelegateReader");
+//    }
 
-    private static int loadColorDepthWithBioFormats(IRandomAccessFile handle, ImageID imageID)
-    {
-        return loadColorDepthWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
-                "TiffDelegateReader");
-    }
+    private static Dimension loadDimensions(IRandomAccessFile handle) throws IOException {
+        try (ImageInputStream iis = new RAFImageInputStream(handle))
+        {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext())
+            {
+                throw new RuntimeException("No ImageReader found for this format");
+            }
 
+            ImageReader reader = readers.next();
+            reader.setInput(iis, true, true);
+
+            int w = reader.getWidth(0);
+            int h = reader.getHeight(0);
+
+            reader.dispose();
+            return new Dimension(w, h);
+        }
+    }
+//    private static int loadColorDepthWithBioFormats(IRandomAccessFile handle, ImageID imageID)
+//    {
+//        return loadColorDepthWithLibrary(handle, imageID, ImageReaderConstants.BIOFORMATS_LIBRARY,
+//                "TiffDelegateReader");
+//    }
+
+    public static int loadColorDepth(IRandomAccessFile handle) throws IOException {
+        try (ImageInputStream iis = new RAFImageInputStream(handle))
+        {
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            if (!readers.hasNext())
+            {
+                throw new RuntimeException("No ImageReader found for this format");
+            }
+            ImageReader reader = readers.next();
+            reader.setInput(iis, true, true);
+
+            Iterator<ImageTypeSpecifier> types = reader.getImageTypes(0);
+            if (!types.hasNext())
+            {
+                throw new RuntimeException("No image types available for this TIFF");
+            }
+            ImageTypeSpecifier spec = types.next();
+            SampleModel sm = spec.getSampleModel();
+
+            int[] sampleSizes = sm.getSampleSize();
+            int totalBits = 0;
+            for (int b : sampleSizes)
+            {
+                totalBits += b;
+            }
+
+            reader.dispose();
+            return totalBits;
+        }
+    }
     /**
      * For experts only! Loads some kinds of TIFF images handled by JAI library.
      */

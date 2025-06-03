@@ -46,9 +46,10 @@ var EmptyLinksController = {
         }
 };
 
-function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, showAnnotableTypes, disableAddAnyType, sampleTypeCode, stateObj, spaceCode, setDirty) {
+function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, showAnnotableTypes, disableAddAnyType, sampleTypeCode, stateObj, spaceCode, setDirty, viewId) {
+    var viewId = viewId;
 	var linksModel = new LinksModel(title, sampleTypeHints, isDisabled, showAnnotableTypes, disableAddAnyType, sampleTypeCode, stateObj, spaceCode);
-	var linksView = new LinksView(this, linksModel);
+	var linksView = new LinksView(this, linksModel, viewId);
 	var dirtyCallback = setDirty;
 	
 	this.init = function($container) {

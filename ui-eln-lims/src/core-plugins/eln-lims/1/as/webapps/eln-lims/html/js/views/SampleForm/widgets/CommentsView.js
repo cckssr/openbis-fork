@@ -17,6 +17,7 @@
 function CommentsView(commentsController, commentsModel) {
 	this._commentsController = commentsController;
 	this._commentsModel = commentsModel;
+	this._viewId = mainController.getNextId();
 	this.commentsContainer = $("<div>");
 	this.commentsAddButton = $("<div>");
 	
@@ -46,8 +47,9 @@ function CommentsView(commentsController, commentsModel) {
 	this.addCommentWidget = function(dateValue, userId, value) {
 		var _this = this;
 		var $buttonDelete = null;
+		var buttonDeleteId = "delete-comment-btn-" + this._viewId;
 		if(this._commentsModel.mode !== FormMode.VIEW) {
-			$buttonDelete = $("<a>", {"class" : "btn btn-default"});
+			$buttonDelete = $("<a>", {"class" : "btn btn-default", "id" : buttonDeleteId});
 			$buttonDelete.append($("<span>", { "class" : "glyphicon glyphicon-minus-sign"}));
 		}
 		var date = Util.getFormatedDate(new Date(parseInt(dateValue)));
@@ -65,7 +67,7 @@ function CommentsView(commentsController, commentsModel) {
 				});
 		
 		if(this._commentsModel.mode !== FormMode.VIEW) {
-			$buttonDelete.click(function() {
+			$("body").on("click", "#" + buttonDeleteId, function() {
 				_this._commentsController.deleteComment(dateValue);
 				commentWidget.remove();
 			});
@@ -78,9 +80,10 @@ function CommentsView(commentsController, commentsModel) {
 		if(this._commentsModel.mode !== FormMode.VIEW) {
 			var _this = this;
 			var commentNumber = 0;
-			var $buttonPlusOne = $("<a>", {"class" : "btn btn-default", "id" : "add-comment-btn"});
-			$buttonPlusOne.append($("<span>", { "class" : "glyphicon glyphicon-plus-sign"}));
-			$buttonPlusOne.click(function() {
+			var buttonPlusOneId = "add-comment-btn-"+this._viewId;
+			var $buttonPlusOne = $("<a>", {"class" : "btn btn-default", "id" : buttonPlusOneId});
+			$buttonPlusOne.append($("<span>", { "class" : "material-icons", "text" : "control_point", "style" : "font-size: 18px;"}));
+			$("body").on("click", "#"+buttonPlusOneId, function() {
 				_this.addNewComment(commentNumber);
 				commentNumber++;
 			});
@@ -91,14 +94,15 @@ function CommentsView(commentsController, commentsModel) {
 	this.addNewComment = function(commentNumber) {
 		var $textBox = FormUtil._getTextBox("comment-" + commentNumber + "-box", null, false);
 		var $textBoxGroup = FormUtil.getFieldForComponentWithLabel($textBox, null, null);
-		var $saveButton = FormUtil.getButtonWithText("Add Comment", null, null, "save-comment-" + commentNumber + "-btn");
+		var saveButtonId = "save-comment-" + commentNumber + "-btn-" + this._viewId;
+		var $saveButton = FormUtil.getButtonWithText("Add Comment", null, null, saveButtonId);
 		var $saveButtonGroup = FormUtil.getFieldForComponentWithLabel($saveButton, null, null);
 		
 		this.commentsContainer.append($textBoxGroup);
 		this.commentsContainer.append($saveButtonGroup);
 		
 		var _this = this;
-		$saveButton.click(function() {
+		$("body").on("click", "#"+saveButtonId, function() {
 			//Save Value
 			value = $textBox.val();
 			//value = html.sanitize(value);

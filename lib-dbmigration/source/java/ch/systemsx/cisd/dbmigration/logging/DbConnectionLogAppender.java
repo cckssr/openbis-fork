@@ -15,30 +15,52 @@
  */
 package ch.systemsx.cisd.dbmigration.logging;
 
-import org.apache.log4j.DailyRollingFileAppender;
-import org.apache.log4j.spi.LoggingEvent;
+import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
+import ch.systemsx.cisd.common.logging.ext.ExtendedLogRecord;
+
+import java.io.IOException;
+import java.util.logging.LogRecord;
 
 /**
  * @author pkupczyk
  */
-public class DbConnectionLogAppender extends DailyRollingFileAppender
+public class DbConnectionLogAppender extends DailyRollingFileHandler
 {
+    /**
+     * Constructs the DailyRollingFileHandler.
+     *
+     * @param baseFileName The base name (including path) for the log files.
+     * @throws IOException If an I/O error occurs while opening the log file.
+     */
+    public DbConnectionLogAppender(String baseFileName) throws IOException
+    {
+        super(baseFileName);
+    }
 
     @Override
-    public void append(LoggingEvent event)
+    public synchronized void publish(LogRecord record)
     {
-        if (DbConnectionLogConfiguration.getInstance().isDbConnectionsSeparateLogFileEnabled())
-        {
-            super.append(new LoggingEvent(event.getFQNOfLoggerClass(),
-                    event.getLogger(),
-                    event.getTimeStamp(),
-                    event.getLevel(),
-                    event.getMessage(),
-                    Thread.currentThread().getName().replaceAll("\\s", "_"),
-                    event.getThrowableInformation(),
-                    event.getNDC(),
-                    event.getLocationInformation(),
-                    event.getProperties()));
-        }
+        ExtendedLogRecord extendedLogRecord = new ExtendedLogRecord(record,
+                Thread.currentThread().getName().replaceAll("\\s", "_"));
+
+        super.publish(extendedLogRecord);
     }
+
+    //    @Override
+//    public void append(LoggingEvent event)
+//    {
+//        if (DbConnectionLogConfiguration.getInstance().isDbConnectionsSeparateLogFileEnabled())
+//        {
+//            super.publish(new LoggingEvent(event.getFQNOfLoggerClass(),
+//                    event.getLogger(),
+//                    event.getTimeStamp(),
+//                    event.getLevel(),
+//                    event.getMessage(),
+//                    Thread.currentThread().getName().replaceAll("\\s", "_"),
+//                    event.getThrowableInformation(),
+//                    event.getNDC(),
+//                    event.getLocationInformation(),
+//                    event.getProperties()));
+//        }
+//    }
 }

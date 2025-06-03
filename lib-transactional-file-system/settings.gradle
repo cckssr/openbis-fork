@@ -1,1 +1,1 @@
-includeFlat 'lib-json'
+includeFlat 'lib-json', 'lib-logging'

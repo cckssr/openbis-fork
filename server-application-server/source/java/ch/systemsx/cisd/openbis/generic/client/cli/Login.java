@@ -26,10 +26,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ch.systemsx.cisd.common.logging.ext.ConfigureNullHandler;
 import jline.ConsoleReader;
-
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.varia.NullAppender;
 
 import ch.systemsx.cisd.args4j.Argument;
 import ch.systemsx.cisd.args4j.CmdLineParser;
@@ -178,7 +176,7 @@ public class Login
 
     public static void main(String[] args) throws IOException
     {
-        BasicConfigurator.configure(new NullAppender());
+        ConfigureNullHandler.configure();
         try
         {
             final Parameters params = new Parameters(args);
