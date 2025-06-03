@@ -39,7 +39,7 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;
 public class TarBasedPathInfoProviderTest extends AbstractFileSystemTestCase
 {
     private static final File TEST_DATA_FOLDER =
-            new File("./resource/test-data/"
+            new File("../lib-hierarchical-content/resource/test-data/"
                     + TarBasedPathInfoProviderTest.class.getSimpleName());
 
     private static final SimpleComparator<DataSetPathInfo, String> COMPARATOR =
