@@ -57,6 +57,10 @@ public class ShareIdManagerTest extends AbstractTest
     private static final String DATA_SET_2_LOCATION =
             STORAGE_UUID + "/" + String.join("/", IOUtils.getShards(DATA_SET_2_CODE)) + "/" + DATA_SET_2_CODE;
 
+    private static final int LOCKING_TIMEOUT_IN_SECONDS = 1;
+
+    private static final int LOCKING_LOCKING_WAITING_INTERVAL_IN_MILLIS = 100;
+
     @Test
     public void testLockTheSameDataSetInTheSameThread() throws Exception
     {
@@ -71,6 +75,16 @@ public class ShareIdManagerTest extends AbstractTest
 
         DataSet immutableExperimentDataSet = dataSet(experiment(false), null, DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
         testLockDataSetsInTheSameThread(immutableExperimentDataSet, immutableExperimentDataSet, null);
+    }
+
+    @Test
+    public void testLockTheSameDataSetMultipleTimesInTheSameThread() throws Exception
+    {
+        DataSet mutableDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockTheSameDataSetMultipleTimesInTheSameThread(mutableDataSet, "Locking of data sets: [data-set-1] failed.");
+
+        DataSet immutableDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testLockTheSameDataSetMultipleTimesInTheSameThread(immutableDataSet, null);
     }
 
     @Test
@@ -177,6 +191,26 @@ public class ShareIdManagerTest extends AbstractTest
         testLockAndReleaseLock(immutableExperimentDataSet1, immutableExperimentDataSet2, true);
     }
 
+    @Test
+    public void testAwait() throws Exception
+    {
+        DataSet mutableDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testAwait(mutableDataSet, LOCKING_TIMEOUT_IN_SECONDS * 1000 / 2, null);
+
+        DataSet immutableDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testAwait(immutableDataSet, LOCKING_TIMEOUT_IN_SECONDS * 1000 / 2, null);
+    }
+
+    @Test
+    public void testAwaitTimeout() throws Exception
+    {
+        DataSet mutableDataSet = dataSet(null, sample(true), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testAwait(mutableDataSet, LOCKING_TIMEOUT_IN_SECONDS * 1000, "Locking of data sets: [data-set-1] failed.");
+
+        DataSet immutableDataSet = dataSet(null, sample(false), DATA_SET_1_CODE, SHARE_1, DATA_SET_1_LOCATION);
+        testAwait(immutableDataSet, LOCKING_TIMEOUT_IN_SECONDS * 1000, "Locking of data sets: [data-set-1] failed.");
+    }
+
     private void testLockDataSetsInTheSameThread(DataSet dataSet1, DataSet dataSet2, String expectedException) throws Exception
     {
         Mockery context = new Mockery();
@@ -206,6 +240,107 @@ public class ShareIdManagerTest extends AbstractTest
         }
 
         assertNull(exception);
+
+        context.assertIsSatisfied();
+    }
+
+    private void testLockTheSameDataSetMultipleTimesInTheSameThread(DataSet dataSet, String expectedException) throws Exception
+    {
+
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
+        context.checking(new Expectations()
+        {
+            {
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet.getCode())), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet)));
+            }
+        });
+
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
+        MessageChannel channel1 = new MessageChannel();
+        MessageChannel channel2 = new MessageChannel();
+
+        AtomicReference<Throwable> exception1 = new AtomicReference<Throwable>(null);
+        Thread thread1 = new Thread(() ->
+        {
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked the first time");
+
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked the second time");
+
+                channel2.assertNextMessage("first attempt");
+
+                shareIdManager.releaseLock(dataSet.getCode());
+                channel1.send("released the first time");
+
+                channel2.assertNextMessage("second attempt");
+
+                shareIdManager.releaseLock(dataSet.getCode());
+                channel1.send("released the second time");
+            } catch (Throwable e)
+            {
+                logger.info("Thread 1 exception", e);
+                exception1.set(e);
+            }
+        });
+
+        AtomicReference<Throwable> exception2a = new AtomicReference<Throwable>(null);
+        AtomicReference<Throwable> exception2b = new AtomicReference<Throwable>(null);
+        AtomicReference<Throwable> exception2c = new AtomicReference<Throwable>(null);
+        Thread thread2 = new Thread(() ->
+        {
+            channel1.assertNextMessage("locked the first time");
+            channel1.assertNextMessage("locked the second time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2a exception", e);
+                exception2a.set(e);
+            }
+
+            channel2.send("first attempt");
+            channel1.assertNextMessage("released the first time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2b exception", e);
+                exception2b.set(e);
+            }
+
+            channel2.send("second attempt");
+            channel1.assertNextMessage("released the second time");
+
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2c exception", e);
+                exception2c.set(e);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        assertNull(exception1.get());
+        assertEquals(expectedException, exception2a.get() != null ? exception2a.get().getMessage() : null);
+        assertEquals(expectedException, exception2b.get() != null ? exception2b.get().getMessage() : null);
+        assertNull(exception2c.get() != null ? exception2c.get().getMessage() : null);
 
         context.assertIsSatisfied();
     }
@@ -385,6 +520,69 @@ public class ShareIdManagerTest extends AbstractTest
         context.assertIsSatisfied();
     }
 
+    private void testAwait(DataSet dataSet, int sleepInMillis, String expectedException) throws Exception
+    {
+        Mockery context = new Mockery();
+        IOpenBISFacade openBISFacade = context.mock(IOpenBISFacade.class);
+
+        context.checking(new Expectations()
+        {
+            {
+                allowing(openBISFacade).searchDataSets(with(dataSetSearchCriteria(dataSet.getCode())), with(any(DataSetFetchOptions.class)));
+                will(returnValue(searchResult(dataSet)));
+            }
+        });
+
+        IShareIdManager shareIdManager = shareIdManager(openBISFacade);
+        MessageChannel channel1 = new MessageChannel();
+        MessageChannel channel2 = new MessageChannel();
+
+        AtomicReference<Throwable> exception1 = new AtomicReference<Throwable>(null);
+        Thread thread1 = new Thread(() ->
+        {
+            try
+            {
+                shareIdManager.lock(dataSet.getCode());
+                channel1.send("locked");
+
+                Thread.sleep(sleepInMillis);
+                channel2.assertEmpty();
+
+                shareIdManager.releaseLock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 1 exception", e);
+                exception1.set(e);
+            }
+        });
+
+        AtomicReference<Throwable> exception2 = new AtomicReference<Throwable>(null);
+        Thread thread2 = new Thread(() ->
+        {
+            try
+            {
+                channel1.assertNextMessage("locked");
+                shareIdManager.await(dataSet.getCode());
+                shareIdManager.lock(dataSet.getCode());
+            } catch (Throwable e)
+            {
+                logger.info("Thread 2 exception", e);
+                exception2.set(e);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
+
+        assertNull(exception1.get());
+        assertEquals(expectedException, exception2.get() != null ? exception2.get().getMessage() : null);
+
+        context.assertIsSatisfied();
+    }
+
     private ShareIdManager shareIdManager(IOpenBISFacade openBISFacade) throws Exception
     {
         Configuration configuration = new Configuration(ServerClientEnvironmentFS.getInstance().getDefaultServerConfiguration().getProperties());
@@ -417,7 +615,8 @@ public class ShareIdManagerTest extends AbstractTest
 
         TransactionManager transactionManager =
                 new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot);
-        return new ShareIdManager(openBISFacade, transactionManager, storageRoot, 0, 0);
+        return new ShareIdManager(openBISFacade, transactionManager, storageRoot, LOCKING_TIMEOUT_IN_SECONDS,
+                LOCKING_LOCKING_WAITING_INTERVAL_IN_MILLIS);
     }
 
     private Experiment experiment(boolean mutable)

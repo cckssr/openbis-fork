@@ -73,6 +73,11 @@ public class ProxyShareIdManager implements IShareIdManager
         shareIdManager.releaseLock(dataSetCode);
     }
 
+    @Override public void releaseLocks(List<String> dataSetCodes)
+    {
+        shareIdManager.releaseLocks(dataSetCodes);
+    }
+
     @Override
     public void releaseLocks()
     {

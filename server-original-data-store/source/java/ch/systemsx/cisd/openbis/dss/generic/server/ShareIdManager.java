@@ -285,6 +285,14 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
+    @Override public void releaseLocks(List<String> dataSetCodes)
+    {
+        for (String dataSetCode : dataSetCodes)
+        {
+            releaseLock(dataSetCode);
+        }
+    }
+
     @Override
     public void releaseLocks()
     {

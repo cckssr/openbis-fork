@@ -21,7 +21,7 @@ package ch.systemsx.cisd.openbis.generic.shared;
  * Be aware about the uniqueness of the bean names loaded by <i>Spring</i>. Names defined here should not conflict with already existing bean names.
  * Look for other <code>ResourceNames</code> classes.
  * </p>
- * 
+ *
  * @author Christian Ribeaud
  */
 public final class ResourceNames
@@ -59,7 +59,7 @@ public final class ResourceNames
     public final static String COMMON_SERVICE = "common-service";
 
     public final static String COMMON_SERVER = "common-server";
-    
+
     public final static String IMPORT_SERVICE = "import-service";
 
     public final static String TRACKING_SERVER = "tracking-server";
@@ -82,5 +82,9 @@ public final class ResourceNames
             "service-conversation-server-manager";
 
     public final static String MULTIPLEXER = "multiplexer";
+
+    public final static String OPENBIS_DATABASE_CONTEXT = "db-configuration-context";
+
+    public final static String MESSAGES_DATABASE_CONTEXT = "messages-db-configuration-context";
 
 }

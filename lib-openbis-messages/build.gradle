@@ -1,0 +1,12 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    annotationProcessor 'lombok:lombok:1.18.22'
+    implementation project(':lib-json'),
+            project(':lib-messages-db'),
+            'lombok:lombok:1.18.22'
+    testImplementation 'junit:junit:4.10',
+            'hamcrest:hamcrest-core:1.3',
+            'hamcrest:hamcrest-library:1.3'
+
+}

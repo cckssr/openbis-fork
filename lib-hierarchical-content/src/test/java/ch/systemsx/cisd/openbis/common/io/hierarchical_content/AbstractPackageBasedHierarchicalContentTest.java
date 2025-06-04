@@ -41,7 +41,7 @@ public abstract class AbstractPackageBasedHierarchicalContentTest extends Abstra
 {
 
     private static final File TEST_HDF5_CONTAINER = new File(
-            "../lib-hierarchical-content/resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
+            "./resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
 
     protected void init()
     {

@@ -1,3 +1,3 @@
-includeFlat 'lib-logging', 'lib-commonbase', 'lib-common', 'lib-compress', 'lib-hdf5', 'lib-maintenance', 'api-openbis-java', 'lib-openbis-common', 'lib-openbis-commonbase', 'lib-authentication', 'lib-two-phase-transaction',
+includeFlat 'lib-logging', 'lib-commonbase', 'lib-common', 'lib-compress', 'lib-hdf5', 'lib-maintenance', 'api-openbis-java', 'lib-openbis-common', 'lib-openbis-commonbase', 'lib-messages-db', 'lib-openbis-messages', 'lib-authentication', 'lib-two-phase-transaction',
         'lib-db', 'lib-dbmigration', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-archiver-db', 'lib-json', 'lib-data-store-commonbase', 'lib-data-store-common', 'lib-hierarchical-content', 'lib-mail', 'lib-archiver', 'lib-shuffling',
         'server-application-server', 'api-openbis-javascript', 'api-data-store-server-java', 'api-data-store-server-javascript'

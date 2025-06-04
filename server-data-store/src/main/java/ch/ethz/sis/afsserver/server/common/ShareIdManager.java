@@ -2,8 +2,9 @@ package ch.ethz.sis.afsserver.server.common;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import lombok.Getter;
 
 public class ShareIdManager implements IShareIdManager
 {
@@ -32,7 +34,7 @@ public class ShareIdManager implements IShareIdManager
 
     private final int lockingWaitingIntervalInMillis;
 
-    private final ThreadLocal<UUID> threadOwnerId = new ThreadLocal<>();
+    private final ThreadLocal<ThreadLocks> threadLocks = new ThreadLocal<>();
 
     public ShareIdManager(IOpenBISFacade openBISFacade, TransactionManager transactionManager, String storageRoot, int lockingTimeoutInSeconds,
             int lockingWaitingIntervalInMillis)
@@ -79,7 +81,6 @@ public class ShareIdManager implements IShareIdManager
 
     @Override public void lock(final List<String> dataSetCodes)
     {
-        UUID ownerId = getThreadOwnerId();
         List<DataSet> dataSets = getDataSets(dataSetCodes);
 
         if (dataSets.size() != dataSetCodes.size())
@@ -89,16 +90,38 @@ public class ShareIdManager implements IShareIdManager
             throw new UnknownDataSetException(notFoundDataSetCodes);
         }
 
-        List<DataSet> mutableDataSets = filterDataSetsByMutability(dataSets, true);
-        List<DataSet> immutableDataSets = filterDataSetsByMutability(dataSets, false);
+        ThreadLocks threadLocks = getThreadLocks();
+        List<DataSetLock> locksToAdd = new ArrayList<>();
+        List<DataSetLock> locksToIncrease = new ArrayList<>();
 
-        List<Lock<UUID, String>> locks = new ArrayList<>();
-        locks.addAll(createLocks(ownerId, mutableDataSets, LockType.HierarchicallyExclusive));
-        locks.addAll(createLocks(ownerId, immutableDataSets, LockType.Shared));
+        for (DataSet dataSet : dataSets)
+        {
+            DataSetLock dataSetLock = threadLocks.getLock(dataSet.getCode());
 
-        boolean success = transactionManager.lock(locks);
+            if (dataSetLock == null)
+            {
+                Lock<UUID, String> lock = new Lock<>(threadLocks.getOwnerId(), getResource(dataSet),
+                        isMutable(dataSet) ? LockType.HierarchicallyExclusive : LockType.Shared);
+                locksToAdd.add(new DataSetLock(dataSet.getCode(), lock, 1));
+            } else
+            {
+                locksToIncrease.add(dataSetLock);
+            }
+        }
 
-        if (!success)
+        boolean success = transactionManager.lock(locksToAdd.stream().map(DataSetLock::getLock).collect(Collectors.toList()));
+
+        if (success)
+        {
+            for (DataSetLock lockToAdd : locksToAdd)
+            {
+                threadLocks.setLock(lockToAdd.getDataSetCode(), lockToAdd);
+            }
+            for (DataSetLock lockToIncrease : locksToIncrease)
+            {
+                lockToIncrease.increaseCounter();
+            }
+        } else
         {
             throw new LockingFailedException(dataSetCodes);
         }
@@ -113,17 +136,25 @@ public class ShareIdManager implements IShareIdManager
             throw new UnknownDataSetException(dataSetCode);
         }
 
+        ThreadLocks threadLocks = getThreadLocks();
+        String dataSetResource = getResource(dataSet);
         long startMillis = System.currentTimeMillis();
 
         while (System.currentTimeMillis() < startMillis + lockingTimeoutInSeconds * 1000L)
         {
-            List<Lock<UUID, String>> locks = filterLocksByDataSet(transactionManager.getLocks(), dataSet);
+            boolean lockedByOthers = false;
 
-            if (!locks.isEmpty())
+            for (Lock<UUID, String> lock : transactionManager.getLocks())
             {
-                // Unfortunately, we don't have a mechanism in AFS that would notify
-                // us when all the locks are released, therefore, we need to do the waiting here.
+                if (Objects.equals(dataSetResource, lock.getResource()) && !Objects.equals(threadLocks.getOwnerId(), lock.getOwner()))
+                {
+                    lockedByOthers = true;
+                    break;
+                }
+            }
 
+            if (lockedByOthers)
+            {
                 try
                 {
                     Thread.sleep(lockingWaitingIntervalInMillis);
@@ -132,44 +163,75 @@ public class ShareIdManager implements IShareIdManager
                     Thread.currentThread().interrupt();
                     throw new RuntimeException(e);
                 }
+            } else
+            {
+                return;
             }
         }
+
+        throw new LockingFailedException(List.of(dataSetCode));
     }
 
     @Override public void releaseLock(final String dataSetCode)
     {
-        UUID ownerId = getThreadOwnerId();
-        DataSet dataSet = getDataSet(dataSetCode);
+        releaseLocks(List.of(dataSetCode));
+    }
 
-        if (dataSet == null)
+    @Override public void releaseLocks(final List<String> dataSetCodes)
+    {
+        ThreadLocks threadLocks = getThreadLocks();
+        List<DataSetLock> locksToRemove = new ArrayList<>();
+        List<DataSetLock> locksToDecrease = new ArrayList<>();
+
+        for (String dataSetCode : dataSetCodes)
         {
-            throw new UnknownDataSetException(dataSetCode);
+            DataSetLock dataSetLock = threadLocks.getLock(dataSetCode);
+
+            if (dataSetLock != null)
+            {
+                locksToDecrease.add(dataSetLock);
+
+                if (dataSetLock.getCounter() <= 1)
+                {
+                    locksToRemove.add(dataSetLock);
+                }
+            }
         }
 
-        List<Lock<UUID, String>> locks = new ArrayList<>(transactionManager.getLocks());
-        locks = filterLocksByOwnerId(locks, ownerId);
-        locks = filterLocksByDataSet(locks, dataSet);
+        boolean success = transactionManager.unlock(locksToRemove.stream().map(DataSetLock::getLock).collect(Collectors.toList()));
 
-        boolean success = transactionManager.unlock(locks);
-
-        if (!success)
+        if (success)
         {
-            throw new UnlockingFailedException(List.of(dataSetCode));
+            for (DataSetLock lockToRemove : locksToRemove)
+            {
+                threadLocks.setLock(lockToRemove.getDataSetCode(), null);
+            }
+            for (DataSetLock lockToDecrease : locksToDecrease)
+            {
+                lockToDecrease.decreaseCounter();
+            }
+        } else
+        {
+            throw new UnlockingFailedException(dataSetCodes);
         }
     }
 
     @Override public void releaseLocks()
     {
-        UUID ownerId = getThreadOwnerId();
+        ThreadLocks threadLocks = getThreadLocks();
+        List<DataSetLock> locksToRemove = threadLocks.getLocks();
 
-        List<Lock<UUID, String>> locks = new ArrayList<>(transactionManager.getLocks());
-        locks = filterLocksByOwnerId(locks, ownerId);
+        boolean success = transactionManager.unlock(locksToRemove.stream().map(DataSetLock::getLock).collect(Collectors.toList()));
 
-        boolean success = transactionManager.unlock(locks);
-
-        if (!success)
+        if (success)
         {
-            throw new UnlockingFailedException(ownerId);
+            for (DataSetLock lockToRemove : locksToRemove)
+            {
+                threadLocks.setLock(lockToRemove.getDataSetCode(), null);
+            }
+        } else
+        {
+            throw new UnlockingFailedException(threadLocks.getOwnerId());
         }
     }
 
@@ -205,39 +267,15 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
-    private List<Lock<UUID, String>> createLocks(UUID owner, List<DataSet> dataSets, LockType lockType)
+    private String getResource(DataSet dataSet)
     {
-        List<Lock<UUID, String>> locks = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets)
-        {
-            String resource = Paths.get(storageRoot, dataSet.getPhysicalData().getShareId(), dataSet.getPhysicalData().getLocation()).toString();
-            locks.add(new Lock<>(owner, resource, lockType));
-        }
-
-        return locks;
+        return Paths.get(storageRoot, dataSet.getPhysicalData().getShareId(), dataSet.getPhysicalData().getLocation()).toString();
     }
 
-    private List<DataSet> filterDataSetsByMutability(List<DataSet> dataSets, boolean mutable)
+    private boolean isMutable(DataSet dataSet)
     {
-        return dataSets.stream().filter(dataSet ->
-        {
-            Date experimentImmutableDate = dataSet.getExperiment() != null ? dataSet.getExperiment().getImmutableDataDate() : null;
-            Date sampleImmutableDate = dataSet.getSample() != null ? dataSet.getSample().getImmutableDataDate() : null;
-
-            return (experimentImmutableDate == null && sampleImmutableDate == null) == mutable;
-        }).collect(Collectors.toList());
-    }
-
-    private List<Lock<UUID, String>> filterLocksByOwnerId(List<Lock<UUID, String>> locks, UUID ownerId)
-    {
-        return locks.stream().filter(lock -> Objects.equals(ownerId, lock.getOwner())).collect(Collectors.toList());
-    }
-
-    private List<Lock<UUID, String>> filterLocksByDataSet(List<Lock<UUID, String>> locks, DataSet dataSet)
-    {
-        Lock<UUID, String> dataSetLock = createLocks(null, List.of(dataSet), null).get(0);
-        return locks.stream().filter(lock -> Objects.equals(dataSetLock.getResource(), lock.getResource())).collect(Collectors.toList());
+        return (dataSet.getExperiment() == null || dataSet.getExperiment().getImmutableDataDate() == null) && (dataSet.getSample() == null
+                || dataSet.getSample().getImmutableDataDate() == null);
     }
 
     private static class UnknownDataSetException extends IllegalArgumentException
@@ -274,15 +312,72 @@ public class ShareIdManager implements IShareIdManager
         }
     }
 
-    private UUID getThreadOwnerId()
+    private ThreadLocks getThreadLocks()
     {
-        UUID ownerId = threadOwnerId.get();
-        if (ownerId == null)
+        ThreadLocks locks = threadLocks.get();
+        if (locks == null)
+        {
+            locks = new ThreadLocks();
+            threadLocks.set(locks);
+        }
+        return locks;
+    }
+
+    private static class ThreadLocks
+    {
+
+        @Getter private final UUID ownerId;
+
+        private final Map<String, DataSetLock> dataSetLocks;
+
+        public ThreadLocks()
         {
             ownerId = UUID.randomUUID();
-            threadOwnerId.set(ownerId);
+            dataSetLocks = new HashMap<>();
         }
-        return ownerId;
+
+        public DataSetLock getLock(String dataSetCode)
+        {
+            return dataSetLocks.get(dataSetCode);
+        }
+
+        public void setLock(String dataSetCode, DataSetLock dataSetLock)
+        {
+            dataSetLocks.put(dataSetCode, dataSetLock);
+        }
+
+        public List<DataSetLock> getLocks()
+        {
+            return new ArrayList<>(dataSetLocks.values());
+        }
+    }
+
+    private static class DataSetLock
+    {
+
+        @Getter private final String dataSetCode;
+
+        @Getter private final Lock<UUID, String> lock;
+
+        @Getter private int counter;
+
+        public DataSetLock(String dataSetCode, Lock<UUID, String> lock, int counter)
+        {
+            this.dataSetCode = dataSetCode;
+            this.lock = lock;
+            this.counter = counter;
+        }
+
+        public void increaseCounter()
+        {
+            counter++;
+        }
+
+        public void decreaseCounter()
+        {
+            counter--;
+        }
+
     }
 
 }

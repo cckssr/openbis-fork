@@ -20,6 +20,7 @@ import java.util.List;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 
@@ -38,6 +39,7 @@ public class MaintenanceTaskUtils
         }
         long startUpTimestampOfAS = STARTED_FILE.lastModified();
         DataStoreSearchCriteria searchCriteria = new DataStoreSearchCriteria();
+        searchCriteria.withKind().thatIn(DataStoreKind.DSS);
         DataStoreFetchOptions fetchOptions = new DataStoreFetchOptions();
         List<DataStore> dataStores = service.searchDataStores(sessionToken, searchCriteria, fetchOptions).getObjects();
         for (DataStore dataStore : dataStores)

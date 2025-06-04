@@ -106,7 +106,7 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
             throw ex;
         } finally
         {
-            shareIdManager.releaseLocks();
+            shareIdManager.releaseLock(dataSetCode);
         }
         return size;
     }

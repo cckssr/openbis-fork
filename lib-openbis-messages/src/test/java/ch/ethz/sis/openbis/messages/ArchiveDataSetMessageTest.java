@@ -1,12 +1,12 @@
-package ch.ethz.sis.afsserver.server.archiving.messages;
+package ch.ethz.sis.openbis.messages;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.testng.Assert;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;

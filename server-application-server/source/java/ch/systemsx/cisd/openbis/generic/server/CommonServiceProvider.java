@@ -26,6 +26,7 @@ import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.mail.MailClientParameters;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
@@ -140,6 +141,10 @@ public class CommonServiceProvider
     public static IDataStoreServerApi getDataStoreServerApi()
     {
         return dataStoreServerApi;
+    }
+
+    public static DatabaseConfigurationContext getMessagesDatabaseConfigurationContext() {
+        return (DatabaseConfigurationContext) applicationContext.getBean(ResourceNames.MESSAGES_DATABASE_CONTEXT);
     }
 
 }

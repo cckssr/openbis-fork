@@ -29,6 +29,10 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.mail.EMailAddress;
@@ -39,8 +43,6 @@ import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.Mul
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchivingUtils;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.dataaccess.MultiDataSetArchiverDataSourceUtil;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 
 public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
 {
@@ -87,10 +89,10 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         String destination = null;
         if (isMultiDatasetArchiver)
         {
-            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("archiver.final-destination", null);
+            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("final-destination", null);
         } else
         {
-            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("archiver.destination", null);
+            destination = ArchiverServiceProviderFactory.getInstance().getArchiverProperties().getProperty("destination", null);
         }
 
         if (destination == null)
@@ -123,14 +125,13 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
         }
 
         operationLog.info("2.2 Database, obtain a list of the archived datasets on the database.");
-        IOpenBISService service = ArchiverServiceProviderFactory.getInstance().getOpenBISService();
-        List<SimpleDataSetInformationDTO> presentDTOs = service.listPhysicalDataSetsByArchivingStatus(null, Boolean.TRUE);
+        List<DataSet> presentDTOs = listPresentInArchivedOnDB();
         Set<String> presentInArchiveOnDB = new HashSet<String>();
         if (presentDTOs != null)
         {
-            for (SimpleDataSetInformationDTO presentDTO : presentDTOs)
+            for (DataSet presentDTO : presentDTOs)
             {
-                presentInArchiveOnDB.add(presentDTO.getDataSetCode().toLowerCase());
+                presentInArchiveOnDB.add(presentDTO.getCode().toLowerCase());
             }
         }
 
@@ -243,6 +244,20 @@ public class DataSetArchiverOrphanFinderTask implements IMaintenanceTask
             addresses.add(new EMailAddress(token.trim()));
         }
         return addresses;
+    }
+
+    private List<DataSet> listPresentInArchivedOnDB()
+    {
+        DataSetSearchCriteria criteria = new DataSetSearchCriteria();
+        criteria.withDataStore().withKind().thatIn(DataStoreKind.DSS, DataStoreKind.AFS);
+        criteria.withPhysicalData();
+        criteria.withPhysicalData().withPresentInArchive().thatEquals(true);
+
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+
+        String sessionToken = ArchiverServiceProviderFactory.getInstance().getOpenBISService().getSessionToken();
+        return ArchiverServiceProviderFactory.getInstance().getV3ApplicationService().searchDataSets(sessionToken, criteria, fetchOptions)
+                .getObjects();
     }
 
 }

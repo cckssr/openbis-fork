@@ -53,7 +53,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
 {
     private static final File STORE_ROOT =
-            new File("../server-original-data-store/resource/test-data/"
+            new File("./resource/test-data/"
                     + PathInfoDatabaseFeedingTaskTest.class.getSimpleName());
 
     private static final String DATA_SET_CODE = "ds1";
@@ -92,7 +92,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
                 allowing(shareIdManager).lock(with(any(String.class)));
                 allowing(shareIdManager).getShareId(with(any(String.class)));
                 will(returnValue("1"));
-                allowing(shareIdManager).releaseLocks();
+                allowing(shareIdManager).releaseLock(with(any(String.class)));
                 allowing(configProvider).getDataStoreKind();
                 will(returnValue(DataStoreKind.DSS));
             }
@@ -144,6 +144,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setRegistrationTimestamp(new Date(78000));
         ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
+        ds1.setDataSetSize(3L);
         context.checking(new Expectations()
         {
             {
@@ -175,6 +176,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setRegistrationTimestamp(new Date(78000));
         ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
+        ds1.setDataSetSize(1025784L);
         context.checking(new Expectations()
         {
             {
@@ -211,6 +213,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         ds1.setH5Folders(true);
+        ds1.setDataSetSize(1007978L);
         context.checking(new Expectations()
         {
             {
@@ -265,6 +268,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
         ds1.setH5arFolders(true);
+        ds1.setDataSetSize(1007978L);
         context.checking(new Expectations()
         {
             {
@@ -318,12 +322,12 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1.setRegistrationTimestamp(new Date(78000));
         ds1.setImmutableDataTimestamp(ds1.getRegistrationTimestamp());
         ds1.setStorageConfirmed(true);
+        ds1.setDataSetSize(3L);
         context.checking(new Expectations()
         {
             {
                 one(service).listOldestPhysicalDataSets(12);
                 will(returnValue(Arrays.asList(ds1)));
-
             }
         });
 
@@ -349,6 +353,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1NonConfirmed.setRegistrationTimestamp(new Date(78000));
         ds1NonConfirmed.setImmutableDataTimestamp(ds1NonConfirmed.getRegistrationTimestamp());
         ds1NonConfirmed.setStorageConfirmed(false);
+        ds1NonConfirmed.setDataSetSize(3L);
 
         final SimpleDataSetInformationDTO ds1Confirmed = new SimpleDataSetInformationDTO();
         ds1Confirmed.setDataSetCode("ds1");
@@ -356,6 +361,7 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         ds1Confirmed.setRegistrationTimestamp(new Date(79000));
         ds1Confirmed.setImmutableDataTimestamp(ds1Confirmed.getRegistrationTimestamp());
         ds1Confirmed.setStorageConfirmed(true);
+        ds1Confirmed.setDataSetSize(3L);
 
         context.checking(new Expectations()
         {
@@ -771,6 +777,15 @@ public class PathInfoDatabaseFeedingTaskTest extends AbstractFileSystemTestCase
         dataSet.setImmutableDataTimestamp(dataSet.getRegistrationTimestamp());
         dataSet.setDataSetLocation(location);
         dataSet.setStorageConfirmed(true);
+
+        if ("2".equals(location))
+        {
+            dataSet.setDataSetSize(3L);
+        } else if ("3".equals(location))
+        {
+            dataSet.setDataSetSize(16L);
+        }
+
         return dataSet;
     }
 

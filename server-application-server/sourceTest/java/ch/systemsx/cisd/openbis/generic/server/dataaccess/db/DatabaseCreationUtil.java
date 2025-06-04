@@ -28,6 +28,7 @@ import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.ISqlScriptProvider;
 import ch.systemsx.cisd.dbmigration.postgresql.DumpPreparator;
+import ch.systemsx.cisd.openbis.generic.shared.ResourceNames;
 
 import static ch.systemsx.cisd.dbmigration.DBMigrationEngine.FULL_TEXT_SEARCH_DOCUMENT_VERSION_FILE_PATH;
 
@@ -111,7 +112,8 @@ public final class DatabaseCreationUtil
             final String databaseKind)
     {
         final BeanFactory factory = getBeanFactory();
-        final DatabaseConfigurationContext configurationContext = (DatabaseConfigurationContext) factory.getBean("db-configuration-context");
+        final DatabaseConfigurationContext configurationContext = (DatabaseConfigurationContext) factory.getBean(
+                ResourceNames.OPENBIS_DATABASE_CONTEXT);
         configurationContext.setDatabaseKind(databaseKind);
         configurationContext.setScriptFolder("sourceTest/sql");
         return configurationContext;
