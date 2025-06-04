@@ -1368,13 +1368,13 @@
 	
 			var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
 			if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate-children-'+this._viewId}).text("Generate " + childrenTitle);
-				$("body").on("click", '#generate-children-'+this._viewId, function(event) {
-					_this._generateChildren();
-				});
-	
+//				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate-children-'+this._viewId}).text("Generate " + childrenTitle);
+//				$("body").on("click", '#generate-children-'+this._viewId, function(event) {
+//					_this._generateChildren();
+//				});
+
 				var $generateChildrenBox = $("<div>")
-												.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
+//												.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
 												.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown-'+this._viewId }))
 				$sampleChildrenWidget.append($generateChildrenBox);
 			}
