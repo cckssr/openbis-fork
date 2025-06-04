@@ -1114,8 +1114,8 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				}
 			}, {
                 label : 'Name',
-                property : 'NAME',
-                exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY("NAME"),
+                property : profile.getInternalNamespacePrefix() + 'NAME',
+                exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(profile.getInternalNamespacePrefix() + "NAME"),
                 filterable: !isGlobalSearch,
                 sortable : !isGlobalSearch,
                 render : function(data) {
@@ -1331,7 +1331,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 				//2. Get columns
 				var propertyColumnsToSort = [];
 				for(var propertyCode in foundPropertyCodes) {
-					var propertiesToSkip = ["NAME", "XMLCOMMENTS", "ANNOTATIONS_STATE"];
+					var propertiesToSkip = [profile.getInternalNamespacePrefix() + "NAME", profile.getInternalNamespacePrefix() + "XMLCOMMENTS", profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"];
 					if($.inArray(propertyCode, propertiesToSkip) !== -1) {
 						continue;
 					}

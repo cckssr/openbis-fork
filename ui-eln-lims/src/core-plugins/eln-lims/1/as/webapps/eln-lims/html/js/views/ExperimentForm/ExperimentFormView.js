@@ -655,17 +655,17 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 			profile.fixV1PropertyTypeVocabulary(propertyType);
 			FormUtil.fixStringPropertiesForForm(propertyTypeV3, this._experimentFormModel.experiment);
 
-			if(!propertyType.showInEditViews && (this._experimentFormController.mode === FormMode.EDIT || this._experimentFormController.mode === FormMode.CREATE) && propertyType.code !== "XMLCOMMENTS") { //Skip
+			if(!propertyType.showInEditViews && (this._experimentFormController.mode === FormMode.EDIT || this._experimentFormController.mode === FormMode.CREATE) && propertyType.code !== profile.getInternalNamespacePrefix() + "XMLCOMMENTS") { //Skip
 				continue;
 			} else if(propertyType.dinamic && this._experimentFormController.mode === FormMode.CREATE) { //Skip
 				continue;
 			} else if(this._experimentFormModel.isSimpleFolder && this._experimentFormModel.mode === FormMode.CREATE &&
-			        propertyType.code !== "NAME" &&
+			        propertyType.code !== profile.getInternalNamespacePrefix() + "NAME" &&
 			        !propertyType.mandatory) {
 			    continue;
 			}
 
-            if(propertyType.code === "XMLCOMMENTS") {
+            if(propertyType.code === profile.getInternalNamespacePrefix() + "XMLCOMMENTS") {
 				var $commentsContainer = $("<div>");
 				$fieldset.append($commentsContainer);
 				var isAvailable = this._experimentFormController._addCommentsWidget($commentsContainer);
@@ -673,7 +673,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 					continue;
 				}
 			} else {
-				if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
+				if(propertyType.code === profile.getInternalNamespacePrefix() + "SHOW_IN_PROJECT_OVERVIEW") {
 					if(!(profile.inventorySpaces.length > 0 && $.inArray(IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier), profile.inventorySpaces) === -1)) {
 						continue;
 					}
@@ -712,7 +712,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     }
 				} else {
 					var $component = null;
-					if(propertyType.code === "DEFAULT_OBJECT_TYPE") {
+					if(propertyType.code === profile.getInternalNamespacePrefix() + "DEFAULT_OBJECT_TYPE") {
 						$component = FormUtil.getSampleTypeDropdown(propertyType.code, false, null, null, IdentifierUtil.getSpaceCodeFromIdentifier(this._experimentFormModel.experiment.identifier), true);
 					} else {
 						$component = FormUtil.getFieldForPropertyType(propertyType, value, isMultiValue);

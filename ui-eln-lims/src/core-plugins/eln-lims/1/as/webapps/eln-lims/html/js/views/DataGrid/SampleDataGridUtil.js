@@ -51,8 +51,8 @@ var SampleDataGridUtil = new function() {
 
 		columnsFirst.push({
 			label : 'Name',
-			property : 'NAME',
-			exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY("NAME"),
+			property : profile.getInternalNamespacePrefix() + 'NAME',
+			exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(profile.getInternalNamespacePrefix() + "NAME"),
 			filterable: true,
 			sortable : true,
 			render : function(data) {
@@ -838,7 +838,7 @@ var SampleDataGridUtil = new function() {
         var samplePermIdsToIdentify = new Set();
         var propertyColumnsToSort = [];
         for (propertyCode in foundPropertyCodes) {
-            var propertiesToSkip = ["NAME", "XMLCOMMENTS", "ANNOTATIONS_STATE"];
+            var propertiesToSkip = [profile.getInternalNamespacePrefix() + "NAME", profile.getInternalNamespacePrefix() + "XMLCOMMENTS", profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"];
             if($.inArray(propertyCode, propertiesToSkip) !== -1) {
                 continue;
             }

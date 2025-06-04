@@ -1296,7 +1296,10 @@ function ServerFacade(openbisServer) {
 						const transformedResult = _this._transformSearchDataStoresResult(searchResult);
 						callbackFunction(transformedResult);
 					});
-			}
+			}, function (err) {
+			    profile.isOpenBIS6orNewer = false;
+                 _this.openbisServer.listDataStores(callbackFunction);
+            }
 		)
 	}
 	

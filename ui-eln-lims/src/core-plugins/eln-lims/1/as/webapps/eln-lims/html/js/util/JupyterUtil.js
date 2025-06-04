@@ -208,7 +208,7 @@ var JupyterUtil = new function() {
 		                     ownerSettings,
 		                     "parents=resultDatasetParents,\n",
 		                     "files = [fileName, fileName + '.html'],\n",
-		                     "props={'name': resultDatasetName, 'notes': resultDatasetNotes, 'history_id' : resultDatasetHistoryId })\n",
+		                     "props={'" + profile.getInternalNamespacePrefix() + "name': resultDatasetName, 'notes': resultDatasetNotes, 'history_id' : resultDatasetHistoryId })\n",
 		                     "ds_new.save()"
 		]));
 		

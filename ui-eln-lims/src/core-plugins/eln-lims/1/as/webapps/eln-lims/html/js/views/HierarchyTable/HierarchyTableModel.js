@@ -114,7 +114,7 @@ function HierarchyTableModel(entity) {
 			historyId : historyId,
 			permId : entity.permId.permId,
 			path: path,
-			name : entity.properties["NAME"],
+			name : entity.properties[profile.getInternalNamespacePrefix() + "NAME"],
 			sampleCode : (entity.sample)?entity.sample.code:null,
 			experimentCode : (entity.experiment)?entity.experiment.code:null,
 			parentAnnotations : this._createAnnotations(annotations, relationShips.parents),

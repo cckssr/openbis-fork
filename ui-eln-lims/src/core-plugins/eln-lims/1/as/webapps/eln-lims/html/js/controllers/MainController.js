@@ -1462,6 +1462,9 @@ function MainController(profile) {
 			this.serverFacade.listExperimentsForIdentifiers([experimentIdentifier], function (data) {
 				var experiment = data.result[0];
 				var defaultCollectionView = experiment.properties["DEFAULT_COLLECTION_VIEW"];
+				if(!defaultCollectionView) { // 20.10 Backwards compatibility before loading the profile
+			        defaultCollectionView = experiment.properties["$DEFAULT_COLLECTION_VIEW"];
+				}
 				var collectionView = forced || !defaultCollectionView ? forcedView : defaultCollectionView;
 
 				switch (collectionView) {
