@@ -117,7 +117,8 @@ public class RdfToOpenBisMapper
                 if (samplePropertyType.vocabularyCode != null)
                 {
                     propertyType.setVocabulary(
-                            vocabularyMap.get(samplePropertyType.vocabularyCode));
+                            vocabularyMap.get(
+                                    new VocabularyPermId(samplePropertyType.vocabularyCode)));
                 }
                 propertyType.setDataType(DataType.valueOf(samplePropertyType.dataType));
                 propertyType.setLabel(samplePropertyType.propertyLabel);
