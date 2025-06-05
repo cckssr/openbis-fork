@@ -74,9 +74,18 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         stagingDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.STAGING_DESTINATION_KEY));
         replicatedDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY));
 
-        IOUtils.delete(finalDestination.getPath());
-        IOUtils.delete(stagingDestination.getPath());
-        IOUtils.delete(replicatedDestination.getPath());
+        if (finalDestination.exists())
+        {
+            IOUtils.delete(finalDestination.getPath());
+        }
+        if (stagingDestination.exists())
+        {
+            IOUtils.delete(stagingDestination.getPath());
+        }
+        if (replicatedDestination.exists())
+        {
+            IOUtils.delete(replicatedDestination.getPath());
+        }
 
         IOUtils.createDirectories(finalDestination.getPath());
         IOUtils.createDirectories(stagingDestination.getPath());
