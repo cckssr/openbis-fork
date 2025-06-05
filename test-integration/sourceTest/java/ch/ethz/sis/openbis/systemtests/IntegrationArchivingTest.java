@@ -29,7 +29,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
-import ch.ethz.sis.openbis.systemtests.messages.TestMessagesConsumerMaintenanceTask;
+import ch.ethz.sis.openbis.systemtests.common.TestMessagesConsumerMaintenanceTask;
+import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -133,6 +134,9 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         // make sample immutable
         makeSampleImmutable(openBIS, sample.getPermId());
 
+        // populate path info db (only immutable data added considered)
+        TestPathInfoDatabaseFeedingTask.executeOnce();
+
         // create archiving message again
         ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(sample.getPermId().getPermId()), true, Map.of());
 
@@ -163,7 +167,8 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         // wait until data set is deleted
         TestLogger.waitUntilCondition(
                 recordedLog -> Arrays.stream(recordedLog)
-                        .anyMatch(line -> line.matches(".*Data set " + sample.getPermId().getPermId() + " at .* has been successfully deleted.*")), 5000);
+                        .anyMatch(line -> line.matches(".*Data set " + sample.getPermId().getPermId() + " at .* has been successfully deleted.*")),
+                5000);
 
         try
         {

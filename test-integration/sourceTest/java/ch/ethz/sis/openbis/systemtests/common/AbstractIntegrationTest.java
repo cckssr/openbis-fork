@@ -552,6 +552,7 @@ public abstract class AbstractIntegrationTest
         Properties configuration = new Properties();
         configuration.load(new FileInputStream("etc/as/service.properties"));
         configuration.setProperty("database.create-from-scratch", String.valueOf(createDatabase));
+        configuration.setProperty("messages-database.create-from-scratch", String.valueOf(createDatabase));
         configuration.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
         configuration.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
                 TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());

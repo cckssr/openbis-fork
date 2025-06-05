@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.systemtests.shuffling;
+package ch.ethz.sis.openbis.systemtests.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,11 +75,23 @@ public class TestSegmentedStoreShufflingTask implements IMaintenanceTask
             }
         });
 
-        SegmentedStoreShufflingTask segmentedStoreShufflingTask = new SegmentedStoreShufflingTask();
-        segmentedStoreShufflingTask.setUp(pluginName, properties);
-        segmentedStoreShufflingTask.execute();
-
-        ShufflingServiceProviderFactory.setInstance(originalProvider);
+        Thread thread = new Thread(() ->
+        {
+            SegmentedStoreShufflingTask segmentedStoreShufflingTask = new SegmentedStoreShufflingTask();
+            segmentedStoreShufflingTask.setUp(pluginName, properties);
+            segmentedStoreShufflingTask.execute();
+        }, pluginName);
+        try
+        {
+            thread.start();
+            thread.join();
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        } finally
+        {
+            ShufflingServiceProviderFactory.setInstance(originalProvider);
+        }
     }
 
     public static class TestChecksumProvider implements IChecksumProvider
