@@ -46,7 +46,7 @@ dependencies {
             project(':api-openbis-java'),
             'lombok:lombok:1.18.38',
             'io.netty:netty-all:4.1.68.Final',
-            'slf4j:slf4j-jdk14:1.6.2',
+            'slf4j:slf4j-jdk14:1.7.24',
             'shriop:javacsv:2.0'
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             'junit:junit:4.10',

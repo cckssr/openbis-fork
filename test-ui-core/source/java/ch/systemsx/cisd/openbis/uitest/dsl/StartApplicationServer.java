@@ -54,7 +54,7 @@ public class StartApplicationServer
                 Server server = new Server(10000);
 
 
-                server.addLifeCycleListener(new LifeCycle.Listener() {
+                server.addEventListener(new LifeCycle.Listener() {
                     @Override
                     public void lifeCycleStarting(LifeCycle lifeCycle)
                     {

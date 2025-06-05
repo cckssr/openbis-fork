@@ -51,7 +51,7 @@ dependencies {
             'testng:testng:6.8-CISD',
             'selenium:selenium-java:3.141.59'
 
-    testRuntimeFirst 'javax:servlet-api:3.1.0', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
+    testRuntimeFirst 'javax:servlet-api:4.0.1', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
 
     testRuntimeSecond 'google:gwt-user:2.4'
 

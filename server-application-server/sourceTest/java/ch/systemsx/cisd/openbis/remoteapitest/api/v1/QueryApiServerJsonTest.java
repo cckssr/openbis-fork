@@ -43,7 +43,7 @@ import ch.systemsx.cisd.openbis.remoteapitest.RemoteApiTestCase;
 @Test(groups = { "remote api" }, dependsOnGroups = { "before remote api" })
 public class QueryApiServerJsonTest extends RemoteApiTestCase
 {
-    private static final String SERVICE_URL = TestInstanceHostUtils.getOpenBISUrl() + "/openbis/"
+    private static final String SERVICE_URL = TestInstanceHostUtils.getOpenBISUrl() + "/openbis"
             + IQueryApiServer.JSON_SERVICE_URL;
 
     protected IQueryApiServer queryApiService;

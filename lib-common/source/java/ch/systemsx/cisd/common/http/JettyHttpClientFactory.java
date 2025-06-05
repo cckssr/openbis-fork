@@ -19,8 +19,11 @@ import java.io.InputStream;
 import java.security.KeyStore;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.HttpProxy;
 import org.eclipse.jetty.client.ProxyConfiguration;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.ScheduledExecutorScheduler;
@@ -69,7 +72,7 @@ public class JettyHttpClientFactory
 
     private static HttpClient createHttpClient()
     {
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setEndpointIdentificationAlgorithm(null); // disable hostname verification
 
         String trustStorePath = System.getProperties().getProperty("javax.net.ssl.trustStore");
@@ -82,25 +85,44 @@ public class JettyHttpClientFactory
         {
             sslContextFactory.setTrustAll(true);
         }
-        HttpClient client = new HttpClient(sslContextFactory)
-            {
-                @Override
-                protected void doStart() throws Exception
-                {
-                    if (getExecutor() == null)
-                    {
-                        QueuedThreadPool threadPool = new QueuedThreadPool();
-                        threadPool.setName("openBIS-jetty");
-                        threadPool.setDaemon(true);
-                        setExecutor(threadPool);
-                    }
-                    if (getScheduler() == null)
-                    {
-                        setScheduler(new ScheduledExecutorScheduler("openBIS-jetty-scheduler", true));
-                    }
-                    super.doStart();
-                }
-            };
+
+
+        ClientConnector clientConnector = new ClientConnector();
+
+        // Set the SslContextFactory on the ClientConnector
+        clientConnector.setSslContextFactory(sslContextFactory);
+
+        // Configure Executor, Scheduler, ByteBufferPool directly on ClientConnector
+        // This makes the HttpClient's doStart() override for these less necessary if ClientConnector is fully set up.
+        QueuedThreadPool threadPool = new QueuedThreadPool();
+        threadPool.setName("openBIS-jetty"); // Naming for connector's pool
+        threadPool.setDaemon(true);
+        clientConnector.setExecutor(threadPool);
+
+        ScheduledExecutorScheduler scheduler = new ScheduledExecutorScheduler("openBIS-jetty-scheduler", true);
+        clientConnector.setScheduler(scheduler);
+
+        HttpClientTransportOverHTTP httpClientTransportOverHTTP = new HttpClientTransportOverHTTP(clientConnector);
+        HttpClient client = new HttpClient(httpClientTransportOverHTTP);
+//            {
+//                @Override
+//                protected void doStart() throws Exception
+//                {
+//                    if (getExecutor() == null)
+//                    {
+//                        QueuedThreadPool threadPool = new QueuedThreadPool();
+//                        threadPool.setName("openBIS-jetty");
+//                        threadPool.setDaemon(true);
+//                        setExecutor(threadPool);
+//                    }
+//                    if (getScheduler() == null)
+//                    {
+//                        setScheduler(new ScheduledExecutorScheduler("openBIS-jetty-scheduler", true));
+//                    }
+//                    super.doStart();
+//                }
+//
+//            };
         return client;
     }
 

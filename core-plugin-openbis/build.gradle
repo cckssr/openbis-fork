@@ -64,21 +64,20 @@ configurations.create('libOpenbisCommonJavadoc')
 configurations.create('serverOriginalDataStoreJavadoc')
 configurations.create('serverApplicationServerJavadoc')
 
-def jettyVersion = '9.4.44'
-def jettyDistributionVersion = '9.4.44.v20210927'
+def jettyVersion = '10.0.25'
+def jettyDistributionVersion = '10.0.25'
 
 dependencies {
     api project(':server-screening')
 
     providedCompile 'google:gwt-user:2.4'
 
-    providedRuntime "eclipse:jetty-deploy:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-xml:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-webapp:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-servlet:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-security:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-server:${jettyVersion}.v20210927@jar",
-            "eclipse:jetty-continuation:${jettyVersion}.v20210927@jar"
+    providedRuntime "eclipse:jetty-deploy:${jettyVersion}@jar",
+            "eclipse:jetty-xml:${jettyVersion}@jar",
+            "eclipse:jetty-webapp:${jettyVersion}@jar",
+            "eclipse:jetty-servlet:${jettyVersion}@jar",
+            "eclipse:jetty-security:${jettyVersion}@jar",
+            "eclipse:jetty-server:${jettyVersion}@jar"
 
     gwt 'reveregroup:gwt-image-loader:1.1.4',
             'google:gwt-dev:2.4'
