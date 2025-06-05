@@ -1,7 +1,9 @@
 package ch.ethz.sis.openbis.messages;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,9 +62,9 @@ public class ArchiveDataSetMessage
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
-        metaData.setDataSetCodes(dataSetCodes);
+        metaData.setDataSetCodes(new ArrayList<>(dataSetCodes));
         metaData.setRemoveFromDataStore(removeFromDataStore);
-        metaData.setOptions(options);
+        metaData.setOptions(new HashMap<>(options));
 
         try
         {

@@ -2,6 +2,7 @@ package ch.ethz.sis.afsserver.server.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
@@ -100,6 +101,33 @@ public class TestLogger
         }
         return recordedLog.toString();
     }
+
+    public static void waitUntilCondition(Predicate<String[]> condition, long timeout)
+    {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTime + timeout)
+        {
+            String recordedLog = TestLogger.getRecordedLog();
+
+            if (condition.test(recordedLog.split("\n")))
+            {
+                return;
+            } else
+            {
+                try
+                {
+                    Thread.sleep(timeout / 10);
+                } catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        throw new RuntimeException("Timed out waiting for " + timeout + " ms.");
+    }
+
 
     private static class TestOutputStreamManager extends OutputStreamManager
     {
