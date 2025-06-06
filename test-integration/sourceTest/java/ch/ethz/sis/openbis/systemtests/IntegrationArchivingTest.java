@@ -26,7 +26,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
 import ch.ethz.sis.openbis.systemtests.common.TestMessagesConsumerMaintenanceTask;
@@ -59,6 +63,8 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
     private static final String TEST_FILE_CONTENT = "test-content";
 
     private Space space;
+
+    private Project project;
 
     private File finalDestination;
 
@@ -95,6 +101,7 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         space = createSpace(openBIS, "ARCHIVING");
+        project = createProject(openBIS, space.getPermId(), "ARCHIVING");
 
         openBIS.logout();
     }
@@ -114,60 +121,84 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
     }
 
     @Test
-    public void testSuccessfulArchiving() throws Exception
+    public void testSuccessfulExperimentArchiving() throws Exception
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+        Experiment experiment = createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        testSuccessfulArchiving(experiment.getPermId(), null);
+    }
+
+    @Test
+    public void testSuccessfulSampleArchiving() throws Exception
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+        Sample sample = createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        testSuccessfulArchiving(null, sample.getPermId());
+    }
+
+    private void testSuccessfulArchiving(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
     {
         OpenBIS openBIS = createOpenBIS();
 
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        // create a sample
-        Sample sample = createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
 
         // upload a file
-        openBIS.getAfsServerFacade().write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
+        openBIS.getAfsServerFacade().write(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
         // check data set is AVAILABLE
-        DataSet afsDataSet = getAfsDataSet(openBIS, sample.getPermId().getPermId());
+        DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
         // create archiving message
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(sample.getPermId().getPermId()), true, Map.of());
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
 
         // consume archiving message
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
 
         // check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)
-        afsDataSet = getAfsDataSet(openBIS, sample.getPermId().getPermId());
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
-        // make sample immutable
-        makeSampleImmutable(openBIS, sample.getPermId());
+        // make owner immutable
+        if (experimentId != null)
+        {
+            makeExperimentImmutable(openBIS, experimentId);
+        } else
+        {
+            makeSampleImmutable(openBIS, sampleId);
+        }
 
         // populate path info db (only immutable data added considered)
         TestPathInfoDatabaseFeedingTask.executeOnce();
 
         // create archiving message again
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(sample.getPermId().getPermId()), true, Map.of());
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
 
         // consume archiving message
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
 
         // check data set is now ARCHIVE_PENDING
-        afsDataSet = getAfsDataSet(openBIS, sample.getPermId().getPermId());
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVE_PENDING);
 
         // replicate from final-destination to replica-destination
-        replicateDataSetArchive(sample.getPermId().getPermId());
+        replicateDataSetArchive(ownerId);
 
         // consume finalize archiving message
         TestMessagesConsumerMaintenanceTask.executeOnce(FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK);
 
         // check data set is ARCHIVED
-        afsDataSet = getAfsDataSet(openBIS, sample.getPermId().getPermId());
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVED);
 
         // check data set can still be read
-        byte[] fileContent = openBIS.getAfsServerFacade().read(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+        byte[] fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
         assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
 
         // consume delete data set message
@@ -176,13 +207,13 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         // wait until data set is deleted
         TestLogger.waitUntilCondition(
                 recordedLog -> Arrays.stream(recordedLog)
-                        .anyMatch(line -> line.matches(".*Data set " + sample.getPermId().getPermId() + " at .* has been successfully deleted.*")),
+                        .anyMatch(line -> line.matches(".*Data set " + ownerId + " at .* has been successfully deleted.*")),
                 5000);
 
         try
         {
             // check data set can no longer be read
-            openBIS.getAfsServerFacade().read(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+            openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
             fail();
         } catch (Exception e)
         {
