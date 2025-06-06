@@ -44,7 +44,7 @@ public class ArchiverConfiguration
                     if (!archiverProperties.isEmpty())
                     {
                         String storeRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-                        instance = new ArchiverConfiguration(new Configuration(archiverProperties), storeRoot);
+                        instance = new ArchiverConfiguration(archiverProperties, storeRoot);
                     } else
                     {
                         instance = null;
@@ -58,13 +58,13 @@ public class ArchiverConfiguration
         return instance;
     }
 
-    private ArchiverConfiguration(Configuration configuration, String storeRoot)
+    private ArchiverConfiguration(Properties properties, String storeRoot)
     {
-        String className = PropertyUtils.getMandatoryProperty(configuration.getProperties(), "class");
+        String className = PropertyUtils.getMandatoryProperty(properties, "class");
 
         try
         {
-            archiverPlugin = ClassUtils.create(IArchiverPlugin.class, className, configuration.getProperties(),
+            archiverPlugin = ClassUtils.create(IArchiverPlugin.class, className, properties,
                     new File(storeRoot));
         } catch (ConfigurationFailureException ex)
         {
@@ -75,7 +75,7 @@ public class ArchiverConfiguration
                     + "'", CheckedExceptionTunnel.unwrapIfNecessary(ex));
         }
 
-        this.properties = configuration.getProperties();
+        this.properties = properties;
     }
 
 }

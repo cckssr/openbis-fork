@@ -39,7 +39,7 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
 
                     if (!databaseProperties.isEmpty())
                     {
-                        instance = new MessagesDatabaseConfiguration(new Configuration(databaseProperties));
+                        instance = new MessagesDatabaseConfiguration(databaseProperties);
                     } else
                     {
                         throw new DatabaseNotConfiguredException();
@@ -53,9 +53,9 @@ public class MessagesDatabaseConfiguration extends DatabaseConfiguration
         return instance;
     }
 
-    private MessagesDatabaseConfiguration(Configuration configuration)
+    private MessagesDatabaseConfiguration(Properties properties)
     {
-        super(configuration);
+        super(properties);
         messagesDatabaseFacade = new MessagesDatabaseFacade(getDataSource());
     }
 
