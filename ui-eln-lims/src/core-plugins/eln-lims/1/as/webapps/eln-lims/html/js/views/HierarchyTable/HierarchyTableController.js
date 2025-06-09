@@ -24,8 +24,8 @@ function HierarchyTableController(parentController, entity) {
 		this._view.repaint(views);
 	}
 
-	this.refresh = function(views) {
-        this._view.refresh(views);
+	this.refresh = function() {
+        this._view.refresh();
     }
 
 }

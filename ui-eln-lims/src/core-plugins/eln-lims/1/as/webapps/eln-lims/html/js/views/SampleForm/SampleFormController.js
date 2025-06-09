@@ -19,7 +19,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab);
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
 
-    this.refresh = function(views) {
+    this.refresh = function() {
         if(this._sampleFormModel.dataSetViewer) {
             mainController.sideMenu.removeSubSideMenu();
             mainController.sideMenu.addSubSideMenu(this._sampleFormView._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);

@@ -21,9 +21,11 @@ function HierarchyTableView(controller, model) {
 	this._dataGrid;
 	this._hierarchyFilterController;
 	this._viewId = mainController.getNextId();
+	this._views;
 	
 	this.repaint = function(views) {
 		var _this = this;
+		this._views = views;
 		
 		var $containerColumn = $("<form>", {
 			'role' : "form", 
@@ -41,10 +43,16 @@ function HierarchyTableView(controller, model) {
 		
 	}
 
-	this.refresh = function(views) {
-	    views.header.empty();
-	    views.content.empty();
-	    this.repaint(views);
+	this.refresh = function() {
+	    var parentsLimit = this._hierarchyFilterController.getParentsLimit()
+	    var childrenLimit = this._hierarchyFilterController.getChildrenLimit()
+	    this._views.header.empty();
+	    this._views.content.empty();
+	    this.repaint(this._views);
+
+	    this._hierarchyFilterController.setParentsLimit(parentsLimit);
+	    this._hierarchyFilterController.setChildrenLimit(childrenLimit);
+	    this._showHierarchy();
 	}
 	
 	this._showHierarchy = function() {

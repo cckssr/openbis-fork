@@ -36,10 +36,18 @@ function HierarchyFilterController(entity, action) {
 	this.getParentsLimit = function() {
 		return getSliderValue("parentsLimit-" + this._viewId);
 	}
+
+	this.setParentsLimit = function(value) {
+        return setSliderValue("parentsLimit-" + this._viewId, value);
+    }
 	
 	this.getChildrenLimit = function() {
 		return getSliderValue("childrenLimit-" + this._viewId);
 	}
+
+	this.setChildrenLimit = function(value) {
+        return setSliderValue("childrenLimit-" + this._viewId, value);
+    }
 	
 	this.getSelectedEntityTypes = function() {
 		var selectedEntityTypes = $('#entityTypesSelector-' + this._viewId).val();
@@ -54,9 +62,20 @@ function HierarchyFilterController(entity, action) {
 		if(element.length > 0) {
 		    if(element.data('slider')) {
 		        return element.data('slider').getValue();
+		    } else if(element.data('sliderValue')) {
+		        return element.data('sliderValue');
 		    }
 		}
 		return  0;
 	}
+
+	var setSliderValue = function(id, value) {
+        var element = $('#' + id)
+        if(element.length > 0) {
+            if(element.data('slider')) {
+                element.data('slider').setValue(value);
+            }
+        }
+    }
 
 }
