@@ -122,26 +122,26 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
     }
 
     @Test
-    public void testSuccessfulExperimentArchiving() throws Exception
+    public void testSuccessfulExperimentArchivingAndUnarchiving() throws Exception
     {
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
         Experiment experiment = createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
-        testSuccessfulArchiving(experiment.getPermId(), null);
+        testSuccessfulArchivingAndUnarchiving(experiment.getPermId(), null);
     }
 
     @Test
-    public void testSuccessfulSampleArchiving() throws Exception
+    public void testSuccessfulSampleArchivingAndUnarchiving() throws Exception
     {
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
         Sample sample = createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
-        testSuccessfulArchiving(null, sample.getPermId());
+        testSuccessfulArchivingAndUnarchiving(null, sample.getPermId());
     }
 
-    private void testSuccessfulArchiving(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
+    private void testSuccessfulArchivingAndUnarchiving(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
     {
         OpenBIS openBIS = createOpenBIS();
 
