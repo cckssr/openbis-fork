@@ -21,6 +21,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsserver.server.common.TestLogger;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -219,6 +220,30 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         {
             AssertionUtil.assertContains("NoSuchFileException", e.getMessage());
         }
+
+        // create unarchiving message
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().unarchiveDataSets(List.of(ownerId));
+
+        // consume unarchiving message
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        // check data set is now UNARCHIVE_PENDING
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
+
+        // wait for the cached location of the data set to timeout (the share has changed from 1 to 4)
+        Thread.sleep(2L * getAfsServerConfiguration().getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
+
+        // check data set can be read again
+        fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+        assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
+
+        // consume status change message
+        TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
+
+        // check data set is now AVAILABLE
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
     }
 
     public DataSet getAfsDataSet(OpenBIS openBIS, String dataSetCode)
