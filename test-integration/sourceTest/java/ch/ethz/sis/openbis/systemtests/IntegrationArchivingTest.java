@@ -1,0 +1,336 @@
+package ch.ethz.sis.openbis.systemtests;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.function.Supplier;
+
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import ch.ethz.sis.afsserver.server.common.TestLogger;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
+import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.openbis.systemtests.common.TestMessagesConsumerMaintenanceTask;
+import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
+import ch.ethz.sis.shared.io.IOUtils;
+import ch.systemsx.cisd.base.utilities.OSUtilities;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
+import ch.systemsx.cisd.common.process.ProcessResult;
+import ch.systemsx.cisd.common.test.AssertionUtil;
+import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetFileOperationsManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
+
+public class IntegrationArchivingTest extends AbstractIntegrationTest
+{
+
+    private static final Logger log = LogFactory.getLogger(LogCategory.OPERATION, IntegrationArchivingTest.class);
+
+    private static final String COMMON_MESSAGES_CONSUMER_TASK = "commonMessagesConsumerTask";
+
+    private static final String ARCHIVING_MESSAGES_CONSUMER_TASK = "archivingMessagesConsumerTask";
+
+    private static final String FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK = "finalizeArchivingMessagesConsumerTask";
+
+    private static final String ENTITY_CODE_PREFIX = "ARCHIVING_TEST_";
+
+    private static final String TEST_FILE_NAME = "test-file.txt";
+
+    private static final String TEST_FILE_CONTENT = "test-content";
+
+    private Space space;
+
+    private Project project;
+
+    private File finalDestination;
+
+    private File stagingDestination;
+
+    private File replicatedDestination;
+
+    @BeforeClass public void beforeClass() throws Exception
+    {
+        Properties archiverProperties = ArchiverServiceProviderFactory.getInstance().getArchiverProperties();
+
+        finalDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.FINAL_DESTINATION_KEY));
+        stagingDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.STAGING_DESTINATION_KEY));
+        replicatedDestination = new File(archiverProperties.getProperty(MultiDataSetFileOperationsManager.REPLICATED_DESTINATION_KEY));
+
+        if (finalDestination.exists())
+        {
+            IOUtils.delete(finalDestination.getPath());
+        }
+        if (stagingDestination.exists())
+        {
+            IOUtils.delete(stagingDestination.getPath());
+        }
+        if (replicatedDestination.exists())
+        {
+            IOUtils.delete(replicatedDestination.getPath());
+        }
+
+        IOUtils.createDirectories(finalDestination.getPath());
+        IOUtils.createDirectories(stagingDestination.getPath());
+        IOUtils.createDirectories(replicatedDestination.getPath());
+
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        space = createSpace(openBIS, "ARCHIVING");
+        project = createProject(openBIS, space.getPermId(), "ARCHIVING");
+
+        openBIS.logout();
+    }
+
+    @BeforeMethod
+    public void beforeMethod(Method method) throws Exception
+    {
+        super.beforeMethod(method);
+        TestLogger.startLogRecording(Level.TRACE, TestLogger.DEFAULT_LOG_LAYOUT_PATTERN, ".*");
+    }
+
+    @AfterMethod
+    public void afterMethod(Method method) throws Exception
+    {
+        super.afterMethod(method);
+        TestLogger.stopLogRecording();
+    }
+
+    @Test
+    public void testSuccessfulExperimentArchivingAndUnarchiving() throws Exception
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+        Experiment experiment = createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        testSuccessfulArchivingAndUnarchiving(experiment.getPermId(), null);
+    }
+
+    @Test
+    public void testSuccessfulSampleArchivingAndUnarchiving() throws Exception
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+        Sample sample = createSample(openBIS, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        testSuccessfulArchivingAndUnarchiving(null, sample.getPermId());
+    }
+
+    private void testSuccessfulArchivingAndUnarchiving(ExperimentPermId experimentId, SamplePermId sampleId) throws Exception
+    {
+        OpenBIS openBIS = createOpenBIS();
+
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
+
+        log("upload a file");
+        openBIS.getAfsServerFacade().write(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
+
+        log("check data set is AVAILABLE");
+        DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+
+        log("create archiving message");
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+
+        log("consume archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log("check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+
+        log("make data immutable");
+        if (experimentId != null)
+        {
+            makeExperimentImmutable(openBIS, experimentId);
+
+        } else
+        {
+            makeSampleImmutable(openBIS, sampleId);
+        }
+
+        log("populate path info db (only immutable data is added)");
+        TestPathInfoDatabaseFeedingTask.executeOnce();
+
+        log("create archiving message again");
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+
+        log("consume archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log("check data set is now ARCHIVE_PENDING");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVE_PENDING);
+
+        log("replicate from final-destination to replica-destination");
+        replicateDataSetArchive(ownerId);
+
+        log("consume finalize archiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log("check data set is ARCHIVED");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVED);
+
+        log("check data set can still be read");
+        byte[] fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+        assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
+
+        log("consume delete data set message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
+
+        log("wait until data set is deleted");
+        waitUntilCondition(() ->
+                {
+                    String[] recordedLines = TestLogger.getRecordedLog().split("\n");
+                    return Arrays.stream(recordedLines).anyMatch(line -> line.matches(".*Data set " + ownerId + " at .* has been successfully deleted.*"));
+                },
+                5000);
+
+        try
+        {
+            log("check data set can no longer be read");
+            openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+            fail();
+        } catch (Exception e)
+        {
+            AssertionUtil.assertContains("NoSuchFileException", e.getMessage());
+        }
+
+        log("create unarchiving message");
+        ArchiverServiceProviderFactory.getInstance().getOpenBISService().unarchiveDataSets(List.of(ownerId));
+
+        log("consume unarchiving message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
+
+        log("check data set is now UNARCHIVE_PENDING");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
+
+        log("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
+        Thread.sleep(2L * getAfsServerConfiguration().getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
+
+        log("check data set can be read again");
+        fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
+        assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
+
+        log("consume status change message");
+        TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
+
+        log("check data set is now AVAILABLE");
+        afsDataSet = getAfsDataSet(openBIS, ownerId);
+        assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
+    }
+
+    public DataSet getAfsDataSet(OpenBIS openBIS, String dataSetCode)
+    {
+        DataSetPermId dataSetId = new DataSetPermId(dataSetCode);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withPhysicalData();
+        return openBIS.getDataSets(List.of(dataSetId), fetchOptions).get(dataSetId);
+    }
+
+    public void replicateDataSetArchive(String dataSetCode)
+    {
+        File[] finalDestinationFiles = finalDestination.listFiles();
+
+        if (finalDestinationFiles == null || finalDestinationFiles.length == 0)
+        {
+            throw new RuntimeException("Replication failed. The final destination folder is empty. ");
+        }
+
+        List<File> dataSetArchives =
+                Arrays.stream(finalDestinationFiles).filter(file -> file.getName().endsWith(".tar") && file.getName().contains(dataSetCode))
+                        .sorted(Comparator.comparing(File::lastModified).reversed()).toList();
+
+        if (dataSetArchives.isEmpty())
+        {
+            throw new RuntimeException(
+                    "Replication failed. No archives for data set " + dataSetCode + " were found in the final destination folder.");
+        }
+
+        File newestDataSetArchive = dataSetArchives.iterator().next();
+        File dataSetArchiveReplica = new File(replicatedDestination, newestDataSetArchive.getName());
+
+        try
+        {
+            IOUtils.copy(newestDataSetArchive.getPath(), dataSetArchiveReplica.getPath());
+        } catch (IOException e)
+        {
+            throw new RuntimeException(
+                    "Replication failed. Could not copy file " + newestDataSetArchive.getAbsolutePath() + " to "
+                            + dataSetArchiveReplica.getAbsolutePath(), e);
+        }
+
+        File shell = OSUtilities.findExecutable("sh");
+
+        if (shell == null)
+        {
+            throw new RuntimeException("Replication failed. Shell command necessary for setting T flag was not found.");
+        }
+
+        List<String> setTFlagCommand = Arrays.asList(shell.getAbsolutePath(), "-c", "chmod +t " + dataSetArchiveReplica.getAbsoluteFile());
+        ProcessResult setTFlagResult = ProcessExecutionHelper.run(setTFlagCommand, log, log);
+
+        if (setTFlagResult.isOK())
+        {
+            log("Successfully replicated file " + newestDataSetArchive.getAbsolutePath() + " to " + dataSetArchiveReplica.getAbsolutePath() + ".");
+        } else
+        {
+            throw new RuntimeException("Replication failed. Could not set the T flag on file " + dataSetArchiveReplica.getAbsolutePath());
+        }
+    }
+
+    public static void waitUntilCondition(Supplier<Boolean> condition, long timeout)
+    {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTime + timeout)
+        {
+            if (condition.get())
+            {
+                return;
+            } else
+            {
+                try
+                {
+                    Thread.sleep(timeout / 10);
+                } catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        throw new RuntimeException("Timed out waiting for " + timeout + " ms.");
+    }
+
+}

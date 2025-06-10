@@ -1,9 +1,9 @@
 package ch.ethz.sis.openbis.systemtests;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import net.lemnik.eodsql.QueryTool;
 
@@ -32,8 +33,6 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 {
 
     private static final String ENTITY_CODE_PREFIX = "PATH_INFO_TEST_";
-
-    private static final long WAITING_TIME_FOR_PATH_INFO_FEEDING = 2000L;
 
     private static final long WAITING_TIME_FOR_PATH_INFO_DELETION = 3000L;
 
@@ -88,7 +87,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         makeExperimentImmutable(openBIS, immutableExperiment.getPermId());
         makeSampleImmutable(openBIS, immutableSample.getPermId());
 
-        Thread.sleep(WAITING_TIME_FOR_PATH_INFO_FEEDING);
+        TestPathInfoDatabaseFeedingTask.executeOnce();
 
         // verify that path info entries got created for the immutable data
         mutableExperimentEntryId = pathInfoDAO.tryToGetDataSetId(mutableExperiment.getPermId().getPermId());
@@ -209,7 +208,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
         // make data immutable
         makeSampleImmutable(openBIS, sample.getPermId());
-        Thread.sleep(WAITING_TIME_FOR_PATH_INFO_FEEDING);
+        TestPathInfoDatabaseFeedingTask.executeOnce();
 
         sampleEntryId = pathInfoDAO.tryToGetDataSetId(sample.getPermId().getPermId());
         assertNotNull(sampleEntryId);

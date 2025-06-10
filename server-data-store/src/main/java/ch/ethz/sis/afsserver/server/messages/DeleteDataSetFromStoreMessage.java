@@ -1,6 +1,7 @@
 package ch.ethz.sis.afsserver.server.messages;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -59,7 +60,7 @@ public class DeleteDataSetFromStoreMessage
         try
         {
             MetaData metaData = new MetaData();
-            metaData.setDataSets(dataSets);
+            metaData.setDataSets(new ArrayList<>(dataSets));
             metaData.setMaxNumberOfRetries(maxNumberOfRetries);
             metaData.setWaitingTimeBetweenRetries(waitingTimeBetweenRetries);
             message.setMetaData(new String(objectMapper.writeValue(metaData)));

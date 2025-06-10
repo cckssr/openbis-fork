@@ -35,7 +35,7 @@ public class MailConfiguration
 
                     if (!mailProperties.isEmpty())
                     {
-                        instance = new MailConfiguration(new Configuration(mailProperties));
+                        instance = new MailConfiguration(mailProperties);
                     } else
                     {
                         instance = null;
@@ -49,12 +49,12 @@ public class MailConfiguration
         return instance;
     }
 
-    private MailConfiguration(Configuration configuration)
+    private MailConfiguration(Properties properties)
     {
-        this.from = PropertyUtils.getProperty(configuration.getProperties(), "from");
-        this.smtpHost = PropertyUtils.getProperty(configuration.getProperties(), "smtp.host");
-        this.smtpUser = PropertyUtils.getProperty(configuration.getProperties(), "smtp.user");
-        this.smtpPassword = PropertyUtils.getProperty(configuration.getProperties(), "smtp.password");
+        this.from = PropertyUtils.getProperty(properties, "from");
+        this.smtpHost = PropertyUtils.getProperty(properties, "smtp.host");
+        this.smtpUser = PropertyUtils.getProperty(properties, "smtp.user");
+        this.smtpPassword = PropertyUtils.getProperty(properties, "smtp.password");
     }
 
 }

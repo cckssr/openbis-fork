@@ -2,6 +2,7 @@ package ch.ethz.sis.afsserver.server.archiving.messages;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -91,8 +92,8 @@ public class FinalizeDataSetArchivingMessage
 
         MetaData metaData = new MetaData();
         metaData.setTask(metaDataTask);
-        metaData.setParameterBindings(parameterBindings);
-        metaData.setDataSets(dataSets);
+        metaData.setParameterBindings(new HashMap<>(parameterBindings));
+        metaData.setDataSets(new ArrayList<>(dataSets));
 
         try
         {
