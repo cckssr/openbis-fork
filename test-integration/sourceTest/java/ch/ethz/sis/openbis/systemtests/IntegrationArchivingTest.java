@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.apache.log4j.Logger;
 import org.apache.logging.log4j.Level;
@@ -149,71 +150,74 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
 
         String ownerId = experimentId != null ? experimentId.getPermId() : sampleId.getPermId();
 
-        // upload a file
+        log("upload a file");
         openBIS.getAfsServerFacade().write(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        // check data set is AVAILABLE
+        log("check data set is AVAILABLE");
         DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
-        // create archiving message
+        log("create archiving message");
         ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
 
-        // consume archiving message
+        log("consume archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
 
-        // check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)
+        log("check data set is still AVAILABLE (it shouldn't have been archived as it is still mutable)");
         afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
-        // make owner immutable
+        log("make data immutable");
         if (experimentId != null)
         {
             makeExperimentImmutable(openBIS, experimentId);
+
         } else
         {
             makeSampleImmutable(openBIS, sampleId);
         }
 
-        // populate path info db (only immutable data added considered)
+        log("populate path info db (only immutable data is added)");
         TestPathInfoDatabaseFeedingTask.executeOnce();
 
-        // create archiving message again
+        log("create archiving message again");
         ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
 
-        // consume archiving message
+        log("consume archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
 
-        // check data set is now ARCHIVE_PENDING
+        log("check data set is now ARCHIVE_PENDING");
         afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVE_PENDING);
 
-        // replicate from final-destination to replica-destination
+        log("replicate from final-destination to replica-destination");
         replicateDataSetArchive(ownerId);
 
-        // consume finalize archiving message
+        log("consume finalize archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(FINALIZE_ARCHIVING_MESSAGES_CONSUMER_TASK);
 
-        // check data set is ARCHIVED
+        log("check data set is ARCHIVED");
         afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.ARCHIVED);
 
-        // check data set can still be read
+        log("check data set can still be read");
         byte[] fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
         assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
 
-        // consume delete data set message
+        log("consume delete data set message");
         TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
 
-        // wait until data set is deleted
-        TestLogger.waitUntilCondition(
-                recordedLog -> Arrays.stream(recordedLog)
-                        .anyMatch(line -> line.matches(".*Data set " + ownerId + " at .* has been successfully deleted.*")),
+        log("wait until data set is deleted");
+        waitUntilCondition(() ->
+                {
+                    String[] recordedLines = TestLogger.getRecordedLog().split("\n");
+                    return Arrays.stream(recordedLines).anyMatch(line -> line.matches(".*Data set " + ownerId + " at .* has been successfully deleted.*"));
+                },
                 5000);
 
         try
         {
-            // check data set can no longer be read
+            log("check data set can no longer be read");
             openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
             fail();
         } catch (Exception e)
@@ -221,27 +225,27 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
             AssertionUtil.assertContains("NoSuchFileException", e.getMessage());
         }
 
-        // create unarchiving message
+        log("create unarchiving message");
         ArchiverServiceProviderFactory.getInstance().getOpenBISService().unarchiveDataSets(List.of(ownerId));
 
-        // consume unarchiving message
+        log("consume unarchiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
 
-        // check data set is now UNARCHIVE_PENDING
+        log("check data set is now UNARCHIVE_PENDING");
         afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
 
-        // wait for the cached location of the data set to timeout (the share has changed from 1 to 4)
+        log("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
         Thread.sleep(2L * getAfsServerConfiguration().getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
 
-        // check data set can be read again
+        log("check data set can be read again");
         fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());
         assertEquals(fileContent, TEST_FILE_CONTENT.getBytes());
 
-        // consume status change message
+        log("consume status change message");
         TestMessagesConsumerMaintenanceTask.executeOnce(COMMON_MESSAGES_CONSUMER_TASK);
 
-        // check data set is now AVAILABLE
+        log("check data set is now AVAILABLE");
         afsDataSet = getAfsDataSet(openBIS, ownerId);
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
     }
@@ -303,6 +307,30 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         {
             throw new RuntimeException("Replication failed. Could not set the T flag on file " + dataSetArchiveReplica.getAbsolutePath());
         }
+    }
+
+    public static void waitUntilCondition(Supplier<Boolean> condition, long timeout)
+    {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTime + timeout)
+        {
+            if (condition.get())
+            {
+                return;
+            } else
+            {
+                try
+                {
+                    Thread.sleep(timeout / 10);
+                } catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        throw new RuntimeException("Timed out waiting for " + timeout + " ms.");
     }
 
 }
