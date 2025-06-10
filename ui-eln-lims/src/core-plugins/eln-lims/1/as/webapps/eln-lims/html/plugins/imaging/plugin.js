@@ -146,8 +146,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     experimentFormTop: function ($container, model) {
         if (model.mode === FormMode.VIEW) {
             let isGalleryView = model.experiment &&
-                model.experiment.properties["DEFAULT_COLLECTION_VIEW"] &&
-                model.experiment.properties["DEFAULT_COLLECTION_VIEW"] === "IMAGING_GALLERY_VIEW";
+                model.experiment.properties[profile.getInternalNamespacePrefix() + "DEFAULT_COLLECTION_VIEW"] &&
+                model.experiment.properties[profile.getInternalNamespacePrefix() + "DEFAULT_COLLECTION_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.experiment.permId, 'collection',
@@ -190,8 +190,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     sampleFormTop: function ($container, model) {
         if (model.mode === FormMode.VIEW) {
             let isGalleryView = model.sample &&
-                model.sample.properties["DEFAULT_OBJECT_VIEW"] &&
-                model.sample.properties["DEFAULT_OBJECT_VIEW"] === "IMAGING_GALLERY_VIEW";
+                model.sample.properties[profile.getInternalNamespacePrefix() + "DEFAULT_OBJECT_VIEW"] &&
+                model.sample.properties[profile.getInternalNamespacePrefix() + "DEFAULT_OBJECT_VIEW"] === "IMAGING_GALLERY_VIEW";
             if (isGalleryView) {
                 var _this = this;
                 this.displayImagingTechViewer($container, false, model.sample.permId, 'object',
@@ -227,8 +227,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             // Potentially any DataSet Type can be an Imaging DataSet Type. The system will know what DataSet Types
             // are an Imaging DataSet by convention, those Types SHOULD end with IMAGING_DATA on their Type Code.
             let isImagingDatasetView = model.dataSetV3 &&
-                model.dataSetV3.properties["DEFAULT_DATASET_VIEW"] &&
-                model.dataSetV3.properties["DEFAULT_DATASET_VIEW"] === "IMAGING_DATASET_VIEWER";
+                model.dataSetV3.properties[profile.getInternalNamespacePrefix() + "DEFAULT_DATASET_VIEW"] &&
+                model.dataSetV3.properties[profile.getInternalNamespacePrefix() + "DEFAULT_DATASET_VIEW"] === "IMAGING_DATASET_VIEWER";
             if (isImagingDatasetView) {
                 let viewDirty = function(objId, isDirty) {
                     model.isFormDirty = isDirty;

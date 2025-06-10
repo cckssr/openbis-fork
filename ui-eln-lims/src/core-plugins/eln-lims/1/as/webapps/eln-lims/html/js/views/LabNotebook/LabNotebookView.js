@@ -44,7 +44,7 @@ function LabNotebookView(labNotebookController, labNotebookView) {
             if (profile.isAdmin) {
                 var $createSpace = FormUtil.getToolbarButton("SPACE", function() {
                                      _this.labNotebookController.createSpace();
-                                 }, "Space", "New Space", "create-btn", 'btn btn-primary btn-secondary');
+                                 }, "Space", "New Space", "create-space-lab-notebook-btn", 'btn btn-primary btn-secondary');
                 toolbarModel.push({component : $createSpace});
             }
 			

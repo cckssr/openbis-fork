@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,8 +14,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsserver.server.archiving.messages.ArchiveDataSetMessage;
+import ch.ethz.sis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessage;
+import ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
 import ch.ethz.sis.afsserver.server.messages.IMessagesDatabaseFacade;
+import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
@@ -40,6 +43,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOpt
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
+import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -58,6 +62,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Metaproject;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.MetaprojectIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.id.metaproject.MetaprojectIdentifierId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.DatasetDescription;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SimpleDataSetInformationDTO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.SampleIdentifier;
@@ -317,7 +322,38 @@ public class OpenBISService implements IOpenBISService
 
     @Override public List<String> listDataSetCodesFromCommandQueue()
     {
-        return List.of();
+        List<Message> messages =
+                messagesDatabaseFacade.listByTypesNotConsumed(List.of(ArchiveDataSetMessage.TYPE, FinalizeDataSetArchivingMessage.TYPE,
+                        UpdateDataSetArchivingStatusMessage.TYPE));
+
+        Set<String> dataSetCodes = new LinkedHashSet<>();
+        for (Message message : messages)
+        {
+            if (ArchiveDataSetMessage.TYPE.equals(message.getType()))
+            {
+                ArchiveDataSetMessage archiveMessage = ArchiveDataSetMessage.deserialize(objectMapper, message);
+                if (archiveMessage.getDataSetCodes() != null)
+                {
+                    dataSetCodes.addAll(archiveMessage.getDataSetCodes());
+                }
+            } else if (FinalizeDataSetArchivingMessage.TYPE.equals(message.getType()))
+            {
+                FinalizeDataSetArchivingMessage finalizeMessage = FinalizeDataSetArchivingMessage.deserialize(objectMapper, message);
+                if (finalizeMessage.getDataSets() != null)
+                {
+                    dataSetCodes.addAll(finalizeMessage.getDataSets().stream().map(DatasetDescription::getDataSetCode).collect(Collectors.toList()));
+                }
+            } else if (UpdateDataSetArchivingStatusMessage.TYPE.equals(message.getType()))
+            {
+                UpdateDataSetArchivingStatusMessage updateMessage = UpdateDataSetArchivingStatusMessage.deserialize(objectMapper, message);
+                if (updateMessage.getDataSetCodes() != null)
+                {
+                    dataSetCodes.addAll(updateMessage.getDataSetCodes());
+                }
+            }
+        }
+
+        return new ArrayList<>(dataSetCodes);
     }
 
     @Override public List<SimpleDataSetInformationDTO> listPhysicalDataSets() throws UserFailureException
@@ -609,6 +645,7 @@ public class OpenBISService implements IOpenBISService
         simpleDataSetsFetchOptions.withLinkedDataUsing(linkedDataFetchOptions);
 
         DataSetFetchOptions dataSetFetchOptions = new DataSetFetchOptions();
+        dataSetFetchOptions.withDataStore();
         dataSetFetchOptions.withType().withPropertyAssignments().withPropertyType();
         dataSetFetchOptions.withProperties();
         dataSetFetchOptions.withTags();

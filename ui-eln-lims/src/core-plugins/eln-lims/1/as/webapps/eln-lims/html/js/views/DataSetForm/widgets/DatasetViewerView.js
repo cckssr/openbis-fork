@@ -164,8 +164,8 @@ function DataSetViewerView(dataSetViewerController, dataSetViewerModel) {
         });
         columns.push({
             label : 'Name',
-            property : 'NAME',
-            isExportable: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY("NAME"),
+            property : profile.getInternalNamespacePrefix() + 'NAME',
+            isExportable: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(profile.getInternalNamespacePrefix() + "NAME"),
             sortable : true,
             filterable: true,
             showByDefault: true,

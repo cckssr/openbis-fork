@@ -15,10 +15,10 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 		
 		this.sampleFormOnSubmit = function(sample, action) {
 			if(sample.sampleTypeCode === "ORDER") {
-				var orderStatus = sample.properties["ORDERING.ORDER_STATUS"];
+				var orderStatus = sample.properties[ profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS"];
 				var samplesToDelete = null;
 				var changesToDo = null;
-				if((orderStatus === "ORDERED" || orderStatus === "DELIVERED" || orderStatus === "PAID") && !sample.properties["ORDER.ORDER_STATE"]) {
+				if((orderStatus === "ORDERED" || orderStatus === "DELIVERED" || orderStatus === "PAID") && !sample.properties[ profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"]) {
 					//Update parents to hold all info
     	    				var searchSamples = { entityKind : "SAMPLE", logicalOperator : "OR", rules : {} };
 					for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
@@ -30,17 +30,17 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 						// We force V1 annotations on the ordering system to be backwards compatible, just in case is openBIS 20.X
 						for(var pIdx = 0; pIdx < sample.parents.length; pIdx++) {
 						    var pIdxAnnotationState = FormUtil.getAnnotationsFromSample(result.objects[pIdx], null);
-						    sample.parents[pIdx].properties["ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
+						    sample.parents[pIdx].properties[ profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
 						}
 						//Set property
-						sample.properties["ORDER.ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(sample))));
+						sample.properties[profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"] = window.btoa(unescape(encodeURIComponent(JSON.stringify(sample))));
 						
 						//Update order state on the requests
 						changesToDo = [];
 						var requests = sample.parents;
 						if(requests) {
 							for(var rIdx = 0; rIdx < requests.length; rIdx++) {
-								changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : {"ORDERING.ORDER_STATUS" : orderStatus } });
+								changesToDo.push({ "permId" : requests[rIdx].permId, "identifier" : requests[rIdx].identifier, "properties" : { [profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS"] : orderStatus } });
 							}
 						}
 						
@@ -107,7 +107,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									Util.showUserError("Product " + requestProduct.code + " from request " +  request.code + " does not have a quantity, FIX IT!.");
 									return;
 								}
-								var currencyCode = requestProduct.properties["PRODUCT.CURRENCY"];
+								var currencyCode = requestProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"];
 								if(!currencyCode) {
 									currencyCode = "N/A";
 								}
@@ -117,8 +117,8 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									absoluteTotalForCurrency = 0;
 								}
 								
-								if(requestProduct.properties["PRODUCT.PRICE_PER_UNIT"]) {
-									absoluteTotalForCurrency += parseFloat(requestProduct.properties["PRODUCT.PRICE_PER_UNIT"]) * quantity;
+								if(requestProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"]) {
+									absoluteTotalForCurrency += parseFloat(requestProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"]) * quantity;
 								}
 								
 								absoluteTotalByCurrency[currencyCode] = absoluteTotalForCurrency;
@@ -136,7 +136,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 							var orderPages = [];
 							for(var providerPermId in productsByProviderPermId) {
 								var provider = providerByPermId[providerPermId];
-								var preferredSupplierLanguage = provider.properties["SUPPLIER.COMPANY_LANGUAGE"];
+								var preferredSupplierLanguage = provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_LANGUAGE"];
 								
 								var languageLabels = profile.orderLanguage[preferredSupplierLanguage];
 								if(!languageLabels) {
@@ -160,7 +160,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									page += "\n";
 									page += "- " + languageLabels["ORDER_DATE"] + ": " + Util.getFormatedDate(new Date(registrationDate));
 									page += "\n";
-									page += "- " + languageLabels["ORDER_STATUS"] + ": " + order.properties["ORDERING.ORDER_STATUS"];
+									page += "- " + languageLabels["ORDER_STATUS"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS"];
 									page += "\n";
 									page += "- " + languageLabels["ORDER_CODE"] + ": " + order.code;
 									page += "\n";
@@ -168,24 +168,24 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									page += "\n";
 									page += languageLabels["COSTUMER_INFORMATION"];
 									page += "\n";
-									if(order.properties["ORDER.SHIP_TO"]) {
-										page += "- " + languageLabels["SHIP_TO"] + ": " + order.properties["ORDER.SHIP_TO"];
+									if(order.properties[profile.getInternalNamespacePrefix() + "ORDER.SHIP_TO"]) {
+										page += "- " + languageLabels["SHIP_TO"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDER.SHIP_TO"];
 										page += "\n";
 									}
-									if(order.properties["ORDER.BILL_TO"]) {
-										page += "- " + languageLabels["BILL_TO"] + ": " + order.properties["ORDER.BILL_TO"];
+									if(order.properties[profile.getInternalNamespacePrefix() + "ORDER.BILL_TO"]) {
+										page += "- " + languageLabels["BILL_TO"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDER.BILL_TO"];
 										page += "\n";
 									}
-									if(order.properties["ORDER.SHIP_ADDRESS"]) {
-										page += "- " + languageLabels["SHIP_ADDRESS"] + ": " + order.properties["ORDER.SHIP_ADDRESS"];
+									if(order.properties[profile.getInternalNamespacePrefix() + "ORDER.SHIP_ADDRESS"]) {
+										page += "- " + languageLabels["SHIP_ADDRESS"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDER.SHIP_ADDRESS"];
 										page += "\n";
 									}
-									if(order.properties["ORDER.CONTACT_PHONE"]) {
-										page += "- " + languageLabels["PHONE"] + ": " + order.properties["ORDER.CONTACT_PHONE"];
+									if(order.properties[profile.getInternalNamespacePrefix() + "ORDER.CONTACT_PHONE"]) {
+										page += "- " + languageLabels["PHONE"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDER.CONTACT_PHONE"];
 										page += "\n";
 									}
-									if(order.properties["ORDER.CONTACT_FAX"]) {
-										page += "- " + languageLabels["FAX"] + ": " + order.properties["ORDER.CONTACT_FAX"];
+									if(order.properties[profile.getInternalNamespacePrefix() + "ORDER.CONTACT_FAX"]) {
+										page += "- " + languageLabels["FAX"] + ": " + order.properties[profile.getInternalNamespacePrefix() + "ORDER.CONTACT_FAX"];
 										page += "\n";
 									}
 									page += "\n";
@@ -196,28 +196,28 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 										page += "- " + languageLabels["SUPPLIER"] + ": " + provider.properties[profile.propertyReplacingCode];
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.COMPANY_ADDRESS_LINE_1"]) {
-										page += "- " + languageLabels["SUPPLIER_ADDRESS_LINE_1"] + ": " + provider.properties["SUPPLIER.COMPANY_ADDRESS_LINE_1"]
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_ADDRESS_LINE_1"]) {
+										page += "- " + languageLabels["SUPPLIER_ADDRESS_LINE_1"] + ": " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_ADDRESS_LINE_1"]
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.COMPANY_ADDRESS_LINE_2"]) {
-										page += "  " + languageLabels["SUPPLIER_ADDRESS_LINE_2"] + "  " + provider.properties["SUPPLIER.COMPANY_ADDRESS_LINE_2"]
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_ADDRESS_LINE_2"]) {
+										page += "  " + languageLabels["SUPPLIER_ADDRESS_LINE_2"] + "  " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_ADDRESS_LINE_2"]
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.COMPANY_PHONE"]) {
-										page += "- " + languageLabels["SUPPLIER_PHONE"] + ": " + provider.properties["SUPPLIER.COMPANY_PHONE"];
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_PHONE"]) {
+										page += "- " + languageLabels["SUPPLIER_PHONE"] + ": " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_PHONE"];
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.COMPANY_FAX"]) {
-										page += "- " + languageLabels["SUPPLIER_FAX"] + ": " + provider.properties["SUPPLIER.COMPANY_FAX"];
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_FAX"]) {
+										page += "- " + languageLabels["SUPPLIER_FAX"] + ": " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_FAX"];
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.COMPANY_EMAIL"]) {
-										page += "- " + languageLabels["SUPPLIER_EMAIL"] + ": " + provider.properties["SUPPLIER.COMPANY_EMAIL"];
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_EMAIL"]) {
+										page += "- " + languageLabels["SUPPLIER_EMAIL"] + ": " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.COMPANY_EMAIL"];
 										page += "\n";
 									}
-									if(provider.properties["SUPPLIER.CUSTOMER_NUMBER"]) {
-										page += "- " + languageLabels["CUSTOMER_NUMBER"] + ": " + provider.properties["SUPPLIER.CUSTOMER_NUMBER"];
+									if(provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.CUSTOMER_NUMBER"]) {
+										page += "- " + languageLabels["CUSTOMER_NUMBER"] + ": " + provider.properties[profile.getInternalNamespacePrefix() + "SUPPLIER.CUSTOMER_NUMBER"];
 										page += "\n";
 									}
 									page += "\n";
@@ -230,28 +230,28 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									for(var pIdx = 0; pIdx < providerProducts.length; pIdx++) {
 										var product = providerProducts[pIdx];
 										var quantity = quantityByProductPermId[product.permId];
-										var unitPriceAsString = product.properties["PRODUCT.PRICE_PER_UNIT"];
+										var unitPriceAsString = product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"];
 										var unitPrice = "N/A";
 										if(unitPriceAsString) {
 											unitPrice = parseFloat(unitPriceAsString);
 										}
-										var currencyCode = product.properties["PRODUCT.CURRENCY"];
+										var currencyCode = product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"];
 										if(!currencyCode) {
 											currencyCode = "N/A";
 										}
-										page += quantity + "\t\t" + product.properties[profile.propertyReplacingCode] + "\t\t" + product.properties["PRODUCT.CATALOG_NUM"] + "\t\t" + unitPrice + " " + currencyCode;
+										page += quantity + "\t\t" + product.properties[profile.propertyReplacingCode] + "\t\t" + product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CATALOG_NUM"] + "\t\t" + unitPrice + " " + currencyCode;
 										page += "\n";
 										
 										if(unitPriceAsString) {
-											var totalForCurrency = providerTotalByCurrency[product.properties["PRODUCT.CURRENCY"]];
+											var totalForCurrency = providerTotalByCurrency[product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"]];
 											if(!totalForCurrency) {
 												totalForCurrency = 0;
 											}
 											totalForCurrency += unitPrice * quantity;
 											
-											providerTotalByCurrency[product.properties["PRODUCT.CURRENCY"]] = totalForCurrency;
+											providerTotalByCurrency[product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"]] = totalForCurrency;
 										} else {
-											providerTotalByCurrency[product.properties["PRODUCT.CURRENCY"]] = "N/A";
+											providerTotalByCurrency[product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"]] = "N/A";
 										}
 									}
 									page += "\n";
@@ -277,7 +277,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									}
 									page += languageLabels["ADDITIONAL_INFO_LABEL"];
 									page += "\n";
-									var additionalInfo = order.properties["ORDER.ADDITIONAL_INFORMATION"];
+									var additionalInfo = order.properties[profile.getInternalNamespacePrefix() + "ORDER.ADDITIONAL_INFORMATION"];
 									if(!additionalInfo) {
 										additionalInfo = "N/A";
 									}
@@ -374,7 +374,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 								for(var pIdx = 0; pIdx < providerProducts.length; pIdx++) {
 									var product = providerProducts[pIdx];
 									var quantity = quantityByProductPermId[product.permId];
-									var unitPriceAsString = product.properties["PRODUCT.PRICE_PER_UNIT"];
+									var unitPriceAsString = product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"];
 									var unitPrice = "N/A";
 									if(unitPriceAsString) {
 										unitPrice = parseFloat(unitPriceAsString);
@@ -384,7 +384,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									rowData.permId = product.permId;
 									rowData.supplier = provider.properties[profile.propertyReplacingCode];
 									rowData.name = product.properties[profile.propertyReplacingCode];
-									rowData.catalogNum =  product.properties["PRODUCT.CATALOG_NUM"];
+									rowData.catalogNum =  product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CATALOG_NUM"];
 									rowData.quantity = quantity;
 									rowData.unitPrice = unitPrice;
 									rowData.rowId = index;
@@ -393,7 +393,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 									} else {
 										rowData.totalProductCost = "N/A";
 									}
-									var currencyCode = product.properties["PRODUCT.CURRENCY"];
+									var currencyCode = product.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"];
 									if(!currencyCode) {
 										currencyCode = "N/A";
 									}
@@ -429,9 +429,9 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 					// Data Structures to Help the reports functionality
 					//
 					var orderSample = mainController.currentView._sampleFormModel.sample;
-					if(orderSample.properties["ORDER.ORDER_STATE"]) {
+					if(orderSample.properties[profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"]) {
 						isFromState = true;
-						var order = JSON.parse(decodeURIComponent(escape(window.atob(orderSample.properties["ORDER.ORDER_STATE"]))));
+						var order = JSON.parse(decodeURIComponent(escape(window.atob(orderSample.properties[profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE"]))));
 						showOrderSummary(order);
 					} else {
 						var searchSamples = { entityKind : "SAMPLE", logicalOperator : "OR", rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : orderSample.permId } } };
@@ -442,7 +442,7 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
                             // We force V1 annotations on the ordering system to be backwards compatible, just in case is openBIS 20.X
                             for(var pIdx = 0; pIdx < order.parents.length; pIdx++) {
                                 var pIdxAnnotationState = FormUtil.getAnnotationsFromSample(orderV3.parents[pIdx], null);
-                                order.parents[pIdx].properties["ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
+                                order.parents[pIdx].properties[profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(pIdxAnnotationState);
                             }
 
 							showOrderSummary(order);

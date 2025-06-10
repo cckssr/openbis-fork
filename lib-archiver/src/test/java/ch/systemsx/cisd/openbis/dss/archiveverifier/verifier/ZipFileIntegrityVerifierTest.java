@@ -64,7 +64,7 @@ public class ZipFileIntegrityVerifierTest
     private IArchiveFileVerifier verifier;
 
     private static final File PWD = new File(
-            "../lib-archiver/src/test/java/ch/systemsx/cisd/openbis/dss/archiveverifier/verifier/");
+            "./src/test/java/ch/systemsx/cisd/openbis/dss/archiveverifier/verifier/");
 
     private static final File VALID_ZIP_FILE = new File(PWD, "VALID.zip");
 

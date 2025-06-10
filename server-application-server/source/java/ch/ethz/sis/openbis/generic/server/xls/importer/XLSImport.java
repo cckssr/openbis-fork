@@ -282,6 +282,7 @@ public class XLSImport
                 int pageEnd = getPageEnd(page);
                 while (lineNumber < pageEnd)
                 {
+                    operationLog.debug("XLSImport - Page: " + pageNumber + " Line: " + lineNumber);
                     int blockEnd = getBlockEnd(page, lineNumber);
                     ImportTypes blockType;
                     try

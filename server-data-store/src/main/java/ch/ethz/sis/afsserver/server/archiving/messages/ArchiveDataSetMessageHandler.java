@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -59,7 +60,7 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
         if (foundDataSets.isEmpty())
         {
             operationLog.info("Could not find any of the data sets to be archived: " + CollectionUtils.abbreviate(archiveMessage.getDataSetCodes(),
-                    CollectionUtils.DEFAULT_MAX_LENGTH) + ". Nothing to archive.");
+                    CollectionUtils.DEFAULT_MAX_LENGTH) + ". Nothing will be archived.");
             return;
         } else
         {
@@ -73,6 +74,20 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
                                 CollectionUtils.DEFAULT_MAX_LENGTH) + ". Only those found will be archived: " + CollectionUtils.abbreviate(
                                 codesList(foundDataSets), CollectionUtils.DEFAULT_MAX_LENGTH));
             }
+        }
+
+        List<DataSet> mutableDataSets = foundDataSets.stream()
+                .filter(dataSet -> (dataSet.getExperiment() == null || dataSet.getExperiment().getImmutableDataDate() == null)
+                        && (dataSet.getSample() == null || dataSet.getSample().getImmutableDataDate() == null)).collect(
+                        Collectors.toList());
+
+        if (!mutableDataSets.isEmpty())
+        {
+            operationLog.error(
+                    "The following data sets to be archived are mutable: " + CollectionUtils.abbreviate(mutableDataSets,
+                            CollectionUtils.DEFAULT_MAX_LENGTH)
+                            + " (i.e. don't have immutable data date set on experiment/sample). Nothing will be archived.");
+            return;
         }
 
         List<DataSet> availableDataSets = new ArrayList<>();
@@ -92,7 +107,7 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
         if (availableDataSets.isEmpty())
         {
             operationLog.info(
-                    "All data sets to be archived have archiving status != '" + ArchivingStatus.AVAILABLE + "'. Nothing to archive.");
+                    "All data sets to be archived have archiving status != '" + ArchivingStatus.AVAILABLE + "'. Nothing will be archived.");
             return;
         } else if (!notAvailableDataSets.isEmpty())
         {
@@ -149,11 +164,19 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
             ArchiverTaskContext archiverTaskContext = ServiceProvider.getInstance().getArchiverContextFactory().createContext();
             archiverTaskContext.setOptions(options);
 
+            ServiceProvider.getInstance().getShareIdManager().lock(codesList(availableDataSets));
+
             archiverPlugin.archive(dataSetDescriptions, archiverTaskContext, removeFromDataStore);
         } catch (Exception e)
         {
+            operationLog.error(
+                    "Archiving failed for data sets " + CollectionUtils.abbreviate(codesList(availableDataSets), CollectionUtils.DEFAULT_MAX_LENGTH),
+                    e);
             ServiceProvider.getInstance().getDataSetStatusUpdater()
                     .scheduleUpdate(codesList(availableDataSets), DataSetArchivingStatus.AVAILABLE, null);
+        } finally
+        {
+            ServiceProvider.getInstance().getShareIdManager().releaseLocks(codesList(availableDataSets));
         }
     }
 

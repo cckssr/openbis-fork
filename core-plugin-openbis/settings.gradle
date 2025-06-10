@@ -1,5 +1,5 @@
 includeFlat 'lib-commonbase', 'lib-common', 'lib-logging', 'lib-two-phase-transaction', 'lib-dbmigration', 'lib-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-hierarchical-content', 'lib-mail',
-        'api-openbis-java', 'lib-openbis-common', 'lib-authentication', 'lib-json', 'lib-transactional-file-system', 'lib-hdf5', 'lib-openbis-commonbase',
+        'api-openbis-java', 'lib-openbis-common', 'lib-openbis-messages', 'lib-authentication', 'lib-json', 'lib-transactional-file-system', 'lib-hdf5', 'lib-openbis-commonbase',
         'lib-data-store-commonbase', 'lib-data-store-common', 'lib-maintenance', 'lib-microservice-server', 'lib-messages-db', 'lib-archiver-db', 'lib-archiver', 'lib-shuffling', 'lib-compress',
         'server-application-server', 'server-original-data-store', 'server-screening', 'server-external-data-store', 'server-data-store',
         'ui-admin', 'ui-eln-lims', 'api-openbis-javascript', 'api-openbis-typescript', 'api-data-store-server-java', 'api-data-store-server-javascript'

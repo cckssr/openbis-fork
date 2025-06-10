@@ -56,7 +56,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             server: [
                 {
                     type: "Property",
-                    name: "NAME",
+                    name: profile.getInternalNamespacePrefix() + "NAME",
                     direction: "asc",
                 },
                 {
@@ -73,7 +73,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
             server: [
                 {
                     type: "Property",
-                    name: "NAME",
+                    name: profile.getInternalNamespacePrefix() + "NAME",
                     direction: "desc",
                 },
                 {
@@ -921,7 +921,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     rules: {
                         [Util.guid()]: {
                             type: "Property",
-                            name: "NAME",
+                            name: profile.getInternalNamespacePrefix() + "NAME",
                             value: filter,
                             operator: "thatStartsWithString",
                         },
@@ -987,7 +987,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     rules: {
                         [Util.guid()]: {
                             type: "Property",
-                            name: "NAME",
+                            name: profile.getInternalNamespacePrefix() + "NAME",
                             value: filter,
                             operator: "thatStartsWithString",
                         },
@@ -1076,7 +1076,7 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
                     rules: {
                         [Util.guid()]: {
                             type: "Property",
-                            name: "NAME",
+                            name: profile.getInternalNamespacePrefix() + "NAME",
                             value: filter,
                             operator: "thatStartsWithString",
                         },

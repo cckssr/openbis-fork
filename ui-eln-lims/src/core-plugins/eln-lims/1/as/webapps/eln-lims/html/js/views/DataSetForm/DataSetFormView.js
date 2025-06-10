@@ -905,7 +905,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				    continue;
 				}
 				
-                if(propertyType.code === "XMLCOMMENTS") {
+                if(propertyType.code === profile.getInternalNamespacePrefix() + "XMLCOMMENTS") {
 					var $commentsContainer = $("<div>");
 					$fieldset.append($commentsContainer);
 					var isAvailable = this._dataSetFormController._addCommentsWidget($commentsContainer);
@@ -913,7 +913,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 						continue;
 					}
 				} else {
-					if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
+					if(propertyType.code === profile.getInternalNamespacePrefix() + "SHOW_IN_PROJECT_OVERVIEW") {
 						var identifier = null;
 						if(this._dataSetFormModel.isExperiment()) { 
 							identifier = this._dataSetFormModel.entity.identifier.identifier;

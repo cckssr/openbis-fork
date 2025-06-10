@@ -212,7 +212,7 @@
 											}
 						});
 	
-						if(profile.isPropertyPressent(sampleType, "BARCODE")) {
+						if(profile.isPropertyPressent(sampleType, profile.getInternalNamespacePrefix() + "BARCODE")) {
 							dropdownOptionsModel.push({
 								label : "Custom Barcode/QR Code Update",
 								action : function() {
@@ -494,12 +494,12 @@
 	
 			if(sampleTypeCode === "ENTRY") {
 				var isReadOnly = this._sampleFormModel.mode === FormMode.VIEW;
-				var documentPropertyType = profile.getPropertyType("DOCUMENT");
-				var documentPropertyTypeV3 = profile.getPropertyTypeFromSampleTypeV3(this._sampleFormModel.sampleType, "DOCUMENT");
+				var documentPropertyType = profile.getPropertyType(profile.getInternalNamespacePrefix() + "DOCUMENT");
+				var documentPropertyTypeV3 = profile.getPropertyTypeFromSampleTypeV3(this._sampleFormModel.sampleType, profile.getInternalNamespacePrefix() + "DOCUMENT");
 				FormUtil.fixStringPropertiesForForm(documentPropertyTypeV3, this._sampleFormModel.sample);
 				var documentChangeEvent = function(jsEvent, newValue) {
 					var newCleanValue = Util.getEmptyIfNull(newValue);
-					_this._sampleFormModel.sample.properties["DOCUMENT"] = Util.getEmptyIfNull(newValue);
+					_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "DOCUMENT"] = Util.getEmptyIfNull(newValue);
 					var titleStart = newCleanValue.indexOf("<h2>");
 					var titleEnd = newCleanValue.indexOf("</h2>");
 					if(titleStart !== -1 && titleEnd !== -1) {
@@ -524,7 +524,7 @@
 	
 				var documentEditorEditableContainer = $("<div>", { class : "document-editor__editable-container", style : "min-height: " + height + "px; overflow: hidden;" });
 	
-				var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : "DOCUMENT" });
+				var documentEditorEditable = $("<div>", { class : "document-editor__editable", id : profile.getInternalNamespacePrefix() + "DOCUMENT" });
 	
 				var value = Util.getEmptyIfNull(this._sampleFormModel.sample.properties[documentPropertyType.code]);
 				if(this._sampleFormModel.mode === FormMode.CREATE && !value) {
@@ -545,7 +545,7 @@
                     _refreshableFields.push(documentEditorEditableToolbar);
                 }
 				documentEditorEditableFinal.addClass("document-editor__editable");
-				documentEditorEditableFinal.attr("id", "DOCUMENT");
+				documentEditorEditableFinal.attr("id", profile.getInternalNamespacePrefix() + "DOCUMENT");
 				//  documentEditorEditableFinal.css("height", "100%");
 				//  Bugfix for Webkit Chrome/Safari
 				documentEditorEditableFinal.css("min-height", height + "px");
@@ -857,13 +857,13 @@
 				}
 
 
-				if(sampleTypeCode === "ENTRY" && (propertyType.code === "NAME" || propertyType.code === "DOCUMENT" || propertyType.code === "ANNOTATIONS_STATE")) {
+				if(sampleTypeCode === "ENTRY" && (propertyType.code === "NAME" || propertyType.code === profile.getInternalNamespacePrefix() + "DOCUMENT" || propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE")) {
 					continue;
-				} else if(sampleTypeCode === "FOLDER" && propertyType.code !== "NAME") {
+				} else if(sampleTypeCode === "FOLDER" && propertyType.code !== profile.getInternalNamespacePrefix() + "NAME") {
 				    continue;
-				} else if(propertyType.code === "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === "ORDER.ORDER_STATE" || propertyType.code === "BARCODE" ) {
+				} else if(propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE" || propertyType.code === "FREEFORM_TABLE_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "ORDER.ORDER_STATE" || propertyType.code === profile.getInternalNamespacePrefix() + "BARCODE" ) {
 					continue;
-				} else if(propertyType.code === "XMLCOMMENTS") {
+				} else if(propertyType.code === profile.getInternalNamespacePrefix() + "XMLCOMMENTS") {
 					var $commentsContainer = $("<div>");
 					$fieldset.append($commentsContainer);
 					var isAvailable = this._sampleFormController._addCommentsWidget($commentsContainer);
@@ -871,7 +871,7 @@
 						continue;
 					}
 				} else {
-					if(propertyType.code === "SHOW_IN_PROJECT_OVERVIEW") {
+					if(propertyType.code === profile.getInternalNamespacePrefix() + "SHOW_IN_PROJECT_OVERVIEW") {
 						if(!(profile.inventorySpaces.length > 0 && $.inArray(this._sampleFormModel.sample.spaceCode, profile.inventorySpaces) === -1)) {
 							continue;
 						}
@@ -1042,7 +1042,7 @@
 					$fieldset.append($controlGroup);
 				}
 	
-				if(propertyType.code !== "ANNOTATIONS_STATE") {
+				if(propertyType.code !== profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE") {
 					propertyGroupPropertiesOnForm++;
 				}
 			}
@@ -1162,7 +1162,7 @@
 				var $defaultBarcodeField = FormUtil.getFieldForLabelWithText("Default Barcode", this._sampleFormModel.sample.permId);
 				$fieldset.append($defaultBarcodeField);
 	
-				var $customBarcodeProperty = this._sampleFormModel.sample.properties["BARCODE"];
+				var $customBarcodeProperty = this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "BARCODE"];
 				if($customBarcodeProperty) {
 					var $customBarcodePropertyField = FormUtil.getFieldForLabelWithText("Custom Barcode/QR Code", $customBarcodeProperty);
 					$fieldset.append($customBarcodePropertyField);
@@ -1368,13 +1368,13 @@
 	
 			var childrenDisabled = sampleTypeDefinitionsExtension && sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"];
 			if ((this._sampleFormModel.mode !== FormMode.VIEW) && this._sampleFormModel.isELNSample && !childrenDisabled) {
-				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate-children-'+this._viewId}).text("Generate " + childrenTitle);
-				$("body").on("click", '#generate-children-'+this._viewId, function(event) {
-					_this._generateChildren();
-				});
-	
+//				var $generateChildrenBtn = $("<a>", { 'class' : 'btn btn-default', 'style' : 'margin-top:15px;', 'id' : 'generate-children-'+this._viewId}).text("Generate " + childrenTitle);
+//				$("body").on("click", '#generate-children-'+this._viewId, function(event) {
+//					_this._generateChildren();
+//				});
+
 				var $generateChildrenBox = $("<div>")
-												.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
+//												.append($("<div>", { 'class' : 'form-group' }).append($generateChildrenBtn))
 												.append($("<div>", { 'id' : 'newChildrenOnBenchDropDown-'+this._viewId }))
 				$sampleChildrenWidget.append($generateChildrenBox);
 			}

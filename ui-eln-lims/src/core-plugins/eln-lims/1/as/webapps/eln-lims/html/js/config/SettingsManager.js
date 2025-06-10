@@ -182,7 +182,7 @@ function SettingsManager(serverFacade) {
 		    Util.unblockUI();
 			Util.showError(errorString);
 		} else {
-			settingsSample.properties = { "ELN_SETTINGS" : JSON.stringify(settings) };
+			settingsSample.properties = { [profile.getInternalNamespacePrefix() + "ELN_SETTINGS"] : JSON.stringify(settings) };
 			this._serverFacade.updateSample(settingsSample, function(ok) {
 				if(ok) {
 					_this.applySettingsToProfile(settings, profile);
@@ -242,7 +242,7 @@ function SettingsManager(serverFacade) {
 				for(var sIdx = 0; sIdx < settingsObjects.length; sIdx++) {
 					var settingsObject = settingsObjects[sIdx];
 					if (settingsObject && settingsObject.properties && (settingsObject.properties["ELN_SETTINGS"] || settingsObject.properties["ELN_SETTINGS"])) {
-						var settings = settingsObject.properties["ELN_SETTINGS"];
+						var settings = settingsObject.properties[ profile.getInternalNamespacePrefix() + "ELN_SETTINGS"];
 						if(!settings) {
 							settings = settingsObject.properties["ELN_SETTINGS"];
 						}

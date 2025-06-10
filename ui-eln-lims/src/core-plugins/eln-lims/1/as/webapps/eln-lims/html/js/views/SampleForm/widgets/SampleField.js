@@ -139,7 +139,7 @@ function SampleField(isRequired,
                         logicalOperator : "AND",
                         rules : {
                             "2-1": { type : "Attribute", name : "SAMPLE_TYPE", value : sampleTypeCode },
-                            "2-2": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q }
+                            "2-2": { type: "Property/Attribute", 	name: "PROP." + profile.getInternalNamespacePrefix() + "NAME", operator : "thatContainsString", value: storedParams.data.q }
                         }
                     }
                 }
@@ -149,7 +149,7 @@ function SampleField(isRequired,
                 entityKind : "SAMPLE",
                 logicalOperator : "OR",
                 rules : {
-                    "1": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: storedParams.data.q },
+                    "1": { type: "Property/Attribute", 	name: "PROP." + profile.getInternalNamespacePrefix() + "NAME", operator : "thatContainsString", value: storedParams.data.q },
                     "2": { type: "Property/Attribute", 	name: "ATTR.CODE", operator : "thatContains", value: storedParams.data.q }
                 }
             };

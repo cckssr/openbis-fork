@@ -19,20 +19,23 @@ dependencies {
             project(':api-openbis-java'),
             project(':lib-openbis-commonbase'),
             project(':lib-openbis-common'),
+            project(':lib-openbis-messages'),
             project(':lib-authentication'),
             project(':lib-mail'),
+            project(':lib-json'),
             project(':lib-maintenance'),
             project(':lib-dbmigration'),
+            project(':lib-messages-db'),
             project(':lib-two-phase-transaction'),
             project(':api-data-store-server-javascript'),
             'sencha:gxt:2.2.5',
             'jboss:javassist:3.28.0.GA',
             'hibernate:hibernate-core:5.2.14.Final',
             'fasterxml:classmate:1.3.0',
-            'eclipse:jetty-deploy:9.4.44.v20210927',
+            'eclipse:jetty-deploy:10.0.25',
             'google:gwt-debug-panel:1.0',
             'javax.activation:activation:1.1.1',
-            'javax:servlet-api:3.1.0',
+            'javax:servlet-api:4.0.1',
             'javax:mail:1.6.2',
             'google:gwt-user:2.4',
             'reveregroup:gwt-image-loader:1.1.4',
@@ -56,10 +59,8 @@ dependencies {
             'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
 
 
-    runtimeOnly 'slf4j:slf4j-jdk14:1.6.2',
+    runtimeOnly 'slf4j:slf4j-jdk14:1.7.24',
             'apache:commons-fileupload:1.3.3'
-
-    devRuntime 'eclipse:jetty-runner:9.4.44.v20210927'
 
     asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 
@@ -80,7 +81,7 @@ dependencies {
             'hamcrest:hamcrest-integration:1.3',
             'hamcrest:hamcrest-library:1.3'
 
-    testRuntimeFirst 'javax:servlet-api:3.1.0'
+    testRuntimeFirst 'javax:servlet-api:4.0.1'
 
 }
 
@@ -199,7 +200,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 }
 
 task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
-    mainClass = 'org.eclipse.jetty.runner.Runner'
+    mainClass = 'ch.ethz.sis.openbis.generic.server.dev.EmbeddedJettyDevelopmentServer'
     classpath = sourceSets.asExec.runtimeClasspath
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',

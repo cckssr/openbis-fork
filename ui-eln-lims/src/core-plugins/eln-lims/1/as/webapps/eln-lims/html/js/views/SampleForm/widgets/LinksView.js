@@ -284,7 +284,7 @@ function LinksView(linksController, linksModel, viewId) {
 	}
 	
 	linksView.getCustomField = function(propertyType) {
-		var propertyAnnotationCode = "ANNOTATION::" + propertyType.code;
+		var propertyAnnotationCode = profile.getInternalNamespacePrefix() + "ANNOTATION::" + propertyType.code;
 		return {
 			label : propertyType.label,
 			property : propertyAnnotationCode,
@@ -474,14 +474,14 @@ function LinksView(linksController, linksModel, viewId) {
                                         logicalOperator : "AND",
                                         rules : {
                                             "2-1": { type : "Attribute", name : "SAMPLE_TYPE", value : sampleTypeCode },
-                                            "2-2": { type: "Property/Attribute", 	name: "PROP.NAME", operator : "thatContainsString", value: searchDropdown.getParams().data.q }
+                                            "2-2": { type: "Property/Attribute", 	name: "PROP." + profile.getInternalNamespacePrefix() + "NAME", operator : "thatContainsString", value: searchDropdown.getParams().data.q }
                                         }
                         }
                     }
                 }
         		if(sampleTypeCode === "REQUEST") {
-        			advancedSampleSearchCriteria.subCriteria["1"].rules["1-3"] = { type : "Property/Attribute", name : "PROP.ORDERING.ORDER_STATUS", operator : "thatEqualsString", value : "NOT_YET_ORDERED" };
-        			advancedSampleSearchCriteria.subCriteria["2"].rules["2-3"] = { type : "Property/Attribute", name : "PROP.ORDERING.ORDER_STATUS", operator : "thatEqualsString", value : "NOT_YET_ORDERED" };
+				advancedSampleSearchCriteria.subCriteria["1"].rules["1-3"] = { type : "Property/Attribute", name : "PROP." + profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS", operator : "thatEqualsString", value : "NOT_YET_ORDERED" };
+				advancedSampleSearchCriteria.subCriteria["2"].rules["2-3"] = { type : "Property/Attribute", name : "PROP." + profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS", operator : "thatEqualsString", value : "NOT_YET_ORDERED" };
         		}
                 if (["ORGANIZATION_UNIT", "REQUEST", "PRODUCT", "SUPPLIER"].indexOf(sampleTypeCode) >= 0 &&
                 mainController.currentView._sampleFormModel.sample.projectCode !== "TEMPLATES") {

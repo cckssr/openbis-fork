@@ -19,7 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +39,6 @@ import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.util.B64Code;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
@@ -231,11 +232,23 @@ public class DataSourceConnector implements IDataSourceConnector
         return url;
     }
 
-    private Request createRequest(HttpClient client, String url)
-    {
-        Request requestEntity = client.newRequest(url).method("GET");
-        requestEntity.header(HttpHeader.AUTHORIZATION, "Basic " + B64Code.encode(authCredentials.getUser() + ":" + authCredentials.getPassword()));
+    private Request createRequest(HttpClient client, String url) {
+        String creds = authCredentials.getUser() + ":" + authCredentials.getPassword();
+        String basicAuth = "Basic " +
+                Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8));
+
+        Request requestEntity = client
+                .newRequest(url)
+                .method("GET");
+        requestEntity.header(HttpHeader.AUTHORIZATION, basicAuth);
         return requestEntity;
     }
+
+//    private Request createRequest(HttpClient client, String url)
+//    {
+//        Request requestEntity = client.newRequest(url).method("GET");
+//        requestEntity.header(HttpHeader.AUTHORIZATION, "Basic " + B64Code.encode(authCredentials.getUser() + ":" + authCredentials.getPassword()));
+//        return requestEntity;
+//    }
 
 }

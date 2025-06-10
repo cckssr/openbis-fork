@@ -153,7 +153,7 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             boolean isInternal = ImportUtils.isTrue(internal);
             if(isInternal)
             {
-                PropertyType pt = delayedExecutor.getPropertyType(new PropertyTypePermId(code), new PropertyTypeFetchOptions());
+                PropertyType pt = delayedExecutor.getPropertyType(new PropertyTypePermId(code));
                 if(pt == null) {
                     throw new UserFailureException("Non-system user can not create internal property types!");
                 }
@@ -194,16 +194,14 @@ public class PropertyTypeImportHelper extends BasicImportHelper
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
-        PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-        fetchOptions.withVocabulary().withTerms().withVocabulary();
 
         PropertyTypePermId propertyTypePermId = new PropertyTypePermId(code);
-        return delayedExecutor.getPropertyType(propertyTypePermId, fetchOptions) != null;
+        return delayedExecutor.getPropertyType(propertyTypePermId) != null;
     }
 
     @Override
     protected void createObject(Map<String, Integer> header, List<String> values, int page,
-            int line)
+                                int line)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
         String propertyLabel = getValueByColumnName(header, values, Attribute.PropertyLabel);
@@ -289,11 +287,7 @@ public class PropertyTypeImportHelper extends BasicImportHelper
             }
         }
 
-        PropertyTypeFetchOptions propertyTypeFetchOptions = new PropertyTypeFetchOptions();
-        propertyTypeFetchOptions.withVocabulary();
-        propertyTypeFetchOptions.withSampleType();
-        PropertyType propertyType =
-                delayedExecutor.getPropertyType(propertyTypePermId, propertyTypeFetchOptions);
+        PropertyType propertyType = delayedExecutor.getPropertyType(propertyTypePermId);
         if (vocabularyCode != null && !vocabularyCode.isEmpty())
         {
             if (propertyType.getVocabulary() != null  && vocabularyCode.equals(propertyType.getVocabulary().getCode()) == false)

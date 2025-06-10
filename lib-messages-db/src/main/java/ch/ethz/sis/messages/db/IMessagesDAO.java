@@ -31,4 +31,5 @@ public interface IMessagesDAO
 
     List<Message> listByTypesAndIdRange(List<String> messageTypes, Long minMessageId, Long maxMessageId, int messageBatchSize);
 
+    List<Message> listByTypesNotConsumed(List<String> messageTypes);
 }

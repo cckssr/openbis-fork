@@ -100,7 +100,7 @@ dependencies {
         exclude group: 'google', module: 'gwt-user'
     }
 
-    testRuntimeFirst 'javax:servlet-api:3.1.0'
+    testRuntimeFirst 'javax:servlet-api:4.0.1'
     testRuntimeSecond 'google:gwt-user:2.4'
 }
 

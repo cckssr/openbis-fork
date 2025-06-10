@@ -70,11 +70,14 @@ public class MultiDataSetUnarchivingMaintenanceTask implements IMaintenanceTask
         {
             List<MultiDataSetArchiverDataSetDTO> dataSets = dao.listDataSetsForContainerId(container.getId());
             List<String> dataSetCodes = extractCodes(dataSets);
-            operationLog.info("Start unarchiving " + CollectionUtils.abbreviate(dataSetCodes, 20));
             List<DatasetDescription> loadedDataSets = loadDataSets(dataSetCodes);
-            archiverPlugin.unarchive(loadedDataSets, context);
-            resetRequestUnarchiving(container);
-            operationLog.info("Unarchiving finished for " + CollectionUtils.abbreviate(dataSetCodes, 20));
+            if (!loadedDataSets.isEmpty())
+            {
+                operationLog.info("Start unarchiving " + CollectionUtils.abbreviate(dataSetCodes, 20));
+                archiverPlugin.unarchive(loadedDataSets, context);
+                resetRequestUnarchiving(container);
+                operationLog.info("Unarchiving finished for " + CollectionUtils.abbreviate(dataSetCodes, 20));
+            }
         }
     }
 

@@ -20,11 +20,11 @@ function CommentsModel(entity, mode, form) {
 	this.form = form;
 	
 	this.getComments = function() {
-	    return this._getProperties()["XMLCOMMENTS"];
+	    return this._getProperties()[profile.getInternalNamespacePrefix() + "XMLCOMMENTS"];
 	}
 	
 	this.setComments = function(commentsXML) {
-	    this._getProperties()["XMLCOMMENTS"] = commentsXML;
+	    this._getProperties()[profile.getInternalNamespacePrefix() + "XMLCOMMENTS"] = commentsXML;
 		this.form.isFormDirty = true;
 	}
 

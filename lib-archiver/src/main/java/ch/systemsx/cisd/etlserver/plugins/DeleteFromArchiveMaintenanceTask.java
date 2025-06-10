@@ -18,6 +18,7 @@ package ch.systemsx.cisd.etlserver.plugins;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import ch.systemsx.cisd.common.collection.CollectionUtils;
@@ -57,6 +58,8 @@ public class DeleteFromArchiveMaintenanceTask extends
             datasets = filterOldStyleHistoryEvents(list);
         }
 
+        datasets = filterCurrentDataStoreDataOnly(datasets);
+
         IArchiverPlugin archiverPlugin = ArchiverServiceProviderFactory.getInstance().getArchiverPlugin();
         List<DatasetLocation> datasetLocations = toDataSetLocations(datasets);
         archiverPlugin.deleteFromArchive(datasetLocations);
@@ -65,7 +68,6 @@ public class DeleteFromArchiveMaintenanceTask extends
                 String.format("Deleted %s dataset from archive: '%s'", datasets.size(),
                         CollectionUtils.abbreviate(datasets, 10));
         operationLog.info(logMessage);
-
     }
 
     // NOTE: Before the introduction of eager-archiving the column which now corresponds to
@@ -79,6 +81,21 @@ public class DeleteFromArchiveMaintenanceTask extends
         {
             if (dataset.getIdentifier() != null
                     && false == dataset.getIdentifier().equals(dataset.getLocationOrNull()))
+            {
+                result.add(dataset);
+            }
+        }
+        return result;
+    }
+
+    private List<DeletedDataSet> filterCurrentDataStoreDataOnly(List<DeletedDataSet> datasets)
+    {
+        String dataStoreCode = ArchiverServiceProviderFactory.getInstance().getConfigProvider().getDataStoreCode();
+
+        List<DeletedDataSet> result = new ArrayList<>();
+        for (DeletedDataSet dataset : datasets)
+        {
+            if (dataset.getLocationObjectOrNull() == null || Objects.equals(dataset.getLocationObjectOrNull().getDatastoreCode(), dataStoreCode))
             {
                 result.add(dataset);
             }

@@ -1,4 +1,4 @@
-package ch.ethz.sis.afsserver.server.archiving.messages;
+package ch.ethz.sis.openbis.messages;
 
 import java.io.ByteArrayInputStream;
 import java.util.Date;

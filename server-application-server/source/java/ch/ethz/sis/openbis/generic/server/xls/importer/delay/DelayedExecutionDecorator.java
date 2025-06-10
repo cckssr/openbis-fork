@@ -25,12 +25,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
@@ -291,7 +293,7 @@ public class DelayedExecutionDecorator
     {
         if (!propertyTypeCache.containsKey(propertyCode))
         {
-            PropertyType propertyType = getPropertyType(new PropertyTypePermId(propertyCode), new PropertyTypeFetchOptions());
+            PropertyType propertyType = getPropertyType(new PropertyTypePermId(propertyCode));
             propertyTypeCache.put(propertyCode, propertyType);
         }
 
@@ -455,7 +457,7 @@ public class DelayedExecutionDecorator
         // Check if they have been created already
         for (IPropertyTypeId propertyTypeId : possibleDependencies)
         {
-            PropertyType propertyType = getPropertyType(propertyTypeId, new PropertyTypeFetchOptions());
+            PropertyType propertyType = getPropertyType(propertyTypeId);
             if (propertyType == null)
             {
                 dependencies.add(propertyTypeId);
@@ -901,7 +903,7 @@ public class DelayedExecutionDecorator
         // Check if they have been created already
         for (IPropertyTypeId propertyTypeId : possibleDependencies)
         {
-            PropertyType propertyType = getPropertyType(propertyTypeId, new PropertyTypeFetchOptions());
+            PropertyType propertyType = getPropertyType(propertyTypeId);
             if (propertyType == null)
             {
                 dependencies.add(propertyTypeId);
@@ -960,7 +962,7 @@ public class DelayedExecutionDecorator
         // Check if they have been created already
         for (IPropertyTypeId propertyTypeId : possibleDependencies)
         {
-            PropertyType propertyType = getPropertyType(propertyTypeId, new PropertyTypeFetchOptions());
+            PropertyType propertyType = getPropertyType(propertyTypeId);
             if (propertyType == null)
             {
                 dependencies.add(propertyTypeId);
@@ -984,9 +986,21 @@ public class DelayedExecutionDecorator
     // PROPERTY
     //
 
-    public PropertyType getPropertyType(IPropertyTypeId typeId, PropertyTypeFetchOptions fetchOptions)
+    Map<IPropertyTypeId, PropertyType> propertyTypeCache2 = new ConcurrentHashMap<>();
+
+    public PropertyType getPropertyType(IPropertyTypeId typeId)
     {
-        return v3.getPropertyTypes(this.sessionToken, List.of(typeId), fetchOptions).getOrDefault(typeId, null);
+        if (!propertyTypeCache2.containsKey(typeId)) {
+            PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+            fetchOptions.withVocabulary().withTerms().withVocabulary();
+            fetchOptions.withSampleType();
+
+            PropertyType propertyType = v3.getPropertyTypes(this.sessionToken, List.of(typeId), fetchOptions).getOrDefault(typeId, null);
+            if (propertyType != null) {
+                propertyTypeCache2.put(typeId, propertyType);
+            }
+        }
+        return propertyTypeCache2.get(typeId);
     }
 
     public void createPropertyType(PropertyTypeCreation newPropertyType, int page, int line)
@@ -997,7 +1011,7 @@ public class DelayedExecutionDecorator
         //  IF PROPERTY TYPE EXISTS - DUE TO DE DELAY IN EXECUTION OF A CYCLICAL DEPENDENCY
         //      IGNORE CREATION, ALL CREATIONS LOOK THE SAME AND ALREADY HAPPENED, IT WILL BE ASSIGNED AS NEXT STEP
         //
-        if (getPropertyType(new PropertyTypePermId(newPropertyType.getCode()), new PropertyTypeFetchOptions()) != null)
+        if (getPropertyType(new PropertyTypePermId(newPropertyType.getCode())) != null)
         {
             return;
         }
@@ -1149,7 +1163,7 @@ public class DelayedExecutionDecorator
         }
 
         if (propertyTypePermId != null) {
-            PropertyType propertyType = getPropertyType(propertyTypePermId, new PropertyTypeFetchOptions());
+            PropertyType propertyType = getPropertyType(propertyTypePermId);
             if (propertyType == null)
             {
                 dependencies.add(propertyTypePermId);

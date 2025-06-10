@@ -23,8 +23,8 @@ var ExperimentDataGridUtil = new function() {
 		});
         columns.push({
             label : 'Name',
-            property : 'NAME',
-            exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY("NAME"),
+            property : profile.getInternalNamespacePrefix() + 'NAME',
+            exportableProperty: DataGridExportOptions.EXPORTABLE_FIELD.PROPERTY(profile.getInternalNamespacePrefix() + "NAME"),
             sortable : true,
             render : function(data) {
                 var nameToUse = "";

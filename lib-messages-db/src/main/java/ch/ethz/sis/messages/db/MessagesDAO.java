@@ -22,6 +22,9 @@ public class MessagesDAO implements IMessagesDAO
     private static final String LIST_BY_TYPES_AND_ID_RANGE =
             "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) AND ID > ? AND ID <= ? ORDER BY ID ASC LIMIT ?";
 
+    private static final String LIST_BY_TYPES_NOT_CONSUMED =
+            "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) AND CONSUMPTION_TIMESTAMP IS NULL ORDER BY ID ASC;";
+
     private final Connection connection;
 
     public MessagesDAO(Connection connection)
@@ -87,6 +90,27 @@ public class MessagesDAO implements IMessagesDAO
             statement.setLong(2, minMessageId != null ? minMessageId : 0);
             statement.setLong(3, maxMessageId != null ? maxMessageId : 0);
             statement.setInt(4, messageBatchSize);
+
+            List<Message> result = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next())
+            {
+                result.add(getMessage(resultSet));
+            }
+
+            return result;
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override public List<Message> listByTypesNotConsumed(List<String> messageTypes)
+    {
+        try (PreparedStatement statement = connection.prepareStatement(LIST_BY_TYPES_NOT_CONSUMED))
+        {
+            statement.setObject(1, messageTypes.toArray(new String[0]));
 
             List<Message> result = new ArrayList<>();
             ResultSet resultSet = statement.executeQuery();

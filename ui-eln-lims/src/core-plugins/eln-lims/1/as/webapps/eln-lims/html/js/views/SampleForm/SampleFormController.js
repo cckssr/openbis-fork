@@ -19,7 +19,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 	this._sampleFormModel = new SampleFormModel(mode, sample, paginationInfo, activeTab);
 	this._sampleFormView = new SampleFormView(this, this._sampleFormModel);
 
-    this.refresh = function(views) {
+    this.refresh = function() {
         if(this._sampleFormModel.dataSetViewer) {
             mainController.sideMenu.removeSubSideMenu();
             mainController.sideMenu.addSubSideMenu(this._sampleFormView._dataSetViewerContainer, this._sampleFormModel.dataSetViewer);
@@ -308,7 +308,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                     }
                 }
             } else if (sample.sampleTypeCode === "ORDER") {
-                if (!sample.properties["ORDERING.ORDER_STATUS"]) {
+                if (!sample.properties[profile.getInternalNamespacePrefix() + "ORDERING.ORDER_STATUS"]) {
                     Util.showUserError("Order status is undefined.");
                     return;
                 }
@@ -362,7 +362,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             }
 
             if(!profile.enableNewAnnotationsBackend) { // Used by openBIS 19.X
-			    properties["ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
+			    properties[profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"] = FormUtil.getXMLFromAnnotations(mergedAnnotationsState);
             }
 
 			//
@@ -474,8 +474,8 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 				parameters["method"] = "copySample";
 				parameters["sampleCode"] = isCopyWithNewCode;
 				parameters["sampleCodeOrig"] = sampleCode;
-				if(!copyCommentsLogOnCopy && parameters["sampleProperties"]["XMLCOMMENTS"]) {
-					delete parameters["sampleProperties"]["XMLCOMMENTS"];
+				if(!copyCommentsLogOnCopy && parameters["sampleProperties"][profile.getInternalNamespacePrefix() + "XMLCOMMENTS"]) {
+					delete parameters["sampleProperties"][profile.getInternalNamespacePrefix() + "XMLCOMMENTS"];
 				}
 				
 				parameters["sampleParents"] = sampleParentsFinal;
@@ -1030,7 +1030,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             var isStateFieldAvailable = false;
             if(this._sampleFormModel.sample) {
                 var availableFields = profile.getAllPropertiCodesForTypeCode(this._sampleFormModel.sample.sampleTypeCode);
-                var pos = $.inArray("ANNOTATIONS_STATE", availableFields);
+                var pos = $.inArray(profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE", availableFields);
                 isStateFieldAvailable = (pos !== -1);
             }
             if(!isStateFieldAvailable && this.sampleTypeHints && this.sampleTypeHints.length !== 0) { //Indicates annotations are needed

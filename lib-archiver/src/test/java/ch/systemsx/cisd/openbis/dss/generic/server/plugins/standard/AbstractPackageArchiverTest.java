@@ -67,7 +67,7 @@ public abstract class AbstractPackageArchiverTest extends AbstractArchiverTestCa
     protected static final String DATA_SET_CODE = "ds1";
 
     protected static final File HDF5_ARCHIVE = new File(
-            "../lib-archiver/resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
+            "./resource/test-data/HDF5ContainerBasedHierarchicalContentNodeTest/thumbnails.h5");
 
     protected File defaultArchive;
 

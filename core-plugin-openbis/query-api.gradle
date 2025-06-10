@@ -133,7 +133,7 @@ dependencies {
             'sis:sis-file-transfer:19.03.1',
             'apache:httpclient:4.3.6',
             'apache:commons-lang3:3.14',
-            'eclipse:jetty-client:9.4.44.v20210927',
+            'eclipse:jetty-client:10.0.25',
             'springframework:spring-web:5.3.39',
             'marathon:marathon-spring-util:1.2.5',
             'fasterxml:jackson-annotations:2.9.10',

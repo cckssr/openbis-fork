@@ -39,7 +39,7 @@ function NewProductsView(newProductsController, newProductsModel) {
 			for(var sIdx = 0; sIdx < suppliers.length; sIdx++) {
                 var supplier = suppliers[sIdx];
                 if (supplier.spaceCode == spaceCode) {
-                    var name = supplier.properties["NAME"];
+                    var name = supplier.properties[profile.getInternalNamespacePrefix() + "NAME"];
                     if (!name) {
                         name = supplier.properties["NAME"];
                     }
@@ -51,7 +51,7 @@ function NewProductsView(newProductsController, newProductsModel) {
 			}
 			var supplierDropdown = FormUtil.getDropDownForTerms("new-product-supplier-" + _this.rowIndex, supplierTerms, "Select a supplier", true);
 			
-			var currencyVocabulary = profile.getVocabularyByCode("PRODUCT.CURRENCY");
+			var currencyVocabulary = profile.getVocabularyByCode(profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY");
 			var currencyDropdown = FormUtil.getDropDownForTerms("new-product-currency-" + _this.rowIndex, currencyVocabulary.terms, "Select a currency", false);
 			
 			var quantityField = FormUtil.getIntegerInputField("new-product-quantity-" + _this.rowIndex, "Quantity", true);

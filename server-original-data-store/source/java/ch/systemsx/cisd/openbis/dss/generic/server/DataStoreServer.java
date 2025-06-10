@@ -23,6 +23,7 @@ import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.Deflater;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -44,6 +46,8 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.compression.CompressionPool;
+import org.eclipse.jetty.util.compression.DeflaterPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -280,15 +284,25 @@ public class DataStoreServer
     private static void configureGzipHandler(final Server thisServer)
     {
         final GzipHandler gzipHandler = new GzipHandler();
+
         gzipHandler.setMinGzipSize(2048);
-        gzipHandler.setCheckGzExists(false);
-        gzipHandler.setCompressionLevel(-1);
-        gzipHandler.setInflateBufferSize(0);
-        gzipHandler.setSyncFlush(false);
-        gzipHandler.setExcludedAgentPatterns(".*MSIE.6\\.0.*");
-        gzipHandler.setExcludedMethodList("");
-        gzipHandler.setIncludedMethodList("");
-        thisServer.insertHandler(gzipHandler);
+
+        gzipHandler.setDeflaterPool(
+                new DeflaterPool(
+                        CompressionPool.DEFAULT_CAPACITY,
+                        Deflater.BEST_SPEED,
+                        true
+                )
+        );
+
+//        gzipHandler.setExcludedUserAgents(".*MSIE\\.6\\.0.*");
+//        gzipHandler.setCompressionLevel(-1);
+        // (omit setCheckGzExists, setInflateBufferSize, setSyncFlush)
+
+        // Wrap the existing handler under gzip:
+        Handler oldHandler = thisServer.getHandler();
+        gzipHandler.setHandler(oldHandler);
+        thisServer.setHandler(gzipHandler);
     }
 
     /**
@@ -488,7 +502,7 @@ public class DataStoreServer
 
         if (configParams.isUseSSL())
         {
-            final SslContextFactory sslContextFactory = new SslContextFactory.Server();
+            final SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
             sslContextFactory.setKeyStorePath(configParams.getKeystorePath());
             sslContextFactory.setKeyStorePassword(configParams.getKeystorePassword());
             sslContextFactory.setKeyManagerPassword(configParams.getKeystoreKeyPassword());
@@ -513,11 +527,20 @@ public class DataStoreServer
             };
             sslContextFactory.setExcludeCipherSuites(excludedCiphers);
 
+            // disable TLS-level “require SNI
+            sslContextFactory.setSniRequired(false);
+
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-            httpsConfig.addCustomizer(new SecureRequestCustomizer());
+
+            SecureRequestCustomizer customizer = new SecureRequestCustomizer();
+            customizer.setSniHostCheck(false);
+            httpsConfig.addCustomizer(customizer);
+
+            SslConnectionFactory sslConnectionFactory =
+                    new SslConnectionFactory(sslContextFactory, "http/1.1");
 
             return new ServerConnector(thisServer,
-                    new SslConnectionFactory(sslContextFactory, "http/1.1"),
+                    sslConnectionFactory,
                     new HttpConnectionFactory(httpsConfig));
         } else
         {

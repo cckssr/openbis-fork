@@ -33,7 +33,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 public class TestJsonServiceFactory
 {
     private static final String OPENBIS_SERVER_URL = TestInstanceHostUtils.getOpenBISUrl()
-            + "/openbis/";
+            + "/openbis";
 
     private static final String GENERAL_INFO_SERVICE_URL = OPENBIS_SERVER_URL
             + IGeneralInformationService.JSON_SERVICE_URL;

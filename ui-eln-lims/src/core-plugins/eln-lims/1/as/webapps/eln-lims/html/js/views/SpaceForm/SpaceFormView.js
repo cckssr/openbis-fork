@@ -261,7 +261,7 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
         var space = this._spaceFormModel.v3_space;
         var description = space ? space.getDescription() : "";
         if (this._spaceFormModel.mode !== FormMode.VIEW) {
-            var $textBox = FormUtil._getTextBox("description-id", "Description", false);
+            var $textBox = FormUtil._getTextBox("description-id-"+this._viewId, "Description", false);
             var textBoxEvent = function(jsEvent, newValue) {
                 var valueToUse = null;
                 if (newValue !== undefined && newValue !== null) {

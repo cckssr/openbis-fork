@@ -622,8 +622,8 @@ function AdvancedSearchController(mainController, forceSearch) {
 	this._sampleToSavedSearch = function(sample) {
 		return {
 			sample: sample,
-			name: sample.properties['NAME'],
-			criteria: JSON.parse(sample.properties['SEARCH_QUERY.CUSTOM_DATA'].replace('<xml><![CDATA[', '').replace(']]></xml>', ''))['eln-lims-criteria'],
+			name: sample.properties[profile.getInternalNamespacePrefix() + 'NAME'],
+			criteria: JSON.parse(sample.properties[profile.getInternalNamespacePrefix() + 'SEARCH_QUERY.CUSTOM_DATA'].replace('<xml><![CDATA[', '').replace(']]></xml>', ''))['eln-lims-criteria'],
 		};
 	}
 

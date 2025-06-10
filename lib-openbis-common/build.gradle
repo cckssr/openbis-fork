@@ -20,13 +20,17 @@ dependencies {
             'apache:commons-collections4:4.1',
             'truezip:truezip:6.8.1'
 
+
+
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
             project(path: ':lib-dbmigration', configuration: 'tests'),
             project(path: ':lib-authentication', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
-            'eclipse:jetty-servlet:9.4.44.v20210927',
+            'eclipse:jetty-servlet:10.0.25',
             'hamcrest:hamcrest-integration:1.3',
-            'hamcrest:hamcrest-library:1.3'
+            'hamcrest:hamcrest-library:1.3',
+            'slf4j:slf4j-api:1.7.24',
+            'slf4j:slf4j-jdk14:1.7.24'
 }

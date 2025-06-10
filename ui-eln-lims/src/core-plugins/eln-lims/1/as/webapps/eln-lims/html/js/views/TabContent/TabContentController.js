@@ -57,9 +57,16 @@ function TabContentController(controller) {
 
     this.refreshCurrentPage = function() {
         var tab = _this._model.currentTab;
-        if(mainController.currentView && mainController.currentView.refresh) {
-            mainController.currentView.refresh(mainController.views)
+
+        if(tab && tab.id) {
+            var currentView = _this._model.views[tab.id];
+            if(currentView && currentView.refresh) {
+                currentView.refresh();
+            }
         }
+//        if(mainController.currentView && mainController.currentView.refresh) {
+//            mainController.currentView.refresh(mainController.views)
+//        }
     }
 
     this.updateCurrentTabInfo = function(tabInfo) {

@@ -53,16 +53,16 @@ function NewProductsController() {
 						code : codePrefix + nextCodeNumber,
 						parentsIdentifiers : [$($($productProperties[4]).children()[0]).val()],
 						properties : {
-							"NAME" : $($($productProperties[0]).children()[0]).val(),
-							"PRODUCT.PRICE_PER_UNIT" : $($($productProperties[2]).children()[0]).val(),
-							"PRODUCT.CURRENCY" : $($($productProperties[3]).children()[0]).val(),
-							"PRODUCT.CATALOG_NUM" : $($($productProperties[1]).children()[0]).val()
+							[profile.getInternalNamespacePrefix() + "NAME"] : $($($productProperties[0]).children()[0]).val(),
+							[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"] : $($($productProperties[2]).children()[0]).val(),
+							[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"] : $($($productProperties[3]).children()[0]).val(),
+							[profile.getInternalNamespacePrefix() + "PRODUCT.CATALOG_NUM"] : $($($productProperties[1]).children()[0]).val()
 						},
 						annotations : {
 							"ANNOTATION.REQUEST.QUANTITY_OF_ITEMS" : $($($productProperties[5]).children()[0]).val()
 						}
 				}
-				if(!newProduct.properties["NAME"] && !newProduct.properties["PRODUCT.CATALOG_NUM"]) {
+				if(!newProduct.properties[profile.getInternalNamespacePrefix() + "NAME"] && !newProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CATALOG_NUM"]) {
                     Util.showError("Indicating a name or catalog number is mandatory for new products.");
                     return;
                 }
@@ -75,11 +75,11 @@ function NewProductsController() {
                     Util.showError("Indicating the provider is mandatory for new products.");
                     return;
                 }
-				if(!newProduct.properties["PRODUCT.CURRENCY"]) {
-					delete newProduct.properties["PRODUCT.CURRENCY"];
+				if(!newProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"]) {
+					delete newProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.CURRENCY"];
 				}
-				if(!newProduct.properties["PRODUCT.PRICE_PER_UNIT"]) {
-					delete newProduct.properties["PRODUCT.PRICE_PER_UNIT"];
+				if(!newProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"]) {
+					delete newProduct.properties[profile.getInternalNamespacePrefix() + "PRODUCT.PRICE_PER_UNIT"];
 				}
 				products.push(newProduct);
 				nextCodeNumber++;

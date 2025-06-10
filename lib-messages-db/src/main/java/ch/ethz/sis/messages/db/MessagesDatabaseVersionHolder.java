@@ -25,6 +25,11 @@ public class MessagesDatabaseVersionHolder implements IDatabaseVersionHolder
     @Override
     public String getDatabaseVersion()
     {
+        return getDatabaseVersionStatic();
+    }
+
+    public static String getDatabaseVersionStatic()
+    {
         return "001";
     }
 }

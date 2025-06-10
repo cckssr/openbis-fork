@@ -26,7 +26,7 @@ function ExperimentTableController(parentController, title, project, showInProje
 		var callback = function(data) {
             for(var i = 0; i < data.experiments.length; i++) {
 				var item = data.experiments[i];
-				var showOnlyOverview = _this._experimentTableModel.showInProjectOverview && item.properties["SHOW_IN_PROJECT_OVERVIEW"] === "true";
+				var showOnlyOverview = _this._experimentTableModel.showInProjectOverview && item.properties[profile.getInternalNamespacePrefix() + "SHOW_IN_PROJECT_OVERVIEW"] === "true";
 				var showAll = !_this._experimentTableModel.showInProjectOverview;
 				if(showOnlyOverview || showAll) {
 					_this._experimentTableModel.allExperiments.push(item);
@@ -56,7 +56,7 @@ function ExperimentTableController(parentController, title, project, showInProje
         var experiments = [];
         for (var idx = 0; idx < this._experimentTableModel.allExperiments.length; idx++) {
             var exptoCheckType = this._experimentTableModel.allExperiments[idx];
-            var showOnlyOverview = this._experimentTableModel.showInProjectOverview && exptoCheckType.properties["SHOW_IN_PROJECT_OVERVIEW"] === "true";
+            var showOnlyOverview = this._experimentTableModel.showInProjectOverview && exptoCheckType.properties[profile.getInternalNamespacePrefix() + "SHOW_IN_PROJECT_OVERVIEW"] === "true";
             var showAll = !this._experimentTableModel.showInProjectOverview;
             if(showOnlyOverview || showAll) {
                 experiments.push(exptoCheckType);

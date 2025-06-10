@@ -75,6 +75,8 @@ public class TestInitializer
         System.setProperty("database.kind", getDBKind());
         System.setProperty("script-folder", scriptFolder);
 
+        System.setProperty("messages-database.kind", getDBKind());
+
         DBMigrationEngine.deleteFullTextSearchDocumentVersionFile();
     }
 
