@@ -25,7 +25,7 @@ function StorageManagerView(storageManagerController, storageManagerModel, stora
 	this._viewId = mainController.getNextId();
 	this._moveBtn  = FormUtil.getToolbarButton("SAVE", null, "Save Changes", "Save Changes", "search-save-btn-"+this._viewId);
 
-	this._showHideStorageToBtn = FormUtil.getToolbarButton("EYE_OPEN", null, "Toggle Storage B", null, 'toggle-storage-b-id');
+	this._showHideStorageToBtn = FormUtil.getToolbarButton("EYE_OPEN", null, "Toggle Storage B", null, 'toggle-storage-b-id', 'btn btn-primary btn-secondary');
 
     this._showHideMenuBtn = FormUtil.getToolbarButton("FULLSCREEN", function() {
             var iconSpan = $(this.children[0]);
@@ -36,7 +36,7 @@ function StorageManagerView(storageManagerController, storageManagerModel, stora
                iconSpan.text("open_in_full")
                mainController.sideMenu.expandSideMenu();
            }
-    }, "Toggle Full Screen", "Toggle Full Screen", 'fullscreen-btn-'+this._viewId);
+    }, "Toggle Full Screen", "Toggle Full Screen", 'fullscreen-btn-'+this._viewId, 'btn btn-primary btn-secondary');
 		
 	this._moveBtn.removeClass("btn-default");
 	this._moveBtn.addClass("btn-primary");
