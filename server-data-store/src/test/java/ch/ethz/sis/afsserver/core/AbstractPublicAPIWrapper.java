@@ -38,14 +38,14 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
     }
 
     @Override
-    public List<File> list(@NonNull String owner, @NonNull String source,
+    public File[] list(@NonNull String owner, @NonNull String source,
             @NonNull Boolean recursively) throws Exception
     {
         Map<String, Object> args = Map.of(
                 "owner", owner,
                 "source", source,
                 "recursively", recursively);
-        return process(List.class, "list", args);
+        return process(File[].class, "list", args);
     }
 
     @Override

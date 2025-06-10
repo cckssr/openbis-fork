@@ -31,11 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -193,14 +189,14 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, "", Boolean.TRUE);
-        assertEquals(4, files.size());
+        File[] files = afsClient.list(owner, "", Boolean.TRUE);
+        assertEquals(4, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
-        assertFileEquals(files.get(1), owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
-        assertFileEquals(files.get(2), owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
-        assertFileEquals(files.get(3), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
+        assertFileEquals(files[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        assertFileEquals(files[2], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(files[3], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
     }
 
     @Test
@@ -208,12 +204,12 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, "", Boolean.FALSE);
-        assertEquals(2, files.size());
+        File[] files = afsClient.list(owner, "", Boolean.FALSE);
+        assertEquals(2, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
-        assertFileEquals(files.get(1), owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
+        assertFileEquals(files[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
     }
 
     @Test
@@ -221,12 +217,12 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, FILE_BINARY_FOLDER, Boolean.TRUE);
-        assertEquals(2, files.size());
+        File[] files = afsClient.list(owner, FILE_BINARY_FOLDER, Boolean.TRUE);
+        assertEquals(2, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
-        assertFileEquals(files.get(1), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(files[1], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
     }
 
     @Test
@@ -234,10 +230,10 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, FILE_BINARY_FOLDER, Boolean.FALSE);
-        assertEquals(1, files.size());
+        File[] files = afsClient.list(owner, FILE_BINARY_FOLDER, Boolean.FALSE);
+        assertEquals(1, files.length);
 
-        assertFileEquals(files.get(0), owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(files[0], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
     }
 
     @Test
@@ -245,9 +241,9 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, "/" + FILE_BINARY, Boolean.FALSE);
-        assertEquals(1, files.size());
-        assertFileEquals(files.get(0), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        File[] files = afsClient.list(owner, "/" + FILE_BINARY, Boolean.FALSE);
+        assertEquals(1, files.length);
+        assertFileEquals(files[0], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
 
     }
 
@@ -256,9 +252,9 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> files = afsClient.list(owner, FILE_BINARY, Boolean.FALSE);
-        assertEquals(1, files.size());
-        assertFileEquals(files.get(0), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        File[] files = afsClient.list(owner, FILE_BINARY, Boolean.FALSE);
+        assertEquals(1, files.length);
+        assertFileEquals(files[0], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
     }
 
     @Test
@@ -402,24 +398,24 @@ public abstract class BaseApiClientTest
     {
         login();
 
-        List<File> filesBefore = afsClient.list(owner, "", true);
-        assertEquals(4, filesBefore.size());
+        File[] filesBefore = afsClient.list(owner, "", true);
+        assertEquals(4, filesBefore.length);
 
-        filesBefore = sortFiles(filesBefore);
-        assertFileEquals(filesBefore.get(0), owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
-        assertFileEquals(filesBefore.get(1), owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
-        assertFileEquals(filesBefore.get(2), owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
-        assertFileEquals(filesBefore.get(3), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        Arrays.sort(filesBefore, Comparator.comparing(File::getPath));
+        assertFileEquals(filesBefore[0], owner, "/" + FILE_A , FILE_A_NAME, false, (long) DATA.length);
+        assertFileEquals(filesBefore[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        assertFileEquals(filesBefore[2], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(filesBefore[3], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
 
         Boolean result = afsClient.move(owner, FILE_A, owner, FILE_B);
         assertTrue(result);
 
-        List<File> filesAfter = afsClient.list(owner, "", true);
-        filesAfter = sortFiles(filesAfter);
-        assertFileEquals(filesAfter.get(0), owner, "/" + FILE_B , FILE_B_NAME, false, (long) DATA.length);
-        assertFileEquals(filesAfter.get(1), owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
-        assertFileEquals(filesAfter.get(2), owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
-        assertFileEquals(filesAfter.get(3), owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
+        File[] filesAfter = afsClient.list(owner, "", true);
+        Arrays.sort(filesAfter, Comparator.comparing(File::getPath));
+        assertFileEquals(filesAfter[0], owner, "/" + FILE_B , FILE_B_NAME, false, (long) DATA.length);
+        assertFileEquals(filesAfter[1], owner, "/" + FILE_BINARY_FOLDER, FILE_BINARY_FOLDER_NAME, true, null);
+        assertFileEquals(filesAfter[2], owner, "/" + FILE_BINARY_SUBFOLDER, FILE_BINARY_SUBFOLDER_NAME, true, null);
+        assertFileEquals(filesAfter[3], owner, "/" + FILE_BINARY, FILE_BINARY_NAME, false, (long) binaryData.length);
 
         byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_B));
         assertArrayEquals(DATA, testDataFile);
@@ -428,13 +424,6 @@ public abstract class BaseApiClientTest
     protected String login() throws Exception
     {
         return afsClient.login("test", "test");
-    }
-
-    protected List<File> sortFiles(Collection<File> files)
-    {
-        List<File> sortedFiles = new ArrayList<>(files);
-        sortedFiles.sort(Comparator.comparing(File::getPath));
-        return sortedFiles;
     }
 
     protected void assertFileEquals(File actualFile, String expectedOwner, String expectedPath, String expectedName, Boolean expectedDirectory,

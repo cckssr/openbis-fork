@@ -440,22 +440,12 @@ DataStoreServer.prototype.list = function(owner, source, recursively){
 		this._internal.buildGetUrl(data),
 		{}
 	)
-    return {promise :promise.then((response) => parseJsonResponse(response)).then((response) => {
-            if(response && Array.isArray(response.result) && response.result.length === 2){
-                var files = []
-                if(Array.isArray(response.result[1])){
-                    response.result[1].forEach(function(item){
-                        if(Array.isArray(item) && item.length === 2){
-                            files.push(new File(item[1]));
-                        }
-                    });
-                }
-                return files;
-            } else {
-                return response
-            }
-        }),
-        abortFn};
+    return {
+        promise : promise.then((response) => response.text()).then(
+            (responseText) => FileEncoderDecoder.decodeFiles(responseText)
+        ),
+        abortFn
+    };
 }
 
 /**
@@ -745,7 +735,14 @@ var File = function(fileObject){
     this.name = fileObject.name;
     this.directory = fileObject.directory;
     this.size = fileObject.size;
-    this.lastModifiedTime = fileObject.lastModifiedTime ? Date.parse(fileObject.lastModifiedTime) : null;
+    if ( typeof fileObject.lastModifiedTime === "number" ) {
+        this.lastModifiedTime = fileObject.lastModifiedTime;
+    } else if ( typeof fileObject.lastModifiedTime === "string" ) {
+        this.lastModifiedTime = Date.parse(fileObject.lastModifiedTime);
+    } else {
+        this.lastModifiedTime = null;
+    }
+
 
     this.getOwner = function(){
         return this.owner;
@@ -839,6 +836,65 @@ var ChunkEncoderDecoder = (function(){
         EMPTY_ARRAY : EMPTY_ARRAY
     }
 })();
+
+var FileEncoderDecoder = (function(){
+    const FILE_SEPARATOR = ',';
+    const FILE_ARRAY_SEPARATOR = ';';
+
+    function encodeFile(file) {
+        return file.getOwner() + FILE_SEPARATOR
+            + file.getPath() + FILE_SEPARATOR
+            + file.getName() + FILE_SEPARATOR
+            + ( file.getDirectory() != null ? file.getDirectory() : "" ) + FILE_SEPARATOR
+            + ( file.getSize() != null ? file.getSize() : "" ) + FILE_SEPARATOR
+            + ( file.getLastModifiedTime() != null ? file.getLastModifiedTime() : "" );
+    }
+
+    function encodeFiles(files) {
+        var builder = '';
+        for (var fIdx = 0; fIdx < files.length; fIdx++) {
+            if (fIdx > 0) {
+                builder += FILE_ARRAY_SEPARATOR;
+            }
+            builder += encodeFile(files[fIdx]);
+        }
+        return builder;
+    }
+
+    function decodeFile(fileAsString) {
+        var fileParameters = fileAsString.split(FILE_SEPARATOR);
+
+        var directory = (fileParameters[3].length != 0) ? (fileParameters[3].toLowerCase() === 'true') : null;
+        var size = (fileParameters[4].length != 0) ? Number.parseInt(fileParameters[4]) : null;
+        var lastModifiedTime = (fileParameters[5].length != 0) ? Number.parseInt(fileParameters[5]) : null;
+
+        return new File({
+            owner: fileParameters[0],
+            path: fileParameters[1],
+            name: fileParameters[2],
+            directory: directory,
+            size: size,
+            lastModifiedTime: lastModifiedTime
+        });
+    }
+
+    function decodeFiles(filesAsString) {
+        var files = [];
+        if (filesAsString.length != 0) {
+            var filesParameters = filesAsString.split(FILE_ARRAY_SEPARATOR);
+            for (var fIdx = 0; fIdx < filesParameters.length; fIdx++) {
+                files[fIdx] = decodeFile(filesParameters[fIdx]);
+            }
+        }
+        return files;
+    }
+
+    return {
+        encodeFiles : encodeFiles,
+        decodeFiles : decodeFiles
+    }
+})();
+
 
 var Base64 = (function(){
 /*
@@ -986,6 +1042,7 @@ DataStoreServer.prototype.Private.File = File;
 DataStoreServer.prototype.Private.Chunk = Chunk;
 
 DataStoreServer.prototype.Private.ChunkEncoderDecoder = ChunkEncoderDecoder;
+DataStoreServer.prototype.Private.FileEncoderDecoder = FileEncoderDecoder;
 DataStoreServer.prototype.Private.Base64 = Base64;
 
 /**

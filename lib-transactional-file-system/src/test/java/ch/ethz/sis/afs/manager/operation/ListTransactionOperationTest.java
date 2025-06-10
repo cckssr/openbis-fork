@@ -34,8 +34,8 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
     @Test
     public void operation_list_succeed() throws Exception {
         begin();
-        List<File> list = list(ROOT, false);
-        assertEquals(2, list.size());
+        File[] list = list(ROOT, false);
+        assertEquals(2, list.length);
         assertEquals(0, getTransaction().getOperations().size());
     }
 
@@ -48,8 +48,8 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
     @Test
     public void operation_list_recursively_succeed() throws Exception {
         begin();
-        List<File> list = list(ROOT, true);
-        assertEquals(6, list.size());
+        File[] list = list(ROOT, true);
+        assertEquals(6, list.length);
         assertEquals(0, getTransaction().getOperations().size());
     }
 
@@ -57,6 +57,6 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
     public void operation_list_after_delete_exception() throws Exception {
         begin();
         delete(DIR_B_PATH);
-        List<File> list = list(DIR_BC_PATH, true);
+        File[] list = list(DIR_BC_PATH, true);
     }
 }

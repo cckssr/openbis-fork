@@ -25,11 +25,11 @@ public class InterceptorProxy extends AbstractProxy
     }
 
     @Override
-    public List<File> list(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean recursively) throws Exception
+    public File[] list(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean recursively) throws Exception
     {
         if (apiServerObserver != null)
         {
-            return (List<File>) apiServerObserver.duringAPICall(nextProxy,
+            return (File[]) apiServerObserver.duringAPICall(nextProxy,
                     new APICallImpl("list", Map.of("sourceOwner", sourceOwner, "source", source, "recursively", recursively))
                     {
                         @Override public Object executeDefault() throws Exception

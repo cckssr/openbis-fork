@@ -26,6 +26,8 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,7 +139,7 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
         transaction.commit();
     }
 
-    public List<File> list(String source, boolean recursively) throws Exception {
+    public File[] list(String source, boolean recursively) throws Exception {
         return transaction.list(source, recursively);
     }
 

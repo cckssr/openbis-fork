@@ -206,8 +206,8 @@ public class OpenBISCreateDataSetsAPIServerObserver
     {
         try
         {
-            List<File> files = worker.list(owner, "", false);
-            return !files.isEmpty();
+            File[] files = worker.list(owner, "", false);
+            return files.length > 0;
         } catch (NoSuchFileException e)
         {
             return false;

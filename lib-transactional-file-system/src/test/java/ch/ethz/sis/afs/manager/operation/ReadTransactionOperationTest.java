@@ -73,8 +73,8 @@ public class ReadTransactionOperationTest extends AbstractTransactionOperationTe
     public void operation_read_after_delete_exception() throws Exception {
         begin();
         delete(DIR_B_PATH);
-        List<File> list = list(DIR_BC_PATH, true);
-        assertEquals(1, list.size());
-        byte[] read = read(FILE_C_PATH, 0, Math.toIntExact(list.get(0).getSize()));
+        File[] list = list(DIR_BC_PATH, true);
+        assertEquals(1, list.length);
+        byte[] read = read(FILE_C_PATH, 0, Math.toIntExact(list[0].getSize()));
     }
 }

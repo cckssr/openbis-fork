@@ -24,13 +24,7 @@ import static org.junit.Assert.fail;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.After;
@@ -247,13 +241,13 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             return getDefaultOperationExecutor(null).executeOperation(url, methodName, methodArguments);
         });
 
-        List<File> files = afsClient.list(testExperiment, "", Boolean.TRUE);
-        assertEquals(3, files.size());
+        File[] files = afsClient.list(testExperiment, "", Boolean.TRUE);
+        assertEquals(3, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), testExperiment, "/test-file-1", "test-file-1", false, (long) TEST_CONTENT_A.getBytes().length);
-        assertFileEquals(files.get(1), testExperiment, "/test-folder", "test-folder", true, null);
-        assertFileEquals(files.get(2), testExperiment, "/test-folder/test-file-2", "test-file-2", false,
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], testExperiment, "/test-file-1", "test-file-1", false, (long) TEST_CONTENT_A.getBytes().length);
+        assertFileEquals(files[1], testExperiment, "/test-folder", "test-folder", true, null);
+        assertFileEquals(files[2], testExperiment, "/test-folder/test-file-2", "test-file-2", false,
                 (long) TEST_CONTENT_AB.getBytes().length);
     }
 
@@ -314,13 +308,13 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             return getDefaultOperationExecutor(null).executeOperation(url, methodName, methodArguments);
         });
 
-        List<File> files = afsClient.list(testSample, "", Boolean.TRUE);
-        assertEquals(3, files.size());
+        File[] files = afsClient.list(testSample, "", Boolean.TRUE);
+        assertEquals(3, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), testSample, "/test-file-1", "test-file-1", false, (long) TEST_CONTENT_A.getBytes().length);
-        assertFileEquals(files.get(1), testSample, "/test-folder", "test-folder", true, null);
-        assertFileEquals(files.get(2), testSample, "/test-folder/test-file-2", "test-file-2", false,
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], testSample, "/test-file-1", "test-file-1", false, (long) TEST_CONTENT_A.getBytes().length);
+        assertFileEquals(files[1], testSample, "/test-folder", "test-folder", true, null);
+        assertFileEquals(files[2], testSample, "/test-folder/test-file-2", "test-file-2", false,
                 (long) TEST_CONTENT_AB.getBytes().length);
     }
 
@@ -381,12 +375,12 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             return getDefaultOperationExecutor(SHARE_3).executeOperation(url, methodName, methodArguments);
         });
 
-        List<File> files = afsClient.list(testDataSet, "", Boolean.TRUE);
-        assertEquals(2, files.size());
+        File[] files = afsClient.list(testDataSet, "", Boolean.TRUE);
+        assertEquals(2, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), testDataSet, "/test-folder-2", "test-folder-2", true, null);
-        assertFileEquals(files.get(1), testDataSet, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], testDataSet, "/test-folder-2", "test-folder-2", true, null);
+        assertFileEquals(files[1], testDataSet, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
     }
 
     @Test

@@ -28,7 +28,7 @@ public interface OperationsAPI
 {
 
     @NonNull
-    List<File> list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively)
+    File[] list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively)
             throws Exception;
 
     @NonNull

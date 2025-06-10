@@ -147,11 +147,11 @@ public final class AfsClient implements PublicAPI, ClientAPI
     }
 
     @Override
-    public @NonNull List<File> list(@NonNull final String owner, @NonNull final String source,
+    public @NonNull File[] list(@NonNull final String owner, @NonNull final String source,
             @NonNull final Boolean recursively) throws Exception
     {
         validateSessionToken();
-        return request("GET", "list", List.class,
+        return request("GET", "list", File[].class,
                 Map.of("owner", owner, "source", source, "recursively",
                         recursively.toString()));
     }
@@ -291,8 +291,8 @@ public final class AfsClient implements PublicAPI, ClientAPI
             @NonNull Long offset) throws Exception
     {
 
-        final List<File> infos = list(owner, source, false);
-        if (infos.isEmpty())
+        final File[] infos = list(owner, source, false);
+        if (infos.length == 0)
         {
             throw ClientExceptions.API_ERROR.getInstance("File not found '" + source + "'");
         }
@@ -501,7 +501,7 @@ public final class AfsClient implements PublicAPI, ClientAPI
             case "application/json":
                 return parseJsonResponse(responseBody);
             case "application/octet-stream":
-                return responseType.cast(ChunkEncoderDecoder.decodeChunks(responseBody));
+                return parseOctetStreamResponse(responseType, responseBody);
             default:
                 throw new IllegalArgumentException(
                         "Client error HTTP response. Unsupported content-type received.");
@@ -538,6 +538,16 @@ public final class AfsClient implements PublicAPI, ClientAPI
         {
             return (T) response.getResult();
         }
+    }
+
+    private static <T> T parseOctetStreamResponse(Class<T> responseType, byte[] responseBody) throws Exception
+    {
+        if (Chunk[].class.equals(responseType)) {
+            return responseType.cast(ChunkEncoderDecoder.decodeChunks(responseBody));
+        } else if (File[].class.equals(responseType)) {
+            return responseType.cast(FileEncoderDecoder.decodeFiles(responseBody));
+        }
+        throw new IllegalArgumentException("Client error HTTP response. Unsupported content-type received for expected responseType");
     }
 
     private void validateSessionToken()

@@ -521,7 +521,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                             return new File(fileObject)
                         });
                     } else {
-                        return response;
+                        return AfsServer.prototype.Private.FileEncoderDecoder.decodeFiles(response);
                     }
                 })
 		    }else{

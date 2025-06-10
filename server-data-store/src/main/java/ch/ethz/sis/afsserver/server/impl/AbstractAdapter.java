@@ -29,7 +29,9 @@ import java.util.UUID;
 
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.DTO;
+import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
+import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.exception.HTTPExceptions;
 import ch.ethz.sis.afsserver.http.HttpResponse;
@@ -221,12 +223,15 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
         } else
         {
             final Object result = response.getResult();
-            if (result instanceof List || result instanceof DTO) {
+            if (result instanceof DTO) {
                 contentType = HttpResponse.CONTENT_TYPE_JSON;
                 body = jsonObjectMapper.writeValue(response);
             } else if (result instanceof Chunk[]) {
                 contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
                 body = ChunkEncoderDecoder.encodeChunksAsBytes((Chunk[]) result);
+            } else if (result instanceof File[]) {
+                contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
+                body = FileEncoderDecoder.encodeFilesAsBytes((File[]) result);
             } else {
                 contentType = HttpResponse.CONTENT_TYPE_TEXT;
                 body = String.valueOf(result).getBytes(StandardCharsets.UTF_8);

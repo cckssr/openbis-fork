@@ -253,14 +253,14 @@ public class TransactionConnection implements TransactionalFileSystem {
     //
 
     @Override
-    public List<File> list(String source, boolean recursively) throws Exception {
+    public File[] list(String source, boolean recursively) throws Exception {
         source = getSafePath(OperationName.List, source);
         validateOperationAndPaths(OperationName.List, source, null);
         validateWritten(OperationName.List, source);
         final File file = IOUtils.getFile(source);
         if (!file.getDirectory())
         {
-            return List.of(file);
+            return new File[]{file};
         } else
         {
             ListOperation operation = new ListOperation(transaction.getUuid(), source, recursively);

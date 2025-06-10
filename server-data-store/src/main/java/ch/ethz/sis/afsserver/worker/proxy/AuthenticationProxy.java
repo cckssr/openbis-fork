@@ -131,7 +131,7 @@ public class AuthenticationProxy extends AbstractProxy {
     //
 
     @Override
-    public List<File> list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
+    public File[] list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
         validateSessionAvailable();
         return nextProxy.list(owner, source, recursively);
     }

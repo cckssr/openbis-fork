@@ -8,6 +8,7 @@ import static org.testng.Assert.assertNull;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -143,68 +144,68 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         openBIS.getAfsServerFacade().write(sample.getPermId().getPermId(), "test-folder/test-file-3_%$.txt", 0L, testData3.getBytes());
 
         // FS : list "" recursively
-        List<File> rootRecursivelyFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "", true);
-        rootRecursivelyFS.sort(Comparator.comparing(File::getPath));
+        File[] rootRecursivelyFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "", true);
+        Arrays.sort(rootRecursivelyFS, Comparator.comparing(File::getPath));
 
-        assertEquals(rootRecursivelyFS.size(), 4);
-        assertFile(rootRecursivelyFS.get(0), sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
-        assertFile(rootRecursivelyFS.get(1), sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
-        assertFile(rootRecursivelyFS.get(2), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
-        assertFile(rootRecursivelyFS.get(3), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
+        assertEquals(rootRecursivelyFS.length, 4);
+        assertFile(rootRecursivelyFS[0], sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
+        assertFile(rootRecursivelyFS[1], sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
+        assertFile(rootRecursivelyFS[2], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        assertFile(rootRecursivelyFS[3], sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
                 49L);
 
         // FS : list "/" non-recursively
-        List<File> rootNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
-        rootNotRecursiveFS.sort(Comparator.comparing(File::getPath));
+        File[] rootNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
+        Arrays.sort(rootNotRecursiveFS, Comparator.comparing(File::getPath));
 
-        assertEquals(2, rootNotRecursiveFS.size());
-        assertFile(rootNotRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
-        assertFile(rootNotRecursiveFS.get(1), sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
+        assertEquals(2, rootNotRecursiveFS.length);
+        assertFile(rootNotRecursiveFS[0], sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
+        assertFile(rootNotRecursiveFS[1], sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
 
         // FS : list "//" non-recursively
-        List<File> rootNotRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
-        rootNotRecursive2FS.sort(Comparator.comparing(File::getPath));
+        File[] rootNotRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
+        Arrays.sort(rootNotRecursive2FS, Comparator.comparing(File::getPath));
 
-        assertEquals(2, rootNotRecursive2FS.size());
-        assertFile(rootNotRecursive2FS.get(0), sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
-        assertFile(rootNotRecursive2FS.get(1), sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
+        assertEquals(2, rootNotRecursive2FS.length);
+        assertFile(rootNotRecursive2FS[0], sample.getPermId().getPermId(), "/test-file-1", "test-file-1", Boolean.FALSE, 49L);
+        assertFile(rootNotRecursive2FS[1], sample.getPermId().getPermId(), "/test-folder", "test-folder", Boolean.TRUE, null);
 
         // FS : list "test-folder" recursively
-        List<File> folderRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
-        folderRecursiveFS.sort(Comparator.comparing(File::getPath));
+        File[] folderRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
+        Arrays.sort(folderRecursiveFS, Comparator.comparing(File::getPath));
 
-        assertEquals(folderRecursiveFS.size(), 2);
-        assertFile(folderRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
-        assertFile(folderRecursiveFS.get(1), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
+        assertEquals(folderRecursiveFS.length, 2);
+        assertFile(folderRecursiveFS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        assertFile(folderRecursiveFS[1], sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
                 49L);
 
         // FS : list "/test-folder/" recursively
-        List<File> folderRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
-        folderRecursive2FS.sort(Comparator.comparing(File::getPath));
+        File[] folderRecursive2FS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
+        Arrays.sort(folderRecursive2FS, Comparator.comparing(File::getPath));
 
-        assertEquals(folderRecursive2FS.size(), 2);
-        assertFile(folderRecursive2FS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
-        assertFile(folderRecursive2FS.get(1), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
+        assertEquals(folderRecursive2FS.length, 2);
+        assertFile(folderRecursive2FS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        assertFile(folderRecursive2FS[1], sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt", Boolean.FALSE,
                 49L);
 
         // FS : list "/test-folder" non-recursively
-        List<File> folderNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
-        folderNotRecursiveFS.sort(Comparator.comparing(File::getPath));
+        File[] folderNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
+        Arrays.sort(folderNotRecursiveFS, Comparator.comparing(File::getPath));
 
-        assertEquals(folderNotRecursiveFS.size(), 2);
-        assertFile(folderNotRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
-        assertFile(folderNotRecursiveFS.get(1), sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt",
+        assertEquals(folderNotRecursiveFS.length, 2);
+        assertFile(folderNotRecursiveFS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        assertFile(folderNotRecursiveFS[1], sample.getPermId().getPermId(), "/test-folder/test-file-3_%$.txt", "test-file-3_%$.txt",
                 Boolean.FALSE, 49L);
 
         // FS : list "test-folder/test-file-2" recursively
-        List<File> fileRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder/test-file-2", true);
-        assertEquals(fileRecursiveFS.size(), 1);
-        assertFile(fileRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        File[] fileRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder/test-file-2", true);
+        assertEquals(fileRecursiveFS.length, 1);
+        assertFile(fileRecursiveFS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
 
         // FS : list "/test-folder/test-file-2" non-recursively
-        List<File> fileNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/test-file-2", false);
-        assertEquals(fileNotRecursiveFS.size(), 1);
-        assertFile(fileNotRecursiveFS.get(0), sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
+        File[] fileNotRecursiveFS = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/test-file-2", false);
+        assertEquals(fileNotRecursiveFS.length, 1);
+        assertFile(fileNotRecursiveFS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
 
         // make data immutable
         makeSampleImmutable(openBIS, sample.getPermId());
@@ -214,35 +215,35 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertNotNull(sampleEntryId);
 
         // DB : list "" recursively
-        List<File> rootRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "", true);
+        File[] rootRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "", true);
         assertFilesEqual(rootRecursivelyFS, rootRecursiveDB);
 
         // DB : list "/" non-recursively
-        List<File> rootNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
+        File[] rootNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
         assertFilesEqual(rootNotRecursiveFS, rootNotRecursiveDB);
 
         // DB : list "//" non-recursively
-        List<File> rootNotRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
+        File[] rootNotRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
         assertFilesEqual(rootNotRecursive2FS, rootNotRecursive2DB);
 
         // DB : list "test-folder" recursively
-        List<File> folderRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
+        File[] folderRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
         assertFilesEqual(folderRecursiveFS, folderRecursiveDB);
 
         // DB : list "/test-folder/" recursively
-        List<File> folderRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
+        File[] folderRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
         assertFilesEqual(folderRecursive2FS, folderRecursive2DB);
 
         // DB : list "/test-folder" non-recursively
-        List<File> folderNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
+        File[] folderNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
         assertFilesEqual(folderNotRecursiveFS, folderNotRecursiveDB);
 
         // DB : list "test-folder/test-file-2" recursively
-        List<File> fileRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder/test-file-2", true);
+        File[] fileRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder/test-file-2", true);
         assertFilesEqual(fileRecursiveFS, fileRecursiveDB);
 
         // DB : list "/test-folder/test-file-2" non-recursively
-        List<File> fileNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/test-file-2", false);
+        File[] fileNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/test-file-2", false);
         assertFilesEqual(fileNotRecursiveFS, fileNotRecursiveDB);
 
         // delete data
@@ -259,17 +260,17 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }
 
-    public void assertFilesEqual(List<File> files1, List<File> files2) throws Exception
+    public void assertFilesEqual(File[] files1, File[] files2) throws Exception
     {
-        assertEquals(files1.size(), files2.size());
+        assertEquals(files1.length, files2.length);
 
-        files1.sort(Comparator.comparing(File::getPath));
-        files2.sort(Comparator.comparing(File::getPath));
+        Arrays.sort(files1, Comparator.comparing(File::getPath));
+        Arrays.sort(files2, Comparator.comparing(File::getPath));
 
-        for (int i = 0; i < files1.size(); i++)
+        for (int i = 0; i < files1.length; i++)
         {
-            File file1 = files1.get(i);
-            File file2 = files2.get(i);
+            File file1 = files1[i];
+            File file2 = files2[i];
             assertEquals(file1.getOwner(), file2.getOwner());
             assertEquals(file1.getPath(), file2.getPath());
             assertEquals(file1.getName(), file2.getName());
