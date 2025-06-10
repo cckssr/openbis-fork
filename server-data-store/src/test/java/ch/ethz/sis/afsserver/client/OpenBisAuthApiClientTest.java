@@ -275,12 +275,12 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             return getDefaultOperationExecutor(SHARE_3).executeOperation(url, methodName, methodArguments);
         });
 
-        List<File> files = afsClient.list(testExperiment, "", Boolean.TRUE);
-        assertEquals(2, files.size());
+        File[] files = afsClient.list(testExperiment, "", Boolean.TRUE);
+        assertEquals(2, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), testExperiment, "/test-folder-2", "test-folder-2", true, null);
-        assertFileEquals(files.get(1), testExperiment, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], testExperiment, "/test-folder-2", "test-folder-2", true, null);
+        assertFileEquals(files[1], testExperiment, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
     }
 
     @Test
@@ -342,12 +342,12 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
             return getDefaultOperationExecutor(SHARE_3).executeOperation(url, methodName, methodArguments);
         });
 
-        List<File> files = afsClient.list(testSample, "", Boolean.TRUE);
-        assertEquals(2, files.size());
+        File[] files = afsClient.list(testSample, "", Boolean.TRUE);
+        assertEquals(2, files.length);
 
-        files = sortFiles(files);
-        assertFileEquals(files.get(0), testSample, "/test-folder-2", "test-folder-2", true, null);
-        assertFileEquals(files.get(1), testSample, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        assertFileEquals(files[0], testSample, "/test-folder-2", "test-folder-2", true, null);
+        assertFileEquals(files[1], testSample, "/test-folder-2/test-file-3", "test-file-3", false, (long) TEST_CONTENT_ABC.getBytes().length);
     }
 
     @Test
