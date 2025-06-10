@@ -1837,8 +1837,9 @@ var FormUtil = new function() {
 		var $alternateRightToolbarContainer = $("<div>", { class: "alternate-right-toolbar-container" })
 		  .css({
 			display: "flex",
-			alignItems: "center",
-			gap: "10px"
+			alignItems: "baseline",
+			gap: "10px",
+			height: "34px"
 		  }).append($alternateRightToolbar);
 		$alternateRightToolbarContainer.hide();
 	  
@@ -2751,6 +2752,167 @@ var FormUtil = new function() {
     		});
     }
 
+    this.archivingAfsDataSectionButtons = function(permId, buttonsContainer) {
+        var _this = this;
+
+        var $buttons = $('<div>', {'id' : 'archiving_buttons-' + permId})
+                            .css({
+                                display: "flex",
+                            });
+        if(buttonsContainer) {
+            $buttons = buttonsContainer;
+        }
+
+
+        var archiveForm = function(dataset, container) {
+            var physicalData = null;
+            if(dataset) {
+                physicalData = dataset.physicalData;
+            }
+
+            if(physicalData) {
+
+                var archiveIcon = "ARCHIVE_NOT_REQUESTED";
+                var archiveImage = "./img/archive-not-requested-icon.png";
+                var archiveStatus = physicalData.status;
+                if (physicalData.presentInArchive) {
+                    archiveIcon = "ARCHIVED";
+                    archiveImage = "./img/archive-archived-icon.png";
+                    archiveStatus = "ARCHIVED";
+                } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
+                    archiveImage = "./img/archive-requested-icon.png";
+                    archiveIcon = "ARCHIVE_REQUESTED";
+                    if(physicalData.archivingRequested) {
+                        archiveStatus = "ARCHIVE REQUESTED";
+                    } else {
+                        archiveStatus = "ARCHIVE PENDING";
+                    }
+                }
+                var iconType = IconUtil.getToolbarIconType(archiveIcon)
+                var icon = IconUtil.getIcon(iconType);
+                icon.css('margin-left', '-2px')
+
+                var archiveTooltip = null;
+                if (physicalData.status == "AVAILABLE" && !physicalData.presentInArchive) {
+                    if (physicalData.archivingRequested) {
+                        var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'revoke-archiving-btn-'+permId});
+                        $revokeButton.append(icon)
+                        $revokeButton.append('&nbsp;')
+                        $revokeButton.append('Revoke archiving request')
+                        $("body").off('click', '#revoke-archiving-btn-'+permId);
+                        $("body").on('click', '#revoke-archiving-btn-'+permId, function() {
+                            var physicalDataUpdate = { archivingRequested : false }
+                            mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                container.empty();
+                                FormUtil.archivingAfsDataSectionButtons(permId, container);
+                                Util.unblockUI();
+                                Util.showSuccess("Archive request revoked");
+                            });
+                        });
+                        container.append($revokeButton).append('&nbsp;')
+                        archiveTooltip = "Revoke archiving request";
+                    } else {
+                        var $requestButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'request-archiving-btn-'+permId});
+                        $requestButton.append(icon)
+                        $requestButton.append('&nbsp;')
+                        $requestButton.append('Request archiving')
+                        $("body").off('click', '#request-archiving-btn-'+permId);
+                        $("body").on('click', '#request-archiving-btn-'+permId, function() {
+                            Util.requestArchiving([dataset], function() {
+                                container.empty();
+                                FormUtil.archivingAfsDataSectionButtons(permId, container);
+                                Util.unblockUI();
+                            });
+                        });
+
+                        var iconTypeLocked = IconUtil.getToolbarIconType("LOCK")
+                        var iconLocked = IconUtil.getIcon(iconTypeLocked);
+                        iconLocked.css('margin-left', '-2px')
+
+                        var $lockButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'lock-archiving-btn-'+permId});
+                        $lockButton.append(iconLocked)
+                        $lockButton.append('&nbsp;')
+                        $lockButton.append('Disallow archiving')
+                        $("body").off('click', '#lock-archiving-btn-'+permId);
+                        $("body").on('click', '#lock-archiving-btn-'+permId, function() {
+                              var physicalDataUpdate = { status : "LOCKED" }
+                              mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                                  container.empty();
+                                  FormUtil.archivingAfsDataSectionButtons(permId, container);
+                                  Util.unblockUI();
+                                  Util.showSuccess("Archiving Locked");
+                              });
+                        });
+                        container.append($requestButton).append('&nbsp;').append($lockButton).append('&nbsp;')
+                        archiveTooltip = "Request or disallow archiving";
+                    }
+                } else if (physicalData.status == "LOCKED") {
+                    var $allowArchivingButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'unlock-archiving-btn-'+permId});
+                    var iconTypeUnlock = IconUtil.getToolbarIconType("UNLOCK")
+                    var iconUnlock = IconUtil.getIcon(iconTypeUnlock);
+                    iconUnlock.css('margin-left', '-2px')
+                    $allowArchivingButton.append(iconUnlock)
+                    $allowArchivingButton.append('&nbsp;')
+                    $allowArchivingButton.append('Allow archiving')
+                    $("body").off('click', '#unlock-archiving-btn-'+permId);
+                    $("body").on('click', '#unlock-archiving-btn-'+permId, function() {
+                      var physicalDataUpdate = { status : "AVAILABLE" }
+                      mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+                          container.empty();
+                          FormUtil.archivingAfsDataSectionButtons(permId, container);
+                          Util.unblockUI();
+                          Util.showSuccess("Archiving Unlocked");
+                      });
+                    });
+                    container.append($allowArchivingButton).append('&nbsp;')
+                    archiveTooltip = "Allow archiving";
+                } else if (physicalData.status == "ARCHIVED") {
+                     var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'unarchive-btn-'+permId});
+                     $unarchiveButton.append(icon)
+                     $unarchiveButton.append('&nbsp;')
+                     $unarchiveButton.append('Unarchive')
+                     $("body").off('click', '#unarchive-btn-'+permId);
+                     $("body").on('click', '#unarchive-btn-'+permId, function() {
+                       var parameters = {
+                            "method" : "unarchive",
+                            "sessionToken" : mainController.serverFacade.getSession(),
+                            "permId" : permId
+                       }
+                       mainController.serverFacade.customASService(parameters, function(result) {
+                            if(result.status === "OK") {
+                                Util.showSuccess("Unarchive triggered.", function() {
+                                  container.empty();
+                                  FormUtil.archivingAfsDataSectionButtons(permId, container);
+                                  Util.unblockUI();
+                                });
+                            } else {
+                                Util.showUserError('Unarchiving failed.', function() {
+                                    Util.unblockUI();
+                                });
+                            }
+                       }, "afs-eln-lims-api",  Util.showError);
+                     });
+                    container.append($unarchiveButton).append('&nbsp;')
+                    archiveTooltip = "Unarchive";
+                }
+
+            }
+
+        }
+
+        require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+            function(DataSetPermId, DataSetFetchOptions) {
+                var ids = [new DataSetPermId(permId)];
+                var fetchOptions = new DataSetFetchOptions();
+                fetchOptions.withPhysicalData();
+                mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                    var datasets = Util.mapValuesToList(map);
+                    archiveForm(datasets.length > 0 ? datasets[0] : null, $buttons)
+                });
+        });
+        return $buttons;
+    }
+
     this.showArchiveAfsDataForm = function(entityType, permId, code) {
         var _this = this;
         var archiveForm = function(dataset) {
@@ -2838,10 +3000,41 @@ var FormUtil = new function() {
                          var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'text' : 'Unarchive', 'id' : 'unarchive-btn'});
                         $unarchiveButton.click(function() {
                             //todo wait until unarchive flow will work for AFS datasets
-                            Util.showSuccess("Work in progress");
-//                            mainController.serverFacade.unarchiveDataSets([permId], function() {
-//                                Util.unblockUI();
+//                            var _forceUnarchiving = function(id) {
+//                                Util.blockUI();
+//                                mainController.serverFacade.unarchiveDataSets([id], function() {
+//                                    Util.showSuccess("Data unarchived");
+//                                    Util.unblockUI();
+//                                });
+//                            }
+//                            var _this = this;
+//                            mainController.serverFacade.getArchivingInfo([permId], function(info) {
+//                                var containerSize = info[permId]["numberOfDataSets"].length;
+//                                if (containerSize > 1) {
+//                                    mainController.serverFacade.getServiceProperty("ui.unarchiving.threshold.relative", "2", function(rThreshold) {
+//                                        mainController.serverFacade.getServiceProperty("ui.unarchiving.threshold.absolute", "10e9", function(aThreshold) {
+//                                            var callback = function() {
+//                                                _forceUnarchiving(permId)
+//                                            };
+//                                            var totalSize = info["total size"];
+//                                            var size = info[permId]["size"];
+//                                            var threshold = Math.max(rThreshold * size, parseFloat(aThreshold));
+//                                            if (totalSize > threshold) {
+//                                                var text = "Unarchiving this data set leads to unarchiving of additional "
+//                                                    + (containerSize - 1) + " data sets. All these data sets need "
+//                                                    + PrintUtil.renderNumberOfBytes(totalSize) + " memory.\n"
+//                                                    + "Do you want to unarchive this data set anyway?";
+//                                                Util.showWarning(text, callback);
+//                                            } else {
+//                                                callback();
+//                                            }
+//                                        });
+//                                    });
+//                                } else {
+//                                    _forceUnarchiving(permId);
+//                                }
 //                            });
+
                         });
                         $buttons.append($unarchiveButton).append('&nbsp;')
                         archiveTooltip = "Unarchive";
