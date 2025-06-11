@@ -223,7 +223,7 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
         } else
         {
             final Object result = response.getResult();
-            if (result instanceof DTO) {
+            if (result instanceof DTO || result instanceof List) {
                 contentType = HttpResponse.CONTENT_TYPE_JSON;
                 body = jsonObjectMapper.writeValue(response);
             } else if (result instanceof Chunk[]) {
