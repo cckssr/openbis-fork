@@ -40,7 +40,15 @@
         <!-- Default is 10240 (10kB). Set to 1MB (1048576). -->
         <property name="maxInMemorySize" value="1048576" />
     </bean>
-    
-    
-    
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+            </list>
+        </property>
+    </bean>
+
+
+
 </beans>

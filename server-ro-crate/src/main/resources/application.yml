@@ -1,0 +1,22 @@
+# ===============================
+# SpringDoc / OpenAPI Configuration
+# ===============================
+springdoc:
+  api-docs:
+    path: /openapi.json
+  swagger-ui:
+    path: /api-docs
+    supported-submit-methods: [get]
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+
+# OpenAPI metadata
+openapi:
+  info:
+    title: RO-Crate API
+    version: v1
+    description: API for exporting, importing, and validating RO-Crates
+  servers:
+    - url: http://localhost:8080/openbis
+      description: RO-Crate API instance
+
