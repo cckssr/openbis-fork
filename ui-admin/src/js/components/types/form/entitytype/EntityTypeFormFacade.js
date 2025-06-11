@@ -10,12 +10,10 @@ export default class EntityTypeFormFacade {
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withRegistrator()
-    //fo.withPropertyAssignments().withSemanticAnnotations()
     fo.withPropertyAssignments().withPropertyType().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withMaterialType()
     fo.withPropertyAssignments().withPropertyType().withSampleType()
     fo.withPropertyAssignments().withPropertyType().withVocabulary()
-    //fo.withPropertyAssignments().withPropertyType().withSemanticAnnotations()
     fo.withPropertyAssignments().sortBy().ordinal()
 
     return strategy.getTypes([id], fo).then(map => {

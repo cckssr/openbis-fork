@@ -97,9 +97,7 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 	}
 
 	handleAddSemanticAnnotation = (property, semanticField) => {
-
 		const semanticAnnotations = property[semanticField];
-		//console.log('handleAddSemanticAnnotation: ', semanticAnnotations);
 
 		const newSemanticAnnotation = {
 			tempPermId: { permId: `${semanticField}-${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}` },
@@ -217,8 +215,6 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 	renderSemanticAnnotations(property, semanticField) {
 		const semanticAnnotationValue = property[semanticField].value || [];
 
-		//console.log('render semanticAnnotations for ' + semanticField + ' : ', semanticAnnotationValue);
-
 		if (semanticAnnotationValue === undefined || semanticAnnotationValue === null || semanticAnnotationValue.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_ANNOTATIONS_DEFINED)}</Typography>
 		}
@@ -235,8 +231,6 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 		if (!property) {
 			return null;
 		}
-
-		//console.log('render EntityTypeFormParametersSemanticAnnotation property: ', property);
 
 		return (
 			<Container>

@@ -216,7 +216,6 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		if (!visible) {
 			return null
 		}
-		console.log('render semanticAnnotations: ', type.semanticAnnotations);
 
 		if (value === undefined || value === null || value.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_ANNOTATIONS_DEFINED)}</Typography>
@@ -234,8 +233,6 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		if (!type) {
 			return null
 		}
-
-		console.log('render EntityTypeFormParametersTypeSemanticAnnotation type: ', type);
 
 		return (
 			<Container>
