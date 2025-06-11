@@ -5,7 +5,6 @@ import PageControllerLoad from '@src/js/components/common/page/PageControllerLoa
 import EntityTypeFormControllerStrategies from '@src/js/components/types/form/entitytype/EntityTypeFormControllerStrategies.js'
 import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
-import users from '@src/js/common/consts/users.js'
 import util from '@src/js/common/util.js'
 
 export default class EntityTypeFormControllerLoad extends PageControllerLoad {
@@ -56,9 +55,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }
     }
 
-    //const typeSemanticAnnotation = await this.facade.loadSemanticAnnotations(loadedType)
-    //console.log('Loaded typeSemanticAnnotation:', typeSemanticAnnotation);
-
     const loadedAssignments = await this.facade.loadAssignments(object)
 
     const sections = []
@@ -68,24 +64,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     let sectionsCounter = 0
     let propertiesCounter = 0
 
-    /* const semanticAnnotationsProp = {}
-    const semanticAnnotationsAssignment = {}
-    if (loadedType && loadedType.propertyAssignments) {
-      for (const loadedAssignment of loadedType.propertyAssignments) {
-        const propAssgnKey = [loadedAssignment.permId.entityTypeId.entityKind,
-          loadedAssignment.permId.entityTypeId.permId,
-        loadedAssignment.permId.propertyTypeId.permId].join('.');
-        const assignmentSemanticAnnotations = await this.facade.loadPropertyAssignmentsSemanticAnnotations(loadedAssignment.permId);
-        console.log('Loaded assignmentSemanticAnnotations:', assignmentSemanticAnnotations);
-        semanticAnnotationsAssignment[propAssgnKey] = _.isEmpty(assignmentSemanticAnnotations) ? [] : assignmentSemanticAnnotations;
-
-        const propertySemanticAnnotations = await this.facade.loadPropertyTypeSemanticAnnotations(loadedAssignment.propertyType);
-        console.log('Loaded semanticAnnotations for property:', propertySemanticAnnotations);
-        semanticAnnotationsProp[loadedAssignment.permId.propertyTypeId.permId] = _.isEmpty(propertySemanticAnnotations) ? [] : propertySemanticAnnotations;
-      }
-    }
-    console.log('       semanticAnnotationsProp MAP:', semanticAnnotationsProp);
-    console.log(' semanticAnnotationsAssignment MAP:', semanticAnnotationsAssignment); */
     console.log('loadedType', loadedType);
     if (loadedType && loadedType.propertyAssignments) {
       for (const loadedAssignment of loadedType.propertyAssignments) {
@@ -120,11 +98,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         section.properties.push(property.id)
         property.section = section.id
         property.original = _.cloneDeep(property)
-      })
+      }
     }
 
-    const type = this._createType(loadedType)
-
+    const type = this._createType(loadedType)    
     if (loadedType) {
       type.original = _.cloneDeep({
         ...type,
@@ -306,13 +283,11 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       semanticAnnotations: FormUtil.createField({
         value: propertySemanticAnnotations,
-        enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+        enabled: !assignmentInternal || AppController.getInstance().isSystemUser()
       }),
       assignmentSemanticAnnotations: FormUtil.createField({
         value: assignmentSemanticAnnotations,
-        enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+        enabled: !assignmentInternal || AppController.getInstance().isSystemUser()
       }),
       assignmentSemanticAnnotationsInherited: FormUtil.createField({
         value: _.get(loadedAssignment, 'semanticAnnotationsInherited', false),

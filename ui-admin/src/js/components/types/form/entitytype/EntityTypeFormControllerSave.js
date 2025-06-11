@@ -25,31 +25,35 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
           )
         }
       })
-      this._handleSemanticAnnotations(
-        operations,
-        type.code.value,
-        null,
-        type.semanticAnnotations.value,
-        type.original.semanticAnnotations.value,
-      )
     }
 
     properties.forEach((property, index) => {
       const original = property.originalGlobal || property.original
 
       if (original) {
+        
+        if (FormUtil.haveFieldsChanged(property, original, ['semanticAnnotations'])) {
+          this._handleSemanticAnnotations(
+            operations,
+            null,
+            property.code.value,
+            property.semanticAnnotations.value,
+            original.semanticAnnotations.value,
+          )
+        }
+        if (FormUtil.haveFieldsChanged(property, original, ['assignmentSemanticAnnotations'])) {
+          this._handleSemanticAnnotations(
+            operations,
+            type.code.value,
+            property.code.value,
+            property.assignmentSemanticAnnotations.value,
+            original.assignmentSemanticAnnotations.value,
+          )
+        }
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
           operations.push(this._updatePropertyTypeOperation(property))
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
-
-        this._handleSemanticAnnotations(
-          operations,
-          null,
-          property.code.value,
-          property.semanticAnnotations.value,
-          original.semanticAnnotations.value,
-        )
       } else {
         operations.push(this._createPropertySemanticAnnotationOperation(null, property.code.value, property.semanticAnnotations.value, []))
         operations.push(this._createPropertyTypeOperation(property))
@@ -59,6 +63,13 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
 
     if (type.original) {
       operations.push(this._updateTypeOperation(type, assignments))
+      this._handleSemanticAnnotations(
+        operations,
+        type.code.value,
+        null,
+        type.semanticAnnotations.value,
+        type.original.semanticAnnotations.value,
+      )
     } else {
       operations.push(this._createTypeOperation(type, assignments))
       operations.push(this._createPropertySemanticAnnotationOperation(type.code.value, null, type.semanticAnnotations.value, []))
@@ -79,18 +90,25 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
   }
 
   _handleSemanticAnnotations(operations, typeCode, propertyCode, currentSemanticAnnValue, originalSemanticAnnValue) {
-    if (originalSemanticAnnValue == null || originalSemanticAnnValue.length === 0) {
-      if (currentSemanticAnnValue?.length > 0) {
-        operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, currentSemanticAnnValue, []))
-      }
-    } else if (currentSemanticAnnValue?.length !== 0 || originalSemanticAnnValue?.length !== 0) {
-      if (currentSemanticAnnValue?.length > originalSemanticAnnValue?.length) {
-        operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, currentSemanticAnnValue, originalSemanticAnnValue))
-      } else if (currentSemanticAnnValue?.length < originalSemanticAnnValue?.length) {
-        operations.push(this._deletePropertySemanticAnnotationOperation(currentSemanticAnnValue, originalSemanticAnnValue))
-      } else {
-        operations.push(this._updatePropertySemanticAnnotationOperation(currentSemanticAnnValue, originalSemanticAnnValue))
-      }
+    const current = Array.isArray(currentSemanticAnnValue) ? currentSemanticAnnValue : [];
+    const original = Array.isArray(originalSemanticAnnValue) ? originalSemanticAnnValue : [];
+    if (current.length === 0 && original.length === 0) {
+      return;
+    }
+    if (original.length === 0 && current.length > 0) {
+      operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, current, []));
+      return;
+    }
+    if (current.length === 0 && original.length > 0) {
+      operations.push(this._deletePropertySemanticAnnotationOperation(current, original));
+      return;
+    }
+    if (current.length > original.length) {
+      operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, current, original));
+    } else if (current.length < original.length) {
+      operations.push(this._deletePropertySemanticAnnotationOperation(current, original));
+    } else {
+      operations.push(this._updatePropertySemanticAnnotationOperation(current, original));
     }
   }
 
@@ -146,7 +164,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
 
     const semanticAnnotationUpdates = []
     currentSemanticAnnValue.forEach(semanticAnnotation => {
-      if (!semanticAnnotation.permId) return // Only update existing ones
+      if (!semanticAnnotation.permId) return 
       const originalSemAnn = originalSemAnnsByPermId[semanticAnnotation.permId]
       if (
         originalSemAnn &&
