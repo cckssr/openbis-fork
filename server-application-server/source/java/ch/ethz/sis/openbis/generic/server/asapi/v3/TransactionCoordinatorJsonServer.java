@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
+import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
 import org.eclipse.jetty.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -213,7 +214,7 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
                     }
                 }
                 return convertedResultList;
-            } else if (operationResult.getClass().isArray()) {
+            } else if (operationResult.getClass().equals(Chunk[].class)) {
 //                Object[] resultArray= (Object[]) operationResult;
 //                Object[] convertedResultArray = new Object[resultArray.length];
 //                int idx = 0;
@@ -232,6 +233,8 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
 //                }
 //                return convertedResultArray;
                 return ChunkEncoderDecoder.encodeChunks((Chunk[]) operationResult);
+            } else if (operationResult.getClass().equals(File[].class)) {
+                return FileEncoderDecoder.encodeFiles((File[]) operationResult);
             }
 
             return operationResult;

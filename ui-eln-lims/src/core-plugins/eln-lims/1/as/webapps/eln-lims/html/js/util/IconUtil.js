@@ -125,7 +125,6 @@ var IconUtil = new function() {
         } else if(type === "CLEAR") {
             icon.class = "glyphicon glyphicon-remove";
         }  else if(type === "SEARCH") {
-            icon.class = "glyphicon glyphicon-search";
             icon.class = "material-icons";
             icon.text = "search";
         } else if(type === "?") {
@@ -208,9 +207,12 @@ var IconUtil = new function() {
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-archived-icon.png";
             icon.css = { "height": "21px", "margin-top": "4px"}
-        } else if(type === "LOCKED") {
+        } else if(type === "LOCKED" || type === "LOCK") {
             icon.class = "material-icons";
             icon.text = "lock";
+        } else if(type === "UNLOCKED" || type === "UNLOCK") {
+            icon.class = "material-icons";
+            icon.text = "lock_open";
         } else if(type === "LOCKED_DATA") {
             icon.class = "material-icons";
             icon.text = "lock_outline";

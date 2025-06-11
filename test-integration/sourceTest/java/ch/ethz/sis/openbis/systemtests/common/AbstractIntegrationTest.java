@@ -70,8 +70,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
+import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.common.TestLogger;
+import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
+import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -123,6 +127,8 @@ import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
 import ch.systemsx.cisd.common.filesystem.SoftLinkMaker;
+import ch.systemsx.cisd.common.properties.ExtendedProperties;
+import ch.systemsx.cisd.dbmigration.postgresql.PostgreSQLDAOFactory;
 import ch.systemsx.cisd.etlserver.ETLDaemon;
 import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
@@ -177,6 +183,11 @@ public abstract class AbstractIntegrationTest
     {
         initLogging();
 
+        dropOpenBISDatabase();
+        dropMessagesDatabase();
+        dropPathInfoDatabase();
+        dropArchiverDatabase();
+
         cleanupApplicationServerFolders();
         cleanupAfsServerFolders();
         cleanupDataStoreServerFolders();
@@ -184,7 +195,7 @@ public abstract class AbstractIntegrationTest
         configureShares();
         configureELN();
 
-        startApplicationServer(true);
+        startApplicationServer();
         startApplicationServerProxy();
         createApplicationServerData();
         startDataStoreServer();
@@ -223,9 +234,48 @@ public abstract class AbstractIntegrationTest
         System.setProperty("log4j.configuration", "etc/as/logging.properties");
     }
 
+    private void dropOpenBISDatabase() throws Exception
+    {
+        Properties properties = getApplicationServerConfiguration();
+
+        Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
+        databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
+        databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS, TestOpenBISDatabaseVersionHolder.class.getName());
+        databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, properties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
+
+        DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
+        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
+        factory.getDatabaseDAO().dropDatabase();
+        log("Dropped openBIS database.");
+    }
+
+    private void dropMessagesDatabase()
+    {
+        MessagesDatabaseConfiguration configuration = MessagesDatabaseConfiguration.getInstance(getAfsServerConfiguration());
+        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
+        factory.getDatabaseDAO().dropDatabase();
+        log("Dropped messages database.");
+    }
+
+    private void dropPathInfoDatabase()
+    {
+        PathInfoDatabaseConfiguration configuration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
+        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
+        factory.getDatabaseDAO().dropDatabase();
+        log("Dropped path info database.");
+    }
+
+    private void dropArchiverDatabase()
+    {
+        ArchiverDatabaseConfiguration configuration = ArchiverDatabaseConfiguration.getInstance(getAfsServerConfiguration());
+        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
+        factory.getDatabaseDAO().dropDatabase();
+        log("Dropped archiver database.");
+    }
+
     private void cleanupApplicationServerFolders() throws Exception
     {
-        Properties configuration = getApplicationServerConfiguration(true);
+        Properties configuration = getApplicationServerConfiguration();
 
         String transactionLogFolder = configuration.getProperty(TransactionConfiguration.TRANSACTION_LOG_FOLDER_PATH_PROPERTY_NAME);
         cleanupFolderSafely(transactionLogFolder);
@@ -296,10 +346,10 @@ public abstract class AbstractIntegrationTest
         log("Configured ELN.");
     }
 
-    private void startApplicationServer(boolean createDatabase) throws Exception
+    private void startApplicationServer() throws Exception
     {
         log("Starting application server.");
-        Properties configuration = getApplicationServerConfiguration(createDatabase);
+        Properties configuration = getApplicationServerConfiguration();
 
         for (Object key : configuration.keySet())
         {
@@ -536,7 +586,7 @@ public abstract class AbstractIntegrationTest
     {
         log("Restarting application server.");
         shutdownApplicationServer();
-        startApplicationServer(false);
+        startApplicationServer();
     }
 
     public void restartAfsServer() throws Exception
@@ -546,11 +596,10 @@ public abstract class AbstractIntegrationTest
         startAfsServer();
     }
 
-    public static Properties getApplicationServerConfiguration(boolean createDatabase) throws Exception
+    public static Properties getApplicationServerConfiguration() throws Exception
     {
         Properties configuration = new Properties();
         configuration.load(new FileInputStream("etc/as/service.properties"));
-        configuration.setProperty("database.create-from-scratch", String.valueOf(createDatabase));
         configuration.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
         configuration.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
                 TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());

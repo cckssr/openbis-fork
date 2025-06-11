@@ -37,7 +37,7 @@ public class PathInfoDatabaseConfiguration extends DatabaseConfiguration
 
                     if (!databaseProperties.isEmpty())
                     {
-                        instance = new PathInfoDatabaseConfiguration(new Configuration(databaseProperties));
+                        instance = new PathInfoDatabaseConfiguration(databaseProperties);
                     } else
                     {
                         throw new DatabaseNotConfiguredException();
@@ -51,9 +51,9 @@ public class PathInfoDatabaseConfiguration extends DatabaseConfiguration
         return instance;
     }
 
-    private PathInfoDatabaseConfiguration(Configuration configuration)
+    private PathInfoDatabaseConfiguration(Properties properties)
     {
-        super(configuration);
+        super(properties);
     }
 
 }

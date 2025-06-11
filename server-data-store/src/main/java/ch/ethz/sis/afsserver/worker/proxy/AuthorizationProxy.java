@@ -66,7 +66,7 @@ public class AuthorizationProxy extends AbstractProxy {
     }
 
     @Override
-    public List<File> list(String owner, String source, Boolean recursively) throws Exception {
+    public File[] list(String owner, String source, Boolean recursively) throws Exception {
         validateUserRights(owner, source, IOUtils.readPermissions, OperationName.List);
         return nextProxy.list(owner, source, recursively);
     }

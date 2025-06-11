@@ -68,7 +68,7 @@ public class LogProxy extends AbstractProxy {
     }
 
     @Override
-    public List<File> list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
+    public File[] list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
         logger.traceAccess(null, owner, source, recursively);
         return logger.traceExit(nextProxy.list(owner, source, recursively));
     }

@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.worker.proxy;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -96,12 +97,11 @@ public class ExecutorProxy extends AbstractProxy
     }
 
     @Override
-    public List<File> list(String owner, String source, Boolean recursively) throws Exception
+    public File[] list(String owner, String source, Boolean recursively) throws Exception
     {
-        return workerContext.getConnection().list(getSourcePath(owner, source), recursively)
-                .stream()
+        return Arrays.stream(workerContext.getConnection().list(getSourcePath(owner, source), recursively))
                 .map(file -> convertToFile(owner, file))
-                .collect(Collectors.toList());
+                .toArray(File[]::new);
     }
 
     private File convertToFile(String owner, ch.ethz.sis.afs.api.dto.File file)

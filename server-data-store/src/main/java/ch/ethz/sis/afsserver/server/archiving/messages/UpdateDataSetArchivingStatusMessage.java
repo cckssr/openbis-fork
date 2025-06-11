@@ -1,6 +1,7 @@
 package ch.ethz.sis.afsserver.server.archiving.messages;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class UpdateDataSetArchivingStatusMessage
         message.setCreationTimestamp(new Date());
 
         MetaData metaData = new MetaData();
-        metaData.setDataSetCodes(dataSetCodes);
+        metaData.setDataSetCodes(new ArrayList<>(dataSetCodes));
         metaData.setArchivingStatus(archivingStatus);
         metaData.setPresentInArchive(presentInArchive);
 

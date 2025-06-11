@@ -147,7 +147,7 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     }
 
     @Override
-    public List<File> list(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
+    public File[] list(@NonNull String sourceOwner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
         return nextProxy.list(sourceOwner, source, recursively);
     }
 

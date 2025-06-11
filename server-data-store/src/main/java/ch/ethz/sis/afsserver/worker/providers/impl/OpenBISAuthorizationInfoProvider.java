@@ -63,6 +63,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.shared.io.FilePermission;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.startup.Configuration;
+import lombok.Data;
 
 public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvider, LockMapper<UUID, String>
 {
@@ -109,56 +110,13 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
             openBIS.setInteractiveSessionKey(interactiveSessionKey);
         }
 
-        String ownerShare = null;
-        ObjectPermId ownerPermId = null;
-        Set<FilePermission> ownerSupportedPermissions = null;
+        OwnerEntity ownerEntity = findOwnerEntity(openBIS, owner);
 
-        Experiment foundExperiment = findExperiment(openBIS, owner);
-
-        if (foundExperiment != null)
+        if (ownerEntity != null)
         {
-            ownerPermId = foundExperiment.getPermId();
-
-            if (foundExperiment.isImmutableData())
+            if (hasPermissions(openBIS, ownerEntity.getPermId(), ownerEntity.getSupportedPermissions(), permissions))
             {
-                ownerSupportedPermissions = Set.of(FilePermission.Read);
-            } else
-            {
-                ownerSupportedPermissions = Set.of(FilePermission.Read, FilePermission.Write);
-            }
-        } else
-        {
-            Sample foundSample = findSample(openBIS, owner);
-
-            if (foundSample != null)
-            {
-                ownerPermId = foundSample.getPermId();
-
-                if (foundSample.isImmutableData())
-                {
-                    ownerSupportedPermissions = Set.of(FilePermission.Read);
-                } else
-                {
-                    ownerSupportedPermissions = Set.of(FilePermission.Read, FilePermission.Write);
-                }
-            } else
-            {
-                DataSet foundDataSet = findDataSet(openBIS, owner);
-
-                if (foundDataSet != null)
-                {
-                    ownerPermId = foundDataSet.getPermId();
-                    ownerShare = foundDataSet.getPhysicalData().getShareId();
-                    ownerSupportedPermissions = Set.of(FilePermission.Read);
-                }
-            }
-        }
-
-        if (ownerPermId != null)
-        {
-            if (hasPermissions(openBIS, ownerPermId, ownerSupportedPermissions, permissions))
-            {
-                String ownerPath = findOwnerPath(ownerPermId.getPermId(), ownerShare);
+                String ownerPath = findOwnerPath(ownerEntity.getPermId().getPermId(), ownerEntity.getShare());
                 workerContext.getOwnerPathMap().put(owner, ownerPath);
                 return true;
             }
@@ -234,6 +192,32 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         }
 
         return true;
+    }
+
+    private OwnerEntity findOwnerEntity(OpenBIS openBIS, String owner)
+    {
+        Sample foundSample = findSample(openBIS, owner);
+        DataSet foundDataSet = findDataSet(openBIS, owner);
+
+        if (foundSample != null)
+        {
+            return new OwnerEntity(foundSample.getPermId(), foundDataSet != null ? foundDataSet.getPhysicalData().getShareId() : null,
+                    foundSample.isImmutableData() ? Set.of(FilePermission.Read) : Set.of(FilePermission.Read, FilePermission.Write));
+        } else
+        {
+            Experiment foundExperiment = findExperiment(openBIS, owner);
+
+            if (foundExperiment != null)
+            {
+                return new OwnerEntity(foundExperiment.getPermId(), foundDataSet != null ? foundDataSet.getPhysicalData().getShareId() : null,
+                        foundExperiment.isImmutableData() ? Set.of(FilePermission.Read) : Set.of(FilePermission.Read, FilePermission.Write));
+            } else if (foundDataSet != null)
+            {
+                return new OwnerEntity(foundDataSet.getPermId(), foundDataSet.getPhysicalData().getShareId(), Set.of(FilePermission.Read));
+            }
+        }
+
+        return null;
     }
 
     private Experiment findExperiment(OpenBIS openBIS, String experimentPermId)
@@ -335,6 +319,16 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
         elements.addAll(Arrays.asList(shards));
         elements.add(ownerFolder);
         return IOUtils.getPath("", elements.toArray(new String[] {}));
+    }
+
+    @Data
+    private static class OwnerEntity
+    {
+        private final ObjectPermId permId;
+
+        private final String share;
+
+        private final Set<FilePermission> supportedPermissions;
     }
 
 }

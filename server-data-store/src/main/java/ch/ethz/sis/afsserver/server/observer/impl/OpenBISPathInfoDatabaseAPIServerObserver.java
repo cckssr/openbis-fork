@@ -103,10 +103,10 @@ public class OpenBISPathInfoDatabaseAPIServerObserver
 
                         return fileRecords.stream().filter(fileRecord -> fileRecord.relative_path != null && !fileRecord.relative_path.isEmpty())
                                 .map(fileRecord -> convert(sourceOwner, fileRecord))
-                                .collect(Collectors.toList());
+                                .toArray(File[]::new);
                     } else
                     {
-                        return Collections.singletonList(convert(sourceOwner, fileOrFolderRecord));
+                        return new File[] { convert(sourceOwner, fileOrFolderRecord) };
                     }
                 }
             }

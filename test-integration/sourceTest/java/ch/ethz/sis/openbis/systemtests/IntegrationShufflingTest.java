@@ -22,8 +22,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
-import ch.ethz.sis.openbis.systemtests.shuffling.TestSegmentedStoreShufflingTask;
-import ch.ethz.sis.openbis.systemtests.shuffling.TestSegmentedStoreShufflingTask.TestChecksumProvider;
+import ch.ethz.sis.openbis.systemtests.common.TestSegmentedStoreShufflingTask;
+import ch.ethz.sis.openbis.systemtests.common.TestSegmentedStoreShufflingTask.TestChecksumProvider;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 

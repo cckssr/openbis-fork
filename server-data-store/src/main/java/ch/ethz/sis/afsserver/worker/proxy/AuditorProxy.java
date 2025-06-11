@@ -83,7 +83,7 @@ public class AuditorProxy extends AbstractProxy {
     }
 
     @Override
-    public List<File> list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
+    public File[] list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception {
         auditBefore();
         return auditAfter(nextProxy.list(owner, source, recursively));
     }

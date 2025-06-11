@@ -154,24 +154,14 @@ public class AfsClientTest
         final Path sourceFilePath = Path.of(sourceFileName);
         final String destinationFileName = "afs-test-dst.txt";
         final Path destinationFilePath = Path.of(destinationFileName);
-        final String fileNameJson = String.format("{\n"
-                + "  \"id\" : \"1\",\n"
-                + "  \"result\" : [ \"java.util.ArrayList\", [ [ \"ch.ethz.sis.afsapi.dto.File\", {\n"
-                + "    \"path\" : \"%s\",\n"
-                + "    \"name\" : \"%s\",\n"
-                + "    \"directory\" : false,\n"
-                + "    \"size\" : 4,\n"
-                + "    \"lastModifiedTime\" : \"2023-06-27T17:18:08.900154283+02:00\"\n"
-                + "  } ] ] ],\n"
-                + "  \"error\" : null\n"
-                + "}", sourceFileName, sourceFileName);
+        final String fileNameJson = String.format("owner-UUID,%s,%s,false,4,1687879088900", sourceFileName, sourceFileName);
         byte[] fileData = "ABCD".getBytes();
         Files.write(sourceFilePath, fileData);
 
         Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, fileData.length,  fileData) };
         byte[] encodedChunks = ChunkEncoderDecoder.encodeChunksAsBytes(chunks);
 
-        httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), encodedChunks}, new String[] {"application/json", "application/octet-stream"});
+        httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), encodedChunks}, new String[] {"application/octet-stream", "application/octet-stream"});
 
         afsClient.resumeRead("", sourceFileName, destinationFilePath, 0L);
 

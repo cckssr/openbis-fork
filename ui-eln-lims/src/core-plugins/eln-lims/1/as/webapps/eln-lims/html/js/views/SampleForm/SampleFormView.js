@@ -349,12 +349,8 @@
 
 					}
 					if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
-					    dropdownOptionsModel.push({
-                            label : "Data archiving",
-                            action : function () {
-                                FormUtil.showArchiveAfsDataForm("SAMPLE", _this._sampleFormModel.v3_sample.permId.permId, _this._sampleFormModel.v3_sample.code);
-                            }
-                        });
+                        var $archivingAfsButtons = FormUtil.archivingAfsDataSectionButtons(_this._sampleFormModel.v3_sample.permId.permId);
+                        altRightToolbarModel.push({ component : $archivingAfsButtons });
 					}
 				}
 	
@@ -447,7 +443,7 @@
 								Util.unblockUI();
 							});
 						});
-					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId());
+					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId(), 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
 				}
 			}

@@ -37,7 +37,7 @@ public class ArchiverDatabaseConfiguration extends DatabaseConfiguration
 
                     if (!databaseProperties.isEmpty())
                     {
-                        instance = new ArchiverDatabaseConfiguration(new Configuration(databaseProperties));
+                        instance = new ArchiverDatabaseConfiguration(databaseProperties);
                     } else
                     {
                         throw new DatabaseNotConfiguredException();
@@ -51,9 +51,9 @@ public class ArchiverDatabaseConfiguration extends DatabaseConfiguration
         return instance;
     }
 
-    private ArchiverDatabaseConfiguration(Configuration configuration)
+    private ArchiverDatabaseConfiguration(Properties properties)
     {
-        super(configuration);
+        super(properties);
     }
 
 }

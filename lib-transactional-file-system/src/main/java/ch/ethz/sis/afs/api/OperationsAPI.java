@@ -24,7 +24,7 @@ import lombok.NonNull;
 public interface OperationsAPI {
 
     @NonNull
-    List<File> list(@NonNull String source, boolean recursively) throws Exception;
+    File[] list(@NonNull String source, boolean recursively) throws Exception;
 
     @NonNull
     byte[] read(@NonNull String source, @NonNull long offset, @NonNull int limit) throws Exception;

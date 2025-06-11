@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,9 +86,9 @@ public abstract class PublicApiTest extends AbstractTest
     @Test
     public void list() throws Exception
     {
-        List<File> list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
-        assertEquals(1, list.size());
-        assertEquals(FILE_A, list.get(0).getName());
+        File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
+        assertEquals(1, list.length);
+        assertEquals(FILE_A, list[0].getName());
     }
 
     @Test
@@ -117,8 +118,8 @@ public abstract class PublicApiTest extends AbstractTest
     {
         Boolean deleted = getPublicAPI().delete(owner, FILE_A);
         assertTrue(deleted);
-        List<File> list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
-        assertEquals(0, list.size());
+        File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
+        assertEquals(0, list.length);
     }
 
     @Test
@@ -133,9 +134,9 @@ public abstract class PublicApiTest extends AbstractTest
     public void move() throws Exception
     {
         getPublicAPI().move(owner, FILE_A, owner, FILE_B);
-        List<File> list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
-        assertEquals(1, list.size());
-        assertEquals(FILE_B, list.get(0).getName());
+        File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
+        assertEquals(1, list.length);
+        assertEquals(FILE_B, list[0].getName());
     }
 
     @Test
@@ -143,12 +144,12 @@ public abstract class PublicApiTest extends AbstractTest
     {
         getPublicAPI().create(owner, FILE_B, Boolean.TRUE);
 
-        final List<File> list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
-        assertEquals(2, list.size());
+        final File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
+        assertEquals(2, list.length);
 
-        final List<File> matchedFiles = list.stream().filter(file -> file.getName().equals(FILE_B)).collect(Collectors.toList());
-        assertEquals(1, matchedFiles.size());
-        assertTrue(matchedFiles.get(0).getDirectory());
+        final File[] matchedFiles = Arrays.stream(list).filter(file -> file.getName().equals(FILE_B)).toArray(File[]::new);
+        assertEquals(1, matchedFiles.length);
+        assertTrue(matchedFiles[0].getDirectory());
     }
 
     @Test
@@ -156,11 +157,11 @@ public abstract class PublicApiTest extends AbstractTest
     {
         getPublicAPI().create(owner, FILE_B, Boolean.FALSE);
 
-        final List<File> list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
+        final File[] list = getPublicAPI().list(owner, ROOT, Boolean.TRUE);
 
-        final List<File> matchedFiles = list.stream().filter(file -> file.getName().equals(FILE_B)).collect(Collectors.toList());
-        assertEquals(1, matchedFiles.size());
-        assertFalse(matchedFiles.get(0).getDirectory());
+        final File[] matchedFiles = Arrays.stream(list).filter(file -> file.getName().equals(FILE_B)).toArray(File[]::new);
+        assertEquals(1, matchedFiles.length);
+        assertFalse(matchedFiles[0].getDirectory());
 
         Chunk[] chunks = getPublicAPI().read(new Chunk[]{ new Chunk(owner, FILE_B, 0L, 0, ChunkEncoderDecoder.EMPTY_ARRAY) });
         assertEquals(0, chunks[0].getData().length);

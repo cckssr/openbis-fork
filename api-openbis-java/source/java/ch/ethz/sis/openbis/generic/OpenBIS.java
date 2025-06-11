@@ -1519,7 +1519,7 @@ public class OpenBIS
             }
         }
 
-        public List<ch.ethz.sis.afsapi.dto.File> list(String owner, String source, Boolean recursively)
+        public ch.ethz.sis.afsapi.dto.File[] list(String owner, String source, Boolean recursively)
         {
             try
             {

@@ -35,7 +35,7 @@ public class ValidationProxy extends AbstractProxy {
 
 
     @Override
-    public List<File> list(String owner, String source, Boolean recursively) throws Exception {
+    public File[] list(String owner, String source, Boolean recursively) throws Exception {
         return nextProxy.list(owner, source, recursively);
     }
 

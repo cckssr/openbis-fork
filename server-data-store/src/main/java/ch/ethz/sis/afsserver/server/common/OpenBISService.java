@@ -44,6 +44,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
+import ch.ethz.sis.openbis.messages.UnarchiveDataSetMessage;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -597,6 +598,20 @@ public class OpenBISService implements IOpenBISService
         messagesDatabaseFacade.create(
                 new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes, removeFromDataStore, options).serialize(
                         objectMapper));
+    }
+
+    @Override public void unarchiveDataSets(final List<String> dataSetCodes) throws UserFailureException
+    {
+        if (dataSetCodes.isEmpty())
+        {
+            return;
+        }
+        if (messagesDatabaseFacade == null)
+        {
+            throw new RuntimeException("Messages database not configured");
+        }
+        messagesDatabaseFacade.create(
+                new UnarchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes).serialize(objectMapper));
     }
 
     @Override public void notifyDatasetAccess(final String dataSetCode)

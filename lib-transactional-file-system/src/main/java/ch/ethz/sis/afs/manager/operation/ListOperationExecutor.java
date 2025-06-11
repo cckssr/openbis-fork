@@ -43,11 +43,13 @@ public class ListOperationExecutor implements NonModifyingOperationExecutor<List
     }
 
     @Override
-    public List<File> executeOperation(@NonNull Transaction transaction, @NonNull ListOperation operation) throws Exception {
+    public File[] executeOperation(@NonNull Transaction transaction, @NonNull ListOperation operation) throws Exception {
         List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively());
-        List<File> filesFromRoot = new ArrayList<>();
+        File[] filesFromRoot = new File[files.size()];
+        int index = 0;
         for (File file : files) {
-            filesFromRoot.add(file.toBuilder().path(OperationExecutor.getStoragePath(transaction, file.getPath())).build());
+            filesFromRoot[index] = file.toBuilder().path(OperationExecutor.getStoragePath(transaction, file.getPath())).build();
+            index++;
         }
         return filesFromRoot;
     }
