@@ -1,7 +1,6 @@
 package ch.ethz.sis.openbis.systemtests;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
@@ -10,15 +9,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
 
+import org.apache.log4j.Level;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -44,10 +45,19 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
     {
         super.beforeMethod(method);
 
+        TestLogger.startLogRecording(Level.INFO, TestLogger.DEFAULT_LOG_LAYOUT_PATTERN, ".*");
+
         deleteLastSeenDeletionFile();
 
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
         pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
+    }
+
+    @AfterMethod
+    public void afterMethod(Method method) throws Exception
+    {
+        super.afterMethod(method);
+        TestLogger.stopLogRecording();
     }
 
     @Test
@@ -124,6 +134,8 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
     @Test
     public void testAFSListMethodReturnsTheSameResultsWithAndWithoutPathInfoDBEntries() throws Exception
     {
+        final String FOUND_IN_PATH_INFO_DB = "found in the path info database";
+
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
@@ -214,37 +226,47 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         sampleEntryId = pathInfoDAO.tryToGetDataSetId(sample.getPermId().getPermId());
         assertNotNull(sampleEntryId);
 
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 0);
+
         // DB : list "" recursively
         File[] rootRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "", true);
         assertFilesEqual(rootRecursivelyFS, rootRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 1);
 
         // DB : list "/" non-recursively
         File[] rootNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/", false);
         assertFilesEqual(rootNotRecursiveFS, rootNotRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 2);
 
         // DB : list "//" non-recursively
         File[] rootNotRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "//", false);
         assertFilesEqual(rootNotRecursive2FS, rootNotRecursive2DB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 3);
 
         // DB : list "test-folder" recursively
         File[] folderRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder", true);
         assertFilesEqual(folderRecursiveFS, folderRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 4);
 
         // DB : list "/test-folder/" recursively
         File[] folderRecursive2DB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/", true);
         assertFilesEqual(folderRecursive2FS, folderRecursive2DB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 5);
 
         // DB : list "/test-folder" non-recursively
         File[] folderNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder", false);
         assertFilesEqual(folderNotRecursiveFS, folderNotRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 6);
 
         // DB : list "test-folder/test-file-2" recursively
         File[] fileRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "test-folder/test-file-2", true);
         assertFilesEqual(fileRecursiveFS, fileRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 7);
 
         // DB : list "/test-folder/test-file-2" non-recursively
         File[] fileNotRecursiveDB = openBIS.getAfsServerFacade().list(sample.getPermId().getPermId(), "/test-folder/test-file-2", false);
         assertFilesEqual(fileNotRecursiveFS, fileNotRecursiveDB);
+        assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 8);
 
         // delete data
         deleteSample(openBIS, sample.getPermId());
@@ -276,11 +298,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
             assertEquals(file1.getName(), file2.getName());
             assertEquals(file1.getDirectory(), file2.getDirectory());
             assertEquals(file1.getSize(), file2.getSize());
-            // File system and database dates will differ in precision (we check they are different just to make sure we always
-            // hit both the file system and the path info database, but the rest of the dates should be the same). If they are
-            // exactly the same it means we didn't hit the path info database.
-            assertNotEquals(file1.getLastModifiedTime(), file2.getLastModifiedTime());
-            assertEquals(file1.getLastModifiedTime().withNano(0), file2.getLastModifiedTime().withNano(0));
+            assertEquals(file1.getLastModifiedTime(), file2.getLastModifiedTime());
         }
     }
 
@@ -292,6 +310,28 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertEquals(file.getDirectory(), expectedDirectory);
         assertEquals(file.getSize(), expectedSize);
         assertNotNull(file.getLastModifiedTime());
+    }
+
+    public void assertContains(String str, String substring, int count)
+    {
+        int counter = 0;
+        int indexOf = 0;
+
+        while (true)
+        {
+            indexOf = str.indexOf(substring, indexOf);
+
+            if (indexOf == -1)
+            {
+                break;
+            } else
+            {
+                indexOf += substring.length();
+                counter++;
+            }
+        }
+
+        assertEquals(counter, count);
     }
 
 }
