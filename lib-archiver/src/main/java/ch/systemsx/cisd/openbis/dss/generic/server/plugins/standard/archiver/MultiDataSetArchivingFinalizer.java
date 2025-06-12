@@ -131,7 +131,7 @@ public class MultiDataSetArchivingFinalizer implements IArchiverTask
             File originalFile = parameters.getOriginalFile();
             if (originalFile.exists() == false)
             {
-                String message = "Replication of '" + originalFile + "' failed because the original file does not exist.";
+                String message = "Replication failed for '" + originalFile + "' because the original file does not exist.";
                 status = createStatusAndRearchive(dataSetCodes, parameters, removeFromDataStore, originalFile, message);
             } else
             {
@@ -151,7 +151,7 @@ public class MultiDataSetArchivingFinalizer implements IArchiverTask
                     updateStatus(codesWithStatus);
                 } else
                 {
-                    String message = "Replication of '" + originalFile + "' failed.";
+                    String message = "Replication failed for '" + originalFile + "'.";
                     status = createStatusAndRearchive(dataSetCodes, parameters, removeFromDataStore, originalFile, message);
                 }
             }
