@@ -409,39 +409,107 @@
 								settingsForDropdown.push({  label: name,
 														value: results.objects[rIdx].identifier.identifier});
 							}
+
+							var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+                            $window.append($('<legend>').append("Select template"));
+                            var css = {
+                                'top' : '35%',
+                                'width' : '50%',
+                                'left' : '30%',
+                                'right' : '20%',
+                                'text-align' : 'left',
+                                'overflow' : 'hidden',
+                            };
 	
-							var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select template");
+							var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Template", "templatesDropdown");
 							$dropdown.attr("id", "templatesDropdown");
-							Util.showDropdownAndBlockUI("templatesDropdown", $dropdown);
-	
-							$("#templatesDropdown").on("change", function(event) {
-								var sampleIdentifier = $("#templatesDropdown")[0].value;
-								var sample = null;
-								for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
-									if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
-										sample = results.objects[rIdx];
-									}
-								}
-								_this._sampleFormModel.sample.properties = sample.properties;
-								_this._sampleFormModel.sample.parents = sample.parents;
-								_this._sampleFormModel.sample.children = sample.children;
-	
-								if (_this._sampleFormModel.views.header) {
-									_this._sampleFormModel.views.header.empty();
-								}
-								if (_this._sampleFormModel.views.content) {
-									 _this._sampleFormModel.views.content.empty();
-								}
-								if (_this._sampleFormModel.views.auxContent) {
-									 _this._sampleFormModel.views.auxContent.empty();
-								}
-								_this._sampleFormController.init(_this._sampleFormModel.views, true);
-								Util.unblockUI();
-							});
-	
-							$("#templatesDropdownCancel").on("click", function(event) {
-								Util.unblockUI();
-							});
+							$window.append($dropdown)
+							var $warningText = $("<p>", { style : "color:red; font-size: large;" })
+							$window.append($warningText);
+
+							var checkboxText = "Merge current parents/children";
+                            var attr = {'type' : 'checkbox', 'alt' : checkboxText, 'placeholder' : checkboxText, 'id' : 'merge-relationships', 'checked': '' };
+
+                            var $checkbox = $('<div>', {'class' : 'checkbox'}).append($('<label>').append($('<input>', attr)));
+                            $checkbox.css({
+                                "display": "flex",
+                                "alignItems": "center",
+                                "marginBottom": "5px"
+                            })
+                            $checkbox.append(checkboxText);
+                            $window.append($checkbox);
+
+                            var $buttons = $('<div>', {'id' : 'grouping'});
+                            $window.append($buttons);
+
+                            var $acceptButton = $('<div>', {'class' : 'btn btn btn-primary btn-secondary', 'text' : 'Accept', 'id' : 'accept-btn'});
+                            $acceptButton.css('margin-right', '5px');
+                            $acceptButton.click(function() {
+                                var sampleIdentifier = $("#templatesDropdown")[0].value;
+                                if(sampleIdentifier === '') {
+                                    $warningText.text("You need to select a template!");
+                                    return;
+                                }
+                                var sample = null;
+                                for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                                    if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
+                                        sample = results.objects[rIdx];
+                                    }
+                                }
+                                _this._sampleFormModel.sample.properties = sample.properties;
+
+                                var mergeParents = $($checkbox.children()[0]).children()[0].checked;
+                                if(mergeParents) {
+                                    var currentParents = _this._sampleFormModel.sample.parents ?? [];
+                                    var currentParentsIds = currentParents.map(x => x.permId.permId)
+                                    sample.parents.forEach(parent => {
+                                        if(!currentParentsIds.includes(parent.permId.permId)) {
+                                            currentParents.push(parent);
+                                        }
+                                    });
+                                    _this._sampleFormModel.sample.parents = currentParents;
+
+                                     var currentChildren = _this._sampleFormModel.sample.children ?? [];
+                                     var currentChildrenIds = currentChildren.map(x => x.permId.permId);
+                                    sample.children.forEach(child => {
+                                        if(!currentChildrenIds.includes(child.permId.permId)) {
+                                            currentChildren.push(child);
+                                        }
+                                    });
+                                    _this._sampleFormModel.sample.children = currentChildren;
+                                } else {
+                                    _this._sampleFormModel.sample.parents = sample.parents;
+                                    _this._sampleFormModel.sample.children = sample.children;
+                                }
+
+                                if (_this._sampleFormModel.views.header) {
+                                    _this._sampleFormModel.views.header.empty();
+                                }
+                                if (_this._sampleFormModel.views.content) {
+                                     _this._sampleFormModel.views.content.empty();
+                                }
+                                if (_this._sampleFormModel.views.auxContent) {
+                                     _this._sampleFormModel.views.auxContent.empty();
+                                }
+                                _this._sampleFormController.init(_this._sampleFormModel.views, true);
+                                Util.unblockUI();
+                            });
+                            $buttons.append($acceptButton);
+
+                            var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel-btn'});
+                            $cancelButton.click(function() {
+                                Util.unblockUI();
+                            });
+
+                            $buttons.append($cancelButton);
+							Util.blockUI($window, css);
+
+                            $("#templatesDropdown").on("change", function(event) {
+                                var sampleIdentifier = $("#templatesDropdown")[0].value;
+                                if(sampleIdentifier !== '') {
+                                    $warningText.text('');
+                                }
+                            });
 						});
 					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId(), 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
