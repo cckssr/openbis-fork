@@ -104,10 +104,11 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 			tempPermId: { permId: `semantic-ann-${type.code.value}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}` },
 			predicateOntologyId: '',
 			predicateOntologyVersion: '',
-			predicateAccessionId: ''
+			predicateAccessionId: '',
+			action: 'CREATE'
 		};
 
-		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.value?.length > 0) {
+		if (semanticAnnotations && Array.isArray(semanticAnnotations.value)) {
 			semanticAnnotations.value.push(newSemanticAnnotation);
 		} else {
 			semanticAnnotations.value = [newSemanticAnnotation];
@@ -119,28 +120,48 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		});
 	};
 
-	handleRemoveSemanticAnnotation = (semanticAnnotationTripletId, index) => {
+	handleRemoveSemanticAnnotation = (id) => {
 		const type = this.getType(this.props);
 		let { semanticAnnotations } = type;
-		//it's already the list of semantic annotations
-		semanticAnnotations = semanticAnnotations.value.filter((semanticAnnotationTriplet, idx) => idx !== index);
-		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
-			field: 'semanticAnnotations',
-			value: semanticAnnotations
-		});
-	};
+		const index = semanticAnnotations.value.findIndex(
+			ann => (ann.permId || ann.tempPermId?.permId) === id
+		);
+		if (index === -1) return;
+		const annotation = semanticAnnotations.value[index];
 
-	handleSemanticAnnotationFieldChange(index, field, fieldValue) {
-		const type = this.getType(this.props);
-		let { semanticAnnotations } = type;
-		semanticAnnotations.value[index][field] = fieldValue;
+		if (!annotation.permId) {
+			semanticAnnotations.value.splice(index, 1);
+		} else {
+			annotation.action = 'DELETE';
+		}
+
 		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
 			field: 'semanticAnnotations',
 			value: semanticAnnotations.value
 		});
 	}
 
-	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, selectionType) {
+	handleSemanticAnnotationFieldChange = (id, field, fieldValue) => {
+		const type = this.getType(this.props);
+		let { semanticAnnotations } = type;
+		const annotation = semanticAnnotations.value.find(
+			ann => (ann.permId || ann.tempPermId?.permId) === id
+		);
+		if (!annotation) return;
+
+		annotation[field] = fieldValue;
+
+		if (annotation.permId && annotation.action !== 'DELETE' && annotation.action !== 'CREATE') {
+			annotation.action = 'UPDATE';
+		}
+
+		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+			field: 'semanticAnnotations',
+			value: semanticAnnotations.value
+		});
+	}
+
+	renderSemanticAnnotationFields(semanticAnnotationTriplet, permId, selectionType) {
 		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId, error } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
@@ -148,12 +169,12 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ID)}
-						name={selectionType + '-predicateOntologyId-' + index}
+						name={selectionType + '-predicateOntologyId-' + permId}
 						mandatory={true}
 						error={error?.predicateOntologyId}
 						value={predicateOntologyId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateOntologyId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(permId, 'predicateOntologyId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -161,12 +182,12 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_VERSION)}
-						name={selectionType + '-predicateOntologyVersion-' + index}
+						name={selectionType + '-predicateOntologyVersion-' + permId}
 						mandatory={true}
 						error={error?.predicateOntologyVersion}
 						value={predicateOntologyVersion}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateOntologyVersion', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(permId, 'predicateOntologyVersion', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -174,12 +195,12 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ANNOTATION_ID)}
-						name={selectionType + '-predicateAccessionId-' + index}
+						name={selectionType + '-predicateAccessionId-' + permId}
 						mandatory={true}
 						error={error?.predicateAccessionId}
 						value={predicateAccessionId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(index, 'predicateAccessionId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(permId, 'predicateAccessionId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -188,21 +209,21 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		);
 	}
 
-	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, selectionType) {
+	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, permId, selectionType) {
 		const { classes, mode } = this.props;
 		return (
-			<div key={`${selectionType}-annotation-${index}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
+			<div key={`${selectionType}-annotation-${permId}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
 				<div className={classes.semanticAnnotationFieldsWrapper}>
-					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, index, selectionType)}
+					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, permId, selectionType)}
 				</div>
 				{mode === 'edit' && (
 					<Button
 						variant='contained'
 						color='white'
 						className={classes.removeButton}
-						onClick={() => this.handleRemoveSemanticAnnotation(semanticAnnotationTriplet.id, index)}
+						onClick={() => this.handleRemoveSemanticAnnotation(permId)}
 						label={<RemoveIcon />}
-						aria-label={`${messages.get(messages.REMOVE)} ${selectionType} annotation ${index + 1}`}
+						aria-label={`${messages.get(messages.REMOVE)} ${selectionType} annotation ${permId + 1}`}
 						tooltip={messages.get(messages.REMOVE)}
 					/>
 				)}
@@ -217,12 +238,17 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 			return null
 		}
 
-		if (value === undefined || value === null || value.length === 0) {
+		const filteredValue = (value || []).filter(
+			annotation => annotation.action !== 'DELETE'
+		)
+
+		if (filteredValue.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_ANNOTATIONS_DEFINED)}</Typography>
 		}
 
-		return value.map((semanticAnnotationTriplet, index) => {
-			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, EntityTypeFormSelectionType.TYPE)
+		return filteredValue.map((semanticAnnotationTriplet) => {
+			const permId = semanticAnnotationTriplet.permId || semanticAnnotationTriplet.tempPermId?.permId;
+			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, permId, EntityTypeFormSelectionType.TYPE)
 		})
 	}
 
@@ -230,16 +256,12 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		logger.log(logger.DEBUG, 'EntityTypeFormParametersTypeSemanticAnnotation.render');
 
 		const type = this.getType(this.props)
-		if (!type) {
-			return null
-		}
+		if (!type) return null
 
 		return (
 			<Container>
 				{this.renderHeader(messages.get(messages.SEMANTIC_ANNOTATIONS), type)}
-
 				{this.renderSemanticAnnotations(type)}
-
 			</Container>
 		)
 	}

@@ -75,6 +75,12 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
       'Semantic Annotation fields'
     )
 
+    validator.validateSemanticAnnotationsNotEmpty(
+      property,
+      'assignmentSemanticAnnotations',
+      'Semantic Annotation fields'
+    )
+
     validator.validateNotEmpty(
       property,
       'dataType',

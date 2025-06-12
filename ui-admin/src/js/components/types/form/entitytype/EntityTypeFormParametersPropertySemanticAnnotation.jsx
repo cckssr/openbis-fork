@@ -103,10 +103,11 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 			tempPermId: { permId: `${semanticField}-${property.section}-${property.id}-${semanticAnnotations?.value?.length > 0 ? semanticAnnotations.value.length : 0}` },
 			predicateOntologyId: '',
 			predicateOntologyVersion: '',
-			predicateAccessionId: ''
+			predicateAccessionId: '',
+			action: 'CREATE'
 		};
 
-		if (semanticAnnotations !== undefined && semanticAnnotations !== null && semanticAnnotations.value?.length > 0) {
+		if (semanticAnnotations && Array.isArray(semanticAnnotations.value)) {
 			semanticAnnotations.value.push(newSemanticAnnotation);
 		} else {
 			semanticAnnotations.value = [newSemanticAnnotation];
@@ -119,22 +120,42 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 		});
 	};
 
-	handleRemoveSemanticAnnotation = (semanticAnnotationTripletId, index, semanticField) => {
+	handleRemoveSemanticAnnotation = (id, semanticField) => {
 		const property = this.getProperty(this.props);
 		let semanticAnnotations = property[semanticField];
-		//it's already the list of semantic annotations
-		semanticAnnotations = semanticAnnotations.value.filter((semanticAnnotationTriplet, idx) => idx !== index);
+		const index = semanticAnnotations.value.findIndex(
+			ann => (ann.permId || ann.tempPermId?.permId) === id
+		);
+		if (index === -1) return;
+		const annotation = semanticAnnotations.value[index];
+
+		if (!annotation.permId) {
+			semanticAnnotations.value.splice(index, 1);
+		} else {
+			annotation.action = 'DELETE';
+		}
+
 		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
 			id: property.id,
 			field: semanticField,
-			value: semanticAnnotations
+			value: semanticAnnotations.value
 		});
 	};
 
-	handleSemanticAnnotationFieldChange(semanticField, index, field, fieldValue) {
+	handleSemanticAnnotationFieldChange = (id, semanticField, field, fieldValue) => {
 		const property = this.getProperty(this.props);
 		let semanticAnnotations = property[semanticField];
-		semanticAnnotations.value[index][field] = fieldValue;
+		const annotation = semanticAnnotations.value.find(
+			ann => (ann.permId || ann.tempPermId?.permId) === id
+		);
+		if (!annotation) return;
+
+		annotation[field] = fieldValue;
+
+		if (annotation.permId && annotation.action !== 'DELETE' && annotation.action !== 'CREATE') {
+			annotation.action = 'UPDATE';
+		}
+
 		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
 			id: property.id,
 			field: semanticField,
@@ -142,20 +163,20 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 		});
 	}
 
-	renderSemanticAnnotationFields(semanticAnnotationTriplet, index, semanticField) {
-		const { id, predicateOntologyId, predicateOntologyVersion, predicateAccessionId, error } = semanticAnnotationTriplet;
+	renderSemanticAnnotationFields(semanticAnnotationTriplet, id, semanticField) {
+		const { predicateOntologyId, predicateOntologyVersion, predicateAccessionId, error } = semanticAnnotationTriplet;
 		const { mode, classes } = this.props;
 		return (
 			<>
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ID)}
-						name={'predicateOntologyId-' + semanticField + '-' + index}
+						name={'predicateOntologyId-' + semanticField + '-' + id}
 						mandatory={true}
 						error={error?.predicateOntologyId}
 						value={predicateOntologyId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(semanticField, index, 'predicateOntologyId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(id, semanticField, 'predicateOntologyId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -163,12 +184,12 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_VERSION)}
-						name={'predicateOntologyVersion-' + semanticField + '-' + index}
+						name={'predicateOntologyVersion-' + semanticField + '-' + id}
 						mandatory={true}
 						error={error?.predicateOntologyVersion}
 						value={predicateOntologyVersion}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(semanticField, index, 'predicateOntologyVersion', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(id, semanticField, 'predicateOntologyVersion', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -176,12 +197,12 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 				<div className={classes.field}>
 					<TextField
 						label={messages.get(messages.ONTOLOGY_ANNOTATION_ID)}
-						name={'predicateAccessionId-' + semanticField + '-' + index}
+						name={'predicateAccessionId-' + semanticField + '-' + id}
 						mandatory={true}
 						error={error?.predicateAccessionId}
 						value={predicateAccessionId}
 						mode={mode}
-						onChange={(event) => this.handleSemanticAnnotationFieldChange(semanticField, index, 'predicateAccessionId', event.target.value)}
+						onChange={(event) => this.handleSemanticAnnotationFieldChange(id, semanticField, 'predicateAccessionId', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
 					/>
@@ -190,21 +211,21 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 		);
 	}
 
-	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, semanticField) {
+	renderSemanticAnnotationTriplet(semanticAnnotationTriplet, id, semanticField) {
 		const { classes, mode } = this.props;
 		return (
-			<div key={`${semanticField}-annotation-${index}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
+			<div key={`${semanticField}-annotation-${id}`} className={mode === 'edit' ? classes.semanticAnnotationTripletContainerEdit : classes.semanticAnnotationTripletContainer}>
 				<div className={classes.semanticAnnotationFieldsWrapper}>
-					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, index, semanticField)}
+					{this.renderSemanticAnnotationFields(semanticAnnotationTriplet, id, semanticField)}
 				</div>
 				{mode === 'edit' && (
 					<Button
 						variant='contained'
 						color='white'
 						className={classes.removeButton}
-						onClick={() => this.handleRemoveSemanticAnnotation(semanticAnnotationTriplet.id, index, semanticField)}
+						onClick={() => this.handleRemoveSemanticAnnotation(id, semanticField)}
 						label={<RemoveIcon />}
-						aria-label={`${messages.get(messages.REMOVE)} ${semanticField} annotation ${index + 1}`}
+						aria-label={`${messages.get(messages.REMOVE)} ${semanticField} annotation`}
 						tooltip={messages.get(messages.REMOVE)}
 					/>
 				)}
@@ -213,14 +234,17 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 	}
 
 	renderSemanticAnnotations(property, semanticField) {
-		const semanticAnnotationValue = property[semanticField].value || [];
+		const semanticAnnotationValue = (property[semanticField].value || []).filter(
+			annotation => annotation.action !== 'DELETE'
+		);
 
-		if (semanticAnnotationValue === undefined || semanticAnnotationValue === null || semanticAnnotationValue.length === 0) {
+		if (semanticAnnotationValue.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_ANNOTATIONS_DEFINED)}</Typography>
 		}
 
-		return semanticAnnotationValue.map((semanticAnnotationTriplet, index) => {
-			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, index, semanticField)
+		return semanticAnnotationValue.map((semanticAnnotationTriplet) => {
+			const id = semanticAnnotationTriplet.permId || semanticAnnotationTriplet.tempPermId?.permId;
+			return this.renderSemanticAnnotationTriplet(semanticAnnotationTriplet, id, semanticField)
 		})
 	}
 
@@ -228,9 +252,7 @@ class EntityTypeFormParametersPropertySemanticAnnotation extends React.PureCompo
 		logger.log(logger.DEBUG, 'EntityTypeFormParametersSemanticAnnotation.render');
 
 		const property = this.getProperty(this.props);
-		if (!property) {
-			return null;
-		}
+		if (!property) return null
 
 		return (
 			<Container>

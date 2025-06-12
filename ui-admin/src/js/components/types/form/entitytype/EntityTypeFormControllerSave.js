@@ -31,14 +31,12 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       const original = property.originalGlobal || property.original
 
       if (original) {
-        
         if (FormUtil.haveFieldsChanged(property, original, ['semanticAnnotations'])) {
           this._handleSemanticAnnotations(
             operations,
             null,
             property.code.value,
-            property.semanticAnnotations.value,
-            original.semanticAnnotations.value,
+            property.semanticAnnotations.value
           )
         }
         if (FormUtil.haveFieldsChanged(property, original, ['assignmentSemanticAnnotations'])) {
@@ -46,8 +44,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
             operations,
             type.code.value,
             property.code.value,
-            property.assignmentSemanticAnnotations.value,
-            original.assignmentSemanticAnnotations.value,
+            property.assignmentSemanticAnnotations.value
           )
         }
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
@@ -55,7 +52,12 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {
-        operations.push(this._createPropertySemanticAnnotationOperation(null, property.code.value, property.semanticAnnotations.value, []))
+        this._handleSemanticAnnotations(
+          operations,
+          null,
+          property.code.value,
+          property.semanticAnnotations.value
+        )
         operations.push(this._createPropertyTypeOperation(property))
         assignments.push(this._propertyAssignmentCreation(property, index))
       }
@@ -67,12 +69,16 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         operations,
         type.code.value,
         null,
-        type.semanticAnnotations.value,
-        type.original.semanticAnnotations.value,
+        type.semanticAnnotations.value
       )
     } else {
       operations.push(this._createTypeOperation(type, assignments))
-      operations.push(this._createPropertySemanticAnnotationOperation(type.code.value, null, type.semanticAnnotations.value, []))
+      this._handleSemanticAnnotations(
+        operations,
+        type.code.value,
+        null,
+        type.semanticAnnotations.value
+      )
     }
 
     const deleteUnusedPropertyTypesOperation =
@@ -89,100 +95,73 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     return type.code.value
   }
 
-  _handleSemanticAnnotations(operations, typeCode, propertyCode, currentSemanticAnnValue, originalSemanticAnnValue) {
-    const current = Array.isArray(currentSemanticAnnValue) ? currentSemanticAnnValue : [];
-    const original = Array.isArray(originalSemanticAnnValue) ? originalSemanticAnnValue : [];
-    if (current.length === 0 && original.length === 0) {
-      return;
+  _handleSemanticAnnotations(operations, typeCode, propertyCode, currentSemanticAnnValue) {
+    const current = Array.isArray(currentSemanticAnnValue) ? currentSemanticAnnValue : []
+
+    const toCreate = current.filter(a => a.action === 'CREATE')
+    const toUpdate = current.filter(a => a.action === 'UPDATE')
+    const toDelete = current.filter(a => a.action === 'DELETE')
+
+    if (toCreate.length > 0) {
+      operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, toCreate))
     }
-    if (original.length === 0 && current.length > 0) {
-      operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, current, []));
-      return;
+    if (toUpdate.length > 0) {
+      operations.push(this._updatePropertySemanticAnnotationOperation(toUpdate))
     }
-    if (current.length === 0 && original.length > 0) {
-      operations.push(this._deletePropertySemanticAnnotationOperation(current, original));
-      return;
-    }
-    if (current.length > original.length) {
-      operations.push(this._createPropertySemanticAnnotationOperation(typeCode, propertyCode, current, original));
-    } else if (current.length < original.length) {
-      operations.push(this._deletePropertySemanticAnnotationOperation(current, original));
-    } else {
-      operations.push(this._updatePropertySemanticAnnotationOperation(current, original));
+    if (toDelete.length > 0) {
+      operations.push(this._deletePropertySemanticAnnotationOperation(toDelete))
     }
   }
 
-  _createPropertySemanticAnnotationOperation(typeCode, propertyCode, currentSemanticAnnValue, originalSemanticAnnValue) {
+  _createPropertySemanticAnnotationOperation(typeCode, propertyCode, currentSemanticAnnValue) {
     const strategy = this._getStrategy()
-    const originalSemAnnPermIds = new Set(originalSemanticAnnValue.map(osa => osa.permId.permId))
     const semanticAnnotationCreations = []
     currentSemanticAnnValue.forEach(semanticAnnotation => {
-      if (!semanticAnnotation.permId || !originalSemAnnPermIds.has(semanticAnnotation.permId.permId)) {
-        const semanticAnnotationCreation = new openbis.SemanticAnnotationCreation()
-        if (typeCode != null && propertyCode != null) {
-          semanticAnnotationCreation.setPropertyAssignmentId(
-            new openbis.PropertyAssignmentPermId(
-              new openbis.EntityTypePermId(typeCode, strategy.getEntityKind()),
-              new openbis.PropertyTypePermId(propertyCode)
-            )
-          );
-        } else if (typeCode != null && propertyCode == null) {
-          semanticAnnotationCreation.setEntityTypeId(new openbis.EntityTypePermId(typeCode, strategy.getEntityKind()));
-          semanticAnnotationCreation.setDescriptorOntologyId(semanticAnnotation.predicateOntologyId);
-          semanticAnnotationCreation.setDescriptorOntologyVersion(semanticAnnotation.predicateOntologyVersion);
-          semanticAnnotationCreation.setDescriptorAccessionId(semanticAnnotation.predicateAccessionId);
-        } else if (propertyCode != null && typeCode == null) {
-          semanticAnnotationCreation.setPropertyTypeId(new openbis.PropertyTypePermId(propertyCode));
-        }
-        semanticAnnotationCreation.setPredicateOntologyId(semanticAnnotation.predicateOntologyId);
-        semanticAnnotationCreation.setPredicateOntologyVersion(semanticAnnotation.predicateOntologyVersion);
-        semanticAnnotationCreation.setPredicateAccessionId(semanticAnnotation.predicateAccessionId);
-
-        semanticAnnotationCreations.push(semanticAnnotationCreation);
+      const semanticAnnotationCreation = new openbis.SemanticAnnotationCreation()
+      if (typeCode != null && propertyCode != null) {
+        semanticAnnotationCreation.setPropertyAssignmentId(
+          new openbis.PropertyAssignmentPermId(
+            new openbis.EntityTypePermId(typeCode, strategy.getEntityKind()),
+            new openbis.PropertyTypePermId(propertyCode)
+          )
+        )
+      } else if (typeCode != null && propertyCode == null) {
+        semanticAnnotationCreation.setEntityTypeId(new openbis.EntityTypePermId(typeCode, strategy.getEntityKind()))
+        semanticAnnotationCreation.setDescriptorOntologyId(semanticAnnotation.predicateOntologyId)
+        semanticAnnotationCreation.setDescriptorOntologyVersion(semanticAnnotation.predicateOntologyVersion)
+        semanticAnnotationCreation.setDescriptorAccessionId(semanticAnnotation.predicateAccessionId)
+      } else if (propertyCode != null && typeCode == null) {
+        semanticAnnotationCreation.setPropertyTypeId(new openbis.PropertyTypePermId(propertyCode))
       }
+      semanticAnnotationCreation.setPredicateOntologyId(semanticAnnotation.predicateOntologyId)
+      semanticAnnotationCreation.setPredicateOntologyVersion(semanticAnnotation.predicateOntologyVersion)
+      semanticAnnotationCreation.setPredicateAccessionId(semanticAnnotation.predicateAccessionId)
+      semanticAnnotationCreations.push(semanticAnnotationCreation)
     })
     return new openbis.CreateSemanticAnnotationsOperation(semanticAnnotationCreations)
   }
 
-  _deletePropertySemanticAnnotationOperation(currentSemanticAnnValue, originalSemanticAnnValue) {
-    const currentPermIds = new Set(currentSemanticAnnValue.map(csa => csa.permId.permId))
-    const annotationIds = originalSemanticAnnValue
-      .filter(semanticAnnotation => semanticAnnotation.permId && !currentPermIds.has(semanticAnnotation.permId.permId))
-      .map(semanticAnnotation => semanticAnnotation.permId)
-    const deleteOptions = new openbis.SemanticAnnotationDeletionOptions();
-    deleteOptions.setReason('deleted via admin_ui');
-    return new openbis.DeleteSemanticAnnotationsOperation(annotationIds, deleteOptions)
-  }
-
-  _updatePropertySemanticAnnotationOperation(currentSemanticAnnValue, originalSemanticAnnValue) {
-    const originalSemAnnsByPermId = {}
-    originalSemanticAnnValue.forEach(osa => {
-      if (osa.permId) {
-        originalSemAnnsByPermId[osa.permId] = osa
-      }
-    })
-
+  _updatePropertySemanticAnnotationOperation(currentSemanticAnnValue) {
     const semanticAnnotationUpdates = []
     currentSemanticAnnValue.forEach(semanticAnnotation => {
-      if (!semanticAnnotation.permId) return 
-      const originalSemAnn = originalSemAnnsByPermId[semanticAnnotation.permId]
-      if (
-        originalSemAnn &&
-        (
-          semanticAnnotation.predicateOntologyId !== originalSemAnn.predicateOntologyId ||
-          semanticAnnotation.predicateOntologyVersion !== originalSemAnn.predicateOntologyVersion ||
-          semanticAnnotation.predicateAccessionId !== originalSemAnn.predicateAccessionId
-        )
-      ) {
-        const semanticAnnotationUpdate = new openbis.SemanticAnnotationUpdate()
-        semanticAnnotationUpdate.setSemanticAnnotationId(semanticAnnotation.permId)
-        semanticAnnotationUpdate.setPredicateOntologyId(semanticAnnotation.predicateOntologyId)
-        semanticAnnotationUpdate.setPredicateOntologyVersion(semanticAnnotation.predicateOntologyVersion)
-        semanticAnnotationUpdate.setPredicateAccessionId(semanticAnnotation.predicateAccessionId)
-        semanticAnnotationUpdates.push(semanticAnnotationUpdate)
-      }
+      if (!semanticAnnotation.permId) return // Only update existing ones
+      const semanticAnnotationUpdate = new openbis.SemanticAnnotationUpdate()
+      semanticAnnotationUpdate.setSemanticAnnotationId(semanticAnnotation.permId)
+      semanticAnnotationUpdate.setPredicateOntologyId(semanticAnnotation.predicateOntologyId)
+      semanticAnnotationUpdate.setPredicateOntologyVersion(semanticAnnotation.predicateOntologyVersion)
+      semanticAnnotationUpdate.setPredicateAccessionId(semanticAnnotation.predicateAccessionId)
+      semanticAnnotationUpdates.push(semanticAnnotationUpdate)
     })
     return new openbis.UpdateSemanticAnnotationsOperation(semanticAnnotationUpdates)
+  }
+
+  _deletePropertySemanticAnnotationOperation(currentSemanticAnnValue) {
+    const annotationIds = currentSemanticAnnValue
+      .filter(semanticAnnotation => semanticAnnotation.permId)
+      .map(semanticAnnotation => semanticAnnotation.permId)
+    const deleteOptions = new openbis.SemanticAnnotationDeletionOptions()
+    deleteOptions.setReason('deleted via admin_ui')
+    return new openbis.DeleteSemanticAnnotationsOperation(annotationIds, deleteOptions)
   }
 
   _prepareType(type) {
