@@ -572,12 +572,17 @@ task deleteOpenbisNgUi(type: Delete) {
     delete 'dist/core-plugins/admin'
 }
 
+task deleteOpenbisElnLims(type: Delete) {
+    delete 'dist/core-plugins/eln-lims'
+}
+
 task copyOpenbisNgUiToCorePlugins(type: Copy, dependsOn: [deleteOpenbisNgUi, ':ui-admin:copyWebApp']) {
     from project(':ui-admin').file('build/core-plugins')
     into file('dist/core-plugins')
 }
 
 zipCorePlugins.dependsOn copyOpenbisNgUiToCorePlugins
+zipCorePlugins.dependsOn deleteOpenbisElnLims
 
 task generateJavadoc(type: Javadoc) {
     source = configurations.javadoc_sources.collect {
