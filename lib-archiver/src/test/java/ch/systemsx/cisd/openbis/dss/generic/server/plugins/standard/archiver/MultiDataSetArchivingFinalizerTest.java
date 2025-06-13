@@ -202,10 +202,10 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                         + "start-time=" + START_TIME_AS_STRING + ", "
                         + "wait-for-sanity-check=false, wait-for-sanity-check-initial-waiting-time=10000, wait-for-sanity-check-max-waiting-time=1800000, "
                         + "finalizer-polling-time=20000, finalizer-max-waiting-time=300000, finalizer-wait-for-t-flag=false, finalizer-sanity-check=false, status=ARCHIVED, sub-directory=my-group}\n"
-                        + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication of "
-                        + "'" + dataFileInArchive.getPath() + "' failed because the original file does not exist.",
+                        + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication failed for "
+                        + "'" + dataFileInArchive.getPath() + "' because the original file does not exist.",
                 logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed because the original file does not exist.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "' because the original file does not exist.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
         assertEquals("[[ds1] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
@@ -263,7 +263,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                         + "WARN  OPERATION.MultiDataSetArchivingFinalizer - "
                         + "No container found in Multi Data Set Archive database with container ID 42.\n",
                 logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
         assertEquals("[[ds1] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
@@ -294,7 +294,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                         + "WARN  OPERATION.MultiDataSetArchivingFinalizer - "
                         + "Archive file '" + dataFileInArchive.getPath() + "' doesn't ends with 'wrong/path'.\n",
                 logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
         assertEquals("[[ds1] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
@@ -326,7 +326,7 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                         + "Data sets in Multi Data Set Archive database are different from provided data sets: "
                         + "Provided data sets: [ds1]. Data sets in Multi Data Set Archive database: [unknown]\n",
                 logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
         assertEquals("[[ds1] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
@@ -455,11 +455,11 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "condition: 5 bytes of 13 bytes are replicated for " + dataFileInArchive + "\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition still not fulfilled after 5min, "
                 + "condition: 5 bytes of 13 bytes are replicated for " + dataFileInArchive + "\n"
-                + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication of '"
-                + dataFileInArchive.getPath() + "' failed.", logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+                + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication failed for '"
+                + dataFileInArchive.getPath() + "'.", logRecorder.getLogContent());
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds2.getDataSetCode()).toString());
         assertEquals("[[ds1, ds2] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());
@@ -503,11 +503,11 @@ public class MultiDataSetArchivingFinalizerTest extends AbstractFileSystemTestCa
                 + "condition: 5 bytes of 13 bytes are replicated for " + dataFileInArchive + "\n"
                 + "INFO  OPERATION.MultiDataSetArchivingFinalizer - Condition still not fulfilled after 5min, "
                 + "condition: 5 bytes of 13 bytes are replicated for " + dataFileInArchive + "\n"
-                + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication of '"
-                + dataFileInArchive.getPath() + "' failed.", logRecorder.getLogContent());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+                + "ERROR OPERATION.MultiDataSetArchivingFinalizer - Replication failed for '"
+                + dataFileInArchive.getPath() + "'.", logRecorder.getLogContent());
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds1.getDataSetCode()).toString());
-        assertEquals("ERROR: \"Replication of '" + dataFileInArchive.getPath() + "' failed.\"",
+        assertEquals("ERROR: \"Replication failed for '" + dataFileInArchive.getPath() + "'.\"",
                 status.tryGetStatusByDataset(ds2.getDataSetCode()).toString());
         assertEquals("[[ds1, ds2] - AVAILABLE]", updatedStatus.toString());
         assertEquals(false, updatedStatus.get(0).isPresentInArchive());

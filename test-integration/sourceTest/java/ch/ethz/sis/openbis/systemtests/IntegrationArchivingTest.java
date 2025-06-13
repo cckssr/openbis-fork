@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -475,7 +476,7 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
 
         List<File> dataSetArchives =
                 Arrays.stream(finalDestinationFiles).filter(file -> file.getName().endsWith(".tar") && file.getName().contains(dataSetCode))
-                        .sorted(Comparator.comparing(File::lastModified).reversed()).toList();
+                        .sorted(Comparator.comparing(File::lastModified).reversed()).collect(Collectors.toList());
 
         if (dataSetArchives.isEmpty())
         {
