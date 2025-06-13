@@ -20,17 +20,16 @@ public class MessagesDatabaseFacade implements IMessagesDatabaseFacade
     @Override public void create(Message message)
     {
         MessagesDatabase messagesDatabase = new MessagesDatabase(dataSource);
-        messagesDatabase.begin();
-        messagesDatabase.getMessagesDAO().create(message);
-        messagesDatabase.commit();
+        messagesDatabase.execute(() ->
+        {
+            messagesDatabase.getMessagesDAO().create(message);
+            return null;
+        });
     }
 
     @Override public List<Message> listByTypesNotConsumed(final List<String> messageTypes)
     {
         MessagesDatabase messagesDatabase = new MessagesDatabase(dataSource);
-        messagesDatabase.begin();
-        List<Message> messages = messagesDatabase.getMessagesDAO().listByTypesNotConsumed(messageTypes);
-        messagesDatabase.commit();
-        return messages;
+        return messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO().listByTypesNotConsumed(messageTypes));
     }
 }

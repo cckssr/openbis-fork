@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -35,6 +36,7 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.validator.DataSetPE
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 
 /**
@@ -52,7 +54,7 @@ abstract class AbstractArchiveUnarchiveDataSetExecutor
     protected ICommonBusinessObjectFactory businessObjectFactory;
 
     protected void doArchiveUnarchive(IOperationContext context, List<? extends IDataSetId> dataSetIds, Object options,
-            IArchiveUnarchiveAction action)
+            IDssArchiveUnarchiveAction dssAction, IAfsArchiveUnarchiveAction afsAction)
     {
         if (context == null)
         {
@@ -68,7 +70,7 @@ abstract class AbstractArchiveUnarchiveDataSetExecutor
         }
 
         Map<IDataSetId, DataPE> dataSetMap = mapDataSetByIdExecutor.map(context, dataSetIds);
-        Set<String> dataSetCodes = new HashSet<String>();
+        Set<DataPE> dataSets = new HashSet<>();
 
         for (IDataSetId dataSetId : dataSetIds)
         {
@@ -78,30 +80,61 @@ abstract class AbstractArchiveUnarchiveDataSetExecutor
                 throw new ObjectNotFoundException(dataSetId);
             }
             assertAuthorization(context, dataSetId, dataSet);
-            if (false == dataSetCodes.contains(dataSet.getCode()))
+            if (!dataSets.contains(dataSet))
             {
                 DataSetPEByExperimentOrSampleIdentifierValidator validator = new DataSetPEByExperimentOrSampleIdentifierValidator();
                 validator.init(new AuthorizationDataProvider(daoFactory));
 
-                if (false == validator.doValidation(context.getSession().tryGetPerson(), dataSet))
+                if (!validator.doValidation(context.getSession().tryGetPerson(), dataSet))
                 {
                     throw new UnauthorizedObjectAccessException(dataSetId);
                 }
-                dataSetCodes.add(dataSet.getCode());
+                dataSets.add(dataSet);
             }
         }
 
-        IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
-        dataSetTable.loadByDataSetCodes(new ArrayList<String>(dataSetCodes), false, true);
-        action.execute(dataSetTable);
+        List<DataPE> dssDataSets = new ArrayList<>();
+        List<DataPE> afsDataSets = new ArrayList<>();
+
+        for (DataPE dataSet : dataSets)
+        {
+            if (Constants.AFS_DATA_STORE_CODE.equals(dataSet.getDataStore().getCode()))
+            {
+                afsDataSets.add(dataSet);
+            } else
+            {
+                dssDataSets.add(dataSet);
+            }
+        }
+
+        if (!dssDataSets.isEmpty())
+        {
+            List<String> dataSetCodes = dssDataSets.stream().map(DataPE::getCode).collect(Collectors.toList());
+            IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
+            dataSetTable.loadByDataSetCodes(dataSetCodes, false, true);
+            dssAction.execute(dataSetTable);
+        }
+
+        if (!afsDataSets.isEmpty())
+        {
+            List<String> dataSetCodes = afsDataSets.stream().map(DataPE::getCode).collect(Collectors.toList());
+            afsAction.execute(dataSetCodes);
+        }
     }
 
     protected abstract void assertAuthorization(IOperationContext context, IDataSetId dataSetId, DataPE dataSet);
 
-    public static interface IArchiveUnarchiveAction
+    public interface IDssArchiveUnarchiveAction
     {
 
-        public void execute(IDataSetTable dataSetTable);
+        void execute(IDataSetTable dataSetTable);
+
+    }
+
+    public interface IAfsArchiveUnarchiveAction
+    {
+
+        void execute(List<String> dataSetCodes);
 
     }
 

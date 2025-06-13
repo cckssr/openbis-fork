@@ -9,7 +9,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -27,8 +26,10 @@ import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.unarchive.DataSetUnarchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.PhysicalDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -221,7 +222,9 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
         log("create archiving message");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+        DataSetArchiveOptions options = new DataSetArchiveOptions();
+        options.setRemoveFromDataStore(true);
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
 
         log("consume archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
@@ -244,7 +247,7 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         TestPathInfoDatabaseFeedingTask.executeOnce();
 
         log("create archiving message again");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
 
         log("consume archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
@@ -289,7 +292,8 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         }
 
         log("create unarchiving message");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().unarchiveDataSets(List.of(ownerId));
+        DataSetUnarchiveOptions unarchiveOptions = new DataSetUnarchiveOptions();
+        openBIS.unarchiveDataSets(List.of(new DataSetPermId(ownerId)), unarchiveOptions);
 
         log("consume unarchiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);
@@ -348,7 +352,9 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         openBIS.updateDataSets(List.of(update));
 
         log("create archiving message");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+        DataSetArchiveOptions options = new DataSetArchiveOptions();
+        options.setRemoveFromDataStore(true);
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
 
         AssertionUtil.assertContainsNot("All data sets to be archived have archiving status != 'AVAILABLE'. Nothing will be archived.",
                 TestLogger.getRecordedLog());
@@ -389,7 +395,9 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
         log("create archiving message");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+        DataSetArchiveOptions options = new DataSetArchiveOptions();
+        options.setRemoveFromDataStore(true);
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
 
         AssertionUtil.assertContainsNot("Archiving for dataset " + ownerId + " finished with the status: ERROR", TestLogger.getRecordedLog());
 
@@ -440,7 +448,9 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.AVAILABLE);
 
         log("create archiving message");
-        ArchiverServiceProviderFactory.getInstance().getOpenBISService().archiveDataSets(List.of(ownerId), true, Map.of());
+        DataSetArchiveOptions options = new DataSetArchiveOptions();
+        options.setRemoveFromDataStore(true);
+        openBIS.archiveDataSets(List.of(new DataSetPermId(ownerId)), options);
 
         log("consume archiving message");
         TestMessagesConsumerMaintenanceTask.executeOnce(ARCHIVING_MESSAGES_CONSUMER_TASK);

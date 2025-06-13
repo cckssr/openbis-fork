@@ -58,8 +58,6 @@ public interface IOpenBISService
 
     void archiveDataSets(List<String> dataSetCodes, boolean removeFromDataStore, Map<String, String> options) throws UserFailureException;
 
-    void unarchiveDataSets(List<String> dataSetCodes) throws UserFailureException;
-
     void notifyDatasetAccess(String dataSetCode);
 
 }
