@@ -53,7 +53,7 @@ class Download extends React.Component {
             color={color}
             size={buttonSize}
             variant={className ? '' : 'outlined'}
-            disabled={multiselectedFiles.size === 0}
+            disabled={multiselectedFiles.size === 0 || disabled}
             startIcon={<DownloadIcon />}
             onClick={onDownload}
             >

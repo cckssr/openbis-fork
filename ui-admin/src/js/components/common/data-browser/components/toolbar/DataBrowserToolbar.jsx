@@ -223,7 +223,9 @@ class DataBrowserToolbar extends React.Component {
     const {
       classes,                 
       owner,  
-      extOpenbis    
+      extOpenbis,
+      frozen,
+      archived
     } = this.props
 
     const {
@@ -248,6 +250,8 @@ class DataBrowserToolbar extends React.Component {
           spaceStatusChanged={this.fetchSpaceStatus}
           onDownload={this.handleDownload}
           controller={this.controller}
+          frozen={frozen}
+          archived={archived}
         />
         
         <RightToolbar 
@@ -258,6 +262,7 @@ class DataBrowserToolbar extends React.Component {
           editable={editable}
           onViewTypeChange={this.handleViewTypeChange}
           controller={this.controller}
+          frozen={frozen}
           afterUpload={ () => {
                           this.fetchSpaceStatus()
                           this.onGridActionComplete()
@@ -275,7 +280,9 @@ class DataBrowserToolbar extends React.Component {
       owner,
       extOpenbis,
       className,
-      primaryClassName
+      primaryClassName,
+      frozen,
+      archived
     } = this.props
 
     const {
@@ -299,10 +306,11 @@ class DataBrowserToolbar extends React.Component {
             primaryClassName={primaryClassName}
             controller={this.controller}
             afterUpload={ () => {
-              this.fetchSpaceStatus()
-              this.onGridActionComplete()
+                this.fetchSpaceStatus()
+                this.onGridActionComplete()
+                }
             }
-          }
+            frozen={frozen}
             />
 
           <LeftToolbarButtons
@@ -319,6 +327,8 @@ class DataBrowserToolbar extends React.Component {
             classes={classes}
             className={className}
             controller={this.controller}
+            frozen={frozen}
+            archived={archived}
             />
           
           <ViewSwitch
@@ -350,7 +360,9 @@ class DataBrowserToolbar extends React.Component {
       owner,
       extOpenbis,
       className,
-      primaryClassName
+      primaryClassName,
+      frozen,
+      archived
     } = this.props
 
     const {
@@ -374,10 +386,11 @@ class DataBrowserToolbar extends React.Component {
             primaryClassName={primaryClassName}
             controller={this.controller}
             afterUpload={ () => {
-              this.fetchSpaceStatus()
-              this.onGridActionComplete()
+                  this.fetchSpaceStatus()
+                  this.onGridActionComplete()
+                }
             }
-          }
+            frozen={frozen}
             />
 
           <LeftToolbarButtons
@@ -394,6 +407,8 @@ class DataBrowserToolbar extends React.Component {
             classes={classes}
             className={className}
             controller={this.controller}
+            frozen={frozen}
+            archived={archived}
             />
         </div>
       </ResizeObserver>

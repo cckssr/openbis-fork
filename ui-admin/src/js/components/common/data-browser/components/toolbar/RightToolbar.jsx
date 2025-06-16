@@ -77,7 +77,8 @@ class RightToolbar extends React.Component {
       selected,
       controller,
       onChange,
-      afterUpload
+      afterUpload,
+      frozen
     } = this.props
 
     return (
@@ -100,6 +101,7 @@ class RightToolbar extends React.Component {
           editable={editable}
           controller={controller}
           afterUpload={afterUpload}
+          frozen={frozen}
         />
       </div>
     )

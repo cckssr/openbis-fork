@@ -491,7 +491,9 @@ class DataBrowser extends React.Component {
           <DataBrowserToolbar                              
             owner={id}          
             extOpenbis={this.props.extOpenbis}
-            viewType={viewType}        
+            viewType={viewType}
+            frozen={this.props.frozen}
+            archived={this.props.archived}
           />
         }
         <InfoBar
