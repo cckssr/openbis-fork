@@ -82,7 +82,7 @@ $.extend(DefaultProfile.prototype, {
 		}
 
         this.legacyExports = {
-            enable : false
+            enable : true
         }
 
 		this.MainMenuNodeNames = {
