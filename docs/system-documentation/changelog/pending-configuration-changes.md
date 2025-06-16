@@ -13,6 +13,118 @@ echo -n "Starting Data Store Server "
 # rotateLogFiles $LOGFILE $MAXLOGS  # <- uncomment this line to bring back log rotation
 ```
 
+#### 2. Cycle Detection in Hierarchy Graphs
+
+In rare cases, hierarchy graphs may not display due to cycles in the database. To check for cycles, run the provided SQL query.
+
+Note:
+If the query runs indefinitely or causes memory/disk issues, an error will be shown but the system will continue to function normally.
+
+Please report such errors to the openBIS team. A separate tool will be provided for reliable cycle detection.
+ 
+```sql
+
+(WITH RECURSIVE cycle_detector AS (
+  SELECT
+    sample_id_child,
+    sample_id_parent,
+    relationship_id,
+    ARRAY[sample_id_child] AS path,
+    sample_id_child AS root
+  FROM sample_relationships_all
+  WHERE relationship_id IN (1,3)
+  
+  UNION ALL
+  
+  SELECT
+    sr.sample_id_child,
+    sr.sample_id_parent,
+    sr.relationship_id,
+    cd.path || sr.sample_id_child,
+    cd.root
+  FROM cycle_detector cd
+  JOIN sample_relationships_all sr
+    ON sr.sample_id_child = cd.sample_id_parent
+  AND sr.relationship_id = cd.relationship_id 
+    WHERE NOT sr.sample_id_child = ANY(cd.path)
+),
+
+cycles AS (
+  SELECT DISTINCT root, path || sample_id_parent AS cycle_path
+  FROM cycle_detector
+  WHERE sample_id_parent = root
+    AND root = (SELECT MIN(x) FROM unnest(path || sample_id_parent) AS x)
+)
+SELECT 
+  'sample_cycle' AS entity,
+  c.root AS cycle_root,
+  c.cycle_path,
+  COUNT(s.id) AS num_entities,
+  JSONB_AGG(
+    JSON_BUILD_OBJECT(
+      'entity_id', s.id,
+      'sample_identifier', s.sample_identifier,
+      'perm_id', s.perm_id     
+    )
+    ORDER BY array_position(c.cycle_path, s.id)
+  ) AS entities_details
+FROM cycles c
+LEFT JOIN samples_all s ON s.id = ANY(c.cycle_path)
+GROUP BY c.root, c.cycle_path)
+
+UNION 
+
+(WITH RECURSIVE cycle_detector AS (
+
+  SELECT
+    data_id_child,
+    data_id_parent,
+    relationship_id,
+    ARRAY[data_id_child] AS path,
+    data_id_child AS root
+  FROM data_set_relationships_all
+  WHERE relationship_id IN (1,3)
+  
+  UNION ALL
+  
+  SELECT
+    dr.data_id_child,
+    dr.data_id_parent,
+    dr.relationship_id,
+    cd.path || dr.data_id_child,
+    cd.root
+  FROM cycle_detector cd
+  JOIN data_set_relationships_all dr
+    ON dr.data_id_child = cd.data_id_parent
+    AND dr.relationship_id = cd.relationship_id 
+    WHERE NOT dr.data_id_child = ANY(cd.path)
+),
+
+cycles AS (
+  SELECT DISTINCT root, path || data_id_parent AS cycle_path
+  FROM cycle_detector
+  WHERE data_id_parent = root
+    AND root = (SELECT MIN(x) FROM unnest(path || data_id_parent) AS x)
+)
+
+SELECT 
+  'dataset_cycle' AS entity,
+  c.root AS cycle_root,
+  c.cycle_path,
+  COUNT(d.id) AS num_entities,
+  JSONB_AGG(
+    JSON_BUILD_OBJECT(
+      'entity_id', d.id,
+      'code', d.code
+    )
+    ORDER BY array_position(c.cycle_path, d.id)
+  ) AS entities_details
+FROM cycles c
+LEFT JOIN data_all d ON d.id = ANY(c.cycle_path)
+GROUP BY c.root, c.cycle_path);
+
+```
+
 ## Version 20.10.9
 
 #### 1. Changes to ELN LIMS Dropbox, new configuration keys for DSS service.properties.
