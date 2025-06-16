@@ -17,7 +17,7 @@ import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
-
+import { SpaceFormController } from './new-forms/controllers/SpaceFormController.tsx'
 
 const styles = theme => ({
   tabsPanel: {
@@ -41,7 +41,7 @@ class DatabaseComponent extends React.PureComponent {
   async componentDidMount() {
     try {
       const { object } = this.props
-
+      console.log(object);
       let json = null
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
@@ -125,10 +125,10 @@ class DatabaseComponent extends React.PureComponent {
 
   renderImagingDataset(object) {
     return <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
-        objId={object.id}
-        objType={object.type}
-        extOpenbis={openbis} 
-        showSemanticAnnotations={true}/>
+      objId={object.id}
+      objType={object.type}
+      extOpenbis={openbis}
+      showSemanticAnnotations={true} />
   }
 
   getGridSettingsId() {
@@ -162,9 +162,10 @@ class DatabaseComponent extends React.PureComponent {
       <Container>
         <TabContext value={value}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value} onChange={this.handleTabChange} 
-            textColor='secondary'
-            indicatorColor='secondary'>
+            <Tabs value={value}
+              onChange={this.handleTabChange}
+              textColor='secondary'
+              indicatorColor='secondary'>
               <Tab label={messages.get(messages.FILES)} value="0" />
               <Tab label={messages.get(messages.IMAGES)} value="1" />
             </Tabs>
@@ -179,9 +180,9 @@ class DatabaseComponent extends React.PureComponent {
               viewType='list'
               extOpenbis={openbis}
               onLoadDisplaySettings={this.loadGridSettings}
-              onStoreDisplaySettings={this.onGridSettingsChange}              
+              onStoreDisplaySettings={this.onGridSettingsChange}
               leftToolbar={true}
-              
+
             />
           </TabPanel>
           <TabPanel classes={{ root: classes.tabsPanel }} value="1">
@@ -200,9 +201,11 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   renderJson() {
+    const { object } = this.props
     return (
       <Container>
-        <pre>{JSON.stringify(this.state.json || {}, null, 2)}</pre>
+        <SpaceFormController openbisFacade={openbis}/>
+        {object.type === objectType.PROJECT && (<pre>{JSON.stringify(this.state.json || {}, null, 2)}</pre>)}
       </Container>
     )
   }
@@ -215,8 +218,8 @@ class DatabaseComponent extends React.PureComponent {
     const { object } = this.props
     const { properties } = this.state.json
     if (object.type === objectType.DATA_SET && constants.IMAGING_DATA_CONFIG in properties) return this.renderImagingDataset(object)
-    return this.state.showDataBrowser ? this.renderDataBrowsers()
-      : this.renderJson()
+    //return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
+    return this.renderJson()
   }
 }
 
