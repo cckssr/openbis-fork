@@ -82,7 +82,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 task executeScreeningOpenBisDev(type: JavaExec) {
     mainClass = 'org.eclipse.jetty.runner.Runner'
     classpath = sourceSets.main.runtimeClasspath + configurations.devRuntime
-    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=../server-application-server/etc/log.xml',
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=../server-application-server/etc/logging.properties',
              '-Djavax.net.ssl.trustStore=../server-application-server/dist/server/openBIS.keystore',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
              '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-ea'])
@@ -100,7 +100,7 @@ task executeScreeningDataStoreDev(type: JavaExec) {
     mainClass = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
     classpath = sourceSets.main.runtimeClasspath + configurations.devRuntime +
             files("../core-plugin-openbis/dist/core-plugins/microscopy/3/dss/drop-boxes/MicroscopyDropbox/lib/MicroscopyReader_20190521113500.jar")
-    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=../server-original-data-store/etc/log.xml',
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=../server-original-data-store/etc/logging.properties',
              '-Djavax.net.ssl.trustStore=../server-original-data-store/dist/etc/openBIS.keystore',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog',
              '-Dorg.mortbay.util.FileResource.checkAliases=false', '-Xmx2048M', '-ea'])

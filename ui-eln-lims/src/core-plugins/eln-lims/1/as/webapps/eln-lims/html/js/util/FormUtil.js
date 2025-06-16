@@ -2873,29 +2873,19 @@ var FormUtil = new function() {
                      $unarchiveButton.append('Unarchive')
                      $("body").off('click', '#unarchive-btn-'+permId);
                      $("body").on('click', '#unarchive-btn-'+permId, function() {
-                       var parameters = {
-                            "method" : "unarchive",
-                            "sessionToken" : mainController.serverFacade.getSession(),
-                            "permId" : permId
-                       }
-                       mainController.serverFacade.customASService(parameters, function(result) {
-                            if(result.status === "OK") {
+                       mainController.serverFacade.unarchiveDataSets([permId], function(result){
+                           if(result){
                                 Util.showSuccess("Unarchive triggered.", function() {
                                   container.empty();
                                   FormUtil.archivingAfsDataSectionButtons(permId, container);
                                   Util.unblockUI();
                                 });
-                            } else {
-                                Util.showUserError('Unarchiving failed.', function() {
-                                    Util.unblockUI();
-                                });
-                            }
-                       }, "afs-eln-lims-api",  Util.showError);
+                           }
+                       });
                      });
                     container.append($unarchiveButton).append('&nbsp;')
                     archiveTooltip = "Unarchive";
                 }
-
             }
 
         }

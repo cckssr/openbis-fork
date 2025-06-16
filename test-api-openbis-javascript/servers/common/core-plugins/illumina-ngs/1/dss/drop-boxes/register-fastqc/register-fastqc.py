@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @note
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 Expects as incoming folder: Project_120427_SN792_0110_AD0YCGACXX_1
 
 @author:

@@ -20,7 +20,7 @@ Processes each flow lane of a Sequencing run and attaches the fastq files to
 the correct corresponding library samples
 
 @note:
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 Expects as incoming folder:
 Project_<Flow Cell>_<Lane>
 e.g.Project_110715_SN792_0054_BC035RACXX_1
@@ -30,7 +30,7 @@ e.g.Project_110715_SN792_0054_BC035RACXX_1
 Manuel Kohler
 
 Note: 
-print statements go to: ~openbis/sprint/datastore_server/log/startup_log.txt
+print statements go to: ~openbis/sprint/datastore_server/log/datastore_server.log
 '''
 
 import os

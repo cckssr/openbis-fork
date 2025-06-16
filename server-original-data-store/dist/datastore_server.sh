@@ -50,28 +50,6 @@ checkNotRoot()
   fi
 }
 
-rotateLogFiles()
-{
-  logfile=$1
-  max=$2
-  if [ -z "$logfile" ]; then
-    echo "Error: rotateLogFiles: logfile argument missing"
-    return 1
-  fi
-  if [ -z "$max" ]; then
-    echo "Error: rotateLogFiles: max argument missing"
-    return 1
-  fi
-  test -f $logfile.$max && rm $logfile.$max
-  n=$max
-  while [ $n -gt 1 ]; do
-    nnew=$(($n-1))
-    test -f $logfile.$nnew && mv $logfile.$nnew $logfile.$n
-    n=$nnew
-  done
-  test -f $logfile && mv $logfile $logfile.1
-}
-
 getStatus()
 {
   if [ -f $PIDFILE ]; then
@@ -111,8 +89,8 @@ printStatus()
 
 PIDFILE=${DATASTORE_SERVER_PID:-datastore_server.pid}
 CONFFILE=etc/datastore_server.conf
-LOGFILE=log/datastore_server_log.txt
-STARTUPLOG=log/startup_log.txt
+LOGFILE=log/datastore_server.log
+STARTUPLOG=log/datastore_server.log
 SUCCESS_MSG="Data Store Server ready and waiting for data"
 LIB_FOLDER=lib
 # contains custom libraries e.g. JDBC drivers for external databases
@@ -181,9 +159,8 @@ case "$command" in
     fi
 
     echo -n "Starting Data Store Server "
-#    rotateLogFiles $LOGFILE $MAXLOGS
     shift 1
-    "${CMD}" $COMMON_OPTIONS "$@" > $STARTUPLOG 2>&1 & echo $! > $PIDFILE
+    "${CMD}" $COMMON_OPTIONS "$@" >> $STARTUPLOG 2>&1 & echo $! > $PIDFILE
     if [ $? -eq 0 ]; then
       # wait for initial self-test to finish
       n=0
@@ -278,7 +255,7 @@ case "$command" in
     echo "  $0 show-command-queue  -  show the queue of commands from openBIS AS waiting to be executed"
     echo "  $0 log-db-connections-separate-log-file on / off  -  switch on / off logging messages related to database connections to log/datastore_server_db_connections.txt"
     echo "  $0 log-db-connections  -  log the currently active database connections"
-    echo "  $0 log-thread-dump  -  log the current thread dump to log/startup_log.txt"
+    echo "  $0 log-thread-dump  -  log the current thread dump to log/datastore_server.log"
     echo "  $0 debug-db-connections on / off -  switch on / off database connection debug logging"
     echo "  $0 record-stacktrace-db-connections on / off -  switch on / off database connection stacktrace recording"
     echo "  $0 log-service-calls on / off -  switch on / off logging of start and end of service calls to separate file"
@@ -309,7 +286,7 @@ case "$command" in
       isPIDRunning $PID
       if [ $? -eq 0 ]; then
         kill -3 $PID
-        echo "Thread dump logged to log/startup_log.txt"
+        echo "Thread dump logged to log/datastore_server.log"
       else
         echo "Error: Data Store Server not running."
         exit 100

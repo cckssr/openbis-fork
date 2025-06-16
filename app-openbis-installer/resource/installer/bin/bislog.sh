@@ -16,4 +16,4 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
-less $BASE/../servers/openBIS-server/jetty/logs/openbis_log.txt
+less $BASE/../servers/openBIS-server/jetty/logs/openbis.log

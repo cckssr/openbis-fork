@@ -78,7 +78,7 @@ public final class DefaultReturnValueFilterTest
         validator = context.mock(IValidator.class);
         defaultReturnValueFilter = new DefaultReturnValueFilter(null);
         logRecorder = LogRecordingUtils.createRecorder("%m%n", Level.DEBUG);
-        // Because 'log.xml' set the root logger level to INFO, we have to reset it here to DEBUG if
+        // Because 'logging.properties' set the root logger level to INFO, we have to reset it here to DEBUG if
         // we want to catch the messages we are looking for.
         final Logger rootLogger = Logger.getRootLogger();
         previousLevel = rootLogger.getLevel();

@@ -125,7 +125,7 @@ public final class BufferedAppender extends Handler {
             int start = messageBytes.length - maxBufferSize;
             byte[] trimmed = new byte[maxBufferSize];
             System.arraycopy(messageBytes, start, trimmed, 0, maxBufferSize);
-            LogLog.debug("BufferedAppender: New log message is too large; only its tail is kept.");
+            LoggerDiagnostics.debug("BufferedAppender: New log message is too large; only its tail is kept.");
             messageBytes = trimmed;
             logRecorder.reset();
         }
@@ -135,7 +135,7 @@ public final class BufferedAppender extends Handler {
             byte[] current = logRecorder.toByteArray();
             int totalSize = current.length + messageBytes.length;
             int dropLength = maxBufferSize/4;
-            LogLog.debug(
+            LoggerDiagnostics.debug(
                     "BufferedAppender: Log buffer exceeded capacity. Dropping "+ dropLength +" bytes (approx. 25%% of max capacity)" +
                             " from oldest log entries.");
 

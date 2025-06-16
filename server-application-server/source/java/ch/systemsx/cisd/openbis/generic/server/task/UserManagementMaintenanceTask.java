@@ -50,7 +50,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
 
     static final String AUDIT_LOG_FILE_PATH_PROPERTY = "audit-log-file-path";
 
-    static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit_log.txt";
+    static final String DEFAULT_AUDIT_LOG_FILE_PATH = "logs/user-management-audit.log";
 
     static final String SHARES_MAPPING_FILE_PATH_PROPERTY = "shares-mapping-file-path";
 

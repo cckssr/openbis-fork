@@ -17,6 +17,8 @@
 
 package ch.systemsx.cisd.common.logging.configtest;
 
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.logging.LogInitializer;
 import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
 import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
@@ -26,11 +28,9 @@ import org.testng.annotations.Test;
 import org.testng.Assert;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.logging.*;
 import java.util.stream.Stream;
 
@@ -50,9 +50,19 @@ public class LoggingConfigTest {
     public void testAllFilesAreCreatedAndContainMessages() throws IOException {
         // fire log events
         Logger root     = Logger.getLogger("");
-        Logger auth     = Logger.getLogger("AUTH");
-        Logger tracking = Logger.getLogger("TRACKING");
-        Logger access   = Logger.getLogger("ACCESS");
+//        Logger auth     = Logger.getLogger("AUTH");
+//        Logger tracking = Logger.getLogger("TRACKING");
+//        Logger access   = Logger.getLogger("ACCESS");
+
+        final org.apache.log4j.Logger
+                auth = LogFactory.getLogger(LogCategory.AUTH,
+                LoggingConfigTest.class);
+
+        final org.apache.log4j.Logger tracking = LogFactory.getLogger(LogCategory.TRACKING,
+                LoggingConfigTest.class);
+
+        final org.apache.log4j.Logger access = LogFactory.getLogger(LogCategory.ACCESS,
+                LoggingConfigTest.class);
 
         root.info("root-hello");
         auth.info("auth-hello");
@@ -65,23 +75,89 @@ public class LoggingConfigTest {
         }
 
         // verify files exist
-        Path defaultLog = Path.of("logs/openbis_log.txt");
-        Path authLog    = Path.of("logs/openbis_auth_log.txt");
-        Path usageLog   = Path.of("logs/openbis_usage_log.txt");
+        Path defaultLog = Path.of("logs/openbis.log");
+        Path authLog    = Path.of("logs/openbis_auth.log");
+        Path usageLog   = Path.of("logs/openbis_usage.log");
+        Path parentDir = defaultLog.getParent();
+        String dirListing = Arrays.toString(parentDir.toFile().list());
 
-        Assert.assertTrue(Files.exists(defaultLog), "Default log not created");
-        Assert.assertTrue(Files.exists(authLog),    "Auth log not created");
-        Assert.assertTrue(Files.exists(usageLog),   "Usage log not created");
+        boolean existsDefault = Files.exists(defaultLog);
+        Assert.assertTrue(
+                existsDefault,
+                String.format(
+                        "Expected default log <%s> to exist, but it does not.%n" +
+                                "Directory listing (%s): %s",
+                        defaultLog.getFileName(),
+                        defaultLog.getParent().toAbsolutePath(),
+                        dirListing
+                )
+        );
 
-        // verify content
+        boolean existsAuth = Files.exists(authLog);
+        Assert.assertTrue(
+                existsAuth,
+                String.format(
+                        "Expected auth log <%s> to exist, but it does not.%n" +
+                                "Directory listing (%s): %s",
+                        authLog.getFileName(),
+                        parentDir.toAbsolutePath(),
+                        dirListing
+                )
+        );
+
+        boolean existsUsage = Files.exists(usageLog);
+        Assert.assertTrue(
+                existsUsage,
+                String.format(
+                        "Expected usage log <%s> to exist, but it does not.%n" +
+                                "Directory listing (%s): %s",
+                        usageLog.getFileName(),
+                        parentDir.toAbsolutePath(),
+                        dirListing
+                )
+        );
+
+        // 2) Verify each file’s contents, and if a substring is missing, show the entire content
         String defContent   = Files.readString(defaultLog);
         String authContent  = Files.readString(authLog);
         String usageContent = Files.readString(usageLog);
 
-        Assert.assertTrue(defContent.contains("root-hello"),   "root message missing in default log");
-        Assert.assertTrue(authContent.contains("auth-hello"),  "auth message missing in auth log");
-        Assert.assertTrue(usageContent.contains("track-hello"),  "tracking message missing in usage log");
-        Assert.assertTrue(usageContent.contains("access-hello"), "access message missing in usage log");
+        Assert.assertTrue(
+                defContent.contains("root-hello"),
+                String.format(
+                        "Expected default log <%s> to contain \"root-hello\", but its contents were:%n---%n%s%n---",
+                        defaultLog.getFileName(),
+                        defContent.isEmpty() ? "(file is empty)" : defContent
+                )
+        );
+
+        Assert.assertTrue(
+                authContent.contains("auth-hello"),
+                String.format(
+                        "Expected auth log <%s> to contain \"auth-hello\", but its contents were:%n---%n%s%n---",
+                        authLog.getFileName(),
+                        authContent.isEmpty() ? "(file is empty)" : authContent
+                )
+        );
+
+        Assert.assertTrue(
+                usageContent.contains("track-hello"),
+                String.format(
+                        "Expected usage log <%s> to contain \"track-hello\", but its contents were:%n---%n%s%n---",
+                        usageLog.getFileName(),
+                        usageContent.isEmpty() ? "(file is empty)" : usageContent
+                )
+        );
+
+        Assert.assertTrue(
+                usageContent.contains("access-hello"),
+                String.format(
+                        "Expected usage log <%s> to contain \"access-hello\", but its contents were:%n---%n%s%n---",
+                        usageLog.getFileName(),
+                        usageContent
+                )
+        );
+
     }
 
     /**
@@ -114,7 +190,7 @@ public class LoggingConfigTest {
         Handler[] rootHandlers = Logger.getLogger("").getHandlers();
         boolean hasDefault = Arrays.stream(rootHandlers)
                 .anyMatch(h -> h instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)h).getLogFileNamePattern().contains("openbis_log.txt"));
+                        && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis.log"));
         boolean hasConsole = Arrays.stream(rootHandlers)
                 .anyMatch(h -> h instanceof ConsoleHandler);
         Assert.assertTrue(hasDefault, "DefaultFileHandler should be on root logger");
@@ -125,25 +201,25 @@ public class LoggingConfigTest {
         Assert.assertEquals(authHandlers.length, 2, "AUTH should have 2 handlers");
         Assert.assertTrue(Arrays.stream(authHandlers)
                         .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileNamePattern().contains("openbis_auth_log.txt")),
+                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_auth.log")),
                 "AuthFileHandler missing on AUTH logger");
         Assert.assertTrue(Arrays.stream(authHandlers)
                         .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileNamePattern().contains("openbis_usage_log.txt")),
+                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_usage.log")),
                 "UsageFileHandler missing on AUTH logger");
 
         // TRACKING
         Handler[] trackHandlers = Logger.getLogger("TRACKING").getHandlers();
         Assert.assertEquals(trackHandlers.length, 1, "TRACKING should have exactly 1 handler");
         Assert.assertTrue(trackHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)trackHandlers[0]).getLogFileNamePattern().contains("openbis_usage_log.txt"),
+                        && ((DailyRollingFileHandler)trackHandlers[0]).getLogFileName().contains("openbis_usage.log"),
                 "UsageFileHandler missing on TRACKING logger");
 
         // ACCESS
         Handler[] accessHandlers = Logger.getLogger("ACCESS").getHandlers();
         Assert.assertEquals(accessHandlers.length, 1, "ACCESS should have exactly 1 handler");
         Assert.assertTrue(accessHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)accessHandlers[0]).getLogFileNamePattern().contains("openbis_usage_log.txt"),
+                        && ((DailyRollingFileHandler)accessHandlers[0]).getLogFileName().contains("openbis_usage.log"),
                 "UsageFileHandler missing on ACCESS logger");
     }
 

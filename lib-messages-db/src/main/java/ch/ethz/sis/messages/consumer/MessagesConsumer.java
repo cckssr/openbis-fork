@@ -129,7 +129,7 @@ public class MessagesConsumer
                     lastSeenMessage = new LastSeenMessage();
                     lastSeenMessage.setConsumerId(consumerId);
                     lastSeenMessage.setLastSeenMessageId(message.getId());
-                    messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage);
+                    lastSeenMessage.setId(messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage));
                 } else
                 {
                     lastSeenMessage.setLastSeenMessageId(message.getId());

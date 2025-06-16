@@ -2,7 +2,7 @@
 Processes each flow lane of a Sequencing run
 
 Note: 
-print statements go to: ~openbis/sprint/datastore_server/log/startup_log.txt
+print statements go to: ~openbis/sprint/datastore_server/log/datastore_server.log
 '''
 
 import os
