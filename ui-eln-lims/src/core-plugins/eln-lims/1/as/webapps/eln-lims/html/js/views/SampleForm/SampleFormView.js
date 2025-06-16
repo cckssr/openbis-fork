@@ -2005,7 +2005,8 @@
 						objKind: "object",	
 						viewType:'list',					
 						withoutToolbar: true,
-						extOpenbis: _this.extOpenbis
+						extOpenbis: _this.extOpenbis,
+						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
 					}
 					let configKey = "AFS-WIDGET-KEY";
 										
@@ -2069,6 +2070,10 @@
 		this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
 			let $element = $("<div>")
 			const _this = this
+			let isArchived = false;
+			if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
+			    isArchived = _this._sampleFormModel.afs_data.physicalData.presentInArchive;
+			}
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
 				"as/dto/experiment/id/ExperimentPermId",
@@ -2081,7 +2086,9 @@
 						viewType:'list',
 						className :'btn btn-default',
 						primaryClassName :'btn btn-primary',
-						extOpenbis: _this.extOpenbis
+						extOpenbis: _this.extOpenbis,
+						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
+						archived: isArchived
 					}
 
 
