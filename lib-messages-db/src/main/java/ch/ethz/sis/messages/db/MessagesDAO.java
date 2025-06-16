@@ -11,18 +11,21 @@ public class MessagesDAO implements IMessagesDAO
 {
 
     private static final String CREATE_SQL =
-            "INSERT INTO MESSAGES (ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID) VALUES (NEXTVAL('MESSAGES_ID_SEQ'), ?, ?, ?::JSONB, ?)";
+            "INSERT INTO MESSAGES (ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID) VALUES (?, ?, ?, ?::JSONB, ?)";
 
     private static final String UPDATE_SQL =
             "UPDATE MESSAGES SET CONSUMPTION_TIMESTAMP = ? WHERE ID = ?";
 
-    private static final String GET_NEWEST_BY_TYPES =
+    private static final String GET_NEXT_ID_SQL =
+            "SELECT NEXTVAL('MESSAGES_ID_SEQ') AS ID";
+
+    private static final String GET_NEWEST_BY_TYPES_SQL =
             "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) ORDER BY ID DESC LIMIT 1";
 
-    private static final String LIST_BY_TYPES_AND_ID_RANGE =
+    private static final String LIST_BY_TYPES_AND_ID_RANGE_SQL =
             "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) AND ID > ? AND ID <= ? ORDER BY ID ASC LIMIT ?";
 
-    private static final String LIST_BY_TYPES_NOT_CONSUMED =
+    private static final String LIST_BY_TYPES_NOT_CONSUMED_SQL =
             "SELECT ID, TYPE, DESCRIPTION, META_DATA, PROCESS_ID, CREATION_TIMESTAMP, CONSUMPTION_TIMESTAMP FROM MESSAGES WHERE TYPE IN (SELECT UNNEST(?)) AND CONSUMPTION_TIMESTAMP IS NULL ORDER BY ID ASC;";
 
     private final Connection connection;
@@ -32,15 +35,18 @@ public class MessagesDAO implements IMessagesDAO
         this.connection = connection;
     }
 
-    @Override public void create(final Message message)
+    @Override public Long create(final Message message)
     {
-        try (PreparedStatement statement = connection.prepareStatement(CREATE_SQL);)
+        try (PreparedStatement createStatement = connection.prepareStatement(CREATE_SQL))
         {
-            statement.setString(1, message.getType());
-            statement.setString(2, message.getDescription());
-            statement.setObject(3, message.getMetaData());
-            statement.setString(4, message.getProcessId());
-            statement.executeUpdate();
+            Long id = getNextId();
+            createStatement.setLong(1, id);
+            createStatement.setString(2, message.getType());
+            createStatement.setString(3, message.getDescription());
+            createStatement.setObject(4, message.getMetaData());
+            createStatement.setString(5, message.getProcessId());
+            createStatement.executeUpdate();
+            return id;
         } catch (SQLException e)
         {
             throw new RuntimeException(e);
@@ -61,9 +67,22 @@ public class MessagesDAO implements IMessagesDAO
         }
     }
 
+    private Long getNextId()
+    {
+        try (PreparedStatement statement = connection.prepareStatement(GET_NEXT_ID_SQL))
+        {
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            return resultSet.getLong("id");
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override public Message getNewestByTypes(final List<String> messageTypes)
     {
-        try (PreparedStatement statement = connection.prepareStatement(GET_NEWEST_BY_TYPES))
+        try (PreparedStatement statement = connection.prepareStatement(GET_NEWEST_BY_TYPES_SQL))
         {
             statement.setObject(1, messageTypes.toArray(new String[0]));
 
@@ -84,7 +103,7 @@ public class MessagesDAO implements IMessagesDAO
 
     @Override public List<Message> listByTypesAndIdRange(List<String> messageTypes, Long minMessageId, Long maxMessageId, int messageBatchSize)
     {
-        try (PreparedStatement statement = connection.prepareStatement(LIST_BY_TYPES_AND_ID_RANGE))
+        try (PreparedStatement statement = connection.prepareStatement(LIST_BY_TYPES_AND_ID_RANGE_SQL))
         {
             statement.setObject(1, messageTypes.toArray(new String[0]));
             statement.setLong(2, minMessageId != null ? minMessageId : 0);
@@ -108,7 +127,7 @@ public class MessagesDAO implements IMessagesDAO
 
     @Override public List<Message> listByTypesNotConsumed(List<String> messageTypes)
     {
-        try (PreparedStatement statement = connection.prepareStatement(LIST_BY_TYPES_NOT_CONSUMED))
+        try (PreparedStatement statement = connection.prepareStatement(LIST_BY_TYPES_NOT_CONSUMED_SQL))
         {
             statement.setObject(1, messageTypes.toArray(new String[0]));
 

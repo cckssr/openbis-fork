@@ -9,12 +9,15 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
 {
 
     private static final String CREATE_SQL =
-            "INSERT INTO LAST_SEEN_MESSAGES (ID, LAST_SEEN_MESSAGE_ID, CONSUMER_ID) VALUES (NEXTVAL('LAST_SEEN_MESSAGES_ID_SEQ'), ?, ?)";
+            "INSERT INTO LAST_SEEN_MESSAGES (ID, LAST_SEEN_MESSAGE_ID, CONSUMER_ID) VALUES (?, ?, ?)";
 
     private static final String UPDATE_SQL =
             "UPDATE LAST_SEEN_MESSAGES SET LAST_SEEN_MESSAGE_ID = ? WHERE ID = ?";
 
-    private static final String GET_BY_CONSUMER_ID =
+    private static final String GET_NEXT_ID_SQL =
+            "SELECT NEXTVAL('LAST_SEEN_MESSAGES_ID_SEQ') AS ID";
+
+    private static final String GET_BY_CONSUMER_ID_SQL =
             "SELECT ID, LAST_SEEN_MESSAGE_ID, CONSUMER_ID FROM LAST_SEEN_MESSAGES WHERE CONSUMER_ID = ?";
 
     private final Connection connection;
@@ -24,13 +27,16 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
         this.connection = connection;
     }
 
-    @Override public void create(final LastSeenMessage lastSeenMessage)
+    @Override public Long create(final LastSeenMessage lastSeenMessage)
     {
         try (PreparedStatement statement = connection.prepareStatement(CREATE_SQL))
         {
-            statement.setLong(1, lastSeenMessage.getLastSeenMessageId());
-            statement.setString(2, lastSeenMessage.getConsumerId());
+            Long id = getNextId();
+            statement.setLong(1, id);
+            statement.setLong(2, lastSeenMessage.getLastSeenMessageId());
+            statement.setString(3, lastSeenMessage.getConsumerId());
             statement.executeUpdate();
+            return id;
         } catch (SQLException e)
         {
             throw new RuntimeException(e);
@@ -50,9 +56,22 @@ public class LastSeenMessagesDAO implements ILastSeenMessagesDAO
         }
     }
 
+    private Long getNextId()
+    {
+        try (PreparedStatement statement = connection.prepareStatement(GET_NEXT_ID_SQL))
+        {
+            ResultSet resultSet = statement.executeQuery();
+            resultSet.next();
+            return resultSet.getLong("id");
+        } catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override public LastSeenMessage getByConsumerId(final String consumerId)
     {
-        try (PreparedStatement statement = connection.prepareStatement(GET_BY_CONSUMER_ID))
+        try (PreparedStatement statement = connection.prepareStatement(GET_BY_CONSUMER_ID_SQL))
         {
             statement.setString(1, consumerId);
 
