@@ -21,7 +21,7 @@ property for a finished sequencer called 'SEQUENCER_FINISHED' to the
 time stamp of this file.
 
 @note:
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 expected incoming Name for HiSeq runs: 110715_SN792_0054_BC035RACXX
 
 structure:

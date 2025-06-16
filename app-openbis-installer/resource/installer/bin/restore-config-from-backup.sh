@@ -33,7 +33,7 @@ if [ -d $ROOT/openBIS-server ]; then
     version=`cat $ROOT/openBIS-server/jetty/webapps/openbis/WEB-INF/classes/BUILD-openbis.INFO`
     restore $CONF/.keystore $ROOT/openBIS-server/jetty/etc openBIS.keystore
     restore $CONF/service.properties $ROOT/openBIS-server/jetty/etc service.properties
-    restore $CONF/log.xml $ROOT/openBIS-server/jetty/etc log.xml
+    restore $CONF/logging.properties $ROOT/openBIS-server/jetty/etc logging.properties
     restore $CONF/openbis.conf $ROOT/openBIS-server/jetty/etc openbis.conf
     restore $CONF/jetty.properties $ROOT/openBIS-server/jetty/etc jetty.properties
     restore $CONF/passwd $ROOT/openBIS-server/jetty/etc passwd
@@ -53,12 +53,12 @@ fi
 # -- DSS
 version=`unzip -c $ROOT/datastore_server/lib/server-original-data-store-*.jar  BUILD-datastore_server.INFO|tail -n 1`
 restore $CONF/dss-service.properties $ROOT/datastore_server/etc service.properties
-restore $CONF/dss-log.xml $ROOT/datastore_server/etc log.xml
+restore $CONF/dss-logging.properties $ROOT/datastore_server/etc logging.properties
 restore $CONF/datastore_server.conf $ROOT/datastore_server/etc datastore_server.conf
 restore $CONF/.keystore $ROOT/datastore_server/etc openBIS.keystore
 copyIfExists $CONF/ext-lib $ROOT/datastore_server
 
 # -- AFS
 restore $CONF/afs_server.conf $ROOT/afs-server/etc afs_server.conf
-restore $CONF/afs-log.xml $ROOT/afs-server/etc log.xml
+restore $CONF/afs-logging.properties $ROOT/afs-server/etc logging.properties
 restore $CONF/afs-service.properties $ROOT/afs-server/etc service.properties

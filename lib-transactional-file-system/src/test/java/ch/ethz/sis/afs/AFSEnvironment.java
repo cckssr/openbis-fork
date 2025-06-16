@@ -27,7 +27,7 @@ public class AFSEnvironment {
     public static Configuration getDefaultAFSConfig() {
         Map<Enum, String> configuration = new HashMap<>();
         configuration.put(AtomicFileSystemParameter.logFactoryClass,  Log4J2LogFactory.class.getName());
-//        configuration.put(AtomicFileSystemParameter.logConfigFile,  "objectfs-afs-config-log4j2.xml");
+//        configuration.put(AtomicFileSystemParameter.logConfigFile,  "objectfs-afs-config-logging.properties");
         configuration.put(AtomicFileSystemParameter.jsonObjectMapperClass, JacksonObjectMapper.class.getName());
         configuration.put(AtomicFileSystemParameter.writeAheadLogRoot, "./target/tests/transactions");
         configuration.put(AtomicFileSystemParameter.storageRoot, "./target/tests/storage");

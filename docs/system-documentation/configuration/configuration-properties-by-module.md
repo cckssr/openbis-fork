@@ -143,7 +143,7 @@
 
 | Key                                                    | Example Value                                                     | Short Explanation                                                                                                          |
 |--------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| user-management.audit-log-file-path                    | /var/log/user-management-audit_log.txt | Path to user-managment audit log file |  |
+| user-management.audit-log-file-path                    | /var/log/user-management-audit.log | Path to user-managment audit log file |  |
 | user-management.class                                  | ch.systemsx.cisd.openbis.generic.server.task.UserManagementMaintenanceTask |  |
 | user-management.configuration-file-path                | ${root-dir}/user-management-maintenance-config.json |  |
 | user-management.deactivate-unknown-users               | false | Deactivate users unkown to the authentication backend (true) or not (false) |

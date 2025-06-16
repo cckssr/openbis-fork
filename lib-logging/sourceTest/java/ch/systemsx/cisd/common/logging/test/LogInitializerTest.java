@@ -32,7 +32,7 @@
 //public class LogInitializerTest {
 //    @BeforeMethod
 //    public void setUp() throws Exception {
-//        System.clearProperty("log4j.configuration");
+//        System.clearProperty("log.configuration");
 //        resetInitializedFlag();
 //        //Logger.getRootLogger().removeAllAppenders();
 //    }
@@ -75,7 +75,7 @@
 //        try (FileWriter writer = new FileWriter(tempFile)) {
 //            writer.write(xmlConfig);
 //        }
-//        System.setProperty("log4j.configuration", "file:" + tempFile.getAbsolutePath());
+//        System.setProperty("log.configuration", "file:" + tempFile.getAbsolutePath());
 //        LogInitializer.init();
 //        Assert.assertTrue(getInitialized());
 //        Assert.assertEquals(Logger.getRootLogger().getLevel(), Level.DEBUG);

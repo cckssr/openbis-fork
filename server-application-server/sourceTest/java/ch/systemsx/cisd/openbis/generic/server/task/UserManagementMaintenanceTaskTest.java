@@ -74,7 +74,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         super.setUp();
         logRecorder = LogRecordingUtils.createRecorder("%-5p %c - %m%n", Level.INFO);
         configFile = new File(workingDirectory, "config.json");
-        auditLogFile = new File(workingDirectory, "audit_log.txt");
+        auditLogFile = new File(workingDirectory, "audit.log");
         mappingFile = new File(workingDirectory, "mapping-file.txt");
         properties = new Properties();
         properties.setProperty(UserManagementMaintenanceTask.CONFIGURATION_FILE_PATH_PROPERTY, configFile.getPath());

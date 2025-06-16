@@ -47,7 +47,7 @@ XML Structur which is processed:
         [...]
 
 @note: 
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 '''
 
 import time

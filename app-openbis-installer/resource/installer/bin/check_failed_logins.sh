@@ -11,7 +11,7 @@ fi
 
 EMAIL=manuel.kohler@bsse.ethz.ch
 LOG_FOLDER=/servers/openBIS-server/jetty/logs/
-LOG_FILE=openbis_auth_log.txt
+LOG_FILE=openbis_auth.log
 FULL_PATH=${BIS_HOME}${LOG_FOLDER}${LOG_FILE}
 LIMIT=5
 HOSTNAME=`hostname`

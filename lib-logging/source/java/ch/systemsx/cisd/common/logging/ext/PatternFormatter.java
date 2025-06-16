@@ -21,14 +21,23 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatternFormatter extends Formatter {
+
+    public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss,SSS";
+
+    public static final Pattern LOGGER_PATTERN = Pattern.compile("%logger(?:\\{(\\d+)})?");
+
+    public static final Pattern DATE_PATTERN = Pattern.compile("%d(?:\\{([^}]+)})?");
+
+    public static final Pattern LEVEL_PATTERN = Pattern.compile("%(-?\\d+)?(p|level)");
+
     private final String messagePattern;
-    private final SimpleDateFormat defaultDateFormat;
 
     /**
      * Constructs a PatternFormatter with the given pattern.
@@ -39,8 +48,6 @@ public class PatternFormatter extends Formatter {
      */
     public PatternFormatter(String messagePattern) {
         this.messagePattern = messagePattern;
-        // Default date format used for %d token.
-        this.defaultDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     }
 
     @Override
@@ -113,8 +120,7 @@ public class PatternFormatter extends Formatter {
 
     private static String formatLogger(LogRecord record, String formatted)
     {
-        Pattern loggerPattern = Pattern.compile("%logger(?:\\{(\\d+)})?");
-        Matcher loggerMatcher = loggerPattern.matcher(formatted);
+        Matcher loggerMatcher = LOGGER_PATTERN.matcher(formatted);
         StringBuilder loggerBuffer = new StringBuilder();
         while (loggerMatcher.find()) {
             String loggerName = getLoggerName(record, loggerMatcher);
@@ -144,17 +150,12 @@ public class PatternFormatter extends Formatter {
 
     private String formatDate(LogRecord record, String formatted)
     {
-        Pattern datePattern = Pattern.compile("%d(?:\\{([^}]+)})?");
-        Matcher dateMatcher = datePattern.matcher(formatted);
+        Matcher dateMatcher = DATE_PATTERN.matcher(formatted);
         StringBuilder dateBuffer = new StringBuilder();
         while (dateMatcher.find()) {
             String dateFormatStr = dateMatcher.group(1);
-            SimpleDateFormat sdf;
-            if (dateFormatStr != null) {
-                sdf = new SimpleDateFormat(dateFormatStr);
-            } else {
-                sdf = defaultDateFormat;
-            }
+            SimpleDateFormat sdf = new SimpleDateFormat(
+                    Objects.requireNonNullElse(dateFormatStr, DEFAULT_DATE_PATTERN));
             String dateStr = sdf.format(new Date(record.getMillis()));
             dateMatcher.appendReplacement(dateBuffer, Matcher.quoteReplacement(dateStr));
         }
@@ -165,8 +166,7 @@ public class PatternFormatter extends Formatter {
 
     private static String formatLevel(LogRecord record, String formatted)
     {
-        Pattern levelPattern = Pattern.compile("%(-?\\d+)?(p|level)");
-        Matcher levelMatcher = levelPattern.matcher(formatted);
+        Matcher levelMatcher = LEVEL_PATTERN.matcher(formatted);
         StringBuilder levelBuffer = new StringBuilder();
         while (levelMatcher.find()) {
             String widthStr = levelMatcher.group(1);
