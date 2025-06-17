@@ -77,7 +77,12 @@ dependencies {
             "eclipse:jetty-webapp:${jettyVersion}@jar",
             "eclipse:jetty-servlet:${jettyVersion}@jar",
             "eclipse:jetty-security:${jettyVersion}@jar",
-            "eclipse:jetty-server:${jettyVersion}@jar"
+            "eclipse:jetty-server:${jettyVersion}@jar",
+            "eclipse:jetty-io:${jettyVersion}@jar",
+            "eclipse:jetty-client:${jettyVersion}@jar",
+            "eclipse:jetty-util:${jettyVersion}@jar",
+            "eclipse:jetty-http:${jettyVersion}@jar"
+
 
     gwt 'reveregroup:gwt-image-loader:1.1.4',
             'google:gwt-dev:2.4'
