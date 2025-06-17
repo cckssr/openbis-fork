@@ -14,8 +14,6 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -57,6 +55,8 @@ public class LogInitializer
 
     public static final String APPEND = ".append";
 
+    public static final String USE_PARENT_HANDLERS = ".useParentHandlers";
+
     static
     {
         System.setProperty("log4j.defaultInitOverride", "true");
@@ -79,7 +79,7 @@ public class LogInitializer
                 return new URL(configurationOrNull);
             } catch (final MalformedURLException ex)
             {
-                System.err.println("Malformed URL '" + configurationOrNull + "': " + ex.getMessage());
+                LoggerDiagnostics.error("Malformed URL '" + configurationOrNull + "': " + ex.getMessage());
             }
         }
         URL resource = LogInitializer.class.getResource("/" + LOG_DIRECTORY + "/" + LOG_FILENAME);
@@ -132,12 +132,10 @@ public class LogInitializer
     {
         LoggerDiagnostics.info("Starting initialize()");
         String config = tryFindConfigurationInSystemProperties();
-        boolean fileTried = false;
 
         if (config == null || !config.startsWith(FILE_URL_PREFIX))
         {
             File logFile = getEffectiveLogFile(config);
-            fileTried = true;
             if (logFile.exists() && logFile.isFile())
             {
                 LoggerDiagnostics.info("Found log file: " + logFile.getAbsolutePath());
@@ -178,7 +176,7 @@ public class LogInitializer
             }
         } catch (URISyntaxException e)
         {
-            System.err.println("URI syntax error: " + e.getMessage());
+            LoggerDiagnostics.error("URI syntax error: " + e.getMessage());
         }
         System.out.printf("Configured from URL '%s' (no watching)%n", url);
     }
@@ -208,14 +206,14 @@ public class LogInitializer
         File logFile = logFileParam;
         if (logFileParam == null || logFileParam.getPath().trim().isEmpty())
         {
-            System.err.println("No log file defined; using default logging.properties in cwd.");
+            LoggerDiagnostics.error("No log file defined; using default logging.properties in cwd.");
             logFile = new File("logging.properties");
         }
 
         Properties props = loadProperties(logFile);
         if (props == null)
         {
-            System.err.println("Properties load failed; aborting.");
+            LoggerDiagnostics.error("Properties load failed; aborting.");
             return;
         }
 
@@ -238,7 +236,7 @@ public class LogInitializer
         String handlersList = props.getProperty(GLOBAL_HANDLERS);
         if (handlersList == null)
         {
-            System.err.println("No 'handlers' property defined.");
+            LoggerDiagnostics.error("No 'handlers' property defined.");
             configureGlobalLoggingLevel(props);
             return;
         }
@@ -261,21 +259,20 @@ public class LogInitializer
                 LoggerDiagnostics.info("Handler added: " + handler);
             } catch (Exception e)
             {
-                System.err.println("Error initializing handler '" + alias + "': " + e.getMessage());
-                e.printStackTrace();
+                LoggerDiagnostics.error("Error initializing handler '" + alias + "': " + e.getMessage(),e);
             }
         }
 
         // --- attach per‐logger handlers (AUTH, TRACKING, ACCESS, etc.) ---
-        for (String key : props.stringPropertyNames()) {
+        for (String propertyKey : props.stringPropertyNames()) {
             // look for keys like "AUTH.handlers", but skip the global "handlers"
-            if (key.endsWith(INTERNAL_HANDLERS) && !key.equals(GLOBAL_HANDLERS)) {
-                String loggerName = key.substring(0, key.length() - INTERNAL_HANDLERS.length());
-                String[] aliases2 = props.getProperty(key).split("\\s*,\\s*");
+            if (propertyKey.endsWith(INTERNAL_HANDLERS) && !propertyKey.equals(GLOBAL_HANDLERS)) {
+                String loggerName = propertyKey.substring(0, propertyKey.length() - INTERNAL_HANDLERS.length());
+                String[] loggerAliases = props.getProperty(propertyKey).split("\\s*,\\s*");
                 Logger logger = null;
                 try
                 {
-                    System.err.println(logFile.getAbsolutePath() + " : " + loggerName);
+                    LoggerDiagnostics.error(logFile.getAbsolutePath() + " : " + loggerName);
                     logger = Logger.getLogger(loggerName);
                 } catch (Throwable e)
                 {
@@ -285,19 +282,19 @@ public class LogInitializer
                 for (Handler h : logger.getHandlers()) {
                     logger.removeHandler(h);
                 }
-                for (String alias2 : aliases2) {
+                for (String loggerAlias : loggerAliases) {
                     try {
-                        Handler handler = createHandler(alias2, props);
-                        configureCommonProperties(handler, alias2, props);
+                        Handler handler = createHandler(loggerAlias, props);
+                        configureCommonProperties(handler, loggerAlias, props);
+                        logger.setUseParentHandlers(useParentHandlers(loggerName, props));
                         logger.addHandler(handler);
                         LoggerDiagnostics.info(
-                                "Attached handler '" + alias2 +
+                                "Attached handler '" + loggerAlias +
                                         "' to logger '" + loggerName + "'");
                     } catch (Exception e) {
-                        System.err.println(
-                                "Failed to attach handler '" + alias2 +
-                                        "' to logger '" + loggerName + "': " + e.getMessage());
-                        e.printStackTrace();
+                        LoggerDiagnostics.error(
+                                "Failed to attach handler '" + loggerAlias +
+                                        "' to logger '" + loggerName + "': " + e.getMessage(), e);
                     }
                 }
             }
@@ -307,7 +304,16 @@ public class LogInitializer
         configureSpecificLoggerLevels(props, handlerAliases);
     }
 
-
+    private static boolean useParentHandlers(String loggerName, Properties props)
+    {
+        String useParentHandlersKey = loggerName + USE_PARENT_HANDLERS;
+        String useParentHandlersValue = props.getProperty(useParentHandlersKey);
+        boolean useParentHandlers = false; // default
+        if (useParentHandlersValue != null) {
+            useParentHandlers = Boolean.parseBoolean(useParentHandlersValue.trim());
+        }
+        return useParentHandlers;
+    }
 
     private static void removeAllHandlersBeforeInitialization()
     {
@@ -339,7 +345,7 @@ public class LogInitializer
                 is = new FileInputStream(configurationFile);
             } catch (IOException e)
             {
-                System.err.println("IOException opening file: " + e.getMessage());
+                LoggerDiagnostics.error("IOException opening file: " + e.getMessage());
             }
         } else
         {
@@ -382,11 +388,11 @@ public class LogInitializer
                 LoggerDiagnostics.info("Properties loaded successfully.");
             } catch (IOException e)
             {
-                System.err.println("Error loading properties: " + e.getMessage());
+                LoggerDiagnostics.error("Error loading properties: " + e.getMessage());
             }
         } else
         {
-            System.err.println("Could not find configuration resource: " + configurationFile.getPath());
+            LoggerDiagnostics.error("Could not find configuration resource: " + configurationFile.getPath());
         }
         return loaded ? props : null;
     }
@@ -429,7 +435,7 @@ public class LogInitializer
                 return jul;
             } catch (Exception ex)
             {
-                System.err.println("Failed to parse level: " + levelStr);
+                LoggerDiagnostics.error("Failed to parse level: " + levelStr);
                 return null;
             }
         }
@@ -517,10 +523,10 @@ public class LogInitializer
                     hostField.setAccessible(true);
                     hostField.set(handler, host);
                 } catch (Exception ex) {
-                    System.err.println("Could not set host for SocketHandler for alias: " + alias);
+                    LoggerDiagnostics.error("Could not set host for SocketHandler for alias: " + alias);
                 }
             } catch (Exception e) {
-                System.err.println("Error setting host for SocketHandler for alias: " + alias);
+                LoggerDiagnostics.error("Error setting host for SocketHandler for alias: " + alias);
             }
         }
 
@@ -536,10 +542,10 @@ public class LogInitializer
                     portField.setAccessible(true);
                     portField.set(handler, port);
                 } catch (Exception ex) {
-                    System.err.println("Could not set port for SocketHandler for alias: " + alias);
+                    LoggerDiagnostics.error("Could not set port for SocketHandler for alias: " + alias);
                 }
             } catch (Exception e) {
-                System.err.println("Error setting port for SocketHandler for alias: " + alias);
+                LoggerDiagnostics.error("Error setting port for SocketHandler for alias: " + alias);
             }
         }
     }
@@ -553,17 +559,16 @@ public class LogInitializer
         for (String key : props.stringPropertyNames()) {
             if (key.endsWith(LEVEL_SUFFIX) && !key.equals(GLOBAL_LEVEL_KEY)) {
                 // Extract the potential logger name or handler alias part
-                String namePart = key.substring(0, key.length() - LEVEL_SUFFIX.length());
+                String loggerName = key.substring(0, key.length() - LEVEL_SUFFIX.length());
 
                 // IMPORTANT: Check if this key belongs to a handler configuration
-                if (handlerAliases.contains(namePart)) {
+                if (handlerAliases.contains(loggerName)) {
                     // This is a handler's level (e.g., myConsoleHandler.level), already processed. Skip it.
-                    // LogLog.info("Skipping handler level key: " + key); // Optional debug log
+                    LoggerDiagnostics.debug("Skipping handler level key: " + key); // Optional debug log
                     continue;
                 }
 
                 // If it's not global and not a handler level, assume it's a specific logger level
-                String loggerName = namePart;
                 String levelStr = props.getProperty(key);
                 Level level = tryGetLogLevel(levelStr);
 
@@ -574,16 +579,25 @@ public class LogInitializer
                         LoggerDiagnostics.info("Set level " + level.getName() + " for logger '" + loggerName + "'");
                     } catch (Exception e) {
                         // Catch potential issues getting the logger (though unlikely)
-                        System.err.println("ERROR: Could not set level for logger '" + loggerName + "' from property '" + key + "': " + e.getMessage());
+                        LoggerDiagnostics.error("ERROR: Could not set level for logger '" + loggerName + "' from property '" + key + "': " + e.getMessage());
                         e.printStackTrace(System.err);
                     }
                 } else {
-                    System.err.println("WARNING: Could not parse level '" + levelStr + "' for logger property '" + key + "'. Level not set.");
+                    LoggerDiagnostics.error("WARNING: Could not parse level '" + levelStr + "' for logger property '" + key + "'. Level not set.");
                 }
             }
         }
         LoggerDiagnostics.info("Finished configuring specific logger levels.");
     }
 
+    /*
+     * May be needed for some circumstances where an external
+     * lib may reset the JUL
+     */
+    public static void forceReinit() {
+        initialized = false;
+        LoggerDiagnostics.info("forceReinit() called.");
+        init();
+    }
 
 }

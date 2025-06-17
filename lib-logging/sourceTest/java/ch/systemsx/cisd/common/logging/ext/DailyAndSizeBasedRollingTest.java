@@ -23,7 +23,6 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -87,9 +86,7 @@ public class DailyAndSizeBasedRollingTest
         // ---- step 2: create handler (cap = 0 → everything deleted) and force its date to yesterday ----
         DailyRollingFileHandler handler = new DailyRollingFileHandler(basePath.toString(), Integer.MAX_VALUE, true, DATE_PATTERN, 0);
         handler.setFormatter(new SimpleFormatter());
-        Field dateField = DailyRollingFileHandler.class.getDeclaredField("currentDate");
-        dateField.setAccessible(true);
-        dateField.set(handler, yesterday);
+        handler.setCurrentDate(yesterday);
 
         // ---- step 3: publish one record today, triggering daily rollover ----
         handler.publish(new LogRecord(Level.INFO, "today"));

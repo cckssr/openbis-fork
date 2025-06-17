@@ -58,6 +58,8 @@ public final class CISDContextLoaderListener extends ContextLoaderListener
         try
         {
             super.contextInitialized(event);
+            // something resets the loggers in jetty distribution
+            LogInitializer.forceReinit();
         } catch (Exception ex)
         {
             statusLog.error("Couldn't create application context.", ex);

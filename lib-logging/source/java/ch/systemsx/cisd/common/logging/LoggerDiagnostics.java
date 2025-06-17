@@ -49,6 +49,7 @@ import java.util.Optional;
 public final class LoggerDiagnostics
 {
     private static final PrintStream out = System.out;
+    private static final PrintStream err = System.err;
 
     public enum Level {
         DEBUG, INFO, WARN, ERROR, OFF;
@@ -91,14 +92,14 @@ public final class LoggerDiagnostics
 
     public static void error(Object message) {
         if (CURRENT_LEVEL.allows(Level.ERROR)) {
-            out.println(format(Level.ERROR, String.valueOf(message)));
+            err.println(format(Level.ERROR, String.valueOf(message)));
         }
     }
 
     public static void error(Object message, Throwable t) {
         if (CURRENT_LEVEL.allows(Level.ERROR)) {
-            out.println(format(Level.ERROR, String.valueOf(message)));
-            t.printStackTrace(out);
+            err.println(format(Level.ERROR, String.valueOf(message)));
+            t.printStackTrace(err);
         }
     }
 

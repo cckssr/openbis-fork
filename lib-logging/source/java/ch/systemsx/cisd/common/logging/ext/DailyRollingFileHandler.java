@@ -2,6 +2,7 @@ package ch.systemsx.cisd.common.logging.ext;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -134,6 +135,19 @@ public class DailyRollingFileHandler extends Handler {
 
     // handles large files
     public static void copyFile(File source, File destination) throws IOException {
+        // Validate source file
+        if (!source.exists() || !source.isFile()) {
+            throw new FileNotFoundException("Source file not found or not a file: " + source.getAbsolutePath());
+        }
+
+        // Ensure parent directory exists
+        File parentDir = destination.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            if (!parentDir.mkdirs()) {
+                throw new IOException("Failed to create parent directories for: " + destination.getAbsolutePath());
+            }
+        }
+
         try (
                 FileChannel sourceChannel = new FileInputStream(source).getChannel();
                 FileChannel destChannel = new FileOutputStream(destination).getChannel()
@@ -261,15 +275,7 @@ public class DailyRollingFileHandler extends Handler {
 
         lock.lock();
         try {
-            LocalDate now = LocalDate.now();
-            // Daily rollover at midnight
-            if (!now.equals(currentDate)) {
-                rotateByDate();
-            }
-
-            if (maxLogFileSize > 0 && currentSize + bytes.length > maxLogFileSize) {
-                rotateBySize();
-            }
+            handleLogRotation(bytes);
 
             outputStream.write(bytes);
             outputStream.flush();
@@ -278,6 +284,27 @@ public class DailyRollingFileHandler extends Handler {
             reportError(null, e, ErrorManager.WRITE_FAILURE);
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void handleLogRotation(byte[] bytes) throws IOException
+    {
+        try
+        {
+            LocalDate now = LocalDate.now();
+            // Daily rollover at midnight
+            if (!now.equals(currentDate))
+            {
+                rotateByDate();
+            }
+
+            if (maxLogFileSize > 0 && currentSize + bytes.length > maxLogFileSize)
+            {
+                rotateBySize();
+            }
+
+        } catch (IOException e) {
+            reportError("log rotation has issues : ", e, ErrorManager.WRITE_FAILURE);
         }
     }
 
@@ -324,8 +351,16 @@ public class DailyRollingFileHandler extends Handler {
     }
 
     public String getLogFileName() { return logFileName; }
+
     public int getMaxLogFileSize() { return maxLogFileSize; }
+
     public boolean isAppend() { return append; }
+
     public Charset getEncodingUsed() { return encoding; }
+
+    void setCurrentDate(LocalDate currentDate){
+        this.currentDate =currentDate;
+    }
+
 
 }

@@ -5,18 +5,21 @@ import org.testng.annotations.Test;
 import org.testng.annotations.AfterMethod;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -175,10 +178,9 @@ public class DailyRollingFileHandlerTest
         // Write one entry for "yesterday"
         handler.publish(new LogRecord(Level.INFO, "OldDayMessage"));
         handler.flush();
+
         // Now simulate a date rollover by setting currentDate to yesterday
-        Field dateField = DailyRollingFileHandler.class.getDeclaredField("currentDate");
-        dateField.setAccessible(true);
-        dateField.set(handler, yesterday);
+        handler.setCurrentDate(yesterday);
 
         // Publish for "today" — this should rotate the active file to base + yesterdaySuffix
         handler.publish(new LogRecord(Level.INFO, "NewDayMessage"));
@@ -268,9 +270,7 @@ public class DailyRollingFileHandlerTest
             LocalDate simulatedDate = baseDate.plusDays(i);
             // Set the handler's currentDate to the simulated previous day to force rollover
             if (i > 0) {
-                Field dateField = DailyRollingFileHandler.class.getDeclaredField("currentDate");
-                dateField.setAccessible(true);
-                dateField.set(handler, simulatedDate.minusDays(1));
+                handler.setCurrentDate(simulatedDate.minusDays(1));
             }
             // Publish a record for this day
             String message = "DayMsg" + i;
@@ -305,17 +305,13 @@ public class DailyRollingFileHandlerTest
         String base = tempDir.resolve("sevenday").toString();
         DailyRollingFileHandler handler = new DailyRollingFileHandler(base, Integer.MAX_VALUE, true, DATE_PATTERN, 7);
         handler.setFormatter(new SimpleFormatter());
-
-        Field dateField = DailyRollingFileHandler.class.getDeclaredField("currentDate");
-        dateField.setAccessible(true);
-        // initialize to day before startDate
-        dateField.set(handler, startDate.minusDays(1));
+        handler.setCurrentDate(startDate.minusDays(1));
 
         // simulate 10 consecutive days of logging
         for (int i = 0; i < 10; i++) {
             LocalDate simDate = startDate.plusDays(i);
             // force rollover by setting to previous day
-            dateField.set(handler, simDate.minusDays(1));
+            handler.setCurrentDate(simDate.minusDays(1));
             handler.publish(new LogRecord(Level.INFO, "Day" + i));
             handler.flush();
         }
@@ -332,6 +328,48 @@ public class DailyRollingFileHandlerTest
         assertTrue(Files.exists(active), "Active log file should exist");
     }
 
+    @Test
+    void testLogFileIsTruncatedNotDeleted()
+            throws IOException, NoSuchFieldException, IllegalAccessException
+    {
+        File tempLogFile = File.createTempFile("test-log", ".log");
+        // Write initial content to the file
+        try (FileWriter writer = new FileWriter(tempLogFile)) {
+            writer.write("Initial log content\n");
+        }
+
+        // Setup handler with maxLogRotations = 0 (should truncate instead of rotate)
+        DailyRollingFileHandler handler = new DailyRollingFileHandler(
+                tempLogFile.getAbsolutePath(),
+                DailyRollingFileHandler.DEFAULT_MAX_LOG_FILE_SIZE,
+                true,
+                DailyRollingFileHandler.DEFAULT_FILE_NAME_DATE_PATTERN,
+                0,  // trigger truncation
+                StandardCharsets.UTF_8
+        );
+        handler.setFormatter(new SimpleFormatter());
+        handler.setCurrentDate(LocalDate.now().minusDays(1));
+
+        // Publish a log entry to trigger rotation
+        String newLogMessage = "Log entry to trigger rotation";
+        LogRecord record = new LogRecord(java.util.logging.Level.INFO, newLogMessage);
+        handler.publish(record);
+        handler.close();
+
+        // Read the file content
+        List<String> lines = java.nio.file.Files.readAllLines(tempLogFile.toPath(), StandardCharsets.UTF_8);
+        String content = String.join("\n", lines);
+
+        // Check that original content is gone
+        assertFalse(content.contains("Initial log content"), "Old content should be truncated");
+
+        // Check that new log message is present
+        assertTrue(content.contains(newLogMessage), "New log message should be written after truncation");
+
+        if (tempLogFile.exists()) {
+            tempLogFile.delete();
+        }
+    }
 
     @AfterMethod
     public void tearDown() throws IOException {
