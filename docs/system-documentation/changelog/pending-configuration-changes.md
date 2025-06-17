@@ -1,19 +1,8 @@
 # Pending 20.10 Configuration Changes
 
-## Version 20.10.10
+## Version 20.10.12
 
-#### 1. Changes to Datastore logs configuration
-
-Datastore server will no longer create a separate log file everytime it starts up.
-
-In order to revert this change, uncomment `rotateLogFiles` call from `<INSTALLATION_DIR>/servers/datastore_server/datastore_server.sh` (line 184)
-
-```shell
-echo -n "Starting Data Store Server "
-# rotateLogFiles $LOGFILE $MAXLOGS  # <- uncomment this line to bring back log rotation
-```
-
-#### 2. Cycle Detection in Hierarchy Graphs
+#### 1. Cycle Detection in Hierarchy Graphs
 
 In rare cases, hierarchy graphs may not display due to cycles in the database. To check for cycles, run the provided SQL query.
 
@@ -123,6 +112,19 @@ FROM cycles c
 LEFT JOIN data_all d ON d.id = ANY(c.cycle_path)
 GROUP BY c.root, c.cycle_path);
 
+```
+
+## Version 20.10.10
+
+#### 1. Changes to Datastore logs configuration
+
+Datastore server will no longer create a separate log file everytime it starts up.
+
+In order to revert this change, uncomment `rotateLogFiles` call from `<INSTALLATION_DIR>/servers/datastore_server/datastore_server.sh` (line 184)
+
+```shell
+echo -n "Starting Data Store Server "
+# rotateLogFiles $LOGFILE $MAXLOGS  # <- uncomment this line to bring back log rotation
 ```
 
 ## Version 20.10.9
