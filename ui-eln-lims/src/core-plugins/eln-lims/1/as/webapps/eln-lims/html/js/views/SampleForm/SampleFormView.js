@@ -2072,7 +2072,7 @@
 			const _this = this
 			let isArchived = false;
 			if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
-			    isArchived = _this._sampleFormModel.afs_data.physicalData.presentInArchive;
+			    isArchived = _this._sampleFormModel.afs_data.physicalData.status === "ARCHIVED";
 			}
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
