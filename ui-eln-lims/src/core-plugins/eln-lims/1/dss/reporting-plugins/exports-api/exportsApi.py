@@ -39,23 +39,6 @@ operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".exportsApi.py")
 OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis"
 V3_DSS_BEAN = "data-store-server_INTERNAL"
 
-
-class MLStripper(HTMLParser):
-    def __init__(self):
-        self.reset()
-        self.fed = []
-    def handle_data(self, d):
-        self.fed.append(d)
-    def get_data(self):
-        return ''.join(self.fed)
-
-
-def strip_tags(html):
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
-
-
 def displayResult(isOk, tableBuilder, result=None, errorMessage="Operation Failed"):
     if isOk:
         tableBuilder.addHeader("STATUS")
