@@ -2,24 +2,39 @@
 
 ## Description
 
-Type Groups is a functionality that TBD
+Type Groups is a functionality that allows for aggregation of sample types in groups according to business rules. 
+This is a many-to-many relationship connection: any sample type can be assigned to any type group. Any sample type can be assigned to multiple Type Groups. 
+
+Type Groups improve search functionalities for sample types in case more complex division of types is needed depending on the business rules.
+
+### Internal Type Groups and internal Type Group Assignment
+
+Type Group can have an internal flag set - this group can only be managed by a system user (creation, update, deletion).
+Internal Type Group Assignment is an assignment of Sample Type to a Type Group that can be only managed by the system user (creation, deletion)
+
+Internal Type Group Assignment happen only between Internal Sample Type and Internal Type Group!
 
 ## Implementation proposal
 
 ### DB changes
 
+Estimation: 2d
+
 New tables additional tables:
 - TypeGroups
 - SampleTypeTypeGroups
+- TypeGroupHistory
+- SampleTypeTypeGroupsHistory
 
 #### TypeGroups table
 
-| column                 | DB type        | description                             |
-|------------------------|----------------|-----------------------------------------|
-| name                   | CODE (unique)  | name of the type group (unique)         |
-| registration_timestamp | TIME_STAMP_DFL | time of the type group registration     |
-| pres_id_registerer     | TECH_ID        | id of person registering it             |
-| meta_data              | JSONB          | meta data for the particular type group |
+| column                 | DB type        | description                                    |
+|------------------------|----------------|------------------------------------------------|
+| name                   | CODE (unique)  | name of the type group (unique)                |
+| registration_timestamp | TIME_STAMP_DFL | time of the type group registration            |
+| pres_id_registerer     | TECH_ID        | id of person registering it                    |
+| is_managed_internally  | BOOLEAN_CHAR   | flag describing whether type group is internal |
+| meta_data              | JSONB          | meta data for the particular type group        |
 
 SQL changes:
 ``` sql
@@ -27,6 +42,7 @@ CREATE TABLE TYPE_GROUPS (
     NAME CODE NOT NULL,
     PERS_ID_REGISTERER TECH_ID NOT NULL,
     REGISTRATION_TIMESTAMP TIME_STAMP_DFL NOT NULL,
+    IS_MANAGED_INTERNALLY BOOLEAN_CHAR NOT NULL DEFAULT 'F',
     META_DATA JSONB
 );
 
@@ -38,12 +54,12 @@ ALTER TABLE TYPE_GROUPS ADD CONSTRAINT TG_PERS_FK FOREIGN KEY (PERS_ID_REGISTERE
 
 #### SampleTypeTypeGroups table
 
-| column               | DB type | description                             |
-|----------------------|---------|-----------------------------------------|
-| SATY_ID              | TECH_ID | sample type id                          |
-| TG_ID                | CODE    | type group id (name)                    |
-| pres_id_registerer   | TECH_ID | id of person registering it             |
-| meta_data            | JSONB   | meta data for the particular type group |
+| column                | DB type      | description                                                       |
+|-----------------------|--------------|-------------------------------------------------------------------|
+| SATY_ID               | TECH_ID      | sample type id                                                    |
+| TG_ID                 | CODE         | type group id (name)                                              |
+| pres_id_registerer    | TECH_ID      | id of person registering it                                       |
+| is_managed_internally | BOOLEAN_CHAR | boolean flag describing whether type group assignment is internal |
 
 ```sql
 
@@ -51,7 +67,8 @@ CREATE TABLE SAMPLE_TYPE_TYPE_GROUPS (
     SATY_ID TECH_ID NOT NULL,
     TG_ID CODE NOT NULL
     PERS_ID_REGISTERER TECH_ID NOT NULL, 
-    REGISTRATION_TIMESTAMP TIME_STAMP_DFL NOT NULL
+    REGISTRATION_TIMESTAMP TIME_STAMP_DFL NOT NULL,
+    IS_MANAGED_INTERNALLY BOOLEAN_CHAR NOT NULL DEFAULT 'F'
 )
 
 ALTER TABLE SAMPLE_TYPE_TYPE_GROUPS ADD CONSTRAINT SAMPLE_TYPE_TYPE_GROUPS_UK UNIQUE (SATY_ID, TG_ID);
@@ -66,38 +83,86 @@ CREATE INDEX STTG_TG_FK_I ON SAMPLE_TYPE_TYPE_GROUPS (TG_ID);
 CREATE INDEX STTG_PERS_FK_I ON SAMPLE_TYPE_TYPE_GROUPS (PERS_ID_REGISTERER);
 
 ```
+#### TypeGroupsHistory table
+
+Column-wise, it is a copy of TypeGroups table with additional column containing one of the 2 values:
+- UPDATE
+- DELETE
+
+inserts to this table will happen during updates and deletes on TypeGroup table (as trigger)
+
+#### SampleTypeTypeGroupsHistory table
+
+Column-wise, it is a copy of SampleTypeTypeGroups table with additional column containing one of the 2 values:
+- UPDATE
+- DELETE
+
+inserts to this table will happen during updates and deletes on SampleTypeTypeGroups table (as trigger)
+
 
 ### API changes
 
-Introduction of `typegroup` package to V3 API containing classes for:
+Estimation: 2d
+
+1. Introduction of `typegroup` package to V3 API containing classes for:
 
 - creation
 - deletion (with/without trash?)
 - get
 - search
+- assignment
 
-update/fetchoptions are not to be added
+update/fetchoptions sections are not needed
+
+2. Changes to `sample` package in V3 API (sample package contains sampletype V3 classes)
+
+- Expansion of fetchoptions to include type group assignments
+- Expansion of create/update to include type group assignments
+
 
 ### AS changes
-TypeGroupsPE, SampleTypeTypeGroups, SampleTypeTypeGroupsId
 
+Estimation: 8d
+
+- Executors for creation/deletion/update/search need to be created for Type Groups and Type Group Assignment
+- Sample Type executors need to be amended to include Type Group Assignment information
+
+#### DTO classes
+- TypeGroupsPE, SampleTypeTypeGroups, SampleTypeTypeGroupsId
+
+
+#### Data Import/Export
+
+- Importer needs to be amended to include Type Group and Type Group Assignment information
+- Exporter needs to export Type Groups and Type Groups Assignments in import-compatible way
 
 
 
 ### DSS/AFS changes
-N/A
-
-
+DSS/AFS are not aware of Type Group existance, no change is needed
 
 
 ### UI changes
 
 #### ELN UI
 
+Estimation: ???
+
+???
+
 #### ADMIN UI
 
+Estimation: 5d
 
+- Types Menu section needs to be expanded with listing of all Type Groups
+- Each Type Group should have a list of Sample Types can be added/deleted (internal assignments can not be deleted)
+- Sample Type view should be expanded with listing of all Type Groups it belongs to (???) 
+- History of Type Group changes?
+- History of Type Group assignments?
 
 
 ### PyBIS changes
 
+Estimation: 2d
+
+- only get/search functionalities for type groups and type group assignments in sample types
