@@ -1,11 +1,16 @@
 Archiving AFS Datasets
 ======================
 
-AFS provides the same archiving functionality as DSS i.e. both servers share the same plugins and tasks that can be configured to perform the archiving and unarchiving operations. The configuration of these plugins and tasks is exactly the same at both servers. The only difference between the two is the way the databases are set up (AFS uses the same database properties as AS which is different from what DSS uses).
-
 **IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa).
 
-Archiving can be only done on immutable data. All DSS data sets are immutable from the moment they are created (i.e. files and folders inside a data set can never be created, changed or deleted once a DSS dataset is created). The situation with AFS data sets is different. They are created mutable (i.e. files and folders inside an AFS data set can be created, changed and deleted after a data set is created). Making the AFS data immutable is an explicit operation that can be triggered by a user from ELN. Once an AFS data set is made immutable it can be archived but it cannot be made mutable again.
+**IMPORTANT:** Only immutable data can be archived.
+
+AFS provides the same archiving functionality as DSS i.e. both servers share the same plugins and tasks that can be configured to perform the archiving and unarchiving operations. The configuration of these plugins and tasks is almost exactly the same at both servers. The only differences between the two are:
+
+* database configuration : AFS uses the same properties for the database configuration as AS (which are different from the properties that DSS uses)
+* queuing mechanisms : AFS uses a new queuing mechanism where all asynchronous tasks are stored in the newly created "messages" database (in DSS such tasks were stored in dedicated files that represented the queues). Consumption of the messages at AFS is configurable. Messages of chosen types can be configured to form a single queue and be consumed one after another (e.g. see AFS service.properties example below with "archivingMessagesConsumerTask" consumer that handles both archiving and unarchiving requests, while "finalizeArchivingMessagesConsumerTask" consumer independently handles archiving finalization requests). Conceptually this is similar to the DSS command queue which also offers such configuration options.
+
+Archiving can be only done on immutable data. All DSS data sets are immutable from the moment they are created (i.e. files and folders inside a data set can never be created, changed or deleted once a DSS dataset is created). The situation with AFS data sets is different. They are created mutable (i.e. files and folders inside an AFS data set can be created, changed and deleted after a data set is created). Making the AFS data immutable is an explicit operation that can be triggered by a user from ELN (samples_all.immutable_data_timestamp or experiments_all.immutable_data_timestamp is set in the database). Once an AFS data set is made immutable it can be archived, but it cannot be made mutable again.
 
 An example of a simple AFS archiving configuration is presented below. The example consists of: AFS service.properties snippet, AS service.properties snippet and share.properties file which has to be put in the root folder of the unarchiving share. This constitutes a simple multi dataset archiver configuration which provides the following flows:
 
@@ -17,7 +22,6 @@ Archiving flow:
 Unarchiving flow:
 * a user in ELN requests unarchiving of a chosen data set (an unarchiving message in the messages database is created)
 * AFS consumes the unarchiving message and executes the unarchive logic of the archiver plugin (ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.MultiDataSetArchiver)
-
 
 AFS service.properties:
 
