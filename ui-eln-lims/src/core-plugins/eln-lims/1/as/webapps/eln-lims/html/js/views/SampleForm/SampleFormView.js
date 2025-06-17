@@ -445,6 +445,20 @@
                             var $acceptButton = $('<div>', {'class' : 'btn btn btn-primary btn-secondary', 'text' : 'Accept', 'id' : 'accept-btn'});
                             $acceptButton.css('margin-right', '5px');
                             $acceptButton.click(function() {
+
+                                var reInitView = function() {
+                                    if (_this._sampleFormModel.views.header) {
+                                        _this._sampleFormModel.views.header.empty();
+                                    }
+                                    if (_this._sampleFormModel.views.content) {
+                                         _this._sampleFormModel.views.content.empty();
+                                    }
+                                    if (_this._sampleFormModel.views.auxContent) {
+                                         _this._sampleFormModel.views.auxContent.empty();
+                                    }
+                                    _this._sampleFormController.init(_this._sampleFormModel.views, true);
+                                }
+
                                 var sampleIdentifier = $("#templatesDropdown")[0].value;
                                 if(sampleIdentifier === '') {
                                     $warningText.text("You need to select a template!");
@@ -462,37 +476,71 @@
                                 if(mergeParents) {
                                     var currentParents = _this._sampleFormModel.sample.parents ?? [];
                                     var currentParentsIds = currentParents.map(x => x.permId.permId)
+                                    var sampleLinksParents = _this._sampleFormModel.sampleLinksParents.getSamples()
+                                    var parentsToGet = []
+                                    if(sampleLinksParents.length !== 0) {
+                                        sampleLinksParents.forEach(parent => {
+                                            if(!currentParentsIds.includes(parent.permId)) {
+                                                parentsToGet.push(parent.permId);
+                                            }
+                                        });
+                                    }
                                     sample.parents.forEach(parent => {
                                         if(!currentParentsIds.includes(parent.permId.permId)) {
                                             currentParents.push(parent);
                                         }
                                     });
-                                    _this._sampleFormModel.sample.parents = currentParents;
-
                                      var currentChildren = _this._sampleFormModel.sample.children ?? [];
                                      var currentChildrenIds = currentChildren.map(x => x.permId.permId);
+
+                                     var sampleLinksChildren = _this._sampleFormModel.sampleLinksChildren.getSamples()
+                                     var childrenToGet = []
+                                     if(sampleLinksChildren.length !== 0) {
+                                         sampleLinksChildren.forEach(child => {
+                                             if(!currentChildrenIds.includes(child.permId)) {
+                                                 childrenToGet.push(child.permId);
+                                             }
+                                         });
+                                     }
+
                                     sample.children.forEach(child => {
                                         if(!currentChildrenIds.includes(child.permId.permId)) {
                                             currentChildren.push(child);
                                         }
                                     });
-                                    _this._sampleFormModel.sample.children = currentChildren;
+
+                                    if(parentsToGet.length !== 0 || childrenToGet.length !== 0) {
+
+                                        var doneFunction = function(samples) {
+                                            samples.forEach(sample => {
+                                                if(parentsToGet.includes(sample.permId.permId)) {
+                                                    currentParents.push(sample);
+                                                } else {
+                                                    currentChildren.push(sample);
+                                                }
+                                                _this._sampleFormModel.sample.parents = currentParents;
+                                                _this._sampleFormModel.sample.children = currentChildren;
+
+                                            })
+                                            reInitView();
+                                            Util.unblockUI();
+                                        }
+
+                                         _this._sampleFormController._getSamples(parentsToGet.concat(childrenToGet), doneFunction);
+                                    } else {
+                                        _this._sampleFormModel.sample.parents = currentParents;
+                                        _this._sampleFormModel.sample.children = currentChildren;
+                                        reInitView();
+                                        Util.unblockUI();
+                                    }
+
+
                                 } else {
                                     _this._sampleFormModel.sample.parents = sample.parents;
                                     _this._sampleFormModel.sample.children = sample.children;
+                                    reInitView();
+                                    Util.unblockUI();
                                 }
-
-                                if (_this._sampleFormModel.views.header) {
-                                    _this._sampleFormModel.views.header.empty();
-                                }
-                                if (_this._sampleFormModel.views.content) {
-                                     _this._sampleFormModel.views.content.empty();
-                                }
-                                if (_this._sampleFormModel.views.auxContent) {
-                                     _this._sampleFormModel.views.auxContent.empty();
-                                }
-                                _this._sampleFormController.init(_this._sampleFormModel.views, true);
-                                Util.unblockUI();
                             });
                             $buttons.append($acceptButton);
 

@@ -132,6 +132,23 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
 		}
 		});
 	}
+	this._getSamples = function(permIds, callback) {
+        require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+                    function(SamplePermId, SampleIdentifier, SampleFetchOptions) {
+                        var ids = permIds.map(id => new SamplePermId(id));
+    					var fetchOptions = new SampleFetchOptions();
+    					fetchOptions.withSpace();
+    					fetchOptions.withProject();
+    					fetchOptions.withExperiment();
+    					fetchOptions.withProperties();
+    					fetchOptions.withParents();
+    					fetchOptions.withChildren();
+    					mainController.openbisV3.getSamples(ids, fetchOptions).done(function(map) {
+    					    var samples = Util.mapValuesToList(map);
+    						callback(samples);
+    					});
+    			});
+	}
 		
 	this.isDirty = function() {
 		return this._sampleFormModel.isFormDirty;
