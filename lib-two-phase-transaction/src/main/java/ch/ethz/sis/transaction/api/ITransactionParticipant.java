@@ -1,4 +1,4 @@
-package ch.ethz.sis.transaction;
+package ch.ethz.sis.transaction.api;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +20,8 @@ public interface ITransactionParticipant
      * - coordinator flow
      * - participant interactive flow
      */
-    <T> T executeOperation(UUID transactionId, String sessionToken, String interactiveSessionKey, String operationName, Object[] operationArguments) throws TransactionOperationException;
+    <T> T executeOperation(UUID transactionId, String sessionToken, String interactiveSessionKey, String operationName, Object[] operationArguments) throws
+            TransactionOperationException;
 
     /**
      * Used in:

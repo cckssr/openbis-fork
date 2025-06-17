@@ -22,10 +22,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionParticipantApi;
 import ch.ethz.sis.transaction.ISessionTokenProvider;
 import ch.ethz.sis.transaction.ITransactionLog;
-import ch.ethz.sis.transaction.ITransactionParticipant;
 import ch.ethz.sis.transaction.TransactionCoordinator;
 import ch.ethz.sis.transaction.TransactionLog;
-import ch.ethz.sis.transaction.TransactionOperationException;
+import ch.ethz.sis.transaction.api.ITransactionParticipant;
+import ch.ethz.sis.transaction.api.TransactionOperationException;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 

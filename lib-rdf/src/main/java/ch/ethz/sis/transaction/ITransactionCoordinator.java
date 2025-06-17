@@ -2,6 +2,8 @@ package ch.ethz.sis.transaction;
 
 import java.util.UUID;
 
+import ch.ethz.sis.transaction.api.TransactionOperationException;
+
 public interface ITransactionCoordinator
 {
 

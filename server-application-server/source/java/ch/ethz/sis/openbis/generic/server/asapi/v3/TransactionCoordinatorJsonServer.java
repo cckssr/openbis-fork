@@ -33,9 +33,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ch.ethz.sis.afsapi.dto.Chunk;
-import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
-import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
 import org.eclipse.jetty.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -44,10 +41,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.sis.afsapi.api.OperationsAPI;
+import ch.ethz.sis.afsapi.dto.Chunk;
 import ch.ethz.sis.afsapi.dto.File;
+import ch.ethz.sis.afsclient.client.ChunkEncoderDecoder;
+import ch.ethz.sis.afsclient.client.FileEncoderDecoder;
 import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
-import ch.ethz.sis.transaction.TransactionOperationException;
+import ch.ethz.sis.transaction.api.TransactionOperationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.api.server.AbstractApiJsonServiceExporter;
 
