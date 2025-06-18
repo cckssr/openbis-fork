@@ -337,7 +337,9 @@ var BarcodeUtil = new function() {
                         $width.val(50)
                    }
                    $height.trigger('change.select2');
+                   $height.trigger('change');
                    $width.trigger('change.select2');
+                   $width.trigger('change');
                  });
 
         var numberDropdownModel = [];
@@ -848,7 +850,9 @@ var BarcodeUtil = new function() {
                         $width.val(50)
                    }
                    $height.trigger('change.select2');
+                   $height.trigger('change');
                    $width.trigger('change.select2');
+                   $width.trigger('change');
                  });
 
         var $width = FormUtil.getDropdown([ { label: '10 mm', value: 10 },
