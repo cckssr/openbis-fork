@@ -19,6 +19,7 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	this._tableContainer = $("<div>").css("margin-top", "-10px").css("margin-left", "-10px");
 	this.sampleTypeSelector = null;
 	this._viewId = mainController.getNextId();
+	var _refreshableFields = [];
 
 	this.refresh = function() {
 	    var dropdownId = '#all-sample-types-' + this._viewId;
@@ -26,6 +27,9 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 	    if(allTypesDropdown.length !== 0) {
 	        Select2Manager.add(allTypesDropdown);
 	    }
+	    for(var field of _refreshableFields) {
+            field.refresh();
+        }
 
 	}
 	
@@ -130,58 +134,101 @@ function SampleTableView(sampleTableController, sampleTableModel) {
 		
 		if(_this._sampleTableModel.experimentIdentifier && _this._sampleTableModel.sampleRights.rights.indexOf("CREATE") >= 0) {
 			var $createSampleOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'New ' + ELNDictionary.Sample + '', 'id' : 'create-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('New ' + ELNDictionary.Sample + ''));
-			$createSampleOption.click(function() {
-				_this.createNewSample(_this._sampleTableModel.experimentIdentifier);
-			});
+			var createSampleFunction = function() {
+                _this.createNewSample(_this._sampleTableModel.experimentIdentifier);
+            }
+			$createSampleOption.click(createSampleFunction);
+			$createSampleOption.refresh = function() {
+                this.off('click')
+                this.click(createSampleFunction);
+            }
+			_refreshableFields.push($createSampleOption);
 			$list.append($createSampleOption);
 		}
 		
-		
+		   //
         var label = "XLS Batch Register " + ELNDictionary.Samples;
-        var id = 'xsl-register-' + ELNDictionary.Sample.toLowerCase() + '-btn';
+        var id = 'xsl-register-' + ELNDictionary.Sample.toLowerCase() + '-btn-'+_this._viewId;
         var $xslBatchRegisterOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label, 'id' : id}).append(label));
-        $xslBatchRegisterOption.click(function() {
-            _this._sampleTableController.registerSamples(_this._sampleTableModel.experimentIdentifier);
-        });
+        var batchRegisterFunction = function() {
+           _this._sampleTableController.registerSamples(_this._sampleTableModel.experimentIdentifier);
+        }
+        $xslBatchRegisterOption.click(batchRegisterFunction);
+        $xslBatchRegisterOption.refresh = function() {
+            this.off('click')
+            this.click(batchRegisterFunction);
+        }
+        _refreshableFields.push($xslBatchRegisterOption);
         $list.append($xslBatchRegisterOption);
 
         var label = "XLS Batch Update " + ELNDictionary.Samples;
         var id = 'xsl-update-' + ELNDictionary.Sample.toLowerCase() + '-btn';
         var $xslBatchUpdateOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : label, 'id' : id}).append(label));
-        $xslBatchUpdateOption.click(function() {
-            _this._sampleTableController.updateSamples(_this._sampleTableModel.experimentIdentifier);
-        });
+        var batchUpdateFunction = function() {
+          _this._sampleTableController.updateSamples(_this._sampleTableModel.experimentIdentifier);
+        }
+        $xslBatchUpdateOption.click(batchUpdateFunction);
+        $xslBatchUpdateOption.refresh = function() {
+            this.off('click')
+            this.click(batchUpdateFunction);
+        }
+        _refreshableFields.push($xslBatchUpdateOption);
         $list.append($xslBatchUpdateOption);
 
         var $batchRegisterOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'TSV Batch Register ' + ELNDictionary.Sample + 's (Deprecated)', 'id' : 'register-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('TSV Batch Register ' + ELNDictionary.Sample + 's (Deprecated)'));
-		$batchRegisterOption.click(function() {
-			_this.registerSamples(_this._sampleTableModel.experimentIdentifier);
-		});
+		var batchRegisterFunctionTSV = function() {
+            _this.registerSamples(_this._sampleTableModel.experimentIdentifier);
+        }
+		$batchRegisterOption.click(batchRegisterFunctionTSV);
+		$batchRegisterOption.refresh = function() {
+            this.off('click')
+            this.click(batchRegisterFunctionTSV);
+        }
+		_refreshableFields.push($batchRegisterOption);
 		$list.append($batchRegisterOption);
 		
 		var $batchUpdateOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'TSV Batch Update ' + ELNDictionary.Sample + 's (Deprecated)', 'id' : 'update-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('TSV Batch Update ' + ELNDictionary.Sample + 's (Deprecated)'));
-		$batchUpdateOption.click(function() {
-			_this.updateSamples(_this._sampleTableModel.experimentIdentifier);
-		});
+		var batchUpdateOptionFunctionTSV = function() {
+            _this.updateSamples(_this._sampleTableModel.experimentIdentifier);
+        }
+		$batchUpdateOption.click(batchUpdateOptionFunctionTSV);
+		$batchUpdateOption.refresh = function() {
+            this.off('click')
+            this.click(batchUpdateOptionFunctionTSV);
+        }
+		_refreshableFields.push($batchUpdateOption);
 		$list.append($batchUpdateOption);
 		
 		if(_this._sampleTableModel.experimentIdentifier) {
             var expKindName = ELNDictionary.getExperimentKindName(_this._sampleTableModel.experiment.experimentTypeCode, false);
 			var $searchCollectionOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Search in ' + expKindName, 'id' : 'search-' + ELNDictionary.Sample.toLowerCase() + '-btn'}).append('Search in ' + expKindName));
-			$searchCollectionOption.click(function() {
-				
-				var sampleRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : _this._sampleTableModel.experiment.permId } };
-				var rules = { entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules };
-				
-				mainController.changeView("showAdvancedSearchPage", JSON.stringify(rules));
-			});
+			var searchCollectionFunction = function() {
+
+                var sampleRules = { "UUIDv4" : { type : "Experiment", name : "ATTR.PERM_ID", value : _this._sampleTableModel.experiment.permId } };
+                var rules = { entityKind : "SAMPLE", logicalOperator : "AND", rules : sampleRules };
+
+                mainController.changeView("showAdvancedSearchPage", JSON.stringify(rules));
+            }
+			$searchCollectionOption.click(searchCollectionFunction);
+			$searchCollectionOption.refresh = function() {
+                this.off('click')
+                this.click(searchCollectionFunction);
+            }
+
+			_refreshableFields.push($searchCollectionOption);
 			$list.append($searchCollectionOption);
 
 			var $detailsOption = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : 'Edit Collection', 'id' : 'detail-btn'}).append('Edit Collection'));
-            $detailsOption.click(function() {
+            var detailsOptionFunction = function() {
                 mainController.changeView("showExperimentPageFromIdentifier", encodeURIComponent('["' +
-						_this._sampleTableModel.experimentIdentifier + '",true]'));
-            });
+                        _this._sampleTableModel.experimentIdentifier + '",true]'));
+            }
+            $detailsOption.click(detailsOptionFunction);
+            $detailsOption.refresh = function() {
+                this.off('click')
+                this.click(detailsOptionFunction);
+            }
+            _refreshableFields.push($detailsOption);
             $list.append($detailsOption);
 		}
 		
