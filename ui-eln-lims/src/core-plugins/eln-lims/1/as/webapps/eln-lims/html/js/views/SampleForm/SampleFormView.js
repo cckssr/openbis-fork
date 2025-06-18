@@ -618,12 +618,12 @@
 						var futureName = newCleanValue.substring(titleStart+4, titleEnd);
 						if(futureName.indexOf("<") !== -1 && futureName.indexOf(">") !== -1) {
 							Util.showError("Entry names can't contain rich text. The current title will not be saved as Entry name.");
-							_this._sampleFormModel.sample.properties["NAME"] = null;
+							_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = null;
 						} else {
-							_this._sampleFormModel.sample.properties["NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
+							_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
 						}
 					} else {
-						_this._sampleFormModel.sample.properties["NAME"] = null;
+						_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = null;
 					}
 				}
 				// https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
