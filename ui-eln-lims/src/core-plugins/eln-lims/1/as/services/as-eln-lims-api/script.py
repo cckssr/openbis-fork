@@ -11,6 +11,7 @@ import ch.systemsx.cisd.common.logging.LogFactory as LogFactory
 
 isOpenBIS2020 = True
 enableNewSearchEngine = isOpenBIS2020
+openbisVersion = None
 
 OPERATION_LOG = LogFactory.getLogger(LogCategory.OPERATION, LogFactory)
 
@@ -33,7 +34,20 @@ def getNumberFromLetter(letter): # TODO Generate big numbers
             return i
     return None
 
+def getOpenBISVersion(context):
+    global openbisVersion
+    if openbisVersion == None:
+        sessionToken = context.getApplicationService().loginAsSystem()
+        openbisVersion = context.getApplicationService().getServerInformation(sessionToken)['openbis-version']
+
+def getInternalNamespacePropertyCode(propertyCode):
+    if openbisVersion.startswith("20.10."):
+        return "$" + propertyCode
+    else:
+        return propertyCode
+
 def process(context, parameters):
+    openbisVersion = getOpenBISVersion(context)
     method = parameters.get("method")
     result = None
 
@@ -141,7 +155,7 @@ def _getAllSettingsSamples(context):
 def _removeInventorySpace(context, settingsSamples, code):
     settingsUpdated = False
     for settingsSample in settingsSamples:
-        settings = settingsSample.getProperty("ELN_SETTINGS")
+        settings = settingsSample.getProperty(getInternalNamespacePropertyCode("ELN_SETTINGS"))
         if settings is not None:
             removed = False
             settings = json.loads(settings)
@@ -170,7 +184,7 @@ def createSpace(context, parameters):
     reloadNeeded = False
     if parameters.get("isInventory"):
         settingsSample = _getSettingsSample(context, parameters, group)
-        settings = settingsSample.getProperty("ELN_SETTINGS")
+        settings = settingsSample.getProperty(getInternalNamespacePropertyCode("ELN_SETTINGS"))
         if settings is None:
             raise UserFailureException("Settings %s not yet defined. Please, edit them first." 
                                        % settingsSample.getIdentifier())
@@ -216,7 +230,7 @@ def _updateSettings(context, settingsSample, settings):
 
     sampleUpdate = SampleUpdate()
     sampleUpdate.setSampleId(settingsSample.getPermId())
-    sampleUpdate.setProperty("ELN_SETTINGS", json.dumps(settings))
+    sampleUpdate.setProperty(getInternalNamespacePropertyCode("ELN_SETTINGS"), json.dumps(settings))
     context.getApplicationService().updateSamples(context.getSessionToken(), [sampleUpdate])
 
 def _addAuthorizations(context, parameters, group, code, isReadOnly, spaces):
@@ -367,7 +381,7 @@ def validateExperimentOrSpaceDefined(row_number, properties, mode, experiment, s
 def validateBarcode(row_number, properties, barcodeValidationInfo):
     barcode = properties.get("custom barcode")
     if barcode is None:
-        barcode = properties.get("BARCODE")
+        barcode = properties.get(getInternalNamespacePropertyCode("BARCODE"))
     if barcode is not None:
         minBarcodeLength = barcodeValidationInfo['minBarcodeLength']
         if len(barcode) < minBarcodeLength:
@@ -474,14 +488,14 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
 
     samplePermId = parameters.get("samplePermId")
     sampleProperties = parameters.get("sampleProperties")
-    storageCode = sampleProperties.get("STORAGE_POSITION.STORAGE_CODE")
-    storageRackRow = sampleProperties.get("STORAGE_POSITION.STORAGE_RACK_ROW")
-    storageRackColumn = sampleProperties.get("STORAGE_POSITION.STORAGE_RACK_COLUMN")
-    storageBoxName = sampleProperties.get("STORAGE_POSITION.STORAGE_BOX_NAME")
-    storageBoxSize = sampleProperties.get("STORAGE_POSITION.STORAGE_BOX_SIZE")
-    storageBoxPosition = sampleProperties.get("STORAGE_POSITION.STORAGE_BOX_POSITION")
+    storageCode = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE"))
+    storageRackRow = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW"))
+    storageRackColumn = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN"))
+    storageBoxName = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME"))
+    storageBoxSize = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_SIZE"))
+    storageBoxPosition = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_POSITION"))
 
-    storageUser = sampleProperties.get("STORAGE_POSITION.STORAGE_USER")
+    storageUser = sampleProperties.get(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_USER"))
     OPERATION_LOG.debug("-----------------> " + str(sampleProperties))
     # 1. Obtain Storage to retrieve Storage Validation Level
     if storageCode is None:
@@ -499,7 +513,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
     sampleSearchResults = context.applicationService.searchSamples(sessionToken, searchCriteria, fetchOptions).getObjects()
     if sampleSearchResults.size() == 1:
         storage = sampleSearchResults.get(0)
-        storageValidationLevel = storage.getProperty("STORAGE.STORAGE_VALIDATION_LEVEL")
+        storageValidationLevel = storage.getProperty(getInternalNamespacePropertyCode("STORAGE.STORAGE_VALIDATION_LEVEL"))
     else:
         raise UserFailureException("Found: " + str(sampleSearchResults.size()) + " storages for storage code: " + storageCode)
 
@@ -519,8 +533,8 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
     # 3. IF $STORAGE.STORAGE_VALIDATION_LEVEL >= RACK
     # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 3")
     # 3.1 Check the rack exists, it should always be specified as an integer, failing the conversion is a valid error
-    storageNumOfRowsAsInt = int(storage.getProperty("STORAGE.ROW_NUM"))
-    storageNumOfColAsInt = int(storage.getProperty("STORAGE.COLUMN_NUM"))
+    storageNumOfRowsAsInt = int(storage.getProperty(getInternalNamespacePropertyCode("STORAGE.ROW_NUM")))
+    storageNumOfColAsInt = int(storage.getProperty(getInternalNamespacePropertyCode("STORAGE.COLUMN_NUM")))
     storageRackRowAsInt = int(storageRackRow)
     storageRackColAsInt = int(storageRackColumn)
     if storageRackRowAsInt > storageNumOfRowsAsInt or storageRackColAsInt > storageNumOfColAsInt:
@@ -533,7 +547,7 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.1")
         searchCriteriaOtherBox = SampleSearchCriteria()
         searchCriteriaOtherBox.withType().withCode().thatEquals("STORAGE_POSITION")
-        searchCriteriaOtherBox.withStringProperty("STORAGE_POSITION.STORAGE_BOX_NAME").thatEquals(storageBoxName)
+        searchCriteriaOtherBox.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")).thatEquals(storageBoxName)
         searchCriteriaOtherBoxOptions = SampleFetchOptions()
         searchCriteriaOtherBoxOptions.withProperties()
 
@@ -542,24 +556,24 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         OPERATION_LOG.debug("-----------------> " + str(sampleSearchResultsRes) + " ----- " + str(sampleSearchResults))
         OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.1 - LEN: " + str(len(sampleSearchResults)))
         for result in sampleSearchResults:
-            if (result.getProperty("STORAGE_POSITION.STORAGE_CODE") != storageCode) or (result.getProperty("STORAGE_POSITION.STORAGE_RACK_ROW") != storageRackRow) or (result.getProperty("STORAGE_POSITION.STORAGE_RACK_COLUMN") != storageRackColumn):
-                raise UserFailureException("You entered the name of an already existing box in a different place - Box Name: " + str(storageBoxName) + " Given -> Storage Code: " + str(storageCode) + " Rack Row: " + str(storageRackRow) + " Rack Column: " + str(storageRackColumn) + " - Found -> Storage Code: " + result.getProperty("STORAGE_POSITION.STORAGE_CODE") + " Rack Row: " + result.getProperty("STORAGE_POSITION.STORAGE_RACK_ROW") + " Rack Column: " + result.getProperty("STORAGE_POSITION.STORAGE_RACK_COLUMN"))
+            if (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")) != storageCode) or (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")) != storageRackRow) or (result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")) != storageRackColumn):
+                raise UserFailureException("You entered the name of an already existing box in a different place - Box Name: " + str(storageBoxName) + " Given -> Storage Code: " + str(storageCode) + " Rack Row: " + str(storageRackRow) + " Rack Column: " + str(storageRackColumn) + " - Found -> Storage Code: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")) + " Rack Row: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")) + " Rack Column: " + result.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")))
 
     if storageValidationLevel == "BOX" or storageValidationLevel == "BOX_POSITION":
         # 4.2 The number of total different box names on the rack including the given one should be below $STORAGE.BOX_NUM
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.2")
         searchCriteriaStorageRack = SampleSearchCriteria()
         searchCriteriaStorageRack.withType().withCode().thatEquals("STORAGE_POSITION")
-        searchCriteriaStorageRack.withStringProperty("STORAGE_POSITION.STORAGE_CODE").thatEquals(storageCode)
-        searchCriteriaStorageRack.withNumberProperty("STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(int(storageRackRow))
-        searchCriteriaStorageRack.withNumberProperty("STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(int(storageRackColumn))
+        searchCriteriaStorageRack.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
+        searchCriteriaStorageRack.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")).thatEquals(int(storageRackRow))
+        searchCriteriaStorageRack.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")).thatEquals(int(storageRackColumn))
         searchCriteriaStorageRackResults = context.applicationService.searchSamples(sessionToken, searchCriteriaStorageRack, fetchOptions).getObjects()
         storageRackBoxes = {storageBoxName}
         for sample in searchCriteriaStorageRackResults:
-            storageRackBoxes.add(sample.getProperty("STORAGE_POSITION.STORAGE_BOX_NAME"))
+            storageRackBoxes.add(sample.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")))
         # 4.3 $STORAGE.BOX_NUM is only checked in is configured
         # OPERATION_LOG.info("isValidStoragePositionToInsertUpdate - 4.3")
-        storageBoxNum = storage.getProperty("STORAGE.BOX_NUM")
+        storageBoxNum = storage.getProperty(getInternalNamespacePropertyCode("STORAGE.BOX_NUM"))
         if storageBoxNum is not None:
             storageBoxNumAsInt = int(storageBoxNum)
             if len(storageRackBoxes) > storageBoxNumAsInt:
@@ -594,23 +608,23 @@ def isValidStoragePositionToInsertUpdate(context, parameters, sessionToken):
         for storageBoxSubPosition in storageBoxPosition.split(" "):
             searchCriteriaStorageBoxPosition = SampleSearchCriteria()
             searchCriteriaStorageBoxPosition.withType().withCode().thatEquals("STORAGE_POSITION")
-            searchCriteriaStorageBoxPosition.withStringProperty("STORAGE_POSITION.STORAGE_CODE").thatEquals(storageCode)
-            searchCriteriaStorageBoxPosition.withNumberProperty("STORAGE_POSITION.STORAGE_RACK_ROW").thatEquals(int(storageRackRow))
-            searchCriteriaStorageBoxPosition.withNumberProperty("STORAGE_POSITION.STORAGE_RACK_COLUMN").thatEquals(int(storageRackColumn))
+            searchCriteriaStorageBoxPosition.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")).thatEquals(storageCode)
+            searchCriteriaStorageBoxPosition.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_ROW")).thatEquals(int(storageRackRow))
+            searchCriteriaStorageBoxPosition.withNumberProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_RACK_COLUMN")).thatEquals(int(storageRackColumn))
 
             if enableNewSearchEngine:
-                searchCriteriaStorageBoxPosition.withStringProperty("STORAGE_POSITION.STORAGE_BOX_NAME").thatEquals(storageBoxName)
+                searchCriteriaStorageBoxPosition.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")).thatEquals(storageBoxName)
             else: # Patch for Lucene
                 import org.apache.lucene.queryparser.classic.QueryParserBase as QueryParserBase
-                searchCriteriaStorageBoxPosition.withStringProperty("STORAGE_POSITION.STORAGE_BOX_NAME").thatEquals(QueryParserBase.escape(storageBoxName))
-            searchCriteriaStorageBoxPosition.withStringProperty("STORAGE_POSITION.STORAGE_BOX_POSITION").thatContains(storageBoxSubPosition)
+                searchCriteriaStorageBoxPosition.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")).thatEquals(QueryParserBase.escape(storageBoxName))
+            searchCriteriaStorageBoxPosition.withStringProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_POSITION")).thatContains(storageBoxSubPosition)
             searchCriteriaStorageBoxResults = context.applicationService.searchSamples(sessionToken, searchCriteriaStorageBoxPosition, fetchOptions).getObjects()
             # 5.1 If the given box position dont exists (the list is empty), is new
             for sample in searchCriteriaStorageBoxResults:
                 if sample.getPermId().getPermId() != samplePermId \
-                        and storageBoxSubPosition in sample.getProperty("STORAGE_POSITION.STORAGE_BOX_POSITION").split(" ") \
-                        and sample.getProperty("STORAGE_POSITION.STORAGE_BOX_NAME") == storageBoxName \
-                        and sample.getProperty("STORAGE_POSITION.STORAGE_CODE") == storageCode:
+                        and storageBoxSubPosition in sample.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_POSITION")).split(" ") \
+                        and sample.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_BOX_NAME")) == storageBoxName \
+                        and sample.getProperty(getInternalNamespacePropertyCode("STORAGE_POSITION.STORAGE_CODE")) == storageCode:
                     # 5.3 If the given box position already exists, with a different permId -> Is an error
                     raise UserFailureException("You entered an existing box position - Box Name: " + str(storageBoxName) + " Box Position " + storageBoxSubPosition + " is already used by " + sample.getPermId().getPermId())
                 else:
