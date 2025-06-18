@@ -23,8 +23,6 @@ Estimation: 2d
 New tables additional tables:
 - TypeGroups
 - SampleTypeTypeGroups
-- TypeGroupHistory
-- SampleTypeTypeGroupsHistory
 
 #### TypeGroups table
 
@@ -83,23 +81,6 @@ CREATE INDEX STTG_TG_FK_I ON SAMPLE_TYPE_TYPE_GROUPS (TG_ID);
 CREATE INDEX STTG_PERS_FK_I ON SAMPLE_TYPE_TYPE_GROUPS (PERS_ID_REGISTERER);
 
 ```
-#### TypeGroupsHistory table
-
-Column-wise, it is a copy of TypeGroups table with additional column containing one of the 2 values:
-- UPDATE
-- DELETE
-
-inserts to this table will happen during updates and deletes on TypeGroup table (as trigger)
-
-#### SampleTypeTypeGroupsHistory table
-
-Column-wise, it is a copy of SampleTypeTypeGroups table with additional column containing one of the 2 values:
-- UPDATE
-- DELETE
-
-inserts to this table will happen during updates and deletes on SampleTypeTypeGroups table (as trigger)
-
-
 ### API changes
 
 Estimation: 2d
@@ -107,12 +88,12 @@ Estimation: 2d
 1. Introduction of `typegroup` package to V3 API containing classes for:
 
 - creation
-- deletion (with/without trash?)
+- deletion (without trash)
 - get
 - search
 - assignment
 
-update/fetchoptions sections are not needed
+updates can update the name/fetchoptions for assignments
 
 2. Changes to `sample` package in V3 API (sample package contains sampletype V3 classes)
 
@@ -144,24 +125,31 @@ DSS/AFS are not aware of Type Group existance, no change is needed
 
 ### UI changes
 
-#### ELN UI
-
-Estimation: ???
-
-???
-
 #### ADMIN UI
 
 Estimation: 5d
 
-- Types Menu section needs to be expanded with listing of all Type Groups
-- Each Type Group should have a list of Sample Types can be added/deleted (internal assignments can not be deleted)
-- Sample Type view should be expanded with listing of all Type Groups it belongs to (???) 
-- History of Type Group changes?
-- History of Type Group assignments?
+
+- Changes on the `Left Side Navigation Menu`: As shown on the image below, there is a new section called `Object Type Groups` where
+type groups are. There a second new Section called `Legacy Entity Types` where `Collections`, `Datasets` and `Materials`
+will be grouped.
+
+![type-groups-left-side-menu.png](type-groups-left-side-menu.png)
+
+- Changes on the `Object Type Form`: A table showing the `Object Type Groups` the type belongs to is shown, 
+on edit mode is possible to add/remove new groups to this table. (internal assignments can not be deleted by non system user)
+
+- New View `Object Type Groups Table`: This view is just a table with the list of groups, is shown when the user clicks over `Object Type Groups`.
+- New View `Object Type Group Form`: This view is shown when clicking over a singular group, it has a single table with 
+the list of `Object Types` that belong to that group, in edit mode is possible to add/remove new types to the table.  (internal assignments can not be deleted by non system user)
 
 
-### PyBIS changes
+#### Task 2: ELN UI
+
+- Need to add Type Groups filtering on the sample tables, specially parents and children tables.
+- Need to add Type Groups filtering to the new Graph View when this view is rewritten.
+
+### Task 3: PyBIS changes
 
 Estimation: 2d
 
