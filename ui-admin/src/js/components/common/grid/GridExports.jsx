@@ -148,14 +148,16 @@ class GridExports extends React.PureComponent {
       disabled,
       multiselectable,
       multiselectedRows,
+      multiselectLimit,
       visibleColumns,
+      totalCount,
       classes
     } = this.props
     const { el, importCompatibleError } = this.state
 
     const rowsOptions = [
       {
-        label: messages.get(messages.ALL_PAGES),
+        label: totalCount <= multiselectLimit ? messages.get(messages.ALL_PAGES) : messages.get(messages.ALL_PAGES_WITH_LIMIT, multiselectLimit),
         value: GridExportOptions.ROWS.ALL_PAGES
       },
       {
@@ -191,7 +193,7 @@ class GridExports extends React.PureComponent {
           id={id + '.exports-button-id'}
           label={messages.get(messages.EXPORTS)}
           disabled={disabled}
-//           color='inherit'
+          //           color='inherit'
           color='white'
           onClick={this.handleOpen} />
         <Popover
@@ -302,7 +304,7 @@ class GridExports extends React.PureComponent {
               )}
               {(isTSVExport || isXLSEntityExport) &&
                 exportOptions.values ===
-                  GridExportOptions.VALUES.PLAIN_TEXT && (
+                GridExportOptions.VALUES.PLAIN_TEXT && (
                   <div className={classes.field}>
                     <Message type='warning'>
                       {messages.get(messages.EXPORT_PLAIN_TEXT_WARNING)}

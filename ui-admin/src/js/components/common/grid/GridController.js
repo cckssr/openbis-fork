@@ -527,14 +527,14 @@ export default class GridController {
     return settings
   }
 
-  async _loadRowsFromAllPages() {
+  async _loadRowsFromAllPages(limit) {
     const state = this.context.getState()
     const props = this.context.getProps()
 
     var rowsFromAllPages = []
 
     if (state.local) {
-      rowsFromAllPages = state.sortedRows
+      rowsFromAllPages = _.slice(state.sortedRows, 0, limit)
     } else if (props.loadRows) {
       const columns = {}
 
@@ -548,7 +548,7 @@ export default class GridController {
         filters: state.filters,
         globalFilter: state.globalFilter,
         page: 0,
-        pageSize: 1000000,
+        pageSize: limit,
         sortings: state.sortings
       })
 
@@ -1042,11 +1042,12 @@ export default class GridController {
     const { multiselectedRows } = this.context.getState()
 
     if (row) {
+      const multiselectLimit = this.getMultiselectLimit()
       const newMultiselectedRows = { ...multiselectedRows }
 
       if (newMultiselectedRows[row.id]) {
         delete newMultiselectedRows[row.id]
-      } else {
+      } else if (Object.keys(multiselectedRows).length < multiselectLimit) {
         newMultiselectedRows[row.id] = true
       }
 
@@ -1060,11 +1061,20 @@ export default class GridController {
     const rowIds = rows.map(row => String(row.id))
     const multiselectedRowIds = Object.keys(multiselectedRows)
 
+    const newRowIds = _.difference(rowIds, multiselectedRowIds)
     let newMultiselectedRowIds = null
-    if (_.difference(rowIds, multiselectedRowIds).length === 0) {
+
+    if (newRowIds.length === 0) {
+      // all rows at the page are already selected -> deselect the whole page 
       newMultiselectedRowIds = _.difference(multiselectedRowIds, rowIds)
     } else {
-      newMultiselectedRowIds = _.union(multiselectedRowIds, rowIds)
+      // not all rows at the page are selected yet -> select the whole page (up to the limit)
+      const multiselectLimit = this.getMultiselectLimit()
+      if (multiselectedRowIds.length + newRowIds.length > multiselectLimit) {
+        newMultiselectedRowIds = _.union(multiselectedRowIds, _.slice(newRowIds, 0, multiselectLimit - multiselectedRowIds.length))
+      } else {
+        newMultiselectedRowIds = _.union(multiselectedRowIds, newRowIds)
+      }
     }
     this.multiselectRows(newMultiselectedRowIds)
   }
@@ -1075,8 +1085,10 @@ export default class GridController {
 
   async handleSelectAllPages() {
     const { local, totalCount } = this.context.getState()
+    const multiselectLimit = this.getMultiselectLimit()
 
-    if (!local && totalCount > 1000) {
+    // require a confirmation if trying to select more than half of the limit
+    if (!local && totalCount > multiselectLimit / 2) {
       await this.context.setState({
         confirmSelectAllPagesOpen: true
       })
@@ -1093,7 +1105,8 @@ export default class GridController {
       return
     }
 
-    const rowsFromAllPages = await this._loadRowsFromAllPages()
+    const limit = this.getMultiselectLimit();
+    const rowsFromAllPages = await this._loadRowsFromAllPages(limit)
 
     const rowsMap = {}
     rows.forEach(row => {
@@ -1482,7 +1495,8 @@ export default class GridController {
     const { exportOptions, rows, multiselectedRows } = this.context.getState()
 
     if (exportOptions.rows === GridExportOptions.ROWS.ALL_PAGES) {
-      return await this._loadRowsFromAllPages()
+      const limit = this.getMultiselectLimit()
+      return await this._loadRowsFromAllPages(limit)
     } else if (exportOptions.rows === GridExportOptions.ROWS.CURRENT_PAGE) {
       return rows
     } else if (exportOptions.rows === GridExportOptions.ROWS.SELECTED_ROWS) {
@@ -1629,6 +1643,15 @@ export default class GridController {
   getMultiselectedRows() {
     const { multiselectedRows } = this.context.getState()
     return multiselectedRows
+  }
+
+  getMultiselectLimit() {
+    const { multiselectLimit } = this.context.getProps()
+    if (multiselectLimit !== null && multiselectLimit !== undefined && _.isNumber(multiselectLimit)) {
+      return multiselectLimit
+    } else {
+      return 5000;
+    }
   }
 
   getTotalCount() {

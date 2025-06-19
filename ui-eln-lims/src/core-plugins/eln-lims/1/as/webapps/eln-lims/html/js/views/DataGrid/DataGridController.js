@@ -67,6 +67,7 @@ function DataGridController(
                     exportXLS: _this._exportXLS,
                     selectable: false,
                     multiselectable: multiselectable,
+                    multiselectLimit : profile && profile.grid ? profile.grid.multiselectLimit : null,
                     actions: _this._actions(extraOptions),
                 })
 
