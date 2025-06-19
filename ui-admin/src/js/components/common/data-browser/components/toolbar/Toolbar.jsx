@@ -60,7 +60,8 @@ class Toolbar extends React.Component {
       onShowInfoChange,            
       owner,      
       editable,      
-      onSpaceStatusChange
+      onSpaceStatusChange,
+      frozen
     } = this.props
     
     const containerClass = leftToolbar
@@ -76,6 +77,7 @@ class Toolbar extends React.Component {
             buttonSize={buttonSize}                        
             owner={owner}          
             extOpenbis={this.props.openBis}
+            frozen={frozen}
           />
         )}
         <RightToolbar
@@ -87,6 +89,7 @@ class Toolbar extends React.Component {
           onViewTypeChange={onViewTypeChange}
           controller={this.controller}
           afterUpload={onSpaceStatusChange}
+          frozen={frozen}
         />
       </div>
 

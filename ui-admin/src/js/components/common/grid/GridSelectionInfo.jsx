@@ -19,8 +19,8 @@ const styles = theme => ({
     flex: '0 0 auto',
     '&:first-child': {
       marginLeft: '2px',
-      marginRight: theme.spacing(1)
-    }
+    },
+    marginRight: theme.spacing(1)
   },
   button: {
     marginRight: theme.spacing(1),
@@ -38,7 +38,7 @@ class GridSelectionInfo extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'GridSelectionInfo.render')
 
-    const { columns, rows, multiselectable, multiselectedRows, classes } =
+    const { columns, rows, multiselectable, multiselectedRows, multiselectLimit, classes } =
       this.props
 
     if (columns.length === 0 || !multiselectable) {
@@ -69,6 +69,7 @@ class GridSelectionInfo extends React.PureComponent {
       >
         {this.renderNumberOfSelectedRows(numberOfSelectedRows)}
         {this.renderButtons()}
+        {this.renderMultiselectLimitReached(numberOfSelectedRows, multiselectLimit)}
         {this.renderNumberOfSelectedRowsNotVisible(
           numberOfSelectedRowsNotVisible
         )}
@@ -83,6 +84,24 @@ class GridSelectionInfo extends React.PureComponent {
       <div className={classes.message}>
         <Message type='info'>
           {messages.get(messages.NUMBER_OF_SELECTED_ROWS, numberOfSelectedRows)}
+        </Message>
+      </div>
+    )
+  }
+
+  renderMultiselectLimitReached(numberOfSelectedRows, multiselectLimit) {
+    if (numberOfSelectedRows < multiselectLimit) {
+      return null
+    }
+
+    const { classes } = this.props
+
+    return (
+      <div className={classes.message}>
+        <Message type='warning'>
+          {messages.get(
+            messages.SELECTED_ROWS_LIMIT_REACHED, multiselectLimit
+          )}
         </Message>
       </div>
     )

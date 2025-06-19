@@ -600,20 +600,6 @@ public class OpenBISService implements IOpenBISService
                         objectMapper));
     }
 
-    @Override public void unarchiveDataSets(final List<String> dataSetCodes) throws UserFailureException
-    {
-        if (dataSetCodes.isEmpty())
-        {
-            return;
-        }
-        if (messagesDatabaseFacade == null)
-        {
-            throw new RuntimeException("Messages database not configured");
-        }
-        messagesDatabaseFacade.create(
-                new UnarchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes).serialize(objectMapper));
-    }
-
     @Override public void notifyDatasetAccess(final String dataSetCode)
     {
         DataSetUpdate update = new DataSetUpdate();

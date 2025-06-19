@@ -135,7 +135,7 @@ class UploadSection extends React.Component {
   }
 
   render() {
-    const { classes, buttonSize, editable, controller, className,primaryClassName } = this.props
+    const { classes, buttonSize, editable, controller, className, primaryClassName, frozen } = this.props
     const {
       uploadButtonsPopup,
       loading,
@@ -159,7 +159,7 @@ class UploadSection extends React.Component {
           color={primaryClassName ? '' : color }
           size={buttonSize}
           variant={className ?  '' : "contained"}
-          disabled={!editable}
+          disabled={!editable || frozen}
           startIcon={<PublishIcon />}
           onClick={this.uploadManager.handleUploadClick}
         >

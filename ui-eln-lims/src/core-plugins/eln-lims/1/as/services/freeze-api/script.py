@@ -46,7 +46,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.RoleLevel as Role
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId as OperationExecutionPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.SynchronousOperationExecutionOptions as SynchronousOperationExecutionOptions;
 
+openbisVersion = None
+
+def getOpenBISVersion(context):
+    global openbisVersion
+    if openbisVersion == None:
+        sessionToken = context.getApplicationService().loginAsSystem()
+        openbisVersion = context.getApplicationService().getServerInformation(sessionToken)['openbis-version']
+
+def getInternalNamespacePropertyCode(propertyCode):
+    if openbisVersion.startswith("20.10."):
+        return "$" + propertyCode
+    else:
+        return propertyCode
+
 def process(context, parameters):
+    openbisVersion = getOpenBISVersion(context)
 	method = parameters.get("method");
 	result = None;
 	
@@ -330,8 +345,8 @@ def getEntity(service, sessionToken, type, permId):
 
 def getDisplayName(entity):
 	displayName = None;
-	if hasattr(entity, 'properties') and "NAME" in entity.properties and entity.properties["NAME"]:
-		displayName = entity.properties["NAME"];
+	if hasattr(entity, 'properties') and getInternalNamespacePropertyCode("NAME") in entity.properties and entity.properties[getInternalNamespacePropertyCode("NAME")]:
+		displayName = entity.properties[getInternalNamespacePropertyCode("NAME")];
 	elif hasattr(entity, 'code') and entity.getCode():
 		displayName = entity.getCode();
 	elif hasattr(permId, 'permId'):

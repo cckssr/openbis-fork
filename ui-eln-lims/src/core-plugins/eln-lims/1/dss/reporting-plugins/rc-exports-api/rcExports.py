@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import json
 import os
 import traceback
 import xml.etree.ElementTree as ET
@@ -32,9 +31,17 @@ from java.util.zip import ZipOutputStream, Deflater
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
-from org.eclipse.jetty.client.util import BasicAuthentication
+from org.eclipse.jetty.io import ClientConnector
+from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
+from org.eclipse.jetty.client.util import MultiPartContentProvider
+from org.eclipse.jetty.client.util import PathContentProvider
+from org.eclipse.jetty.client.util import StringContentProvider
 from org.eclipse.jetty.http import HttpMethod
+from org.eclipse.jetty.util import Jetty
 from org.eclipse.jetty.util.ssl import SslContextFactory
+from org.eclipse.jetty.client.util import BasicAuthentication
+
+
 
 from exportsApi import displayResult, getConfigurationProperty, addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService
 
@@ -168,8 +175,22 @@ def sendToDSpace(params, tr, tempZipFileName, tempZipFilePath):
 
 
 def authenticateUserJava(url, tr):
+    jettyVersion = Jetty.VERSION
+    operationLog.info('Detected Jetty VERSION: %s' % jettyVersion)
+
     sslContextFactory = SslContextFactory.Client()
-    httpClient = HttpClient(sslContextFactory)
+    sslContextFactory.setTrustAll(True)
+
+    httpClient = None
+    if jettyVersion.startswith('9.'):
+        httpClient =  HttpClient(sslContextFactory)
+    elif jettyVersion.startswith('10.'):
+        clientConnector = ClientConnector()
+        clientConnector.setSslContextFactory(sslContextFactory)
+        httpClient =  HttpClient(HttpClientTransportOverHTTP(clientConnector))
+    else:
+        raise ValueError('Unsupported Jetty version: %s. Only 9.x and 10.x are handled for HttpClient creation.' % jettyVersion)
+
     proxyConfig = httpClient.getProxyConfiguration()
     proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
     uri = URI(url)

@@ -20,7 +20,7 @@ Registers an incoming directory as a 'BASECALL_STATS' data set in openBIS.
 The name of the directory is used to search for the matching sample. 
 
 @note: 
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 expected incoming Name for HiSeq runs: C035RACXX_1
 expected incoming Name for MiSeq runs: A0T19_1
 

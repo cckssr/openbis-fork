@@ -231,7 +231,7 @@ public abstract class AbstractIntegrationTest
 
     private void initLogging()
     {
-        System.setProperty("log4j.configuration", "etc/as/logging.properties");
+        System.setProperty("log.configuration", "etc/as/logging.properties");
     }
 
     private void dropOpenBISDatabase() throws Exception

@@ -96,7 +96,7 @@
     </category>
 
     <!--
-        // If we have the category 'STATUS' and we send a logging event with priority 'info', then log to STDOUT (will go into jetty.out).
+        // If we have the category 'STATUS' and we send a logging event with priority 'info', then log to STDOUT (will go into openbis.log).
     -->
     <category name="STATUS">
         <priority value="info" />

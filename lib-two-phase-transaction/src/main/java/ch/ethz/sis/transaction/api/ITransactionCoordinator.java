@@ -1,4 +1,4 @@
-package ch.ethz.sis.transaction;
+package ch.ethz.sis.transaction.api;
 
 import java.util.UUID;
 

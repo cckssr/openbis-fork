@@ -189,7 +189,7 @@ class LeftToolbarButtons extends React.Component {
         color={color}
         size={buttonSize}
         variant='outlined'
-        disabled={!this.props.editable}        
+        disabled={!this.props.editable || this.props.frozen}
         title={messages.get(messages.NEW_DIRECTORY)}
         onClick={this.openNewFolderDialog}
       >        
@@ -246,7 +246,8 @@ class LeftToolbarButtons extends React.Component {
         multiselectedFiles={multiselectedFiles.size === 0}
         onDownload={onDownload}
         classes={{ root: classes.buttonLeft }}
-        className={className} 
+        className={className}
+        disabled={this.props.archived}
       />,
       <Button
         key='delete'
@@ -255,7 +256,7 @@ class LeftToolbarButtons extends React.Component {
         color={color}
         size={buttonSize}
         variant='text'
-        disabled={!editable}
+        disabled={!editable || this.props.frozen}
         startIcon={<DeleteIcon />}
         onClick={this.openDeleteDialog}        
       >
@@ -268,7 +269,7 @@ class LeftToolbarButtons extends React.Component {
         color={color}
         size={buttonSize}
         variant='text'
-        disabled={multiselectedFiles.size !== 1 || !editable}
+        disabled={multiselectedFiles.size !== 1 || !editable || this.props.frozen}
         startIcon={<RenameIcon />}
         onClick={this.openRenameDialog}
       >
@@ -281,7 +282,7 @@ class LeftToolbarButtons extends React.Component {
         color={color}
         size={buttonSize}
         variant='text'
-        disabled={!editable}
+        disabled={!editable || this.props.frozen}
         startIcon={<CopyIcon />}
         onClick={this.openCopyLocationDialog}
       >
@@ -294,7 +295,7 @@ class LeftToolbarButtons extends React.Component {
         color={color}
         size={buttonSize}
         variant='text'
-        disabled={!editable}
+        disabled={!editable || this.props.frozen}
         startIcon={<MoveIcon />}
         onClick={this.openMoveLocationDialog}
       >

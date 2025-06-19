@@ -43,7 +43,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Code;
  * space, project, experiment, sample, data set type or a combination of those. The combination defines a so called 'grouping key'. Groups can be
  * merged if they are too small. Several grouping keys can be specified.
  * <p>
- * Searching for an appropriate group of data sets for auto archiving is logged. If no group could be found the admin (as specified in log.xml) is
+ * Searching for an appropriate group of data sets for auto archiving is logged. If no group could be found the admin (as specified in logging.properties) is
  * notified be email with the searching log as content.
  *
  * @author Franz-Josef Elmer

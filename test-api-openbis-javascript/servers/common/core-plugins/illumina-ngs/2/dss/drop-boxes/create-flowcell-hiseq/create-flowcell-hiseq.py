@@ -22,7 +22,7 @@ from those two XML files. Additionally the number of lanes are read out and
 are created as contained samples of type 'ILLUMINA_FLOW_LANE'.
 
 @note: 
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 expected incoming Name for HiSeq runs: 110715_SN792_0054_BC035RACXX
 
 structure:

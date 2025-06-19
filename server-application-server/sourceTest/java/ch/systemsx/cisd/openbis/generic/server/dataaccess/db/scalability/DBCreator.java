@@ -68,7 +68,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
  * IMPORTANT - to make it faster try:
  * <ul>
  * <li>commenting out flush() in create methods for in {@link IDataDAO} and {@link SampleDAO}
- * <li>turning off logging (doesn't make a big difference) - change root logging priority in log.xml from "info" to "error".
+ * <li>turning off logging (doesn't make a big difference) - change root logging priority in logging.properties from "info" to "error".
  * </ul>
  * To log the current state of particular entity creation change static LOG variable value to true.
  * 

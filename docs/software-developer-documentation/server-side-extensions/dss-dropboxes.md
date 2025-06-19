@@ -574,7 +574,7 @@ ALIGNMENT_SOFTWARE, ISSUED_COMMAND, SAMTOOLS_FLAGSTAT,
 TOTAL_READS, MAPPED_READS
 Obviously you need a working samtools binary
 Note:
-print statements go to: ~openbis/sprint/datastore_server/log/startup_log.txt
+print statements go to: ~openbis/sprint/datastore_server/log/datastore_server.log
 '''
 import os
 from ch.systemsx.cisd.openbis.generic.shared.api.v1.dto import SearchCriteria

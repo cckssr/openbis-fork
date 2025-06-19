@@ -10,6 +10,9 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
+import ch.ethz.sis.transaction.api.ITransactionCoordinator;
+import ch.ethz.sis.transaction.api.ITransactionParticipant;
+import ch.ethz.sis.transaction.api.TransactionOperationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;

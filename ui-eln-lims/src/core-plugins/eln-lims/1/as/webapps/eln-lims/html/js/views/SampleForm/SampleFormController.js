@@ -36,6 +36,19 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
         mainController.serverFacade.getSampleType(sample.sampleTypeCode, function(sampleType) {
         _this._sampleFormModel.sampleType = sampleType;
 		if(mode !== FormMode.CREATE) {
+            if(profile.isAFSAvailable()) {
+                require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+                        function(DataSetPermId, DataSetFetchOptions) {
+                            var ids = [new DataSetPermId(sample.permId)];
+                            var fetchOptions = new DataSetFetchOptions();
+                            fetchOptions.withPhysicalData();
+                            mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+                                var datasets = Util.mapValuesToList(map);
+                                _this._sampleFormModel.afs_data = datasets.length > 0 ? datasets[0] : null;
+                            });
+                });
+            }
+
 			require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier",
                 "as/dto/dataset/id/DataSetPermId", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
                 function(SamplePermId, SampleIdentifier, DataSetPermId, SampleFetchOptions) {
@@ -118,6 +131,23 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             Util.unblockUI();
 		}
 		});
+	}
+	this._getSamples = function(permIds, callback) {
+        require([ "as/dto/sample/id/SamplePermId", "as/dto/sample/id/SampleIdentifier", "as/dto/sample/fetchoptions/SampleFetchOptions" ],
+                    function(SamplePermId, SampleIdentifier, SampleFetchOptions) {
+                        var ids = permIds.map(id => new SamplePermId(id));
+    					var fetchOptions = new SampleFetchOptions();
+    					fetchOptions.withSpace();
+    					fetchOptions.withProject();
+    					fetchOptions.withExperiment();
+    					fetchOptions.withProperties();
+    					fetchOptions.withParents();
+    					fetchOptions.withChildren();
+    					mainController.openbisV3.getSamples(ids, fetchOptions).done(function(map) {
+    					    var samples = Util.mapValuesToList(map);
+    						callback(samples);
+    					});
+    			});
 	}
 		
 	this.isDirty = function() {

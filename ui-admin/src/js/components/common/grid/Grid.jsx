@@ -325,6 +325,8 @@ class Grid extends React.PureComponent {
     }
 
     const visibleColumns = this.controller.getVisibleColumns()
+    const multiselectLimit = this.controller.getMultiselectLimit()
+    const totalCount = this.controller.getTotalCount()
 
     return (
       <GridExports
@@ -334,7 +336,9 @@ class Grid extends React.PureComponent {
         exportOptions={exportOptions}
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
+        multiselectLimit={multiselectLimit}
         visibleColumns={visibleColumns}
+        totalCount={totalCount}
         onExport={this.controller.handleExport}
         onExportOptionsChange={this.controller.handleExportOptionsChange}
       />
@@ -419,6 +423,7 @@ class Grid extends React.PureComponent {
     const { rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
+    const multiselectLimit = this.controller.getMultiselectLimit()
 
     return (
       <GridSelectionInfo
@@ -430,6 +435,7 @@ class Grid extends React.PureComponent {
         onSelectAllPages={this.controller.handleSelectAllPages}
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
+        multiselectLimit={multiselectLimit}
       />
     )
   }
@@ -463,13 +469,21 @@ class Grid extends React.PureComponent {
 
   renderConfirmSelectAllPages() {
     const { confirmSelectAllPagesOpen, totalCount } = this.state
+    const multiselectLimit = this.controller.getMultiselectLimit()
+
+    let content = null
+    if (totalCount <= multiselectLimit) {
+      content = messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES, totalCount)
+    } else {
+      content = messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES_WITH_LIMIT, multiselectLimit)
+    }
 
     return (<ConfirmationDialog
       open={confirmSelectAllPagesOpen}
       onConfirm={this.controller.handleConfirmSelectAllPages}
       onCancel={this.controller.handleCancelSelectAllPages}
       title={messages.get(messages.SELECT_ALL_PAGES)}
-      content={messages.get(messages.CONFIRMATION_SELECT_ALL_PAGES, totalCount)}
+      content={content}
     />)
   }
 }

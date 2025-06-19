@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-from __future__ import print_function
-
 import json
 import traceback
 
@@ -28,10 +26,13 @@ from java.nio.file import Paths
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
+from org.eclipse.jetty.io import ClientConnector
+from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
 from org.eclipse.jetty.client.util import MultiPartContentProvider
 from org.eclipse.jetty.client.util import PathContentProvider
 from org.eclipse.jetty.client.util import StringContentProvider
 from org.eclipse.jetty.http import HttpMethod
+from org.eclipse.jetty.util import Jetty
 from org.eclipse.jetty.util.ssl import SslContextFactory
 from org.json import JSONObject
 
@@ -52,10 +53,10 @@ def process(tr, params, tableBuilder):
 def exportAll(tr, params):
     sessionToken = params.get('sessionToken')
 
-    exportModel = params.get("entities")
+    exportModel = params.get('entities')
     downloadResultMap = getDownloadUrlFromASService(sessionToken, exportModel)
 
-    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get("nodeExportList"))
+    resultUrl = sendToZenodo(tr=tr, params=params, tempZipFilePath=downloadResultMap.get('canonicalPath'), entities=exportModel.get('nodeExportList'))
     return resultUrl
 
 
@@ -155,9 +156,22 @@ def addAuthenticationHeader(accessToken, request):
 
 
 def createHttpClient():
+    jettyVersion = Jetty.VERSION
+    operationLog.info('Detected Jetty VERSION: %s' % jettyVersion)
+
     sslContextFactory = SslContextFactory.Client()
     sslContextFactory.setTrustAll(True)
-    httpClient =  HttpClient(sslContextFactory)
+
+    httpClient = None
+    if jettyVersion.startswith('9.'):
+        httpClient =  HttpClient(sslContextFactory)
+    elif jettyVersion.startswith('10.'):
+        clientConnector = ClientConnector()
+        clientConnector.setSslContextFactory(sslContextFactory)
+        httpClient =  HttpClient(HttpClientTransportOverHTTP(clientConnector))
+    else:
+        raise ValueError('Unsupported Jetty version: %s. Only 9.x and 10.x are handled for HttpClient creation.' % jettyVersion)
+
     proxyConfig = httpClient.getProxyConfiguration()
     proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
     return httpClient

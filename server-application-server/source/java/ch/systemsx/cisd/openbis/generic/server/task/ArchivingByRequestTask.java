@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
-import ch.ethz.sis.messages.db.MessagesDatabase;
-import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
@@ -43,12 +40,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.PhysicalDataSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
-import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.collection.SimpleComparator;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
 
@@ -136,19 +131,11 @@ public class ArchivingByRequestTask extends AbstractGroupMaintenanceTask
         // AFS
         List<DataSet> afsDataSets = getDataSetsToBeArchived(service, DataStoreKind.AFS, sessionToken);
         List<ArchiveRequest> afsRequests = groupAndChunkDataSets(afsDataSets);
-        DatabaseConfigurationContext messagesDatabaseConfiguration = CommonServiceProvider.getMessagesDatabaseConfigurationContext();
-        MessagesDatabase messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
 
-        messagesDatabase.begin();
         for (ArchiveRequest afsRequest : afsRequests)
         {
-            List<String> dataSetCodes = afsRequest.getDataSetPermIds().stream().map(DataSetPermId::getPermId).collect(Collectors.toList());
-            ArchiveDataSetMessage archiveMessage = new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes,
-                    afsRequest.getArchiveOptions().isRemoveFromDataStore(),
-                    afsRequest.getArchiveOptions().getOptions());
-            messagesDatabase.getMessagesDAO().create(archiveMessage.serialize(JacksonObjectMapper.getInstance()));
+            service.archiveDataSets(sessionToken, afsRequest.dataSetPermIds, afsRequest.archiveOptions);
         }
-        messagesDatabase.commit();
     }
 
     private List<ArchiveRequest> groupAndChunkDataSets(List<DataSet> dataSets)

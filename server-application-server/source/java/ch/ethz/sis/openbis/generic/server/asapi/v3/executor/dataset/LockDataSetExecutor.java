@@ -28,7 +28,6 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
 
 /**
  * @author Franz-Josef Elmer
- *
  */
 @Component
 public class LockDataSetExecutor extends AbstractArchiveUnarchiveDataSetExecutor implements ILockDataSetExecutor
@@ -40,14 +39,22 @@ public class LockDataSetExecutor extends AbstractArchiveUnarchiveDataSetExecutor
     @Override
     public void lock(final IOperationContext context, final List<? extends IDataSetId> dataSetIds, final DataSetLockOptions options)
     {
-        doArchiveUnarchive(context, dataSetIds, options, new IArchiveUnarchiveAction()
+        doArchiveUnarchive(context, dataSetIds, options, new IDssArchiveUnarchiveAction()
+        {
+            @Override
+            public void execute(IDataSetTable dataSetTable)
             {
-                @Override
-                public void execute(IDataSetTable dataSetTable)
-                {
-                    dataSetTable.lockDatasets();
-                }
-            });
+                dataSetTable.lockDatasets();
+            }
+        }, new IAfsArchiveUnarchiveAction()
+        {
+            @Override public void execute(final List<String> dataSetCodes)
+            {
+                IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
+                dataSetTable.loadByDataSetCodes(dataSetCodes, false, true);
+                dataSetTable.lockDatasets();
+            }
+        });
     }
 
     @Override

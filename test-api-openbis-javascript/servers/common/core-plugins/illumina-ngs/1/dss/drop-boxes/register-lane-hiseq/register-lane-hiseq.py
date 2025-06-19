@@ -6,7 +6,7 @@ Project_<Flow Cell>_<Lane>
 e.g.Project_110715_SN792_0054_BC035RACXX_1 or Project_110816_6354LAAXX_1
 
 Note: 
-print statements go to: ~openbis/sprint/datastore_server/log/startup_log.txt
+print statements go to: ~openbis/sprint/datastore_server/log/datastore_server.log
 '''
 
 import os

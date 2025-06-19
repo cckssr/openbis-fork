@@ -57,7 +57,7 @@ class FormValidator {
     ]
     const errors = []
 
-    field?.value.forEach(item => {
+    field?.value?.forEach(item => {
       const errorMessages = {}
       requiredFields.forEach(({ key, label }) => {
         if (this._isStringNotValide(item[key])) {

@@ -409,39 +409,155 @@
 								settingsForDropdown.push({  label: name,
 														value: results.objects[rIdx].identifier.identifier});
 							}
+
+							var $window = $('<form>', { 'action' : 'javascript:void(0);' });
+                            $window.append($('<legend>').append("Select template"));
+                            var css = {
+                                'top' : '35%',
+                                'width' : '50%',
+                                'left' : '30%',
+                                'right' : '20%',
+                                'text-align' : 'left',
+                                'overflow' : 'hidden',
+                            };
 	
-							var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Select template");
+							var $dropdown = FormUtil.getDropdown(settingsForDropdown, "Template", "templatesDropdown");
 							$dropdown.attr("id", "templatesDropdown");
-							Util.showDropdownAndBlockUI("templatesDropdown", $dropdown);
-	
-							$("#templatesDropdown").on("change", function(event) {
-								var sampleIdentifier = $("#templatesDropdown")[0].value;
-								var sample = null;
-								for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
-									if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
-										sample = results.objects[rIdx];
-									}
-								}
-								_this._sampleFormModel.sample.properties = sample.properties;
-								_this._sampleFormModel.sample.parents = sample.parents;
-								_this._sampleFormModel.sample.children = sample.children;
-	
-								if (_this._sampleFormModel.views.header) {
-									_this._sampleFormModel.views.header.empty();
-								}
-								if (_this._sampleFormModel.views.content) {
-									 _this._sampleFormModel.views.content.empty();
-								}
-								if (_this._sampleFormModel.views.auxContent) {
-									 _this._sampleFormModel.views.auxContent.empty();
-								}
-								_this._sampleFormController.init(_this._sampleFormModel.views, true);
-								Util.unblockUI();
-							});
-	
-							$("#templatesDropdownCancel").on("click", function(event) {
-								Util.unblockUI();
-							});
+							$window.append($dropdown)
+							var $warningText = $("<p>", { style : "color:red; font-size: large;" })
+							$window.append($warningText);
+
+							var checkboxText = "Merge current parents/children";
+                            var attr = {'type' : 'checkbox', 'alt' : checkboxText, 'placeholder' : checkboxText, 'id' : 'merge-relationships', 'checked': '' };
+
+                            var $checkbox = $('<div>', {'class' : 'checkbox'}).append($('<label>').append($('<input>', attr)));
+                            $checkbox.css({
+                                "display": "flex",
+                                "alignItems": "center",
+                                "marginBottom": "5px"
+                            })
+                            $checkbox.append(checkboxText);
+                            $window.append($checkbox);
+
+                            var $buttons = $('<div>', {'id' : 'grouping'});
+                            $window.append($buttons);
+
+                            var $acceptButton = $('<div>', {'class' : 'btn btn btn-primary btn-secondary', 'text' : 'Accept', 'id' : 'accept-btn'});
+                            $acceptButton.css('margin-right', '5px');
+                            $acceptButton.click(function() {
+
+                                var reInitView = function() {
+                                    if (_this._sampleFormModel.views.header) {
+                                        _this._sampleFormModel.views.header.empty();
+                                    }
+                                    if (_this._sampleFormModel.views.content) {
+                                         _this._sampleFormModel.views.content.empty();
+                                    }
+                                    if (_this._sampleFormModel.views.auxContent) {
+                                         _this._sampleFormModel.views.auxContent.empty();
+                                    }
+                                    _this._sampleFormController.init(_this._sampleFormModel.views, true);
+                                }
+
+                                var sampleIdentifier = $("#templatesDropdown")[0].value;
+                                if(sampleIdentifier === '') {
+                                    $warningText.text("You need to select a template!");
+                                    return;
+                                }
+                                var sample = null;
+                                for(var rIdx = 0; rIdx < results.totalCount; rIdx++) {
+                                    if(results.objects[rIdx].identifier.identifier === sampleIdentifier) {
+                                        sample = results.objects[rIdx];
+                                    }
+                                }
+                                _this._sampleFormModel.sample.properties = sample.properties;
+
+                                var mergeParents = $($checkbox.children()[0]).children()[0].checked;
+                                if(mergeParents) {
+                                    var currentParents = _this._sampleFormModel.sample.parents ?? [];
+                                    var currentParentsIds = currentParents.map(x => x.permId.permId)
+                                    var sampleLinksParents = _this._sampleFormModel.sampleLinksParents.getSamples()
+                                    var parentsToGet = []
+                                    if(sampleLinksParents.length !== 0) {
+                                        sampleLinksParents.forEach(parent => {
+                                            if(!currentParentsIds.includes(parent.permId)) {
+                                                parentsToGet.push(parent.permId);
+                                            }
+                                        });
+                                    }
+                                    sample.parents.forEach(parent => {
+                                        if(!currentParentsIds.includes(parent.permId.permId)) {
+                                            currentParents.push(parent);
+                                        }
+                                    });
+                                     var currentChildren = _this._sampleFormModel.sample.children ?? [];
+                                     var currentChildrenIds = currentChildren.map(x => x.permId.permId);
+
+                                     var sampleLinksChildren = _this._sampleFormModel.sampleLinksChildren.getSamples()
+                                     var childrenToGet = []
+                                     if(sampleLinksChildren.length !== 0) {
+                                         sampleLinksChildren.forEach(child => {
+                                             if(!currentChildrenIds.includes(child.permId)) {
+                                                 childrenToGet.push(child.permId);
+                                             }
+                                         });
+                                     }
+
+                                    sample.children.forEach(child => {
+                                        if(!currentChildrenIds.includes(child.permId.permId)) {
+                                            currentChildren.push(child);
+                                        }
+                                    });
+
+                                    if(parentsToGet.length !== 0 || childrenToGet.length !== 0) {
+
+                                        var doneFunction = function(samples) {
+                                            samples.forEach(sample => {
+                                                if(parentsToGet.includes(sample.permId.permId)) {
+                                                    currentParents.push(sample);
+                                                } else {
+                                                    currentChildren.push(sample);
+                                                }
+                                                _this._sampleFormModel.sample.parents = currentParents;
+                                                _this._sampleFormModel.sample.children = currentChildren;
+
+                                            })
+                                            reInitView();
+                                            Util.unblockUI();
+                                        }
+
+                                         _this._sampleFormController._getSamples(parentsToGet.concat(childrenToGet), doneFunction);
+                                    } else {
+                                        _this._sampleFormModel.sample.parents = currentParents;
+                                        _this._sampleFormModel.sample.children = currentChildren;
+                                        reInitView();
+                                        Util.unblockUI();
+                                    }
+
+
+                                } else {
+                                    _this._sampleFormModel.sample.parents = sample.parents;
+                                    _this._sampleFormModel.sample.children = sample.children;
+                                    reInitView();
+                                    Util.unblockUI();
+                                }
+                            });
+                            $buttons.append($acceptButton);
+
+                            var $cancelButton = $('<div>', {'class' : 'btn btn-default', 'text' : 'Cancel', 'id' : 'cancel-btn'});
+                            $cancelButton.click(function() {
+                                Util.unblockUI();
+                            });
+
+                            $buttons.append($cancelButton);
+							Util.blockUI($window, css);
+
+                            $("#templatesDropdown").on("change", function(event) {
+                                var sampleIdentifier = $("#templatesDropdown")[0].value;
+                                if(sampleIdentifier !== '') {
+                                    $warningText.text('');
+                                }
+                            });
 						});
 					}, "Templates", null, "templates-btn-sample-" + mainController.getNextId(), 'btn btn-primary btn-secondary');
 					toolbarModel.push({ component : $templateBtn, tooltip: "Templates" });
@@ -502,12 +618,12 @@
 						var futureName = newCleanValue.substring(titleStart+4, titleEnd);
 						if(futureName.indexOf("<") !== -1 && futureName.indexOf(">") !== -1) {
 							Util.showError("Entry names can't contain rich text. The current title will not be saved as Entry name.");
-							_this._sampleFormModel.sample.properties["NAME"] = null;
+							_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = null;
 						} else {
-							_this._sampleFormModel.sample.properties["NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
+							_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = newCleanValue.substring(titleStart+4, titleEnd);
 						}
 					} else {
-						_this._sampleFormModel.sample.properties["NAME"] = null;
+						_this._sampleFormModel.sample.properties[profile.getInternalNamespacePrefix() + "NAME"] = null;
 					}
 				}
 				// https://ckeditor.com/docs/ckeditor5/latest/framework/guides/deep-dive/ui/document-editor.html
@@ -1937,7 +2053,8 @@
 						objKind: "object",	
 						viewType:'list',					
 						withoutToolbar: true,
-						extOpenbis: _this.extOpenbis
+						extOpenbis: _this.extOpenbis,
+						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
 					}
 					let configKey = "AFS-WIDGET-KEY";
 										
@@ -2001,6 +2118,10 @@
 		this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
 			let $element = $("<div>")
 			const _this = this
+			let isArchived = false;
+			if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
+			    isArchived = _this._sampleFormModel.afs_data.physicalData.status === "ARCHIVED";
+			}
 			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
 				"as/dto/sample/id/SamplePermId",
 				"as/dto/experiment/id/ExperimentPermId",
@@ -2013,7 +2134,9 @@
 						viewType:'list',
 						className :'btn btn-default',
 						primaryClassName :'btn btn-primary',
-						extOpenbis: _this.extOpenbis
+						extOpenbis: _this.extOpenbis,
+						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
+						archived: isArchived
 					}
 
 

@@ -30,7 +30,7 @@ if [ ${server_folder#/} == ${server_folder} ]; then
 fi
 
 properties_file="${installation_folder}/service.properties"
-logconf_file="${installation_folder}/log.xml"
+logconf_file="${installation_folder}/logging.properties"
 checksum_file="${installation_folder}/configuration.MD5"
 startup_properties_file="${installation_folder}/openbis.conf"
 # Check whether given properties files exist and are regular file.
@@ -96,10 +96,10 @@ mkdir "$openbis_webapp"
 unzip -q "$installation_folder/openBIS.war" -d "$openbis_webapp"
 war_classes="$openbis_webapp/WEB-INF/classes"
 mkdir -p "$war_classes/etc"
-# Replace 'service.properties' and 'log.xml' files 
+# Replace 'service.properties' and 'logging.properties' files
 echo "Replace service.properties by following file (if it exists): $properties_file"
 test -f "$properties_file" && cp -p "$properties_file" "$war_classes/"
-echo "Replace log.xml by following file (if it exists): " $logconf_file
+echo "Replace logging.properties by following file (if it exists): " $logconf_file
 test -f "$logconf_file" && cp -p "$logconf_file" "$war_classes/etc/"
 echo "Make the configuration checksum file available : " $checksum_file
 test -f "$checksum_file" && cp -p "$checksum_file" "$base_folder"

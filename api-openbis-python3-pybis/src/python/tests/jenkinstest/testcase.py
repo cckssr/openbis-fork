@@ -800,7 +800,7 @@ class OpenbisController(_Controller):
         monitor.waitUntilEvent(condition)
 
     def createLogMonior(self, timeOutInMinutes=DEFAULT_TIME_OUT_IN_MINUTES):
-        logFilePath = "%s/servers/datastore_server/log/datastore_server_log.txt" % self.installPath
+        logFilePath = "%s/servers/datastore_server/log/datastore_server.log" % self.installPath
         return util.LogMonitor("%s.DSS" % self.instanceName, logFilePath, timeOutInMinutes)
 
     def assertFeatureVectorLabel(self, featureCode, expectedFeatureLabel):

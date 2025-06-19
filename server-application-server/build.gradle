@@ -202,7 +202,7 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     mainClass = 'ch.ethz.sis.openbis.generic.server.dev.EmbeddedJettyDevelopmentServer'
     classpath = sourceSets.asExec.runtimeClasspath
-    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog4j.configuration=etc/logging.properties',
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',

@@ -10,7 +10,7 @@ if [ -f $JETTY_PID_FILE ]; then
   isPIDRunning $PID
   if [ $? -eq 0 ]; then
     kill -3 $PID
-		echo "Thread dump logged to logs/jetty.out"
+		echo "Thread dump logged to logs/openbis.log"
   else
   	echo "Error: Application Server not running."
   	exit 100

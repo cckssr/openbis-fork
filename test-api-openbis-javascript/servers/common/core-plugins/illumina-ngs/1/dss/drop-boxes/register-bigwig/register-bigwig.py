@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 @note: 
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 expected incoming Name for HiSeq runs: 110715_SN792_0054_BC035RACXX
 expected incoming Name for GAII runs: 110812_6353WAAXX
 

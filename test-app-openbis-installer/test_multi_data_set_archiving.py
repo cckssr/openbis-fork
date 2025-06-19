@@ -138,7 +138,7 @@ class TestCase(systemtest.testcase.TestCase):
         operation = 'requestToArchive'
         util.printAndFlush("Waiting for archiving operation '%s' is finshed." % operation)
         monitor = util.LogMonitor("%s.DSS" % openbisController.instanceName, 
-                                  "%s/servers/datastore_server/log/datastore_server_log.txt" % openbisController.installPath)
+                                  "%s/servers/datastore_server/log/datastore_server.log" % openbisController.installPath)
         monitor.addNotificationCondition(util.RegexCondition('\[archiving - '))
         monitor.waitUntilEvent(util.RegexCondition('Successfully committed transaction'))
 
@@ -149,7 +149,7 @@ class TestCase(systemtest.testcase.TestCase):
         self.performArchivingOperation(openbisController, operation, data_set_codes)
         util.printAndFlush("Waiting for archiving operation '%s' is finshed." % operation)
         monitor = util.LogMonitor("%s.DSS" % openbisController.instanceName, 
-                                  "%s/servers/datastore_server/log/datastore_server_log.txt" % openbisController.installPath)
+                                  "%s/servers/datastore_server/log/datastore_server.log" % openbisController.installPath)
         monitor.addNotificationCondition(util.RegexCondition('OPERATION.MultiDataSet'))
         monitor.waitUntilEvent(util.RegexCondition('changed status to'))
         

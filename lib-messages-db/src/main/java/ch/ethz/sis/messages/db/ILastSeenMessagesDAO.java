@@ -21,7 +21,7 @@ package ch.ethz.sis.messages.db;
 public interface ILastSeenMessagesDAO
 {
 
-    void create(LastSeenMessage message);
+    Long create(LastSeenMessage message);
 
     void update(LastSeenMessage message);
 

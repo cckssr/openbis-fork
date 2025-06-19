@@ -32,7 +32,7 @@ if [ -d $ROOT/openBIS-server ]; then
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/service.properties $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/capabilities $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/dss-datasource-mapping $CONF/
-    copyFileIfExists $ROOT/openBIS-server/jetty/etc/log.xml $CONF/
+    copyFileIfExists $ROOT/openBIS-server/jetty/etc/logging.properties $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/bin/openbis.conf $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/etc/openbis.conf $CONF/
     copyFileIfExists $ROOT/openBIS-server/jetty/bin/jetty.properties $CONF/
@@ -51,7 +51,7 @@ fi
 
 # -- DSS
 cp $ROOT/datastore_server/etc/service.properties $CONF/dss-service.properties
-cp $ROOT/datastore_server/etc/log.xml $CONF/dss-log.xml
+cp $ROOT/datastore_server/etc/logging.properties $CONF/dss-logging.properties
 cp $ROOT/datastore_server/etc/datastore_server.conf $CONF/datastore_server.conf
 # not always present
 copyIfExists $ROOT/datastore_server/etc/openBIS.keystore $CONF/.keystore
@@ -59,5 +59,5 @@ copyIfExists $ROOT/datastore_server/ext-lib $CONF
 
 # -- AFS
 copyFileIfExists $ROOT/afs-server/etc/afs_server.conf $CONF/afs_server.conf
-copyFileIfExists $ROOT/afs-server/etc/log.xml $CONF/afs-log.xml
+copyFileIfExists $ROOT/afs-server/etc/logging.properties $CONF/afs-logging.properties
 copyFileIfExists $ROOT/afs-server/etc/service.properties $CONF/afs-service.properties

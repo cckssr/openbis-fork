@@ -43,10 +43,10 @@ public class MessagesConsumer
 
         while (true)
         {
-            messagesDatabase.begin();
-            LastSeenMessage lastSeenMessage = messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId);
-            Message newestMessage = messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes));
-            messagesDatabase.commit();
+
+            LastSeenMessage lastSeenMessage = messagesDatabase.execute(() -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
+            Message newestMessage =
+                    messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
 
             List<Message> messages = loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
                     newestMessage != null ? newestMessage.getId() : null);
@@ -62,10 +62,8 @@ public class MessagesConsumer
 
     private List<Message> loadNextBatch(Set<String> messageTypes, Long minMessageId, Long maxMessageId)
     {
-        messagesDatabase.begin();
-        List<Message> messages = messagesDatabase.getMessagesDAO()
-                .listByTypesAndIdRange(new ArrayList<>(messageTypes), minMessageId, maxMessageId, messageBatchSize);
-        messagesDatabase.commit();
+        List<Message> messages = messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO()
+                .listByTypesAndIdRange(new ArrayList<>(messageTypes), minMessageId, maxMessageId, messageBatchSize));
 
         if (messages.isEmpty())
         {
@@ -131,7 +129,7 @@ public class MessagesConsumer
                     lastSeenMessage = new LastSeenMessage();
                     lastSeenMessage.setConsumerId(consumerId);
                     lastSeenMessage.setLastSeenMessageId(message.getId());
-                    messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage);
+                    lastSeenMessage.setId(messagesDatabase.getLastSeenMessagesDAO().create(lastSeenMessage));
                 } else
                 {
                     lastSeenMessage.setLastSeenMessageId(message.getId());

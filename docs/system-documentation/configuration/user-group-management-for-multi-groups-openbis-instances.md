@@ -78,7 +78,7 @@ user-management.configuration-file-path = ../../../data/user-management-maintena
 # Path to the file with information which maps groups to data store shares. 
 # Will be created by the maintenance task and is needed by DSS (EagerShufflingTask during post registration)
 user-management.shares-mapping-file-path = ../../../data/shares-mapping.txt
-# Path to the audit log file. Default: logs/user-management-audit_log.txt
+# Path to the audit log file. Default: logs/user-management-audit.log
 # user-management.audit-log-file-path =
 
 usage-reporting.class = ch.systemsx.cisd.openbis.generic.server.task.UsageReportingTask

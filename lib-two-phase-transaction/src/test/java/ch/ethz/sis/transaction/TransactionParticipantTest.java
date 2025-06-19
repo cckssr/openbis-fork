@@ -23,6 +23,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.transaction.api.ITransactionParticipant;
+import ch.ethz.sis.transaction.api.TransactionOperationException;
+
 public class TransactionParticipantTest
 {
 

@@ -20,7 +20,7 @@ Registers an incoming directory as a data set in openBIS. The name of the direct
 search for the matching sample. 
 
 @note: 
-print statements go to: <openBIS_HOME>/datastore_server/log/startup_log.txt
+print statements go to: <openBIS_HOME>/datastore_server/log/datastore_server.log
 expected incoming Name for HiSeq runs: 110715_SN792_0054_BC035RACXX
 expected incoming Name for GAII runs: 110812_6353WAAXX
 expected incoming Name for MiSeq runs: 121218_M00721_0017_000000000-A0T19

@@ -1,6 +1,6 @@
 package ch.ethz.sis.openbis.generic.asapi.v3;
 
-import ch.ethz.sis.transaction.ITransactionCoordinator;
+import ch.ethz.sis.transaction.api.ITransactionCoordinator;
 import ch.systemsx.cisd.common.api.IRpcService;
 
 public interface ITransactionCoordinatorApi extends ITransactionCoordinator, IRpcService

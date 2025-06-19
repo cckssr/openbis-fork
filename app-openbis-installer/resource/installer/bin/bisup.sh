@@ -52,8 +52,8 @@ fi
 
 
 JETTY_HOME=$BASE/../servers/openBIS-server/jetty
-OPENBIS_LOG=$JETTY_HOME/logs/openbis_log.txt
-JETTY_LOG=$JETTY_HOME/logs/jetty.out
+OPENBIS_LOG=$JETTY_HOME/logs/openbis.log
+JETTY_LOG=$JETTY_HOME/logs/openbis.log
 STARTED_MARKER=$JETTY_HOME/SERVER_STARTED
 TIMEOUT=120
 

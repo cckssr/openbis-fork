@@ -22,8 +22,22 @@ from org.apache.log4j import Logger
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.publication-api.py')
 
+openbisVersion = None
+
+def getOpenBISVersion(context):
+    global openbisVersion
+    if openbisVersion == None:
+        sessionToken = context.getApplicationService().loginAsSystem()
+        openbisVersion = context.getApplicationService().getServerInformation(sessionToken)['openbis-version']
+
+def getInternalNamespacePropertyCode(propertyCode):
+    if openbisVersion.startswith("20.10."):
+        return "$" + propertyCode
+    else:
+        return propertyCode
 
 def process(context, parameters):
+    openbisVersion = getOpenBISVersion(context)
     method = parameters.get('method')
 
     try:
@@ -139,14 +153,14 @@ def createPublicationSamples(parameters, sessionToken, v3):
         sampleCreation.setExperimentId(ExperimentIdentifier('/' + groupPrefix + 'PUBLICATIONS/' + groupPrefix
                 + 'PUBLIC_REPOSITORIES/' + groupPrefix + 'PUBLICATIONS_COLLECTION'))
         sampleCreation.setSpaceId(SpacePermId(groupPrefix + 'PUBLICATIONS'))
-        sampleCreation.setProperty('NAME', name)
-        sampleCreation.setProperty('PUBLICATION.ORGANIZATION', publicationOrganization)
-        sampleCreation.setProperty('PUBLICATION.TYPE', publicationType)
-        sampleCreation.setProperty('PUBLICATION.IDENTIFIER', publicationIdentifier)
-        sampleCreation.setProperty('PUBLICATION.URL', publicationURL)
-        sampleCreation.setProperty('PUBLICATION.DESCRIPTION', publicationDescription)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('NAME'), name)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.ORGANIZATION'), publicationOrganization)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.TYPE'), publicationType)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.IDENTIFIER'), publicationIdentifier)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.URL'), publicationURL)
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.DESCRIPTION'), publicationDescription)
         # Adding identifiers with removed repetitions
-        sampleCreation.setProperty('PUBLICATION.OPENBIS_RELATED_IDENTIFIERS',
+        sampleCreation.setProperty(getInternalNamespacePropertyCode('PUBLICATION.OPENBIS_RELATED_IDENTIFIERS'),
                                    String.join(', ', LinkedHashSet(openBISRelatedIdentifiers.split(','))))
         sampleCreations.append(sampleCreation)
 

@@ -74,7 +74,7 @@ public class ServerClientEnvironmentFS
     {
         Map<Enum, String> configuration = new HashMap<>();
         configuration.put(AtomicFileSystemServerParameter.logFactoryClass, Log4J2LogFactory.class.getName());
-        //        configuration.put(AtomicFileSystemServerParameter.logConfigFile,  "objectfs-afs-config-log4j2.xml");
+        //        configuration.put(AtomicFileSystemServerParameter.logConfigFile,  "objectfs-afs-config-logging.properties");
 
         configuration.put(AtomicFileSystemServerParameter.lockMapperClass, NopLockMapper.class.getName());
         configuration.put(AtomicFileSystemServerParameter.jsonObjectMapperClass, JacksonObjectMapper.class.getName());

@@ -38,7 +38,7 @@ The policy can be specified by `policy.class` property. It has to be the fully-
 
 **Description**: Policy which tries to find a group of data sets with a total size from a specified interval. This is important in case of [Multi Data Set Archiving](../../uncategorized/multi-data-set-archiving.md). Grouping can be defined by space, project, collection, object, data set type or a combination of those. Groups can be merged if they are too small. Several grouping keys can be specified.
 
-Searching for an appropriate group of data sets for auto archiving is logged. If no group could be found an admin is notified via email (email address specified in `log.xml`). The email contains the search log.
+Searching for an appropriate group of data sets for auto archiving is logged. If no group could be found an admin is notified via email (email address specified in `logging.properties`). The email contains the search log.
 
 **Configuration**:
 

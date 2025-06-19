@@ -81,8 +81,12 @@ $.extend(DefaultProfile.prototype, {
 				showDatasets : true
 		}
 
+		this.grid = {
+			multiselectLimit : 5000
+		}
+
         this.legacyExports = {
-            enable : false
+            enable : true
         }
 
 		this.MainMenuNodeNames = {

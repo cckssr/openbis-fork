@@ -23,7 +23,7 @@ import java.util.List;
 public interface IMessagesDAO
 {
 
-    void create(Message message);
+    Long create(Message message);
 
     void update(Message message);
 
