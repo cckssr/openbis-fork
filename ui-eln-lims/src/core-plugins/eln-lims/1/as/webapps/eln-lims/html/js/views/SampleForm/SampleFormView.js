@@ -969,7 +969,7 @@
 				}
 
 
-				if(sampleTypeCode === "ENTRY" && (propertyType.code === "NAME" || propertyType.code === profile.getInternalNamespacePrefix() + "DOCUMENT" || propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE")) {
+				if(sampleTypeCode === "ENTRY" && (propertyType.code === profile.getInternalNamespacePrefix() + "NAME" || propertyType.code === profile.getInternalNamespacePrefix() + "DOCUMENT" || propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE")) {
 					continue;
 				} else if(sampleTypeCode === "FOLDER" && propertyType.code !== profile.getInternalNamespacePrefix() + "NAME") {
 				    continue;
