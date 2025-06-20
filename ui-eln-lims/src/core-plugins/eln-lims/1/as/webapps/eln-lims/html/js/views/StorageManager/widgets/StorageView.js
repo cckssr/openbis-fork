@@ -133,6 +133,7 @@ function StorageView(storageController, storageModel, gridViewRack, gridViewPosi
                     }
                 }
                 var attrId = _this._defaultStoragesDropDown.attr("id");
+                $("body").off("change", "#"+attrId);
 				$("body").on("change", "#"+attrId, changeFunction);
 			}
 			
