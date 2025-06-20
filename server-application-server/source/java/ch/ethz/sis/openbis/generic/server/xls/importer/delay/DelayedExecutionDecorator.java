@@ -32,10 +32,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
@@ -132,7 +130,8 @@ public class DelayedExecutionDecorator
         this.v3 = v3;
         this.ids = new LinkedHashSet<>();
         this.resolvedVariables = new HashMap<>();
-        this.delayedExecutions = new LinkedHashMap<>(); // The only reason this is a linked Hash Map is so the list of error messages is on the same order as the delayed executions are added.
+        this.delayedExecutions =
+                new LinkedHashMap<>(); // The only reason this is a linked Hash Map is so the list of error messages is on the same order as the delayed executions are added.
         this.propertyTypeCache = new HashMap<>();
     }
 
@@ -182,7 +181,8 @@ public class DelayedExecutionDecorator
         if (!delayedExecutions.isEmpty())
         {
             List<String> errors = new ArrayList<>();
-            Set<DelayedExecution> delayedExecutionsAsList = new LinkedHashSet<>(); // The only reason this is a linked Hash Set is so the list of error messages is on the same order as the delayed executions are added.
+            Set<DelayedExecution> delayedExecutionsAsList =
+                    new LinkedHashSet<>(); // The only reason this is a linked Hash Set is so the list of error messages is on the same order as the delayed executions are added.
             for (List<DelayedExecution> valueList : delayedExecutions.values())
             {
                 delayedExecutionsAsList.addAll(valueList);
@@ -429,10 +429,12 @@ public class DelayedExecutionDecorator
 
     public void createExperimentType(ExperimentTypeCreation experimentTypeCreation, int page, int line)
     {
-        if (!safe(experimentTypeCreation.getPropertyAssignments()).isEmpty()) {
+        if (!safe(experimentTypeCreation.getPropertyAssignments()).isEmpty())
+        {
             throw new IllegalStateException("XLS Parser - createExperimentType called with properties.");
         }
-        addIdsAndExecuteDelayed(v3.createExperimentTypes(this.sessionToken, List.of(experimentTypeCreation)).get(0), ImportTypes.EXPERIMENT_TYPE, null);
+        addIdsAndExecuteDelayed(v3.createExperimentTypes(this.sessionToken, List.of(experimentTypeCreation)).get(0), ImportTypes.EXPERIMENT_TYPE,
+                null);
     }
 
     public void updateExperimentType(ExperimentTypeUpdate experimentTypeUpdate, int page, int line)
@@ -538,7 +540,8 @@ public class DelayedExecutionDecorator
         }
     }
 
-    private void createSampleResolvingAndScheduleAssignmentOfSampleParentChildDependencies(ISampleId sampleId, SampleCreation sampleCreation, int page, int line)
+    private void createSampleResolvingAndScheduleAssignmentOfSampleParentChildDependencies(ISampleId sampleId, SampleCreation sampleCreation,
+            int page, int line)
     {
         List<ISampleId> dependencies = new ArrayList<>();
         dependencies.add(sampleId);
@@ -626,22 +629,30 @@ public class DelayedExecutionDecorator
         }
     }
 
-    private void samplePropertiesVariableReplacer(IPropertiesHolder sampleOrExperimentDTO) {
+    private void samplePropertiesVariableReplacer(IPropertiesHolder sampleOrExperimentDTO)
+    {
         Map<String, Serializable> properties = sampleOrExperimentDTO.getProperties();
         Map<String, Serializable> sampleProperties = new HashMap<>();
-        for (String propertyCode : properties.keySet()) {
-            if (isKeySamplePropertyCode(propertyCode)) {
+        for (String propertyCode : properties.keySet())
+        {
+            if (isKeySamplePropertyCode(propertyCode))
+            {
                 List<String> propertyValues = new ArrayList<>();
-                for (String propertyValue : getProperties(properties.get(propertyCode))) {
+                for (String propertyValue : getProperties(properties.get(propertyCode)))
+                {
                     ISampleId sampleId = ImportUtils.buildSampleIdentifier(propertyValue);
-                    if (sampleId instanceof IdentifierVariable && resolvedVariables.containsKey(sampleId)) {
+                    if (sampleId instanceof IdentifierVariable && resolvedVariables.containsKey(sampleId))
+                    {
                         sampleId = (ISampleId) resolvedVariables.get(sampleId);
-                        if (sampleId instanceof SampleIdentifier) {
+                        if (sampleId instanceof SampleIdentifier)
+                        {
                             propertyValue = ((SampleIdentifier) sampleId).getIdentifier();
-                        } else if (sampleId instanceof SamplePermId) {
+                        } else if (sampleId instanceof SamplePermId)
+                        {
                             propertyValue = ((SamplePermId) sampleId).getPermId();
                         }
-                    } else {
+                    } else
+                    {
                         // Do nothing
                     }
                     propertyValues.add(propertyValue);
@@ -651,12 +662,14 @@ public class DelayedExecutionDecorator
         }
 
         // Update sample properties on the DTO
-        for (String samplePropertyKey:sampleProperties.keySet()) {
+        for (String samplePropertyKey : sampleProperties.keySet())
+        {
             sampleOrExperimentDTO.setProperty(samplePropertyKey, sampleProperties.get(samplePropertyKey));
         }
     }
 
-    private void resolveAndScheduleAssignmentOfSampleProperties(IObjectId objectId, IPropertiesHolder sampleOrExperimentDTO, int page, int line) {
+    private void resolveAndScheduleAssignmentOfSampleProperties(IObjectId objectId, IPropertiesHolder sampleOrExperimentDTO, int page, int line)
+    {
         samplePropertiesVariableReplacer(sampleOrExperimentDTO); // Update properties before deciding to schedule anything
 
         Map<String, Serializable> properties = sampleOrExperimentDTO.getProperties();
@@ -665,35 +678,41 @@ public class DelayedExecutionDecorator
 
         for (String propertyCode : properties.keySet())
         {
-            if (isKeySamplePropertyCode(propertyCode)) {
+            if (isKeySamplePropertyCode(propertyCode))
+            {
                 boolean dependencyFound = false;
-                for(String propertyValue : getProperties(properties.get(propertyCode)))
+                for (String propertyValue : getProperties(properties.get(propertyCode)))
                 {
                     if (propertyValue != null)
                     {
                         ISampleId sampleId = ImportUtils.buildSampleIdentifier(propertyValue);
                         // 1. Check if they are dependencies or not
-                        if (sampleId instanceof IdentifierVariable && !resolvedVariables.containsKey(sampleId)) {
+                        if (sampleId instanceof IdentifierVariable && !resolvedVariables.containsKey(sampleId))
+                        {
                             // Not resolved variable => Dependency
                             dependencies.add(sampleId);
                             dependencyFound = true;
-                        } else if (sampleId instanceof SampleIdentifier && getSample(sampleId, new SampleFetchOptions()) == null) {
+                        } else if (sampleId instanceof SampleIdentifier && getSample(sampleId, new SampleFetchOptions()) == null)
+                        {
                             // Not found sample => Dependency
                             dependencies.add(sampleId);
                             dependencyFound = true;
-                        } else {
+                        } else
+                        {
                             // Not a dependency
                         }
                     }
                 }
 
-                if (dependencyFound) { // We store all sample properties with dependencies to create the update
+                if (dependencyFound)
+                { // We store all sample properties with dependencies to create the update
                     sampleProperties.put(propertyCode, properties.get(propertyCode));
                 }
             }
         }
 
-        if (dependencies.isEmpty() == false) { // We only create an update if dependencies are not resolved
+        if (dependencies.isEmpty() == false)
+        { // We only create an update if dependencies are not resolved
             IObjectUpdate entityToUpdate = null;
             if (sampleOrExperimentDTO instanceof SampleCreation || sampleOrExperimentDTO instanceof SampleUpdate)
             {
@@ -710,13 +729,15 @@ public class DelayedExecutionDecorator
             }
 
             // Remove all sample properties scheduled for update
-            for (String samplePropertyKey:sampleProperties.keySet()) {
+            for (String samplePropertyKey : sampleProperties.keySet())
+            {
                 sampleOrExperimentDTO.getProperties().remove(samplePropertyKey);
             }
 
             // If is a creation the entity is a dependency
             if (sampleOrExperimentDTO instanceof SampleCreation ||
-                    sampleOrExperimentDTO instanceof ExperimentCreation) {
+                    sampleOrExperimentDTO instanceof ExperimentCreation)
+            {
                 dependencies.add(objectId);
             }
             String variable = null;
@@ -733,16 +754,19 @@ public class DelayedExecutionDecorator
 
     private String[] getProperties(Serializable propertyValue)
     {
-        if(propertyValue == null) {
+        if (propertyValue == null)
+        {
             return new String[0];
         }
-        if(propertyValue.getClass().isArray()) {
+        if (propertyValue.getClass().isArray())
+        {
             Serializable[] values = (Serializable[]) propertyValue;
             return Stream.of(values)
                     .map(Serializable::toString)
                     .toArray(String[]::new);
-        } else {
-            return new String[] {propertyValue.toString()};
+        } else
+        {
+            return new String[] { propertyValue.toString() };
         }
     }
 
@@ -755,8 +779,10 @@ public class DelayedExecutionDecorator
         IProjectId projectId = sampleUpdate.getProjectId().getValue();
 
         // check for self cyclical dependency using variable
-        if (sampleUpdate.getSampleId() instanceof IdentifierVariable) {
-            if (resolvedVariables.containsKey((IdentifierVariable) sampleUpdate.getSampleId())) {
+        if (sampleUpdate.getSampleId() instanceof IdentifierVariable)
+        {
+            if (resolvedVariables.containsKey((IdentifierVariable) sampleUpdate.getSampleId()))
+            {
                 sampleUpdate.setSampleId((SampleIdentifier) resolvedVariables.get((IdentifierVariable) sampleUpdate.getSampleId()));
             }
         }
@@ -811,14 +837,9 @@ public class DelayedExecutionDecorator
         }
         Collection<ISampleId> parentIdsRemoved = sampleUpdate.getParentIds().getRemoved();
 
-        ListUpdateValue.ListUpdateActionAdd<ISampleId> listUpdateActionAddP = new ListUpdateValue.ListUpdateActionAdd<>();
-        listUpdateActionAddP.setItems(parentIdsAdded);
-        ListUpdateValue.ListUpdateActionRemove<ISampleId> listUpdateActionRemoveP = new ListUpdateValue.ListUpdateActionRemove<>();
-        listUpdateActionRemoveP.setItems(parentIdsRemoved);
-        List<ListUpdateValue.ListUpdateAction<ISampleId>> actionsP = new ArrayList<>();
-        actionsP.add(listUpdateActionAddP);
-        actionsP.add(listUpdateActionRemoveP);
-        sampleUpdate.setParentActions(actionsP);
+        sampleUpdate.getParentIds().clearActions();
+        sampleUpdate.getParentIds().add(parentIdsAdded.toArray(new ISampleId[0]));
+        sampleUpdate.getParentIds().remove(parentIdsRemoved.toArray(new ISampleId[0]));
 
         List<ISampleId> childIdsAdded = new ArrayList<>();
         for (ISampleId id : sampleUpdate.getChildIds().getAdded())
@@ -846,14 +867,9 @@ public class DelayedExecutionDecorator
         }
         Collection<ISampleId> childIdsRemoved = sampleUpdate.getChildIds().getRemoved();
 
-        ListUpdateValue.ListUpdateActionAdd<ISampleId> listUpdateActionAddC = new ListUpdateValue.ListUpdateActionAdd<>();
-        listUpdateActionAddC.setItems(childIdsAdded);
-        ListUpdateValue.ListUpdateActionRemove<ISampleId> listUpdateActionRemoveC = new ListUpdateValue.ListUpdateActionRemove<>();
-        listUpdateActionRemoveC.setItems(childIdsRemoved);
-        List<ListUpdateValue.ListUpdateAction<ISampleId>> actionsC = new ArrayList<>();
-        actionsC.add(listUpdateActionAddC);
-        actionsC.add(listUpdateActionRemoveC);
-        sampleUpdate.setChildActions(actionsC);
+        sampleUpdate.getChildIds().clearActions();
+        sampleUpdate.getChildIds().add(childIdsAdded.toArray(new ISampleId[0]));
+        sampleUpdate.getChildIds().remove(childIdsRemoved.toArray(new ISampleId[0]));
 
         if (!dependencies.isEmpty())
         {
@@ -875,7 +891,8 @@ public class DelayedExecutionDecorator
 
     public void createSampleType(SampleTypeCreation sampleTypeCreation, int page, int line)
     {
-        if (!safe(sampleTypeCreation.getPropertyAssignments()).isEmpty()) {
+        if (!safe(sampleTypeCreation.getPropertyAssignments()).isEmpty())
+        {
             throw new IllegalStateException("XLS Parser - createSampleType called with properties.");
         }
         addIdsAndExecuteDelayed(v3.createSampleTypes(this.sessionToken, List.of(sampleTypeCreation)).get(0), ImportTypes.SAMPLE_TYPE, null);
@@ -934,7 +951,8 @@ public class DelayedExecutionDecorator
 
     public void createDataSetType(DataSetTypeCreation dataSetTypeCreation, int page, int line)
     {
-        if (!safe(dataSetTypeCreation.getPropertyAssignments()).isEmpty()) {
+        if (!safe(dataSetTypeCreation.getPropertyAssignments()).isEmpty())
+        {
             throw new IllegalStateException("XLS Parser - createDataSetType called with properties.");
         }
         addIdsAndExecuteDelayed(v3.createDataSetTypes(this.sessionToken, List.of(dataSetTypeCreation)).get(0), ImportTypes.DATASET_TYPE, null);
@@ -990,13 +1008,15 @@ public class DelayedExecutionDecorator
 
     public PropertyType getPropertyType(IPropertyTypeId typeId)
     {
-        if (!propertyTypeCache2.containsKey(typeId)) {
+        if (!propertyTypeCache2.containsKey(typeId))
+        {
             PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
             fetchOptions.withVocabulary().withTerms().withVocabulary();
             fetchOptions.withSampleType();
 
             PropertyType propertyType = v3.getPropertyTypes(this.sessionToken, List.of(typeId), fetchOptions).getOrDefault(typeId, null);
-            if (propertyType != null) {
+            if (propertyType != null)
+            {
                 propertyTypeCache2.put(typeId, propertyType);
             }
         }
@@ -1116,12 +1136,15 @@ public class DelayedExecutionDecorator
     // SEMANTIC ANNOTATIONS
     //
 
-    public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions) {
+    public SemanticAnnotation getSemanticAnnotation(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
+    {
         SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
 
-        if (semanticAnnotationSearchResult.getTotalCount() > 0) {
+        if (semanticAnnotationSearchResult.getTotalCount() > 0)
+        {
             return semanticAnnotationSearchResult.getObjects().get(0);
-        } else {
+        } else
+        {
             return null;
         }
     }
@@ -1132,21 +1155,26 @@ public class DelayedExecutionDecorator
         EntityTypePermId entityTypePermId = null;
         PropertyTypePermId propertyTypePermId = null;
 
-        if (creation.getPropertyAssignmentId() != null) {
+        if (creation.getPropertyAssignmentId() != null)
+        {
             PropertyAssignmentPermId propertyAssignmentPermId = (PropertyAssignmentPermId) creation.getPropertyAssignmentId();
             entityTypePermId = (EntityTypePermId) propertyAssignmentPermId.getEntityTypeId();
             propertyTypePermId = (PropertyTypePermId) propertyAssignmentPermId.getPropertyTypeId();
         }
-        if (creation.getEntityTypeId() != null) {
+        if (creation.getEntityTypeId() != null)
+        {
             entityTypePermId = (EntityTypePermId) creation.getEntityTypeId();
         }
-        if (creation.getPropertyTypeId() != null) {
+        if (creation.getPropertyTypeId() != null)
+        {
             propertyTypePermId = (PropertyTypePermId) creation.getPropertyTypeId();
         }
 
-        if (entityTypePermId != null) {
+        if (entityTypePermId != null)
+        {
             IEntityType entityType = null;
-            switch (entityTypePermId.getEntityKind()) {
+            switch (entityTypePermId.getEntityKind())
+            {
                 case EXPERIMENT:
                     entityType = getExperimentType(entityTypePermId, new ExperimentTypeFetchOptions());
                     break;
@@ -1157,12 +1185,14 @@ public class DelayedExecutionDecorator
                     entityType = getDataSetType(entityTypePermId, new DataSetTypeFetchOptions());
                     break;
             }
-            if (entityType == null) {
+            if (entityType == null)
+            {
                 dependencies.add(entityTypePermId);
             }
         }
 
-        if (propertyTypePermId != null) {
+        if (propertyTypePermId != null)
+        {
             PropertyType propertyType = getPropertyType(propertyTypePermId);
             if (propertyType == null)
             {
@@ -1170,11 +1200,13 @@ public class DelayedExecutionDecorator
             }
         }
 
-        if (!dependencies.isEmpty()) { // Delay
+        if (!dependencies.isEmpty())
+        { // Delay
             DelayedExecution delayedExecution = new DelayedExecution(null, null, creation, page, line);
             delayedExecution.addDependencies(dependencies);
             addDelayedExecution(delayedExecution);
-        } else { // Execute
+        } else
+        { // Execute
             v3.createSemanticAnnotations(sessionToken, List.of(creation));
         }
     }

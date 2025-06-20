@@ -15,19 +15,24 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.RelationshipUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -238,33 +243,15 @@ public class SampleUpdate extends AbstractEntityUpdate
     }
 
     @JsonIgnore
-    public void setTagActions(List<ListUpdateAction<ITagId>> actions)
-    {
-        tagIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<ISampleId> getComponentIds()
     {
         return componentIds;
     }
 
     @JsonIgnore
-    public void setComponentActions(List<ListUpdateAction<ISampleId>> actions)
-    {
-        componentIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<ISampleId> getParentIds()
     {
         return parentIds;
-    }
-
-    @JsonIgnore
-    public void setParentActions(List<ListUpdateAction<ISampleId>> actions)
-    {
-        parentIds.setActions(actions);
     }
 
     @JsonIgnore
@@ -298,21 +285,9 @@ public class SampleUpdate extends AbstractEntityUpdate
     }
 
     @JsonIgnore
-    public void setChildActions(List<ListUpdateAction<ISampleId>> actions)
-    {
-        childIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public AttachmentListUpdateValue getAttachments()
     {
         return attachments;
-    }
-
-    @JsonIgnore
-    public void setAttachmentsActions(List<ListUpdateAction<Object>> actions)
-    {
-        attachments.setActions(actions);
     }
 
     @JsonIgnore
@@ -320,12 +295,6 @@ public class SampleUpdate extends AbstractEntityUpdate
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
-    }
-
-    @JsonIgnore
-    public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
-    {
-        metaData.setActions(actions);
     }
 
     @JsonIgnore

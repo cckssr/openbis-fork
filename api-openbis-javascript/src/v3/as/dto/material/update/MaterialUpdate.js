@@ -28,9 +28,6 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 		prototype.getTagIds = function() {
 			return this.tagIds;
 		};
-		prototype.setTagActions = function(actions) {
-			this.tagIds.setActions(actions);
-		};
 	}, {
 		materialId : "IMaterialId",
 		tagIds : {

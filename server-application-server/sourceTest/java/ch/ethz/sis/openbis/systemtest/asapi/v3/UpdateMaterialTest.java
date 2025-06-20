@@ -19,21 +19,17 @@ import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateActionAdd;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.Material;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.fetchoptions.MaterialFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.MaterialPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update.MaterialUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.Tag;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 
@@ -136,9 +132,7 @@ public class UpdateMaterialTest extends AbstractSampleTest
 
         TagCode test123 = new TagCode("TEST_123");
         TagCode testMetaprojects = new TagCode("TEST_METAPROJECTS");
-        ListUpdateAction<ITagId> addAction = new ListUpdateActionAdd<ITagId>();
-        addAction.setItems(Arrays.asList(test123, testMetaprojects));
-        update.setTagActions(Collections.singletonList(addAction));
+        update.getTagIds().add(test123, testMetaprojects);
 
         v3api.updateMaterials(sessionToken, Arrays.asList(update));
 

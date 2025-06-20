@@ -30,9 +30,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/dataset/update
 		prototype.getContentCopies = function() {
 			return this.externalDmsId;
 		};
-		prototype.setContentCopyActions = function(actions) {
-			this.contentCopies.setActions(actions);
-		};
 	}, {
 		externalCode : {
 			name : "FieldUpdateValue",

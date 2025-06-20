@@ -28,9 +28,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.getUserIds = function() {
 			return this.userIds;
 		};
-		prototype.setUserIdActions = function(actions) {
-			this.userIds.setActions(actions);
-		};
 	}, {
 		AuthorizationGroupId : "IAuthorizationGroupId",
 		groupId: {

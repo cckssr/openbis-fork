@@ -48,7 +48,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.PhysicalDataCreation;
@@ -286,29 +285,29 @@ public abstract class DeletionTest extends AbstractTest
     public void assertRegistrationTimestampAttribute(String permId, final Date after, final Date before) throws Exception
     {
         IModificationFilter filter = new IModificationFilter()
+        {
+            @Override
+            public boolean accept(Modification modification)
             {
-                @Override
-                public boolean accept(Modification modification)
-                {
-                    return modification.type.equals(AttributeEntry.ATTRIBUTE)
-                            && modification.key.equals("REGISTRATION_TIMESTAMP");
-                }
+                return modification.type.equals(AttributeEntry.ATTRIBUTE)
+                        && modification.key.equals("REGISTRATION_TIMESTAMP");
+            }
 
-                @Override
-                public String getDescription()
-                {
-                    return "Attributes";
-                }
-            };
-        IChangeRenderer renderer = new IChangeRenderer()
+            @Override
+            public String getDescription()
             {
-                @Override
-                public String render(Change change)
-                {
-                    return isInbetween(change.value, after, before) ? TIMESTAMP_OK
-                            : "ERROR: Timestamp " + change.value + " is not between " + after + " and " + before;
-                }
-            };
+                return "Attributes";
+            }
+        };
+        IChangeRenderer renderer = new IChangeRenderer()
+        {
+            @Override
+            public String render(Change change)
+            {
+                return isInbetween(change.value, after, before) ? TIMESTAMP_OK
+                        : "ERROR: Timestamp " + change.value + " is not between " + after + " and " + before;
+            }
+        };
 
         assertHistory(permId, filter, renderer, Collections.singleton(TIMESTAMP_OK));
     }
@@ -336,47 +335,47 @@ public abstract class DeletionTest extends AbstractTest
     public void assertAttachment(String permId, Set<String> attachments) throws Exception
     {
         IModificationFilter filter = new IModificationFilter()
+        {
+            @Override
+            public boolean accept(Modification modification)
             {
-                @Override
-                public boolean accept(Modification modification)
-                {
-                    return modification.type.equals(AttachmentEntry.ATTACHMENT);
-                }
+                return modification.type.equals(AttachmentEntry.ATTACHMENT);
+            }
 
-                @Override
-                public String getDescription()
-                {
-                    return "Attachments";
-                }
-            };
-        IChangeRenderer renderer = new IChangeRenderer()
+            @Override
+            public String getDescription()
             {
-                @Override
-                public String render(Change change)
-                {
-                    return change.key + " = " + change.value + " <" + change.attachmentContent + ">";
-                }
-            };
+                return "Attachments";
+            }
+        };
+        IChangeRenderer renderer = new IChangeRenderer()
+        {
+            @Override
+            public String render(Change change)
+            {
+                return change.key + " = " + change.value + " <" + change.attachmentContent + ">";
+            }
+        };
         assertHistory(permId, filter, renderer, attachments);
     }
 
     public void assertAttributes(String permId, Map<String, String> expectations) throws Exception
     {
         IModificationFilter filter = new IModificationFilter()
+        {
+            @Override
+            public boolean accept(Modification modification)
             {
-                @Override
-                public boolean accept(Modification modification)
-                {
-                    return modification.type.equals(AttributeEntry.ATTRIBUTE)
-                            && modification.key.equals("REGISTRATION_TIMESTAMP") == false;
-                }
+                return modification.type.equals(AttributeEntry.ATTRIBUTE)
+                        && modification.key.equals("REGISTRATION_TIMESTAMP") == false;
+            }
 
-                @Override
-                public String getDescription()
-                {
-                    return "Attributes";
-                }
-            };
+            @Override
+            public String getDescription()
+            {
+                return "Attributes";
+            }
+        };
         Set<Entry<String, String>> entrySet = expectations.entrySet();
         Set<String> expected = new HashSet<>();
         for (Entry<String, String> entry : entrySet)
@@ -386,13 +385,13 @@ public abstract class DeletionTest extends AbstractTest
             expected.add(key + " = " + render(AttributeEntry.ATTRIBUTE, value, null, null));
         }
         IChangeRenderer renderer = new IChangeRenderer()
+        {
+            @Override
+            public String render(Change change)
             {
-                @Override
-                public String render(Change change)
-                {
-                    return change.key + " = " + change.value;
-                }
-            };
+                return change.key + " = " + change.value;
+            }
+        };
         assertHistory(permId, filter, renderer, expected);
     }
 
@@ -400,27 +399,27 @@ public abstract class DeletionTest extends AbstractTest
     public final void assertHistory(String permId, final String key, Set<String>... expected) throws Exception
     {
         IModificationFilter filter = new IModificationFilter()
+        {
+            @Override
+            public boolean accept(Modification modification)
             {
-                @Override
-                public boolean accept(Modification modification)
-                {
-                    return modification.key.equals(key);
-                }
+                return modification.key.equals(key);
+            }
 
-                @Override
-                public String getDescription()
-                {
-                    return "Property " + key;
-                }
-            };
-        IChangeRenderer renderer = new IChangeRenderer()
+            @Override
+            public String getDescription()
             {
-                @Override
-                public String render(Change change)
-                {
-                    return change.value;
-                }
-            };
+                return "Property " + key;
+            }
+        };
+        IChangeRenderer renderer = new IChangeRenderer()
+        {
+            @Override
+            public String render(Change change)
+            {
+                return change.value;
+            }
+        };
         assertHistory(permId, filter, renderer, expected);
     }
 
@@ -771,9 +770,7 @@ public abstract class DeletionTest extends AbstractTest
     {
         SampleUpdate update = new SampleUpdate();
         update.setSampleId(sample);
-        IdListUpdateValue<ISampleId> upd = new IdListUpdateValue<ISampleId>();
-        upd.set(children);
-        update.setChildActions(upd.getActions());
+        update.getChildIds().set(children);
         v3api.updateSamples(sessionToken, Arrays.asList(update));
     }
 
@@ -781,9 +778,7 @@ public abstract class DeletionTest extends AbstractTest
     {
         SampleUpdate update = new SampleUpdate();
         update.setSampleId(sample);
-        IdListUpdateValue<ISampleId> upd = new IdListUpdateValue<ISampleId>();
-        upd.set(parents);
-        update.setParentActions(upd.getActions());
+        update.getParentIds().set(parents);
         v3api.updateSamples(sessionToken, Arrays.asList(update));
     }
 
@@ -791,9 +786,7 @@ public abstract class DeletionTest extends AbstractTest
     {
         SampleUpdate update = new SampleUpdate();
         update.setSampleId(sample);
-        IdListUpdateValue<ISampleId> upd = new IdListUpdateValue<ISampleId>();
-        upd.set(components);
-        update.setComponentActions(upd.getActions());
+        update.getComponentIds().set(components);
         v3api.updateSamples(sessionToken, Arrays.asList(update));
     }
 
@@ -818,9 +811,7 @@ public abstract class DeletionTest extends AbstractTest
     {
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSet);
-        IdListUpdateValue<IDataSetId> upd = new IdListUpdateValue<IDataSetId>();
-        upd.set(children);
-        update.setChildActions(upd.getActions());
+        update.getChildIds().set(children);
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
     }
 
@@ -828,9 +819,7 @@ public abstract class DeletionTest extends AbstractTest
     {
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSet);
-        IdListUpdateValue<IDataSetId> upd = new IdListUpdateValue<IDataSetId>();
-        upd.set(parents);
-        update.setParentActions(upd.getActions());
+        update.getParentIds().set(parents);
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
     }
 
@@ -838,19 +827,15 @@ public abstract class DeletionTest extends AbstractTest
     {
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSet);
-        IdListUpdateValue<IDataSetId> upd = new IdListUpdateValue<IDataSetId>();
-        upd.set(components);
-        update.setComponentActions(upd.getActions());
+        update.getComponentIds().set(components);
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
     }
 
-    protected void updateContainers(DataSetPermId dataSet, DataSetPermId... components)
+    protected void updateContainers(DataSetPermId dataSet, DataSetPermId... containers)
     {
         DataSetUpdate update = new DataSetUpdate();
         update.setDataSetId(dataSet);
-        IdListUpdateValue<IDataSetId> upd = new IdListUpdateValue<IDataSetId>();
-        upd.set(components);
-        update.setContainerActions(upd.getActions());
+        update.getContainerIds().set(containers);
         v3api.updateDataSets(sessionToken, Arrays.asList(update));
     }
 

@@ -15,8 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.project.update;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,7 +23,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -142,12 +139,6 @@ public class ProjectUpdate implements IUpdate, IObjectUpdate<IProjectId>
     public AttachmentListUpdateValue getAttachments()
     {
         return attachments;
-    }
-
-    @JsonIgnore
-    public void setAttachmentsActions(List<ListUpdateAction<Object>> actions)
-    {
-        attachments.setActions(actions);
     }
 
     @Override

@@ -15,15 +15,12 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.externaldms.id.IExternalDmsId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -80,12 +77,6 @@ public class LinkedDataUpdate implements IUpdate
     public ContentCopyListUpdateValue getContentCopies()
     {
         return contentCopies;
-    }
-
-    @JsonIgnore
-    public void setContentCopyActions(List<ListUpdateAction<Object>> actions)
-    {
-        contentCopies.setActions(actions);
     }
 
     @Override

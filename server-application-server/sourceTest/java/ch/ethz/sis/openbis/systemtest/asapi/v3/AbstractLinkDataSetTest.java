@@ -39,7 +39,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetc
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IContentCopyId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.ContentCopyListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.LinkedDataUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
@@ -389,23 +388,21 @@ public abstract class AbstractLinkDataSetTest extends AbstractExternalDmsTest
                 linkedDataUpdate.setExternalDmsId(edms);
             }
 
-            ContentCopyListUpdateValue ccluv = new ContentCopyListUpdateValue();
             if (newCopies.isEmpty() == false)
             {
-                ccluv.add(newCopies.toArray(new ContentCopyCreation[0]));
+                linkedDataUpdate.getContentCopies().add(newCopies.toArray(new ContentCopyCreation[0]));
             }
 
             if (removedCopies.isEmpty() == false)
             {
-                ccluv.remove(removedCopies.toArray(new IContentCopyId[0]));
+                linkedDataUpdate.getContentCopies().remove(removedCopies.toArray(new IContentCopyId[0]));
             }
 
             if (replacementCopies.isEmpty() == false)
             {
-                ccluv.set(replacementCopies.toArray(new ContentCopyCreation[0]));
+                linkedDataUpdate.getContentCopies().set(replacementCopies.toArray(new ContentCopyCreation[0]));
             }
 
-            linkedDataUpdate.setContentCopyActions(ccluv.getActions());
             update.setLinkedData(linkedDataUpdate);
             return update;
         }
@@ -457,9 +454,9 @@ public abstract class AbstractLinkDataSetTest extends AbstractExternalDmsTest
 
         Session session = daoFactory.getSessionFactory().openSession();
         Query query = session.createQuery(
-                "FROM DataSetHistoryPE as entry "
-                        + "LEFT JOIN FETCH entry.entityInternal "
-                        + "WHERE entry.entityInternal.code = :code")
+                        "FROM DataSetHistoryPE as entry "
+                                + "LEFT JOIN FETCH entry.entityInternal "
+                                + "WHERE entry.entityInternal.code = :code")
                 .setParameter("code", id.getPermId());
 
         @SuppressWarnings("unchecked")
