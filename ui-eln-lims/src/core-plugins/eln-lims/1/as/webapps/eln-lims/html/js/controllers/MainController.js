@@ -874,7 +874,7 @@ function MainController(profile) {
 				case "showSamplesPage":
 					document.title = "" + ELNDictionary.Sample + " Browser";
 					var argsArray = arg ? arg : [null, null];
-                    if(arg) {
+                    if(arg && argsArray[0]) {
                         var spaceCode = IdentifierUtil.getSpaceCodeFromIdentifier(argsArray[0])
                         this.mainHeader.navigateToTabByEntity("COLLECTION", spaceCode);
                     } else {
