@@ -327,27 +327,27 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     });
                 }
 
-                //TODO uncomment this when afs tabs is implemented in experiments
+
                 // Entity data freezing
-//                if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
-//                    dropdownOptionsModel.push({
-//                        label : "Freeze Entity data (Disable further data upload)",
-//                        action : function () {
-//                            FormUtil.showFreezeAfsDataForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
-//                        }
-//                    });
-//                }
+                if(!isEntityFrozen && profile.isAFSAvailable() && !isImmutableData) {
+                    dropdownOptionsModel.push({
+                        label : "Freeze Entity data (Disable further data upload)",
+                        action : function () {
+                            FormUtil.showFreezeAfsDataForm("EXPERIMENT", _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
+                        }
+                    });
+                }
 
 
-//                if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
+                if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
 
-//                    dropdownOptionsModel.push({
-//                        label : "Data archiving",
-//                        action : function () {
-//                            FormUtil.showArchiveAfsDataForm("EXPERIMENT",  _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
-//                        }
-//                    });
-//                }
+                    dropdownOptionsModel.push({
+                        label : "Data archiving",
+                        action : function () {
+                            FormUtil.showArchiveAfsDataForm("EXPERIMENT",  _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
+                        }
+                    });
+                }
             }
 
             //History
