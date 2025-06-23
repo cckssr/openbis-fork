@@ -790,6 +790,7 @@ get Web App Settings
 get Wished Number Of Streams
 getAccessDate
 getActions
+clear Actions
 getAdaptor
 getAddress
 getAddressType

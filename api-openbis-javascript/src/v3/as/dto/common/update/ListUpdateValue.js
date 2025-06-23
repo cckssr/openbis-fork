@@ -6,11 +6,11 @@ define([ "stjs", "as/dto/common/update/ListUpdateActionRemove", "as/dto/common/u
 	stjs.extend(ListUpdateValue, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.common.update.ListUpdateValue';
 		constructor.serialVersionUID = 1;
-		prototype.setActions = function(actions) {
-			this.actions = actions;
-		};
 		prototype.getActions = function() {
 			return this.actions;
+		};
+		prototype.clearActions = function() {
+			this.actions = [];
 		};
 		prototype.hasActions = function() {
 			return this.getActions() && this.getActions().length > 0;

@@ -16,7 +16,6 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update;
 
 import java.util.Date;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +29,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
@@ -229,21 +227,9 @@ public class DataSetUpdate extends AbstractEntityUpdate
     }
 
     @JsonIgnore
-    public void setTagActions(List<ListUpdateAction<ITagId>> actions)
-    {
-        tagIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<IDataSetId> getContainerIds()
     {
         return containerIds;
-    }
-
-    @JsonIgnore
-    public void setContainerActions(List<ListUpdateAction<IDataSetId>> actions)
-    {
-        containerIds.setActions(actions);
     }
 
     @JsonIgnore
@@ -253,21 +239,9 @@ public class DataSetUpdate extends AbstractEntityUpdate
     }
 
     @JsonIgnore
-    public void setComponentActions(List<ListUpdateAction<IDataSetId>> actions)
-    {
-        componentIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<IDataSetId> getParentIds()
     {
         return parentIds;
-    }
-
-    @JsonIgnore
-    public void setParentActions(List<ListUpdateAction<IDataSetId>> actions)
-    {
-        parentIds.setActions(actions);
     }
 
     @JsonIgnore
@@ -276,23 +250,11 @@ public class DataSetUpdate extends AbstractEntityUpdate
         return childIds;
     }
 
-    @JsonIgnore
-    public void setChildActions(List<ListUpdateAction<IDataSetId>> actions)
-    {
-        childIds.setActions(actions);
-    }
-
     @Override
     @JsonIgnore
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
-    }
-
-    @JsonIgnore
-    public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
-    {
-        metaData.setActions(actions);
     }
 
     public FieldUpdateValue<Date> getAccessDate()

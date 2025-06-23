@@ -59,9 +59,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.getMetaData = function() {
 			return this.metaData;
 		};
-		prototype.setMetaDataActions = function(actions) {
-			this.metaData.setActions(actions);
-		};
 	}, {
 		typeId : "IPropertyTypeId",
 		label: {

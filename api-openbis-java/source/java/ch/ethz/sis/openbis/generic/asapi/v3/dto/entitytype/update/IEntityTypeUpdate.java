@@ -15,12 +15,9 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update;
 
-import java.util.List;
-
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -46,6 +43,4 @@ public interface IEntityTypeUpdate extends IUpdate, IObjectUpdate<IEntityTypeId>
     public void setValidationPluginId(IPluginId pluginId);
 
     public PropertyAssignmentListUpdateValue getPropertyAssignments();
-    
-    public void setPropertyAssignmentActions(List<ListUpdateAction<Object>> actions);
 }

@@ -110,38 +110,20 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 		prototype.getTagIds = function() {
 			return this.tagIds;
 		};
-		prototype.setTagActions = function(actions) {
-			this.tagIds.setActions(actions);
-		};
 		prototype.getContainerIds = function() {
 			return this.containerIds;
-		};
-		prototype.setContainerActions = function(actions) {
-			this.containerIds.setActions(actions);
 		};
 		prototype.getComponentIds = function() {
 			return this.componentIds;
 		};
-		prototype.setComponentActions = function(actions) {
-			this.componentIds.setActions(actions);
-		};
 		prototype.getParentIds = function() {
 			return this.parentIds;
-		};
-		prototype.setParentActions = function(actions) {
-			this.parentIds.setActions(actions);
 		};
 		prototype.getChildIds = function() {
 			return this.childIds;
 		};
-		prototype.setChildActions = function(actions) {
-			this.childIds.setActions(actions);
-		};
 		prototype.getMetaData = function() {
             return this.metaData;
-        };
-        prototype.setMetaDataActions = function(actions) {
-            this.metaData.setActions(actions);
         };
 		prototype.getAccessDate = function() {
 			return this.accessDate;
