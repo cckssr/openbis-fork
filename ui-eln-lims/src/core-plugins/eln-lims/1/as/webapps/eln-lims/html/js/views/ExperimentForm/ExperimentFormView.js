@@ -33,6 +33,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 	this.repaint = function(views) {
 		var $container = views.content;
+        this.extOpenbis = window.NgComponents.default.openbis
+        this.extOpenbis.init(mainController.openbisV3)
+
 		mainController.profile.beforeViewPaint(ViewType.EXPERIMENT_FORM, this._experimentFormModel, $container);
 		var _this = this;
 	    var experimentTypeDefinitionsExtension = profile.experimentTypeDefinitionsExtension[_this._experimentFormModel.experiment.experimentTypeCode];
@@ -494,8 +497,13 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             toolbarModel = continuedToolbarModel;
         }
 
-        $header.append(FormUtil.getToolbar(toolbarModel))
-		$container.append($form);
+        if(this._experimentFormModel.mode === FormMode.CREATE || this._experimentFormModel.mode === FormMode.EDIT){
+            $header.append(FormUtil.getToolbar(toolbarModel))
+            $container.empty();
+		    $container.append($form);
+        } else {
+            this._initTabHandling($header, $container, $form, toolbarModel);
+        }
 
         mainController.profile.afterViewPaint(ViewType.EXPERIMENT_FORM, this._experimentFormModel, $container);
 		Util.unblockUI();
@@ -945,4 +953,217 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var experiment = this._experimentFormModel.v3_experiment;
 		return experiment.frozenForDataSets == false && this._experimentFormModel.dataSetRights.rights.indexOf("CREATE") >= 0;
 	}
+    this._initTabHandling = function($header, $container, $form, toolbarModel) {
+        const _this = this;
+        const $tabsContainer = $('<div class="tabs-container">');
+        const tabs = [
+            { id: "detailsTab-"+_this._viewId, label: "Details", href: "#experimentFormTab-"+_this._viewId, active: true }
+        ];
+        const $tabsContent = $('<div class="tab-content">');
+        const $experimentFormTab = $('<div id="experimentFormTab-'+_this._viewId+'" class="tab-pane fade in active"></div>');
+        const $afsWidgetTab = $('<div id="afsWidgetTab-'+_this._viewId+'" class="tab-pane fade"></div>');
+
+        $tabsContent.append($experimentFormTab);
+        if (profile.isAFSAvailable()) {
+            $tabsContent.append($afsWidgetTab);
+            tabs.push({ id: "filesTab-"+_this._viewId, label: "Files", href: "#afsWidgetTab-"+_this._viewId, active: false });
+        }
+        $tabsContainer.append($tabsContent);
+
+        const tabsModel = {
+            containerId: "tabsContainer-"+_this._viewId,
+            toolbarId: "toolbar-"+_this._viewId,
+            tabs
+        };
+
+
+        const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._experimentFormModel.v3_experiment.permId, "onlyLeftToolbar");
+        const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._experimentFormModel.v3_experiment.permId, "onlyRightToolbar");
+        const $alternateRightToolbar = FormUtil.getToolbar([]);
+        const rightToolbarModel = []
+        const $toolbarWithTabs = FormUtil.getToolbarWithTabs(
+            toolbarModel,
+            tabsModel,
+            rightToolbarModel,
+            $afsWidgetRightToolBar,
+            $afsWidgetLeftToolBar,
+            $alternateRightToolbar
+        )
+        $header.append($toolbarWithTabs);
+
+        $container.empty().append($tabsContainer);
+        $experimentFormTab.append($form);
+
+        if (this._experimentFormModel.activeTab) {
+            let $activeTabLink = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"][href="' + this._experimentFormModel.activeTab + '"]');
+            if ($activeTabLink.length) {
+                $activeTabLink.tab('show');
+            }
+        } else {
+            let $initialActive = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"].active');
+            if ($initialActive.length) {
+                this._experimentFormModel.activeTab = $initialActive.attr('href');
+            }
+        }
+
+        this._updateToolbarForTab(this._experimentFormModel.activeTab, _this._viewId);
+        $("body").on("shown.bs.tab", '#toolbar-' + _this._viewId + ' a[data-toggle="tab"]',  function(e) {
+            const target = $(e.target).attr("href");
+            _this._experimentFormModel.activeTab = target;
+            _this._updateToolbarForTab(target, _this._viewId);
+            if (target === "#afsWidgetTab-"+_this._viewId) {
+                if (!$("#afsWidgetTab-"+_this._viewId).data("dssLoaded")) {
+                    _this._waitForExtOpenbisInitialization().then(()=> {
+                        $afsWidgetTab.empty()
+                        _this._displayAFSWidget($afsWidgetTab, _this._experimentFormModel.experiment.permId);
+                    })
+                    $("#afsWidgetTab-"+_this._viewId).data("dssLoaded", true);
+                }
+            }
+        });
+    };
+
+    this._updateToolbarForTab = function(activeTab, id) {
+        if (activeTab === "#afsWidgetTab-"+id) {
+            let container = $('#toolbar-' + id);
+            container.find(".normal-toolbar-container").hide();
+            container.find(".alternate-toolbar-container").show();
+            container.find(".normal-right-toolbar-container").hide();
+            container.find(".alternate-right-toolbar-container").show();
+            container.find(".extra-right-toolbar-container").show();
+        } else if(activeTab === "#experimentFormTab-"+id) {
+            let container = $('#toolbar-' + id);
+            container.find(".normal-toolbar-container").show();
+            container.find(".alternate-toolbar-container").hide();
+            container.find(".normal-right-toolbar-container").show();
+            container.find(".alternate-right-toolbar-container").hide();
+            container.find(".extra-right-toolbar-container").hide();
+        }
+    };
+
+    this._waitForExtOpenbisInitialization = function() {
+        Util.blockUI();
+        return new Promise((resolve) => {
+            if (this.extOpenbis.initialized === true) {
+                Util.unblockUI();
+                resolve();
+            } else {
+                const interval = setInterval(() => {
+                    if (this.extOpenbis.initialized === true) {
+                        clearInterval(interval);
+                        Util.unblockUI();
+                        resolve();
+                    }
+                }, 100); // check every 100ms
+            }
+        });
+    }
+
+
+    this._displayAFSWidget= function ($container, id) {
+        const _this = this
+        let $element = $("<div>")
+        require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+            "as/dto/experiment/id/ExperimentPermId",
+        ],
+            function (RightsFetchOptions, ExperimentPermId) {
+                let props = {
+                    id:id,
+                    objId: id,
+                    objKind: "collection",
+                    viewType:'list',
+                    withoutToolbar: true,
+                    extOpenbis: _this.extOpenbis,
+                    frozen: _this._experimentFormModel.v3_experiment.immutableDataDate,
+                }
+                let configKey = "AFS-WIDGET-KEY-EX";
+
+                const loadSettings = function () {
+                    return new Promise(function (resolve) {
+                        mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
+                            var gridSettingsObj = null
+
+                            if (elnGridSettingsStr) {
+                                try {
+                                    var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
+
+                                    gridSettingsObj = {
+                                        filterMode: elnGridSettingsObj.filterMode,
+                                        globalFilter: elnGridSettingsObj.globalFilter,
+                                        pageSize: elnGridSettingsObj.pageSize,
+                                        sortings: elnGridSettingsObj.sortings,
+                                        sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
+                                        sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
+                                        columnsVisibility: elnGridSettingsObj.columns,
+                                        columnsSorting: elnGridSettingsObj.columnsSorting,
+                                        exportOptions: elnGridSettingsObj.exportOptions,
+                                    }
+                                } catch (e) {
+                                    //console.log("[WARNING] Could not parse grid settings", configKey, elnGridSettingsStr, e)
+                                }
+                            }
+                            resolve(gridSettingsObj)
+                            })
+                        })
+                }
+
+
+                const onSettingsChange = function (gridSettingsObj) {
+                    let elnGridSettingsObj = {
+                        filterMode: gridSettingsObj.filterMode,
+                        globalFilter: gridSettingsObj.globalFilter,
+                        pageSize: gridSettingsObj.pageSize,
+                        sortings: gridSettingsObj.sortings,
+                        columns: gridSettingsObj.columnsVisibility,
+                        columnsSorting: gridSettingsObj.columnsSorting,
+                        exportOptions: gridSettingsObj.exportOptions,
+                    }
+
+                    let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
+                    mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
+                }
+
+
+                props['onStoreDisplaySettings'] = onSettingsChange;
+                props['onLoadDisplaySettings'] = loadSettings;
+
+                let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
+
+                NgComponentsManager.renderComponent(DataBrowser, $element.get(0));
+            }
+        );
+        $container.append($element);
+    }
+
+    this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
+        let $element = $("<div>")
+        const _this = this
+        let isArchived = false;
+        if(_this._experimentFormModel.afs_data && _this._experimentFormModel.afs_data.physicalData) {
+            isArchived = _this._experimentFormModel.afs_data.physicalData.status === "ARCHIVED";
+        }
+        require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+            "as/dto/experiment/id/ExperimentPermId",
+        ],
+            function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+                let props = {
+                    owner: id.permId,
+                    buttonSize: "small",
+                    toolbarType: toolbarTypeIn,
+                    viewType:'list',
+                    className :'btn btn-default',
+                    primaryClassName :'btn btn-primary',
+                    extOpenbis: _this.extOpenbis,
+                    frozen: _this._experimentFormModel.v3_experiment.immutableDataDate,
+                    archived: isArchived
+                }
+
+
+                let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
+
+                NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));
+            }
+        );
+        return $element;
+    }
 }
