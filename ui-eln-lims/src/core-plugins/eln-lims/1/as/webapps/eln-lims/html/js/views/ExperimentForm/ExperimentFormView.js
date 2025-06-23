@@ -362,9 +362,6 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-                if(_this._experimentFormModel.mode === FormMode.CREATE) {
-                    mainController.tabContent.closeCurrentTab();
-                }
 			}, "Save", "Save changes", "save-collection-btn-"+_this._viewId, 'btn btn-primary');
 			toolbarModel.push({ component : $saveBtn });
 		}

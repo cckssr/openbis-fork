@@ -369,9 +369,6 @@
 					if(!_this._wasSideMenuCollapsed) {
                         mainController.sideMenu.expandSideMenu();
                     }
-                    if(_this._sampleFormModel.mode === FormMode.CREATE) {
-                        mainController.tabContent.closeCurrentTab();
-                    }
 				}, "Save", "Save changes", "save-btn-sample-" + _this._viewId, 'btn btn-primary');
 				toolbarModel.push({ component : $saveBtn });
 	
@@ -699,7 +696,7 @@
 			if(isStorageAvailable && profile.storagesConfiguration["isEnabled"]) {
 				var $fieldsetOwner = $("<div>");
 				var $legend = $("<legend>").append("Storage");
-				var storageListContainer = $("<div>", { 'id' : 'sample-form-storage-list' });
+				var storageListContainer = $("<div>", { 'id' : 'sample-form-storage-list-'+_this._viewId });
 				$fieldsetOwner.append($legend);
 				$fieldsetOwner.append(storageListContainer);
 				$formColumn.append($fieldsetOwner);

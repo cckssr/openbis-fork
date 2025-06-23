@@ -948,6 +948,7 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             if((isCopyWithNewCode || _this._sampleFormModel.mode === FormMode.CREATE || _this._sampleFormModel.mode === FormMode.EDIT) && _this._sampleFormModel.isELNSample) {
                 if(_this._sampleFormModel.mode === FormMode.CREATE) {
                     mainController.sideMenu.refreshCurrentNode();
+                    mainController.tabContent.closeCurrentTab();
                 } else if(_this._sampleFormModel.mode === FormMode.EDIT || isCopyWithNewCode) {
                     _this._refreshSideMenuNodes(_this, sampleParentsChanges, sampleChildrenChanges);
                 }

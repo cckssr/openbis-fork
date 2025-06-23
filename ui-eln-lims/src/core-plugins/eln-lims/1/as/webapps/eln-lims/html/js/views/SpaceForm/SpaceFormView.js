@@ -151,9 +151,6 @@ function SpaceFormView(spaceFormController, spaceFormModel) {
                 if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-                if(_this._spaceFormModel.mode === FormMode.CREATE) {
-                    mainController.tabContent.closeCurrentTab();
-                }
             }, "Save", "Save changes", "save-space-btn-"+ this._viewId, 'btn btn-primary');
             toolbarModel.push({ component : $saveBtn });
         }

@@ -193,6 +193,7 @@ function ExperimentFormController(mainController, mode, experiment) {
 						
 						if(_this._experimentFormModel.mode === FormMode.CREATE) {
 							_this._mainController.sideMenu.refreshCurrentNode(); //Project
+							_this._mainController.tabContent.closeCurrentTab();
 						} else if(_this._experimentFormModel.mode === FormMode.EDIT) {
 							_this._mainController.sideMenu.refreshNodeParentByPermId("EXPERIMENT", _this._experimentFormModel.experiment.permId);
 						}

@@ -96,6 +96,7 @@ function SpaceFormController(mainController, mode, isInventory, space) {
             this._mainController.serverFacade.registerSpace(groupPrefix, this._spaceFormModel.postfix,
                     isInventorySpace, isReadOnly, this._spaceFormModel.description, 
                 function(result) {
+                    _this._mainController.tabContent.closeCurrentTab();
                     Util.showSuccess("Space created", function() {
                         _this._mainController.changeView("showSpacePage", result.spaceIds[0].getPermId());
                         if (result.reloadNeeded) {
