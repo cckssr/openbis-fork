@@ -24,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -71,7 +70,6 @@ public class ListUpdateValue<ADD, REMOVE, SET, ACTION> implements Serializable
         private static final long serialVersionUID = 1L;
     }
 
-    @JsonProperty
     private List<ListUpdateAction<ACTION>> actions = new LinkedList<ListUpdateAction<ACTION>>();
 
     public List<ListUpdateAction<ACTION>> getActions()

@@ -1206,17 +1206,15 @@ exports.default = new Promise((resolve) => {
                     return c.findDataSet(facade, permId).then(function (dataSet) {
                         var contentCopy = dataSet.getLinkedData().getContentCopies()[0]
                         edmsId = contentCopy.getExternalDms().getPermId()
-                        var contentCopyListUpdateValue = new dtos.ContentCopyListUpdateValue()
                         var contentCopyCreation = new dtos.ContentCopyCreation()
                         contentCopyCreation.setExternalDmsId(edmsId)
                         contentCopyCreation.setPath("my/data/path")
                         contentCopyCreation.setGitCommitHash("my-git-hash")
                         contentCopyCreation.setGitRepositoryId("my-git-repository-id")
-                        contentCopyListUpdateValue.add([contentCopyCreation])
-                        contentCopyListUpdateValue.remove([contentCopy.getId()])
 
                         var linkUpdate = new dtos.LinkedDataUpdate()
-                        linkUpdate.setContentCopyActions(contentCopyListUpdateValue.getActions())
+                        linkUpdate.getContentCopies().add([contentCopyCreation])
+                        linkUpdate.getContentCopies().remove([contentCopy.getId()])
 
                         var update = new dtos.DataSetUpdate()
                         update.setDataSetId(permId)
