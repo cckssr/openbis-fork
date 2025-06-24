@@ -261,7 +261,9 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		return (
 			<Container>
 				{this.renderHeader(messages.get(messages.SEMANTIC_ANNOTATIONS), type)}
-				{this.renderSemanticAnnotations(type)}
+				{type.objectType?.value != objectTypes.OBJECT_TYPE ? 
+					(<Typography variant="body2" color="textSecondary">Semantic Annotations are not yet supported for object type: [{type.objectType.value}] !</Typography>)
+					: this.renderSemanticAnnotations(type)}
 			</Container>
 		)
 	}
@@ -281,7 +283,7 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		return (
 			<div className={classes.headerContainer}>
 				<Header>{messages.get(map[type.objectType.value])} {title}</Header>
-				{mode === 'edit' &&
+				{mode === 'edit' && type.objectType?.value === objectTypes.OBJECT_TYPE &&
 					<Button variant='contained'
 						color='white'
 						onClick={() => this.handleAddSemanticAnnotation(type)}
