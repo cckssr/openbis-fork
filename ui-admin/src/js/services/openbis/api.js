@@ -14,15 +14,15 @@ class Facade {
         ['openbis', 'util/Json'],
         (openbis, stjs) => {
           _this.stjs = stjs
-          if(!v3){
-              new openbis().getServerPublicInformation().then(
-                result => {
-                  const afsServerUrlKey = 'server-public-information.afs-server.url'
-                  const afsServerUrl = result[afsServerUrlKey]
-                  _this.v3 = new openbis(null, afsServerUrl)
-                
-                  resolve()
-                },             
+          if (!v3) {
+            new openbis().getServerPublicInformation().then(
+              result => {
+                const afsServerUrlKey = 'server-public-information.afs-server.url'
+                const afsServerUrl = result[afsServerUrlKey]
+                _this.v3 = new openbis(null, afsServerUrl)
+
+                resolve()
+              },
               error => {
                 reject(error)
               }
@@ -211,6 +211,10 @@ class Facade {
     return this.promise(this.v3.getOperationExecutions(ids, fo))
   }
 
+  updateSpaces(updates) {
+    return this.promise(this.v3.updateSpaces(updates));
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }
@@ -355,6 +359,10 @@ class Facade {
     return this.promise(this.v3.getRights(ids, fo))
   }
 
+  searchRoleAssignments(criteria, fo) {
+    return this.promise(this.v3.searchRoleAssignments(criteria, fo))
+  }
+
   async executeService(id, options) {
     const scheduleResult = await this.executeOperations(
       [new dto.ExecuteCustomASServiceOperation(id, options)],
@@ -406,8 +414,8 @@ class Facade {
   promiseWithAbort(dfd) {
     const { promise, abortFn } = dfd;
     return {
-        promise: this.promise(promise),        
-        abortFn 
+      promise: this.promise(promise),
+      abortFn
     };
   }
 

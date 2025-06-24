@@ -17,7 +17,14 @@ import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
-import { SpaceFormController } from './new-forms/controllers/SpaceFormController.tsx'
+
+
+import { SpaceFormProvider } from '@src/js/components/database/new-forms/controllers/Space/SpaceFormContext.tsx';
+import SpaceFormView from '@src/js/components/database/new-forms/controllers/Space/SpaceFormView.tsx';
+import { SpaceForm } from './new-forms/controllers/Space/test.tsx'
+import { EntityFormBuilderProvider } from './new-forms/components/EntityFormBuilderContext.tsx'
+import ProjectFormView from '@src/js/components/database/new-forms/controllers/Project/ProjectFormView.tsx'
+
 
 const styles = theme => ({
   tabsPanel: {
@@ -41,7 +48,7 @@ class DatabaseComponent extends React.PureComponent {
   async componentDidMount() {
     try {
       const { object } = this.props
-      console.log(object);
+      console.log({ object });
       let json = null
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
@@ -204,7 +211,14 @@ class DatabaseComponent extends React.PureComponent {
     const { object } = this.props
     return (
       <Container>
-        <SpaceFormController openbisFacade={openbis}/>
+        {object.type === objectType.SPACE &&
+          <EntityFormBuilderProvider openbisFacade={openbis} entityKind={object.type.toUpperCase()} user={AppController.getInstance().getUser()}>
+            <SpaceFormView permId={object.id} />
+          </EntityFormBuilderProvider>}
+        {object.type === objectType.PROJECT &&
+          <EntityFormBuilderProvider openbisFacade={openbis} entityKind={object.type.toUpperCase()} user={AppController.getInstance().getUser()}>
+            <ProjectFormView permId={object.id} />
+          </EntityFormBuilderProvider>}
         {object.type === objectType.PROJECT && (<pre>{JSON.stringify(this.state.json || {}, null, 2)}</pre>)}
       </Container>
     )

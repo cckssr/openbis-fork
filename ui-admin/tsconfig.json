@@ -5,6 +5,7 @@
     "lib": ["dom", "esnext"],
     "jsx": "react-jsx",
     "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
