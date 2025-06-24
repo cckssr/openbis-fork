@@ -34,6 +34,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.Attachment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.create.AttachmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.fetchoptions.AttachmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.AttachmentFileName;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.id.IAttachmentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IAttachmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPermIdHolder;
@@ -354,9 +355,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             List<ProjectUpdate> updates = new ArrayList<>();
             for (Entry<String, AttachmentListUpdateValue> entry : attachmentsByPermId.entrySet())
             {
+                AttachmentListUpdateValue value = entry.getValue();
                 ProjectUpdate projectUpdate = new ProjectUpdate();
                 projectUpdate.setProjectId(new ProjectPermId(entry.getKey()));
-                projectUpdate.getAttachments().setActions(entry.getValue().getActions());
+                projectUpdate.getAttachments().add(value.getAdded().toArray(new AttachmentCreation[0]));
+                projectUpdate.getAttachments().remove(value.getRemoved().toArray(new IAttachmentId[0]));
                 updates.add(projectUpdate);
             }
             if (dryRun)
@@ -391,9 +394,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             List<ExperimentUpdate> updates = new ArrayList<>();
             for (Entry<String, AttachmentListUpdateValue> entry : attachmentsByPermId.entrySet())
             {
+                AttachmentListUpdateValue value = entry.getValue();
                 ExperimentUpdate experimentUpdate = new ExperimentUpdate();
                 experimentUpdate.setExperimentId(new ExperimentPermId(entry.getKey()));
-                experimentUpdate.getAttachments().setActions(entry.getValue().getActions());
+                experimentUpdate.getAttachments().add(value.getAdded().toArray(new AttachmentCreation[0]));
+                experimentUpdate.getAttachments().remove(value.getRemoved().toArray(new IAttachmentId[0]));
                 updates.add(experimentUpdate);
             }
             if (dryRun)
@@ -428,9 +433,11 @@ public class AttachmentsSynchronizer implements ITaskExecutor<List<IncomingEntit
             List<SampleUpdate> updates = new ArrayList<>();
             for (Entry<String, AttachmentListUpdateValue> entry : attachmentsByPermId.entrySet())
             {
+                AttachmentListUpdateValue value = entry.getValue();
                 SampleUpdate sampleUpdate = new SampleUpdate();
                 sampleUpdate.setSampleId(new SamplePermId(entry.getKey()));
-                sampleUpdate.getAttachments().setActions(entry.getValue().getActions());
+                sampleUpdate.getAttachments().add(value.getAdded().toArray(new AttachmentCreation[0]));
+                sampleUpdate.getAttachments().remove(value.getRemoved().toArray(new IAttachmentId[0]));
                 updates.add(sampleUpdate);
             }
             if (dryRun)

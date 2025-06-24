@@ -15,8 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -25,7 +23,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
@@ -97,21 +94,9 @@ public class TagUpdate implements IUpdate, IObjectUpdate<ITagId>
     }
 
     @JsonIgnore
-    public void setExperimentActions(List<ListUpdateAction<IExperimentId>> actions)
-    {
-        experimentIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<ISampleId> getSampleIds()
     {
         return sampleIds;
-    }
-
-    @JsonIgnore
-    public void setSampleActions(List<ListUpdateAction<ISampleId>> actions)
-    {
-        sampleIds.setActions(actions);
     }
 
     @JsonIgnore
@@ -121,21 +106,9 @@ public class TagUpdate implements IUpdate, IObjectUpdate<ITagId>
     }
 
     @JsonIgnore
-    public void setDataSetActions(List<ListUpdateAction<IDataSetId>> actions)
-    {
-        dataSetIds.setActions(actions);
-    }
-
-    @JsonIgnore
     public IdListUpdateValue<IMaterialId> getMaterialIds()
     {
         return materialIds;
-    }
-
-    @JsonIgnore
-    public void setMaterialActions(List<ListUpdateAction<IMaterialId>> actions)
-    {
-        materialIds.setActions(actions);
     }
 
     @Override

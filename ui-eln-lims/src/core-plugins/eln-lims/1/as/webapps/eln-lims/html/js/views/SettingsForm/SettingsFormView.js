@@ -573,7 +573,7 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 	}
 
 	this._paintMiscellaneous = function($container, text) {
-		var $fieldset = this._getFieldset($container, text.title, "settings-section-miscellaneous");
+		var $fieldset = this._getFieldset($container, text.title, "settings-section-miscellaneous-old");
 		$fieldset.append(FormUtil.getInfoText(text.info));
 		this._miscellaneousTableModel = this._getMiscellaneousTableModel();
 		$fieldset.append(this._getTable(this._miscellaneousTableModel));

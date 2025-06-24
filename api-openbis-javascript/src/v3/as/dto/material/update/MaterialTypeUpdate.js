@@ -37,9 +37,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/entitytype/upd
 		prototype.getPropertyAssignments = function() {
 			return this.propertyAssignments;
 		};
-		prototype.setPropertyAssignmentActions = function(actions) {
-			this.propertyAssignments.setActions(actions);
-		};
 	}, {
 		typeId : "IEntityTypeId",
 		description : {

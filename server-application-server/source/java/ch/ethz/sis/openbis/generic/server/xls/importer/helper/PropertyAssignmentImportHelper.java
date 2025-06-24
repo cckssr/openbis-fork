@@ -15,16 +15,20 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.PropertyAssignmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update.ExperimentTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
@@ -202,7 +206,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
         creation.setPatternType(patternType);
         creation.setManagedInternally(ImportUtils.isTrue(internalAssignment));
 
-        ListUpdateValue newAssignments = new ListUpdateValue();
+        PropertyAssignmentListUpdateValue newAssignments = new PropertyAssignmentListUpdateValue();
         Set<String> existingCodes = existingDynamicPluginsByPropertyCode.keySet();
         PluginPermId scriptId = ImportUtils.getScriptId(script,
                 existingDynamicPluginsByPropertyCode.get(code));
@@ -219,7 +223,7 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             ArrayList<PropertyAssignmentCreation> propertyAssignmentsForUpdate = getPropertyAssignmentsForUpdate();
             int index = indexOf(creation.getPropertyTypeId(), propertyAssignmentsForUpdate);
             propertyAssignmentsForUpdate.set(index, creation);
-            newAssignments.set(propertyAssignmentsForUpdate.toArray());
+            newAssignments.set(propertyAssignmentsForUpdate.toArray(new PropertyAssignmentCreation[0]));
         }
 
         switch (importTypes)
@@ -227,19 +231,39 @@ public class PropertyAssignmentImportHelper extends BasicImportHelper
             case EXPERIMENT_TYPE:
                 ExperimentTypeUpdate experimentTypeUpdate = new ExperimentTypeUpdate();
                 experimentTypeUpdate.setTypeId(this.permId);
-                experimentTypeUpdate.setPropertyAssignmentActions(newAssignments.getActions());
+                if(!newAssignments.getAdded().isEmpty())
+                {
+                    experimentTypeUpdate.getPropertyAssignments().add(newAssignments.getAdded().toArray(new PropertyAssignmentCreation[0]));
+                }
+                if(!newAssignments.getSet().isEmpty()){
+                    experimentTypeUpdate.getPropertyAssignments().set(newAssignments.getSet().toArray(new PropertyAssignmentCreation[0]));
+                }
                 delayedExecutor.updateExperimentType(experimentTypeUpdate, page, line);
                 break;
             case SAMPLE_TYPE:
                 SampleTypeUpdate sampleTypeUpdate = new SampleTypeUpdate();
                 sampleTypeUpdate.setTypeId(this.permId);
-                sampleTypeUpdate.setPropertyAssignmentActions(newAssignments.getActions());
+                if(!newAssignments.getAdded().isEmpty())
+                {
+                    sampleTypeUpdate.getPropertyAssignments().add(newAssignments.getAdded().toArray(new PropertyAssignmentCreation[0]));
+                }
+                if(!newAssignments.getSet().isEmpty())
+                {
+                    sampleTypeUpdate.getPropertyAssignments().set(newAssignments.getSet().toArray(new PropertyAssignmentCreation[0]));
+                }
                 delayedExecutor.updateSampleType(sampleTypeUpdate, page, line);
                 break;
             case DATASET_TYPE:
                 DataSetTypeUpdate dataSetTypeUpdate = new DataSetTypeUpdate();
                 dataSetTypeUpdate.setTypeId(this.permId);
-                dataSetTypeUpdate.setPropertyAssignmentActions(newAssignments.getActions());
+                if(!newAssignments.getAdded().isEmpty())
+                {
+                    dataSetTypeUpdate.getPropertyAssignments().add(newAssignments.getAdded().toArray(new PropertyAssignmentCreation[0]));
+                }
+                if(!newAssignments.getSet().isEmpty())
+                {
+                    dataSetTypeUpdate.getPropertyAssignments().set(newAssignments.getSet().toArray(new PropertyAssignmentCreation[0]));
+                }
                 delayedExecutor.updateDataSetType(dataSetTypeUpdate, page, line);
                 break;
         }

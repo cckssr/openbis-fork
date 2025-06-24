@@ -37,26 +37,14 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.getExperimentIds = function() {
 			return this.experimentIds;
 		};
-		prototype.setExperimentActions = function(actions) {
-			this.experimentIds.setActions(actions);
-		};
 		prototype.getSampleIds = function() {
 			return this.sampleIds;
-		};
-		prototype.setSampleActions = function(actions) {
-			this.sampleIds.setActions(actions);
 		};
 		prototype.getDataSetIds = function() {
 			return this.dataSetIds;
 		};
-		prototype.setDataSetActions = function(actions) {
-			this.dataSetIds.setActions(actions);
-		};
 		prototype.getMaterialIds = function() {
 			return this.materialIds;
-		};
-		prototype.setMaterialActions = function(actions) {
-			this.materialIds.setActions(actions);
 		};
 	}, {
 		tagId : "ITagId",

@@ -439,7 +439,7 @@ var FormUtil = new function() {
 	    }
 		var sampleTypes = this.profile.getAllSampleTypes();
 		
-		var $component = $("<select>", {"id" : id, class : 'form-control'});
+		var $component = $("<select>", {"id" : this.prepareId(id), class : 'form-control'});
 		if (isRequired) {
 			$component.attr('required', '');
 		}

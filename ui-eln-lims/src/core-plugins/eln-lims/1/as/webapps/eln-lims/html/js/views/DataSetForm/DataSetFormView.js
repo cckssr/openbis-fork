@@ -455,9 +455,6 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-                if(_this._dataSetFormModel.mode === FormMode.CREATE) {
-                    mainController.tabContent.closeCurrentTab();
-                }
 			}, "Save", "Save changes", "save-dataset-btn-"+this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");

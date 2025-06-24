@@ -15,13 +15,21 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.task;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertyAssignmentsHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -87,11 +95,7 @@ import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
-import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
-import org.apache.log4j.Logger;
-
-import java.util.*;
 
 public class MaterialsMigration implements IMaintenanceTask {
 
@@ -367,28 +371,26 @@ public class MaterialsMigration implements IMaintenanceTask {
                     if (oldPropertyAssignment.getPlugin() != null) {
                         newPropertyAssignment.setPluginId(oldPropertyAssignment.getPlugin().getPermId());
                     }
-                    ListUpdateValue.ListUpdateActionAdd add = new ListUpdateValue.ListUpdateActionAdd();
-                    add.setItems(List.of(newPropertyAssignment));
 
                     IEntityTypeUpdate update = null;
                     if (holderType instanceof SampleType) {
                         update = new SampleTypeUpdate();
                         update.setTypeId(((SampleType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(add));
+                        update.getPropertyAssignments().add(newPropertyAssignment);
                         if (assign) {
                             v3.updateSampleTypes(sessionToken, List.of((SampleTypeUpdate) update));
                         }
                     } else if (holderType instanceof ExperimentType) {
                         update = new ExperimentTypeUpdate();
                         update.setTypeId(((ExperimentType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(add));
+                        update.getPropertyAssignments().add(newPropertyAssignment);
                         if (assign) {
                             v3.updateExperimentTypes(sessionToken, List.of((ExperimentTypeUpdate) update));
                         }
                     } else if (holderType instanceof DataSetType) {
                         update = new DataSetTypeUpdate();
                         update.setTypeId(((DataSetType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(add));
+                        update.getPropertyAssignments().add(newPropertyAssignment);
                         if (assign) {
                             v3.updateDataSetTypes(sessionToken, List.of((DataSetTypeUpdate) update));
                         }
@@ -664,10 +666,7 @@ public class MaterialsMigration implements IMaintenanceTask {
                 newPropertyAssignmentCreations.add(creation);
             }
 
-            ListUpdateValue.ListUpdateActionSet<Object> set = new ListUpdateValue.ListUpdateActionSet<>();
-            set.setItems(newPropertyAssignmentCreations);
-
-            typeUpdate.setPropertyAssignmentActions(List.of(set));
+            typeUpdate.getPropertyAssignments().set(newPropertyAssignmentCreations.toArray(new PropertyAssignmentCreation[0]));
 
             if(typeUpdate instanceof SampleTypeUpdate) {
                 v3.updateSampleTypes(sessionToken, List.of((SampleTypeUpdate)typeUpdate));
@@ -824,31 +823,29 @@ public class MaterialsMigration implements IMaintenanceTask {
             for (PropertyAssignment oldPropertyAssignment : holderType.getPropertyAssignments()) {
                 if (oldPropertyAssignment.getPropertyType().getDataType() == DataType.MATERIAL) {
                     info("unassignMaterialPropertiesForHolder","removing" + oldPropertyAssignment.getPropertyType().getCode());
-                    ListUpdateValue.ListUpdateActionRemove remove = new ListUpdateValue.ListUpdateActionRemove<>();
-                    remove.setItems(List.of(oldPropertyAssignment.getPermId()));
                     IEntityTypeUpdate update = null;
                     if (holderType instanceof SampleType) {
                         update = new SampleTypeUpdate();
                         update.setTypeId(((SampleType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(remove));
+                        update.getPropertyAssignments().remove(oldPropertyAssignment.getPermId());
                         update.getPropertyAssignments().setForceRemovingAssignments(true);
                         v3.updateSampleTypes(sessionToken, List.of((SampleTypeUpdate) update));
                     } else if (holderType instanceof ExperimentType) {
                         update = new ExperimentTypeUpdate();
                         update.setTypeId(((ExperimentType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(remove));
+                        update.getPropertyAssignments().remove(oldPropertyAssignment.getPermId());
                         update.getPropertyAssignments().setForceRemovingAssignments(true);
                         v3.updateExperimentTypes(sessionToken, List.of((ExperimentTypeUpdate) update));
                     } else if (holderType instanceof DataSetType) {
                         update = new DataSetTypeUpdate();
                         update.setTypeId(((DataSetType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(remove));
+                        update.getPropertyAssignments().remove(oldPropertyAssignment.getPermId());
                         update.getPropertyAssignments().setForceRemovingAssignments(true);
                         v3.updateDataSetTypes(sessionToken, List.of((DataSetTypeUpdate) update));
                     } else if (holderType instanceof MaterialType) {
                         update = new MaterialTypeUpdate();
                         update.setTypeId(((MaterialType) holderType).getPermId());
-                        update.setPropertyAssignmentActions(List.of(remove));
+                        update.getPropertyAssignments().remove(oldPropertyAssignment.getPermId());
                         update.getPropertyAssignments().setForceRemovingAssignments(true);
                         v3.updateMaterialTypes(sessionToken, List.of((MaterialTypeUpdate) update));
                     }

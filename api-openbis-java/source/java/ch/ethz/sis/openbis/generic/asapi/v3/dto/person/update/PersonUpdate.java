@@ -17,15 +17,17 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.person.update;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.webapp.update.WebAppSettingsUpdateValue;
@@ -146,12 +148,6 @@ public class PersonUpdate implements IUpdate, IObjectUpdate<IPersonId>, IMetaDat
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
-    }
-
-    @JsonIgnore
-    public void setMetaDataActions(List<ListUpdateValue.ListUpdateAction<Object>> actions)
-    {
-        metaData.setActions(actions);
     }
 
     @Override

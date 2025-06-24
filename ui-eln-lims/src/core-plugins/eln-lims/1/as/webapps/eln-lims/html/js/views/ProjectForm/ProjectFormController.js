@@ -234,6 +234,9 @@ function ProjectFormController(mainController, mode, project) {
 					var callbackOk = function() {
 					    var refreshNode = _this._projectFormModel.mode === FormMode.CREATE;
 						_this._projectFormModel.isFormDirty = false;
+						if(refreshNode) {
+						    _this._mainController.tabContent.closeCurrentTab();
+						}
 						_this._mainController.changeView("showProjectPageFromIdentifier", parameters["projectIdentifier"]);
 						if(refreshNode) {
                             _this._mainController.sideMenu.refreshCurrentNode();

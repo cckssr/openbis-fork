@@ -57,7 +57,7 @@ var TabContentUtil = new function() {
             return this.getCleanTab("CREATE_DATASET", true, 'create-dataset-id')
         }
 
-         var name = dataset.properties['NAME'];
+         var name = dataset.properties[profile.getInternalNamespacePrefix() + 'NAME'];
          name = name ? name : dataset.code;
          var id = dataset.code;
          if(optionalPrefix) {
@@ -77,7 +77,7 @@ var TabContentUtil = new function() {
      }
 
     this.getSampleTabInfo = function(sample, mode, optionalPrefix) {
-        var name = sample.properties['NAME'];
+        var name = sample.properties[profile.getInternalNamespacePrefix() + 'NAME'];
         name = name ? name : sample.code;
         var id = sample.permId;
         if(optionalPrefix) {
@@ -104,7 +104,7 @@ var TabContentUtil = new function() {
             return this.getCleanTab("CREATE_EXPERIMENT", true, 'create-collection-' + mainController.getNextId())
         }
 
-        var name = experiment.properties['NAME'];
+        var name = experiment.properties[profile.getInternalNamespacePrefix() + 'NAME'];
         name = name ? name : experiment.code;
         var id = experiment.permId;
 

@@ -62,9 +62,6 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/attachment/upd
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};
-		prototype.setAttachmentsActions = function(actions) {
-			this.attachments.setActions(actions);
-		};
 	}, {
 		projectId : "IProjectId",
 		spaceId : {

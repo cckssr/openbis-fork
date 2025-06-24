@@ -176,9 +176,6 @@ function ProjectFormView(projectFormController, projectFormModel) {
 				if(!_this._wasSideMenuCollapsed) {
                     mainController.sideMenu.expandSideMenu();
                 }
-                if(_this._projectFormModel.mode === FormMode.CREATE) {
-                    mainController.tabContent.closeCurrentTab();
-                }
 			}, "Save", "Save changes", "save-btn-project-" + _this._viewId);
 			$saveBtn.removeClass("btn-default");
 			$saveBtn.addClass("btn-primary");

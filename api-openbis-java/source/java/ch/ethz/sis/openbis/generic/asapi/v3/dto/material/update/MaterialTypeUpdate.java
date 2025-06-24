@@ -15,14 +15,11 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.IEntityTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.PropertyAssignmentListUpdateValue;
@@ -103,13 +100,6 @@ public class MaterialTypeUpdate implements IEntityTypeUpdate
     public PropertyAssignmentListUpdateValue getPropertyAssignments()
     {
         return propertyAssignments;
-    }
-
-    @Override
-    @JsonIgnore
-    public void setPropertyAssignmentActions(List<ListUpdateAction<Object>> actions)
-    {
-        propertyAssignments.setActions(actions);
     }
 
     @Override

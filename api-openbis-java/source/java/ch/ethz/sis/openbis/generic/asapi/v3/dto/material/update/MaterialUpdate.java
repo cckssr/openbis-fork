@@ -15,28 +15,18 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.material.update;
 
-import java.io.Serializable;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.property.PropertiesDeserializer;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.material.id.IMaterialId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * @author Jakub Straszewski
@@ -76,12 +66,6 @@ public class MaterialUpdate extends AbstractEntityUpdate
     public IdListUpdateValue<ITagId> getTagIds()
     {
         return tagIds;
-    }
-
-    @JsonIgnore
-    public void setTagActions(List<ListUpdateAction<ITagId>> actions)
-    {
-        tagIds.setActions(actions);
     }
 
     @Override

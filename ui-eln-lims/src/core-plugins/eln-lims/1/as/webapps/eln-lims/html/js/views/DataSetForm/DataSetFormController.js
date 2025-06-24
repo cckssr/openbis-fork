@@ -262,6 +262,7 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 
 					setTimeout(function() {
 						if(_this._dataSetFormModel.mode === FormMode.CREATE) {
+						    mainController.tabContent.closeCurrentTab();
 							Util.showSuccess("DataSet Created.", callbackOk);
 							if(!isInventory) {
                                 var currentNode = mainController.sideMenu.getCurrentNodeId();

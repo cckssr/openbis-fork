@@ -28,10 +28,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/dataset/update
 			this.externalDmsId.setValue(externalDmsId);
 		};
 		prototype.getContentCopies = function() {
-			return this.externalDmsId;
-		};
-		prototype.setContentCopyActions = function(actions) {
-			this.contentCopies.setActions(actions);
+			return this.contentCopies;
 		};
 	}, {
 		externalCode : {

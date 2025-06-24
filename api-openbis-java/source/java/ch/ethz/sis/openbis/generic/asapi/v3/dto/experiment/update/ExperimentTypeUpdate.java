@@ -15,16 +15,13 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update;
 
-import java.util.List;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.IEntityTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.update.PropertyAssignmentListUpdateValue;
@@ -112,24 +109,10 @@ public class ExperimentTypeUpdate implements IEntityTypeUpdate, IMetaDataUpdateH
 
     @Override
     @JsonIgnore
-    public void setPropertyAssignmentActions(List<ListUpdateAction<Object>> actions)
-    {
-        propertyAssignments.setActions(actions);
-    }
-
-    @Override
-    @JsonIgnore
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
     }
-
-    @JsonIgnore
-    public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
-    {
-        metaData.setActions(actions);
-    }
-
 
     @Override
     public String toString()

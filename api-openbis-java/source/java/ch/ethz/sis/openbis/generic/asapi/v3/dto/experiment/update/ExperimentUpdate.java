@@ -15,18 +15,19 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.update;
 
-import java.util.*;
-
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.attachment.update.AttachmentListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IPropertiesHolder;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateValue.ListUpdateAction;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.ListUpdateMapValues;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.IExperimentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
@@ -151,23 +152,11 @@ public class ExperimentUpdate extends AbstractEntityUpdate
         return attachments;
     }
 
-    @JsonIgnore
-    public void setAttachmentsActions(List<ListUpdateAction<Object>> actions)
-    {
-        attachments.setActions(actions);
-    }
-
     @Override
     @JsonIgnore
     public ListUpdateMapValues getMetaData()
     {
         return metaData;
-    }
-
-    @JsonIgnore
-    public void setMetaDataActions(List<ListUpdateAction<Object>> actions)
-    {
-        metaData.setActions(actions);
     }
 
     @JsonIgnore

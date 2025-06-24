@@ -71,14 +71,8 @@ define([ "stjs", "as/dto/common/entity/AbstractEntityUpdate", "as/dto/common/upd
 		prototype.getAttachments = function() {
 			return this.attachments;
 		};
-		prototype.setAttachmentsActions = function(actions) {
-			this.attachments.setActions(actions);
-		};
 		prototype.getMetaData = function() {
             return this.metaData;
-        };
-        prototype.setMetaDataActions = function(actions) {
-            this.metaData.setActions(actions);
         };
         prototype.isImmutableData = function() {
             return this.immutableData;

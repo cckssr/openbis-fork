@@ -168,6 +168,7 @@ var BarcodeUtil = new function() {
             isScanner = false;
         }
 
+        $("body").off("change", "#devices-"+viewId);
         $("body").on("change", "#devices-"+viewId, onDeviceChange);
 
         $container.append($form);
