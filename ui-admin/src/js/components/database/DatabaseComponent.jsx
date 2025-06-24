@@ -18,10 +18,7 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
-
-import { SpaceFormProvider } from '@src/js/components/database/new-forms/controllers/Space/SpaceFormContext.tsx';
 import SpaceFormView from '@src/js/components/database/new-forms/controllers/Space/SpaceFormView.tsx';
-import { SpaceForm } from './new-forms/controllers/Space/test.tsx'
 import { EntityFormBuilderProvider } from './new-forms/components/EntityFormBuilderContext.tsx'
 import ProjectFormView from '@src/js/components/database/new-forms/controllers/Project/ProjectFormView.tsx'
 

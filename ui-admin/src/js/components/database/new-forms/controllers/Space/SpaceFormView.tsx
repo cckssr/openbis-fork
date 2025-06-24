@@ -3,8 +3,6 @@ import { useSpaceFormController } from '@src/js/components/database/new-forms/co
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx';
 import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
 import Button from '@src/js/components/common/form/Button.jsx';
-import { Grid2 } from '@mui/material';
-import { FormFieldRenderer } from '@src/js/components/database/new-forms/components/FormFieldRenderer.tsx';
 import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.ts';
 
 const SpaceFormView = ({ permId }: { permId: string }) => {
