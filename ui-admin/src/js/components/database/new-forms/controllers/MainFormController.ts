@@ -2,8 +2,9 @@ import openbis from "@srcV3/openbis.esm";
 // MainController.ts (or similar service file)
 export class AuthorizationService { // Or part of a larger MainController class
 
-	async fetchRights(openbis, objId, ids) {
-		const right = await openbis.getRightsByIds(ids, new openbis.RightsFetchOptions())
+	async fetchRights(openbisFacade: openbis.openbis, objId: string, ids: any[]) {
+		const { RightsFetchOptions } = openbisFacade;
+		const right = await openbisFacade.getRightsByIds(ids, new RightsFetchOptions())
 
 		if (right[objId] && right[objId].rights) {
 			const editable = right[objId].rights.includes("UPDATE")

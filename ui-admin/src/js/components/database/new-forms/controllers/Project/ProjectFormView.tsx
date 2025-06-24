@@ -29,17 +29,6 @@ const ProjectFormView = ({ permId }) => {
 		</>
 	);
 
-	const projectSections = ({ form }) => (
-		<>
-			<div title="Identification Info">
-				{/* Render code, registrator, registration date */}
-			</div>
-			<div title="General">
-				{/* Render description, etc. */}
-			</div>
-		</>
-	);
-
 
 	if (loading) return <div>Loading...</div>
 	if (error) return <div>Error: {error.message}</div>
@@ -50,8 +39,8 @@ const ProjectFormView = ({ permId }) => {
 			initialForm={form}
 			initialMode={FormMode.VIEW}
 			controller={controller}
-			renderToolbar={null}
-			renderSections={null}
+			customToolbar={null}
+			customSections={null}
 		/>
 	)
 }
