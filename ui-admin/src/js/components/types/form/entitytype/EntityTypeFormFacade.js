@@ -1,12 +1,13 @@
 import openbis from '@src/js/services/openbis.js'
 import EntityTypeFormControllerStrategies from '@src/js/components/types/form/entitytype/EntityTypeFormControllerStrategies.js'
+import objectTypes from '@src/js/common/consts/objectType.js'
 
 export default class EntityTypeFormFacade {
   async loadType(object) {
     const strategy = this._getStrategy(object.type)
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
-    fo.withSemanticAnnotations()
+    if (object.type === objectTypes.OBJECT_TYPE) fo.withSemanticAnnotations()
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withRegistrator()
