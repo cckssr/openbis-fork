@@ -50,8 +50,8 @@ class TextFormField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value, description } = this.props
-    return <FormFieldView label={label} value={value} description={description} />
+    const { label, value, description, disableUnderline } = this.props
+    return <FormFieldView label={label} value={value} description={description} disableUnderline={disableUnderline || false} />
   }
 
   renderEdit() {
