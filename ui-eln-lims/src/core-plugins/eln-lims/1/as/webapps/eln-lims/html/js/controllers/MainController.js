@@ -1379,8 +1379,8 @@ function MainController(profile) {
 	
 	this._showWelcomePage = function() {
 	    //welcome tab
-	    var navigationTab = TabContentUtil.getCleanTab("WELCOME", false, 'welcome-'+this.getNextId());
-        var content = this._getBackwardsCompatibleMainContainer("welcome-"+localReference.getNextId(), navigationTab);
+	    var navigationTab = TabContentUtil.getCleanTab("WELCOME", false, 'welcome-tab-'+this.getNextId());
+        var content = this._getBackwardsCompatibleMainContainer("welcome-"+this.getNextId(), navigationTab);
 
 		$.ajax({ cache: false,
         		 url: "./etc/welcome.html",
