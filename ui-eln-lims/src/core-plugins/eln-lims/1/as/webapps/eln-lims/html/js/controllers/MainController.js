@@ -1378,7 +1378,9 @@ function MainController(profile) {
 	}
 	
 	this._showWelcomePage = function() {
-		var content = this._getBackwardsCompatibleMainContainer();
+	    //welcome tab
+	    var navigationTab = TabContentUtil.getCleanTab("WELCOME", false, 'welcome-'+this.getNextId());
+        var content = this._getBackwardsCompatibleMainContainer("welcome-"+localReference.getNextId(), navigationTab);
 
 		$.ajax({ cache: false,
         		 url: "./etc/welcome.html",
@@ -1948,7 +1950,8 @@ function MainController(profile) {
 									filePrefix: 'search-' + searchDomainLabel
 								}, 90);
 								localReference.currentView = dataGrid;
-								var content = localReference._getBackwardsCompatibleMainContainer();
+								var navigationTab = TabContentUtil.getSearchTabInfo(value);
+								var content = localReference._getBackwardsCompatibleMainContainer("search-data-set-"+localReference.getNextId, navigationTab);
 								dataGrid.init(content);
 								history.pushState({id: ++this._stateCounter}, "", ""); //History Push State
 							}
@@ -2079,7 +2082,8 @@ function MainController(profile) {
 										filePrefix: 'search-' + searchDomainLabel
 									}, 90);
 									localReference.currentView = dataGrid;
-									var content = localReference._getBackwardsCompatibleMainContainer();
+									var navigationTab = TabContentUtil.getSearchTabInfo(value);
+									var content = localReference._getBackwardsCompatibleMainContainer("search-other-"+localReference.getNextId(), navigationTab);
 									dataGrid.init(content);
 									history.pushState({id: ++this._stateCounter}, "", ""); //History Push State
 								} else {

@@ -206,9 +206,31 @@ var TabContentUtil = new function() {
         }
 
         return {
-            label: tabName,
+            label: label,
             changed: false,
             id: tabName + '-id',
+            icon: icon[0].outerHTML,
+            page: 'tools',
+        }
+    }
+
+    this.getSearchTabInfo = function(optionalText) {
+        var iconType = IconUtil.getNavigationIcon("SEARCH")
+        var icon = IconUtil.getIcon(iconType);
+
+        var label = "SEARCH"
+        if(optionalText) {
+            if(optionalText.length > 17) {
+                label = label + ": " + optionalText.substr(0, 17) + "\u2026";
+            } else {
+                label = label + ": " + optionalText;
+            }
+        }
+
+        return {
+            label: label,
+            changed: false,
+            id: 'search-id-'+mainController.getNextId(),
             icon: icon[0].outerHTML,
             page: 'tools',
         }
