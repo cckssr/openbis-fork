@@ -301,6 +301,9 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                     case SPACE:
                         SpaceFetchOptions spaceFetchOptions = new SpaceFetchOptions();
                         spaceFetchOptions.withProjects();
+                        SampleFetchOptions spaceSampleFetchOptions = spaceFetchOptions.withSamples();
+                        spaceSampleFetchOptions.withProject();
+                        spaceSampleFetchOptions.withExperiment();
                         Map<ISpaceId, Space> spaces = api.getSpaces(sessionToken,
                                 List.of(new SpacePermId(current.getPermId())),
                                 spaceFetchOptions);
@@ -313,11 +316,21 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                                 todo.add(next);
                                 collectedLevelsAbove.add(next);
                             }
+                            for(Sample sample : space.getSamples()) {
+                                if(sample.getExperiment() == null && sample.getProject() == null) {
+                                    ExportablePermId next = new ExportablePermId(ExportableKind.SAMPLE,
+                                            sample.getPermId().getPermId());
+                                    todo.add(next);
+                                }
+                            }
                         }
                         break;
                     case PROJECT:
                         ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
                         projectFetchOptions.withExperiments();
+                        SampleFetchOptions projectSampleFetchOptions = projectFetchOptions.withSamples();
+                        projectSampleFetchOptions.withProject();
+                        projectSampleFetchOptions.withExperiment();
                         if (withLevelsAbove && !collectedLevelsAbove.contains(current)) {
                             projectFetchOptions.withSpace();
                         }
@@ -335,6 +348,13 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                                         experiment.getPermId().getPermId());
                                 todo.add(next);
                                 collectedLevelsAbove.add(next);
+                            }
+                            for(Sample sample : project.getSamples()) {
+                                if(sample.getExperiment() == null) {
+                                    ExportablePermId next = new ExportablePermId(ExportableKind.SAMPLE,
+                                            sample.getPermId().getPermId());
+                                    todo.add(next);
+                                }
                             }
                         }
                         break;
