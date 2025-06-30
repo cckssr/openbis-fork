@@ -30,6 +30,7 @@ import ch.ethz.sis.rdf.main.model.xlsx.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.util.SplitIRI;
 import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.Serializable;
@@ -41,6 +42,9 @@ import java.util.stream.Collectors;
 
 public class RdfToOpenBisMapper
 {
+
+    public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
+
     public static OpenBisModel convert(ModelRDF modelRDF, String projectIdentifier)
     {
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
@@ -227,7 +231,7 @@ public class RdfToOpenBisMapper
                         .collect(Collectors.toMap(x -> x.getPropertyType().getLabel(), x -> x));
 
                 Map<String, Serializable> proppies = sampleObject.getProperties().stream()
-                        .collect(Collectors.toMap(x -> makeOpenBisCodeCompliant(x.getLabel()),
+                        .collect(Collectors.toMap(x -> x.getLabel(),
                                 x -> convertValue(vocabularyOptionList, x,
                                         labelToProperty.get(x.label).getPropertyType(),
                                         sample.getSpace().getCode(), sample.getProject().getCode()),
@@ -253,8 +257,10 @@ public class RdfToOpenBisMapper
 
     private static String makeOpenBisCodeCompliant(String candiate)
     {
-        return candiate.replaceAll("\\|", "_")
-                .replaceAll("%7C", "_");
+        return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("%[0-9A-Fa-f]{2}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("\\\\u([0-9A-Fa-f]{2}){6}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
     }
 
 
@@ -264,10 +270,10 @@ public class RdfToOpenBisMapper
             String project)
     {
 
-        String value = sampleObjectProperty.value;
+        String value = SplitIRI.localname(sampleObjectProperty.valueURI);
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
-            return String.join("/", project, value)
+            return String.join("/", project, makeOpenBisCodeCompliant(value))
                     .toUpperCase(
                             Locale.ROOT);
         }
