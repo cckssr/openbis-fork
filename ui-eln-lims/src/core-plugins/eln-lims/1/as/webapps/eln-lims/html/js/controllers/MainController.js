@@ -1144,7 +1144,7 @@ function MainController(profile) {
             let tabContentBody = $("<div>", { id: "tab-content-body" });
 
             mainController.tabContent.openTab(navigationTab, function() {
-                tab = $("#" + navigationTab.id)
+                tab = $("[id='"+navigationTab.id+"']")
                 tab.empty()
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);
@@ -1180,7 +1180,7 @@ function MainController(profile) {
 		    let tabContentBody = $("<div>", { id: "tab-content-body" });
 
             mainController.tabContent.openTab(navigationTab, function() {
-                tab = $("#" + navigationTab.id)
+                tab = $("[id='"+navigationTab.id+"']")
                 tab.empty()
                 tab.append(tabContentHeader);
                 tab.append(tabContentBody);

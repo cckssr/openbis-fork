@@ -91,8 +91,8 @@ function TabContentController(controller) {
 
     this._updateView = function(tab) {
         if(tab) {
-            var tabHeader = $("#" + tab.id + " #tab-content-header")
-            var tabBody = $("#" + tab.id + " #tab-content-body")
+            var tabHeader = $("[id='"+tab.id+"']  #tab-content-header")
+            var tabBody = $("[id='"+tab.id+"'] #tab-content-body")
 
             mainController.views.header = tabHeader;
             mainController.views.content = tabBody;
