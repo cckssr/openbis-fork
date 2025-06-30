@@ -147,14 +147,30 @@ class SideMenuWidgetBrowserController extends window.NgComponents.default.Browse
         "lims": [],
         "tools": []
     }
+    ROOTS = {
+        "lab_notebook": null,
+        "lims": null,
+        "tools": null
+    }
 
     changeCurrentTree(treeName) {
+        var oldRootNode = this.getNodeSetAsRoot();
+        this.ROOTS[this.CURRENT_TREE] = oldRootNode;
         this.setState({
           loaded: false,
           loading: true,
         })
         this.CURRENT_TREE = treeName;
-        this.load()
+        var rootNode = this.ROOTS[treeName];
+        var _this = this;
+
+        if(oldRootNode || rootNode) {
+            _this.setNodeAsRoot(null)
+                .then(() => _this.load())
+                .then(() => _this.setNodeAsRoot(rootNode ? rootNode.id : null));
+        } else {
+            this.load();
+        }
     }
 
     SORTINGS_BY_NAME_AND_REGISTRATION_DATE = [].concat(this.SORTINGS_BY_NAME).concat(this.SORTINGS_BY_REGISTRATION_DATE)

@@ -243,7 +243,7 @@
 					});
 				}
 	
-				if(_this._allowedToRegisterDataSet() && !isInventorySample && sampleTypeCode !== "FOLDER") {
+				if(_this._allowedToRegisterDataSet() && sampleTypeCode !== "FOLDER") {
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);

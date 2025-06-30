@@ -1,1 +1,1 @@
-includeFlat 'lib-logging', 'lib-json', 'lib-db', 'lib-messages-db'
+includeFlat 'lib-logging', 'lib-json', 'lib-db', 'lib-messages-db', 'lib-commonbase'
