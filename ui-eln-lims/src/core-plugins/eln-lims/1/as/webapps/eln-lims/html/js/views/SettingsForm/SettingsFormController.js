@@ -33,6 +33,7 @@ function SettingsFormController(mainController, settingsSample, mode) {
 	        var profileToEdit = null;
             if(settingsSample.properties[profile.getInternalNamespacePrefix() + "ELN_SETTINGS"]) {
                 profileToEdit = JSON.parse(settingsSample.properties[profile.getInternalNamespacePrefix() + "ELN_SETTINGS"]);
+                profileToEdit = jQuery.extend(true, profile, profileToEdit);
             }
             var initialGroupSettings = profileToEdit && Object.keys(profileToEdit).length == 2 && profileToEdit["inventorySpaces"] && profileToEdit["inventorySpacesReadOnly"];
             if(initialGroupSettings) { // Special initialisation for group settings
