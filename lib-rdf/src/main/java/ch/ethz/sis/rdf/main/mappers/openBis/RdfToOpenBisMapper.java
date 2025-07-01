@@ -270,10 +270,11 @@ public class RdfToOpenBisMapper
             String project)
     {
 
-        String value = SplitIRI.localname(sampleObjectProperty.valueURI);
+        String value = sampleObjectProperty.value;
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
-            return String.join("/", project, makeOpenBisCodeCompliant(value))
+            String referenceValue = SplitIRI.localname(sampleObjectProperty.valueURI);
+            return String.join("/", project, makeOpenBisCodeCompliant(referenceValue))
                     .toUpperCase(
                             Locale.ROOT);
         }
