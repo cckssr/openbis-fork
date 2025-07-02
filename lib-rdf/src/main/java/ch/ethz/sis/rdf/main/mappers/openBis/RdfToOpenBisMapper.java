@@ -31,12 +31,8 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.util.SplitIRI;
-import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -304,12 +300,7 @@ public class RdfToOpenBisMapper
                 {
                     //Date date = (Date) literal.getValue();
                     //System.out.println("----- DATE: " + date);
-                    TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(
-                            literal.getValue().toString().replaceAll("\"", ""));
-                    Instant i = Instant.from(ta);
-                    Date d = Date.from(i);
-                    return Double.toString(DateUtil.getExcelDate(d));
-
+                    return literal.getValue().toString().replaceAll("\"", "");
                 } else if (matchUris(XSDDatatype.XSDdouble.getURI(), datatypeURI))
                 {
                     String a = literal.getValue().toString().replaceAll("\"", "");
