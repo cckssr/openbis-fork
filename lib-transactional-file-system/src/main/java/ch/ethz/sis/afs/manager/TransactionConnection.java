@@ -257,14 +257,16 @@ public class TransactionConnection implements TransactionalFileSystem {
         source = getSafePath(OperationName.List, source);
         validateOperationAndPaths(OperationName.List, source, null);
         validateWritten(OperationName.List, source);
-        final File file = IOUtils.getFile(source);
-        if (!file.getDirectory())
+        if (IOUtils.isRegularFile(source)) // Is a file and exists
         {
-            return new File[]{file};
-        } else
+            return new File[]{ IOUtils.getFile(source) };
+        } else if (IOUtils.isDirectory(source))
         {
             ListOperation operation = new ListOperation(transaction.getUuid(), source, recursively);
             return executeNonModifyingOperation(operation, source);
+        } else {
+            AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, OperationName.List, source);
+            return null;
         }
     }
 
@@ -273,8 +275,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         source = getSafePath(OperationName.Read, source);
         validateOperationAndPaths(OperationName.Read, source, null);
         validateWritten(OperationName.Read, source);
-        if (IOUtils.getFile(source).getDirectory()) {
-            AFSExceptions.throwInstance(AFSExceptions.PathIsDirectory, OperationName.Read, source);
+        if (!IOUtils.isRegularFile(source)) {
+            AFSExceptions.throwInstance(AFSExceptions.PathNotRegularFile, OperationName.Read, source);
         }
         Operation operation = new ReadOperation(transaction.getUuid(), source, offset, limit);
         return executeNonModifyingOperation(operation, source);

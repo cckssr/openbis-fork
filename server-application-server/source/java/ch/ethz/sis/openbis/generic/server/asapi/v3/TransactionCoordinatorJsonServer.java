@@ -168,7 +168,7 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
                         Object operationArgument = operationArguments[index];
                         if (methodParameter.getName().equals("chunks"))
                         {
-                            convertedOperationArguments[index] = ChunkEncoderDecoder.decodeChunks((String) operationArgument);
+                            convertedOperationArguments[index] = ChunkEncoderDecoder.decodeChunks(convertEncodedChunksOperationArgument(operationArgument));
                         } else
                         {
 
@@ -232,7 +232,7 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
 //                    }
 //                }
 //                return convertedResultArray;
-                return ChunkEncoderDecoder.encodeChunks((Chunk[]) operationResult);
+                return ChunkEncoderDecoder.encodeChunksAsBytes((Chunk[]) operationResult);
             } else if (operationResult.getClass().equals(File[].class)) {
                 return FileEncoderDecoder.encodeFiles((File[]) operationResult);
             }
@@ -248,6 +248,23 @@ public class TransactionCoordinatorJsonServer extends AbstractApiJsonServiceExpo
             } else
             {
                 return null;
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private byte[] convertEncodedChunksOperationArgument(Object operationArgument) {
+            if(operationArgument instanceof byte[]) {
+                return (byte[]) operationArgument;
+            } else if (operationArgument instanceof List){
+                byte[] encodedChunksAsBytes = new byte[((List<?>) operationArgument).size()];
+                int i = 0;
+                for(Number item : (List<? extends Number>) operationArgument) {
+                    encodedChunksAsBytes[i] = item.byteValue();
+                    i++;
+                }
+                return encodedChunksAsBytes;
+            } else {
+                throw new IllegalArgumentException(String.format("Illegal type for operationArgument of encoded chunks: %s", operationArgument.getClass()));
             }
         }
 

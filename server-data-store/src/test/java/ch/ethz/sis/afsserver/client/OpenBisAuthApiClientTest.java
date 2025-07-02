@@ -91,12 +91,19 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
 
     private static int authorizationProxyCacheIdleTimeout;
 
+    private static volatile Configuration configuration;
+
     private DummyOpenBisServer dummyOpenBisServer;
 
     // used for creating test data for the super class tests
     @Override protected String getTestDataFolder(final String owner)
     {
         return getTestDataFolder(SHARE_1, owner);
+    }
+
+    @Override
+    protected Configuration getServerConfiguration() {
+        return configuration;
     }
 
     public String getTestDataFolder(final String shareId, String owner)
@@ -117,7 +124,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
     @BeforeClass
     public static void classSetUp() throws Exception
     {
-        final Configuration configuration =
+        configuration =
                 new Configuration(List.of(AtomicFileSystemServerParameter.class),
                         "src/test/resources/test-server-with-auth-config.properties");
         httpServerPort =

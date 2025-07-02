@@ -36,15 +36,16 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
     PathBusy(                       RuntimeException.class,         List.of(ClientDeveloperCodingError),10011,"Path can't be operated by: %s - %s is currently being used"),
     PathIsDirectory(                RuntimeException.class,         List.of(ClientDeveloperCodingError),10012,"Path can't be operated by: %s - %s is a directory"),
     PathNotDirectory(               RuntimeException.class,         List.of(ClientDeveloperCodingError),10013,"Path can't be operated by: %s - %s is not a directory"),
-    PathNotInStore(                 RuntimeException.class,         List.of(ClientDeveloperCodingError),10014,"Path given to: %s - Not in store: %s"),
-    PathInStore(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10015,"Path given to: %s - In store: %s"),
-    PathInStoreCantBeRelative(      RuntimeException.class,         List.of(ClientDeveloperCodingError),10016,"Path given to: %s - can't contain '/../': %s"),
-    PathNotStartWithRoot(           RuntimeException.class,         List.of(ClientDeveloperCodingError),10017,"Path given to: %s - don't starts with root '/' : %s"),
-    MD5NotMatch(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10018,"MD5 doesn't match on data given to: %s - for: %s"),
-    DeadlockDetected(               RuntimeException.class,         List.of(UserUsageError),            10019,"Deadlock detected, %s is already waiting for %s from %s"),
-    TransactionReuse(               RuntimeException.class,         List.of(CoreDeveloperCodingError),  10020,"Transaction with uuid: %s and state: %s was going to be reused"),
-    NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10021,"No shares found"),
-    PathInvalid(                  RuntimeException.class,         List.of(ClientDeveloperCodingError),          10022,"Path %s contains invalid characters");
+    PathNotRegularFile(             RuntimeException.class,         List.of(ClientDeveloperCodingError),10014,"Path can't be operated by: %s - %s is not a regular file"),
+    PathNotInStore(                 RuntimeException.class,         List.of(ClientDeveloperCodingError),10015,"Path given to: %s - Not in store: %s"),
+    PathInStore(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10016,"Path given to: %s - In store: %s"),
+    PathInStoreCantBeRelative(      RuntimeException.class,         List.of(ClientDeveloperCodingError),10017,"Path given to: %s - can't contain '/../': %s"),
+    PathNotStartWithRoot(           RuntimeException.class,         List.of(ClientDeveloperCodingError),10018,"Path given to: %s - don't starts with root '/' : %s"),
+    MD5NotMatch(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10019,"MD5 doesn't match on data given to: %s - for: %s"),
+    DeadlockDetected(               RuntimeException.class,         List.of(UserUsageError),            10020,"Deadlock detected, %s is already waiting for %s from %s"),
+    TransactionReuse(               RuntimeException.class,         List.of(CoreDeveloperCodingError),  10021,"Transaction with uuid: %s and state: %s was going to be reused"),
+    NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10022,"No shares found"),
+    PathInvalid(                  RuntimeException.class,         List.of(ClientDeveloperCodingError),          10023,"Path %s contains invalid characters");
 
     private RuntimeExceptionTemplate template;
 
@@ -62,5 +63,9 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
 
     public static void throwInstance(AFSExceptions exception, Object... args) {
         throw exception.getInstance(args);
+    }
+
+    public int getCode() {
+        return template.getExceptionCode();
     }
 }

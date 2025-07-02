@@ -540,7 +540,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                 return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
                     data : {
                         "method" : "read",
-                        "params" : [ AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks) ]
+                        "params" : [ Array.from(AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)) ]
                     }
                 }).then(function(chunksAsString){
                     var chunks = AfsServer.prototype.Private.ChunkEncoderDecoder.decodeChunks(chunksAsString); // Decode Chunks
@@ -565,7 +565,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                         "method" : "write",
 		                // use base64 url version of encoding that produces url safe characters only (default version of base64 produces "+" and "/" which need to be further converted by encodeURIComponent to "%2B" and "%2F" and therefore they unnecessarily increase the request size)
 
-                        "params" : [ AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks) ]
+                        "params" : [ Array.from(AfsServer.prototype.Private.ChunkEncoderDecoder.encodeChunks(chunks)) ]
                     }
                 })
             }else{

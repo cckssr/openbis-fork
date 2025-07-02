@@ -397,7 +397,7 @@ exports.default = new Promise((resolve) => {
                                 "Transaction '" + transactionId + "' execute operation 'read' for participant 'afs-server' failed with error:"
                             )
                         )
-                        c.assertTrue(error.message.includes("NoSuchFileException"))
+                        c.assertTrue(error.message.includes("\"exceptionCode\" : 10015"))
                     }
 
                     await facade.rollbackTransaction()
