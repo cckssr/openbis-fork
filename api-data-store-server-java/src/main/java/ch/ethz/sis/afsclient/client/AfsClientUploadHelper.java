@@ -191,7 +191,7 @@ public class AfsClientUploadHelper
     private static boolean isPathNotInStoreError(Exception e) {
         if (e instanceof IllegalArgumentException) {
             String message = e.getMessage();
-            if (message != null && message.contains("ch.ethz.sis.afs.api.dto.ExceptionReason") && message.contains("\"exceptionCode\" : 10015")) {
+            if (message != null && message.contains("NoSuchFileException")) {
                 return true;
             }
         }

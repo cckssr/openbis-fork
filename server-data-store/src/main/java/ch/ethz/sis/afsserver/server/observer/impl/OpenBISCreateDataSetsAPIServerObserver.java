@@ -1,5 +1,6 @@
 package ch.ethz.sis.afsserver.server.observer.impl;
 
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -210,15 +211,8 @@ public class OpenBISCreateDataSetsAPIServerObserver
         {
             File[] files = worker.list(owner, "", false);
             return files.length > 0;
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof ThrowableReason &&
-                    ((ThrowableReason) e.getCause()).getReason() instanceof ExceptionReason) {
-                ExceptionReason exceptionReason = (ExceptionReason) ((ThrowableReason) e.getCause()).getReason();
-                if (exceptionReason.getExceptionCode() == AFSExceptions.PathNotInStore.getCode()) {
-                    return false;
-                }
-            }
-            throw e;
+        } catch (NoSuchFileException e) {
+            return false;
         }
     }
 

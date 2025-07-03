@@ -17,6 +17,7 @@ package ch.ethz.sis.afs.manager;
 
 import static ch.ethz.sis.shared.collection.List.safe;
 
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -167,10 +168,10 @@ public class TransactionConnection implements TransactionalFileSystem {
         // Clone transaction and Removing data from write operations,
         // then writing the clone without data as transaction log leaving original unchanged.
         Transaction transactionForLog = new Transaction(
-                                            transaction.getWriteAheadLogRoot(),
-                                            transaction.getStorageRoot(),
-                                            transaction.getUuid(),
-                                            new ArrayList<>());
+                transaction.getWriteAheadLogRoot(),
+                transaction.getStorageRoot(),
+                transaction.getUuid(),
+                new ArrayList<>());
 
         transaction.getOperations().forEach(operation ->{
             OperationName operationName = operation.getName();
@@ -254,32 +255,29 @@ public class TransactionConnection implements TransactionalFileSystem {
 
     @Override
     public File[] list(String source, boolean recursively) throws Exception {
-        source = getSafePath(OperationName.List, source);
-        validateOperationAndPaths(OperationName.List, source, null);
-        validateWritten(OperationName.List, source);
-        if (IOUtils.isRegularFile(source)) // Is a file and exists
+        String safePath = getSafePath(OperationName.List, source);
+        validateOperationAndPaths(OperationName.List, safePath, null);
+        validateWritten(OperationName.List, safePath);
+        if (!IOUtils.isDirectory(safePath)) // Is a file and exists
         {
-            return new File[]{ IOUtils.getFile(source) };
-        } else if (IOUtils.isDirectory(source))
+            return new File[]{ IOUtils.getFile(safePath) };
+        } else
         {
-            ListOperation operation = new ListOperation(transaction.getUuid(), source, recursively);
-            return executeNonModifyingOperation(operation, source);
-        } else {
-            AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, OperationName.List, source);
-            return null;
+            ListOperation operation = new ListOperation(transaction.getUuid(), safePath, recursively);
+            return executeNonModifyingOperation(operation, safePath);
         }
     }
 
     @Override
     public byte[] read(String source, long offset, int limit) throws Exception {
-        source = getSafePath(OperationName.Read, source);
-        validateOperationAndPaths(OperationName.Read, source, null);
-        validateWritten(OperationName.Read, source);
-        if (!IOUtils.isRegularFile(source)) {
+        String safePath = getSafePath(OperationName.Read, source);
+        validateOperationAndPaths(OperationName.Read, safePath, null);
+        validateWritten(OperationName.Read, safePath);
+        if (!IOUtils.isRegularFile(safePath)) {
             AFSExceptions.throwInstance(AFSExceptions.PathNotRegularFile, OperationName.Read, source);
         }
-        Operation operation = new ReadOperation(transaction.getUuid(), source, offset, limit);
-        return executeNonModifyingOperation(operation, source);
+        Operation operation = new ReadOperation(transaction.getUuid(), safePath, offset, limit);
+        return executeNonModifyingOperation(operation, safePath);
     }
 
     public <RESULT> RESULT executeNonModifyingOperation(Operation operation, String source) throws Exception {
@@ -396,7 +394,7 @@ public class TransactionConnection implements TransactionalFileSystem {
                 prepared = operationExecutors.get(operationName).prepare(transaction, operation);
             }
             if (prepared) {
-                    transaction.getOperations().add(operation);
+                transaction.getOperations().add(operation);
 
             }
         } catch (Exception ex) {
