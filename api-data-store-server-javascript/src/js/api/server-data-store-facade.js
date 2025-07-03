@@ -467,9 +467,9 @@ DataStoreServer.prototype._read = function(chunks){
         if (!(result instanceof Blob)) {
             throw new TypeError('_read result is not a valid value of type Blob');
         }
-        return result.text();
-    }).then(function(text) {
-        var chunks = ChunkEncoderDecoder.decodeChunks(text); // Decode Chunks
+        return result.arrayBuffer();
+    }).then(function(arrayBuffer) {
+        var chunks = ChunkEncoderDecoder.decodeChunks(new Uint8Array(arrayBuffer)); // Decode Chunks
         var data = chunks[0].getData();
         return new Blob([data]);
     });
@@ -784,49 +784,188 @@ var FreeSpace = function(freeSpaceObject){
  */
 
 var ChunkEncoderDecoder = (function(){
+
+    /**
+    Binary chunk encoding:     | 4-byte big-endian int32 : number of following chunks | binary-encoded chunk n. 1 | binary-encoded chunk n. 2 | ...
+    Each chunk is encoded this way:   | 4-byte big-endian int32 : owner UTF-8-bytes length ( -1 if owner was null) |
+                                      | owner UTF-8-bytes (if any) |
+                                      | 4-byte big-endian int32 : source UTF-8-bytes length ( -1 if source was null) |
+                                      | source UTF-8-bytes (if any) |
+                                      | 8-byte big-endian int64 : offset (-1 if offset was null) |
+                                      | 4-byte big-endian int32 : limit (-1 if limit was null) |
+                                      | 4-byte big-endian int32 : data length ( -1 if data was null) |
+                                      | data bytes (if any) |
+    */
+
     const CHUNK_SEPARATOR = ',';
     const CHUNK_ARRAY_SEPARATOR = ';';
     const EMPTY_ARRAY = new Uint8Array();
 
     function encodeChunk(chunk) {
-        var dataAsBase64 = Base64.bytesToBase64(chunk.getData());
-        return chunk.getOwner() + CHUNK_SEPARATOR + chunk.getSource() + CHUNK_SEPARATOR + chunk.getOffset() + CHUNK_SEPARATOR + chunk.getLimit() + CHUNK_SEPARATOR + dataAsBase64;
-    }
+        var textEncoder = new TextEncoder();
+
+        var ownerLength;
+        var ownerBuffer;
+        if (chunk.getOwner() != null) {
+            ownerBuffer = textEncoder.encode(chunk.getOwner());
+            ownerLength = ownerBuffer.length;
+        } else {
+            ownerLength = -1;
+            ownerBuffer = null;
+        }
+
+        var sourceLength;
+        var sourceBuffer;
+        if (chunk.getSource() != null) {
+            sourceBuffer = textEncoder.encode(chunk.getSource());
+            sourceLength = sourceBuffer.length;
+        } else {
+            sourceLength = -1;
+            sourceBuffer = null;
+        }
+
+        var dataLength = chunk.getData() != null ? chunk.getData().length : -1;
+
+        var sizeToBeAllocated = 4 /* 4 bytes for owner buffer length as int32 */
+            + ( ownerBuffer ? ownerBuffer.length : 0 ) /* space for owner if any */
+            + 4 /* 4 bytes for source buffer length as int32 */
+            + ( sourceBuffer ? sourceBuffer.length : 0 ) /* space for source if any */
+            + 8 /* 8 bytes for offset as int64 */
+            + 4 /* 4 bytes for limit as int64 */
+            + 4 /* 4 bytes for data length as int32 */
+            + ((dataLength > 0) ? dataLength : 0); /* space for data if any */
+
+        var packet = new ArrayBuffer(sizeToBeAllocated);
+        var dataView = new DataView(packet);
+        var uint8Array = new Uint8Array(packet);
+
+        var position = 0;
+        dataView.setInt32(position, ownerLength);
+        position += 4;
+        if (ownerBuffer) { uint8Array.set(ownerBuffer, position); position += ownerBuffer.length; }
+        dataView.setInt32(position, sourceLength);
+        position += 4;
+        if (sourceBuffer) { uint8Array.set(sourceBuffer, position); position += sourceBuffer.length; }
+        dataView.setBigInt64(position, BigInt(chunk.getOffset() != null ? chunk.getOffset() : -1));
+        position += 8;
+        dataView.setInt32(position, chunk.getLimit() != null ? chunk.getLimit() : -1);
+        position += 4;
+        dataView.setInt32(position, dataLength);
+        position += 4;
+        if (chunk.getData() != null) { uint8Array.set(chunk.getData(), position); position += chunk.getData().length; }
+
+        return uint8Array;
+   }
 
     function encodeChunks(chunks) {
-        var builder = '';
-        for (var cIdx = 0; cIdx < chunks.length; cIdx++) {
-            if (cIdx > 0) {
-                builder += CHUNK_ARRAY_SEPARATOR;
-            }
-            builder += encodeChunk(chunks[cIdx]);
+        var length = chunks.length;
+        var encodedChunks = [];
+
+        var totalSize = 4; /* for chunks.length int32 */
+
+        for (var i = 0; i<chunks.length; i++) {
+            encodedChunks[i] = encodeChunk(chunks[i]);
+            totalSize += encodedChunks[i].length;
         }
-        return builder;
+
+        var packet = new ArrayBuffer(totalSize);
+        var dataView = new DataView(packet);
+        var uint8Array = new Uint8Array(packet);
+
+        var position = 0;
+        dataView.setInt32(position, chunks.length);
+        position += 4;
+        for (var i = 0; i<chunks.length; i++) {
+            uint8Array.set(encodedChunks[i], position);
+            position += encodedChunks[i].length;
+        }
+
+        return uint8Array;
     }
 
-    function decodeChunk(chunkAsString) {
-        var chunkParameters = chunkAsString.split(CHUNK_SEPARATOR);
+    function decodeChunk(chunkAsUint8Array, position) {
+        var dataView = new DataView(chunkAsUint8Array.buffer);
+        var textDecoder = new TextDecoder();
 
-        var data = null;
-        if (chunkParameters.length == 5) {
-            data = Base64.base64ToBytes(chunkParameters[4]);
+        var ownerLength = dataView.getInt32(position);
+        position += 4;
+        var ownerBuffer;
+        if (ownerLength >= 0) {
+            ownerBuffer = chunkAsUint8Array.slice(position, position + ownerLength);
+            position += ownerLength;
         } else {
-            data = EMPTY_ARRAY;
+            ownerBuffer = null;
+        }
+        var ownerString;
+        if (ownerBuffer) {
+            ownerString = textDecoder.decode(ownerBuffer);
+        } else {
+            ownerString = null;
         }
 
-        return new Chunk(chunkParameters[0],
-                chunkParameters[1],
-                parseInt(chunkParameters[2]),
-                parseInt(chunkParameters[3]),
-                data);
+        var sourceLength = dataView.getInt32(position);
+        position += 4;
+        var sourceBuffer;
+        if (sourceLength >= 0) {
+            sourceBuffer = chunkAsUint8Array.slice(position, position + sourceLength);
+            position += sourceLength;
+        } else {
+            sourceBuffer = null;
+        }
+        var sourceString;
+        if (sourceBuffer) {
+            sourceString = textDecoder.decode(sourceBuffer);
+        } else {
+            sourceString = null;
+        }
+
+        var offset = dataView.getBigInt64(position);
+        position += 8;
+        if (offset < 0) { offset = null; }
+
+        var limit = dataView.getInt32(position);
+        position += 4;
+        if (limit < 0) { limit = null; }
+
+        var dataLength = dataView.getInt32(position);
+        position += 4;
+        var dataBuffer;
+        if (dataLength >= 0) {
+            dataBuffer = chunkAsUint8Array.slice(position, position + dataLength);
+            position += dataLength;
+        } else {
+            dataBuffer = null;
+        }
+
+        return [
+                    new Chunk(ownerString,
+                        sourceString,
+                        offset != null ? Number(offset) : null,
+                        limit != null ? limit : null,
+                        dataBuffer),
+                    position
+                ];
     }
 
-    function decodeChunks(chunksAsString) {
-        var chunksParameters = chunksAsString.split(CHUNK_ARRAY_SEPARATOR);
-        var chunks = [];
-        for (var cIdx = 0; cIdx < chunksParameters.length; cIdx++) {
-            chunks[cIdx] = decodeChunk(chunksParameters[cIdx]);
+    function decodeChunks(encodedChunks) {
+        var chunksAsUint8Array;
+        if (typeof encodedChunks == "string") {
+            chunksAsUint8Array = Base64.base64ToBytes(encodedChunks);
+        } else {
+            chunksAsUint8Array = encodedChunks;
         }
+
+        var chunks = [];
+
+        var position = 4; /* skip 4-bytes of chunks.length int32 */
+        var index = 0;
+        while (position < chunksAsUint8Array.length) {
+            var chunkWithPosition = decodeChunk(chunksAsUint8Array, position);
+            chunks[index] = chunkWithPosition[0];
+            position = chunkWithPosition[1];
+            index++;
+        }
+
         return chunks;
     }
 

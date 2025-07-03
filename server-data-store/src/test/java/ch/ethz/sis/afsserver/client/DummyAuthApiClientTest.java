@@ -28,17 +28,23 @@ import ch.ethz.sis.shared.startup.Configuration;
 public final class DummyAuthApiClientTest extends BaseApiClientTest
 {
 
+    private static volatile Configuration configuration;
+
     @Override protected String getTestDataFolder(final String owner)
     {
         return owner;
     }
 
+    @Override
+    protected Configuration getServerConfiguration() {
+        return configuration;
+    }
+
     @BeforeClass
     public static void classSetUp() throws Exception
     {
-        final Configuration configuration =
-                new Configuration(List.of(AtomicFileSystemServerParameter.class),
-                        "src/test/resources/test-server-config.properties");
+        configuration = new Configuration(List.of(AtomicFileSystemServerParameter.class),
+                "src/test/resources/test-server-config.properties");
         afsServer = new Server<>(configuration);
         httpServerPort =
                 configuration.getIntegerProperty(AtomicFileSystemServerParameter.httpServerPort);

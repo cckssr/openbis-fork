@@ -725,6 +725,16 @@ public class IOUtils {
         return Files.exists(sourcePath);
     }
 
+    public static boolean isRegularFile(String source) {
+        Path sourcePath = getPathObject(source);
+        return Files.isRegularFile(sourcePath);
+    }
+
+    public static boolean isDirectory(String source) {
+        Path sourcePath = getPathObject(source);
+        return isDirectory(sourcePath);
+    }
+
     private static boolean isDirectory(Path source) {
         return Files.isDirectory(source);
     }

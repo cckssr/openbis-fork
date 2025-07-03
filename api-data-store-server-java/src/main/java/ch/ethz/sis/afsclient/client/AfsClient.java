@@ -14,12 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.time.Duration;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -377,6 +372,16 @@ public final class AfsClient implements PublicAPI, ClientAPI
         {
             return false;
         }
+    }
+
+    @Override
+    @NonNull public Boolean upload(@NonNull Path sourcePath, @NonNull String destinationOwner, @NonNull Path destinationPath, @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception {
+        return AfsClientUploadHelper.upload(this, sourcePath, destinationOwner, destinationPath, fileCollisionListener, transferMonitorListener);
+    }
+
+    @Override
+    @NonNull public Boolean download(@NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath, @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception{
+        return AfsClientDownloadHelper.download(this, sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
     }
 
     private static byte[] getMD5(final byte[] data)

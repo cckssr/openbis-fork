@@ -30,9 +30,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.*;
 
+import ch.ethz.sis.afsapi.api.ClientAPI;
+import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.shared.startup.Configuration;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,6 +92,12 @@ public abstract class BaseApiClientTest
 
     protected static final String FILE_BINARY = FILE_BINARY_SUBFOLDER + "/" + FILE_BINARY_NAME;
 
+    public static final String TEST_RESOURCE_DIRECTORY = "ch/ethz/sis/afsserver/";
+    public static final String DOWNLOAD_TEST_RESOURCE_DIRECTORY_NAME = "downloadtest";
+    public static final String DOWNLOAD_TEST_RESOURCE_DIRECTORY = TEST_RESOURCE_DIRECTORY + "/" + DOWNLOAD_TEST_RESOURCE_DIRECTORY_NAME;
+    public static final String UPLOAD_TEST_RESOURCE_DIRECTORY_NAME = "uploadtest";
+    public static final String UPLOAD_TEST_RESOURCE_DIRECTORY = TEST_RESOURCE_DIRECTORY + "/" + UPLOAD_TEST_RESOURCE_DIRECTORY_NAME;
+
     protected static String owner = UUID.randomUUID().toString();
 
     protected int binarySize = -1;
@@ -111,6 +126,12 @@ public abstract class BaseApiClientTest
 
         createTestDataFile(owner, FILE_A, DATA);
         createTestDataFile(owner, FILE_BINARY, binaryData);
+
+        String testResourceDirectory = TEST_RESOURCE_DIRECTORY;
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(testResourceDirectory).getPath());
+        IOUtils.createDirectories(resourceDirectoryPath.toAbsolutePath() + "/" + DOWNLOAD_TEST_RESOURCE_DIRECTORY_NAME);
+        IOUtils.createDirectories(resourceDirectoryPath.toAbsolutePath() + "/" + UPLOAD_TEST_RESOURCE_DIRECTORY_NAME);
+
 
         afsClient = new AfsClient(
                 new URI("http", null, "localhost", httpServerPort, httpServerPath, null, null));
@@ -421,6 +442,592 @@ public abstract class BaseApiClientTest
         assertArrayEquals(DATA, testDataFile);
     }
 
+    @Test
+    public void download_successfully_from_dir_to_dir() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            afsClient.create(owner, subDirName, true);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                afsClient.create(owner, subsubDirName, true);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    afsClient.create(owner, testFileName, false);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+                }
+            }
+        }
+
+        int numberOfBigFiles = 3;
+        byte[][] bigFileSha256s = new byte[numberOfBigFiles][];
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            afsClient.create(owner, subDirName, true);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            int maxSize = 100000;
+            long j = 0;
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA256");
+            while(j + getMaxUsableChunkSize() < maxSize) {
+                byte[] testFileContent = new byte[getMaxUsableChunkSize()];
+                Arrays.fill(testFileContent, (byte) j);
+                afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, j, testFileContent.length, testFileContent) });
+                messageDigest.update(testFileContent);
+                j += getMaxUsableChunkSize();
+            }
+            bigFileSha256s[i] = messageDigest.digest();
+        }
+
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+                    assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+                }
+            }
+        }
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            assertArrayEquals(bigFileSha256s[i], DigestUtils.sha256(new FileInputStream(filePath.toFile())));
+        }
+    }
+
+    @Test
+    public void download_successfully_overwriting_files() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            afsClient.create(owner, subDirName, true);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                afsClient.create(owner, subsubDirName, true);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    afsClient.create(owner, testFileName, false);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+                }
+            }
+        }
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/test%s.txt", i);
+            byte[] testFileContentToBeOverwritten = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s", i).getBytes(StandardCharsets.UTF_8);
+            IOUtils.createFile(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            IOUtils.write(filePath.toString(), 0, testFileContentToBeOverwritten);
+            assertArrayEquals(testFileContentToBeOverwritten, Files.readAllBytes(filePath));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subsubDirName);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContentToBeOverwritten = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    IOUtils.createFile(resourceDirectoryPath.toAbsolutePath() + testFileName);
+                    Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+                    IOUtils.write(filePath.toString(), 0, testFileContentToBeOverwritten);
+                    assertArrayEquals(testFileContentToBeOverwritten, Files.readAllBytes(filePath));
+                }
+            }
+        }
+
+        afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+                    assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+                }
+            }
+        }
+    }
+
+    @Test
+    public void download_successfully_from_regular_file_to_dir() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        String testFileName = "/test1.txt";
+        String testFilePath = serverMainDirectory + testFileName;
+        afsClient.create(owner, testFilePath, false);
+        byte[] testFileContent = "TEST_FILE_CONTENT_1".getBytes(StandardCharsets.UTF_8);
+        afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFilePath, 0L, testFileContent.length, testFileContent) });
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        afsClient.download(owner, Path.of(testFilePath), resourceDirectoryPath, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+        assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+    }
+
+    @Test
+    public void download_successfully_from_regular_file_to_regular_file() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        String testFileName = "/test1.txt";
+        String testFilePath = serverMainDirectory + testFileName;
+        afsClient.create(owner, testFilePath, false);
+        byte[] testFileContent = "TEST_FILE_CONTENT_1".getBytes(StandardCharsets.UTF_8);
+        afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFilePath, 0L, testFileContent.length, testFileContent) });
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        String localTestFileName = "/test2.txt";
+        IOUtils.createFile(resourceDirectoryPath + localTestFileName);
+        byte[] contentToBeOverwritten = "CONTENT_TO_BE_OVERWRITTEN".getBytes(StandardCharsets.UTF_8);
+        IOUtils.write(resourceDirectoryPath + localTestFileName, 0L, contentToBeOverwritten);
+        assertArrayEquals(contentToBeOverwritten, Files.readAllBytes(Path.of(resourceDirectoryPath + localTestFileName)));
+
+        afsClient.download(owner, Path.of(testFilePath), Path.of(resourceDirectoryPath.toAbsolutePath() + localTestFileName), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + localTestFileName).getPath());
+        assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void download_with_failure_from_dir_to_regular_file() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        String testDirName = "/test1";
+        String testDirPath = serverMainDirectory + testDirName;
+        afsClient.create(owner, testDirPath, true);
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        String localTestFileName = "/test2.txt";
+        IOUtils.createFile(resourceDirectoryPath + localTestFileName);
+        byte[] contentToBeOverwritten = "CONTENT_TO_BE_OVERWRITTEN".getBytes(StandardCharsets.UTF_8);
+        IOUtils.write(resourceDirectoryPath + localTestFileName, 0L, contentToBeOverwritten);
+        assertArrayEquals(contentToBeOverwritten, Files.readAllBytes(Path.of(resourceDirectoryPath + localTestFileName)));
+
+        afsClient.download(owner, Path.of(testDirPath), Path.of(resourceDirectoryPath.toAbsolutePath() + localTestFileName), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void download_with_failure_source_path_not_absolute() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+
+        afsClient.download(owner, Path.of("non_absolute_path"), resourceDirectoryPath.toAbsolutePath(), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void download_with_failure_source_path_not_found() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+
+        afsClient.download(owner, Path.of("/non_existing_server_file"), resourceDirectoryPath.toAbsolutePath(), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void download_with_failure_destination_path_not_found() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        String testFileName = "/test1.txt";
+        String testFilePath = serverMainDirectory + testFileName;
+        afsClient.create(owner, testFilePath, false);
+        byte[] testFileContent = "TEST_FILE_CONTENT_1".getBytes(StandardCharsets.UTF_8);
+        afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFilePath, 0L, testFileContent.length, testFileContent) });
+
+        String downloadTestResourceDirectory = DOWNLOAD_TEST_RESOURCE_DIRECTORY;
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(downloadTestResourceDirectory).getPath());
+
+        afsClient.download(owner, Path.of(testFilePath), resourceDirectoryPath.resolve("NON_EXISTING_LOCAL_FILE"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test
+    public void upload_successfully_from_dir_to_dir() throws Exception
+    {
+        login();
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            IOUtils.createFile(filePath.toAbsolutePath().toString());
+            IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+            assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subsubDirName);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+                    IOUtils.createFile(filePath.toAbsolutePath().toString());
+                    IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+                    assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+                }
+            }
+        }
+
+        int numberOfBigFiles = 3;
+        byte[][] bigFileSha256s = new byte[numberOfBigFiles][];
+        for(int i = 0; i<numberOfBigFiles ; i++) {
+            String subDirName = String.format("/subdirwithbigfile%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            IOUtils.createFile(filePath.toAbsolutePath().toString());
+            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            for(int j = 0; j < 100; j++) {
+                byte[] content = new byte[1000];
+                Arrays.fill(content, (byte) j);
+                IOUtils.write(filePath.toAbsolutePath().toString(), j * 1000, content);
+                sha256.update(content);
+            }
+            bigFileSha256s[i] = sha256.digest();
+        }
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        afsClient.upload(resourceDirectoryPath, owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+            assertArrayEquals(testFileContent, readChunk[0].getData());
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+                    assertArrayEquals(testFileContent, readChunk[0].getData());
+                }
+            }
+        }
+
+        for(int i = 0; i<numberOfBigFiles ; i++) {
+            String subDirName = String.format("/subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            Chunk[] readChunk;
+            int j = 0;
+            do {
+                int offset = j * getMaxUsableChunkSize();
+                readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, (long) offset, Integer.min(getMaxUsableChunkSize(), 100000 - offset), new byte[0])});
+                sha256.update(readChunk[0].getData());
+                j++;
+            } while (readChunk[0].getOffset() + readChunk[0].getData().length < 100000);
+            assertArrayEquals(bigFileSha256s[i], sha256.digest());
+        }
+    }
+
+    @Test
+    public void upload_successfully_overwriting_files() throws Exception
+    {
+        login();
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverUploadDirectory + String.format("/subdir%s", i);
+            afsClient.create(owner, subDirName, true);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                afsClient.create(owner, subsubDirName, true);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    afsClient.create(owner, testFileName, false);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+                }
+            }
+        }
+
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+                    assertArrayEquals(testFileContent, readChunk[0].getData());
+                }
+            }
+        }
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subsubDirName);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+                    IOUtils.createFile(filePath.toAbsolutePath().toString());
+                    IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+                    assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+                }
+            }
+        }
+
+        afsClient.upload(resourceDirectoryPath, owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+                    assertArrayEquals(testFileContent, readChunk[0].getData());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void upload_successfully_from_regular_file_to_dir() throws Exception
+    {
+        login();
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        String testFileName = String.format("/test%s.txt", 1);
+        byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", 1).getBytes(StandardCharsets.UTF_8);
+        Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+        IOUtils.createFile(filePath.toAbsolutePath().toString());
+        IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+        assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        afsClient.upload(filePath.toAbsolutePath(), owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+        assertArrayEquals(testFileContent, readChunk[0].getData());
+    }
+
+    @Test
+    public void upload_successfully_from_regular_file_to_regular_file() throws Exception
+    {
+        login();
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        String testFileName = serverUploadDirectory + String.format("/test_%s.txt", 1);
+        afsClient.create(owner, testFileName, false);
+        byte[] testFileContentToBeOverwritten = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s", 1).getBytes(StandardCharsets.UTF_8);
+        afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContentToBeOverwritten.length, testFileContentToBeOverwritten) });
+
+        Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, testFileName, 0L, testFileContentToBeOverwritten.length, new byte[0])});
+        assertArrayEquals(testFileContentToBeOverwritten, readChunk[0].getData());
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        String newTestFileName = String.format("/test%s.txt", 2);
+        byte[] newTestFileContent = String.format("TEST_FILE_CONTENT_%s", 2).getBytes(StandardCharsets.UTF_8);
+        Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + newTestFileName);
+        IOUtils.createFile(filePath.toAbsolutePath().toString());
+        IOUtils.write(filePath.toAbsolutePath().toString(), 0, newTestFileContent);
+        assertArrayEquals(newTestFileContent, Files.readAllBytes(filePath));
+
+        afsClient.upload(filePath.toAbsolutePath(), owner, Path.of(testFileName), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        Chunk[] newReadChunk = afsClient.read(new Chunk[] {new Chunk(owner, testFileName, 0L, newTestFileContent.length, new byte[0])});
+        assertArrayEquals(newTestFileContent, newReadChunk[0].getData());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void upload_with_failure_from_dir_to_regular_file() throws Exception
+    {
+        login();
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        String testFileName = serverUploadDirectory + String.format("/test_%s.txt", 1);
+        afsClient.create(owner, testFileName, false);
+        byte[] testFileContentToBeOverwritten = String.format("TEST_FILE_CONTENT_TO_BE_OVERWRITTEN_%s", 1).getBytes(StandardCharsets.UTF_8);
+        afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContentToBeOverwritten.length, testFileContentToBeOverwritten) });
+
+        Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, testFileName, 0L, testFileContentToBeOverwritten.length, new byte[0])});
+        assertArrayEquals(testFileContentToBeOverwritten, readChunk[0].getData());
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        afsClient.upload(resourceDirectoryPath, owner, Path.of(testFileName), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void upload_with_failure_destination_path_not_absolute() throws Exception
+    {
+        login();
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+
+        afsClient.upload(resourceDirectoryPath, owner, Path.of("RELATIVE_PATH.txt"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void upload_with_failure_destination_path_not_found() throws Exception
+    {
+        login();
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        String newTestFileName = String.format("/test%s.txt", 2);
+        byte[] newTestFileContent = String.format("TEST_FILE_CONTENT_%s", 2).getBytes(StandardCharsets.UTF_8);
+        Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + newTestFileName);
+        IOUtils.createFile(filePath.toAbsolutePath().toString());
+        IOUtils.write(filePath.toAbsolutePath().toString(), 0, newTestFileContent);
+
+        afsClient.upload(filePath.toAbsolutePath(), owner, Path.of("/NON-EXISTING_FILE"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void upload_with_failure_source_path_not_found() throws Exception
+    {
+        login();
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+
+        afsClient.upload(Path.of("NON-EXISTING_LOCAL_PATH"), owner, Path.of("/uploads"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
     protected String login() throws Exception
     {
         return afsClient.login("test", "test");
@@ -436,4 +1043,18 @@ public abstract class BaseApiClientTest
         assertEquals(expectedSize, actualFile.getSize());
     }
 
+    protected abstract Configuration getServerConfiguration();
+
+    protected int getMaxUsableChunkSize() {
+        Configuration serverConfiguration = getServerConfiguration();
+        if(serverConfiguration != null) {
+            int httpMaxContentLength = serverConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.httpMaxContentLength);
+            int maxReadSize = serverConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.maxReadSizeInBytes);
+
+            return Integer.min(maxReadSize, httpMaxContentLength / 3 * 2);
+
+        } else {
+            return 0;
+        }
+    }
 }

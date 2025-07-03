@@ -33,7 +33,7 @@ var SettingsManagerUtils = new function() {
         var spaceSettingsProperty = this._getSpaceSettingsObject(spaceCode).properties["ELN_SETTINGS"];
         var spaceSettings = null;
         if(spaceSettingsProperty) {
-            spaceSettings = JSON.parse(spaceSettingsProperty);
+            spaceSettings = jQuery.extend(true, this._defaultProfile ?? {}, JSON.parse(spaceSettingsProperty));
         }
         var initialGroupSettings = spaceSettings && Object.keys(spaceSettings).length == 2 && spaceSettings["inventorySpaces"] && spaceSettings["inventorySpacesReadOnly"];
         if(!spaceSettingsProperty || initialGroupSettings) { // Provide default empty settings when settings are missing
@@ -95,7 +95,7 @@ var SettingsManagerUtils = new function() {
         var spaceSettingsProperty = this._getSpaceSettingsObject(spaceCode).properties["ELN_SETTINGS"];
         var spaceSettings = null;
         if(spaceSettingsProperty) {
-            spaceSettings = JSON.parse(spaceSettingsProperty);
+            spaceSettings = jQuery.extend(true, this._defaultProfile ?? {}, JSON.parse(spaceSettingsProperty));
         }
         var initialGroupSettings = spaceSettings && Object.keys(spaceSettings).length == 2 && spaceSettings["inventorySpaces"] && spaceSettings["inventorySpacesReadOnly"];
         if(!spaceSettingsProperty || initialGroupSettings) {
@@ -297,7 +297,6 @@ function SettingsManager(serverFacade) {
      *  User belongs to more than one group: "General Settings" are applied first, any additional group with isMergeGroup = true
      */
    this.applySettingsToProfile = function(settings, targetProfile, isMergeGroup) {
-
      	    // Main menu Items
      	    for(var menuItem in settings.mainMenu) {
      	        if(isMergeGroup && targetProfile.mainMenu[menuItem] !== undefined) { // Merge found values
