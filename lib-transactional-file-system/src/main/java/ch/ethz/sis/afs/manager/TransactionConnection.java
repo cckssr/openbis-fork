@@ -273,8 +273,8 @@ public class TransactionConnection implements TransactionalFileSystem {
         String safePath = getSafePath(OperationName.Read, source);
         validateOperationAndPaths(OperationName.Read, safePath, null);
         validateWritten(OperationName.Read, safePath);
-        if (!IOUtils.isRegularFile(safePath)) {
-            AFSExceptions.throwInstance(AFSExceptions.PathNotRegularFile, OperationName.Read, source);
+        if (IOUtils.getFile(safePath).getDirectory()) {
+            AFSExceptions.throwInstance(AFSExceptions.PathIsDirectory, OperationName.Read, source);
         }
         Operation operation = new ReadOperation(transaction.getUuid(), safePath, offset, limit);
         return executeNonModifyingOperation(operation, safePath);
