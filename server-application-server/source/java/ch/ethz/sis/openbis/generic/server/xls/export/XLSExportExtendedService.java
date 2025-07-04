@@ -401,6 +401,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                         sampleFetchOptions.withDataSets();
                         if (withLevelsAbove && !collectedLevelsAbove.contains(current)) {
                             sampleFetchOptions.withExperiment().withProject().withSpace();
+                            sampleFetchOptions.withProject().withSpace();
                             sampleFetchOptions.withSpace();
                         }
                         if (withObjectsAndDataSetsParents)
@@ -487,17 +488,32 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                         for (DataSet dataset : dataSets.values())
                         {
                             addObjectProperties(todo, dataset.getSampleProperties());
-                            String datasetSpaceCode =
-                                    dataset.getExperiment().getIdentifier().getIdentifier()
+                            String datasetSpaceCode;
+                            if(dataset.getExperiment() != null) {
+                                datasetSpaceCode =
+                                        dataset.getExperiment().getIdentifier().getIdentifier()
+                                                .split("/")[1];
+                            } else {
+                                datasetSpaceCode =
+                                    dataset.getSample().getIdentifier().getIdentifier()
                                             .split("/")[1];
+                            }
 
                             if (withObjectsAndDataSetsParents)
                             {
                                 for (DataSet parent : dataset.getParents())
                                 {
-                                    String parentDatasetSpaceCode =
+                                    String parentDatasetSpaceCode;
+                                    if(parent.getExperiment() != null)
+                                    {
+                                        parentDatasetSpaceCode =
                                             parent.getExperiment().getIdentifier().getIdentifier()
                                                     .split("/")[1];
+                                    } else {
+                                        parentDatasetSpaceCode =
+                                            parent.getSample().getIdentifier().getIdentifier()
+                                                    .split("/")[1];
+                                    }
                                     if (datasetSpaceCode.equals(
                                             parentDatasetSpaceCode) || withObjectsAndDataSetsOtherSpaces)
                                     {
@@ -510,9 +526,17 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
 
                             for (DataSet child : dataset.getChildren())
                             {
-                                String childDatasetSpaceCode =
+                                String childDatasetSpaceCode;
+                                if(child.getExperiment() != null)
+                                {
+                                    childDatasetSpaceCode =
                                         child.getExperiment().getIdentifier().getIdentifier()
                                                 .split("/")[1];
+                                } else {
+                                    childDatasetSpaceCode =
+                                        child.getSample().getIdentifier().getIdentifier()
+                                                .split("/")[1];
+                                }
                                 if (datasetSpaceCode.equals(
                                         childDatasetSpaceCode) || withObjectsAndDataSetsOtherSpaces)
                                 {
@@ -556,6 +580,13 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
                 collection.add(previousExperiment);
 
                 collectLevelsAboveExperiment(Map.of(experiment.getIdentifier(), experiment), collection, collectedLevelsAbove);
+            } if(sample.getProject() != null) {
+                Project project = sample.getProject();
+                ExportablePermId previousProject = new ExportablePermId(ExportableKind.PROJECT,
+                        project.getPermId().getPermId());
+                collection.add(previousProject);
+
+                collectLevelsAboveProject(Map.of(project.getIdentifier(), project), collection, collectedLevelsAbove);
             } else {
                 Space space = sample.getSpace();
                 if (space != null)
