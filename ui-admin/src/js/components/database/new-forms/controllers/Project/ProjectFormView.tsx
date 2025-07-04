@@ -1,11 +1,11 @@
 import React from 'react'
-import { useProjectFormController } from '@src/js/components/database/new-forms/components/EntityFormBuilderContext.tsx'
+import { useProjectFormController } from '@src/js/components/database/new-forms/components/EntityFormBuilderProvider.tsx'
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
 import { FormMode } from '@src/js/components/database/new-forms/types/form.types.ts'
 import Button from '@src/js/components/common/form/Button.jsx'
 
 const ProjectFormView = ({ permId }) => {
-	const controller = useProjectFormController()
+	const {projectController} = useProjectFormController()
 	const [form, setForm] = React.useState(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState(null)
@@ -13,12 +13,12 @@ const ProjectFormView = ({ permId }) => {
 	React.useEffect(() => {
 		let mounted = true
 		setLoading(true)
-		controller.load(permId)
+		projectController.load(permId)
 			.then(f => { if (mounted) setForm(f) })
 			.catch(e => { if (mounted) setError(e) })
 			.finally(() => { if (mounted) setLoading(false) })
 		return () => { mounted = false }
-	}, [controller, permId])
+	}, [projectController, permId])
 
 	const projectToolbar = ({ form, mode, controller }) => (
 		<>
@@ -38,7 +38,7 @@ const ProjectFormView = ({ permId }) => {
 		<EntityForm
 			initialForm={form}
 			initialMode={FormMode.VIEW}
-			controller={controller}
+			controller={projectController}
 			customToolbar={null}
 			customSections={null}
 		/>

@@ -16,7 +16,7 @@ export const useAutoSave = ({
   formData,
   storageKey,
   isEnabled,
-  interval = 60000,
+  interval = 5000,
   onDataRestore
 }: UseAutoSaveProps) => {
   const formDataRef = useRef(formData);

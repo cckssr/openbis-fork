@@ -1,29 +1,44 @@
 import { useState } from 'react';
-import { Form } from '@src/js/components/database/new-forms/types/form.types';
+import { findFormFieldById, Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 export const useConflictResolution = () => {
     const [isConflicted, setConflicted] = useState(false);
     const [conflictingFields, setConflictingFields] = useState<string[]>([]);
 
+    const findConflicts = (localForm: Form, serverForm: Form) => {
+        const conflicts: [FormField, FormField][] = [];
+        localForm.fields
+            .filter(localField => localField.isEditable)
+            .forEach(localField => {
+                const serverField = serverForm.fields.find(f => f.id === localField.id);
+                if (!serverField) return; // Field doesn't exist on server (unlikely)
+
+                const localValue = localField.value;
+                const serverValue = serverField.value;
+
+                // Compare values (deep equality for objects, strict for primitives)
+                const areEqual = JSON.stringify(localValue) === JSON.stringify(serverValue);
+                if (!areEqual) {
+                    conflicts.push([localField, serverField]);
+                }
+            });
+        return conflicts;
+    }
+
     const resolveConflicts = (localForm: Form, serverForm: Form) => {
         const conflicts: string[] = [];
-        const mergedFields = localForm.fields.map(localField => {
-            const serverField = serverForm.fields.find(f => f.id === localField.id);
-            if (!serverField) return localField; // Field doesn't exist on server (unlikely)
+        const mergedFields = localForm.fields
+            .filter(localField => localField.isEditable)
+            .map(localField => {
+                const serverField = serverForm.fields.find(f => f.id === localField.id);
+                if (!serverField) return localField; // Field doesn't exist on server (unlikely)
 
-            const localValue = JSON.stringify(localField.value);
-            const serverValue = JSON.stringify(serverField.value);
+                const localValue = localField.value;
+                const serverValue = serverField.value;
 
-            // Check if server value is different from the version we started editing with
-            // and also different from our current local value.
-            if (serverForm.version > localForm.version && serverValue !== localValue) {
-                conflicts.push(localField.id);
-                // In a real implementation, you would present a UI to choose.
-                // For now, we can flag it.
-                return { ...localField, meta: { ...localField.meta, hasConflict: true } };
-            }
-            return localField; // No conflict for this field
-        });
+
+                return localField; // No conflict for this field
+            });
 
         if (conflicts.length > 0) {
             setConflicted(true);
@@ -35,7 +50,15 @@ export const useConflictResolution = () => {
             // and updating its version before the next save attempt.
             setConflicted(false);
         }
+        return mergedFields;
     };
 
-    return { isConflicted, conflictingFields, resolveConflicts };
+    // New function to check modificationDate conflict
+    const checkModificationDateConflict = (localForm: Form, serverForm: Form): boolean => {
+        const localDate = findFormFieldById(localForm.fields, 'modificationDate')?.value;
+        const serverDate = findFormFieldById(serverForm.fields, 'modificationDate')?.value;
+        return new Date(serverDate) > new Date(localDate);
+    };
+
+    return { isConflicted, conflictingFields, resolveConflicts, checkModificationDateConflict, findConflicts };
 };

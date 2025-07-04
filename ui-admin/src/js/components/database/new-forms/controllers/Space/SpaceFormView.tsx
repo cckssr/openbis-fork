@@ -1,12 +1,16 @@
 import React from 'react'
-import { useSpaceFormController } from '@src/js/components/database/new-forms/components/EntityFormBuilderContext.tsx';
+import { useSpaceFormController } from '@src/js/components/database/new-forms/components/EntityFormBuilderProvider.tsx';
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx';
 import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.ts';
+import { ProjectCreationForm } from '@src/js/components/database/new-forms/controllers/Project/ProjectCreationForm.tsx';
+import AppController from '@src/js/components/AppController.js';
+import pages from '@src/js/common/consts/pages.js';
+import ids from '@src/js/common/consts/ids.js';
 
 const SpaceFormView = ({ permId }: { permId: string }) => {
-	const controller = useSpaceFormController()
+	const {spaceController, onEntityChange, onNewProject} = useSpaceFormController()
 	const [form, setForm] = React.useState(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState(null)
@@ -14,19 +18,32 @@ const SpaceFormView = ({ permId }: { permId: string }) => {
 	React.useEffect(() => {
 		let mounted = true
 		setLoading(true)
-		controller.load(permId)
+		spaceController.load(permId)
 			.then(f => { if (mounted) setForm(f) })
 			.catch(e => { if (mounted) setError(e) })
 			.finally(() => { if (mounted) setLoading(false) })
 		return () => { mounted = false }
-	}, [controller, permId])
+	}, [spaceController, permId])
+
+	const reloadForm = () => {
+		setLoading(true);
+		spaceController.load(permId)
+			.then(f => setForm(f))
+			.catch(e => setError(e))
+			.finally(() => setLoading(false));
+	};
+
+	const handleAddProject = () => {
+		AppController.getInstance().objectOpen(
+			'PROJECT',
+			'CREATE',
+			permId
+		);
+	};
 
 	const spaceToolbar = ({ form, mode, controller }: { form: Form, mode: FormMode, controller: FormController }) => (
 		<>
-			<Button>+ Project</Button>
-			<Button>Edit</Button>
-			<Button>More...</Button>
-			{/* ...other space-specific actions... */}
+			<Button onClick={handleAddProject}>+ Project</Button>
 		</>
 	);
 
@@ -38,9 +55,12 @@ const SpaceFormView = ({ permId }: { permId: string }) => {
 		<EntityForm
 			initialForm={form}
 			initialMode={FormMode.VIEW}
-			controller={controller}
+			controller={spaceController}
 			customToolbar={null}
 			customSections={null}
+			onAfterSave={reloadForm}
+			onEntityChange={onEntityChange}
+			onNewProject={onNewProject}
 		/>
 	)
 }

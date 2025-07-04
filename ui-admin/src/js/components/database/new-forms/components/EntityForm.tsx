@@ -7,12 +7,11 @@ import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAuto
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
 import messages from '@src/js/common/messages.js';
 import Button from '@src/js/components/common/form/Button.jsx';
-import Container from '@src/js/components/common/form/Container.jsx'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
 
-import { makeStyles } from '@mui/styles';
 import Message from '@src/js/components/common/form/Message.jsx';
+import Container from '@src/js/components/common/form/Container.jsx';
+import ConflictResolutionDialog from './ConflictResolutionDialog.tsx';
 
 interface EntityFormProps {
   initialForm: Form;
@@ -20,17 +19,25 @@ interface EntityFormProps {
   controller: FormController;
   customToolbar: any;
   customSections: any;
+  onAfterSave?: () => void;
+  onEntityChange?: (permId: string, changed: boolean) => void;
+  onNewProject?: () => void;
 }
 
-export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode, controller, customToolbar, customSections }) => {
+export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode, controller, customToolbar, customSections, onAfterSave, onEntityChange, onNewProject }) => {
   const [form, setForm] = useState<Form>(initialForm);
   const [mode, setMode] = useState<FormMode>(initialMode);
   const [permissions, setPermissions] = useState({ canEdit: true, canDelete: true, canMove: true });
   const [isAutoSaveEnabled, setAutoSaveEnabled] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+  const [conflictFields, setConflictFields] = useState<any[]>([]);
+  const [conflictResolutionActive, setConflictResolutionActive] = useState(false);
 
-  const { isConflicted, resolveConflicts } = useConflictResolution();
+  const { isConflicted, conflictingFields, resolveConflicts, checkModificationDateConflict, findConflicts } = useConflictResolution();
 
   // Callback to update a single field's value
   const handleFieldUpdate = useCallback((fieldId: string, value: any) => {
@@ -40,24 +47,67 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
         field.id === fieldId ? { ...field, value } : field
       ),
     }));
+    if (onEntityChange) onEntityChange(form.entityPermId, true);
   }, []);
 
+  const validateForm = (form: Form): string | null => {
+    for (const field of form.fields) {
+      if (field.isMandatory && (field.value === undefined || field.value === null || field.value === '')) {
+        return `Field "${field.label}" is mandatory.`;
+      }
+    }
+    return null;
+  };
+
   const handleSave = useCallback(async () => {
+    setValidationError(null);
+    setConflictWarning(null);
+    // 1. Validate mandatory fields
+    const validationMsg = validateForm(form);
+    if (validationMsg) {
+      setValidationError(validationMsg);
+      return;
+    }
+    // 2. Check for conflicts
     try {
+      const latestForm = await controller.load(form.entityPermId);
+      if (!conflictResolutionActive && checkModificationDateConflict(form, latestForm)) {
+        // Use resolveConflicts to get merged fields with conflict info
+        const conflicts = findConflicts(form, latestForm) as any[];
+        
+        setConflictFields(conflicts);
+        setShowConflictDialog(true);
+        return;
+      }
+      // No conflicts, proceed to save
       const newVersion = await controller.save(form);
-      console.log({ newVersion })
       setForm(prev => ({ ...prev, version: newVersion }));
       setMode(FormMode.VIEW);
       setShowSuccess(true);
+      setConflictResolutionActive(false);
+      if (onEntityChange) onEntityChange(form.entityPermId, false);
+      if (onAfterSave) onAfterSave();
     } catch (error: any) {
       if (error.status === 409) {
         const latestForm = await controller.load(form.entityPermId);
         resolveConflicts(form, latestForm);
       } else {
-        console.error("Save failed:", error);
+        console.error('Save failed:', error);
       }
     }
-  }, [controller, form, resolveConflicts]);
+  }, [controller, form, resolveConflicts, onAfterSave, checkModificationDateConflict, conflictResolutionActive, findConflicts]);
+
+  const handleResolveConflicts = (resolved: Record<string, any>) => {
+    setForm(prevForm => ({
+      ...prevForm,
+      fields: prevForm.fields.map(field =>
+        resolved.hasOwnProperty(field.id) ? { ...field, value: resolved[field.id] } : field
+      ),
+    }));
+    setShowConflictDialog(false);
+    setMode(FormMode.EDIT); // Stay in edit mode
+    setConflictResolutionActive(true);
+  };
 
   const handleEdit = () => {
     setMode(FormMode.EDIT);
@@ -74,19 +124,19 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
   };
 
   const handleDelete = () => {
-    console.log("Delete action initiated.");
+    console.log('Delete action initiated.');
     setDeleteModalOpen(true);
   };
 
   const handleMove = () => {
-    alert("Move functionality not yet implemented.");
+    alert('Move functionality not yet implemented.');
   };
 
   useAutoSave({
     formData: form,
     storageKey: `entity-form-${form.entityPermId}`,
     isEnabled: isAutoSaveEnabled && mode === FormMode.EDIT,
-    interval: 60000,
+    interval: 15000,
     onDataRestore: (restoredForm) => console.log(restoredForm) //setForm(restoredForm),
   });
 
@@ -104,10 +154,13 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
 
   const renderToolbar = () => {
     if (customToolbar)
-      return customToolbar({ form, mode, controller })
+      return customToolbar()
     else
       return (
-        <Stack direction='row' spacing={{ xs: 1, sm: 2 }} sx={{ mb: 2 }}>
+        <Stack direction='row' spacing={{ xs: 1, sm: 2 }} sx={{ justifyContent: 'flex-start', 
+          alignItems: 'center', 
+          padding: '16px 16px', 
+          backgroundColor: 'rgb(248,248,248)'}}>
           {mode === FormMode.VIEW && permissions.canEdit && <Button
             id='space-edit'
             label={messages.get(messages.EDIT)}
@@ -123,7 +176,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
           {mode === FormMode.EDIT && <Button
             id='space-cancel'
             label={messages.get(messages.CANCEL)}
-            type='risky'
+            type='neutral'
             styles={{ root: '' }}
             onClick={() => setMode(FormMode.VIEW)}
           />}
@@ -141,16 +194,22 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
             onClick={handleMove}
             disabled={mode === FormMode.EDIT}
           />}
+          <Button
+            id='new=project'
+            label={messages.get(messages.NEW)}
+            type='neutral'
+            onClick={onNewProject}
+            disabled={mode === FormMode.EDIT}
+          />
           <FormGroup>
             <FormControlLabel
               name='autosave-control-switch'
               control={<Switch size='small' checked={isAutoSaveEnabled} onChange={event => setAutoSaveEnabled(prev => !prev)} color='primary' />}
-              label='Auto-Save'
+              label='Keep-Draft'
               labelPlacement='start'
               disabled={mode != FormMode.EDIT}
             />
           </FormGroup>
-
         </Stack>)
   }
 
@@ -167,56 +226,66 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
 
     return (
       <>
-        {Object.entries(fieldsBySection).map(([sectionName, fields]) => (
-          <CollapsableSection isCollapsed={true} title={sectionName} renderWarnings={renderWarningChanges(mode != FormMode.EDIT)}>
-            <Grid2 container spacing={2}>
-              {fields.map(field => (
-                <Grid2 size={{ xs:12, sm: 6, md:4 }} key={field.id}>
-                  <FormFieldRenderer
-                    field={field}
-                    onUpdate={handleFieldUpdate}
-                    isEditing={mode === FormMode.EDIT}
-                    mode={mode}
-                  />
+        {Object.entries(fieldsBySection).map(([sectionName, fields]) => {
+          // @ts-ignore
+          return (
+            <CollapsableSection isCollapsed={true} title={sectionName} renderWarnings={null}>
+              <Container>
+                <Grid2 container spacing={2}>
+                  {fields.map(field => (
+                    <Grid2 size={{ xs:12, sm: 6 }} key={field.id}>
+                      <FormFieldRenderer
+                        field={field}
+                        onUpdate={handleFieldUpdate}
+                        isEditing={mode === FormMode.EDIT}
+                        mode={mode}
+                      />
+                    </Grid2>
+                  ))}
                 </Grid2>
-              ))}
-            </Grid2>
-          </CollapsableSection>
-        ))}
+              </Container>
+            </CollapsableSection>
+          );
+        })}
       </>
     );
   };
 
   return (
-    <div className="entity-form-container">
+    <>
+    {renderToolbar()}
+    <div className='entity-form-container'>
       <Snackbar onClose={handleClose} open={showSuccess} autoHideDuration={2000} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert severity="success" sx={{ width: '100%' }}>
+        <Alert severity='success' sx={{ width: '100%' }}>
           Space updated
         </Alert>
       </Snackbar>
+      {validationError && (
+        <Alert severity='error' sx={{ width: '100%', marginBottom: 2 }}>{validationError}</Alert>
+      )}
+      {conflictWarning && (
+        <Alert severity='warning' sx={{ width: '100%', marginBottom: 2 }}>{conflictWarning}</Alert>
+      )}
       {isConflicted && (
-        <div className="conflict-banner">
+        <div className='conflict-banner'>
           This item has been modified by someone else. Please review the changes before saving.
         </div>
       )}
 
-      {renderToolbar()}
-
-
-      <div className="form-body">
-        <div className="form-sections">
+      <div className='form-body'>
+        <div className='form-sections'>
           {renderFieldsBySection()}
         </div>
 
         {form.entityKind === 'SAMPLE' && (
-          <div className="related-samples-section">
+          <div className='related-samples-section'>
             {/* <h2>Parents/Children</h2>
               <YourExistingTableWidget entityPermId={form.entityPermId} /> */}
           </div>
         )}
 
         {form.entityKind === 'DATASET' && (
-          <div className="dataset-upload-section">
+          <div className='dataset-upload-section'>
             {/* <h2>File Upload (AFS)</h2>
               <YourAdvancedFileUploadWidget entityPermId={form.entityPermId} /> */}
           </div>
@@ -226,8 +295,18 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
       <Dialog
         open={isDeleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        onBackdropClick={() => console.log("Deletion confirmed!")}
+        onBackdropClick={() => console.log('Deletion confirmed!')}
       />
+
+      {showConflictDialog && (
+        <ConflictResolutionDialog
+          open={showConflictDialog}
+          conflicts={conflictFields}
+          onResolve={handleResolveConflicts}
+          onCancel={() => setShowConflictDialog(false)}
+        />
+      )}
     </div>
+    </>
   );
 };

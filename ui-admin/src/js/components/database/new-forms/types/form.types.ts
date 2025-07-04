@@ -33,6 +33,11 @@ export enum FormFieldDataType {
   SPREADSHEET = 'SPREADSHEET',
 }
 
+export enum Widget {
+  RICH_TEXT = 'RichText',
+  SPREADSHEET = 'Spreadsheet'
+}
+
 /**
  * Metadata for a form field, allowing for extensions like help texts,
  * freezing logic, or vocabulary options.
