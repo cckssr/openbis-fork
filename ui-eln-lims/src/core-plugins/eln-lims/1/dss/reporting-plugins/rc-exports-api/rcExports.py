@@ -31,7 +31,6 @@ from java.util.zip import ZipOutputStream, Deflater
 from org.apache.log4j import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
-from org.eclipse.jetty.io import ClientConnector
 from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP
 from org.eclipse.jetty.client.util import MultiPartContentProvider
 from org.eclipse.jetty.client.util import PathContentProvider
@@ -185,6 +184,7 @@ def authenticateUserJava(url, tr):
     if jettyVersion.startswith('9.'):
         httpClient =  HttpClient(sslContextFactory)
     elif jettyVersion.startswith('10.'):
+        from org.eclipse.jetty.io import ClientConnector
         clientConnector = ClientConnector()
         clientConnector.setSslContextFactory(sslContextFactory)
         httpClient =  HttpClient(HttpClientTransportOverHTTP(clientConnector))

@@ -479,7 +479,7 @@ public abstract class BaseApiClientTest
             afsClient.create(owner, testFileName, false);
             int maxSize = 100000;
             long j = 0;
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA256");
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             while(j + getMaxUsableChunkSize() < maxSize) {
                 byte[] testFileContent = new byte[getMaxUsableChunkSize()];
                 Arrays.fill(testFileContent, (byte) j);
@@ -763,7 +763,7 @@ public abstract class BaseApiClientTest
             String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
             Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
             IOUtils.createFile(filePath.toAbsolutePath().toString());
-            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             for(int j = 0; j < 100; j++) {
                 byte[] content = new byte[1000];
                 Arrays.fill(content, (byte) j);
@@ -803,7 +803,7 @@ public abstract class BaseApiClientTest
         for(int i = 0; i<numberOfBigFiles ; i++) {
             String subDirName = String.format("/subdirwithbigfile%s", i);
             String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
-            MessageDigest sha256 = MessageDigest.getInstance("SHA256");
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             Chunk[] readChunk;
             int j = 0;
             do {

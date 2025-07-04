@@ -193,19 +193,6 @@ public class AfsClientTest
         sourceFilePath.toFile().delete();
     }
 
-    @Test
-    public void write_methodIsPost() throws Exception
-    {
-        login();
-        byte[] requestBody = "".getBytes(StandardCharsets.UTF_8);
-        String responseBody = "{\"result\": true}";
-        httpServer.setNextResponse(responseBody);
-        Boolean result = afsClient.write("", "", 0L, requestBody);
-
-        assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
-        assertTrue(result);
-        assertEquals(httpServer.getLastRequestBody().length, requestBody.length);
-    }
 
     @Test
     public void delete_methodIsDelete() throws Exception

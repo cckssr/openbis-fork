@@ -39,7 +39,7 @@ public class ListTransactionOperationTest extends AbstractTransactionOperationTe
         assertEquals(0, getTransaction().getOperations().size());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = NoSuchFileException.class)
     public void operation_list_exception() throws Exception {
         begin();
         list(ROOT + UUID.randomUUID().toString(), false);
