@@ -110,8 +110,14 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
     @Override
     public void execute()
     {
+        if (ldapService != null && ldapService.getConfig().getServerUrl().equals("this is a test") == false) { // Some
+            ldapService.check(); // Check the service is actually running properly if is used or allow an exception to rollback the work
+        }
         UserManagerReport report = createUserManagerReport();
         execute(report);
+        if (ldapService != null && ldapService.getConfig().getServerUrl().equals("this is a test") == false) {
+            ldapService.check(); // Check the service is actually running properly if is used or allow an exception to rollback the work
+        }
     }
 
     public int executeAsync()

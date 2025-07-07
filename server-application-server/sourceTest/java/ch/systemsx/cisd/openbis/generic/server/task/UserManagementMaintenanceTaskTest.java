@@ -615,9 +615,9 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         private UserManagementMaintenanceTaskWithMocks()
         {
             config = new LDAPDirectoryConfiguration();
-            config.setServerUrl("blabla");
-            config.setSecurityPrincipalDistinguishedName("blabla");
-            config.setSecurityPrincipalPassword("blabla");
+            config.setServerUrl("this is a test");
+            config.setSecurityPrincipalDistinguishedName("this is a test");
+            config.setSecurityPrincipalPassword("this is a test");
         }
 
         @Override
