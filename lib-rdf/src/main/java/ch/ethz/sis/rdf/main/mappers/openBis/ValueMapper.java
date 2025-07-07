@@ -8,6 +8,12 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.util.SplitIRI;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -52,7 +58,13 @@ public class ValueMapper
 
                 if (matchUris(XSDDatatype.XSDdateTime.getURI(), datatypeURI))
                 {
-                    return literal.getValue().toString().replaceAll("\"", "");
+                    TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(
+                            literal.getValue().toString().replaceAll("\"", ""));
+                    Instant i = Instant.from(ta);
+                    Date d = Date.from(i);
+                    DateFormat dateFormat = new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ssX"); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
+                    return dateFormat.format(d);
                 } else if (matchUris(XSDDatatype.XSDdouble.getURI(), datatypeURI))
                 {
                     String a = literal.getValue().toString().replaceAll("\"", "");
