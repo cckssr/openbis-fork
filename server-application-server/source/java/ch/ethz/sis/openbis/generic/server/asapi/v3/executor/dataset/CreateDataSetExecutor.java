@@ -15,13 +15,8 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -274,12 +269,12 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
         setDataSetDataStoreExecutor.set(context, batch);
         setDataSetSampleExecutor.set(context, batch);
         setDataSetExperimentExecutor.set(context, batch);
+        updateEntityPropertyExecutor.update(context, batch);
     }
 
     @Override
     protected void updateAll(IOperationContext context, MapBatch<DataSetCreation, DataPE> batch)
     {
-        updateEntityPropertyExecutor.update(context, batch);
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();
 
         for (Map.Entry<DataSetCreation, DataPE> entry : batch.getObjects().entrySet())
