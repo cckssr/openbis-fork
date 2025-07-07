@@ -3,6 +3,8 @@ package ch.ethz.sis.rdf.main.mappers.openBis;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleObjectProperty;
+import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
+import ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -58,13 +60,20 @@ public class ValueMapper
 
                 if (matchUris(XSDDatatype.XSDdateTime.getURI(), datatypeURI))
                 {
+
                     TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(
                             literal.getValue().toString().replaceAll("\"", ""));
                     Instant i = Instant.from(ta);
                     Date d = Date.from(i);
                     DateFormat dateFormat = new SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm:ssX"); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
-                    return dateFormat.format(d);
+                            SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
+
+                    SimplePropertyValidator.TimestampValidator validator =
+                            new SimplePropertyValidator.TimestampValidator();
+                    String result = dateFormat.format(d);
+                    validator.validate(result);
+
+                    return result;
                 } else if (matchUris(XSDDatatype.XSDdouble.getURI(), datatypeURI))
                 {
                     String a = literal.getValue().toString().replaceAll("\"", "");

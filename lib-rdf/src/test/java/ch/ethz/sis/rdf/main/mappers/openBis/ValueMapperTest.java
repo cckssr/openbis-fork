@@ -26,7 +26,7 @@ public class ValueMapperTest
 
         String res = ValueMapper.mapValue(vocabs, sampleObjectProperty, propertyType, "DEFAULT",
                 "DEFAULT");
-        assertEquals("1899-11-02T01:00:00+01", res);
+        assertEquals("1899-11-02 01:00:00 +0100", res);
 
     }
 
@@ -42,7 +42,7 @@ public class ValueMapperTest
 
         String res = ValueMapper.mapValue(vocabs, sampleObjectProperty, propertyType, "DEFAULT",
                 "DEFAULT");
-        assertEquals("2024-08-31T11:30:00+02", res);
+        assertEquals("2024-08-31 11:30:00 +0200", res);
 
     }
 

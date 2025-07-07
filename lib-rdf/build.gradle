@@ -30,6 +30,8 @@ dependencies {
             'apache:poi-ooxml-schemas:3.17',
             'commons-cli:commons-cli:1.4'
     implementation project(':api-openbis-java')
+    implementation project(':server-application-server')
+
     testImplementation 'junit:junit:4.13.1'
 }
 
