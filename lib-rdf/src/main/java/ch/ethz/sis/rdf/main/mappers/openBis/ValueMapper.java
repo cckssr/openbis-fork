@@ -3,8 +3,6 @@ package ch.ethz.sis.rdf.main.mappers.openBis;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleObjectProperty;
-import ch.systemsx.cisd.openbis.generic.shared.util.SimplePropertyValidator;
-import ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -21,6 +19,8 @@ import java.util.Locale;
 
 public class ValueMapper
 {
+
+    public static final String CANONICAL_DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
 
     public static String mapValue(List<String> vocabularyOptionList,
             SampleObjectProperty sampleObjectProperty, PropertyType propertyType, String space,
@@ -65,14 +65,8 @@ public class ValueMapper
                             literal.getValue().toString().replaceAll("\"", ""));
                     Instant i = Instant.from(ta);
                     Date d = Date.from(i);
-                    DateFormat dateFormat = new SimpleDateFormat(
-                            SupportedDateTimePattern.CANONICAL_DATE_PATTERN.getPattern()); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
-
-                    SimplePropertyValidator.TimestampValidator validator =
-                            new SimplePropertyValidator.TimestampValidator();
+                    DateFormat dateFormat = new SimpleDateFormat(CANONICAL_DATE_FORMAT_PATTERN); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
                     String result = dateFormat.format(d);
-                    validator.validate(result);
-
                     return result;
                 } else if (matchUris(XSDDatatype.XSDdouble.getURI(), datatypeURI))
                 {
