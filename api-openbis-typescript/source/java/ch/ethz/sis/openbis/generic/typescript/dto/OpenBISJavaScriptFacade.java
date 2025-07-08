@@ -251,6 +251,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.typescript.TypeScriptMethod;
 import ch.ethz.sis.openbis.generic.typescript.TypeScriptObject;
 
@@ -483,6 +485,12 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     @TypeScriptMethod
     @Override public List<PersonalAccessTokenPermId> createPersonalAccessTokens(final String sessionToken,
             final List<PersonalAccessTokenCreation> newPersonalAccessTokens)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> newTypeGroups)
     {
         return null;
     }
