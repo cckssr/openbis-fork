@@ -35,10 +35,11 @@ dependencies {
             'edu.kit.datamanager:ro-crate-java:2.0.1',
             'com.networknt:json-schema-validator:1.5.7',
             'net.lingala.zip4j:zip4j:2.11.5';
+
+    testImplementation 'testng:testng:6.8-CISD'
 }
 
 mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
-
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
     mainClass = mainClassName
