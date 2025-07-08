@@ -20,12 +20,12 @@ package ch.systemsx.cisd.openbis.generic.shared.basic;
  * 
  * @author Christian Ribeaud
  */
-public interface IIdHolder
+public interface IIdHolder extends ICustomIdHolder<Long>
 {
     /**
      * Returns the technical ID of this instance.
      * 
      * @return <code>null</code> if there is no Id.
      */
-    public Long getId();
+//    public Long getId();
 }

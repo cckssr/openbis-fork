@@ -265,6 +265,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -595,6 +607,18 @@ public interface IApplicationServerApi extends IRpcService
     public List<PersonalAccessTokenPermId> createPersonalAccessTokens(String sessionToken, List<PersonalAccessTokenCreation> newPersonalAccessTokens);
 
     /**
+     * Creates type groups basing on the provided {@code TypeGroupCreation} objects. Returns ids of the newly created type groups
+     * where nth id corresponds to nth creation object.
+     */
+    public List<TypeGroupId> createTypeGroups(String sessionToken, List<TypeGroupCreation> newTypeGroups);
+
+    /**
+     * Creates type group assignments basing on the provided {@code TypeGroupAssignmentCreation} objects. Returns ids of the newly created type groups
+     * where nth id corresponds to nth creation object.
+     */
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken, List<TypeGroupAssignmentCreation> newTypeGroupAssignments);
+
+    /**
      * Updates spaces basing on the provided {@code SpaceUpdate} objects.
      * <p>
      * Required access rights: {@code SPACE_ADMIN} or stronger
@@ -821,6 +845,11 @@ public interface IApplicationServerApi extends IRpcService
      */
     public void updatePersonalAccessTokens(String sessionToken, List<PersonalAccessTokenUpdate> personalAccessTokenUpdates);
 
+    /**
+     * Creates type groups basing on the provided {@code TypeGroupCreation} objects. Returns ids of the newly created type groups
+     * where nth id corresponds to nth creation object.
+     */
+    public void updateTypeGroups(String sessionToken, List<TypeGroupUpdate> typeGroupUpdates);
     /**
      * Gets authorization rights for the provided {@link IObjectId} ids. A result map contains an entry for a given id only if an object for that id
      * has been found and that object can be accessed by the user.
@@ -1208,6 +1237,23 @@ public interface IApplicationServerApi extends IRpcService
      */
     public Map<IPersonalAccessTokenId, PersonalAccessToken> getPersonalAccessTokens(String sessionToken,
             List<? extends IPersonalAccessTokenId> personalAccessTokenIds, PersonalAccessTokenFetchOptions fetchOptions);
+
+    /**
+     * Gets type groups for the provided {@code ITypeGroupId} ids. A result map contains an entry for a given id only if a type group for
+     * that id has been found and that type group can be accessed by the user.
+     * <p>
+     * By default the returned type groups contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code TypeGroupFetchOptions}.
+     * </p>
+     * <ul>
+     * Required access rights:
+     * <li>all groups - {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions);
 
     /**
      * Searches for spaces basing on the provided {@code SpaceSearchCriteria}.
@@ -1690,6 +1736,21 @@ public interface IApplicationServerApi extends IRpcService
             QueryDatabaseFetchOptions fetchOptions);
 
     /**
+     * Searches for type groups basing on the provided {@code TypeGroupSearchCriteria}.
+     * <p>
+     * By default the returned type groups contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code TypeGroupFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public SearchResult<TypeGroup> searchTypeGroups(String sessionToken, TypeGroupSearchCriteria searchCriteria,
+            TypeGroupFetchOptions fetchOptions);
+
+    /**
      * Permanently deletes spaces with the provided {@code ISpaceId} ids. Additional deletion options (e.g. deletion reason) can be set via
      * {@code SpaceDeletionOptions}.
      * <p>
@@ -1965,6 +2026,30 @@ public interface IApplicationServerApi extends IRpcService
      */
     public void deletePersonalAccessTokens(String sessionToken, List<? extends IPersonalAccessTokenId> personalAccessTokenIds,
             PersonalAccessTokenDeletionOptions deletionOptions);
+
+    /**
+     * Permanently deletes type groups with the provided {@code ITypeGroupId} ids. Additional deletion options can be set via
+     * {@code TypeGroupDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public void deleteTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupDeletionOptions deletionOptions);
+
+    /**
+     * Permanently deletes type groups with the provided {@code ITypeGroupAssignmentId} ids. Additional deletion options can be set via
+     * {@code TypeGroupAssignmentDeletionOptions}.
+     * <p>
+     * Required access rights: {@code INSTANCE_ADMIN}
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public void deleteTypeGroupAssignments(String sessionToken, List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions);
 
     /**
      * Searches for deletions basing on the provided {@code DeletionSearchCriteria}.
