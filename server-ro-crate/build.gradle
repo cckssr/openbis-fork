@@ -21,77 +21,31 @@ repositories {
     mavenCentral()
 }
 
-//'openbis:openbis-v3-api-batteries-included:6.5.0',
-//files('libs/openBIS-API-V3-batteries-included-SNAPSHOT-r1718006152.jar'),
-//dependencies {
-//    implementation enforcedPlatform("io.quarkus:quarkus-bom:3.23.0")
-//    implementation 'io.quarkus:quarkus-resteasy:3.23.0'
-//
-//    implementation(project(':lib-ro-crate')) {
-//       exclude group: 'springframework'
-//       exclude group: 'org.springframework'
-//       exclude group: 'fasterxml'
-//       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-//        exclude group: 'org.apache.logging.log4j'
-//    }
-//    implementation(project(':app-ro-crate-openbis')) {
-//       exclude group: 'springframework'
-//       exclude group: 'org.springframework'
-//        exclude group: 'fasterxml'
-//      //  exclude group: 'marathon'
-//       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-//       exclude group: 'org.apache.logging.log4j'
-//    }
-//    implementation(project(':api-openbis-java')) {
-//       exclude group: 'springframework'
-//       exclude group: 'org.springframework'
-//       exclude group: 'fasterxml'
-//      //  exclude group: 'marathon'
-//       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-//        exclude group: 'org.apache.logging.log4j'
-//    }
-//
-//    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
-//    implementation group: "com.networknt", name: "json-schema-validator", version: "1.5.7"
-//    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.5'
-//
-//}
-
 dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
 
-    implementation(project(':lib-ro-crate')) {
-        exclude group: 'springframework'
-        exclude group: 'org.springframework'
-        exclude group: 'fasterxml'
-        exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-        exclude group: 'org.apache.logging.log4j'
-    }
-    implementation(project(':app-ro-crate-openbis')) {
-        exclude group: 'springframework'
-        exclude group: 'org.springframework'
-        exclude group: 'fasterxml'
-        //  exclude group: 'marathon'
-        exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-        exclude group: 'org.apache.logging.log4j'
-    }
-    implementation(project(':api-openbis-java')) {
-        exclude group: 'springframework'
-        exclude group: 'org.springframework'
-        exclude group: 'fasterxml'
-        //  exclude group: 'marathon'
-        exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
-        exclude group: 'org.apache.logging.log4j'
-    }
-
-    implementation  project(':lib-logging'),
-            'lombok:lombok:1.18.38',
+    implementation 'lombok:lombok:1.18.38',
             'lombok:lombok:1.18.22',
-            enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"),
+            project(':lib-logging'),
+            project(':lib-ro-crate'),
+            project(':app-ro-crate-openbis'),
+            project(':api-openbis-java'),
+            enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"), // Any dependencies coming from quarkus take precedence
             'io.quarkus:quarkus-resteasy:3.23.0',
             'edu.kit.datamanager:ro-crate-java:2.0.1',
             'com.networknt:json-schema-validator:1.5.7',
             'net.lingala.zip4j:zip4j:2.11.5';
 }
 
-mainClassName = "ch.ethz.sis.openbis.ros.startup.Main"
+mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
+
+
+task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
+    mainClass = mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    args(["../server-ro-crate/src/main/resources/service.properties"])
+    jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+             '--add-opens=java.base/java.nio=ALL-UNNAMED',
+             '-Dio.netty.tryReflectionSetAccessible=true',
+             '-Xmx512M', '-ea'])
+}
