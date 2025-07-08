@@ -115,14 +115,14 @@ public class PersonalAccessTokenDAOTest
                     allowing(personDAO).tryFindPersonByUserId(with(user.getUserId()));
                     will(returnValue(user));
 
-                    allowing(personDAO).tryGetByTechId(new TechId(user.getId()));
+                    allowing(personDAO).tryGetById(new TechId(user.getId()));
                     will(returnValue(user));
                 }
 
                 allowing(personDAO).tryFindPersonByUserId(with(any(String.class)));
                 will(returnValue(null));
 
-                allowing(personDAO).tryGetByTechId(with(any(TechId.class)), with(any(String[].class)));
+                allowing(personDAO).tryGetById(with(any(TechId.class)), with(any(String[].class)));
                 will(returnValue(null));
             }
         });

@@ -320,6 +320,12 @@
 		<constructor-arg ref="identity-translator"/>
 	</bean>
 
+	<bean id="type-group-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.TypeGroupSearchManager" lazy-init="true">
+		<constructor-arg ref="postgres-search-dao"/>
+		<constructor-arg ref="information-provider-dao"/>
+		<constructor-arg ref="identity-translator"/>
+	</bean>
+
 	<bean id="property-assignment-search-manager" class="ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.PropertyAssignmentSearchManager"
 		  lazy-init="true">
 		<constructor-arg ref="postgres-search-dao"/>

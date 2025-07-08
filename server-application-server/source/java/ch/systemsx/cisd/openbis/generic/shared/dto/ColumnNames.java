@@ -232,6 +232,8 @@ public final class ColumnNames
 
     public static final String PROPERTY_TYPE_COLUMN = "prty_id";
 
+    public static final String TYPE_GROUP_COLUMN = "tg_id";
+
     public static final String REGISTRATION_TIMESTAMP_COLUMN = "registration_timestamp";
 
     public final static String ROLE_COLUMN = "role_code";

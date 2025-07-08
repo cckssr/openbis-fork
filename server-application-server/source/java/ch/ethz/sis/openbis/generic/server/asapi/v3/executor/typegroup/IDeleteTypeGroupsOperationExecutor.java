@@ -1,5 +1,5 @@
 /*
- *  Copyright ETH 2023 Zürich, Scientific IT Services
+ *  Copyright ETH 2025 Zürich, Scientific IT Services
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,15 +15,11 @@
  *
  */
 
-package ch.systemsx.cisd.openbis.generic.shared.dto;
+package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.delete.IDeleteObjectsOperationExecutor;
 
-import java.util.Map;
-
-public interface IEntityWithMetaData extends IIdentityHolder
+public interface IDeleteTypeGroupsOperationExecutor extends IDeleteObjectsOperationExecutor
 {
-    Map<String, String> getMetaData();
 
-    void setMetaData(Map<String, String> metaData);
 }

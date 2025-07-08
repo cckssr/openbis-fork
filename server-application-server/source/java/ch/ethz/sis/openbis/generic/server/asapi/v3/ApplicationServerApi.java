@@ -21,6 +21,24 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.DeleteTypeGroupAssignmentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.DeleteTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.SearchTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.SearchTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.UpdateTypeGroupsOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -791,6 +809,22 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    @Transactional public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> creations)
+    {
+        CreateTypeGroupsOperationResult result = executeOperation(sessionToken, new CreateTypeGroupsOperation(creations));
+        return result.getObjectIds();
+    }
+
+    @Override
+    @Transactional
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken,
+            List<TypeGroupAssignmentCreation> creations)
+    {
+        CreateTypeGroupAssignmentsOperationResult result = executeOperation(sessionToken, new CreateTypeGroupAssignmentsOperation(creations));
+        return result.getObjectIds();
+    }
+
+    @Override
     @Transactional
     public void updateSpaces(String sessionToken, List<SpaceUpdate> updates)
     {
@@ -921,6 +955,13 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     public void updateSemanticAnnotations(String sessionToken, List<SemanticAnnotationUpdate> updates)
     {
         executeOperation(sessionToken, new UpdateSemanticAnnotationsOperation(updates));
+    }
+
+    @Override
+    @Transactional
+    public void updateTypeGroups(String sessionToken, List<TypeGroupUpdate> updates)
+    {
+        executeOperation(sessionToken, new UpdateTypeGroupsOperation(updates));
     }
 
     @Override
@@ -1131,6 +1172,15 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions)
+    {
+        GetTypeGroupsOperationResult result =
+                executeOperation(sessionToken, new GetTypeGroupsOperation(typeGroupIds, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
@@ -1318,6 +1368,15 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public SearchResult<TypeGroup> searchTypeGroups(String sessionToken,
+            TypeGroupSearchCriteria searchCriteria, TypeGroupFetchOptions fetchOptions)
+    {
+        SearchTypeGroupsOperationResult result =
+                executeOperation(sessionToken, new SearchTypeGroupsOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
     @Transactional
     public void deleteSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
@@ -1474,6 +1533,23 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
             final PersonalAccessTokenDeletionOptions deletionOptions)
     {
         executeOperation(sessionToken, new DeletePersonalAccessTokensOperation(personalAccessTokenIds, deletionOptions));
+    }
+
+    @Override
+    @Transactional
+    public void deleteTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupDeletionOptions deletionOptions)
+    {
+        executeOperation(sessionToken, new DeleteTypeGroupsOperation(typeGroupIds, deletionOptions));
+    }
+
+    @Override
+    @Transactional
+    public void deleteTypeGroupAssignments(String sessionToken,
+            List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions)
+    {
+        executeOperation(sessionToken, new DeleteTypeGroupAssignmentsOperation(typeGroupAssignmentIds, deletionOptions));
     }
 
     @Override

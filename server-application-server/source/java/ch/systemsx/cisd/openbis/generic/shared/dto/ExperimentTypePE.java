@@ -24,6 +24,7 @@ import javax.persistence.*;
 import javax.persistence.Id;
 
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import org.hibernate.annotations.Type;
@@ -39,7 +40,8 @@ import org.hibernate.annotations.TypeDefs;
 @Entity
 @Table(name = TableNames.EXPERIMENT_TYPES_TABLE, uniqueConstraints = { @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
-public final class ExperimentTypePE extends EntityTypePE implements IEntityWithMetaData
+public final class ExperimentTypePE extends EntityTypePE implements IMetaDataHolder,
+        IIdentityHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
 

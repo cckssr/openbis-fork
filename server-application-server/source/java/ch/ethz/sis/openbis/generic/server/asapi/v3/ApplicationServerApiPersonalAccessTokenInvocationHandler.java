@@ -267,6 +267,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.CreateTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.CreateTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenInvocation;
@@ -472,6 +486,18 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
         return invocation.proceedWithOriginalArguments();
     }
 
+    @Override public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> creations)
+    {
+        return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
+    }
+
+    @Override
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken,
+            List<TypeGroupAssignmentCreation> newTypeGroupAssignments)
+    {
+        return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
+    }
+
     @Override public void updateSpaces(final String sessionToken, final List<SpaceUpdate> spaceUpdates)
     {
         invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
@@ -590,6 +616,11 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
             throw new UserFailureException("Personal access tokens cannot be used to manage personal access tokens.");
         }
         invocation.proceedWithOriginalArguments();
+    }
+
+    @Override public void updateTypeGroups(String sessionToken, List<TypeGroupUpdate> updates)
+    {
+        invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
     }
 
     @Override public Map<IObjectId, Rights> getRights(final String sessionToken, final List<? extends IObjectId> ids,
@@ -761,6 +792,12 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
         {
             return originalResult;
         }
+    }
+
+    @Override public Map<ITypeGroupId, TypeGroup> getTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions)
+    {
+        return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
     }
 
     @Override public SearchResult<Space> searchSpaces(final String sessionToken, final SpaceSearchCriteria searchCriteria,
@@ -970,6 +1007,13 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
         return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
     }
 
+    @Override
+    public SearchResult<TypeGroup> searchTypeGroups(String sessionToken,
+            TypeGroupSearchCriteria searchCriteria, TypeGroupFetchOptions fetchOptions)
+    {
+        return invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
+    }
+
     @Override public void deleteSpaces(final String sessionToken, final List<? extends ISpaceId> spaceIds, final SpaceDeletionOptions deletionOptions)
     {
         invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
@@ -1114,6 +1158,21 @@ public class ApplicationServerApiPersonalAccessTokenInvocationHandler implements
             throw new UserFailureException("Personal access tokens cannot be used to manage personal access tokens.");
         }
         invocation.proceedWithOriginalArguments();
+    }
+
+    @Override
+    public void deleteTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupDeletionOptions deletionOptions)
+    {
+        invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
+    }
+
+    @Override
+    public void deleteTypeGroupAssignments(String sessionToken,
+            List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions)
+    {
+        invocation.proceedWithNewFirstArgument(converter.convert(sessionToken));
     }
 
     @Override public SearchResult<Deletion> searchDeletions(final String sessionToken, final DeletionSearchCriteria searchCriteria,

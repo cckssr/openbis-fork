@@ -33,6 +33,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -52,7 +53,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 @Table(name = TableNames.DATA_SET_TYPES_TABLE, uniqueConstraints = {
         @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
-public class DataSetTypePE extends EntityTypePE implements IEntityWithMetaData
+public class DataSetTypePE extends EntityTypePE implements IMetaDataHolder, IIdentityHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
 

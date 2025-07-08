@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.*;
 import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -38,32 +39,6 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.openbis.common.spring.SpringEoDSQLExceptionTranslator;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IAttachmentDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IAuthorizationGroupDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ICorePluginDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataSetTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataStoreDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDynamicPropertyEvaluationScheduler;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityHistoryDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityOperationsLogDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityPropertyTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEntityTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IEventsSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExternalDataManagementSystemDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IFileFormatTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ILocatorTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IMaterialDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IOperationExecutionDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPostRegistrationDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPropertyTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleTypeDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IScriptDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISemanticAnnotationDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IVocabularyDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IVocabularyTermDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.util.UpdateUtils;
 import ch.systemsx.cisd.openbis.generic.shared.Constants;
@@ -144,6 +119,10 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
 
     private final ISemanticAnnotationDAO semanticAnnotationDAO;
 
+    private final ITypeGroupDAO typeGroupDAO;
+
+    private final ITypeGroupAssignmentDAO typeGroupAssignmentDAO;
+
     private DatabaseConfigurationContext context;
 
     public static final boolean USE_NEW_SQL_ENGINE = true;
@@ -193,6 +172,8 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
         operationExecutionDAO =
                 new OperationExecutionDAO(sessionFactory, historyCreator);
         semanticAnnotationDAO = new SemanticAnnotationDAO(sessionFactory, historyCreator);
+        typeGroupDAO = new TypeGroupDAO(sessionFactory, historyCreator);
+        typeGroupAssignmentDAO = new TypeGroupAssignmentDAO(sessionFactory, historyCreator);
     }
 
     //
@@ -364,6 +345,18 @@ public final class DAOFactory extends AuthorizationDAOFactory implements IDAOFac
     public ISemanticAnnotationDAO getSemanticAnnotationDAO()
     {
         return semanticAnnotationDAO;
+    }
+
+    @Override
+    public ITypeGroupDAO getTypeGroupDAO()
+    {
+        return typeGroupDAO;
+    }
+
+    @Override
+    public ITypeGroupAssignmentDAO getTypeGroupAssignmentDAO()
+    {
+        return typeGroupAssignmentDAO;
     }
 
     private static String projectConstraintFunction =

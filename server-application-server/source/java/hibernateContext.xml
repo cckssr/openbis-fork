@@ -108,7 +108,9 @@
                 
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionPE</value>
                 <value>ch.systemsx.cisd.openbis.generic.shared.dto.SemanticAnnotationPE</value>
-                
+                <value>ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE</value>
+                <value>ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE</value>
+
             </list>
         </property>
         <!-- 

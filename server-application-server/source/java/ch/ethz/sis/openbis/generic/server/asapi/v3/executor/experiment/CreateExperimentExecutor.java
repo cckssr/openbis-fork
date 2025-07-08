@@ -153,12 +153,12 @@ public class CreateExperimentExecutor extends AbstractCreateEntityExecutor<Exper
     {
         setExperimentProjectExecutor.set(context, batch);
         setExperimentTypeExecutor.set(context, batch);
-        updateEntityPropertyExecutor.update(context, batch);
     }
 
     @Override
     protected void updateAll(IOperationContext context, MapBatch<ExperimentCreation, ExperimentPE> batch)
     {
+        updateEntityPropertyExecutor.update(context, batch);
         Map<AttachmentHolderPE, Collection<? extends AttachmentCreation>> attachmentMap =
                 new HashMap<AttachmentHolderPE, Collection<? extends AttachmentCreation>>();
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();

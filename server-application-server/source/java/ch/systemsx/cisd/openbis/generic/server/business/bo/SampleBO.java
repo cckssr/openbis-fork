@@ -118,7 +118,7 @@ public final class SampleBO extends AbstractSampleBusinessObject implements ISam
         } else if (sampleId instanceof SampleTechIdId)
         {
             SampleTechIdId techIdId = (SampleTechIdId) sampleId;
-            return getSampleDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getSampleDAO().tryGetById(new TechId(techIdId.getTechId()));
         } else
         {
             throw new IllegalArgumentException("Unsupported sample id: " + sampleId);

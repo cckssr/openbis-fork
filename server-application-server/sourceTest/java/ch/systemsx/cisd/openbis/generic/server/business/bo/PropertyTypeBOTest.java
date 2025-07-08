@@ -183,7 +183,7 @@ public final class PropertyTypeBOTest extends AbstractBOTest
                     one(propertyTypeDAO).getDataTypeByCode(DataTypeCode.CONTROLLEDVOCABULARY);
                     will(returnValue(dataTypePE));
 
-                    one(vocabularyDAO).getByTechId(vocabularyId);
+                    one(vocabularyDAO).getById(vocabularyId);
                     will(returnValue(new VocabularyPE()));
                 }
             });

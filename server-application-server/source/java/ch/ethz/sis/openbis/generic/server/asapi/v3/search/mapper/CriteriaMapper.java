@@ -17,26 +17,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AccessDateSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventTechIdSearchCriteria;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_SET_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.DATA_STORE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXPERIMENT_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.EXTERNAL_DATA_MANAGEMENT_SYSTEM_ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.FILE_FORMAT_TYPE;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.ID_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.LOCATOR_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.MATERIAL_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PART_OF_SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_MODIFIER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PERSON_REGISTERER_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROJECT_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SAMPLE_TYPE_PROPERTY_TYPE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.SPACE_COLUMN;
-import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.STORAGE_FORMAT_COLUMN;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -44,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupNameSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import org.springframework.context.ApplicationContext;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AnyBooleanPropertySearchCriteria;
@@ -145,32 +128,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.EventSearchMan
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ISearchManager;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AbsenceConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.AnyPropertySearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.BooleanFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CodeSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CollectionFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.CompleteSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.ControlledVocabularyPropertySearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DataSetKindSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DataStoreKindSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.DateFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EmailSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EnumFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.EventEntityTypeConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.FirstNameSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.IdentifierSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.LastNameSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.ListableSampleTypeSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NameSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.NumberFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.SamplePropertySearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.StringFieldSearchConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.TextAttributeConditionTranslator;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.UserIdSearchConditionTranslator;
+
+import static ch.systemsx.cisd.openbis.generic.shared.dto.ColumnNames.*;
 
 /**
  * Mapper from criteria to translators or to managers.
@@ -332,6 +291,8 @@ public class CriteriaMapper
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventEntityRegistratorSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventEntityRegistrationDateSearchCriteria.class, dateFieldSearchConditionTranslator);
 
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(TypeGroupNameSearchCriteria.class, new SimpleColumnSearchConditionTranslator(NAME_COLUMN));
+
         // When adding a new manager to CRITERIA_TO_IN_COLUMN_MAP, create the manager as a bean in
         // genericApplicationContext.xml and add the corresponding record in initCriteriaToManagerMap().
         CRITERIA_TO_IN_COLUMN_MAP.put(DataSetSearchCriteria.class, DATA_SET_COLUMN);
@@ -359,6 +320,7 @@ public class CriteriaMapper
         CRITERIA_TO_IN_COLUMN_MAP.put(PhysicalDataSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(PropertyAssignmentSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(SemanticAnnotationSearchCriteria.class, ID_COLUMN);
+        CRITERIA_TO_IN_COLUMN_MAP.put(TypeGroupSearchCriteria.class, ID_COLUMN);
         CRITERIA_TO_IN_COLUMN_MAP.put(TagSearchCriteria.class, ID_COLUMN);
 
         PARENT_CHILD_CRITERIA_TO_CHILD_SELECT_ID_MAP.put(
@@ -441,6 +403,8 @@ public class CriteriaMapper
         CRITERIA_TO_MANAGER_MAP.put(MaterialSearchCriteria.class,
                 applicationContext.getBean("material-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(MaterialTypeSearchCriteria.class, materialTypeSearchManager);
+        CRITERIA_TO_MANAGER_MAP.put(TypeGroupSearchCriteria.class,
+                applicationContext.getBean("type-group-search-manager", ILocalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(GlobalSearchCriteria.class,
                 applicationContext.getBean("global-search-manager", IGlobalSearchManager.class));
         CRITERIA_TO_MANAGER_MAP.put(EventSearchCriteria.class, applicationContext.getBean(EventSearchManager.class));

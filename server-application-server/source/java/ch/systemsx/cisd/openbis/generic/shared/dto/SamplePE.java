@@ -77,7 +77,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 @Friend(toClasses = ProjectPE.class)
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public class SamplePE extends AttachmentHolderPE implements IIdAndCodeHolder, Comparable<SamplePE>,
-        IEntityInformationWithPropertiesHolder, IMatchingEntity, IDeletablePE, IEntityWithMetaData,
+        IEntityInformationWithPropertiesHolder, IMatchingEntity, IDeletablePE, IMetaDataHolder,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder, Serializable
 {
     private static final long serialVersionUID = IServer.VERSION;

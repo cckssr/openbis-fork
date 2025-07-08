@@ -190,7 +190,7 @@ public class DeletionDAOTest extends AbstractDAOTest
         deletionDAO.trash(EntityKind.SAMPLE, Collections.singletonList(new TechId(1055)), deletion);
         deletionDAO.trash(EntityKind.DATA_SET, Collections.singletonList(new TechId(22)), deletion);
 
-        MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getByTechId(new TechId(1));
+        MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getById(new TechId(1));
         Set<MetaprojectAssignmentPE> assignments = metaproject.getAssignments();
         assertEquals(2, assignments.size());
         for (MetaprojectAssignmentPE assignment : assignments)
@@ -226,7 +226,7 @@ public class DeletionDAOTest extends AbstractDAOTest
 
         deletionDAO.revert(deletion, testPerson);
 
-        MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getByTechId(new TechId(1));
+        MetaprojectPE metaproject = daoFactory.getMetaprojectDAO().getById(new TechId(1));
         Set<MetaprojectAssignmentPE> assignments = metaproject.getAssignments();
         assertEquals(5, assignments.size());
     }
@@ -260,7 +260,7 @@ public class DeletionDAOTest extends AbstractDAOTest
         ISampleDAO sampleDAO = daoFactory.getSampleDAO();
         for (TechId id : sampleIds)
         {
-            SamplePE sample = sampleDAO.tryGetByTechId(id);
+            SamplePE sample = sampleDAO.tryGetById(id);
             String errorMsg =
                     String.format("sample id=%s is expected %s be deleted;", id,
                             expectedDeleted ? "to" : "not to");
@@ -273,7 +273,7 @@ public class DeletionDAOTest extends AbstractDAOTest
         IExperimentDAO experimentDAO = daoFactory.getExperimentDAO();
         for (TechId id : experimentIds)
         {
-            ExperimentPE experiment = experimentDAO.tryGetByTechId(id);
+            ExperimentPE experiment = experimentDAO.tryGetById(id);
             String errorMsg =
                     String.format("experiment id = %s is expected %s be deleted;", id,
                             expectedDeleted ? "to" : "not to");

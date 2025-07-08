@@ -146,6 +146,8 @@ public final class SequenceNames
     
     public static final String SEMANTIC_ANNOTATIONS_SEQUENCE = "SEMANTIC_ANNOTATION_ID_SEQ";
 
+    public static final String TYPE_GROUPS_SEQUENCE = "TYPE_GROUPS_ID_SEQ";
+
     private SequenceNames()
     {
         // Can not be instantiated.

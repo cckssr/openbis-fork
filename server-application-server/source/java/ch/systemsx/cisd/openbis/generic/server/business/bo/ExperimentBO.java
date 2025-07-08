@@ -141,7 +141,7 @@ public final class ExperimentBO extends AbstractBusinessObject implements IExper
     {
         String[] connections =
                 { PROPERTY_TYPES };
-        experiment = getExperimentDAO().tryGetByTechId(experimentId, connections);
+        experiment = getExperimentDAO().tryGetById(experimentId, connections);
         if (experiment == null)
         {
             throw new UserFailureException(String.format("Experiment with ID '%s' does not exist.",
@@ -190,7 +190,7 @@ public final class ExperimentBO extends AbstractBusinessObject implements IExper
         } else if (experimentId instanceof ExperimentTechIdId)
         {
             ExperimentTechIdId techIdId = (ExperimentTechIdId) experimentId;
-            return getExperimentDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getExperimentDAO().tryGetById(new TechId(techIdId.getTechId()));
         } else
         {
             throw new IllegalArgumentException("Unsupported experiment id: " + experimentId);
