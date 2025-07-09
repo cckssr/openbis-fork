@@ -1,5 +1,5 @@
 import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateService;
-import org.junit.Assert;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.ByteArrayInputStream;
