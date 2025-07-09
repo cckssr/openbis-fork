@@ -13,8 +13,7 @@ public class SchemaOrgReaderTest extends TestCase
     @Test
     public void testReading()
     {
-        String path = "/home/meiandr/Downloads/schema.org/schemaorg-all-https.ttl";
-        SchemaOrgInformation information = SchemaOrgReader.read(path);
+        SchemaOrgInformation information = SchemaOrgReader.read();
 
         IType person = information.getIdentifiersToDataTypes().get("schema:Person");
         assertEquals(1, person.getOntologicalAnnotations().size());

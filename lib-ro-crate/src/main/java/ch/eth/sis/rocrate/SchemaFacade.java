@@ -270,7 +270,7 @@ public class SchemaFacade implements ISchemaFacade
         File file = new File(classLoader.getResource("schemaorg-all-https.ttl").getFile());
         if (schema_org_information == null)
         {
-            schema_org_information = SchemaOrgReader.read(file.getPath());
+            schema_org_information = SchemaOrgReader.read();
         }
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
         Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());

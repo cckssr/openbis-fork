@@ -16,6 +16,7 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDFS;
 
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,15 +34,18 @@ public class SchemaOrgReader
 
     // https://github.com/schemaorg/schemaorg/blob/main/data/releases/29.0/schemaorg-all-http.ttl
 
-    public static SchemaOrgInformation read(String path)
+    public static SchemaOrgInformation read()
     {
 
         OntModel ontModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RDFS_INF);
         Reasoner reasoner = ReasonerRegistry.getRDFSReasoner();
         InfModel inf = ModelFactory.createInfModel(reasoner, ontModel);
 
+        InputStream resourceAsStream = SchemaOrgReader.class.getClassLoader()
+                .getResourceAsStream("schemaorg-all-https.ttl");
+
         RDFDataMgr.read(ontModel,
-                PATH,
+                resourceAsStream,
                 Lang.TTL);
 
 
