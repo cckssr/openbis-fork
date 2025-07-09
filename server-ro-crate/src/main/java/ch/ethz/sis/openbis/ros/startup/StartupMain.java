@@ -31,13 +31,16 @@ public class StartupMain implements QuarkusApplication
         System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
         System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
         configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
-        if (configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace) == null)
-        {
-            throw new Exception("Setting a session workspace is mandatory! ");
-        }
-
+        validate(configuration);
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();
         return 0;
+    }
+
+    private void validate(Configuration configuration) throws IllegalArgumentException {
+        if (configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace) == null)
+        {
+            throw new IllegalArgumentException("Setting a session workspace is mandatory! ");
+        }
     }
 }

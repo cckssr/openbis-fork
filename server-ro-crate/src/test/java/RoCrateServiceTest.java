@@ -34,7 +34,8 @@ public class RoCrateServiceTest extends AbstractTest
 
         List<String> strings = service.importRoCrate(
                 new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)),
-                Map.of("sessionToken", ""));
+                Map.of("sessionToken", openBIS.getSessionToken()));
+
         Assert.assertNotNull(strings);
         Assert.assertTrue(!strings.isEmpty());
     }

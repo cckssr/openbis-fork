@@ -18,12 +18,13 @@ package ch.ethz.sis.openbis.ros.startup;
 public enum RoCrateServerParameter
 {
     httpServerPort,
+    sessionWorkSpace,
+
     httpMaxContentLength,
     maxReadSizeInBytes,
+
     openBISUrl,
     openBISTimeout,
     openBISUser,
     openBISPassword,
-
-    sessionWorkSpace
 }

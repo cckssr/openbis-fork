@@ -10,29 +10,28 @@ import static ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter.*;
 public class AbstractTest
 {
 
-    public Configuration getConfiguration()
+    public static Configuration getConfiguration()
     {
-        Map<Enum, String> vals = new LinkedHashMap<>();
-        vals.put(httpServerPort, "8085");
-        vals.put(sessionWorkSpace, "1048576");
+        if (StartupMain.getConfiguration() == null) {
+            Map<Enum, String> vals = new LinkedHashMap<>();
+            vals.put(httpServerPort, "8085");
+            vals.put(sessionWorkSpace, "/tmp/ro-crate-server/");
 
-        vals.put(httpMaxContentLength, "1540165/");
-        vals.put(maxReadSizeInBytes, "/tmp/ro-crate-server/");
+            vals.put(httpMaxContentLength, "1540165/");
+            vals.put(maxReadSizeInBytes, "1048576");
 
-        vals.put(openBISUrl, "http://localhost:8888");
-        vals.put(openBISTimeout, "30000");
-        vals.put(openBISUser, "system");
-        vals.put(openBISPassword, "changeit");
+            vals.put(openBISUrl, "http://localhost:8888");
+            vals.put(openBISTimeout, "30000");
+            vals.put(openBISUser, "system");
+            vals.put(openBISPassword, "changeit");
+            Configuration configuration = new Configuration(vals);
+            StartupMain.setConfiguration(configuration);
+        }
 
-        Configuration configuration = new Configuration(vals);
-
-        StartupMain.setConfiguration(configuration);
-
-        return configuration;
-
+        return StartupMain.getConfiguration();
     }
 
-    public OpenBIS getOpenBis()
+    public static OpenBIS getOpenBis()
     {
         Configuration configuration = getConfiguration();
         return new OpenBIS(configuration.getStringProperty(openBISUrl),

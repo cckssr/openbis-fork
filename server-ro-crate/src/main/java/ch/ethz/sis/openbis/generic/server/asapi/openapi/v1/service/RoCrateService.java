@@ -33,37 +33,14 @@ import java.util.UUID;
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
 
-    private static final File TEMP_DIRECTORY = new File(System.getProperty("java.io.tmpdir"));
-
-    public static boolean isTest = false;
-
-    public static boolean isTest()
-    {
-        return isTest;
-    }
-
-    public static void setTest(boolean isTest)
-    {
-        RoCrateService.isTest = isTest;
-    }
-
     OpenBIS getOpenBis(String personalAccessToken)
     {
         String openBISUrl =
                 StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
-        Integer openBISTimeout = StartupMain.getConfiguration()
+        int openBISTimeout = StartupMain.getConfiguration()
                 .getIntegerProperty(RoCrateServerParameter.openBISTimeout);
         OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout);
         openBIS.setSessionToken(personalAccessToken);
-
-        if (personalAccessToken == null && isTest)
-        {
-            String openBISUser = StartupMain.getConfiguration()
-                    .getStringProperty(RoCrateServerParameter.openBISUser);
-            String openBISPassword = StartupMain.getConfiguration()
-                    .getStringProperty(RoCrateServerParameter.openBISPassword);
-            openBIS.login(openBISUser, openBISPassword);
-        }
 
         return openBIS;
 
@@ -92,24 +69,16 @@ public class RoCrateService {
             throws IOException
     {
         String sessionToken = options.get("sessionToken");
+        List<String> result;
         try
         {
-            List<String> result;
-            java.nio.file.Path roCratePath = java.nio.file.Path.of("ro-create" + UUID.randomUUID());
-            SessionWorkSpace.write(sessionToken, roCratePath, inputStream);
-            File tempRoCrate = new File(StartupMain.getConfiguration().getStringProperty(
-                    RoCrateServerParameter.sessionWorkSpace) + "/" + UUID.randomUUID().toString());
-            tempRoCrate.mkdir();
-            File metadataFile = new File(tempRoCrate.getPath() + "/" + "ro-crate-metadata.json");
-            try
-            {
-                BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(metadataFile));
-                bufferedWriter.write(Files.readFile(inputStream));
-                bufferedWriter.flush();
-                bufferedWriter.close();
+            // Writing the crate to the session workspace
 
+                java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
+                SessionWorkSpace.write(sessionToken, roCrateMetadata, inputStream);
+            // Reading ro-crate model
                 RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-                RoCrate crate = roCrateFolderReader.readCrate(tempRoCrate.getPath());
+                RoCrate crate = roCrateFolderReader.readCrate(SessionWorkSpace.getRealPath(sessionToken, null).toString());
 
                 SchemaFacade schemaFacade = SchemaFacade.of(crate);
                 List<IType> types = schemaFacade.getTypes();
@@ -118,49 +87,38 @@ public class RoCrateService {
                 for (var type : types)
                 {
                     entryList.addAll(schemaFacade.getEntries(type.getId()));
-
                 }
-                OpenBisModel conversion =
-                        RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
+            // Converting ro-crate model to openBIS model
+                OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
                 byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
-                OpenBIS openBIS = getOpenBis(null);
-
-                java.nio.file.Path myPath = java.nio.file.Path.of(
+            // Sending import request to openBIS
+                OpenBIS openBIS = getOpenBis(sessionToken);
+                java.nio.file.Path modelAsExcel = java.nio.file.Path.of(
                         UUID.randomUUID() + ".xlsx");
-                SessionWorkSpace.write(openBIS.getSessionToken(), myPath,
+                SessionWorkSpace.write(openBIS.getSessionToken(), modelAsExcel,
                         new ByteArrayInputStream(importExcel));
                 java.nio.file.Path realPath =
-                        SessionWorkSpace.getRealPath(openBIS.getSessionToken(), myPath);
-                String uploadId = openBIS.uploadToSessionWorkspace(realPath);
+                        SessionWorkSpace.getRealPath(openBIS.getSessionToken(), modelAsExcel);
+                openBIS.uploadToSessionWorkspace(realPath);
 
                 ImportOptions importOptions = new ImportOptions();
                 importOptions.setMode(ImportMode.UPDATE_IF_EXISTS);
 
                 ImportData importData = new ImportData();
-                importData.setSessionWorkspaceFiles(new String[] { uploadId });
+                importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
                 importData.setFormat(ImportFormat.EXCEL);
 
                 ImportResult importResult = openBIS.executeImport(importData, importOptions);
-
-                result = new ArrayList<>();
-                result.add("TRUE");
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            } finally
-            {
-                metadataFile.delete();
-                tempRoCrate.delete();
-            }
-            return result;
-        } catch (Exception e)
+            result = importResult.getObjectIds().stream().map( id -> id.toString()).toList();
+        }
+        catch (Exception e)
         {
-            throw new RuntimeException();
-
+            throw new IllegalArgumentException(e);
         } finally
         {
             SessionWorkSpace.clear(sessionToken);
         }
+        return result;
     }
 
     @GET

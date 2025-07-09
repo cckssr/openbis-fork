@@ -5,10 +5,8 @@ import ch.ethz.sis.openbis.ros.startup.StartupMain;
 import org.apache.commons.io.FileDeleteStrategy;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class SessionWorkSpace
 {
@@ -34,31 +32,40 @@ public class SessionWorkSpace
     {
         String sessionWorkSpace = StartupMain.getConfiguration()
                 .getStringProperty(RoCrateServerParameter.sessionWorkSpace);
-        Path sessionWorkspacePath = Path.of(sessionWorkSpace);
-        if (!Files.exists(sessionWorkspacePath))
+        Path userSessionWorkspace = Path.of(sessionWorkSpace, sessionToken);
+        if (!Files.exists(userSessionWorkspace))
         {
-            Files.createDirectories(sessionWorkspacePath);
+            Files.createDirectories(userSessionWorkspace);
         }
         if (path == null)
         {
-            return Path.of(sessionWorkSpace, sessionToken);
+            return userSessionWorkspace;
         } else
         {
-            return Path.of(sessionWorkSpace, sessionToken, path.toString());
+            return userSessionWorkspace.resolve(path);
         }
     }
 
     public static void clear(String sessionToken) throws IOException
     {
         Path realPath = getRealPath(sessionToken, null);
-        File fin = new File(realPath.toString());
+        delete(realPath);
+    }
 
-        for (File file : fin.listFiles())
-        {
-            FileDeleteStrategy.FORCE.delete(file);
-        }
+    public static void delete(Path sourceAsPath) throws IOException {
+        Files.walkFileTree(sourceAsPath, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
 
-        Files.delete(realPath);
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
 }
