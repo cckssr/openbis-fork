@@ -16,14 +16,12 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.RDFS;
 
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SchemaOrgReader
 {
-
-    public static final String PATH = "/home/meiandr/Downloads/schema.org/schemaorg-all-https.ttl";
 
     public static final String HTTPS_SCHEMA_ORG_DOMAIN_INCLUDES =
             "https://schema.org/domainIncludes";
@@ -34,18 +32,16 @@ public class SchemaOrgReader
 
     // https://github.com/schemaorg/schemaorg/blob/main/data/releases/29.0/schemaorg-all-http.ttl
 
-    public static SchemaOrgInformation read()
+    public static SchemaOrgInformation read(FileInputStream inputStream)
     {
 
         OntModel ontModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RDFS_INF);
         Reasoner reasoner = ReasonerRegistry.getRDFSReasoner();
         InfModel inf = ModelFactory.createInfModel(reasoner, ontModel);
 
-        InputStream resourceAsStream = SchemaOrgReader.class.getClassLoader()
-                .getResourceAsStream("schemaorg-all-https.ttl");
 
         RDFDataMgr.read(ontModel,
-                resourceAsStream,
+                inputStream,
                 Lang.TTL);
 
 

@@ -13,6 +13,8 @@ import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -267,10 +269,20 @@ public class SchemaFacade implements ISchemaFacade
     private void parseEntities() throws JsonProcessingException
     {
         ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("schemaorg-all-https.ttl").getFile());
+        classLoader.getName();
+        File file = new File(classLoader.getResource(
+                "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl").getFile());
+        FileInputStream fileInputStream = null;
+        try
+        {
+            fileInputStream = new FileInputStream(file);
+        } catch (FileNotFoundException e)
+        {
+            throw new RuntimeException(e);
+        }
         if (schema_org_information == null)
         {
-            schema_org_information = SchemaOrgReader.read();
+            schema_org_information = SchemaOrgReader.read(fileInputStream);
         }
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
         Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());
