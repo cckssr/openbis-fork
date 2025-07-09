@@ -15,6 +15,11 @@ public class StartupMain implements QuarkusApplication
         return configuration;
     }
 
+    public static void setConfiguration(Configuration configuration)
+    {
+        StartupMain.configuration = configuration;
+    }
+
     public static void main(String[] args) throws IOException {
         Quarkus.run(StartupMain.class, args);
     }
@@ -22,9 +27,14 @@ public class StartupMain implements QuarkusApplication
     @Override
     public int run(String... args) throws Exception
     {
+
         System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
         System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
         configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
+        if (configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace) == null)
+        {
+            throw new Exception("Setting a session workspace is mandatory! ");
+        }
 
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();

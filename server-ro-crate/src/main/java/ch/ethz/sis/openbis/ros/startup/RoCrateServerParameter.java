@@ -23,5 +23,7 @@ public enum RoCrateServerParameter
     openBISUrl,
     openBISTimeout,
     openBISUser,
-    openBISPassword
+    openBISPassword,
+
+    sessionWorkSpace
 }
