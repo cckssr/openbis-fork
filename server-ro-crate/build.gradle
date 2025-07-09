@@ -34,7 +34,9 @@ dependencies {
             'io.quarkus:quarkus-resteasy:3.23.0',
             'edu.kit.datamanager:ro-crate-java:2.0.1',
             'com.networknt:json-schema-validator:1.5.7',
-            'net.lingala.zip4j:zip4j:2.11.5';
+            'net.lingala.zip4j:zip4j:2.11.5',
+            'com.fasterxml.jackson.core:jackson-core:2.18.0',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.0';
 
     testImplementation 'testng:testng:6.8-CISD'
 }
