@@ -42,10 +42,17 @@ public class LDAPAuthenticationService implements IAuthenticationService
 
     private final boolean configured;
 
+    private final LDAPDirectoryConfiguration config;
+
     public LDAPAuthenticationService(LDAPDirectoryConfiguration config)
     {
-        query = new LDAPPrincipalQuery(config);
+        this.config = config;
+        this.query = new LDAPPrincipalQuery(config);
         this.configured = config.isConfigured();
+    }
+
+    public LDAPDirectoryConfiguration getConfig() {
+        return config;
     }
 
     @Override

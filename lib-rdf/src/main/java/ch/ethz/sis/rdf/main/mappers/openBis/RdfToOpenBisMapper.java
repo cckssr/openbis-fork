@@ -27,13 +27,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.xlsx.*;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.util.SplitIRI;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RdfToOpenBisMapper
@@ -251,7 +250,7 @@ public class RdfToOpenBisMapper
 
     }
 
-    private static String makeOpenBisCodeCompliant(String candiate)
+    static String makeOpenBisCodeCompliant(String candiate)
     {
         return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
                 .replaceAll("%[0-9A-Fa-f]{2}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
@@ -265,93 +264,12 @@ public class RdfToOpenBisMapper
             SampleObjectProperty sampleObjectProperty, PropertyType propertyType, String space,
             String project)
     {
-
-        String value = sampleObjectProperty.value;
-        if (propertyType.getDataType() == DataType.SAMPLE)
-        {
-            String referenceValue = SplitIRI.localname(sampleObjectProperty.valueURI);
-            return String.join("/", project, makeOpenBisCodeCompliant(referenceValue))
-                    .toUpperCase(
-                            Locale.ROOT);
-        }
-
-        //System.out.println("MAPPED: " + sampleObjectProperty + ", CONTAINS: " + vocabularyOptionList.contains(sampleObjectProperty.value) + ", OBJ: " + sampleObjectProperty.value);
-        if (vocabularyOptionList.contains(sampleObjectProperty.valueURI))
-        {
-            return sampleObjectProperty.value.toUpperCase(Locale.ROOT);
-        } else
-        {
-            if (!value.contains("^^"))
-            {
-                return value;
-            } else
-            {
-                //convertRDFLiteral(property.getObject().replace(RESOURCE_PREFIX, ""), propertyRowValues, idx);
-                String rdfLiteral = value;
-
-                int separatorIndex = rdfLiteral.indexOf("^^");
-
-                String lexicalValue = rdfLiteral.substring(0, separatorIndex);
-                String datatypeURI = rdfLiteral.substring(separatorIndex + 2);
-
-                Literal literal = ResourceFactory.createTypedLiteral(lexicalValue);
-
-                if (matchUris(XSDDatatype.XSDdateTime.getURI(), datatypeURI))
-                {
-                    //Date date = (Date) literal.getValue();
-                    //System.out.println("----- DATE: " + date);
-                    return literal.getValue().toString().replaceAll("\"", "");
-                } else if (matchUris(XSDDatatype.XSDdouble.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    double myDouble = Double.parseDouble(a);
-                    return Double.toString(myDouble);
-                } else if (matchUris(XSDDatatype.XSDint.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    int myInt = Integer.parseInt(a);
-                    return Integer.toString(myInt);
-                } else if (matchUris(XSDDatatype.XSDboolean.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    boolean myBool = Boolean.parseBoolean(a);
-                    return Boolean.toString(myBool);
-                } else if (matchUris(XSDDatatype.XSDanyURI.getURI(), datatypeURI))
-                {
-                    return literal.getString().replaceAll("\"", "");
-                } else if (matchUris(XSDDatatype.XSDtime.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    return a;
-                } else if (matchUris(XSDDatatype.XSDgYear.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    return a;
-                } else if (matchUris(XSDDatatype.XSDgMonth.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    return a;
-                } else if (matchUris(XSDDatatype.XSDgDay.getURI(), datatypeURI))
-                {
-                    String a = literal.getValue().toString().replaceAll("\"", "");
-                    return a;
-                }
-
-
-                return value;
-            }
-        }
-    }
-
-    private static boolean matchUris(String schemaUri, String datatypeUri)
-    {
-        if (schemaUri.equals(datatypeUri))
-        {
-            return true;
-        }
-        return schemaUri.replace("http://www.w3.org/2001/XMLSchema#", "xsd:").equals(datatypeUri);
+        return ValueMapper.mapValue(vocabularyOptionList, sampleObjectProperty, propertyType, space,
+                project);
 
     }
+
+
 
 
 }

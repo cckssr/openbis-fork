@@ -1,0 +1,196 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.springframework.boot' version '2.7.18'
+    id 'io.spring.dependency-management' version '1.1.0'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-parameters'
+}
+
+dependencyManagement {
+    imports {
+        // Boot 2.7.18 BOM (manages Spring 5.3.x)
+        mavenBom "org.springframework.boot:spring-boot-dependencies:2.7.18"
+//        mavenBom "org.eclipse.jetty:jetty-bom:10.0.25"
+    }
+    dependencies {
+        // override core Spring Framework modules to 5.3.39
+        [ "core",
+          "beans",
+          "context",
+          "aop",
+          "expression",
+          "tx",
+          "web",
+          "webmvc",
+          "jcl",
+           ].each { module ->
+            dependency "org.springframework:spring-${module}:5.3.39"
+        }
+    }
+}
+
+repositories {
+    ivy {
+        ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
+        artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
+    }
+    mavenCentral()
+}
+
+//'openbis:openbis-v3-api-batteries-included:6.5.0',
+//files('libs/openBIS-API-V3-batteries-included-SNAPSHOT-r1718006152.jar'),
+dependencies {
+    implementation(project(':lib-ro-crate')) {
+       exclude group: 'springframework'
+       exclude group: 'org.springframework'
+       exclude group: 'fasterxml'
+      //  exclude group: 'marathon'
+       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
+        exclude group: 'org.apache.logging.log4j'
+    }
+    implementation(project(':app-ro-crate-openbis')) {
+       exclude group: 'springframework'
+       exclude group: 'org.springframework'
+        exclude group: 'fasterxml'
+      //  exclude group: 'marathon'
+       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
+       exclude group: 'org.apache.logging.log4j'
+    }
+    implementation(project(':api-openbis-java')) {
+       exclude group: 'springframework'
+       exclude group: 'org.springframework'
+       exclude group: 'fasterxml'
+      //  exclude group: 'marathon'
+       exclude group: 'openbis', module: 'openbis-v3-api-batteries-included'
+        exclude group: 'org.apache.logging.log4j'
+    }
+
+    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1'
+    implementation group: "com.networknt", name: "json-schema-validator", version: "1.5.7"
+    //implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+    implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.5'
+
+
+    implementation("org.springframework.boot:spring-boot-starter-web:2.7.18")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.18")
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+
+        // https://docs.gradle.org/current/userguide/resolution_rules.html
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-databind') {
+            details.useVersion '2.18.0'
+        }
+        if (details.requested.group == 'com.fasterxml.jackson.core' && details.requested.name == 'jackson-core') {
+            details.useVersion '2.18.0'
+        }
+        if (details.requested.group == 'org.slf4j') {
+            details.useVersion '2.0.16'
+        }
+
+    }
+}
+
+tasks.register('runServerRoCrate', JavaExec) {
+    // Print the classpath to the console/log just before execution:
+    doFirst {
+        println "=== [runServerRoCrate] Classpath ==="
+        classpath.files.each { file ->
+            println "  -> $file"
+        }
+        println "====================================="
+    }
+    group = 'application'
+    description = 'Runs the RoCrate Spring Boot app'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass.set('ch.ethz.sis.openbis.generic.server.RoCrateApplication')
+    args(["../server-ro-crate/src/main/resources/service.properties"])
+    jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+             '--add-opens=java.base/java.nio=ALL-UNNAMED',
+             '-Dio.netty.tryReflectionSetAccessible=true',
+             '-Xmx512M', '-ea'])
+}
+
+tasks.register("RoCrateServerZip", Zip) {
+    group = "distribution"
+    description = "Assembles a ZIP containing the Spring-Boot fat JAR + runtime libs"
+
+    dependsOn(bootJar)
+
+    archiveBaseName.set("ro-crate-server")
+
+    from(bootJar.archiveFile) {
+        into("ro-crate-server/lib")
+    }
+
+    from(configurations.runtimeClasspath) {
+        into("ro-crate-server/lib")
+    }
+
+    from("dist") {
+        into("ro-crate-server")
+    }
+}
+
+tasks.register("findEmbeddedSpring") {
+    group       = "help"
+    description = "Detects non-Spring jars that contain org/springframework classes"
+
+    doLast {
+        def cp = configurations.runtimeClasspath.files
+        def offenders = []
+
+        cp.each { File jar ->
+            if (!jar.name.endsWith(".jar")) return   // only inspect jars
+
+            // skip the genuine Spring Framework & Boot artifacts
+            if (jar.path.contains("/org.springframework/") ||
+                    jar.path.contains("/org.springframework.boot/")) {
+                return
+            }
+
+            try {
+                def zip = new java.util.zip.ZipFile(jar)
+                def hasSpring = zip.entries().any { entry ->
+                    entry.name.startsWith("org/springframework/")
+                }
+                zip.close()
+
+                if (hasSpring) {
+                    offenders << jar
+                }
+            }
+            catch (Exception e) {
+                println "⚠️  Could not inspect $jar: $e.message"
+            }
+        }
+
+        if (offenders) {
+            println "\n JARs embedding Spring classes:"
+            offenders.each { println " • $it" }
+            println()
+        }
+        else {
+            println "\n No non-Spring jars were found to embed org/springframework classes.\n"
+        }
+    }
+}
+
+
+
+tasks.named("build") {
+    dependsOn("RoCrateServerZip")
+}

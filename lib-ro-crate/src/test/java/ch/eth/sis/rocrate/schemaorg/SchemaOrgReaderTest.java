@@ -5,16 +5,23 @@ import ch.eth.sis.rocrate.facade.IType;
 import junit.framework.TestCase;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 public class SchemaOrgReaderTest extends TestCase
 {
 
     @Test
-    public void testReading()
+    public void testReading() throws FileNotFoundException
     {
-        String path = "/home/meiandr/Downloads/schema.org/schemaorg-all-https.ttl";
-        SchemaOrgInformation information = SchemaOrgReader.read(path);
+        ClassLoader classLoader = getClass().getClassLoader();
+        classLoader.getName();
+        File file = new File(classLoader.getResource(
+                "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl").getFile());
+
+        SchemaOrgInformation information = SchemaOrgReader.read(new FileInputStream(file));
 
         IType person = information.getIdentifiersToDataTypes().get("schema:Person");
         assertEquals(1, person.getOntologicalAnnotations().size());
