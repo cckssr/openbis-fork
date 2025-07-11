@@ -1,10 +1,10 @@
 import React from 'react'
-import { useSpaceForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx';
-import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx';
-import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { useDatasetForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx'
+import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
+import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts'
 
-const SpaceFormView = ({ permId }: { permId: string }) => {
-	const {controller, onEntityChange } = useSpaceForm()
+const DatasetFormView = ({ permId }: { permId: string }) => {
+	const {controller} = useDatasetForm()
 	const [form, setForm] = React.useState<Form | null>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState<any>(null)
@@ -19,20 +19,9 @@ const SpaceFormView = ({ permId }: { permId: string }) => {
 		return () => { mounted = false }
 	}, [controller, permId])
 
-	const reloadForm = () => {
-		setLoading(true);
-		controller.load(permId)
-			.then((f: Form) => {
-				setForm(f);
-				if (onEntityChange) onEntityChange(f.entityPermId, false);
-			})
-			.catch((e: any) => setError(e))
-			.finally(() => setLoading(false));
-	};
-
 
 	if (loading) return <div>Loading...</div>
-	if (error) return <div>Error: {error}</div>
+	if (error) return <div>Error: {error.message}</div>
 	if (!form) return <div>No data</div>
 	console.log(form);
 	return (
@@ -42,9 +31,8 @@ const SpaceFormView = ({ permId }: { permId: string }) => {
 			controller={controller}
 			customToolbar={null}
 			customSections={null}
-			onAfterSave={reloadForm}
 		/>
 	)
 }
 
-export default SpaceFormView
+export default DatasetFormView
