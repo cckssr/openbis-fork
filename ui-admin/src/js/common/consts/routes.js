@@ -66,6 +66,10 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.PROJECT
   }),
+  NEW_PROJECT: new Route('/new-project/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_PROJECT
+  }),
   TYPES: new Route('/types', {
     page: pages.TYPES
   }),

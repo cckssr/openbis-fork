@@ -91,6 +91,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/plugin/id/PluginPermId',
   'as/dto/plugin/search/PluginSearchCriteria',
   'as/dto/project/Project',
+  'as/dto/project/create/ProjectCreation',
   'as/dto/project/fetchoptions/ProjectFetchOptions',
   'as/dto/project/id/ProjectIdentifier',
   'as/dto/project/id/ProjectPermId',

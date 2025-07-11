@@ -335,6 +335,12 @@ class Facade {
     )
   }
 
+  createProjects(projects) {
+    return this.promise(
+      this.v3.createProjects(projects)
+    )
+  }
+
   free(owner, source) {
     return this.promise(this._getAfsServerFacade().free(owner, source))
   }
