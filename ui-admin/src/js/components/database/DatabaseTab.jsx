@@ -4,20 +4,21 @@ import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import pages from '@src/js/common/consts/pages.js'
 import logger from '@src/js/common/logger.js'
+import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
 class DatabaseTab extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      text: ''
+      label: ''
     }
   }
 
   async componentDidMount() {
     try {
       const { tab } = this.props
-      const { object } = tab
-
+      const { object, changed } = tab
+      console.log('DatabaseTab.componentDidMount', {tab});
       let typeText = null
       let idText = null
 
@@ -57,16 +58,19 @@ class DatabaseTab extends React.PureComponent {
         idText = object.id
       }
 
-      const tabWithLabel = {
+      const label = (typeText || object.type) + ': ' + (idText || object.id)
+      this.setState({ label: label})
+
+     /*  const tabWithLabel = {
         ...tab,
-        label: (typeText || object.type) + ': ' + (idText || object.id)
+        label: (typeText || object.type) + ': ' + (idText || object.id) + (changed ? '*' : '')
       }
 
       AppController.getInstance().replaceOpenTab(
         pages.DATABASE,
         tabWithLabel.id,
         tabWithLabel
-      )
+      ) */
     } catch (error) {
       AppController.getInstance().errorChange(error)
     }
@@ -74,7 +78,8 @@ class DatabaseTab extends React.PureComponent {
 
   render() {
     logger.log(logger.DEBUG, 'DatabaseTab.render')
-    return this.props.tab.label || ''
+    //return this.props.tab.label || ''
+    return <ContentTab label={this.state.label} changed={this.props.tab.changed} />
   }
 }
 

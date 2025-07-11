@@ -5,7 +5,9 @@ import DatabaseBrowser from '@src/js/components/database/browser/DatabaseBrowser
 import DatabaseTab from '@src/js/components/database/DatabaseTab.jsx'
 import DatabaseComponent from '@src/js/components/database/DatabaseComponent.jsx'
 import pages from '@src/js/common/consts/pages.js'
-import logger from '@src/js/common/logger.js'
+import logger from '@src/js/common/logger.js' 
+import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
+import objectType from '@src/js/common/consts/objectType.js'
 
 const styles = () => ({
   container: {
@@ -24,7 +26,7 @@ class Database extends React.PureComponent {
     logger.log(logger.DEBUG, 'Database.render')
 
     const classes = this.props.classes
-
+    console.log( 'Database.render: ', this.props );
     return (
       <div className={classes.container}>
         <DatabaseBrowser />

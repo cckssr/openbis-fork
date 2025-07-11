@@ -18,10 +18,9 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
-import SpaceFormView from '@src/js/components/database/new-forms/controllers/Space/SpaceFormView.tsx';
-import { EntityFormBuilderProvider } from './new-forms/components/EntityFormBuilderContext.tsx'
-import ProjectFormView from '@src/js/components/database/new-forms/controllers/Project/ProjectFormView.tsx'
-
+//import SpaceFormView from '@src/js/components/database/new-forms/controllers/Space/SpaceFormView.tsx';
+//import ProjectFormView from '@src/js/components/database/new-forms/controllers/Project/ProjectFormView.tsx'
+import EntityFormContainer from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
 
 const styles = theme => ({
   tabsPanel: {
@@ -38,15 +37,16 @@ class DatabaseComponent extends React.PureComponent {
     this.state = {
       json: null,
       showDataBrowser: false,
-      value: "0"
+      value: "2",
+      datasetTab: "0"
     }
   }
 
   async componentDidMount() {
     try {
       const { object } = this.props
-      console.log({ object });
-      let json = null
+      console.log(this.props);
+      let json = {}
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
         const spaces = await openbis.getSpaces(
@@ -115,6 +115,7 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   imagingDatasetChange(id, changed) {
+    console.log('imagingDatasetChange', { id }, { changed });
     AppController.getInstance().objectChange(
       pages.DATABASE,
       objectTypes.DATA_SET,
@@ -127,12 +128,36 @@ class DatabaseComponent extends React.PureComponent {
     this.setState({ value })
   }
 
+  handleDatasetTabChange(event, value) {
+    this.setState({ datasetTab: value })
+  }
+
   renderImagingDataset(object) {
-    return <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
-      objId={object.id}
-      objType={object.type}
-      extOpenbis={openbis}
-      showSemanticAnnotations={true} />
+    const { classes } = this.props
+    const { datasetTab } = this.state
+    return <Container>
+      <TabContext value={datasetTab}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={datasetTab}
+            onChange={this.handleDatasetTabChange}
+            textColor='secondary'
+            indicatorColor='secondary'>
+            <Tab label={messages.get(messages.DETAILS)} value="0" />
+            <Tab label={messages.get(messages.IMAGES)} value="1" />
+          </Tabs>
+        </Box>
+        <TabPanel classes={{ root: classes.tabsPanel }} value="0">
+        {this.renderJson()}
+        </TabPanel>
+        <TabPanel classes={{ root: classes.tabsPanel }} value="1">
+          <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
+            objId={object.id}
+            objType={object.type}
+            extOpenbis={openbis}
+            showSemanticAnnotations={true} />
+        </TabPanel>
+      </TabContext>
+    </Container>
   }
 
   getGridSettingsId() {
@@ -170,12 +195,13 @@ class DatabaseComponent extends React.PureComponent {
               onChange={this.handleTabChange}
               textColor='secondary'
               indicatorColor='secondary'>
+              <Tab label={messages.get(messages.DETAILS)} value="2" />
               <Tab label={messages.get(messages.FILES)} value="0" />
               <Tab label={messages.get(messages.IMAGES)} value="1" />
             </Tabs>
           </Box>
           <TabPanel classes={{ root: classes.tabsPanel }} value="0">
-            <DataBrowser
+            {/* <DataBrowser
               key={object.id}
               id={object.id}
               objId={object.id}
@@ -186,8 +212,7 @@ class DatabaseComponent extends React.PureComponent {
               onLoadDisplaySettings={this.loadGridSettings}
               onStoreDisplaySettings={this.onGridSettingsChange}
               leftToolbar={true}
-
-            />
+            /> */}
           </TabPanel>
           <TabPanel classes={{ root: classes.tabsPanel }} value="1">
             {(object.type === objectType.COLLECTION
@@ -199,25 +224,54 @@ class DatabaseComponent extends React.PureComponent {
                 objType={object.type}
                 extOpenbis={openbis} />}
           </TabPanel>
+          <TabPanel classes={{ root: classes.tabsPanel }} value="2">
+            {this.renderJson()}
+          </TabPanel>
         </TabContext>
       </Container>
     )
   }
 
+  spaceChange(id, changed) {
+    console.log('spaceChange', id, changed);
+    AppController.getInstance().objectChange(
+      pages.DATABASE,
+      objectTypes.SPACE,
+      id,
+      changed
+    )
+  }
+
+  createProject(spacePermId) {
+    console.log('createProject');
+    /* AppController.getInstance().objectNew( 
+      pages.DATABASE,
+      objectTypes.NEW_PROJECT,
+      { spacePermId }
+    ) */
+    AppController.getInstance().objectCreate(
+      pages.DATABASE,
+      objectTypes.SPACE,
+      spacePermId,
+      objectTypes.NEW_PROJECT,
+      1
+    )
+  }
+
   renderJson() {
     const { object } = this.props
+
     return (
-      <Container>
-        {object.type === objectType.SPACE &&
-          <EntityFormBuilderProvider openbisFacade={openbis} entityKind={object.type.toUpperCase()} user={AppController.getInstance().getUser()}>
-            <SpaceFormView permId={object.id} />
-          </EntityFormBuilderProvider>}
-        {object.type === objectType.PROJECT &&
-          <EntityFormBuilderProvider openbisFacade={openbis} entityKind={object.type.toUpperCase()} user={AppController.getInstance().getUser()}>
-            <ProjectFormView permId={object.id} />
-          </EntityFormBuilderProvider>}
-        {object.type === objectType.PROJECT && (<pre>{JSON.stringify(this.state.json || {}, null, 2)}</pre>)}
-      </Container>
+      <>
+        <EntityFormContainer openbisFacade={openbis}
+          entityKind={object.type}
+          permId={object.id}
+          user={AppController.getInstance().getUser()}
+          onEntityChange={this.spaceChange}
+          onNewProject={this.createProject}
+        />
+        <pre style={{ height: '95%', overflow: 'auto' }}>{JSON.stringify(this.state.json || {}, null, 2)}</pre>
+      </>
     )
   }
 
@@ -229,8 +283,8 @@ class DatabaseComponent extends React.PureComponent {
     const { object } = this.props
     const { properties } = this.state.json
     if (object.type === objectType.DATA_SET && constants.IMAGING_DATA_CONFIG in properties) return this.renderImagingDataset(object)
-    //return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
-    return this.renderJson()
+    return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
+    //return this.renderJson()
   }
 }
 
