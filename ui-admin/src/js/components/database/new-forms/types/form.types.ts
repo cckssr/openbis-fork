@@ -1,16 +1,24 @@
 /**
- * Represents the mode in which the form is currently operating.
+ * Defines the possible modes for a form.
+ * - 'view': Read-only mode.
+ * - 'edit': Modifying an existing entity.
+ * - 'create': Creating a new entity.
  */
 export enum FormMode {
   VIEW = 'view',
-  NEW = 'new',
+  CREATE = 'create',
   EDIT = 'edit',
 }
 
 export enum EntityKind {
   SPACE = 'SPACE',
   PROJECT = 'PROJECT',
-  SAMPLE = 'SAMPLE'
+  EXPERIMENT = 'EXPERIMENT',
+  NEW_PROJECT = 'NEWPROJECT',
+  OBJECT = 'OBJECT',
+  SAMPLE = 'SAMPLE',
+  COLLECTION = 'COLLECTION',
+  DATASET = 'DATASET'
 }
 
 /**
@@ -59,15 +67,20 @@ export enum FormSection {
  * Represents a single field within a form.
  */
 export interface FormField<T = any> {
-  id: string; // Corresponds to PropertyType code
+  id: string;
+  name?: string; 
   label: string;
   value: T;
+  initialValue?: any; 
   dataType: FormFieldDataType;
-  isMandatory: boolean;
+  required: boolean;
+  readOnly: boolean;
   isMultiValue: boolean;
-  isEditable: boolean;
   section: FormSection;
+  column?: 'left' | 'right' | 'center';
   meta: FormFieldMeta;
+  options?: { label: string; value: string }[]; // For 'select' or 'multiselect' fields
+  validation?: (value: any, form: Form) => string | null; // Validation function
 }
 
 export function findFormFieldById(fields: FormField[], fieldId: string): FormField | undefined {
@@ -78,13 +91,31 @@ export function findFormFieldById(fields: FormField[], fieldId: string): FormFie
  * The unified Form DTO that represents any entity to be displayed or edited.
  */
 export interface Form {
-  entityPermId: string;
-  entityKind: string;
+  entityPermId: string; // The unique identifier of the entity (permId, code, etc.)
+  entityKind: string; // e.g., 'Space', 'Project', 'Sample'
   entityType: string;
   title: string;
   fields: FormField[];
   version: number;
+  mode?: FormMode;
+  isDirty: boolean; // True if any field has been modified
+  isValid: boolean; // True if all fields are valid
   meta: {
     [key: string]: any; // For entity-specific metadata
   };
+  actions?: FormAction[];
+}
+
+/**
+ * Defines the structure for an action that can be performed from the form's toolbar.
+ */
+export interface FormAction {
+  name: string; // e.g., 'save', 'edit', 'delete'
+  label: string; // UI label for the button
+  component: 'button' | 'dropdown' | 'switch';
+  icon?: React.ReactNode; // Icon for the button
+  handler: () => any; // Action logic
+  isAllowed: boolean; // Permission check
+  isVisible: boolean; // Visibility check based on form state
+  value?: boolean; // Value for the switch
 }

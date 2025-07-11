@@ -1,14 +1,15 @@
 import openbis from "@srcV3/openbis.esm";
-// MainController.ts (or similar service file)
 
-export async function fetchRights(openbisFacade: openbis.openbis, objId: string, ids: any[]) {
+export async function fetchRights(openbisFacade: openbis.openbis, objId: string, ids: any[]): Promise<{ editable: boolean, deletable: boolean }> {
 	const { RightsFetchOptions } = openbisFacade;
-	const right = await openbisFacade.getRightsByIds(ids, new RightsFetchOptions())
-
+	const right = await openbisFacade.getRightsByIds(ids, new RightsFetchOptions()) as any;
+	let editable = false;
+	let deletable = false;
 	if (right[objId] && right[objId].rights) {
-		const editable = right[objId].rights.includes("UPDATE")
+		editable = right[objId].rights.includes("UPDATE");
+		deletable = right[objId].rights.includes("DELETE");
 	}
-
+	return { editable, deletable };
 }
 
 export async function getUserRole(openbisFacade: openbis.openbis, isAdmin: boolean, space: string, project?: string): Promise<string[]> {
