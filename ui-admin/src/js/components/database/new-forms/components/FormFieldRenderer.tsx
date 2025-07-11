@@ -12,16 +12,16 @@ interface FormFieldRendererProps {
 }
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({ field, onUpdate, isEditing, mode }) => {
-  const { id, label, value, dataType, meta, isMandatory, isEditable } = field;
+  const { id, label, value, dataType, meta, required, readOnly } = field;
 
   const renderInput = () => {
     switch (dataType) {
       case FormFieldDataType.VARCHAR:
         return (<TextField
-          mandatory={isMandatory}
+          mandatory={required}
           label={label}
-          mode={isEditing ? 'edit' : 'view'}
-          disabled={isEditing && !isEditable}
+          mode={isEditing && !readOnly ? 'edit' : 'view'}
+          disabled={isEditing && readOnly}
           value={value}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate(id, e.target.value)}
           disableUnderline={true}
@@ -31,9 +31,9 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({ field, onU
           name={label}
           label={label}
           value={value}
-          mandatory={isMandatory}
-          disabled={isEditing && !isEditable}
-          mode={isEditing ? 'edit' : 'view'}
+          mandatory={required}
+          disabled={isEditing && readOnly}
+          mode={isEditing && !readOnly ? 'edit' : 'view'}
           onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => onUpdate(id, event.target.value)}
           description={meta?.helpText}
           disableUnderline={true}
@@ -45,7 +45,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({ field, onU
         return <input type="checkbox" checked={!!value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdate(id, e.target.checked)} />;
       case FormFieldDataType.TIMESTAMP:
         //@ts-ignore
-        return (<DateField label={label} name={label + '-Date'} mandatory={isMandatory} mode={isEditing && isEditable ? 'edit' : 'view'} disabled={isEditing && !isEditable} value={{ dateObject: new Date(value) }} mode={mode} disableUnderline={true} />);
+        return (<DateField label={label} name={label + '-Date'} mandatory={required} mode={isEditing && !readOnly ? 'edit' : 'view'} disabled={isEditing && readOnly} value={{ dateObject: new Date(value) }} disableUnderline={true} />);
       case FormFieldDataType.CONTROLLED_VOCABULARY:
         return (
           <select value={value} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onUpdate(id, e.target.value)}>
