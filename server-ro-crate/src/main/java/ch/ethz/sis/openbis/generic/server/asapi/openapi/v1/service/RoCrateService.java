@@ -18,9 +18,7 @@ import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Path("/openbis/open-api/ro-crate")
@@ -64,13 +61,13 @@ public class RoCrateService {
         return "error";
     }
 
-    @GET
+    @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("import")
-    public List<String> importRoCrate(InputStream inputStream, Map<String, String> options)
+    public List<String> importRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
+            InputStream inputStream)
             throws IOException
     {
-        String sessionToken = options.get("sessionToken");
         List<String> result;
         try
         {
@@ -120,6 +117,7 @@ public class RoCrateService {
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             throw new IllegalArgumentException(e);
         } finally
         {
@@ -128,7 +126,7 @@ public class RoCrateService {
         return result;
     }
 
-    @GET
+    @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Path("export")
     public OutputStream exportRoCrate(List<String> identifiers) {

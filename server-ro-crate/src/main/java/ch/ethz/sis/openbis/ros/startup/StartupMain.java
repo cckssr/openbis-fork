@@ -27,6 +27,15 @@ public class StartupMain implements QuarkusApplication
     @Override
     public int run(String... args) throws Exception
     {
+        System.setProperty("quarkus.http.port", "8085");
+        System.setProperty("quarkus.transaction-manager.default-transaction-timeout", "120s");
+        System.setProperty("quarkus.rest-client.connect-timeout", "120s");
+        System.setProperty("quarkus.rest-client.read-timeout", "120s");
+        System.setProperty("quarkus.http.request-timeout", "120s");
+        System.setProperty("quarkus.http.test-timeout", "120s");
+        System.setProperty("quarkus.datasource.jdbc.idle-timeout", "120s");
+
+
 
         System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
         System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
