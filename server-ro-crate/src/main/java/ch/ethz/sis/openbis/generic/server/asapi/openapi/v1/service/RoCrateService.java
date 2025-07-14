@@ -10,6 +10,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
@@ -68,6 +69,7 @@ public class RoCrateService {
             InputStream inputStream)
             throws IOException
     {
+        System.out.println("Import Started");
         List<String> result;
         try
         {
@@ -111,8 +113,8 @@ public class RoCrateService {
                 ImportData importData = new ImportData();
                 importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
                 importData.setFormat(ImportFormat.EXCEL);
-
-                ImportResult importResult = openBIS.executeImport(importData, importOptions);
+            SessionInformation sessionInformation = openBIS.getSessionInformation();
+            ImportResult importResult = openBIS.executeImport(importData, importOptions);
             result = importResult.getObjectIds().stream().map( id -> id.toString()).toList();
         }
         catch (Exception e)
@@ -123,6 +125,7 @@ public class RoCrateService {
         {
             SessionWorkSpace.clear(sessionToken);
         }
+        System.out.println("Import Finished");
         return result;
     }
 

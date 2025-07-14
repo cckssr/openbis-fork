@@ -25,6 +25,8 @@ dependencies {
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
                     'com.fasterxml.jackson.core:jackson-core:2.18.1',
                     'com.fasterxml.jackson.core:jackson-databind:2.18.1',
+                    'com.networknt:json-schema-validator:1.5.7',
+                    'net.lingala.zip4j:zip4j:2.11.5',
                     // Apache Jena
                     'org.apache.jena:apache-jena-libs:5.0.0'
 
