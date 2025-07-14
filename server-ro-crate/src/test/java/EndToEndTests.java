@@ -1,7 +1,8 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.Configuration;
 import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
-import io.quarkus.test.junit.QuarkusTest;
+import ch.ethz.sis.openbis.ros.startup.StartupMain;
+import io.quarkus.runtime.Quarkus;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -10,14 +11,17 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.junit.jupiter.api.Test;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
-@QuarkusTest
 public class EndToEndTests extends AbstractTest
 {
+
+    @BeforeClass
+    public void startQuarkus() {
+        Quarkus.run(StartupMain.class, new String[]{"./src/main/resources/service.properties"});
+    }
 
     @Test
     public void importRoCrateOpenAPITest()
@@ -29,18 +33,17 @@ public class EndToEndTests extends AbstractTest
         openBIS.login("system",
                 "changeit");
 
-        given()
-                .header("sessionToken", openBIS.getSessionToken())
-                .body(RoCrateServiceTest.roCrateMetadataJsonExample1.getBytes())
-                .when().post("/openbis/open-api/ro-crate/import")
-                .then()
-                .statusCode(200)
-                .body(is("hello"));
+//        given()
+//                .header("sessionToken", openBIS.getSessionToken())
+//                .body(RoCrateServiceTest.roCrateMetadataJsonExample1.getBytes())
+//                .when().post("http://localhost:8085/openbis/open-api/ro-crate/import")
+//                .then()
+//                .statusCode(200);
 
         Configuration configuration = getConfiguration();
 
         String apiMethod = "import";
-        int port = getConfiguration().getIntegerProperty(RoCrateServerParameter.httpServerPort);
+        int port = configuration.getIntegerProperty(RoCrateServerParameter.httpServerPort);
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setTrustAll(true);
         ClientConnector clientConnector = new ClientConnector();
@@ -60,5 +63,6 @@ public class EndToEndTests extends AbstractTest
         ContentResponse response = request.send();
         System.out.println(response);
         System.out.println(response.getContentAsString());
+        Assert.assertEquals(200, response.getStatus());
     }
 }
