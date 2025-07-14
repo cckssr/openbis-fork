@@ -1,10 +1,10 @@
 import React from 'react'
-import { useObjectForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx'
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
 import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts'
 
 const ObjectFormView = ({ permId }: { permId: string }) => {
-	const {controller} = useObjectForm()
+	const {controller} = useEntityForm()
 	const [form, setForm] = React.useState<Form | null>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState<any>(null)

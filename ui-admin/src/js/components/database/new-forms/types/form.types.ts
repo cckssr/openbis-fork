@@ -1,9 +1,5 @@
-/**
- * Defines the possible modes for a form.
- * - 'view': Read-only mode.
- * - 'edit': Modifying an existing entity.
- * - 'create': Creating a new entity.
- */
+import objectType from "@src/js/common/consts/objectType";
+
 export enum FormMode {
   VIEW = 'view',
   CREATE = 'create',
@@ -18,12 +14,20 @@ export enum EntityKind {
   OBJECT = 'OBJECT',
   SAMPLE = 'SAMPLE',
   COLLECTION = 'COLLECTION',
-  DATASET = 'DATASET'
+  DATASET = 'DATASET',
 }
 
+export const objectTypeToEntityKindMap = {
+	[objectType.SPACE]: EntityKind.SPACE,
+	[objectType.PROJECT]: EntityKind.PROJECT,
+	[objectType.NEW_PROJECT]: EntityKind.NEW_PROJECT,
+	[objectType.OBJECT]: EntityKind.SAMPLE,
+	[objectType.COLLECTION]: EntityKind.COLLECTION,
+	[objectType.DATA_SET]: EntityKind.DATASET,
+};
+
 /**
- * Defines the data type for a form field, mapping to openBIS property types
- * and custom UI widget types.
+ * Defines the data type for a form field, mapping to openBIS property types and custom UI widget types.
  */
 export enum FormFieldDataType {
   // openBIS Data Types
@@ -46,21 +50,16 @@ export enum Widget {
   SPREADSHEET = 'Spreadsheet'
 }
 
-/**
- * Metadata for a form field, allowing for extensions like help texts,
- * freezing logic, or vocabulary options.
- */
-export interface FormFieldMeta {
-  isFrozen?: boolean;
-  vocabularyOptions?: { code: string; label: string }[];
-  [key: string]: any; // For future extensions
-}
-
-
 export enum FormSection {
   IDENTIFICATION_INFO = 'Identification Info',
   GENERAL = 'General',
   OVERVIEW = 'Overview'
+}
+
+export interface FormFieldMeta {
+  isFrozen?: boolean;
+  vocabularyOptions?: { code: string; label: string }[];
+  [key: string]: any; // For future extensions
 }
 
 /**
@@ -83,9 +82,6 @@ export interface FormField<T = any> {
   validation?: (value: any, form: Form) => string | null; // Validation function
 }
 
-export function findFormFieldById(fields: FormField[], fieldId: string): FormField | undefined {
-  return fields.find(field => field.id === fieldId);
-}
 
 /**
  * The unified Form DTO that represents any entity to be displayed or edited.

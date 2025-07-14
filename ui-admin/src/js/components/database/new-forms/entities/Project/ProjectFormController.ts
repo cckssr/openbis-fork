@@ -1,9 +1,10 @@
 import openbis from '@srcV3/openbis.esm';
-import { Form, findFormFieldById } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.ts';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
 import { adaptProjectDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/controllers/AuthorizationService.ts';
-import { guid } from '@src/js/components/database/new-forms/Utils.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
+import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export class ProjectFormController implements FormController {
   private openbisFacade: openbis.openbis;
@@ -26,8 +27,8 @@ export class ProjectFormController implements FormController {
     const projectDto = result[permId];
     console.log({ projectDto });
     if (!projectDto) throw new Error(`Project with permId ${permId} not found`);
-    const spaceCode = projectDto.space.code;
-    const projectCode = projectDto.code;
+    const spaceCode = projectDto.getSpace().getCode();
+    const projectCode = projectDto.getCode();
     
     const sessionInfo = await this.openbisFacade.getSessionInformation();
     console.log({ sessionInfo })
@@ -41,14 +42,14 @@ export class ProjectFormController implements FormController {
 
   async checkPermissions(form: Form) {
     const { ProjectPermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
-    const objId = form.entityPermId;
-    const projectId = new ProjectPermId(objId);
+    const projectCode = form.entityPermId;
+    const projectPermId = new ProjectPermId(projectCode);
     const projectIdentifier = findFormFieldById(form.fields, 'identifier')?.value;
     console.log({projectIdentifier})
-    const dummyId = new ExperimentIdentifier(projectIdentifier + "/DUMMY_" + guid());
-    const dummyId2 = new SampleIdentifier(projectIdentifier + "/DUMMY2_" + guid());
-    const ids = [projectId, dummyId, dummyId2];
-		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
+    const dummyExperimentId = new ExperimentIdentifier(createDummyExperimentIdentifierFromProjectIdentifier(projectIdentifier));
+    const dummySampleId = new SampleIdentifier(createDummySampleIdentifierFromProjectIdentifier(projectIdentifier));
+    const ids = [projectPermId, dummyExperimentId, dummySampleId];
+		const { editable, deletable } = await fetchRights(this.openbisFacade, projectCode, ids);
 		return { canEdit: editable, canDelete: deletable, canMove: true };
     //return { canEdit: true, canDelete: true, canMove: true };
   }

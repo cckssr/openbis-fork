@@ -1,12 +1,12 @@
 import React from 'react'
-import { useProjectForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx'
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
 import { FormMode, Form, FormAction } from '@src/js/components/database/new-forms/types/form.types.ts'
 import Button from '@src/js/components/common/form/Button.jsx'
 import { Stack } from '@mui/material';
 
 const ProjectFormView = ({ permId }: { permId: string }) => {
-	const {controller, onEntityChange} = useProjectForm()
+	const {controller, onEntityChange} = useEntityForm()
 	const [form, setForm] = React.useState<any>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState<any>(null)

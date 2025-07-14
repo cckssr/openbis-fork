@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { findFormFieldById, Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export const useConflictResolution = () => {
     const [isConflicted, setConflicted] = useState(false);
@@ -8,7 +9,7 @@ export const useConflictResolution = () => {
     const findConflicts = (localForm: Form, serverForm: Form) => {
         const conflicts: [FormField, FormField][] = [];
         localForm.fields
-            .filter(localField => localField.isEditable)
+            .filter(localField => !localField.readOnly)
             .forEach(localField => {
                 const serverField = serverForm.fields.find(f => f.id === localField.id);
                 if (!serverField) return; // Field doesn't exist on server (unlikely)
@@ -28,7 +29,7 @@ export const useConflictResolution = () => {
     const resolveConflicts = (localForm: Form, serverForm: Form) => {
         const conflicts: string[] = [];
         const mergedFields = localForm.fields
-            .filter(localField => localField.isEditable)
+            .filter(localField => !localField.readOnly)
             .map(localField => {
                 const serverField = serverForm.fields.find(f => f.id === localField.id);
                 if (!serverField) return localField; // Field doesn't exist on server (unlikely)

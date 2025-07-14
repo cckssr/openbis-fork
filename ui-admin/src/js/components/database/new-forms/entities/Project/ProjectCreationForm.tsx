@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormField, FormFieldDataType, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormFieldRenderer } from '@src/js/components/database/new-forms/components/FormFieldRenderer.tsx';
-import { useProjectForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx';
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx';
 
 interface ProjectCreationFormProps {
 
@@ -12,7 +12,7 @@ export const ProjectCreationForm: React.FC<ProjectCreationFormProps> = () => {
     code: '',
     description: ''
   });
-  const { controller } = useProjectForm();
+  const { controller } = useEntityForm();
 
   console.log('ProjectCreationForm', { formData });
   const fields: FormField[] = [

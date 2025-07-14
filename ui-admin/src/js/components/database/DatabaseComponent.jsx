@@ -18,8 +18,8 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
-//import SpaceFormView from '@src/js/components/database/new-forms/controllers/Space/SpaceFormView.tsx';
-//import ProjectFormView from '@src/js/components/database/new-forms/controllers/Project/ProjectFormView.tsx'
+//import SpaceFormView from '@src/js/components/database/new-forms/entities/Space/SpaceFormView.tsx';
+//import ProjectFormView from '@src/js/components/database/new-forms/entities/Project/ProjectFormView.tsx'
 import EntityFormContainer from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
 
 const styles = theme => ({

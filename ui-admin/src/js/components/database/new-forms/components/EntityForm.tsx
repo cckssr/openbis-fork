@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { EntityKind, Form, FormAction, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.tsx';
+import { FormController } from '@src/js/components/database/new-forms/entities/FormController.tsx';
 import { FormFieldRenderer } from '@src/js/components/database/new-forms/components/FormFieldRenderer.tsx';
 import { Toolbar, Switch, Dialog, FormGroup, FormControlLabel, Alert, Snackbar, SnackbarCloseReason, Stack, Grid2, Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material'
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
@@ -8,10 +8,10 @@ import { useConflictResolution } from '@src/js/components/database/new-forms/hoo
 import messages from '@src/js/common/messages.js';
 import Button from '@src/js/components/common/form/Button.jsx';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
-import { useSpaceForm, useProjectForm, useObjectForm, useCollectionForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx';
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx';
 
 import Message from '@src/js/components/common/form/Message.jsx';
-import ConflictResolutionDialog from './ConflictResolutionDialog.tsx';
+import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
 import { groupFieldsBySection, SectionGroup } from '@src/js/components/database/new-forms/adapters/sectionBuilder.ts';
 
 interface EntityFormProps {
@@ -22,14 +22,6 @@ interface EntityFormProps {
   customSections: any;
   onAfterSave?: () => void;
   actions?: FormAction[];
-}
-
-const contextMap = {
-  [EntityKind.SPACE]: useSpaceForm,
-  [EntityKind.PROJECT]: useProjectForm,
-  [EntityKind.SAMPLE]: useObjectForm,
-  [EntityKind.COLLECTION]: useCollectionForm,
-  [EntityKind.DATASET]: useCollectionForm
 }
 
 export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode, controller, customToolbar, customSections, onAfterSave, actions }) => {
@@ -46,8 +38,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
   const [conflictResolutionActive, setConflictResolutionActive] = useState(false);
 
   const { isConflicted, conflictingFields, resolveConflicts, checkModificationDateConflict, findConflicts } = useConflictResolution();
-  const { onNewProject, onEntityChange } = contextMap[form.entityKind as keyof typeof contextMap]();
-
+  const { onNewProject, onEntityChange } = useEntityForm();
 
   const handleModeChange = (mode: FormMode) => {
     setForm(prevForm => ({ ...prevForm, mode }));

@@ -1,10 +1,10 @@
 import React from 'react'
-import { useCollectionForm } from '@src/js/components/database/new-forms/components/EntityFormProvider.tsx'
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
 import { FormAction, FormMode, Form } from '@src/js/components/database/new-forms/types/form.types.ts'
 
 const CollectionFormView = ({ permId }: { permId: string }) => {
-	const {controller} = useCollectionForm()
+	const {controller} = useEntityForm()
 	const [form, setForm] = React.useState<Form | null>(null)
 	const [loading, setLoading] = React.useState(true)
 	const [error, setError] = React.useState<any>(null)
@@ -15,7 +15,7 @@ const CollectionFormView = ({ permId }: { permId: string }) => {
 		controller.load(permId)
 			.then((f: Form) => { if (mounted) setForm(f) })
 			.catch((e: any) => { if (mounted) setError(e) })
-			.finally(() => { if (mounted) setLoading(false) })
+			.finally(() => { if (mounted) setLoading(false) })/*  */
 		return () => { mounted = false }
 	}, [controller, permId])
 

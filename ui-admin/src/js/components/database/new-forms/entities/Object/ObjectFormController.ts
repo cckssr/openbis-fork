@@ -1,8 +1,9 @@
-import { findFormFieldById, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.ts';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
 import { adaptSampleDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/controllers/AuthorizationService.ts';
-import { getProjectIdentifierFromSampleIdentifier, guid } from '@src/js/components/database/new-forms/Utils.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
+import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export class ObjectFormController implements FormController {
 	private openbisFacade: any;
@@ -41,11 +42,12 @@ export class ObjectFormController implements FormController {
 	}
 
 	async checkPermissions(form: Form) {
+		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;
 		const objId = form.entityPermId;
 		const samplePermId = new this.openbisFacade.SamplePermId(objId);
 		const sampleIdentifier = findFormFieldById(form.fields, 'identifier')?.value;
-		const dummyId = new this.openbisFacade.DataSetPermId(getProjectIdentifierFromSampleIdentifier(sampleIdentifier) + "/DUMMY_" + guid());
-        const dummyId2 = new this.openbisFacade.SampleIdentifier(getProjectIdentifierFromSampleIdentifier(sampleIdentifier) + "/DUMMY2_" + guid());
+		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromSampleIdentifier(sampleIdentifier));
+        const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(sampleIdentifier));
 		const ids = [samplePermId, dummyId, dummyId2];
 		const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
 		console.log({editable, deletable})

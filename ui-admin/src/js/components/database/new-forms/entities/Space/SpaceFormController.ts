@@ -1,7 +1,8 @@
-import { Form, findFormFieldById } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/controllers/FormController.ts';
-import { guid } from '@src/js/components/database/new-forms/Utils.ts';
-import { fetchRights, getUserRole } from '@src/js/components/database/new-forms/controllers/AuthorizationService.ts';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
+import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { fetchRights, getUserRole } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
 import { adaptSpaceDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
 
 export class SpaceFormController implements FormController {
@@ -44,13 +45,14 @@ export class SpaceFormController implements FormController {
   }
 
   async checkPermissions(form: Form) {
-    const objId = form.entityPermId;
-    const spaceId = new this.openbisFacade.SpacePermId(objId);
-    const dummyId = new this.openbisFacade.ProjectIdentifier("/" + objId + "/DUMMY_" + guid());
-    const dummyId2 = new this.openbisFacade.SampleIdentifier("/" + objId + "/DUMMY2_" + guid());
-    console.log({dummyId, dummyId2})
-    const ids = [spaceId, dummyId, dummyId2];
-    const { editable, deletable } = await fetchRights(this.openbisFacade, objId, ids);
+    const { SpacePermId, ProjectIdentifier, SampleIdentifier } = this.openbisFacade;
+    const spaceCode = form.entityPermId;
+    const spacePermId = new SpacePermId(spaceCode);
+    const dummyProjectId = new ProjectIdentifier(createDummySampleIdentifier(spaceCode));
+    const dummySampleId = new SampleIdentifier(createDummySampleIdentifier(spaceCode));
+    console.log({dummyProjectId, dummySampleId})
+    const ids = [spacePermId, dummyProjectId, dummySampleId];
+    const { editable, deletable } = await fetchRights(this.openbisFacade, spaceCode, ids);
 		console.log({editable, deletable})
 		//return { canEdit: editable, canDelete: deletable, canMove: true };
     return { canEdit: true, canDelete: true, canMove: true };
