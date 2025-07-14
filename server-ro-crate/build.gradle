@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'io.quarkus' version '3.23.0'
+    id 'com.github.vlsi.jandex' version '2.0.0'
 }
 
 java {
@@ -22,30 +23,37 @@ repositories {
 }
 
 dependencies {
+    implementation("com.github.vlsi.jandex:com.github.vlsi.jandex.gradle.plugin:2.0.0")
+}
+
+dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
 
     implementation 'lombok:lombok:1.18.38',
             'lombok:lombok:1.18.22',
             project(':lib-logging'),
             project(':lib-ro-crate'),
+            project(':api-openbis-java'),
             project(':app-ro-crate-openbis')
-    implementation(project(':api-openbis-java'))
+
+
+    // Quarkus
     implementation enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"), // Any dependencies coming from quarkus take precedence
-            'io.quarkus:quarkus-resteasy:3.23.0',
-            'edu.kit.datamanager:ro-crate-java:2.0.1',
+            'io.quarkus:quarkus-resteasy:3.23.0'
+
+    // Ro-crate library
+    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
+            'com.fasterxml.jackson.core:jackson-core:2.18.1',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.1',
             'com.networknt:json-schema-validator:1.5.7',
-            'net.lingala.zip4j:zip4j:2.11.5',
-            'com.fasterxml.jackson.core:jackson-core:2.18.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+            'net.lingala.zip4j:zip4j:2.11.5'
 
-    testImplementation 'testng:testng:6.8-CISD',
-            'io.rest-assured:rest-assured:5.5.5'
-
-
+    testImplementation 'io.quarkus:quarkus-junit5:3.23.0',
+                        'io.rest-assured:rest-assured:5.5.5'
 }
 
 test {
-    useTestNG()
+    useJUnit()
 }
 
 mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
