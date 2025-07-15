@@ -224,6 +224,11 @@ class DataSet(
         else:
             super(DataSet, self).__setattr__(name, value)
 
+    def get_eln_url(self):
+        query = {"type":"DATASET","id":self.permId}
+        return f'{self.openbis.url}/webapp/eln-lims/?menuUniqueId={quote(str(query))}&viewName=showViewDataSetPageFromPermId&viewData={self.permId}'
+
+
     @property
     def props(self):
         return self.__dict__["p"]

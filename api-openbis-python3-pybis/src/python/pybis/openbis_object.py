@@ -97,7 +97,12 @@ class OpenBisObject:
                     if (data_type == 'XML' and 'metaData' in property_type and 'custom_widget' in property_type[
                         'metaData']
                             and property_type['metaData']['custom_widget'].upper() == 'SPREADSHEET'):
-                        value = self.formatter.to_spreadsheet(value)
+                        if key.lower() in self.p.__dict__:
+                            old_spreadsheet = self.p.__dict__[key.lower()]
+                            old_spreadsheet._set_data(self.formatter.to_spreadsheet(value))
+                            value = old_spreadsheet
+                        else:
+                            value = self.formatter.to_spreadsheet(value)
                 self.p.__dict__[key.lower()] = value
 
         # object is already saved to openBIS, so it is not new anymore
@@ -376,7 +381,8 @@ class Transaction:
                                     raise ValueError(
                                         f"Property '{prop_name}' is mandatory and must not be None"
                                     )
-                    props = entity.p._all_props()
+
+                    props = PropertyReformatter(entity.openbis).format(entity.p._all_props())
 
                     if mode == "create":
                         request = entity._new_attrs()

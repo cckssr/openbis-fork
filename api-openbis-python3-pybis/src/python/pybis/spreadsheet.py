@@ -56,6 +56,15 @@ class Spreadsheet:
         self.width = [50 for _ in range(columns)]
         self.values = [["" for _ in range(columns)] for _ in range(rows)]
 
+    def _set_data(self, data):
+        self.version = data.get_version()
+        self.headers = data.get_headers()
+        self.data = data.get_formulas()
+        self.style = data.get_style()
+        self.meta = data.get_meta_data()
+        self.width = data.get_width()
+        self.values = data.get_values()
+
     def _get_index_str(self, index):
         index = index.strip()
         column = ""
@@ -261,12 +270,10 @@ class Spreadsheet:
             label = self.__dict__['column_label']
             if name == "formula":
                 self.__dict__['parent'].data[row][column] = value
-            elif name == "value":
-                self.__dict__['parent'].values[row][column] = value
             elif name == "style":
                 self.__dict__['parent'].style[label + str(column + 1)]  = value
             else:
-                raise ValueError(f"No such attribute '{name}' found!")
+                raise ValueError(f"No such attribute '{name}' is allowed for setting!")
 
         def __str__(self):
             attr = self.__dict__

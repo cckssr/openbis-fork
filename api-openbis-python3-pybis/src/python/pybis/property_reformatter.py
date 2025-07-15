@@ -54,6 +54,18 @@ class PropertyReformatter:
             property_type = self.openbis.get_property_type(key)
             if property_type.dataType == 'TIMESTAMP':
                 properties[key] = self._format_timestamp(value)
+            if property_type.dataType == 'SAMPLE':
+                if property_type.multiValue:
+                    result = []
+                    for sample in value:
+                        if not isinstance(sample, str):
+                            result += sample.permId
+                        else:
+                            result += [sample]
+                    properties[key] = result
+                else:
+                    if not isinstance(value, str):
+                        properties[key] = value.permId
             elif property_type.dataType == 'ARRAY_TIMESTAMP':
                 if property_type.multiValue:
                     properties[key] = ["[" + ",".join(map(str, [self._format_timestamp(x) for x in arr])) + "]" for arr in value]

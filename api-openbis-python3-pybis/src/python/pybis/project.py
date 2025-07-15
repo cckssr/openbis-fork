@@ -15,6 +15,8 @@
 from .openbis_object import OpenBisObject
 from .utils import is_identifier, is_permid
 
+from urllib.parse import quote
+
 
 class Project(OpenBisObject, entity="project", single_item_method_name="get_project"):
     def _modifiable_attrs(self):
@@ -61,3 +63,7 @@ class Project(OpenBisObject, entity="project", single_item_method_name="get_proj
 
     def get_datasets(self):
         return self.openbis.get_datasets(project=self.permId)
+
+    def get_eln_url(self):
+        query = {"type":"PROJECT","id":self.permId}
+        return f'{self.openbis.url}/webapp/eln-lims/?menuUniqueId={quote(str(query))}&viewName=showProjectPageFromPermId&viewData={self.permId}'

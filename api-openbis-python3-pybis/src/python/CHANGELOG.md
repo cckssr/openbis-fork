@@ -8,6 +8,8 @@
 - Improvements to Spreadsheet API
 - Handling UnicodeDecodeError in spreadsheet property
 - Added revert_deletions method
+- Introduced method for getting eln url for entities
+- Improvements to ServerInformation functionalities
 
 ## Changes with pybis-1.37.3
 

@@ -14,6 +14,7 @@
 #
 from .openbis_object import OpenBisObject
 
+from urllib.parse import quote
 
 class Experiment(
     OpenBisObject, entity="experiment", single_item_method_name="get_experiment"
@@ -52,7 +53,12 @@ class Experiment(
                     value = self.formatter.to_array(data_type, value)
             if (data_type == 'XML' and 'metaData' in property_type and 'custom_widget' in property_type['metaData']
                     and property_type['metaData']['custom_widget'].upper() == 'SPREADSHEET'):
-                    value = self.formatter.to_spreadsheet(value)
+                    if key.lower() in self.p.__dict__:
+                        old_spreadsheet = self.p.__dict__[key.lower()]
+                        old_spreadsheet._set_data(self.formatter.to_spreadsheet(value))
+                        value = old_spreadsheet
+                    else:
+                        value = self.formatter.to_spreadsheet(value)
             self.p.__dict__[key.lower()] = value
 
     def __str__(self):
@@ -176,3 +182,7 @@ class Experiment(
         self.samples = objects
 
     del_objects = del_samples  # Alias
+
+    def get_eln_url(self):
+        query = {"type":"EXPERIMENT","id":self.permId}
+        return f'{self.openbis.url}/webapp/eln-lims/?menuUniqueId={quote(str(query))}&viewName=showExperimentPageFromIdentifier&viewData=["{self.identifier}",false]'
