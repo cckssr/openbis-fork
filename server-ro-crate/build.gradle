@@ -57,8 +57,11 @@ test {
 }
 
 mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
+test.dependsOn jandex
+
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
+    dependsOn jandexMain
     mainClass = mainClassName
     classpath = sourceSets.main.runtimeClasspath
     args(["../server-ro-crate/src/main/resources/service.properties"])
