@@ -17,16 +17,23 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetTypeUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
@@ -83,12 +90,15 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
     private final AttributeValidator<Attribute> attributeValidator;
 
-    public DatasetTypeImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, Map<String, Integer> versions)
+    private final SemanticAnnotationHelper annotationCache;
+
+    public DatasetTypeImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, Map<String, Integer> versions, SemanticAnnotationHelper annotationCache)
     {
         super(mode, options);
         this.versions = versions;
         this.delayedExecutor = delayedExecutor;
         this.attributeValidator = new AttributeValidator<>(Attribute.class);
+        this.annotationCache = annotationCache;
     }
 
     @Override protected ImportTypes getTypeName()
@@ -136,7 +146,39 @@ public class DatasetTypeImportHelper extends BasicImportHelper
     @Override protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
-        EntityTypePermId id = new EntityTypePermId(code);
+
+        String[] ontologyId = getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyId, "\n");
+        if(ontologyId != null) {
+            String[] ontologyVersion = getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyVersion, "\n");
+            String[] ontologyAnnotationId =  getMultiValueByColumnName(header, values, SemanticAnnotationImportHelper.Attribute.OntologyAnnotationId, "\n");
+            if(ontologyVersion == null) {
+                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyVersion);
+            }
+            if(ontologyAnnotationId == null) {
+                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyAnnotationId);
+            }
+            if(ontologyId.length != ontologyVersion.length || ontologyId.length != ontologyAnnotationId.length) {
+                throw new UserFailureException("Number of ontology triplets does not match!");
+            }
+
+            List<SemanticAnnotationRecord> records =
+                    IntStream.range(0, ontologyId.length)
+                            .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i], ontologyAnnotationId[i]))
+                            .collect(Collectors.toList());
+            EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
+            SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), permId, null);
+            if(annotation != null) {
+                // if there is semantic annotation, then there is an associated type
+                return true;
+            }
+        } else {
+            if (code == null)
+            {
+                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.Code);
+            }
+        }
+
+        EntityTypePermId id = new EntityTypePermId(code, EntityKind.DATA_SET);
 
         return delayedExecutor.getDataSetType(id, new DataSetTypeFetchOptions()) != null;
     }
@@ -166,7 +208,15 @@ public class DatasetTypeImportHelper extends BasicImportHelper
         String validationScript = getValueByColumnName(header, values, Attribute.ValidationScript);
 
         DataSetTypeUpdate update = new DataSetTypeUpdate();
-        EntityTypePermId permId = new EntityTypePermId(code);
+        EntityTypePermId permId = new EntityTypePermId(code, EntityKind.DATA_SET);
+
+        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(
+                SemanticAnnotationType.EntityType, permId, null);
+
+        if(annotation != null) {
+            code = annotation.getEntityType().getCode();
+            permId = new EntityTypePermId(code, EntityKind.DATA_SET);
+        }
         update.setTypeId(permId);
         if (description != null)
         {
@@ -181,7 +231,7 @@ public class DatasetTypeImportHelper extends BasicImportHelper
 
         DataSetTypeFetchOptions dataSetTypeFetchOptions = new DataSetTypeFetchOptions();
         dataSetTypeFetchOptions.withValidationPlugin();
-        DataSetType dataSetType = delayedExecutor.getDataSetType(new EntityTypePermId(code), dataSetTypeFetchOptions);
+        DataSetType dataSetType = delayedExecutor.getDataSetType(new EntityTypePermId(code, EntityKind.DATA_SET), dataSetTypeFetchOptions);
         update.setValidationPluginId(ImportUtils.getScriptId(validationScript, dataSetType.getValidationPlugin()));
 
         delayedExecutor.updateDataSetType(update, page, line);

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -36,12 +37,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.IdentifierVariable;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportTypes;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
@@ -102,11 +106,14 @@ public class SampleImportHelper extends BasicImportHelper
 
     private final AttributeValidator<Attribute> attributeValidator;
 
-    public SampleImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options)
+    private final SemanticAnnotationHelper annotationCache;
+
+    public SampleImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode, ImportOptions options, SemanticAnnotationHelper annotationCache)
     {
         super(mode, options);
         this.delayedExecutor = delayedExecutor;
         this.attributeValidator = new AttributeValidator<>(Attribute.class);
+        this.annotationCache = annotationCache;
     }
 
     @Override public void importBlock(List<List<String>> page, int pageIndex, int start, int end)
@@ -119,7 +126,14 @@ public class SampleImportHelper extends BasicImportHelper
             AttributeValidator.validateHeader(SAMPLE_TYPE_FIELD, header);
             lineIndex++;
 
-            sampleType = new EntityTypePermId(getValueByColumnName(header, page.get(lineIndex), SAMPLE_TYPE_FIELD));
+            String typeCode = getValueByColumnName(header, page.get(lineIndex), SAMPLE_TYPE_FIELD);
+            sampleType = new EntityTypePermId(typeCode, EntityKind.SAMPLE);
+            SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType, sampleType, null);
+            if(annotation != null)
+            {
+                typeCode = annotation.getEntityType().getCode();
+                sampleType = new EntityTypePermId(typeCode, EntityKind.SAMPLE);
+            }
             if(sampleType.getPermId() == null || sampleType.getPermId().isEmpty()) {
                 throw new UserFailureException("Mandatory field is missing or empty: " + SAMPLE_TYPE_FIELD);
             }
@@ -132,7 +146,7 @@ public class SampleImportHelper extends BasicImportHelper
             {
                 throw new UserFailureException("Sample type " + sampleType + " not found.");
             }
-            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments());
+            this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), annotationCache);
 
             lineIndex++;
         } catch (Exception e)

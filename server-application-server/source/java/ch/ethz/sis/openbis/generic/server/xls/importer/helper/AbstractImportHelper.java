@@ -93,6 +93,15 @@ public abstract class AbstractImportHelper
         return null;
     }
 
+    protected static String[] getMultiValueByColumnName(Map<String, Integer> header, List<String> values, IAttribute columnName, String separator)
+    {
+        String fullValue = getValueByColumnName(header, values, columnName);
+        if(fullValue != null) {
+            return fullValue.split(separator);
+        }
+        return null;
+    }
+
     protected static String getValueByColumnName(Map<String, Integer> header, List<String> values, String columnName)
     {
         if (header.containsKey(columnName))

@@ -20,7 +20,13 @@ import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyType
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationRecord;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
@@ -28,7 +34,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update.PropertyTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
@@ -115,14 +120,19 @@ public class PropertyTypeImportHelper extends BasicImportHelper
 
     private final AttributeValidator<Attribute> attributeValidator;
 
+    private final SemanticAnnotationHelper annotationCache;
+
+    private EntityTypePermId typePermId;
+
     public PropertyTypeImportHelper(DelayedExecutionDecorator delayedExecutor, ImportModes mode,
-            ImportOptions options, Map<String, Integer> versions)
+            ImportOptions options, Map<String, Integer> versions, SemanticAnnotationHelper annotationCache)
     {
         super(mode, options);
         this.versions = versions;
         this.delayedExecutor = delayedExecutor;
         this.propertyCache = new HashMap<>();
         this.attributeValidator = new AttributeValidator<>(Attribute.class);
+        this.annotationCache = annotationCache;
     }
 
     @Override
@@ -190,10 +200,72 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         VersionUtils.updateVersion(version, versions, ImportTypes.PROPERTY_TYPE.getType(), code);
     }
 
+
+    public void importBlock(List<List<String>> page, int pageIndex, int start, int end, ImportTypes importTypes)
+    {
+        Map<String, Integer> header = parseHeader(page.get(start-2), false);
+        String entityTypeCode = getValueByColumnName(header, page.get(start - 1), Attribute.Code);
+
+        EntityTypePermId permId = null;
+
+        switch (importTypes) {
+            case SAMPLE_TYPE:
+                permId = new EntityTypePermId(entityTypeCode, EntityKind.SAMPLE);
+                break;
+            case DATASET_TYPE:
+                permId = new EntityTypePermId(entityTypeCode, EntityKind.DATA_SET);
+                break;
+            case EXPERIMENT_TYPE:
+                permId = new EntityTypePermId(entityTypeCode, EntityKind.EXPERIMENT);
+                break;
+        }
+        if(permId != null)
+        {
+            SemanticAnnotation annotation =
+                    annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.EntityType,
+                            permId, null);
+            if (annotation != null)
+            {
+                permId = new EntityTypePermId(annotation.getEntityType().getCode(),
+                        permId.getEntityKind());
+            }
+        }
+        typePermId = permId;
+
+        super.importBlock(page, pageIndex, start, end);
+    }
+
+
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
         String code = getValueByColumnName(header, values, Attribute.Code);
+
+        String[] ontologyId = getMultiValueByColumnName(header, values, Attribute.OntologyId, "\n");
+
+        if(ontologyId != null) {
+            String[] ontologyVersion = getMultiValueByColumnName(header, values, Attribute.OntologyVersion, "\n");
+            String[] ontologyAnnotationId =  getMultiValueByColumnName(header, values, Attribute.OntologyAnnotationId, "\n");
+            if(ontologyVersion == null) {
+                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyVersion);
+            }
+            if(ontologyAnnotationId == null) {
+                throw new UserFailureException("Mandatory field is missing or empty: " + Attribute.OntologyAnnotationId);
+            }
+            if(ontologyId.length != ontologyVersion.length || ontologyId.length != ontologyAnnotationId.length) {
+                throw new UserFailureException("Number of ontology triplets does not match!");
+            }
+
+            List<SemanticAnnotationRecord> records =
+                    IntStream.range(0, ontologyId.length)
+                            .mapToObj(i -> new SemanticAnnotationRecord(ontologyId[i], ontologyVersion[i], ontologyAnnotationId[i]))
+                            .collect(Collectors.toList());
+            SemanticAnnotation annotation = annotationCache.getSemanticAnnotation(records.toArray(new SemanticAnnotationRecord[0]), typePermId, code);
+            if(annotation != null) {
+                // there is a type for semantic annotation
+                return true;
+            }
+        }
 
         PropertyTypePermId propertyTypePermId = new PropertyTypePermId(code);
         return delayedExecutor.getPropertyType(propertyTypePermId) != null;
@@ -261,6 +333,17 @@ public class PropertyTypeImportHelper extends BasicImportHelper
         String dataType = getValueByColumnName(header, values, Attribute.DataType);
         String vocabularyCode = getValueByColumnName(header, values, Attribute.VocabularyCode);
         String metadata = getValueByColumnName(header, values, Attribute.Metadata);
+
+        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyType, null, code);
+        if(annotation != null) {
+            code = annotation.getPropertyType().getCode();
+        } else if(typePermId != null) {
+            annotation = annotationCache.getCachedSemanticAnnotation(SemanticAnnotationType.PropertyAssignment, typePermId, code);
+            if(annotation != null)
+            {
+                code = annotation.getPropertyAssignment().getPropertyType().getCode();
+            }
+        }
 
         PropertyTypePermId propertyTypePermId = new PropertyTypePermId(code);
 

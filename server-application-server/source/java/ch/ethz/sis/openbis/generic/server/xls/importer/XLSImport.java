@@ -30,6 +30,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -136,18 +137,21 @@ public class XLSImport
         this.afterVersions = VersionInfoHandler.loadAllVersions(options);
         this.dbChecker = new DatabaseConsistencyChecker(this.sessionToken, this.api, this.afterVersions);
         this.delayedExecutor = new DelayedExecutionDecorator(this.sessionToken, this.api);
+
+        SemanticAnnotationHelper annotationCache = new SemanticAnnotationHelper(delayedExecutor);
+
         this.vocabularyHelper = new VocabularyImportHelper(this.delayedExecutor, mode, options, afterVersions);
         this.vocabularyTermHelper = new VocabularyTermImportHelper(this.delayedExecutor, mode, options, afterVersions);
-        this.sampleTypeHelper = new SampleTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
-        this.experimentTypeHelper = new ExperimentTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
-        this.datasetTypeHelper = new DatasetTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
+        this.sampleTypeHelper = new SampleTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
+        this.experimentTypeHelper = new ExperimentTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
+        this.datasetTypeHelper = new DatasetTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
         this.spaceHelper = new SpaceImportHelper(this.delayedExecutor, mode, options);
         this.projectHelper = new ProjectImportHelper(this.delayedExecutor, mode, options);
-        this.experimentHelper = new ExperimentImportHelper(this.delayedExecutor, mode, options);
-        this.sampleHelper = new SampleImportHelper(this.delayedExecutor, mode, options);
-        this.propertyHelper = new PropertyTypeImportHelper(this.delayedExecutor, mode, options, afterVersions);
-        this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions);
-        this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options);
+        this.experimentHelper = new ExperimentImportHelper(this.delayedExecutor, mode, options, annotationCache);
+        this.sampleHelper = new SampleImportHelper(this.delayedExecutor, mode, options, annotationCache);
+        this.propertyHelper = new PropertyTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
+        this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions, annotationCache);
+        this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options, annotationCache);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
         // File Parsing
@@ -315,9 +319,9 @@ public class XLSImport
                             if (lineNumber + 2 != blockEnd)
                             {
                                 scriptHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ScriptTypes.DYNAMIC_SCRIPT);
-                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd);
+                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ImportTypes.SAMPLE_TYPE);
                                 propertyAssignmentHelper.importBlock(page, pageNumber, lineNumber, blockEnd, ImportTypes.SAMPLE_TYPE);
-                                semanticAnnotationImportHelper.importBlockForEntityTypeProperty(page, pageNumber, lineNumber, blockEnd,
+                                semanticAnnotationImportHelper.importBlockForPropertyAssignment(page, pageNumber, lineNumber, blockEnd,
                                         ImportTypes.SAMPLE_TYPE);
                             }
                             break;
@@ -332,9 +336,9 @@ public class XLSImport
                             if (lineNumber + 2 != blockEnd)
                             {
                                 scriptHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ScriptTypes.DYNAMIC_SCRIPT);
-                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd);
+                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ImportTypes.EXPERIMENT_TYPE);
                                 propertyAssignmentHelper.importBlock(page, pageNumber, lineNumber, blockEnd, ImportTypes.EXPERIMENT_TYPE);
-                                semanticAnnotationImportHelper.importBlockForEntityTypeProperty(page, pageNumber, lineNumber, blockEnd,
+                                semanticAnnotationImportHelper.importBlockForPropertyAssignment(page, pageNumber, lineNumber, blockEnd,
                                         ImportTypes.EXPERIMENT_TYPE);
                             }
                             break;
@@ -349,9 +353,9 @@ public class XLSImport
                             if (lineNumber + 2 != blockEnd)
                             {
                                 scriptHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ScriptTypes.DYNAMIC_SCRIPT);
-                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd);
+                                propertyHelper.importBlock(page, pageNumber, lineNumber + 2, blockEnd, ImportTypes.DATASET_TYPE);
                                 propertyAssignmentHelper.importBlock(page, pageNumber, lineNumber, blockEnd, ImportTypes.DATASET_TYPE);
-                                semanticAnnotationImportHelper.importBlockForEntityTypeProperty(page, pageNumber, lineNumber, blockEnd,
+                                semanticAnnotationImportHelper.importBlockForPropertyAssignment(page, pageNumber, lineNumber, blockEnd,
                                         ImportTypes.DATASET_TYPE);
                             }
                             break;

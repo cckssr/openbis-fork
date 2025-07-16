@@ -66,6 +66,9 @@ public class AttributeValidator<E extends IAttribute> {
             if (propertyTypeSearcher.getLabel2PropertyType().containsKey(header)) {
                 continue;
             }
+            if(propertyTypeSearcher.getSemanticallyAnnotatedPropertyTypes().contains(header)) {
+                continue;
+            }
             throw new UserFailureException("Header '" + header + "' is neither an attribute, property code or property label.");
         }
 
