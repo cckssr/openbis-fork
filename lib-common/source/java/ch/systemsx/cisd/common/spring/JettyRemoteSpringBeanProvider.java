@@ -39,33 +39,7 @@ public class JettyRemoteSpringBeanProvider implements IRemoteSpringBeanProvider
     public <T> T create(Class<T> serviceInterface, String serviceURL, long serverTimeoutInMillis)
     {
         JettyHttpInvokerRequestExecutor jettyExecutor = new JettyHttpInvokerRequestExecutor(client, serverTimeoutInMillis);
-        HttpInvokerProxyFactoryBean httpInvokerProxy = new StreamSupportingHttpInvokerProxyFactoryBean(jettyExecutor);
-        httpInvokerProxy.setBeanClassLoader(serviceInterface.getClassLoader());
-        httpInvokerProxy.setServiceUrl(serviceURL);
-        httpInvokerProxy.setServiceInterface(serviceInterface);
-
-        final InetSocketAddress proxyAddress = HttpInvokerUtils.tryFindProxy(serviceURL);
-        if (proxyAddress != null)
-        {
-            synchronized (JettyRemoteSpringBeanProvider.class)
-            {
-                List<Proxy> proxies = client.getProxyConfiguration().getProxies();
-                if (isProxyAlreadyInitialized(proxies, proxyAddress) == false)
-                {
-                    proxies.add(new HttpProxy(proxyAddress.getHostName(), proxyAddress.getPort()));
-                }
-            }
-        }
-
-        httpInvokerProxy.afterPropertiesSet();
-        return HttpInvokerUtils.getCastedService(httpInvokerProxy);
-    }
-
-    @Override
-    public <T> T create(Class<T> serviceInterface, String serviceURL, long serverTimeoutInMillis, ClassLoader customClassLoader)
-    {
-        JettyHttpInvokerRequestExecutor jettyExecutor = new JettyHttpInvokerRequestExecutor(client, serverTimeoutInMillis);
-        jettyExecutor.setBeanClassLoader(customClassLoader);
+        jettyExecutor.setBeanClassLoader(serviceInterface.getClassLoader());
         HttpInvokerProxyFactoryBean httpInvokerProxy = new StreamSupportingHttpInvokerProxyFactoryBean(jettyExecutor);
         httpInvokerProxy.setBeanClassLoader(serviceInterface.getClassLoader());
         httpInvokerProxy.setServiceUrl(serviceURL);

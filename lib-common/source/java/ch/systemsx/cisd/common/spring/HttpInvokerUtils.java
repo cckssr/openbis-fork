@@ -84,16 +84,6 @@ public class HttpInvokerUtils
         return createApacheServiceStub(serviceInterface, serviceURL, serverTimeoutInMillis);
     }
 
-    public static <T> T createServiceStub(final Class<T> serviceInterface, final String serviceURL,
-            final long serverTimeoutInMillis, ClassLoader customClassLoader)
-    {
-        if (checkAndInitializeJettyProvider(Duration.of(serverTimeoutInMillis, ChronoUnit.MILLIS)))
-        {
-            return provider.create(serviceInterface, serviceURL, serverTimeoutInMillis, customClassLoader);
-        }
-        return createApacheServiceStub(serviceInterface, serviceURL, serverTimeoutInMillis);
-    }
-
     public static <T> T createStreamSupportingServiceStub(final Class<T> serviceInterface,
             final String serviceURL, final long serverTimeoutInMillis)
     {

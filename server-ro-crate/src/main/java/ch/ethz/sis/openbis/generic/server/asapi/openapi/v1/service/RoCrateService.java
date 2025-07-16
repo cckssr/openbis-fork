@@ -106,6 +106,7 @@ public class RoCrateService {
                 importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
                 importData.setFormat(ImportFormat.EXCEL);
             SessionInformation sessionInformation = openBIS.getSessionInformation();
+            System.out.println("Session information: " + sessionInformation);
             ImportResult importResult = openBIS.executeImport(importData, importOptions);
             result = importResult.getObjectIds().stream().map( id -> id.toString()).toList();
         }

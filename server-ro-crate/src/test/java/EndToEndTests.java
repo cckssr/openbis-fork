@@ -51,7 +51,8 @@ public class EndToEndTests extends AbstractTest
         sslContextFactory.setTrustAll(true);
         ClientConnector clientConnector = new ClientConnector();
         clientConnector.setSslContextFactory(sslContextFactory);
-        clientConnector.setIdleTimeout(Duration.ofSeconds(120));
+        int timeout = configuration.getIntegerProperty(RoCrateServerParameter.openBISTimeout);
+        clientConnector.setIdleTimeout(Duration.ofMillis(timeout));
         HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP(clientConnector));
         httpClient.start();
 
