@@ -34,7 +34,7 @@ public class OpeBISProvider
                 StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
         int openBISTimeout = StartupMain.getConfiguration()
                 .getIntegerProperty(RoCrateServerParameter.openBISTimeout);
-        OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout);
+        OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout, Thread.currentThread().getContextClassLoader());
         openBIS.setSessionToken(personalAccessToken);
         return openBIS;
     }

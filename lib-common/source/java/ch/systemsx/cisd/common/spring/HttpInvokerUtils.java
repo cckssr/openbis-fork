@@ -19,6 +19,8 @@ import java.net.InetSocketAddress;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.apache.http.HttpHost;
@@ -75,9 +77,19 @@ public class HttpInvokerUtils
     public static <T> T createServiceStub(final Class<T> serviceInterface, final String serviceURL,
             final long serverTimeoutInMillis)
     {
-        if (checkAndInitializeJettyProvider())
+        if (checkAndInitializeJettyProvider(Duration.of(serverTimeoutInMillis, ChronoUnit.MILLIS)))
         {
             return provider.create(serviceInterface, serviceURL, serverTimeoutInMillis);
+        }
+        return createApacheServiceStub(serviceInterface, serviceURL, serverTimeoutInMillis);
+    }
+
+    public static <T> T createServiceStub(final Class<T> serviceInterface, final String serviceURL,
+            final long serverTimeoutInMillis, ClassLoader customClassLoader)
+    {
+        if (checkAndInitializeJettyProvider(Duration.of(serverTimeoutInMillis, ChronoUnit.MILLIS)))
+        {
+            return provider.create(serviceInterface, serviceURL, serverTimeoutInMillis, customClassLoader);
         }
         return createApacheServiceStub(serviceInterface, serviceURL, serverTimeoutInMillis);
     }
@@ -85,14 +97,14 @@ public class HttpInvokerUtils
     public static <T> T createStreamSupportingServiceStub(final Class<T> serviceInterface,
             final String serviceURL, final long serverTimeoutInMillis)
     {
-        if (checkAndInitializeJettyProvider())
+        if (checkAndInitializeJettyProvider(Duration.of(serverTimeoutInMillis, ChronoUnit.MILLIS)))
         {
             return provider.create(serviceInterface, serviceURL, serverTimeoutInMillis);
         }
         return createStreamSupportingApacheServiceStub(serviceInterface, serviceURL, serverTimeoutInMillis);
     }
 
-    private static boolean checkAndInitializeJettyProvider()
+    private static boolean checkAndInitializeJettyProvider(Duration timeout)
     {
         try
         {
@@ -101,7 +113,7 @@ public class HttpInvokerUtils
             {
                 if (provider == null)
                 {
-                    provider = new JettyRemoteSpringBeanProvider(JettyHttpClientFactory.getHttpClient());
+                    provider = new JettyRemoteSpringBeanProvider(JettyHttpClientFactory.getHttpClient(timeout));
                 }
             }
             return true;

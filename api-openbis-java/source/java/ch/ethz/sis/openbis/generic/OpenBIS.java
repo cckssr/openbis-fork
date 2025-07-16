@@ -340,6 +340,11 @@ public class OpenBIS
         this(url + "/openbis/openbis", url + "/datastore_server", url + "/afs_server", timeout);
     }
 
+    public OpenBIS(final String url, final int timeout, ClassLoader customClassLoader)
+    {
+        this(url + "/openbis/openbis", url + "/datastore_server", url + "/afs_server", timeout, customClassLoader);
+    }
+
     public OpenBIS(final String asURL, final String dssURL, final String afsURL)
     {
         this(asURL, dssURL, afsURL, DEFAULT_TIMEOUT_IN_MILLIS);
@@ -355,6 +360,34 @@ public class OpenBIS
                 createTransactionalProxy(ITransactionCoordinatorApi.APPLICATION_SERVER_PARTICIPANT_ID, IApplicationServerApi.class,
                         asFacadeNoTransactions);
         this.dssFacade = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, dssURL + IDataStoreServerApi.SERVICE_URL, timeout);
+
+        if (afsURL != null)
+        {
+            this.afsClientNoTransactions = new AfsClient(URI.create(afsURL), timeout);
+            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
+                    afsClientNoTransactions);
+        } else
+        {
+            this.afsClientNoTransactions = null;
+            this.afsClientWithTransactions = null;
+        }
+
+        this.asURL = asURL;
+        this.dssURL = dssURL;
+        this.afsURL = afsURL;
+        this.timeout = timeout;
+    }
+
+    public OpenBIS(final String asURL, final String dssURL, final String afsURL, final int timeout, ClassLoader customClassLoader)
+    {
+        this.transactionCoordinator =
+                HttpInvokerUtils.createServiceStub(ITransactionCoordinatorApi.class, asURL + ITransactionCoordinatorApi.SERVICE_URL, timeout, customClassLoader);
+        this.asFacadeNoTransactions =
+                HttpInvokerUtils.createServiceStub(IApplicationServerApi.class, asURL + IApplicationServerApi.SERVICE_URL, timeout, customClassLoader);
+        this.asFacadeWithTransactions =
+                createTransactionalProxy(ITransactionCoordinatorApi.APPLICATION_SERVER_PARTICIPANT_ID, IApplicationServerApi.class,
+                        asFacadeNoTransactions);
+        this.dssFacade = HttpInvokerUtils.createServiceStub(IDataStoreServerApi.class, dssURL + IDataStoreServerApi.SERVICE_URL, timeout, customClassLoader);
 
         if (afsURL != null)
         {

@@ -104,33 +104,19 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
     protected RemoteInvocationResult readRemoteInvocationResult(final InputStream is,
             final String codebaseUrl) throws IOException, ClassNotFoundException
     {
-        try (ObjectInputStream ois = createObjectInputStreamOverride(decorateInputStream(is), codebaseUrl)) {
-            final RemoteInvocationResult ret = doReadRemoteInvocationResult(ois);
-            if (!(ret instanceof StreamSupportingRemoteInvocationResult))
-            {
-                is.close();
-            }
-            return ret;
-        } catch (Exception e){
-            throw e;
+        final RemoteInvocationResult ret = super.readRemoteInvocationResult(is, codebaseUrl);
+        if (!(ret instanceof StreamSupportingRemoteInvocationResult))
+        {
+            is.close();
         }
-    }
-
-    protected ObjectInputStream createObjectInputStreamOverride(InputStream is, @Nullable String codebaseUrl) throws IOException {
-        if(getBeanClassLoader() == null) {
-            //TODO can we make it better?
-            //It is a hack to make it work in Quarkus
-            return new org.springframework.remoting.rmi.CodebaseAwareObjectInputStream(is, Thread.currentThread().getContextClassLoader(), codebaseUrl);
-        } else {
-            return new org.springframework.remoting.rmi.CodebaseAwareObjectInputStream(is, getBeanClassLoader(), codebaseUrl);
-        }
+        return ret;
     }
 
     @Override
     protected ObjectInputStream createObjectInputStream(final InputStream is,
             final String codebaseUrl) throws IOException
     {
-        return new SourceStreamPreservingObjectInputStream(is, codebaseUrl);
+        return new SourceStreamPreservingObjectInputStream(is, getBeanClassLoader(), codebaseUrl);
     }
 
     @Override
@@ -294,6 +280,17 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
             // overriding close() to ensure that ObjectInputStream has a chance to
             // clear out itself when close() is called.
             super(new CloseShieldedInputStream(in), codebaseUrl);
+            this.sourceInputStream = in;
+        }
+
+        public SourceStreamPreservingObjectInputStream(final InputStream in, ClassLoader classLoader,
+                final String codebaseUrl) throws IOException
+        {
+            // Prevent the source InputStream from being closed when the
+            // ObjectInputStream is closed. We do it this way rather than
+            // overriding close() to ensure that ObjectInputStream has a chance to
+            // clear out itself when close() is called.
+            super(new CloseShieldedInputStream(in), classLoader, codebaseUrl);
             this.sourceInputStream = in;
         }
 

@@ -17,9 +17,9 @@ package ch.systemsx.cisd.common.http;
 
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.time.Duration;
 
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.HttpClientTransport;
 import org.eclipse.jetty.client.HttpProxy;
 import org.eclipse.jetty.client.ProxyConfiguration;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
@@ -39,13 +39,20 @@ public class JettyHttpClientFactory
 {
     private static HttpClient httpClient;
 
-    public static HttpClient getHttpClient()
+    // Default idle timeout from jetty is also 30 seconds
+    private static final Duration DEFAULT_IDLE_TIMEOUT = Duration.ofSeconds(30);
+
+    public static HttpClient getHttpClient() {
+        return getHttpClient(DEFAULT_IDLE_TIMEOUT);
+    }
+
+    public static HttpClient getHttpClient(Duration idleTimeout)
     {
         if (httpClient == null)
         {
             synchronized (JettyHttpClientFactory.class)
             {
-                HttpClient client = createHttpClient();
+                HttpClient client = createHttpClient(idleTimeout);
 
                 String proxyHost = System.getProperties().getProperty("openbis.proxyHost");
                 String proxyPort = System.getProperties().getProperty("openbis.proxyPort");
@@ -70,7 +77,7 @@ public class JettyHttpClientFactory
         return httpClient;
     }
 
-    private static HttpClient createHttpClient()
+    private static HttpClient createHttpClient(Duration idleTimeout)
     {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setEndpointIdentificationAlgorithm(null); // disable hostname verification
@@ -88,6 +95,10 @@ public class JettyHttpClientFactory
 
 
         ClientConnector clientConnector = new ClientConnector();
+        if(idleTimeout != null){
+            clientConnector.setIdleTimeout(idleTimeout);
+        }
+
 
         // Set the SslContextFactory on the ClientConnector
         clientConnector.setSslContextFactory(sslContextFactory);
