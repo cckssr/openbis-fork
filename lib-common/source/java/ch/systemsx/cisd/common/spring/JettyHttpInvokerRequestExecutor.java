@@ -33,6 +33,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.client.util.FutureResponseListener;
 import org.eclipse.jetty.client.util.InputStreamContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.springframework.lang.Nullable;
 import org.springframework.remoting.httpinvoker.AbstractHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerClientConfiguration;
 import org.springframework.remoting.rmi.CodebaseAwareObjectInputStream;
@@ -103,12 +104,26 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
     protected RemoteInvocationResult readRemoteInvocationResult(final InputStream is,
             final String codebaseUrl) throws IOException, ClassNotFoundException
     {
-        final RemoteInvocationResult ret = super.readRemoteInvocationResult(is, codebaseUrl);
-        if (!(ret instanceof StreamSupportingRemoteInvocationResult))
-        {
-            is.close();
+        try (ObjectInputStream ois = createObjectInputStreamOverride(decorateInputStream(is), codebaseUrl)) {
+            final RemoteInvocationResult ret = doReadRemoteInvocationResult(ois);
+            if (!(ret instanceof StreamSupportingRemoteInvocationResult))
+            {
+                is.close();
+            }
+            return ret;
+        } catch (Exception e){
+            throw e;
         }
-        return ret;
+    }
+
+    protected ObjectInputStream createObjectInputStreamOverride(InputStream is, @Nullable String codebaseUrl) throws IOException {
+        if(getBeanClassLoader() == null) {
+            //TODO can we make it better?
+            //It is a hack to make it work in Quarkus
+            return new org.springframework.remoting.rmi.CodebaseAwareObjectInputStream(is, Thread.currentThread().getContextClassLoader(), codebaseUrl);
+        } else {
+            return new org.springframework.remoting.rmi.CodebaseAwareObjectInputStream(is, getBeanClassLoader(), codebaseUrl);
+        }
     }
 
     @Override
