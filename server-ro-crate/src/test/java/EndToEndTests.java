@@ -11,14 +11,17 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.Duration;
+
 
 public class EndToEndTests extends AbstractTest
 {
 
-    @BeforeClass
+    @BeforeEach
     public void startQuarkus() {
         Quarkus.run(StartupMain.class, new String[]{"./src/main/resources/service.properties"});
     }
@@ -48,6 +51,7 @@ public class EndToEndTests extends AbstractTest
         sslContextFactory.setTrustAll(true);
         ClientConnector clientConnector = new ClientConnector();
         clientConnector.setSslContextFactory(sslContextFactory);
+        clientConnector.setIdleTimeout(Duration.ofSeconds(120));
         HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP(clientConnector));
         httpClient.start();
 
