@@ -22,9 +22,11 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-import org.testng.reporters.Files;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +92,11 @@ public class RoCrateService {
                 }
             // Converting ro-crate model to openBIS model
                 OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
+            if (!RoCrateSchemaValidation.validate(conversion).isOkay())
+            {
+                return List.of("no good!");
+            }
+
                 byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
             // Sending import request to openBIS
                 OpenBIS openBIS = getOpenBis(sessionToken);

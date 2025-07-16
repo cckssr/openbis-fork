@@ -319,10 +319,11 @@ public class RdfToModel
 
                 objectIdentifier = new SampleIdentifier(entry.getId());
                 entity = sample;
-                Map<String, Serializable> properties = new LinkedHashMap<>(entry.getValues());
+                Map<String, Serializable> properties = new LinkedHashMap<>();
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
                 {
-                    properties.put(openBisifyCode(deRdfIdentifier(property.getKey())),
+                    String key = openBisifyCode(deRdfIdentifier(property.getKey()));
+                    properties.put(key,
                             property.getValue());
 
                 }
