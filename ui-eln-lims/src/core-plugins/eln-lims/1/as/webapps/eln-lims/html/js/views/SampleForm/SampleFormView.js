@@ -568,7 +568,7 @@
 			var hideShowOptionsModel = [];
 	
 			// Preview
-			var $previewImageContainer = new $('<div>', { id : "previewImageContainer" });
+			var $previewImageContainer = new $('<div>', { id : "previewImageContainer-"+this._viewId });
 			$previewImageContainer.append($("<legend>").append("Preview"));
 			$previewImageContainer.hide();
 			$formColumn.append($previewImageContainer);
@@ -745,13 +745,15 @@
 	
 				var $previewImage = $("<img>", { 'data-preview-loaded' : 'false',
 												 'class' : 'zoomableImage',
-												 'id' : 'preview-image',
+												 'id' : 'preview-image-'+this._viewId,
 												 'src' : './img/image_loading.gif',
 												 'style' : previewStyle
 												});
-				$previewImage.click(function() {
-					Util.showImage($("#preview-image").attr("src"));
-				});
+
+				$("body").off("click", '#preview-image-'+_this._viewId);
+                $("body").on("click", '#preview-image-'+_this._viewId, function() {
+                    Util.showImage($("#preview-image-"+_this._viewId).attr("src"));
+                });
 	
 				$previewImageContainer.append($previewImage);
 			}
@@ -1601,14 +1603,14 @@
 								} else {
 									for(var pathIdx = 0; pathIdx < dataFiles.result.length; pathIdx++) {
 										if(!dataFiles.result[pathIdx].isDirectory) {
-											var elementId = 'preview-image';
+											var elementId = 'preview-image-'+_this._viewId;
 											var downloadUrl = profile.getDefaultDataStoreURL() + '/' + data.result[0].code + "/" + dataFiles.result[pathIdx].pathInDataSet + "?sessionID=" + mainController.serverFacade.getSession();
 	
 											var img = $("#" + elementId);
 											img.attr('src', downloadUrl);
 											img.attr('data-preview-loaded', 'true');
 											img.show();
-											$("#previewImageContainer").show();
+											$("#previewImageContainer-"+_this._viewId).show();
 											break;
 										}
 									}

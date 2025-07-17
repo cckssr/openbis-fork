@@ -471,7 +471,7 @@ var LayoutManager = {
         return $(window).height() - LayoutManager.secondColumnHeader.outerHeight() - LayoutManager.MAIN_HEADER_HEIGHT;
     },
     getExpectedContentWidth : function() {
-        return LayoutManager.secondColumnHeader.outerWidth();
+        return LayoutManager.secondColumn.outerWidth();
     },
     isMobile : function() {
         var width = $( window ).width();

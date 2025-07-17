@@ -439,9 +439,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 											 'src' : './img/image_loading.gif',
 											 'style' : previewStyle
 											});
-			$previewImage.click(function() {
-				Util.showImage($("#preview-image").attr("src"));
-			});
+            $("body").off("click", '#preview-image-'+_this._viewId);
+            $("body").on("click", '#preview-image-'+_this._viewId, function() {
+                Util.showImage($("#preview-image-"+_this._viewId).attr("src"));
+            });
 
 			$previewImageContainer.append($previewImage);
 		}
