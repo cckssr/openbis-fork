@@ -1,4 +1,4 @@
-import objectType from "@src/js/common/consts/objectType";
+import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
 
 export enum FormMode {
   VIEW = 'view',
@@ -16,15 +16,6 @@ export enum EntityKind {
   COLLECTION = 'COLLECTION',
   DATASET = 'DATASET',
 }
-
-export const objectTypeToEntityKindMap = {
-	[objectType.SPACE]: EntityKind.SPACE,
-	[objectType.PROJECT]: EntityKind.PROJECT,
-	[objectType.NEW_PROJECT]: EntityKind.NEW_PROJECT,
-	[objectType.OBJECT]: EntityKind.SAMPLE,
-	[objectType.COLLECTION]: EntityKind.COLLECTION,
-	[objectType.DATA_SET]: EntityKind.DATASET,
-};
 
 /**
  * Defines the data type for a form field, mapping to openBIS property types and custom UI widget types.
@@ -62,9 +53,12 @@ export interface FormFieldMeta {
   [key: string]: any; // For future extensions
 }
 
-/**
- * Represents a single field within a form.
- */
+export interface ValidationRuleDef {
+  rule: string; // e.g., 'required', 'minLength'
+  message: string;
+  [key: string]: any; // e.g., length: 8
+}
+
 export interface FormField<T = any> {
   id: string;
   name?: string; 
@@ -79,39 +73,68 @@ export interface FormField<T = any> {
   column?: 'left' | 'right' | 'center';
   meta: FormFieldMeta;
   options?: { label: string; value: string }[]; // For 'select' or 'multiselect' fields
-  validation?: (value: any, form: Form) => string | null; // Validation function
+  validation?: ValidationRuleDef[];
 }
 
-
-/**
- * The unified Form DTO that represents any entity to be displayed or edited.
- */
 export interface Form {
   entityPermId: string; // The unique identifier of the entity (permId, code, etc.)
   entityKind: string; // e.g., 'Space', 'Project', 'Sample'
   entityType: string;
   title: string;
+  sections: SectionGroup[];
   fields: FormField[];
   version: number;
   mode?: FormMode;
-  isDirty: boolean; // True if any field has been modified
-  isValid: boolean; // True if all fields are valid
+  isDirty: boolean; 
+  isValid: boolean; 
   meta: {
     [key: string]: any; // For entity-specific metadata
   };
   actions?: FormAction[];
 }
 
+export interface VisibilityRule {
+  mode?: FormMode | FormMode[];
+  permission?: string;
+}
+
 /**
  * Defines the structure for an action that can be performed from the form's toolbar.
  */
 export interface FormAction {
-  name: string; // e.g., 'save', 'edit', 'delete'
-  label: string; // UI label for the button
-  component: 'button' | 'dropdown' | 'switch';
-  icon?: React.ReactNode; // Icon for the button
-  handler: () => any; // Action logic
-  isAllowed: boolean; // Permission check
-  isVisible: boolean; // Visibility check based on form state
-  value?: boolean; // Value for the switch
+  name: string;
+  label: string;
+  component: 'button' | 'switch' | 'dropdown' | string;
+  handler: (...args: any[]) => void;
+  isAllowed: boolean;
+  //isVisible: boolean;
+  visibility: VisibilityRule[];
+  value?: any;
+}
+
+export interface SectionGroup {
+  section: string;
+  fields: string[];
+}
+
+// NEW: Context object for actions
+export interface ActionContext {
+  controller: FormController;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form | null>>;
+  mode: FormMode;
+  setMode: React.Dispatch<React.SetStateAction<FormMode>>;
+  permissions: any;
+  onAfterSave: () => void;
+  openbisFacade: any; // Provide external dependencies
+  onNewProject: (spacePermId: string) => void;
+  onEntityChange: (permId: string, isNew: boolean) => void;
+  closeForm: () => void;
+}
+
+// NEW: Props for field renderers
+export interface FieldRendererProps {
+  field: FormField;
+  onFieldChange: (fieldId: string, value: any) => void;
+  mode: FormMode;
 }
