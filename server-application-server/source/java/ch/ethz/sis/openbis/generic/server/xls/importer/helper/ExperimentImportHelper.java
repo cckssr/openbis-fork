@@ -131,7 +131,7 @@ public class ExperimentImportHelper extends BasicImportHelper
             ExperimentType type = delayedExecutor.getExperimentType(experimentType, fetchTypeOptions);
             if (type == null)
             {
-                throw new UserFailureException("Experiment type " + experimentType + " not found.");
+                throw new UserFailureException("Experiment type " + experimentType.getPermId() + " not found.");
             }
             this.propertyTypeSearcher = new PropertyTypeSearcher(type.getPropertyAssignments(), annotationCache);
 
