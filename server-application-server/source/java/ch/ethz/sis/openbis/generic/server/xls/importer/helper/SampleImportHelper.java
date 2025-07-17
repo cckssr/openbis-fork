@@ -272,7 +272,7 @@ public class SampleImportHelper extends BasicImportHelper
             if (!attributeValidator.isHeader(key))
             {
                 String value = getValueByColumnName(header, values, key);
-                PropertyType propertyType = propertyTypeSearcher.findPropertyType(key);
+                PropertyType propertyType = propertyTypeSearcher.findPropertyType(sampleType, key);
                 creation.setProperty(propertyType.getCode(), getPropertyValue(propertyType, value));
             }
         }
@@ -407,7 +407,7 @@ public class SampleImportHelper extends BasicImportHelper
                     value = null;
                 } else { // Normal behaviour, set value
                 }
-                PropertyType propertyType = propertyTypeSearcher.findPropertyType(key);
+                PropertyType propertyType = propertyTypeSearcher.findPropertyType(sampleType, key);
                 update.setProperty(propertyType.getCode(), getPropertyValue(propertyType, value));
             }
         }

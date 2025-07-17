@@ -101,7 +101,11 @@ public final class SemanticAnnotationHelper
     }
 
     public Set<String> getCachedPropertyTypes() {
-        return propertyTypeToSemanticAnnotationMap.keySet();
+        Set<String> types = propertyAssignmentToSemanticAnnotationMap.keySet().stream()
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toSet());
+        types.addAll(propertyTypeToSemanticAnnotationMap.keySet());
+        return types;
     }
 
     public SemanticAnnotation getCachedSemanticAnnotation(SemanticAnnotationType type,

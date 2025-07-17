@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.utils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.LongDateFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ShortDateFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
@@ -85,7 +86,7 @@ public class PropertyTypeSearcher
         return annotationCache.getCachedPropertyTypes();
     }
 
-    public PropertyType findPropertyType(String code)
+    public PropertyType findPropertyType(EntityTypePermId typePermId, String code)
     {
         if (code2PropertyType.containsKey(code))
         {
@@ -99,6 +100,11 @@ public class PropertyTypeSearcher
                 SemanticAnnotationType.PropertyType, null, code);
         if(annotation != null) {
             return annotation.getPropertyType();
+        }
+        annotation = annotationCache.getCachedSemanticAnnotation(
+                SemanticAnnotationType.PropertyAssignment, typePermId, code);
+        if(annotation != null) {
+            return annotation.getPropertyAssignment().getPropertyType();
         }
 
         throw new UserFailureException("Can't find property with code or label " + code);
