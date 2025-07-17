@@ -1976,7 +1976,7 @@ sample.save() # during save spreadsheet object will be serialized into openbis-s
 #### Cells
 Spreadsheet Cell have 3 attributes:
 - formula - it is either spreadsheet formula (e.g `=SUM(A1:A3)`) or value
-- value - value that is calculated by spreadsheet engine (in ELN UI)
+- value - read-only value that is calculated by spreadsheet engine (in ELN UI) based on the content of `formula` attribute
 - style - styling of particular cell
 
 Accessing cells:
@@ -1994,7 +1994,7 @@ spreadsheet['B', 5].formula = 'B5 Cell'
 
 
 ```
-**Note** `value` attribute will be overwritten by spreadsheet engine in ELN UI, so it is discouraged to modify it 
+**Note** `value` attribute will be overwritten by spreadsheet engine in ELN UI, so it is discouraged to modify it in any way!
 
 #### Columns
 Spreadsheet Column contain 2 attributes:

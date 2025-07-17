@@ -17,11 +17,15 @@ package ch.ethz.sis.openbis.generic.server.xls.importer.utils;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.LongDateFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ShortDateFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
+import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationType;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -29,10 +33,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class PropertyTypeSearcher
@@ -54,10 +55,13 @@ public class PropertyTypeSearcher
 
     private Map<String, PropertyType> label2PropertyType;
 
-    public PropertyTypeSearcher(List<PropertyAssignment> assignment)
+    private final SemanticAnnotationHelper annotationCache;
+
+    public PropertyTypeSearcher(List<PropertyAssignment> assignment, SemanticAnnotationHelper annotationCache)
     {
         this.code2PropertyType = new HashMap<>();
         this.label2PropertyType = new HashMap<>();
+        this.annotationCache = annotationCache;
 
         for (PropertyAssignment propertyAssignment : assignment)
         {
@@ -78,7 +82,11 @@ public class PropertyTypeSearcher
         return label2PropertyType;
     }
 
-    public PropertyType findPropertyType(String code)
+    public Set<String> getSemanticallyAnnotatedPropertyTypes() {
+        return annotationCache.getCachedPropertyTypes();
+    }
+
+    public PropertyType findPropertyType(EntityTypePermId typePermId, String code)
     {
         if (code2PropertyType.containsKey(code))
         {
@@ -87,6 +95,16 @@ public class PropertyTypeSearcher
         if (label2PropertyType.containsKey(code))
         {
             return label2PropertyType.get(code);
+        }
+        SemanticAnnotation annotation = annotationCache.getCachedSemanticAnnotation(
+                SemanticAnnotationType.PropertyType, null, code);
+        if(annotation != null) {
+            return annotation.getPropertyType();
+        }
+        annotation = annotationCache.getCachedSemanticAnnotation(
+                SemanticAnnotationType.PropertyAssignment, typePermId, code);
+        if(annotation != null) {
+            return annotation.getPropertyAssignment().getPropertyType();
         }
 
         throw new UserFailureException("Can't find property with code or label " + code);

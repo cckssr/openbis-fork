@@ -18,6 +18,7 @@ from .utils import (
     is_permid,
 )
 
+from urllib.parse import quote
 
 class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
     """managing openBIS spaces"""
@@ -103,3 +104,8 @@ class Space(OpenBisObject, entity="space", single_item_method_name="get_space"):
 
     def new_sample(self, **kwargs):
         return self.openbis.new_sample(space=self, **kwargs)
+
+    def get_eln_url(self):
+        query = {"type":"SPACE","id":self.code}
+        return f'{self.openbis.url}/webapp/eln-lims/?menuUniqueId={quote(str(query))}&viewName=showSpacePage&viewData={self.code}'
+

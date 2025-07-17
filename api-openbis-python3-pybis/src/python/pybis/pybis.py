@@ -5461,6 +5461,7 @@ class Openbis:
             return dss[dss["code"] == dss_code]["downloadUrl"][0]
 
 
+
 class ExternalDMS:
     """managing openBIS external data management systems"""
 
@@ -5534,6 +5535,17 @@ class ServerInformation:
 
     def __getattr__(self, name):
         return self._info.get(name.replace("_", "-"))
+
+    def get_service_props(self):
+        result = {}
+        if "as-service-properties" in self._info:
+            props = self._info["as-service-properties"].split('\n')[1:]
+            result = {"_resolution_date": props[0]}
+            for prop in props[1:]:
+                split = prop.split('=')
+                if len(split) > 1:
+                    result[split[0]] = "=".join(split[1:])
+        return result
 
     def get_major_version(self):
         return int(self._info["api-version"].split(".")[0])

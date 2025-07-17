@@ -282,6 +282,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
         this._$andOrDropdownComponent.refresh = function() {
             Select2Manager.add(_this._$andOrDropdownComponent);
         }
+        $("body").off("change", "#"+andOrDropdownId);
 		$("body").on("change", "#"+andOrDropdownId, function() {
 			_this._advancedSearchModel.criteria.logicalOperator = $(this).val();
 		});
@@ -1000,6 +1001,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
         var dropdownId = 'entity-type-dropdown-'+_this._viewId;
         var $dropdown = FormUtil.getDropdown(model, 'Select Entity Type to search for', dropdownId);
 
+        $("body").off("change", "#"+dropdownId)
         $("body").on("change", "#"+dropdownId, function() {
             var value = $(this).val();
             var isGlobalSearch = value.startsWith('ALL');

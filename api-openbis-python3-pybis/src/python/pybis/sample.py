@@ -17,6 +17,7 @@ from .openbis_object import OpenBisObject
 from .property import PropertyHolder
 from .property_reformatter import PropertyReformatter
 
+from urllib.parse import quote
 
 class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample"):
     """A Sample (new: Object) is one of the most commonly used entities in openBIS."""
@@ -111,7 +112,12 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
                     value = self.formatter.to_array(data_type, value)
             if (data_type == 'XML' and 'metaData' in property_type and 'custom_widget' in property_type['metaData']
                     and property_type['metaData']['custom_widget'].upper() == 'SPREADSHEET'):
-                    value = self.formatter.to_spreadsheet(value)
+                    if key.lower() in self.p.__dict__:
+                        old_spreadsheet = self.p.__dict__[key.lower()]
+                        old_spreadsheet._set_data(self.formatter.to_spreadsheet(value))
+                        value = old_spreadsheet
+                    else:
+                        value = self.formatter.to_spreadsheet(value)
             self.p.__dict__[key.lower()] = value
 
     def __dir__(self):
@@ -272,3 +278,6 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
 
         else:
             super().save()
+
+    def get_eln_url(self):
+        return f'{self.openbis.url}/webapp/eln-lims/?menuUniqueId=null&viewName=showViewSamplePageFromPermId&viewData={self.permId}'

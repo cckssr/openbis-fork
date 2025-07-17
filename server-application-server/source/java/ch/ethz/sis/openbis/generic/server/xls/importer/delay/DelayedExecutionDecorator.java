@@ -1149,6 +1149,19 @@ public class DelayedExecutionDecorator
         }
     }
 
+    public List<SemanticAnnotation> searchSemanticAnnotations(SemanticAnnotationSearchCriteria criteria, SemanticAnnotationFetchOptions fetchOptions)
+    {
+        SearchResult<SemanticAnnotation> semanticAnnotationSearchResult = v3.searchSemanticAnnotations(this.sessionToken, criteria, fetchOptions);
+
+        if (semanticAnnotationSearchResult.getTotalCount() > 0)
+        {
+            return semanticAnnotationSearchResult.getObjects();
+        } else
+        {
+            return null;
+        }
+    }
+
     public void createSemanticAnnotation(SemanticAnnotationCreation creation, int page, int line)
     {
         List<IObjectId> dependencies = new ArrayList<>();
