@@ -1,8 +1,8 @@
 import openbis from "@srcV3/openbis.esm";
 
 export async function fetchRights(openbisFacade: openbis.openbis, objId: string, ids: any[]): Promise<{ editable: boolean, deletable: boolean }> {
-	const { RightsFetchOptions } = openbisFacade;
-	const right = await openbisFacade.getRightsByIds(ids, new RightsFetchOptions()) as any;
+	const { RightsFetchOptions, getRightsByIds } = openbisFacade;
+	const right = await getRightsByIds(ids, new RightsFetchOptions()) as any;
 	let editable = false;
 	let deletable = false;
 	if (right[objId] && right[objId].rights) {

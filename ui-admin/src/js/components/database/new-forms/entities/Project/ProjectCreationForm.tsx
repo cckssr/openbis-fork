@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormField, FormFieldDataType, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormFieldRenderer } from '@src/js/components/database/new-forms/components/FormFieldRenderer.tsx';
-import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx';
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 interface ProjectCreationFormProps {
 

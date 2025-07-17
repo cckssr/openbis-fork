@@ -1,5 +1,5 @@
 import React from 'react'
-import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx'
 import { EntityForm } from '@src/js/components/database/new-forms/components/EntityForm.tsx'
 import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts'
 

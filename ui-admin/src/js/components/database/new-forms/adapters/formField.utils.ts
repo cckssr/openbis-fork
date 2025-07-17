@@ -6,7 +6,7 @@ export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { v
 
 export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'code',
+    id: dto.code + '-code',
     label: 'Code',
     value: overrides.value ?? dto.code,
     dataType: FormFieldDataType.VARCHAR,
@@ -22,7 +22,7 @@ export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormFiel
 
 export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'description',
+    id: dto.code + '-description',
     label: 'Description',
     value: overrides.value ?? dto.description,
     dataType: FormFieldDataType.MULTILINE_VARCHAR,
@@ -38,7 +38,7 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
 
 export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'permId',
+    id: dto.code + '-permId',
     label: 'PermId',
     value: overrides.value ?? dto.permId?.permId,
     dataType: FormFieldDataType.VARCHAR,
@@ -54,7 +54,7 @@ export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormFi
 
 export function getIdentifierField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'identifier',
+    id: dto.code + '-identifier',
     label: 'Identifier',
     value: overrides.value ?? dto.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -70,7 +70,7 @@ export function getIdentifierField(dto: any, overrides: FieldOverrides = {}): Fo
 
 export function getPathField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'path',
+    id: dto.code + '-path',
     label: 'Path',
     value: overrides.value ?? dto.identifier?.identifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -86,7 +86,7 @@ export function getPathField(dto: any, overrides: FieldOverrides = {}): FormFiel
 
 export function getSpaceField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'space',
+    id: dto.code + '-space',
     label: 'Space',
     value: overrides.value ?? dto.space?.code,
     dataType: FormFieldDataType.VARCHAR,
@@ -102,7 +102,7 @@ export function getSpaceField(dto: any, overrides: FieldOverrides = {}): FormFie
 
 export function getRegistratorField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'registrator',
+    id: dto.code + '-registrator',
     label: 'Registrator',
     value: overrides.value ?? dto.registrator?.userId,
     dataType: FormFieldDataType.VARCHAR,
@@ -118,7 +118,7 @@ export function getRegistratorField(dto: any, overrides: FieldOverrides = {}): F
 
 export function getRegistrationDateField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'registrationDate',
+    id: dto.code + '-registrationDate',
     label: 'Registration Date',
     value: overrides.value ?? (dto.registrationDate ? getFormatedDate(new Date(dto.registrationDate)) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
@@ -134,7 +134,7 @@ export function getRegistrationDateField(dto: any, overrides: FieldOverrides = {
 
 export function getModifierField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'modifier',
+    id: dto.code + '-modifier',
     label: 'Modifier',
     value: overrides.value ?? dto.modifier,
     dataType: FormFieldDataType.VARCHAR,
@@ -150,7 +150,7 @@ export function getModifierField(dto: any, overrides: FieldOverrides = {}): Form
 
 export function getModificationDateField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'modificationDate',
+    id: dto.code + '-modificationDate',
     label: 'Modification Date',
     value: overrides.value ?? (dto.modificationDate ? getFormatedDate(new Date(dto.modificationDate)) : ''),
     dataType: FormFieldDataType.TIMESTAMP,
@@ -166,7 +166,7 @@ export function getModificationDateField(dto: any, overrides: FieldOverrides = {
 
 export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   return {
-    id: 'entityType',
+    id: dto.code + '-entityType',
     label: 'Type',
     value: overrides.value ?? dto.type.code,
     dataType: FormFieldDataType.VARCHAR,

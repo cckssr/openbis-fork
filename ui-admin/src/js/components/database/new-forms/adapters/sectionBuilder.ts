@@ -1,9 +1,4 @@
-import { FormField } from '../types/form.types.ts';
-
-export interface SectionGroup {
-  section: string;
-  fields: FormField[];
-}
+import { FormField, SectionGroup } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 export function groupFieldsBySection(fields: FormField[]): SectionGroup[] {
   const sectionMap: { [section: string]: FormField[] } = {};

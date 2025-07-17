@@ -1,9 +1,11 @@
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
 import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { fetchRights, getUserRole } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
 import { adaptSpaceDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
+import { groupFieldsBySection } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { FormAction } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 export class SpaceFormController implements FormController {
   private openbisFacade: any;

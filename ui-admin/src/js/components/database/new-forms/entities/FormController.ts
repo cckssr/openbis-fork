@@ -1,4 +1,4 @@
-import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 /**
  * Defines the contract for all entity-specific form controllers.

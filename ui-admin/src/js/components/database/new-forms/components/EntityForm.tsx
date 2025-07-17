@@ -8,7 +8,7 @@ import { useConflictResolution } from '@src/js/components/database/new-forms/hoo
 import messages from '@src/js/common/messages.js';
 import Button from '@src/js/components/common/form/Button.jsx';
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
-import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx';
+import { useEntityForm } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 import Message from '@src/js/components/common/form/Message.jsx';
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
@@ -25,8 +25,7 @@ interface EntityFormProps {
 }
 
 export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode, controller, customToolbar, customSections, onAfterSave, actions }) => {
-  const [form, setForm] = useState<Form>(initialForm);
-  //const [mode, setMode] = useState<FormMode>(initialMode);
+  const { form, setForm, mode, setMode } = useEntityForm();
   const [permissions, setPermissions] = useState({ canEdit: true, canDelete: true, canMove: true });
   const [isAutoSaveEnabled, setAutoSaveEnabled] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -41,16 +40,11 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
   const { onNewProject, onEntityChange } = useEntityForm();
 
   const handleModeChange = (mode: FormMode) => {
-    setForm(prevForm => ({ ...prevForm, mode }));
+    setMode(mode);
   }
   // Callback to update a single field's value
   const handleFieldUpdate = useCallback((fieldId: string, value: any) => {
-    setForm(prevForm => ({
-      ...prevForm,
-      fields: prevForm.fields.map(field =>
-        field.id === fieldId ? { ...field, value } : field
-      ),
-    }));
+    setForm(prevForm => ({ ...prevForm, fields: prevForm.fields.map(field => field.id === fieldId ? { ...field, value } : field) }));
     if (onEntityChange) onEntityChange(form.entityPermId, true);
   }, []);
 
@@ -136,13 +130,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
     alert('Move functionality not yet implemented.');
   };
 
-  useAutoSave({
-    formData: form,
-    storageKey: `entity-form-${form.entityPermId}`,
-    isEnabled: isAutoSaveEnabled && form.mode === FormMode.EDIT,
-    interval: 15000,
-    onDataRestore: (restoredForm) => console.log(restoredForm) //setForm(restoredForm),
-  });
+  
 
   useEffect(() => {
     controller.checkPermissions(form).then(setPermissions);
@@ -171,7 +159,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
       component: 'button',
       handler: handleSave,
       isAllowed: true,
-      isVisible: form.mode === FormMode.EDIT
+      isVisible: mode === FormMode.EDIT
     },
     {
       name: 'cancel',
@@ -179,7 +167,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
       component: 'button',
       handler: () => handleModeChange(FormMode.VIEW),
       isAllowed: true,
-      isVisible: form.mode === FormMode.EDIT
+      isVisible: mode === FormMode.EDIT
     },
     {
       name: 'delete',
@@ -228,7 +216,7 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
   }
 
   const renderActions = () => {
-    console.log(form.actions);
+    console.log(form?.actions);
 
     return (
       <Stack key={form.entityPermId + 'actions'} direction='row' spacing={{ xs: 1, sm: 2 }} sx={{
@@ -237,8 +225,8 @@ export const EntityForm: React.FC<EntityFormProps> = ({ initialForm, initialMode
         padding: '16px 16px',
         backgroundColor: 'rgb(248,248,248)'
       }}>
-        {defaultActions.map(action => renderAction(action))}
-        {form.actions && form.actions.map(action => renderAction(action))}
+        {defaultActions.map(action => renderAction(action as FormAction))}
+        {form?.actions && form?.actions.map((action: FormAction) => renderAction(action))}
       </Stack>
     )
   }
