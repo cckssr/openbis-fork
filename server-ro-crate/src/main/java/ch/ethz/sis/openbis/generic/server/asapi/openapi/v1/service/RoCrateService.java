@@ -13,8 +13,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
-import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
-import ch.ethz.sis.openbis.ros.startup.StartupMain;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
@@ -29,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Path("/openbis/open-api/ro-crate")
@@ -119,6 +118,50 @@ public class RoCrateService {
             SessionWorkSpace.clear(sessionToken);
         }
         System.out.println("Import Finished");
+        return result;
+    }
+
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("validate")
+    public List<String> validateRoCrate(InputStream inputStream, Map<String, String> options)
+            throws IOException
+    {
+        String sessionToken = options.get("sessionToken");
+        List<String> result = new ArrayList<>();
+        try
+        {
+            // Writing the crate to the session workspace
+
+            java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
+            SessionWorkSpace.write(sessionToken, roCrateMetadata, inputStream);
+            // Reading ro-crate model
+            RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+            RoCrate crate = roCrateFolderReader.readCrate(
+                    SessionWorkSpace.getRealPath(sessionToken, null).toString());
+
+            SchemaFacade schemaFacade = SchemaFacade.of(crate);
+            List<IType> types = schemaFacade.getTypes();
+            List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
+            List<IMetadataEntry> entryList = new ArrayList<>();
+            for (var type : types)
+            {
+                entryList.addAll(schemaFacade.getEntries(type.getId()));
+            }
+            // Converting ro-crate model to openBIS model
+            OpenBisModel conversion =
+                    RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
+            if (!RoCrateSchemaValidation.validate(conversion).isOkay())
+            {
+                return List.of("no good!");
+            }
+        } catch (Exception e)
+        {
+            throw new IllegalArgumentException(e);
+        } finally
+        {
+            SessionWorkSpace.clear(sessionToken);
+        }
         return result;
     }
 
