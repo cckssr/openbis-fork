@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Path("/openbis/open-api/ro-crate")
@@ -123,11 +122,12 @@ public class RoCrateService {
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
+    @Consumes("application/ld+json")
     @Path("validate")
-    public List<String> validateRoCrate(InputStream inputStream, Map<String, String> options)
+    public List<String> validateRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
+            InputStream inputStream)
             throws IOException
     {
-        String sessionToken = options.get("sessionToken");
         List<String> result = new ArrayList<>();
         try
         {
