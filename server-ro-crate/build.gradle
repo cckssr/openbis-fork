@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'application'
     id 'io.quarkus' version '3.23.0'
-    id 'com.github.vlsi.jandex' version '2.0.0'
 }
 
 java {
@@ -20,10 +19,6 @@ repositories {
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
     mavenCentral()
-}
-
-dependencies {
-    implementation("com.github.vlsi.jandex:com.github.vlsi.jandex.gradle.plugin:2.0.0")
 }
 
 dependencies {
@@ -57,11 +52,9 @@ test {
 }
 
 mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
-test.dependsOn jandexTest
 
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
-    dependsOn jandexMain
     mainClass = mainClassName
     classpath = sourceSets.main.runtimeClasspath
     args(["../server-ro-crate/src/main/resources/service.properties"])
