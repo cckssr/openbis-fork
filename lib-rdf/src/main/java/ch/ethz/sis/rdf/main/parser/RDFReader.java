@@ -91,7 +91,7 @@ public class RDFReader
     private void processOntologyModel(OntModel ontModel, ModelRDF modelRDF)
     {
 
-
+        Set<String> multiValueProperties = new LinkedHashSet<>();
         Map<String, List<String>> RDFtoOpenBISDataTypeMap = DatatypeMapper.getRDFtoOpenBISDataTypeMap(ontModel);
         //modelRDF.RDFtoOpenBISDataType = RDFtoOpenBISDataTypeMap;
         Map<String, List<String>> objectPropToOntClassMap =
@@ -106,10 +106,12 @@ public class RDFReader
                         vocabUnionTypes, modelRDF);
 
         sampleTypeList.removeIf(sampleType -> modelRDF.vocabularyTypeListGroupedByType.containsKey(sampleType.code));
-        restrictionsToSampleMetadata(sampleTypeList, ontClass2OntClassExtensionMap);
+        restrictionsToSampleMetadata(sampleTypeList, ontClass2OntClassExtensionMap,
+                multiValueProperties);
         verifyPropertyTypes(sampleTypeList, RDFtoOpenBISDataTypeMap, objectPropToOntClassMap, modelRDF.vocabularyTypeListGroupedByType, modelRDF.stringOntClassExtensionMap);
 
         modelRDF.sampleTypeList = sampleTypeList; //ClassCollector.getSampleTypeList(ontModel);
+        modelRDF.setMultiValueProperties(multiValueProperties);
     }
 
     private Set<String> handleVocabularyUnion(OntModel ontModel, String vocabTypeUri, ModelRDF modelRDF){
@@ -394,9 +396,8 @@ public class RDFReader
        return uri.replaceAll("https://biomedit.ch/rdf/sphn-schema/sphn#", "").toUpperCase(Locale.ROOT);
     }
 
-
-
-    private void restrictionsToSampleMetadata(List<SampleType> sampleTypeList, Map<String, OntClassExtension> ontClass2OntClassExtensionMap)
+    private void restrictionsToSampleMetadata(List<SampleType> sampleTypeList,
+            Map<String, OntClassExtension> ontClass2OntClassExtensionMap, Set<String> multiValued)
     {
         for(SampleType sampleType: sampleTypeList)
         {
@@ -414,6 +415,11 @@ public class RDFReader
                     }
                     samplePropertyType.metadata.putAll(propertyMetadata);
                     samplePropertyType.setMultiValue(checkMultiValue(propertyMetadata));
+                    if (samplePropertyType.isMultiValue)
+                    {
+                        multiValued.add(samplePropertyType.code);
+                    }
+
                     //samplePropertyType.setMandatory(checkMandatory(propertyMetadata));
                 }
                 sampleMetadata.put(samplePropertyType.code, propertyMetadata);

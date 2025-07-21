@@ -127,7 +127,11 @@ public class RdfToOpenBisMapper
                 PropertyAssignment assignment = new PropertyAssignment();
                 assignment.setSemanticAnnotations(new ArrayList<>());
                 assignment.setMandatory(samplePropertyType.isMandatory == 1);
-                propertyType.setMultiValue(samplePropertyType.isMultiValue);
+                boolean isMultiValued =
+                        samplePropertyType.isMultiValue || modelRDF.getMultiValueProperties()
+                                .contains(
+                                        samplePropertyType.code); // In TTL, this can be different on a per class basis, in openBIS only PropertyTypes can be multivalued, not the assignments. So it's a hack.
+                propertyType.setMultiValue(isMultiValued);
                 List<SemanticAnnotation> propertySemanticAnnotations = new ArrayList<>();
                 SemanticAnnotation semanticAnnotation1 = new SemanticAnnotation();
                 propertySemanticAnnotations.add(semanticAnnotation1);

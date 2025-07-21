@@ -4,8 +4,10 @@ import ch.ethz.sis.rdf.main.model.xlsx.SampleObject;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleType;
 import ch.ethz.sis.rdf.main.model.xlsx.VocabularyType;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ModelRDF
 {
@@ -22,6 +24,18 @@ public class ModelRDF
     public Map<String, List<VocabularyType>> vocabularyTypeListGroupedByType;
     public Map<String, List<String>> subClassChanisMap;
     public List<SampleType> sampleTypeList;
+
+    private Set<String> multiValueProperties = new LinkedHashSet<>();
+
+    public Set<String> getMultiValueProperties()
+    {
+        return multiValueProperties;
+    }
+
+    public void setMultiValueProperties(Set<String> multiValueProperties)
+    {
+        this.multiValueProperties = multiValueProperties;
+    }
 
     public boolean isSubClass(String uri)
     {
