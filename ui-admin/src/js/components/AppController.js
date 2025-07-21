@@ -8,6 +8,11 @@ import routes from '@src/js/common/consts/routes.js'
 import users from '@src/js/common/consts/users.js'
 import cookie from '@src/js/common/cookie.js'
 import ids from '@src/js/common/consts/ids.js'
+import { registerProjectPlugin } from '@src/js/components/database/new-forms/entities/Project/ProjectPluginRegister.ts';
+import { registerSpacePlugin } from '@src/js/components/database/new-forms/entities/Space/SpacePluginRegister.ts';
+import { registerCoreFieldsPlugin } from '@src/js/components/database/new-forms/engine/CoreFieldsPlugin.ts';
+import { registerCoreActionsPlugin } from '@src/js/components/database/new-forms/engine/CoreActionPlugin.ts';
+import { registerCollectionPlugin } from '@src/js/components/database/new-forms/entities/Collection/CollectionPluginRegister.ts';
 
 const AppContext = React.createContext()
 
@@ -19,11 +24,13 @@ export class AppController {
 
     history.listen(location => {
       const route = routes.parse(location.location.pathname)
+      console.log('init - route', {route});
       this.routeChanged(route.path)
     })
 
     this.context = context
     this.history = history
+    this.registerPlugins();
   }
 
   initialState() {
@@ -70,6 +77,7 @@ export class AppController {
                 serverInformation
               })
               const routeObject = routes.parse(this.getRoute())
+              console.log('routeObject', {routeObject});
               await this.routeChanged(routeObject.path)
             } else {
               openbis.useSession(null)
@@ -226,12 +234,12 @@ export class AppController {
     if (oldTab) {
       const newTab = {
         ...oldTab,
-        object: { type: newType, id: newId },
+        object: { type: newType, id: newId, fromType: oldType, fromId: oldId },
         changed: false
       }
       await this.replaceOpenTab(page, oldTab.id, newTab)
 
-      const route = routes.format({ page, type: newType, id: newId })
+      const route = routes.format({ page, type: newType, id: newId, fromType: oldType, fromId: oldId })
       await this.routeReplace(route)
 
       await this.setLastObjectModification(
@@ -265,9 +273,11 @@ export class AppController {
   }
 
   async objectChange(page, type, id, changed) {
+    console.log(this.context.getState())
     const openTabs = this.getOpenTabs(page)
+    console.log('objectChange', {openTabs});
     const oldTab = _.find(openTabs, { object: { type, id } })
-
+    console.log('objectChange', {page}, {type}, {id}, {changed}, {oldTab});
     if (oldTab) {
       const newTab = { ...oldTab, changed }
       await this.replaceOpenTab(page, oldTab.id, newTab)
@@ -409,7 +419,10 @@ export class AppController {
   }
 
   async setOpenTabs(page, newOpenTabs) {
-    await this.context.setState(state => ({
+    console.log('setOpenTabs', {page}, {newOpenTabs});
+    await this.context.setState(state => (
+      console.log('setOpenTabs', {state}), 
+      {
       pages: {
         ...state.pages,
         [page]: {
@@ -442,6 +455,7 @@ export class AppController {
 
   async replaceOpenTab(page, id, tab) {
     const openTabs = this.getOpenTabs(page)
+    console.log('replaceOpenTab', {openTabs}, {id}, {tab});
     const index = _.findIndex(openTabs, { id: id }, _.isMatch)
     if (index !== -1) {
       const newOpenTabs = Array.from(openTabs)
@@ -545,6 +559,14 @@ export class AppController {
     }
     WithContext.displayName = 'WithContext'
     return WithContext
+  }
+
+  registerPlugins() {
+    registerCoreActionsPlugin();
+    registerCoreFieldsPlugin();
+    registerProjectPlugin(openbis);
+    registerSpacePlugin(openbis);
+    registerCollectionPlugin(openbis);
   }
 }
 
