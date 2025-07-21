@@ -34,8 +34,8 @@ export async function getUserRole(openbisFacade: openbis.openbis, isAdmin: boole
 			.then(roleAssignments => {
 				var roles = [];
 				console.log({ roleAssignments });
-				for (let i = 0; i < roleAssignments.length; i++) {
-					const ra = roleAssignments[i];
+				for (let i = 0; i < roleAssignments.getObjects().length; i++) {
+					const ra = roleAssignments.getObjects()[i];
 					if (ra.space && ra.space.code === space && roles.indexOf(ra.role) < 0) {
 						roles.push(ra.role);
 					}

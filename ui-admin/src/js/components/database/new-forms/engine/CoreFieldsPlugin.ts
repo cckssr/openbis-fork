@@ -6,6 +6,8 @@ import { FormFieldDataType } from '@src/js/components/database/new-forms/types/f
 import { TextFieldRenderer } from '@src/js/components/database/new-forms/components/fields/TextFieldRenderer.tsx';
 import { DateFieldRenderer } from '@src/js/components/database/new-forms/components/fields/DateFieldRenderer.tsx';
 import { TextAreaFieldRenderer } from '@src/js/components/database/new-forms/components/fields/TextAreaFieldRenderer.tsx';
+import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/fields/SwitchActionRenderer.tsx';
+import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/fields/ButtonActionRenderer.tsx';
 // ... import others
 
 export function registerCoreFieldsPlugin() {
@@ -13,5 +15,8 @@ export function registerCoreFieldsPlugin() {
   FormEngineRegistry.registerFieldRenderer(FormFieldDataType.VARCHAR, TextFieldRenderer);
   FormEngineRegistry.registerFieldRenderer(FormFieldDataType.TIMESTAMP, DateFieldRenderer);
   FormEngineRegistry.registerFieldRenderer(FormFieldDataType.MULTILINE_VARCHAR, TextAreaFieldRenderer);
-  // ... register all other core field types
+
+  // register action renderers
+  FormEngineRegistry.registerActionRenderer('button', ButtonActionRenderer);
+  FormEngineRegistry.registerActionRenderer('switch', SwitchActionRenderer);
 }

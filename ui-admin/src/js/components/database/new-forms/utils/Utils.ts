@@ -1,11 +1,5 @@
 import objectType from "@src/js/common/consts/objectType";
 import { EntityKind, FormField } from "@src/js/components/database/new-forms/types/form.types.ts";
-import { ProjectCreationForm } from "@src/js/components/database/new-forms/entities/Project/ProjectCreationForm.tsx";
-import CollectionFormView from "@src/js/components/database/new-forms/entities/Collection/CollectionFormView.tsx";
-import SpaceFormView from "@src/js/components/database/new-forms/entities/Space/SpaceFormView.tsx";
-import ProjectFormView from "@src/js/components/database/new-forms/entities/Project/ProjectFormView.tsx";
-import ObjectFormView from "@src/js/components/database/new-forms/entities/Object/ObjectFormView.tsx";
-import DatasetFormView from "@src/js/components/database/new-forms/entities/Dataset/DatasetFormView.tsx";
 
 export function findFormFieldById(fields: FormField[], fieldId: string): FormField | undefined {
 	return fields.find(field => field.id === fieldId);
@@ -30,22 +24,3 @@ export const objectTypeToEntityKindMap = {
 	[objectType.COLLECTION]: EntityKind.COLLECTION,
 	[objectType.DATA_SET]: EntityKind.DATASET,
 };
-
-export const entityKindToFormComponentMap = {
-	[EntityKind.SPACE]: SpaceFormView,
-	[EntityKind.PROJECT]: ProjectFormView,
-	[EntityKind.NEW_PROJECT]: ProjectCreationForm,
-	[EntityKind.SAMPLE]: ObjectFormView,
-	[EntityKind.COLLECTION]: CollectionFormView,
-	[EntityKind.DATASET]: DatasetFormView
-};
-
-export function groupFieldsBySection(fields: FormField[]): { section: string; fields: FormField[] }[] {
-  const sections: { [key: string]: FormField[] } = {};
-  fields.forEach(field => {
-    const section = field.section || 'General';
-    if (!sections[section]) sections[section] = [];
-    sections[section].push(field);
-  });
-  return Object.entries(sections).map(([section, fields]) => ({ section, fields }));
-}

@@ -1,9 +1,7 @@
-import { findFormFieldById, Form, FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
-import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
-import { getProjectCodeFromExperimentIdentifier, getProjectIdentifierFromExperimentIdentifier, guid } from '@src/js/components/database/new-forms/utils/Utils';
-import { openbis } from '@srcV3/openbis.esm';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/entities/Dataset/DatasetAdapter.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService';
 
 export class DatasetFormController implements FormController {
 	private openbisFacade: any;

@@ -1,4 +1,4 @@
-import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
+import { FormController } from '@src/js/components/database/new-forms/types/FormController';
 
 export enum FormMode {
   VIEW = 'view',
@@ -105,7 +105,7 @@ export interface FormAction {
   name: string;
   label: string;
   component: 'button' | 'switch' | 'dropdown' | string;
-  handler: (...args: any[]) => void;
+  handler?: (...args: any[]) => void;
   isAllowed: boolean;
   //isVisible: boolean;
   visibility: VisibilityRule[];
@@ -117,7 +117,7 @@ export interface SectionGroup {
   fields: string[];
 }
 
-// NEW: Context object for actions
+// Context object for actions
 export interface ActionContext {
   controller: FormController;
   form: Form;
@@ -130,11 +130,20 @@ export interface ActionContext {
   onNewProject: (spacePermId: string) => void;
   onEntityChange: (permId: string, isNew: boolean) => void;
   closeForm: () => void;
+  isAutoSaveEnabled: boolean;
+  setAutoSaveEnabled: (isAutoSaveEnabled: boolean) => void;
 }
 
 // NEW: Props for field renderers
 export interface FieldRendererProps {
   field: FormField;
   onFieldChange: (fieldId: string, value: any) => void;
+  mode: FormMode;
+}
+
+// NEW: Props for action renderers
+export interface ActionRendererProps {
+  action: FormAction;
+  onAction: (actionName: string) => void;
   mode: FormMode;
 }

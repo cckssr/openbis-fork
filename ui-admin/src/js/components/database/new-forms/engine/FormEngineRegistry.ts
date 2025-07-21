@@ -1,17 +1,19 @@
 import React from 'react';
-import { ActionContext, FieldRendererProps, FormFieldDataType } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionContext, ActionRendererProps, FieldRendererProps, FormFieldDataType } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 // Define the types for our factories and components
 type ControllerFactory = (openbisFacade: any, user?: string) => any;
 type FormViewComponent = React.ComponentType<any>;
 type FieldRendererComponent = React.ComponentType<FieldRendererProps>;
 type ActionHandler = (context: ActionContext) => void;
+type ActionRendererComponent = React.ComponentType<ActionRendererProps>;
 
 class FormEngineRegistry {
   private static controllers: Record<string, ControllerFactory> = {};
   private static formViews: Record<string, FormViewComponent> = {};
   private static fieldRenderers: Record<string, FieldRendererComponent> = {};
   private static actions: Record<string, ActionHandler> = {};
+  private static actionRenderers: Record<string, ActionRendererComponent> = {};
 
   // --- Controller Registration ---
   static registerController(entityKind: string, factory: ControllerFactory) {
@@ -25,16 +27,7 @@ class FormEngineRegistry {
     return factory(openbisFacade, user);
   }
 
-  // --- Form View Registration ---
-  static registerFormView(entityKind: string, component: FormViewComponent) {
-    this.formViews[entityKind] = component;
-  }
-
-  static getFormView(entityKind: string) {
-    return this.formViews[entityKind];
-  }
-
-  // --- Field Renderer Registration (NEW) ---
+  // --- Field Renderer Registration ---
   static registerFieldRenderer(dataType: string, component: FieldRendererComponent) {
     console.log(`[Registry] Registering Field Renderer for type: ${dataType}`);
     this.fieldRenderers[dataType] = component;
@@ -43,20 +36,32 @@ class FormEngineRegistry {
   static getFieldRenderer(dataType: string): FieldRendererComponent {
     const component = this.fieldRenderers[dataType];
     if (!component) {
-        return this.fieldRenderers[FormFieldDataType.VARCHAR];
+      return this.fieldRenderers[FormFieldDataType.VARCHAR];
     }
     return component;
   }
 
-  // --- Action Registration (NEW) ---
+  // --- Action Registration ---
   static registerAction(name: string, handler: ActionHandler) {
     console.log(`[Registry] Registering Action: ${name}`);
     this.actions[name] = handler;
   }
 
   static getAction(name: string): ActionHandler | undefined {
-    console.log(`[Registry] Getting Action: ${name}`);
     return this.actions[name];
+  }
+
+  static registerActionRenderer(actionComponentType: string, component: ActionRendererComponent) {
+    console.log(`[Registry] Registering Action Renderer: ${actionComponentType}`);
+    this.actionRenderers[actionComponentType] = component;
+  }
+
+  static getActionRenderer(actionComponentType: string): ActionRendererComponent {
+    const component = this.actionRenderers[actionComponentType];
+    if (!component) {
+      return this.actionRenderers['button'];
+    }
+    return component;
   }
 }
 

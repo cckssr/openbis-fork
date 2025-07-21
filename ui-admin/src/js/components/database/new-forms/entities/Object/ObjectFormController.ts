@@ -1,7 +1,7 @@
 import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
+import { FormController } from '@src/js/components/database/new-forms/types/FormController';
 import { adaptSampleDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService';
 import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 

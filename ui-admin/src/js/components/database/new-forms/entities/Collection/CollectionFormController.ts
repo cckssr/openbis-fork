@@ -1,8 +1,8 @@
-import { Form, FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
-import { adaptCollectionDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
-import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier, getProjectCodeFromExperimentIdentifier, getProjectIdentifierFromExperimentIdentifier, guid } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
+import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
+import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export class CollectionFormController implements FormController {
@@ -31,7 +31,7 @@ export class CollectionFormController implements FormController {
 		//console.log({roles});
 		console.log(collectionDto);
 		if (!collectionDto) throw new Error(`Collection with permId ${permId} not found`);
-		return adaptCollectionDtoToForm(collectionDto);
+		return CollectionFormModel.adaptCollectionDtoToForm(collectionDto);
 	}
 
 	async save(form: Form): Promise<number> {

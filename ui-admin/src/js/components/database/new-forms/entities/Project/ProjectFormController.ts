@@ -1,12 +1,10 @@
 import openbis from '@srcV3/openbis.esm';
-import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/entities/FormController.ts';
-import { adaptNewProjectDtoToForm, adaptProjectDtoToForm } from '@src/js/components/database/new-forms/adapters/entity.adapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/entities/AuthorizationService.ts';
+import { EntityKind, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { groupFieldsBySection } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { FormAction } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ProjectFormModel } from '@src/js/components/database/new-forms/entities/Project/ProjectFormModel.ts';
 
 export class ProjectFormController implements FormController {
   private openbisFacade: openbis.openbis;
@@ -18,8 +16,9 @@ export class ProjectFormController implements FormController {
   }
 
   async load(permId: string, entityKind?: string): Promise<Form> {
-    if (entityKind === 'NEWPROJECT') {
-      return adaptNewProjectDtoToForm(permId);
+    console.log('ProjectFormController.load', permId, entityKind);
+    if (entityKind === EntityKind.NEW_PROJECT) {
+      return ProjectFormModel.adaptNewProjectDtoToForm(permId);
     }
     const { ProjectPermId, ProjectFetchOptions, ExperimentIdentifier, RightsFetchOptions } = this.openbisFacade;
     const id = new ProjectPermId(permId);
@@ -31,13 +30,15 @@ export class ProjectFormController implements FormController {
     const projectDto = result[permId];
     console.log({ projectDto });
     if (!projectDto) throw new Error(`Project with permId ${permId} not found`);
-    const spaceCode = projectDto.getSpace().getCode();
+    /* const spaceCode = projectDto.getSpace().getCode();
     const projectCode = projectDto.getCode();
     
     const sessionInfo = await this.openbisFacade.getSessionInformation();
     console.log({ sessionInfo })
     console.log({ spaceCode }, { projectCode });
-    return adaptProjectDtoToForm(projectDto);
+    const roles = await getUserRole(this.openbisFacade, false, spaceCode, projectCode);
+    console.log({roles}); */
+    return ProjectFormModel.adaptProjectDtoToForm(projectDto);
   }
 
   async save(form: Form): Promise<number> {
@@ -77,46 +78,5 @@ export class ProjectFormController implements FormController {
     this.openbisFacade.createProjects([creation]).then(map => {
       console.log('ProjectFormController.create', map);
     });
-  }
-
-  getActions(form: Form, permissions: any): FormAction[] {
-    return [
-      {
-        name: 'edit',
-        label: 'Edit',
-        component: 'button',
-        handler: () => {/* edit logic */},
-        isAllowed: permissions.canEdit,
-        isVisible: true
-      },
-      {
-        name: 'save',
-        label: 'Save',
-        component: 'button',
-        handler: () => {/* save logic */},
-        isAllowed: permissions.canEdit,
-        isVisible: true
-      },
-      {
-        name: 'delete',
-        label: 'Delete',
-        component: 'button',
-        handler: () => {/* delete logic */},
-        isAllowed: permissions.canDelete,
-        isVisible: true
-      },
-      {
-        name: 'custom',
-        label: 'Custom Action',
-        component: 'button',
-        handler: () => {/* custom logic */},
-        isAllowed: true,
-        isVisible: true
-      }
-    ];
-  }
-
-  getSections(form: Form): { section: string; fields: FormField[] }[] {
-    return groupFieldsBySection(form.fields);
   }
 }

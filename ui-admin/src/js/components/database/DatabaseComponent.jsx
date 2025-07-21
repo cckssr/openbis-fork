@@ -18,9 +18,7 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
-//import SpaceFormView from '@src/js/components/database/new-forms/entities/Space/SpaceFormView.tsx';
-//import ProjectFormView from '@src/js/components/database/new-forms/entities/Project/ProjectFormView.tsx'
-import EntityFormContainer from '@src/js/components/database/new-forms/components/EntityFormContainer.tsx'
+import {EntityFormContextProvider} from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 const styles = theme => ({
   tabsPanel: {
@@ -147,7 +145,7 @@ class DatabaseComponent extends React.PureComponent {
           </Tabs>
         </Box>
         <TabPanel classes={{ root: classes.tabsPanel }} value="0">
-        {this.renderJson()}
+          {this.renderJson()}
         </TabPanel>
         <TabPanel classes={{ root: classes.tabsPanel }} value="1">
           <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
@@ -243,7 +241,7 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   createProject(spacePermId) {
-    console.log('createProject');
+    console.log('createProject for space: ', spacePermId);
     /* AppController.getInstance().objectNew( 
       pages.DATABASE,
       objectTypes.NEW_PROJECT,
@@ -258,21 +256,27 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
+  closeForm(spacePermId) {
+    console.log('closeForm for space: ', spacePermId);
+    AppController.getInstance().objectClose(
+      pages.DATABASE,
+      objectTypes.NEW_PROJECT,
+      spacePermId
+    )
+  }
+
   renderJson() {
     const { object } = this.props
 
-    return (
-      <>
-        <EntityFormContainer openbisFacade={openbis}
-          entityKind={object.type}
-          permId={object.id}
-          user={AppController.getInstance().getUser()}
-          onEntityChange={this.spaceChange}
-          onNewProject={this.createProject}
-        />
-        <pre style={{ height: '95%', overflow: 'auto' }}>{JSON.stringify(this.state.json || {}, null, 2)}</pre>
-      </>
-    )
+    return (<EntityFormContextProvider openbisFacade={openbis}
+      entityKind={object.type}
+      permId={object.id}
+      user={AppController.getInstance().getUser()}
+      initialMode={String(object.type).includes('new') ? 'create' : 'view'}
+      onEntityChange={this.spaceChange}
+      onNewProject={(spacePermId) => this.createProject(spacePermId)}
+      onCloseForm={(spacePermId) => this.closeForm(spacePermId)}
+    />)
   }
 
   render() {
