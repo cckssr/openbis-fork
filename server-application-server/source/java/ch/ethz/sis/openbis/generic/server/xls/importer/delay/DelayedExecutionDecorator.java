@@ -638,7 +638,7 @@ public class DelayedExecutionDecorator
             if (isKeySamplePropertyCode(propertyCode))
             {
                 List<String> propertyValues = new ArrayList<>();
-                for (String propertyValue : getProperties(properties.get(propertyCode)))
+                for (String propertyValue : getSamplePropertyValues(properties.get(propertyCode)))
                 {
                     ISampleId sampleId = ImportUtils.buildSampleIdentifier(propertyValue);
                     if (sampleId instanceof IdentifierVariable && resolvedVariables.containsKey(sampleId))
@@ -681,7 +681,7 @@ public class DelayedExecutionDecorator
             if (isKeySamplePropertyCode(propertyCode))
             {
                 boolean dependencyFound = false;
-                for (String propertyValue : getProperties(properties.get(propertyCode)))
+                for (String propertyValue : getSamplePropertyValues(properties.get(propertyCode)))
                 {
                     if (propertyValue != null)
                     {
@@ -752,7 +752,7 @@ public class DelayedExecutionDecorator
         }
     }
 
-    private String[] getProperties(Serializable propertyValue)
+    private String[] getSamplePropertyValues(Serializable propertyValue)
     {
         if (propertyValue == null)
         {
