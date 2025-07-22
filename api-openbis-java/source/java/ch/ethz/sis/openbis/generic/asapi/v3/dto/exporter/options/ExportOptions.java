@@ -46,6 +46,18 @@ public class ExportOptions implements Serializable
     @JsonProperty
     private Boolean zipSingleFiles;
 
+    @JsonProperty
+    private Boolean withLevelsAbove; // Include levels above from same space
+
+    @JsonProperty
+    private Boolean withLevelsBelow; // Include levels below from same space
+
+    @JsonProperty
+    private Boolean withObjectsAndDataSetsParents; // Include Object and Dataset parents from same space
+
+    @JsonProperty
+    private Boolean withObjectsAndDataSetsOtherSpaces; // Include Objects and Datasets parents and children from different spaces
+
     @SuppressWarnings("unused")
     public ExportOptions()
     {
@@ -54,11 +66,26 @@ public class ExportOptions implements Serializable
     public ExportOptions(final Set<ExportFormat> formats, final XlsTextFormat xlsTextFormat, final Boolean withReferredTypes,
             final Boolean withImportCompatibility, final Boolean zipSingleFiles)
     {
+        this(formats, xlsTextFormat, withReferredTypes, withImportCompatibility, zipSingleFiles,
+                Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+    }
+
+    public ExportOptions(final Set<ExportFormat> formats, final XlsTextFormat xlsTextFormat, final Boolean withReferredTypes,
+                         final Boolean withImportCompatibility, final Boolean zipSingleFiles,
+                         Boolean withLevelsAbove,
+                         Boolean withLevelsBelow,
+                         Boolean withObjectsAndDataSetsParents,
+                         Boolean withObjectsAndDataSetsOtherSpaces)
+    {
         this.formats = formats;
         this.xlsTextFormat = xlsTextFormat;
         this.withReferredTypes = withReferredTypes;
         this.withImportCompatibility = withImportCompatibility;
         this.zipSingleFiles = zipSingleFiles;
+        this.withLevelsAbove = withLevelsAbove;
+        this.withLevelsBelow = withLevelsBelow;
+        this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+        this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
     }
 
     @JsonIgnore
@@ -119,6 +146,38 @@ public class ExportOptions implements Serializable
     public void setZipSingleFiles(final Boolean zipSingleFiles)
     {
         this.zipSingleFiles = zipSingleFiles;
+    }
+
+    public Boolean isWithLevelsAbove() {
+        return withLevelsAbove;
+    }
+
+    public void setWithLevelsAbove(Boolean withLevelsAbove) {
+        this.withLevelsAbove = withLevelsAbove;
+    }
+
+    public Boolean isWithLevelsBelow() {
+        return withLevelsBelow;
+    }
+
+    public void setWithLevelsBelow(Boolean withLevelsBelow) {
+        this.withLevelsBelow = withLevelsBelow;
+    }
+
+    public Boolean isWithObjectsAndDataSetsParents() {
+        return withObjectsAndDataSetsParents;
+    }
+
+    public void setWithObjectsAndDataSetsParents(Boolean withObjectsAndDataSetsParents) {
+        this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+    }
+
+    public Boolean isWithObjectsAndDataSetsOtherSpaces() {
+        return withObjectsAndDataSetsOtherSpaces;
+    }
+
+    public void setWithObjectsAndDataSetsOtherSpaces(Boolean withObjectsAndDataSetsOtherSpaces) {
+        this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
     }
 
     @Override
