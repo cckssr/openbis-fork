@@ -48,7 +48,9 @@ public class RDFCommandLine {
 
     public static final String ARG_LONG_REMOVE_DANGLING_REFERENCES = "remove-dangling-references";
 
+    public static final String ARG_LONG_WRITE_SCHEMA = "omit-schema";
 
+    public static final String OPTION_SCHEMA = "noschema";
 
     public static void main(String[] args) {
 
@@ -186,6 +188,10 @@ public class RDFCommandLine {
                 "Remove dangling object references that could cause the openBIS import to fail.");
         options.addOption(dangling);
 
+        Option writeSchema = new Option(OPTION_SCHEMA, ARG_LONG_WRITE_SCHEMA, false,
+                "Omit Schema.");
+        options.addOption(writeSchema);
+
 
 
 
@@ -265,8 +271,9 @@ public class RDFCommandLine {
         String projectIdentifier = cmd.getOptionValue("project");
         boolean verbose = cmd.hasOption("verbose");
         boolean removeDanglingReferences = cmd.hasOption(ARG_LONG_REMOVE_DANGLING_REFERENCES);
+        boolean writeSchema = !cmd.hasOption(ARG_LONG_WRITE_SCHEMA);
 
-        Config.setConfig(removeDanglingReferences);
+        Config.setConfig(removeDanglingReferences, writeSchema);
 
 
         String[] additionalFileOption = cmd.getOptionValues(ADDITIONALFILES);
@@ -354,7 +361,8 @@ public class RDFCommandLine {
         System.out.println("Writing XLSX file...");
         OpenBisModel openBisModel = RdfToOpenBisMapper.convert(modelRDF,
                 Optional.ofNullable(projectIdentifier).orElse("/DEFAULT/DEFAULT"));
-        byte[] xlsx = ExcelWriter.convert(format, openBisModel);
+        byte[] xlsx = ExcelWriter.convert(format, openBisModel, Config.getINSTANCE()
+                .isWriteSchema());
         try {
             Files.write(Path.of(outputFilePath), xlsx);
         } catch (IOException e) {

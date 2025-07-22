@@ -55,7 +55,13 @@ public class ExcelWriter
 
     public static byte[] convert(Format outputFormat, OpenBisModel model) {
         ExcelWriter ExcelWriter = new ExcelWriter();
-        return ExcelWriter.write(model, outputFormat);
+        return ExcelWriter.write(model, outputFormat, true);
+    }
+
+    public static byte[] convert(Format outputFormat, OpenBisModel model, boolean writeSchema)
+    {
+        ExcelWriter ExcelWriter = new ExcelWriter();
+        return ExcelWriter.write(model, outputFormat, writeSchema);
     }
 
     private ExcelWriter()
@@ -70,8 +76,9 @@ public class ExcelWriter
         this.vocabularyTypeHelper = new VocabularyTypeHelper();
     }
 
+
     //TODO Remove projectIdentifier from write method
-    private byte[] write(OpenBisModel openBisModel, Format format)
+    private byte[] write(OpenBisModel openBisModel, Format format, boolean writeSchema)
     {
         this.format = format;
         try (Workbook workbook = new XSSFWorkbook())
@@ -84,13 +91,16 @@ public class ExcelWriter
 
             List<RowWriteResult> writeResults = new ArrayList<>();
 
-            if (!openBisModel.getVocabularyTypes().isEmpty())
+            if (!openBisModel.getVocabularyTypes().isEmpty() && writeSchema)
             {
                 writeResults.addAll(
                         createVocabularyTypesSheet(workbook, headerStyle, openBisModel));
             }
+            if (writeSchema)
+            {
             createObjectTypesSheet(workbook, headerStyle, openBisModel);
             createExperimentTypesSheet(workbook, headerStyle);
+            }
             createSpaceProjExpSheet(workbook, headerStyle, openBisModel);
             if (!openBisModel.getSampleTypes().isEmpty())
             {

@@ -28,7 +28,7 @@ public class RDFReaderTest {
 
     @Before
     public void setup() {
-        Config.setConfig(false);
+        Config.setConfig(false, true);
 
         rdfReader = new RDFReader();
         model = LoaderRDF.loadModel(inputFileName, inputFormatValue);
