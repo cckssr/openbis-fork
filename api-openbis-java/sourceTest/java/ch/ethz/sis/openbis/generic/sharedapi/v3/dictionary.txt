@@ -1432,7 +1432,11 @@ isUnique
 isUseWildcards
 isWithImportCompatibility
 isWithReferredTypes
-isZipForSingleFiles
+isZipSingleFiles
+isWithLevelsAbove
+isWithLevelsBelow
+isWithObjectsAndDataSetsParents
+isWithObjectsAndDataSetsOtherSpaces
 ITagId
 ITagsHolder
 iterator
@@ -2398,6 +2402,10 @@ setWithReferredTypes
 setXlsTextFormat
 setXmlProperty
 setZipSingleFiles
+setWithLevelsAbove
+setWithLevelsBelow
+setWithObjectsAndDataSetsParents
+setWithObjectsAndDataSetsOtherSpaces
 Share Id Search Criteria
 SHORT_DATE_FORMAT
 ShortDateFormat

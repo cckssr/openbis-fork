@@ -137,7 +137,7 @@ public class ExportOptions implements Serializable
     }
 
     @JsonIgnore
-    public Boolean isZipForSingleFiles()
+    public Boolean isZipSingleFiles()
     {
         return zipSingleFiles;
     }

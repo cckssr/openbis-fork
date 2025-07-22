@@ -292,7 +292,7 @@ public class ExportExecutor implements IExportExecutor
                 exportablePermIds, exportFields, TextFormatting.valueOf(exportOptions.getXlsTextFormat().name()), exportOptions.getFormats(),
                 exportOptions.isWithReferredTypes(),
                 exportOptions.isWithImportCompatibility(),
-                exportOptions.isZipForSingleFiles()
+                exportOptions.isZipSingleFiles()
         );
     }
 
