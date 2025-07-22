@@ -17,7 +17,7 @@ public class EndToEndTests extends AbstractTest
 
     @BeforeClass
     public void startQuarkus() {
-        Quarkus.run(StartupMain.class, new String[]{"./src/main/resources/service.properties"});
+        Quarkus.run(StartupMain.class, new String[] { "src/main/resources/service.properties" });
     }
 
     @Test
@@ -103,6 +103,7 @@ public class EndToEndTests extends AbstractTest
         given()
                 .header("sessionToken", openBIS.getSessionToken())
                 .header("Content-Type", "application/json")
+                .header("importMode", "updateIfExists")
                 .body("[\"A\", \"B\"]")
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
                 .then()

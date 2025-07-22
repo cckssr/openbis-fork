@@ -14,21 +14,23 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
@@ -177,11 +179,19 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes("application/json")
     @Path("export")
-    public OutputStream exportRoCrate(
+    public byte[] exportRoCrate(
             @HeaderParam(value = "sessionToken") String sessionToken,
+            @Context HttpHeaders httpHeaders,
 //            @HeaderParam(value = "options") Map<String, String> options,
-            List<String> identifiers) {
-        return null;
+            InputStream inputStream) throws IOException
+    {
+        httpHeaders.getRequestHeaders().entrySet().stream()
+                .forEach(x -> System.out.println(x.getKey() + ": " + x.getValue().stream().collect(
+                        Collectors.joining(","))));
+        ObjectMapper mapper = new ObjectMapper();
+        List<String> identifiers = (List<String>) mapper.readValue(inputStream, List.class);
+
+        return "lol".getBytes();
     }
 
 }
