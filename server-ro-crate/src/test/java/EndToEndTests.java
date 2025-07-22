@@ -80,6 +80,7 @@ public class EndToEndTests extends AbstractTest
         OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
         openBIS.login("system",
                 "changeit");
+        System.out.println(openBIS.getSessionToken());
 
         given()
                 .header("sessionToken", openBIS.getSessionToken())
@@ -104,7 +105,7 @@ public class EndToEndTests extends AbstractTest
                 .header("sessionToken", openBIS.getSessionToken())
                 .header("Content-Type", "application/json")
                 .header("importMode", "updateIfExists")
-                .body("[\"A\", \"B\"]")
+                .body("[\"https://doi.org/10.1038/s41586-020-3010-5\", \"B\"]")
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);

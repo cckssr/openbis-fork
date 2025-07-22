@@ -38,4 +38,15 @@ public class OpeBISProvider
         openBIS.setSessionToken(personalAccessToken);
         return openBIS;
     }
+
+    public String getUrl()
+    {
+        return StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
+    }
+
+    public int getTimeOut()
+    {
+        return StartupMain.getConfiguration()
+                .getIntegerProperty(RoCrateServerParameter.openBISTimeout);
+    }
 }

@@ -5,15 +5,30 @@ import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.XlsTextFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
+import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
+import ch.openbis.rocrate.app.writer.Writer;
+import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
@@ -23,12 +38,20 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.io.ClientConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -183,13 +206,79 @@ public class RoCrateService {
             @HeaderParam(value = "sessionToken") String sessionToken,
             @Context HttpHeaders httpHeaders,
 //            @HeaderParam(value = "options") Map<String, String> options,
-            InputStream inputStream) throws IOException
+            InputStream inputStream) throws Exception
     {
         httpHeaders.getRequestHeaders().entrySet().stream()
                 .forEach(x -> System.out.println(x.getKey() + ": " + x.getValue().stream().collect(
                         Collectors.joining(","))));
+        OpenBIS openBis = openBISProvider.createClient(sessionToken);
+
         ObjectMapper mapper = new ObjectMapper();
         List<String> identifiers = (List<String>) mapper.readValue(inputStream, List.class);
+        SampleSearchCriteria criteria = new SampleSearchCriteria();
+        criteria.withType().withCode().thatEquals("CREATIVEWORK_SCICAT_PUBLISHEDDATA");
+        //criteria.withStringProperty("PUBLICATION.IDENTIFIER").thatContains("doi");
+
+        IApplicationServerApi
+                v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
+                "http://localhost:8888/openbis/openbis" + IApplicationServerApi.SERVICE_URL,
+                openBISProvider.getTimeOut());
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        SearchResult<Sample>
+                searchResults = v3.searchSamples(sessionToken, criteria, sampleFetchOptions);
+        ExportData exportData = new ExportData();
+        List<ExportablePermId> exportablePermIds =
+                List.of(new ExportablePermId(ExportableKind.SAMPLE,
+                        searchResults.getObjects().get(0).getPermId().toString()));
+        ;
+        exportData.setPermIds(exportablePermIds);
+
+        ExportOptions exportOptions = new ExportOptions();
+        exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+        exportOptions.setWithImportCompatibility(true);
+        exportOptions.setWithLevelsAbove(true);
+        exportOptions.setWithReferredTypes(true);
+        exportOptions.setWithLevelsBelow(true);
+        exportOptions.setXlsTextFormat(XlsTextFormat.PLAIN);
+        exportOptions.setZipSingleFiles(false);
+        exportOptions.setWithObjectsAndDataSetsParents(true);
+        exportOptions.setWithObjectsAndDataSetsOtherSpaces(true);
+
+
+        ExportResult exportResult = v3.executeExport(sessionToken, exportData, exportOptions);
+        String downloadUrl = exportResult.getDownloadURL();
+        System.out.println("Download url: " + downloadUrl);
+
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
+        sslContextFactory.setTrustAll(true);
+        ClientConnector clientConnector = new ClientConnector();
+        clientConnector.setSslContextFactory(sslContextFactory);
+        clientConnector.setIdleTimeout(Duration.ofMillis(openBISProvider.getTimeOut()));
+        HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP(clientConnector));
+        httpClient.start();
+
+        Request request =
+                httpClient.newRequest(
+                                downloadUrl)
+                        .headers(httpFields -> httpFields.add("sessionToken",
+                                openBis.getSessionToken()));
+        request.method(HttpMethod.GET);
+        ContentResponse response = request.send();
+        System.out.println("Got a response!:");
+        byte[] content = response.getContent();
+        java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
+
+        SessionWorkSpace.write(sessionToken, roCrateMetadata, new ByteArrayInputStream(content));
+        System.out.println("Wrote excel file!");
+
+        java.nio.file.Path realPath = SessionWorkSpace.getRealPath(sessionToken, roCrateMetadata);
+        OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, realPath);
+        System.out.println("Converted excel to RO-Crate!");
+
+        Writer writer = new Writer();
+        writer.write(openBisModel, java.nio.file.Path.of("/tmp/out-ro-crate" + UUID.randomUUID()));
+
+
 
         return "lol".getBytes();
     }
