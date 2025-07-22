@@ -54,6 +54,7 @@ public class RoCrateService {
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
+    @Consumes({"application/ld+json", "application/zip"})
     @Path("import")
     public List<String> importRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
             InputStream inputStream)
@@ -122,7 +123,7 @@ public class RoCrateService {
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
-    @Consumes("application/ld+json")
+    @Consumes({"application/ld+json", "application/zip"})
     @Path("validate")
     public List<String> validateRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
             InputStream inputStream)
