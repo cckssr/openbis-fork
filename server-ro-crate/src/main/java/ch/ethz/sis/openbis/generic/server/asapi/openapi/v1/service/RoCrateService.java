@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Path("/openbis/open-api/ro-crate")
@@ -56,7 +57,9 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes({"application/ld+json", "application/zip"})
     @Path("import")
-    public List<String> importRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
+    public List<String> importRoCrate(
+            @HeaderParam(value = "sessionToken") String sessionToken,
+//            @HeaderParam(value = "options") Map<String, String> options,
             InputStream inputStream)
             throws IOException
     {
@@ -125,7 +128,9 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes({"application/ld+json", "application/zip"})
     @Path("validate")
-    public List<String> validateRoCrate(@HeaderParam(value = "sessionToken") String sessionToken,
+    public List<String> validateRoCrate(
+            @HeaderParam(value = "sessionToken") String sessionToken,
+//            @HeaderParam(value = "options") Map<String, String> options,
             InputStream inputStream)
             throws IOException
     {
@@ -168,8 +173,12 @@ public class RoCrateService {
 
     @POST
     @Produces(MediaType.TEXT_PLAIN)
+    @Consumes("application/json")
     @Path("export")
-    public OutputStream exportRoCrate(List<String> identifiers) {
+    public OutputStream exportRoCrate(
+            @HeaderParam(value = "sessionToken") String sessionToken,
+//            @HeaderParam(value = "options") Map<String, String> options,
+            List<String> identifiers) {
         return null;
     }
 
