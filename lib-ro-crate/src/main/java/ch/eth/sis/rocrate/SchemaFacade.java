@@ -169,7 +169,7 @@ public class SchemaFacade implements ISchemaFacade
         DataEntity builtProperty = builder.build();
         if (rdfsProperty.getRange().isEmpty())
         {
-            builtProperty.addIdListProperties("schema:rangeIncludes", List.of("schema:Thing"));
+            builtProperty.addIdListProperties("schema:rangeIncludes", List.of("rdfs:Resource"));
         }
         builtProperty.addIdListProperties("schema:rangeIncludes",
                 rdfsProperty.getRange());

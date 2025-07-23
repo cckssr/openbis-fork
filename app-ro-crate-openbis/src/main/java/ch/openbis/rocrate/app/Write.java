@@ -11,17 +11,18 @@ import java.nio.file.Path;
 public class Write
 {
 
-    private static boolean TEST_MODE = false;
+    private static boolean TEST_MODE = true;
 
     private static String TEST_FILE =
-            "/home/meiandr/Documents/sissource/ro-crate/interoperability/0.1.x/examples/reference-openbis-export/metadata.xlsx";
+            "/home/meiandr/Downloads/metadata.2025-07-23-13-20-25-933.xlsx";
 
     public static void main(String[] args) throws IOException, ParseException
     {
 
         if (TEST_MODE)
         {
-            Path excelInputFile = Path.of(TEST_FILE);
+            Path excelInputFile =
+                    Path.of("/home/meiandr/Downloads/metadata.2025-07-23-13-20-25-933edited.xlsx");
             OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, excelInputFile);
 
             Writer writer = new Writer();

@@ -29,7 +29,6 @@ import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.writer.Writer;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
@@ -46,6 +45,7 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -272,9 +272,14 @@ public class RoCrateService {
         System.out.println("Converted excel to RO-Crate!");
 
         Writer writer = new Writer();
-        writer.write(openBisModel, java.nio.file.Path.of("/tmp/out-ro-crate" + UUID.randomUUID()));
+        java.nio.file.Path roCratePath =
+                java.nio.file.Path.of("/tmp/out-ro-crate" + UUID.randomUUID() + ".zip");
+        writer.write(openBisModel, roCratePath);
 
-        return new ByteArrayOutputStream(0);
+        byte[] roZip = Files.readAllBytes(roCratePath);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byteArrayOutputStream.write(roZip);
+        return byteArrayOutputStream;
     }
 
 }
