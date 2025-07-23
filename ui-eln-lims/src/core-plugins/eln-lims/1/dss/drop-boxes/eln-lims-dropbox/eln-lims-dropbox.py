@@ -60,6 +60,24 @@ def process(transaction):
             projectSamplesEnabled = v3.getServerInformation(sessionToken)['project-samples-enabled'] == 'true'
 
             # Parse entity Kind Format
+            if entityKind == "S":
+                if len(datasetInfo) >= 3:
+                    sampleSpace = datasetInfo[1];
+                    sampleCode = datasetInfo[2];
+
+                    emailAddress = getSampleRegistratorsEmail(transaction, sampleSpace, None, sampleCode)
+                    sample = transaction.getSample("/" + sampleSpace + "/" + sampleCode);
+                    if sample is None:
+                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + SAMPLE_MISSING_ERROR_MESSAGE)
+                        raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + SAMPLE_MISSING_ERROR_MESSAGE)
+                    if len(datasetInfo) >= 4:
+                        datasetType = datasetInfo[3];
+                    if len(datasetInfo) >= 5:
+                        name = datasetInfo[4];
+                    if len(datasetInfo) > 5:
+                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE)
+                else:
+                    raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE);
             if entityKind == "O":
                 if len(datasetInfo) >= 4 and projectSamplesEnabled:
                     sampleSpace = datasetInfo[1];
@@ -76,21 +94,6 @@ def process(transaction):
                     if len(datasetInfo) >= 6:
                         name = datasetInfo[5];
                     if len(datasetInfo) > 6:
-                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE)
-                elif len(datasetInfo) >= 3 and not projectSamplesEnabled:
-                    sampleSpace = datasetInfo[1];
-                    sampleCode = datasetInfo[2];
-
-                    emailAddress = getSampleRegistratorsEmail(transaction, sampleSpace, None, sampleCode)
-                    sample = transaction.getSample("/" + sampleSpace + "/" + sampleCode);
-                    if sample is None:
-                        reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + SAMPLE_MISSING_ERROR_MESSAGE)
-                        raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + SAMPLE_MISSING_ERROR_MESSAGE)
-                    if len(datasetInfo) >= 4:
-                        datasetType = datasetInfo[3];
-                    if len(datasetInfo) >= 5:
-                        name = datasetInfo[4];
-                    if len(datasetInfo) > 5:
                         reportIssue(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE)
                 else:
                     raise UserFailureException(INVALID_FORMAT_ERROR_MESSAGE + ":" + FAILED_TO_PARSE_SAMPLE_ERROR_MESSAGE);
