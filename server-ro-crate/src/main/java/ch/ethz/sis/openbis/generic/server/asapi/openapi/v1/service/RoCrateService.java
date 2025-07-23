@@ -45,15 +45,12 @@ import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
@@ -202,19 +199,18 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes("application/json")
     @Path("export")
-    public byte[] exportRoCrate(
+    public OutputStream exportRoCrate(
             @HeaderParam(value = "sessionToken") String sessionToken,
             @Context HttpHeaders httpHeaders,
-//            @HeaderParam(value = "options") Map<String, String> options,
             InputStream inputStream) throws Exception
     {
-        httpHeaders.getRequestHeaders().entrySet().stream()
-                .forEach(x -> System.out.println(x.getKey() + ": " + x.getValue().stream().collect(
-                        Collectors.joining(","))));
+        ExportArgsDeserializer exportArgsDeserializer = new ExportArgsDeserializer(httpHeaders, inputStream);
+
+//        httpHeaders.getRequestHeaders().entrySet().stream()
+//                .forEach(x -> System.out.println(x.getKey() + ": " + x.getValue().stream().collect(
+//                        Collectors.joining(","))));
         OpenBIS openBis = openBISProvider.createClient(sessionToken);
 
-        ObjectMapper mapper = new ObjectMapper();
-        List<String> identifiers = (List<String>) mapper.readValue(inputStream, List.class);
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withType().withCode().thatEquals("CREATIVEWORK_SCICAT_PUBLISHEDDATA");
         //criteria.withStringProperty("PUBLICATION.IDENTIFIER").thatContains("doi");
@@ -278,9 +274,7 @@ public class RoCrateService {
         Writer writer = new Writer();
         writer.write(openBisModel, java.nio.file.Path.of("/tmp/out-ro-crate" + UUID.randomUUID()));
 
-
-
-        return "lol".getBytes();
+        return new ByteArrayOutputStream(0);
     }
 
 }
