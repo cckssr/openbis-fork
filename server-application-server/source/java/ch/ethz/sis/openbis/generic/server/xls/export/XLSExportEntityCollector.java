@@ -42,10 +42,12 @@ public final class XLSExportEntityCollector {
 
         Set<ExportablePermId> allPermIds = new HashSet<>();
 
-        boolean withLevelsAbove = exportOptions.isWithLevelsAbove() == Boolean.TRUE;
-        boolean withLevelsBelow = exportOptions.isWithLevelsBelow() == Boolean.TRUE;
-        boolean withObjectsAndDataSetsParents = exportOptions.isWithObjectsAndDataSetsParents() == Boolean.TRUE;
-        boolean withObjectsAndDataSetsOtherSpaces = exportOptions.isWithObjectsAndDataSetsOtherSpaces() == Boolean.TRUE;
+        boolean withLevelsAbove = Boolean.TRUE.equals(exportOptions.isWithLevelsAbove());
+        boolean withLevelsBelow = Boolean.TRUE.equals(exportOptions.isWithLevelsBelow());
+        boolean withObjectsAndDataSetsParents =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsParents());
+        boolean withObjectsAndDataSetsOtherSpaces =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsOtherSpaces());
 
         for (ExportablePermId exportablePermId : exportData.getPermIds()) {
             collectEntities(api, sessionToken, allPermIds, exportablePermId,
@@ -114,6 +116,7 @@ public final class XLSExportEntityCollector {
                         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
                         sampleFetchOptions.withExperiment().withProject().withSpace();
                         sampleFetchOptions.withSpace();
+                        sampleFetchOptions.withProject().withSpace();
                         Map<ISampleId, Sample> samples = api.getSamples(sessionToken,
                                 List.of(new SamplePermId(current.getPermId())),
                                 sampleFetchOptions);
