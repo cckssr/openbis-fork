@@ -166,14 +166,19 @@ public class SchemaFacade implements ISchemaFacade
         builder.addProperty(RDFS_LABEL, rdfsProperty.getLabel());
         builder.addProperty(RDFS_COMMENT, rdfsProperty.getComment());
 
-        var stuff = builder.build();
-        stuff.addIdListProperties("schema:rangeIncludes",
+        DataEntity builtProperty = builder.build();
+        if (rdfsProperty.getRange().isEmpty())
+        {
+            builtProperty.addIdListProperties("schema:rangeIncludes", List.of("schema:Thing"));
+        }
+        builtProperty.addIdListProperties("schema:rangeIncludes",
                 rdfsProperty.getRange());
-        stuff.addIdListProperties("schema:domainIncludes",
+
+        builtProperty.addIdListProperties("schema:domainIncludes",
                 rdfsProperty.getDomain().stream().map(x -> x.getId()).collect(Collectors.toList()));
-        stuff.addIdListProperties(EQUIVALENT_CONCEPT,
+        builtProperty.addIdListProperties(EQUIVALENT_CONCEPT,
                 rdfsProperty.getOntologicalAnnotations());
-        crate.addDataEntity(stuff);
+        crate.addDataEntity(builtProperty);
         propertyTypes.put(rdfsProperty.getId(), rdfsProperty);
 
     }

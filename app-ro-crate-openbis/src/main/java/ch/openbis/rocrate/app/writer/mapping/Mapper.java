@@ -179,6 +179,7 @@ public class Mapper
                     .forEach(rdfsProperty::addDataType);
             a.getValue().stream()
                     .filter(x -> x.getLeft().getPropertyType().getDataType() == DataType.SAMPLE)
+                    .filter(x -> x.getLeft().getPropertyType().getSampleType() != null)
                     .map(x -> classes.get(x.getLeft().getPropertyType().getSampleType().getCode()))
                     .forEach(rdfsProperty::addType);
 
