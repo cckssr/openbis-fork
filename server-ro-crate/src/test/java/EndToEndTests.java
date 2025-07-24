@@ -21,21 +21,21 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
-    public void echoRoCrateOpenAPITest()
+    public void testTestEcho()
             throws Exception
     {
         getConfiguration();
 
         given()
-                .header("message", "Hello World")
-                .when().get("http://localhost:8085/openbis/open-api/ro-crate/echo")
+                .param("message", "Hello World")
+                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test-echo")
                 .then()
                 .body(is("Hello World"))
                 .statusCode(200);
     }
 
     @Test
-    public void testRoCrateOpenAPITest()
+    public void testTestOpenbisConnection()
             throws Exception
     {
         getConfiguration();
@@ -45,8 +45,8 @@ public class EndToEndTests extends AbstractTest
                 "changeit");
 
         given()
-                .header("sessionToken", openBIS.getSessionToken())
-                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test")
+                .param("sessionToken", openBIS.getSessionToken())
+                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test-openbis-connection")
                 .then()
                 .body(is("admin"))
                 .statusCode(200);

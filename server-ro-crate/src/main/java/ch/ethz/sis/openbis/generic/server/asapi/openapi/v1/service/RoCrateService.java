@@ -38,15 +38,15 @@ public class RoCrateService {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("echo")
-    public String echo(@HeaderParam(value = "message") String message) {
+    @Path("test-echo")
+    public String testEcho(@QueryParam(value = "message") String message) {
         return message;
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("test")
-    public String test(@HeaderParam(value = "sessionToken") String sessionToken) {
+    @Path("test-openbis-connection")
+    public String testOpenbisConnection(@QueryParam(value = "sessionToken") String sessionToken) {
         OpenBIS openBIS = openBISProvider.createClient(sessionToken);
         try {
             return openBIS.getSessionInformation().getUserName();
