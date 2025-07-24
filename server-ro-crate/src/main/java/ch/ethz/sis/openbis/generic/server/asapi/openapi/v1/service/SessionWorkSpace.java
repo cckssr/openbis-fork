@@ -2,7 +2,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service;
 
 import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
-import org.apache.commons.io.FileDeleteStrategy;
 
 import java.io.*;
 import java.nio.file.*;
@@ -25,7 +24,12 @@ public class SessionWorkSpace
     public static OutputStream read(String sessionToken, Path path) throws IOException
     {
         Path realPath = getRealPath(sessionToken, path);
-        return new BufferedOutputStream(Files.newOutputStream(realPath, StandardOpenOption.READ));
+        BufferedInputStream bufferedInputStream =
+                new BufferedInputStream(Files.newInputStream(realPath));
+        OutputStream outputStream = new ByteArrayOutputStream();
+        bufferedInputStream.transferTo(outputStream);
+        return new BufferedOutputStream(outputStream);
+
     }
 
     public static Path getRealPath(String sessionToken, Path path) throws IOException

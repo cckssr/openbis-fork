@@ -44,8 +44,10 @@ import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -263,14 +265,14 @@ public class RoCrateService {
         System.out.println("Converted excel to RO-Crate!");
 
         Writer writer = new Writer();
-        java.nio.file.Path roCratePath =
-                java.nio.file.Path.of("/tmp/out-ro-crate" + UUID.randomUUID() + ".zip");
-        writer.write(openBisModel, roCratePath);
+        java.nio.file.Path roPath =
+                java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
+        java.nio.file.Path roRealPath = SessionWorkSpace.getRealPath(sessionToken,
+                roPath);
 
-        byte[] roZip = Files.readAllBytes(roCratePath);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        byteArrayOutputStream.write(roZip);
-        return byteArrayOutputStream;
+        writer.write(openBisModel, roRealPath);
+
+        return SessionWorkSpace.read(sessionToken, roPath);
     }
 
     private static ExportOptions getExportOptions()
