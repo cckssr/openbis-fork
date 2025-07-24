@@ -36,21 +36,23 @@ public class RoCrateService {
     @Inject
     OpeBISProvider openBISProvider;
 
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("echo")
+    public String echo(@HeaderParam(value = "message") String message) {
+        return message;
+    }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("test")
-    public String test() {
-        OpenBIS openBIS = openBISProvider.createClient(null);
+    public String test(@HeaderParam(value = "sessionToken") String sessionToken) {
+        OpenBIS openBIS = openBISProvider.createClient(sessionToken);
         try {
-            return openBIS.getSessionToken();
-        } catch (Exception ex) {
-
+            return openBIS.getSessionInformation().getUserName();
         } finally {
             openBIS.logout();
         }
-
-        return "error";
     }
 
     @POST

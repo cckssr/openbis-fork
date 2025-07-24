@@ -5,6 +5,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 
 public class EndToEndTests extends AbstractTest
@@ -17,6 +18,38 @@ public class EndToEndTests extends AbstractTest
     @BeforeClass
     public void startQuarkus() {
         Quarkus.run(StartupMain.class, new String[]{"./src/main/resources/service.properties"});
+    }
+
+    @Test
+    public void echoRoCrateOpenAPITest()
+            throws Exception
+    {
+        getConfiguration();
+
+        given()
+                .header("message", "Hello World")
+                .when().get("http://localhost:8085/openbis/open-api/ro-crate/echo")
+                .then()
+                .body(is("Hello World"))
+                .statusCode(200);
+    }
+
+    @Test
+    public void testRoCrateOpenAPITest()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login("admin",
+                "changeit");
+
+        given()
+                .header("sessionToken", openBIS.getSessionToken())
+                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test")
+                .then()
+                .body(is("admin"))
+                .statusCode(200);
     }
 
     @Test
