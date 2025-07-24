@@ -229,17 +229,8 @@ public class RoCrateService {
         ;
         exportData.setPermIds(exportablePermIds);
 
-        ExportOptions exportOptions = new ExportOptions();
-        exportOptions.setFormats(Set.of(ExportFormat.XLSX));
-        exportOptions.setWithImportCompatibility(true);
-        exportOptions.setWithLevelsAbove(true);
-        exportOptions.setWithReferredTypes(true);
-        exportOptions.setWithLevelsBelow(true);
-        exportOptions.setXlsTextFormat(XlsTextFormat.PLAIN);
-        exportOptions.setZipSingleFiles(false);
-        exportOptions.setWithObjectsAndDataSetsParents(true);
-        exportOptions.setWithObjectsAndDataSetsOtherSpaces(true);
-
+        ExportOptions exportOptions =
+                getExportOptions();
 
         ExportResult exportResult = v3.executeExport(sessionToken, exportData, exportOptions);
         String downloadUrl = exportResult.getDownloadURL();
@@ -280,6 +271,21 @@ public class RoCrateService {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         byteArrayOutputStream.write(roZip);
         return byteArrayOutputStream;
+    }
+
+    private static ExportOptions getExportOptions()
+    {
+        ExportOptions exportOptions = new ExportOptions();
+        exportOptions.setFormats(Set.of(ExportFormat.XLSX));
+        exportOptions.setWithImportCompatibility(true);
+        exportOptions.setWithLevelsAbove(true);
+        exportOptions.setWithReferredTypes(true);
+        exportOptions.setWithLevelsBelow(true);
+        exportOptions.setXlsTextFormat(XlsTextFormat.PLAIN);
+        exportOptions.setZipSingleFiles(false);
+        exportOptions.setWithObjectsAndDataSetsParents(true);
+        exportOptions.setWithObjectsAndDataSetsOtherSpaces(true);
+        return exportOptions;
     }
 
 }
