@@ -334,13 +334,38 @@ public class RoCrateService {
             assignmentsToQuery.put(entityType, maybePropertyAssignment.get());
 
         }
+        sampleSearchCriteria.withType().withCode().thatEquals("PUBLICATION");
+
 
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+        sampleFetchOptions.withProperties();
+        sampleFetchOptions.withType();
 
         SearchResult<Sample> sampleSearchResult =
                 v3.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions);
 
+        Set<String> foundIdentifiers = sampleSearchResult.getObjects().stream()
+                .map(x -> isIdentifierFoundInProperty(x, assignmentsToQuery, identifiers))
+                .collect(Collectors.toSet());
+
+
+
         return List.of();
+    }
+
+    private String isIdentifierFoundInProperty(Sample sample,
+            Map<IEntityType, PropertyAssignment> assignmentsToQuery, List<String> identifiers)
+    {
+
+        PropertyAssignment assignment = assignmentsToQuery.get(sample.getType());
+        String value =
+                sample.getProperties().get(assignment.getPropertyType().getCode()).toString();
+        if (identifiers.contains(value))
+        {
+            return value;
+        }
+        return null;
+
     }
 
     private static ExportOptions getExportOptions()
