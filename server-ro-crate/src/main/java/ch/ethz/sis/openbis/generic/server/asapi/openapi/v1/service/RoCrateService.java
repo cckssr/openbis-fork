@@ -6,6 +6,7 @@ import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
@@ -19,9 +20,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
@@ -49,10 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
@@ -221,6 +224,9 @@ public class RoCrateService {
                 v3 = HttpInvokerUtils.createServiceStub(IApplicationServerApi.class,
                 "http://localhost:8888/openbis/openbis" + IApplicationServerApi.SERVICE_URL,
                 openBISProvider.getTimeOut());
+        List<Sample> samples = searchSemanticAnnotations(sessionToken, v3,
+                List.of("https://doi.org/10.1038/s41586-020-3010-5"));
+
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
         SearchResult<Sample>
                 searchResults = v3.searchSamples(sessionToken, criteria, sampleFetchOptions);
@@ -273,6 +279,68 @@ public class RoCrateService {
         writer.write(openBisModel, roRealPath);
 
         return SessionWorkSpace.read(sessionToken, roPath);
+    }
+
+    private List<Sample> searchSemanticAnnotations(String sessionToken, IApplicationServerApi v3,
+            List<String> identifiers)
+    {
+        SemanticAnnotationFetchOptions semanticAnnotationFetchOptions =
+                new SemanticAnnotationFetchOptions();
+        SemanticAnnotationSearchCriteria semanticAnnotationSearchCriteria =
+                new SemanticAnnotationSearchCriteria();
+        semanticAnnotationFetchOptions.withEntityType().withPropertyAssignments()
+                .withSemanticAnnotations();
+        semanticAnnotationFetchOptions.withEntityType().withPropertyAssignments().withPropertyType()
+                .withSemanticAnnotations();
+
+        semanticAnnotationSearchCriteria.withDescriptorAccessionId()
+                .thatEquals("https://schema.org/CreativeWork");
+        SearchResult<SemanticAnnotation>
+                res1 = v3.searchSemanticAnnotations(sessionToken, semanticAnnotationSearchCriteria,
+                semanticAnnotationFetchOptions);
+        List<IEntityType> entityTypes =
+                res1.getObjects().stream().map(x -> x.getEntityType()).collect(Collectors.toList());
+
+        Map<IEntityType, PropertyAssignment> assignmentsToQuery = new LinkedHashMap<>();
+        SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+
+        for (IEntityType entityType : entityTypes)
+        {
+            Optional<PropertyAssignment> maybePropertyAssignment =
+                    entityType.getPropertyAssignments().stream()
+                            .filter(x -> x.getSemanticAnnotations().stream().anyMatch(
+                                    y -> y.getPredicateAccessionId()
+                                            .equals("https://schema.org/identifier")))
+                            .findFirst();
+            if (maybePropertyAssignment.isEmpty())
+            {
+                continue;
+            }
+            SampleSearchCriteria typeCriterion =
+                    sampleSearchCriteria.withSubcriteria().withAndOperator();
+            typeCriterion.withType().withCode().thatEquals(entityType.getCode());
+            SampleSearchCriteria valueCriterion =
+                    sampleSearchCriteria.withSubcriteria().withAndOperator();
+            for (String identifier : identifiers)
+            {
+                SampleSearchCriteria specificIdentifierCriterion =
+                        valueCriterion.withSubcriteria().withOrOperator();
+                specificIdentifierCriterion.withStringProperty(
+                                maybePropertyAssignment.get().getPropertyType().getCode())
+                        .thatEquals(identifier);
+
+            }
+
+            assignmentsToQuery.put(entityType, maybePropertyAssignment.get());
+
+        }
+
+        SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
+
+        SearchResult<Sample> sampleSearchResult =
+                v3.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions);
+
+        return List.of();
     }
 
     private static ExportOptions getExportOptions()
