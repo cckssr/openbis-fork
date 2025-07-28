@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
 import java.util.Date;
+import java.util.Properties;
 
 import org.jmock.Expectations;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -28,6 +29,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.jython.evaluator.EvaluatorException;
 import ch.systemsx.cisd.openbis.generic.server.TestJythonEvaluatorPool;
 import ch.systemsx.cisd.openbis.generic.server.business.ManagerTestTool;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Script;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
@@ -38,11 +40,11 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 
 /**
  * Test cases for {@link ScriptBO}.
- * 
+ *
  * @author Izabela Adamczyk
  */
 @Friend(toClasses =
-{ ScriptBO.class, ScriptBO.IScriptFactory.class, ScriptPE.class })
+        { ScriptBO.class, ScriptBO.IScriptFactory.class, ScriptPE.class })
 public final class ScriptBOTest extends AbstractBOTest
 {
 
@@ -51,18 +53,18 @@ public final class ScriptBOTest extends AbstractBOTest
     private final static Object[][] scriptTypes()
     {
         return new Object[][]
-        {
                 {
-                        ScriptType.DYNAMIC_PROPERTY,
-                        "Error evaluating '1+': SyntaxError: "
-                                + "(\"no viable alternative at input ')'\", "
-                                + "('expression: 1+', 1, 14, '__result__=(1+)\\n'))" },
-                {
-                        ScriptType.MANAGED_PROPERTY,
-                        "SyntaxError: (\"no viable alternative at input '\\\\n\\\\n'\", "
-                                + "('<string>', 1, 2, '1+\\n'))" }
+                        {
+                                ScriptType.DYNAMIC_PROPERTY,
+                                "Error evaluating '1+': SyntaxError: "
+                                        + "(\"no viable alternative at input ')'\", "
+                                        + "('expression: 1+', 1, 14, '__result__=(1+)\\n'))" },
+                        {
+                                ScriptType.MANAGED_PROPERTY,
+                                "SyntaxError: (\"no viable alternative at input '\\\\n\\\\n'\", "
+                                        + "('<string>', 1, 2, '1+\\n'))" }
 
-        };
+                };
     }
 
     private static final String SCRIPT = "1+1";
@@ -73,8 +75,11 @@ public final class ScriptBOTest extends AbstractBOTest
 
     private final ScriptBO createScriptBO()
     {
+        Properties properties = new Properties();
+        properties.setProperty(CodePluginsConfiguration.ALLOWED_USERS, ManagerTestTool.EXAMPLE_SESSION.getUserName() + ", another_person");
+
         return new ScriptBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, scriptFactory,
-                managedPropertyEvaluatorFactory, null, null, new TestJythonEvaluatorPool());
+                managedPropertyEvaluatorFactory, null, null, new TestJythonEvaluatorPool(), properties);
     }
 
     @Test
@@ -106,14 +111,14 @@ public final class ScriptBOTest extends AbstractBOTest
         final ScriptPE scriptPE = new ScriptPE();
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptFactory).create();
-                    will(returnValue(scriptPE));
+                one(scriptFactory).create();
+                will(returnValue(scriptPE));
 
-                    one(scriptDAO).createOrUpdate(scriptPE);
-                }
-            });
+                one(scriptDAO).createOrUpdate(scriptPE);
+            }
+        });
         scriptBO.define(newScript);
         scriptBO.save();
 
@@ -140,12 +145,12 @@ public final class ScriptBOTest extends AbstractBOTest
         final ScriptPE scriptPE = new ScriptPE();
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptFactory).create();
-                    will(returnValue(scriptPE));
-                }
-            });
+                one(scriptFactory).create();
+                will(returnValue(scriptPE));
+            }
+        });
         scriptBO.define(newScript);
         try
         {
@@ -166,14 +171,14 @@ public final class ScriptBOTest extends AbstractBOTest
         scriptPE.setId(1L);
         final TechId techId = TechId.create(scriptPE);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptDAO).getByTechId(techId);
-                    will(returnValue(scriptPE));
+                one(scriptDAO).getByTechId(techId);
+                will(returnValue(scriptPE));
 
-                    one(scriptDAO).delete(scriptPE);
-                }
-            });
+                one(scriptDAO).delete(scriptPE);
+            }
+        });
         scriptBO.deleteByTechId(techId);
         context.assertIsSatisfied();
     }
@@ -186,13 +191,13 @@ public final class ScriptBOTest extends AbstractBOTest
         scriptPE.setId(1L);
         final TechId techId = TechId.create(scriptPE);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptDAO).getByTechId(techId);
-                    will(throwException(new DataRetrievalFailureException("Not found")));
+                one(scriptDAO).getByTechId(techId);
+                will(throwException(new DataRetrievalFailureException("Not found")));
 
-                }
-            });
+            }
+        });
         boolean excetionThrown = false;
         try
         {
@@ -213,16 +218,16 @@ public final class ScriptBOTest extends AbstractBOTest
         scriptPE.setId(1L);
         final TechId techId = TechId.create(scriptPE);
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptDAO).getByTechId(techId);
-                    will(returnValue(scriptPE));
+                one(scriptDAO).getByTechId(techId);
+                will(returnValue(scriptPE));
 
-                    one(scriptDAO).delete(scriptPE);
-                    will(throwException(new DataIntegrityViolationException("")));
+                one(scriptDAO).delete(scriptPE);
+                will(throwException(new DataIntegrityViolationException("")));
 
-                }
-            });
+            }
+        });
         boolean excetionThrown = false;
         try
         {
@@ -259,14 +264,14 @@ public final class ScriptBOTest extends AbstractBOTest
         scriptPE.setModificationDate(updates.getModificationDate());
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    one(scriptDAO).getByTechId(TechId.create(updates));
-                    will(returnValue(scriptPE));
+                one(scriptDAO).getByTechId(TechId.create(updates));
+                will(returnValue(scriptPE));
 
-                    one(scriptDAO).createOrUpdate(scriptPE);
-                }
-            });
+                one(scriptDAO).createOrUpdate(scriptPE);
+            }
+        });
 
         assertFalse(updates.getDescription().equals(scriptPE.getDescription()));
         assertFalse(updates.getName().equals(scriptPE.getName()));
@@ -310,22 +315,22 @@ public final class ScriptBOTest extends AbstractBOTest
         scriptPE.getSampleAssignments().add(etpt);
 
         context.checking(new Expectations()
+        {
             {
+                one(scriptDAO).getByTechId(TechId.create(updates));
+                will(returnValue(scriptPE));
+
+                one(scriptDAO).createOrUpdate(scriptPE);
+
+                if (scriptType == ScriptType.DYNAMIC_PROPERTY)
                 {
-                    one(scriptDAO).getByTechId(TechId.create(updates));
-                    will(returnValue(scriptPE));
+                    one(daoFactory).getEntityPropertyTypeDAO(EntityKind.SAMPLE);
+                    will(returnValue(entityPropertyTypeDAO));
 
-                    one(scriptDAO).createOrUpdate(scriptPE);
-
-                    if (scriptType == ScriptType.DYNAMIC_PROPERTY)
-                    {
-                        one(daoFactory).getEntityPropertyTypeDAO(EntityKind.SAMPLE);
-                        will(returnValue(entityPropertyTypeDAO));
-
-                        one(entityPropertyTypeDAO).scheduleDynamicPropertiesEvaluation(etpt);
-                    }
+                    one(entityPropertyTypeDAO).scheduleDynamicPropertiesEvaluation(etpt);
                 }
-            });
+            }
+        });
 
         assertFalse(updates.getDescription().equals(scriptPE.getDescription()));
         assertFalse(updates.getName().equals(scriptPE.getName()));

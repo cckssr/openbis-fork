@@ -96,7 +96,7 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.api.IEntityInfor
 
 /**
  * The unique {@link ICommonBusinessObjectFactory} implementation.
- * 
+ *
  * @author Tomasz Pylak
  */
 public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFactory implements
@@ -144,7 +144,7 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
     public final IScriptBO createScriptBO(final Session session)
     {
         return new ScriptBO(getDaoFactory(), session, getManagedPropertyEvaluatorFactory(),
-                dataSetTypeWithoutExperimentChecker, relationshipService, jythonEvaluatorPool);
+                dataSetTypeWithoutExperimentChecker, relationshipService, jythonEvaluatorPool, configurer.getResolvedProps());
     }
 
     @Override

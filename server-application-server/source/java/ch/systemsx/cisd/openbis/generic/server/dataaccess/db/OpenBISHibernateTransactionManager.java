@@ -30,6 +30,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.HibernateInterceptorsWrapper;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyCalculatorFactory;
@@ -66,16 +67,21 @@ public class OpenBISHibernateTransactionManager extends HibernateTransactionMana
 
     private IOpenBisSessionManager openBisSessionManager;
 
+    private ExposablePropertyPlaceholderConfigurer configurer;
+
     public OpenBISHibernateTransactionManager(IDAOFactory daoFactory,
             IEntityValidatorFactory entityValidationFactory,
             IDynamicPropertyCalculatorFactory dynamicPropertyCalculatorFactory,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory, IOpenBisSessionManager openBisSessionManager)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            IOpenBisSessionManager openBisSessionManager,
+            ExposablePropertyPlaceholderConfigurer configurer)
     {
         this.daoFactory = daoFactory;
         this.entityValidationFactory = entityValidationFactory;
         this.dynamicPropertyCalculatorFactory = dynamicPropertyCalculatorFactory;
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
         this.openBisSessionManager = openBisSessionManager;
+        this.configurer = configurer;
     }
 
     public void setDynamicPropertiesInterceptor(
@@ -138,7 +144,7 @@ public class OpenBISHibernateTransactionManager extends HibernateTransactionMana
     {
         EntityValidationInterceptor entityValidationInterceptor =
                 new EntityValidationInterceptor(this, daoFactory, entityValidationFactory,
-                        dynamicPropertyCalculatorFactory, managedPropertyEvaluatorFactory);
+                        dynamicPropertyCalculatorFactory, managedPropertyEvaluatorFactory, configurer.getResolvedProps());
 
         SessionsUpdateInterceptor sessionsUpdateInterceptor = new SessionsUpdateInterceptor(openBisSessionManager, daoFactory);
 

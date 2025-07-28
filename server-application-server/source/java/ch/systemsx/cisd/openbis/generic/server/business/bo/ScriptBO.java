@@ -15,6 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
+import java.util.Properties;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 
@@ -22,6 +24,7 @@ import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetTypeWithoutExperimentChecker;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IScriptDAO;
 import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
@@ -38,7 +41,7 @@ import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedProperty
 
 /**
  * The only productive implementation of {@link IScriptBO}. We are using an interface here to keep the system testable.
- * 
+ *
  * @author Izabela Adamczyk
  */
 public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
@@ -50,27 +53,30 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
 
     private final IJythonEvaluatorPool jythonEvaluatorPool;
 
+    private final CodePluginsConfiguration codePluginsConfiguration;
+
     public ScriptBO(final IDAOFactory daoFactory, final Session session,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService,
-            IJythonEvaluatorPool jythonEvaluationPool)
+            IJythonEvaluatorPool jythonEvaluationPool, Properties properties)
     {
         this(daoFactory, session, new ScriptFactory(), managedPropertyEvaluatorFactory, dataSetTypeChecker,
-                relationshipService, jythonEvaluationPool);
+                relationshipService, jythonEvaluationPool, properties);
     }
 
     @Private
-    // for testing
+        // for testing
     ScriptBO(final IDAOFactory daoFactory, final Session session, IScriptFactory scriptFactory,
             IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
             DataSetTypeWithoutExperimentChecker dataSetTypeChecker,
             IRelationshipService relationshipService,
-            IJythonEvaluatorPool jythonEvaluationPool)
+            IJythonEvaluatorPool jythonEvaluationPool, Properties properties)
     {
         super(daoFactory, session, managedPropertyEvaluatorFactory, dataSetTypeChecker, relationshipService);
         this.scriptFactory = scriptFactory;
         this.jythonEvaluatorPool = jythonEvaluationPool;
+        this.codePluginsConfiguration = new CodePluginsConfiguration(properties);
     }
 
     @Private
@@ -91,6 +97,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
     @Override
     public ScriptPE deleteByTechId(TechId groupId) throws UserFailureException
     {
+        checkAllowedUser(session);
         loadDataByTechId(groupId);
         try
         {
@@ -119,6 +126,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
     public void save() throws UserFailureException
     {
         assert script != null : "Script not defined";
+        checkAllowedUser(session);
         try
         {
             PluginUtils.checkScriptCompilation(script, jythonEvaluatorPool);
@@ -133,6 +141,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
     public void define(Script newScript) throws UserFailureException
     {
         assert newScript != null : "Unspecified script.";
+        checkAllowedUser(session);
         script = scriptFactory.create();
         script.setName(newScript.getName());
         script.setDescription(newScript.getDescription());
@@ -151,6 +160,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
         assert newScript != null : "Script cannot be null";
         assert newScript.getName() != null : "Script name cannot be null";
 
+        checkAllowedUser(session);
         IScriptDAO scriptDAO = getScriptDAO();
         script = scriptDAO.tryFindByName(newScript.getName());
         if (script == null)
@@ -192,6 +202,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
         assert name != null : "Script name cannot be null";
         assert scriptType != null : "Script type cannot be null";
 
+        checkAllowedUser(session);
         IScriptDAO scriptDAO = getScriptDAO();
         script = scriptDAO.tryFindByName(name);
 
@@ -217,6 +228,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
     @Override
     public void update(IScriptUpdates updates)
     {
+        checkAllowedUser(session);
         loadDataByTechId(TechId.create(updates));
         if (script.getModificationDate().equals(updates.getModificationDate()) == false)
         {
@@ -259,4 +271,10 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
                     .scheduleDynamicPropertiesEvaluation(assignment);
         }
     }
+
+    private void checkAllowedUser(Session session)
+    {
+        codePluginsConfiguration.checkAllowedUser(session.getUserName());
+    }
+
 }
