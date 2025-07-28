@@ -1,8 +1,6 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import io.quarkus.runtime.Quarkus;
-import jakarta.ws.rs.HeaderParam;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -47,7 +45,7 @@ public class EndToEndTests extends AbstractTest
                 "changeit");
 
         given()
-                .param("sessionToken", openBIS.getSessionToken())
+                .param("api-key", openBIS.getSessionToken())
                 .when().get("http://localhost:8085/openbis/open-api/ro-crate/test-openbis-connection")
                 .then()
                 .body(is("admin"))
@@ -65,7 +63,7 @@ public class EndToEndTests extends AbstractTest
                 "changeit");
 
         given()
-                .header("sessionToken", openBIS.getSessionToken())
+                .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExample1.getBytes())
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/import")
@@ -85,7 +83,7 @@ public class EndToEndTests extends AbstractTest
         System.out.println(openBIS.getSessionToken());
 
         given()
-                .header("sessionToken", openBIS.getSessionToken())
+                .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExample1.getBytes())
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
