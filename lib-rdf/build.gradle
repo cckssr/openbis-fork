@@ -20,11 +20,8 @@ repositories {
     mavenCentral()
 }
 
-//'openbis:openbis-v3-api-batteries-included:6.5.0',
-//files('libs/openBIS-API-V3-batteries-included-SNAPSHOT-r1718006152.jar'),
 dependencies {
     implementation 'org.apache.jena:apache-jena-libs:5.0.0',
-            'openbis:openbis-v3-api-batteries-included:6.6.0-EA',
             'apache:poi:3.17',
             'apache:poi-ooxml:3.17',
             'apache:poi-ooxml-schemas:3.17',
