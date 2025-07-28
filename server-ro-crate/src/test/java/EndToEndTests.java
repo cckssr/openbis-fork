@@ -1,5 +1,6 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import io.quarkus.runtime.Quarkus;
 import jakarta.ws.rs.HeaderParam;
 import org.testng.annotations.BeforeClass;
@@ -54,7 +55,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
-    public void importRoCrateOpenAPITest()
+    public void testImport()
             throws Exception
     {
         getConfiguration();
@@ -73,7 +74,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
-    public void validateRoCrateOpenAPITest()
+    public void testValidate()
             throws Exception
     {
         getConfiguration();
@@ -93,7 +94,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
-    public void exportRoCrateOpenAPITest()
+    public void testExportDOI()
             throws Exception
     {
         getConfiguration();
@@ -105,10 +106,66 @@ public class EndToEndTests extends AbstractTest
                 .header("api-key", openBIS.getSessionToken())
                 .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
-                .header("openbis.importMode", "updateIfExists")
                 .body("[\"https://doi.org/10.1038/s41586-020-3010-5\"]")
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);
+    }
+
+    @Test
+    public void testExportIdentifier()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login("system", "changeit");
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("openbis.with-Levels-below", "true")
+                .header("Content-Type", "application/json")
+                .body("[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]")
+                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    public void testExportPermId()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login("system", "changeit");
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("openbis.with-Levels-below", "true")
+                .header("Content-Type", "application/json")
+                .body("[\"20250728111931402-94\"]")
+                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    public void testExportEmptyResults()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login("system", "changeit");
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("openbis.with-Levels-below", "true")
+                .header("Content-Type", "application/json")
+                .body("[\"NOT-AN-IDENTIFIER\"]")
+                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .then()
+                .statusCode(500);
     }
 }

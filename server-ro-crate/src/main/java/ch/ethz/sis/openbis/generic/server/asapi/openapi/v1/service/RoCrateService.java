@@ -222,17 +222,21 @@ public class RoCrateService {
 
             // Could it be an openBIS permId ?
             if (identifier.contains("-")) {
-                criteria.withPermId().thatEquals(identifier);
+                criteria.withPermId().withoutWildcards().thatEquals(identifier);
             }
 
             // Could it be an openBIS identifier ?
             if (identifier.contains("/")) {
-                criteria.withIdentifier().thatEquals(identifier);
+                criteria.withIdentifier().withoutWildcards().thatEquals(identifier);
             }
 
         }
 
         SearchResult<Sample> searchResults = openBis.searchSamples(criteria, new SampleFetchOptions());
+
+        if (searchResults.getTotalCount() < 1) {
+            throw new IllegalArgumentException("No results found");
+        }
 
         ExportData exportData = new ExportData();
         List<ExportablePermId> exportablePermIds =
