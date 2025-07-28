@@ -1,11 +1,11 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.ros.startup.Configuration;
-import ch.ethz.sis.openbis.ros.startup.StartupMain;
+import ch.ethz.sis.rocrateserver.startup.Configuration;
+import ch.ethz.sis.rocrateserver.startup.StartupMain;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter.*;
+import static ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter.*;
 
 public class AbstractTest
 {

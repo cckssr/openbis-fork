@@ -18,7 +18,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
-import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper.RoCrateSchemaValidation;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.RoCrateSchemaValidation;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

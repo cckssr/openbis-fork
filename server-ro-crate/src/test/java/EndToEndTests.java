@@ -1,5 +1,5 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.ros.startup.StartupMain;
+import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import io.quarkus.runtime.Quarkus;
 import org.junit.Ignore;
 import org.testng.annotations.BeforeClass;
