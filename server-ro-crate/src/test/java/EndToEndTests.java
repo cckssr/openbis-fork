@@ -1,6 +1,7 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
 import io.quarkus.runtime.Quarkus;
+import jakarta.ws.rs.HeaderParam;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -98,14 +99,14 @@ public class EndToEndTests extends AbstractTest
         getConfiguration();
 
         OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
-        openBIS.login("system",
-                "changeit");
+        openBIS.login("system", "changeit");
 
         given()
-                .header("sessionToken", openBIS.getSessionToken())
+                .header("api-key", openBIS.getSessionToken())
+                .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
-                .header("importMode", "updateIfExists")
-                .body("[\"https://doi.org/10.1038/s41586-020-3010-5\", \"B\"]")
+                .header("openbis.importMode", "updateIfExists")
+                .body("[\"https://doi.org/10.1038/s41586-020-3010-5\"]")
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);
