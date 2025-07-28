@@ -303,38 +303,10 @@ public class RoCrateService {
 
         Map<IEntityType, PropertyAssignment> assignmentsToQuery = new LinkedHashMap<>();
         SampleSearchCriteria sampleSearchCriteria = new SampleSearchCriteria();
+        sampleSearchCriteria.withOrOperator();
 
-        for (IEntityType entityType : entityTypes)
-        {
-            Optional<PropertyAssignment> maybePropertyAssignment =
-                    entityType.getPropertyAssignments().stream()
-                            .filter(x -> x.getSemanticAnnotations().stream().anyMatch(
-                                    y -> y.getPredicateAccessionId()
-                                            .equals("https://schema.org/identifier")))
-                            .findFirst();
-            if (maybePropertyAssignment.isEmpty())
-            {
-                continue;
-            }
-            SampleSearchCriteria typeCriterion =
-                    sampleSearchCriteria.withSubcriteria().withAndOperator();
-            typeCriterion.withType().withCode().thatEquals(entityType.getCode());
-            SampleSearchCriteria valueCriterion =
-                    sampleSearchCriteria.withSubcriteria().withAndOperator();
-            for (String identifier : identifiers)
-            {
-                SampleSearchCriteria specificIdentifierCriterion =
-                        valueCriterion.withSubcriteria().withOrOperator();
-                specificIdentifierCriterion.withStringProperty(
-                                maybePropertyAssignment.get().getPropertyType().getCode())
-                        .thatEquals(identifier);
-
-            }
-
-            assignmentsToQuery.put(entityType, maybePropertyAssignment.get());
-
-        }
-        sampleSearchCriteria.withType().withCode().thatEquals("PUBLICATION");
+        sampleSearchCriteria.withStringProperty("PUBLICATION.IDENTIFIER")
+                .thatEquals("https://doi.org/10.1038/s41586-020-3010-5");
 
 
         SampleFetchOptions sampleFetchOptions = new SampleFetchOptions();
@@ -347,6 +319,10 @@ public class RoCrateService {
         Set<String> foundIdentifiers = sampleSearchResult.getObjects().stream()
                 .map(x -> isIdentifierFoundInProperty(x, assignmentsToQuery, identifiers))
                 .collect(Collectors.toSet());
+
+        Set<String> identifiersToSearchViaCOde = Set.of();
+
+        Set<String> identifiersToSearchViaPermId = Set.of();
 
 
 
