@@ -9,6 +9,7 @@ import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.xlsx.*;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.ontology.OntClass;
@@ -52,9 +53,21 @@ public class RDFReader
         ResourceParsingResult resourceParsingResult =
                 handleResources(model, modelRDF, additionalModel);
         printResourceParsingResult(resourceParsingResult);
+        CardinalityCheckResult cardinalityCheckResult = checkCardinalities(modelRDF);
+
+        if (!cardinalityCheckResult.tooFewValues.isEmpty() || !cardinalityCheckResult.tooManyValues.isEmpty())
+        {
+            reportCardinalities(cardinalityCheckResult);
+            throw new UserFailureException(
+                    "Cardinalities are not consistent with the schema, please check the above output.");
+        } else
+        {
+            System.out.println("Cardinality check okay");
+        }
 
 
         if (verbose) ParserUtils.extractGeneralInfo(model, model.getNsPrefixURI(""));
+
 
         return modelRDF;
     }
@@ -591,4 +604,101 @@ public class RDFReader
 
 
     }
+
+    CardinalityCheckResult checkCardinalities(ModelRDF modelRDF)
+    {
+        Set<CardinalityCheckResult.ResourceWithValues> tooFewValues = new LinkedHashSet<>();
+        Set<CardinalityCheckResult.ResourceWithValues> tooManyValues = new LinkedHashSet<>();
+
+        for (Map.Entry<String, List<SampleObject>> entries : modelRDF.sampleObjectsGroupedByTypeMap.entrySet())
+        {
+            Map<String, SampleType> sampleTypesByCode =
+                    modelRDF.sampleTypeList.stream().collect(Collectors.toMap(x -> x.code, x -> x));
+            SampleType sampleType = sampleTypesByCode.get(entries.getKey().toUpperCase());
+            assert sampleType != null;
+            Map<String, SamplePropertyType> labelToSamplePropertyType =
+                    sampleType.properties.stream().collect(
+                            Collectors.toMap(x -> x.propertyLabel, x -> x));
+
+            for (SampleObject sampleObject : entries.getValue())
+            {
+
+                Map<String, List<SampleObjectProperty>> propertiesByLabel =
+                        sampleObject.getProperties().stream()
+                                .collect(Collectors.groupingBy(x -> x.getLabel()));
+                for (SamplePropertyType samplePropertyType : sampleType.properties)
+                {
+                    boolean mandatory = samplePropertyType.isMandatory == 1;
+                    boolean multiValue =
+                            modelRDF.getMultiValueProperties().contains(samplePropertyType.code);
+
+                    if (!mandatory & multiValue)
+                    {
+                        continue;
+                    }
+                    List<SampleObjectProperty> vals =
+                            propertiesByLabel.getOrDefault(samplePropertyType.propertyLabel,
+                                    List.of());
+
+                    if (!multiValue && vals.size() > 1)
+                    {
+                        CardinalityCheckResult.ResourceWithValues reference =
+                                new CardinalityCheckResult.ResourceWithValues(
+                                        sampleObject.name, samplePropertyType.propertyLabel,
+                                        vals.stream().map(x -> x.getValue()).collect(
+                                                Collectors.toSet()));
+                        tooManyValues.add(reference);
+                    }
+                    if (mandatory && vals.isEmpty())
+                    {
+                        CardinalityCheckResult.ResourceWithValues reference =
+                                new CardinalityCheckResult.ResourceWithValues(
+                                        sampleObject.name, samplePropertyType.propertyLabel,
+                                        vals.stream().map(x -> x.getValue()).collect(
+                                                Collectors.toSet()));
+                        tooManyValues.add(reference);
+                    }
+
+                    propertiesByLabel.get(samplePropertyType.propertyLabel);
+
+                }
+
+                for (SampleObjectProperty sampleObjectProperty : sampleObject.getProperties())
+                {
+                    SamplePropertyType samplePropertyType =
+                            labelToSamplePropertyType.get(sampleObjectProperty.label);
+                }
+
+            }
+
+        }
+        return new CardinalityCheckResult(tooManyValues, tooFewValues);
+
+    }
+
+    private void reportCardinalities(CardinalityCheckResult cardinalityCheckResult)
+    {
+        if (!cardinalityCheckResult.tooManyValues.isEmpty())
+        {
+            System.out.println("There are resources with too many properties");
+        }
+        for (CardinalityCheckResult.ResourceWithValues a : cardinalityCheckResult.tooManyValues)
+        {
+            System.out.println(a.resourceId + ", " + a.getPropertyLabel() + ": " + a.values.stream()
+                    .collect(Collectors.joining(","))
+            );
+
+        }
+
+        if (!cardinalityCheckResult.tooFewValues.isEmpty())
+        {
+            System.out.println("There are resources with missing mandatory properties");
+        }
+        for (CardinalityCheckResult.ResourceWithValues a : cardinalityCheckResult.tooFewValues)
+        {
+            System.out.println(a.resourceId + ", " + a.getPropertyLabel());
+        }
+
+    }
+
 }

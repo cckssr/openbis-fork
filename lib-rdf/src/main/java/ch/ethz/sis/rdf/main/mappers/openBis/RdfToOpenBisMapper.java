@@ -235,6 +235,7 @@ public class RdfToOpenBisMapper
                                         labelToProperty.get(x.label).getPropertyType(),
                                         sample.getSpace().getCode(), sample.getProject().getCode()),
                                 (existing, replacement) -> existing + "," + replacement));
+
                 if (!proppies.containsKey("Name"))
                 {
                     proppies.put("Name", sampleObject.name);

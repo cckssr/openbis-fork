@@ -1,0 +1,74 @@
+@prefix :                <https://biomedit.ch/rdf/sphn-rml/sphn#> .
+@prefix brick:           <https://brickschema.org/schema/Brick#> .
+@prefix chop:            <https://biomedit.ch/rdf/sphn-resource/chop/> .
+@prefix csvw:            <http://www.w3.org/ns/csvw#> .
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+@prefix dcam:            <http://purl.org/dc/dcam/> .
+@prefix dcat:            <http://www.w3.org/ns/dcat#> .
+@prefix dcmitype:        <http://purl.org/dc/dcmitype/> .
+@prefix dct:             <http://purl.org/dc/terms/> .
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
+@prefix eco:             <http://purl.obolibrary.org/obo/ECO_> .
+@prefix edam:            <http://edamontology.org/> .
+@prefix efo:             <http://www.ebi.ac.uk/efo/EFO_> .
+@prefix emdn:            <https://biomedit.ch/rdf/sphn-resource/emdn/> .
+@prefix foaf:            <http://xmlns.com/foaf/0.1/> .
+@prefix genepio:         <http://purl.obolibrary.org/obo/GENEPIO_> .
+@prefix geno:            <http://purl.obolibrary.org/obo/GENO_> .
+@prefix geo:             <http://www.opengis.net/ont/geosparql#> .
+@prefix icd-10-gm:       <https://biomedit.ch/rdf/sphn-resource/icd-10-gm/> .
+@prefix loinc:           <https://loinc.org/rdf/> .
+@prefix obi:             <http://purl.obolibrary.org/obo/OBI_> .
+@prefix odrl:            <http://www.w3.org/ns/odrl/2/> .
+@prefix ordo:            <http://www.orpha.net/ORDO/> .
+@prefix org:             <http://www.w3.org/ns/org#> .
+@prefix owl:             <http://www.w3.org/2002/07/owl#> .
+@prefix prof:            <http://www.w3.org/ns/dx/prof/> .
+@prefix prov:            <http://www.w3.org/ns/prov#> .
+@prefix qb:              <http://purl.org/linked-data/cube#> .
+@prefix ql:              <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix resource:        <https://biomedit.ch/rdf/sphn-resource/> .
+@prefix rml:             <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr:              <http://www.w3.org/ns/r2rml#> .
+@prefix schema:          <https://schema.org/> .
+@prefix sh:              <http://www.w3.org/ns/shacl#> .
+@prefix skos:            <http://www.w3.org/2004/02/skos/core#> .
+@prefix snomed:          <http://snomed.info/id/> .
+@prefix so:              <http://purl.obolibrary.org/obo/SO_> .
+@prefix sosa:            <http://www.w3.org/ns/sosa/> .
+@prefix sphn:            <https://biomedit.ch/rdf/sphn-schema/sphn#> .
+@prefix sphn-atc:        <https://biomedit.ch/rdf/sphn-resource/atc/> .
+@prefix sphn-deprecated: <https://biomedit.ch/rdf/sphn-ontology/sphn#> .
+@prefix sphn-eco:        <https://biomedit.ch/rdf/sphn-resource/eco/> .
+@prefix sphn-edam:       <https://biomedit.ch/rdf/sphn-resource/edam/> .
+@prefix sphn-efo:        <https://biomedit.ch/rdf/sphn-resource/efo/> .
+@prefix sphn-genepio:    <https://biomedit.ch/rdf/sphn-resource/genepio/> .
+@prefix sphn-geno:       <https://biomedit.ch/rdf/sphn-resource/geno/> .
+@prefix sphn-hgnc:       <https://biomedit.ch/rdf/sphn-resource/hgnc/> .
+@prefix sphn-individual: <https://biomedit.ch/rdf/sphn-schema/sphn/individual#> .
+@prefix sphn-loinc:      <https://biomedit.ch/rdf/sphn-resource/loinc/> .
+@prefix sphn-obi:        <https://biomedit.ch/rdf/sphn-resource/obi/> .
+@prefix sphn-ordo:       <https://biomedit.ch/rdf/sphn-resource/ordo/> .
+@prefix sphn-so:         <https://biomedit.ch/rdf/sphn-resource/so/> .
+@prefix ssn:             <http://www.w3.org/ns/ssn/> .
+@prefix time:            <http://www.w3.org/2006/time#> .
+@prefix ucum:            <https://biomedit.ch/rdf/sphn-resource/ucum/> .
+@prefix vann:            <http://purl.org/vocab/vann/> .
+@prefix void:            <http://rdfs.org/ns/void#> .
+@prefix wgs:             <https://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix xml:             <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:             <http://www.w3.org/2001/XMLSchema#> .
+
+resource:CHE_108_904_325-sphn-Drug-A36E3391-529F-4D67-8E03-6C9586A9CFE9
+    a sphn:Drug ;
+    sphn:hasActiveIngredient
+      resource:CHE_108_904_325-sphn-Substance-SNOMED-CT-173196005-50.0000000-UCUM-mg,
+      resource:CHE_108_904_325-sphn-Substance-SNOMED-CT-273196005-50.0000000-UCUM-mg .
+
+resource:CHE_108_904_325-sphn-Substance-SNOMED-CT-173196005-50.0000000-UCUM-mg
+    a sphn:Substance .
+
+resource:CHE_108_904_325-sphn-Substance-SNOMED-CT-273196005-50.0000000-UCUM-mg
+    a sphn:Substance .
