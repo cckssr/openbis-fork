@@ -30,6 +30,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.delegates.ValidateDelegate;
 import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.params.ExportParams;
+import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.params.ValidateParams;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import ch.openbis.rocrate.app.writer.Writer;
@@ -72,8 +73,9 @@ public class RoCrateService {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("test-openbis-connection")
-    public String testOpenbisConnection(@QueryParam(value = "sessionToken") String sessionToken) {
-        OpenBIS openBIS = openBISProvider.createClient(sessionToken);
+    public String testOpenbisConnection(@QueryParam(value = "api-key") String apiKey)
+    {
+        OpenBIS openBIS = openBISProvider.createClient(apiKey);
         try {
             return openBIS.getSessionInformation().getUserName();
         } finally {
@@ -86,7 +88,7 @@ public class RoCrateService {
     @Consumes({"application/ld+json", "application/zip"})
     @Path("import")
     public List<String> importRoCrate(
-            @HeaderParam(value = "sessionToken") String sessionToken,
+            @BeanParam ImportParams importParams,
 //            @HeaderParam(value = "options") Map<String, String> options,
             InputStream inputStream)
             throws IOException
@@ -98,10 +100,11 @@ public class RoCrateService {
             // Writing the crate to the session workspace
 
                 java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
-                SessionWorkSpace.write(sessionToken, roCrateMetadata, inputStream);
+            SessionWorkSpace.write(importParams.getApiKey(), roCrateMetadata, inputStream);
             // Reading ro-crate model
                 RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-                RoCrate crate = roCrateFolderReader.readCrate(SessionWorkSpace.getRealPath(sessionToken, null).toString());
+            RoCrate crate = roCrateFolderReader.readCrate(
+                    SessionWorkSpace.getRealPath(importParams.getApiKey(), null).toString());
 
                 SchemaFacade schemaFacade = SchemaFacade.of(crate);
                 List<IType> types = schemaFacade.getTypes();
@@ -120,7 +123,7 @@ public class RoCrateService {
 
                 byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
             // Sending import request to openBIS
-                OpenBIS openBIS = openBISProvider.createClient(sessionToken);
+            OpenBIS openBIS = openBISProvider.createClient(importParams.getApiKey());
                 java.nio.file.Path modelAsExcel = java.nio.file.Path.of(
                         UUID.randomUUID() + ".xlsx");
                 SessionWorkSpace.write(openBIS.getSessionToken(), modelAsExcel,
@@ -146,7 +149,7 @@ public class RoCrateService {
             throw new IllegalArgumentException(e);
         } finally
         {
-            SessionWorkSpace.clear(sessionToken);
+            SessionWorkSpace.clear(importParams.getApiKey());
         }
         System.out.println("Import Finished");
         return result;
