@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service;
+package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper;
 
 import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
@@ -9,7 +9,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class SessionWorkSpace
 {
-
     private SessionWorkSpace()
     {
     }

@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service;
+package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -21,6 +21,10 @@ import java.util.stream.Stream;
  */
 public class RoCrateSchemaValidation
 {
+    private RoCrateSchemaValidation()
+    {
+    }
+
     public static class ValidationResult
     {
         private final Map<String, List<String>> entitiesToMissingProperties;

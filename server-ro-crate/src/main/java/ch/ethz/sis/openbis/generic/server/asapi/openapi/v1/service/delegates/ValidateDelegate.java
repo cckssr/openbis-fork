@@ -5,8 +5,8 @@ import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
-import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.RoCrateSchemaValidation;
-import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.SessionWorkSpace;
+import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper.RoCrateSchemaValidation;
+import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.params.ValidateParams;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -23,7 +23,7 @@ import java.util.List;
 public class ValidateDelegate
 {
 
-    public List<String> validate(InputStream inputStream, ValidateParams validateParams)
+    public List<String> validate(ValidateParams validateParams, InputStream inputStream)
             throws IOException
     {
         List<String> result = new ArrayList<>();

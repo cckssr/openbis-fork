@@ -15,21 +15,21 @@
  *
  */
 
-package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service;
+package ch.ethz.sis.openbis.generic.server.asapi.openapi.v1.service.helper;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.RoCrateServerParameter;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.Produces;
 
-@ApplicationScoped
 public class OpeBISProvider
 {
-
+    private OpeBISProvider()
+    {
+    }
 
     @Produces
-    public OpenBIS createClient(String personalAccessToken) {
+    public static OpenBIS createClient(String personalAccessToken) {
         String openBISUrl =
                 StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
         int openBISTimeout = StartupMain.getConfiguration()
@@ -39,12 +39,12 @@ public class OpeBISProvider
         return openBIS;
     }
 
-    public String getUrl()
+    public static String getUrl()
     {
         return StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
     }
 
-    public int getTimeOut()
+    public static int getTimeOut()
     {
         return StartupMain.getConfiguration()
                 .getIntegerProperty(RoCrateServerParameter.openBISTimeout);
