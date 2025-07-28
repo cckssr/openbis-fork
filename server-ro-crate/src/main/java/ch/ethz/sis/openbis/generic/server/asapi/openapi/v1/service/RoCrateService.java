@@ -205,7 +205,7 @@ public class RoCrateService {
         OpenBIS openBis = openBISProvider.createClient(headers.getApiKey());
         String[] identifiers = ExportParams.getIdentifiers(body);
         String[] identifierAnnotations = headers.getIdentifierAnnotations();
-        List<String> identifierAnnotationPropertyTypeCodes = getIdentifierAnnotationPropertyTypes(openBis, identifierAnnotations);
+        Set<String> identifierAnnotationPropertyTypeCodes = getIdentifierAnnotationPropertyTypes(openBis, identifierAnnotations);
 
         SampleSearchCriteria criteria = new SampleSearchCriteria();
         criteria.withOrOperator();
@@ -221,7 +221,7 @@ public class RoCrateService {
             }
 
             // Could it be an openBIS permId ?
-            if (identifier.contains("-")) {
+            if (identifier.contains("-") && !identifier.contains("/")) {
                 criteria.withPermId().withoutWildcards().thatEquals(identifier);
             }
 
@@ -288,7 +288,7 @@ public class RoCrateService {
     }
 
 
-    private List<String> getIdentifierAnnotationPropertyTypes(
+    private Set<String> getIdentifierAnnotationPropertyTypes(
             OpenBIS v3,
             String[] identifierAnnotations) {
         SemanticAnnotationSearchCriteria criteria = new SemanticAnnotationSearchCriteria();
@@ -302,7 +302,7 @@ public class RoCrateService {
         options.withPropertyType();
 
         SearchResult<SemanticAnnotation> apiResults = v3.searchSemanticAnnotations(criteria, options);
-        List<String> results = new ArrayList<>(apiResults.getTotalCount());
+        Set<String> results = new HashSet<>(apiResults.getTotalCount());
         for (SemanticAnnotation annotation: apiResults.getObjects()) {
             if (annotation.getPropertyAssignment() != null && annotation.getPropertyAssignment().getPropertyType() != null) {
                 results.add(annotation.getPropertyAssignment().getPropertyType().getCode());
