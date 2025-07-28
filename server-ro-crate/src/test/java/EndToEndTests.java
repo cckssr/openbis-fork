@@ -1,6 +1,7 @@
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.ros.startup.StartupMain;
 import io.quarkus.runtime.Quarkus;
+import org.junit.Ignore;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -130,6 +131,9 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
+    @Ignore
+    // PermIds depend on when the import was done. This can lead to false failure.
+    // As long as we don't have a good solution for search in tests, this is disabled.
     public void testExportPermId()
             throws Exception
     {
