@@ -35,6 +35,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.collection.ExtendedLinkedBlockingQueue;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 
 public class DynamicPropertyEvaluationSchedulerTest extends AssertJUnit
@@ -57,7 +58,9 @@ public class DynamicPropertyEvaluationSchedulerTest extends AssertJUnit
     @BeforeMethod
     public void clear()
     {
-        scheduler = new DynamicPropertyEvaluationScheduler(new ExtendedLinkedBlockingQueue<DynamicPropertyEvaluationOperation>(), new Properties());
+        Properties properties = new Properties();
+        properties.setProperty(CodePluginsConfiguration.ENABLED_PROPERTY, "true");
+        scheduler = new DynamicPropertyEvaluationScheduler(new ExtendedLinkedBlockingQueue<DynamicPropertyEvaluationOperation>(), properties);
         counter = 0;
     }
 
