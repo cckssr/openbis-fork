@@ -1,6 +1,6 @@
 package ch.systemsx.cisd.openbis.generic.server.codeplugin;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
 public class CodePluginsDisabledException extends UserFailureException
 {
