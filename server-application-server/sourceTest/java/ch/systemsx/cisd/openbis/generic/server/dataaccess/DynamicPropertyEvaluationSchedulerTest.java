@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -56,7 +57,7 @@ public class DynamicPropertyEvaluationSchedulerTest extends AssertJUnit
     @BeforeMethod
     public void clear()
     {
-        scheduler = new DynamicPropertyEvaluationScheduler(new ExtendedLinkedBlockingQueue<DynamicPropertyEvaluationOperation>());
+        scheduler = new DynamicPropertyEvaluationScheduler(new ExtendedLinkedBlockingQueue<DynamicPropertyEvaluationOperation>(), new Properties());
         counter = 0;
     }
 

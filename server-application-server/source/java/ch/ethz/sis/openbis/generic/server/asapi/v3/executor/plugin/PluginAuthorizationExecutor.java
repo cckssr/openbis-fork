@@ -90,6 +90,12 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     @Capability("EVALUATE_PLUGIN")
     public void canEvaluate(IOperationContext context)
     {
+        checkEnabled(context);
+    }
+
+    private void checkEnabled(IOperationContext context)
+    {
+        codePluginsConfiguration.checkEnabled();
     }
 
     private void checkAllowedUser(IOperationContext context)

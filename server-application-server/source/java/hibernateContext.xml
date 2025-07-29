@@ -142,6 +142,7 @@
 
     <bean id="dynamic-property-scheduler"
         class="ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationScheduler">
+        <constructor-arg ref="propertyConfigurer" />
     </bean>
 
 

@@ -1,5 +1,6 @@
 package ch.systemsx.cisd.openbis.generic.server.codeplugin;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -12,7 +13,9 @@ public class CodePluginsConfiguration
 
     public static final boolean ENABLED_DEFAULT = true;
 
-    public static final String ALLOWED_USERS = "code-plugins.allowed-users";
+    public static final String ALLOWED_USERS_PROPERTY = "code-plugins.allowed-users";
+
+    public static final String ALLOWED_USERS_DEFAULT = ".*";
 
     private final boolean enabled;
 
@@ -20,8 +23,15 @@ public class CodePluginsConfiguration
 
     public CodePluginsConfiguration(Properties properties)
     {
-        enabled = PropertyUtils.getBoolean(properties, ENABLED_PROPERTY, ENABLED_DEFAULT);
-        allowedUsers = PropertyUtils.getList(properties, ALLOWED_USERS);
+        this.enabled = PropertyUtils.getBoolean(properties, ENABLED_PROPERTY, ENABLED_DEFAULT);
+
+        List<String> allowedUsers = PropertyUtils.tryGetListInOriginalCase(properties, ALLOWED_USERS_PROPERTY);
+        if (allowedUsers == null)
+        {
+            allowedUsers = Collections.singletonList(ALLOWED_USERS_DEFAULT);
+        }
+
+        this.allowedUsers = allowedUsers;
     }
 
     public boolean areEnabled()
@@ -31,14 +41,35 @@ public class CodePluginsConfiguration
 
     public boolean isAllowedUser(String userId)
     {
-        return allowedUsers.contains(userId);
+        if (userId == null)
+        {
+            throw new IllegalArgumentException("User id cannot be null");
+        }
+
+        for (String allowedUser : allowedUsers)
+        {
+            if (userId.matches(allowedUser))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void checkEnabled()
+    {
+        if (!areEnabled())
+        {
+            throw new CodePluginsDisabledException();
+        }
     }
 
     public void checkAllowedUser(String userId)
     {
         if (!isAllowedUser(userId))
         {
-            throw new CodePluginsConfigurationNotAllowed(userId);
+            throw new CodePluginsConfigurationNotAllowedException(userId);
         }
     }
 
