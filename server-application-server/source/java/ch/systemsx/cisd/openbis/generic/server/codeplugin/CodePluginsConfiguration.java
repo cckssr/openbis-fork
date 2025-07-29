@@ -11,11 +11,11 @@ public class CodePluginsConfiguration
 
     public static final String ENABLED_PROPERTY = "code-plugins.enabled";
 
-    public static final boolean ENABLED_DEFAULT = true;
+    public static final boolean ENABLED_DEFAULT = false;
 
     public static final String ALLOWED_USERS_PROPERTY = "code-plugins.allowed-users";
 
-    public static final String ALLOWED_USERS_DEFAULT = ".*";
+    public static final String ALLOWED_USERS_DEFAULT = "system";
 
     private final boolean enabled;
 
