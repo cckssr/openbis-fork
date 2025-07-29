@@ -224,6 +224,19 @@ public class ExportExecutor implements IExportExecutor
 
     private long dataLimit = -1;
 
+    private boolean doExportDataRequiresExpansion(ExportOptions exportOptions) {
+        boolean withLevelsAbove = Boolean.TRUE.equals(exportOptions.isWithLevelsAbove());
+        boolean withLevelsBelow = Boolean.TRUE.equals(exportOptions.isWithLevelsBelow());
+        boolean withObjectsAndDataSetsParents =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsParents());
+        boolean withObjectsAndDataSetsOtherSpaces =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsOtherSpaces());
+        return withLevelsAbove ||
+                withLevelsBelow ||
+                withObjectsAndDataSetsParents ||
+                withObjectsAndDataSetsOtherSpaces;
+    }
+
     @Override
     public ExportResult doExport(final IOperationContext context, final ExportOperation operation)
     {
@@ -236,8 +249,13 @@ public class ExportExecutor implements IExportExecutor
             /*
              * Collect additional permIds in base to options and execute the export without them after
              */
-            final ExportData expandedExportData = XLSExportEntityCollector.collectEntities(
-                    CommonServiceProvider.getApplicationServerApi(), sessionToken, exportData, exportOptions);
+            final ExportData expandedExportData;
+            if (doExportDataRequiresExpansion(exportOptions)) {
+                expandedExportData = XLSExportEntityCollector.collectEntities(
+                        CommonServiceProvider.getApplicationServerApi(), sessionToken, exportData, exportOptions);
+            } else {
+                expandedExportData = exportData;
+            }
 
             return doExport(sessionToken, expandedExportData, exportOptions);
         } catch (final IOException e)
