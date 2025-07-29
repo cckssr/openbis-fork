@@ -9,7 +9,6 @@ import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.xlsx.*;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.ontology.OntClass;
@@ -58,8 +57,6 @@ public class RDFReader
         if (!cardinalityCheckResult.tooFewValues.isEmpty() || !cardinalityCheckResult.tooManyValues.isEmpty())
         {
             reportCardinalities(cardinalityCheckResult);
-            throw new UserFailureException(
-                    "Cardinalities are not consistent with the schema, please check the above output.");
         } else
         {
             System.out.println("Cardinality check okay");

@@ -3,7 +3,6 @@ package ch.ethz.sis.rdf.main;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleObject;
 import ch.ethz.sis.rdf.main.parser.RDFReader;
-import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.Assert;
@@ -31,9 +30,13 @@ public class CardinalityTest
         Config.setConfig(false, false);
         RDFReader rdfReader = new RDFReader();
         OntModel ontModel = ModelFactory.createOntologyModel();
-        Assert.assertThrows(UserFailureException.class,
+
+        // Dummied out because the conversion should not explode anymore. Reporting is still in place
+        /*Assert.assertThrows(UserFailureException.class,
                 () -> rdfReader.read(new String[] { input_schema, input_file_too_many },
                         inputFormatValue, false, ontModel));
+
+         */
     }
 
     @Test
