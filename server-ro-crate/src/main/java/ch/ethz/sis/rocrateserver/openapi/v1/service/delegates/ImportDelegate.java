@@ -27,13 +27,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @ApplicationScoped
 public class ImportDelegate
 {
 
-    public List<String> import_(
+    public class OpenBisImportResult
+    {
+        List<String> identifiers;
+
+        Map<String, String> externalToOpenBisIdentifiers;
+
+        public OpenBisImportResult(List<String> identifiers,
+                Map<String, String> externalToOpenBisIdentifiers)
+        {
+            this.identifiers = identifiers;
+            this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+        }
+
+        public List<String> getIdentifiers()
+        {
+            return identifiers;
+        }
+
+        public void setIdentifiers(List<String> identifiers)
+        {
+            this.identifiers = identifiers;
+        }
+
+        public Map<String, String> getExternalToOpenBisIdentifiers()
+        {
+            return externalToOpenBisIdentifiers;
+        }
+
+        public void setExternalToOpenBisIdentifiers(
+                Map<String, String> externalToOpenBisIdentifiers)
+        {
+            this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+        }
+    }
+
+    public OpenBisImportResult import_(
             OpenBIS openBIS,
             ImportParams headers,
             InputStream body,
@@ -70,7 +106,7 @@ public class ImportDelegate
         java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".xlsx");
 
         if (validateOnly) {
-            return List.of();
+            return new OpenBisImportResult(List.of(), Map.of());
         }
 
         // Import
@@ -82,7 +118,9 @@ public class ImportDelegate
         importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
         importData.setFormat(ImportFormat.EXCEL);
         ImportResult apiResult = openBIS.executeImport(importData, getImportOptions(headers));
-        return apiResult.getObjectIds().stream().map( id -> id.toString()).toList();
+        return new OpenBisImportResult(
+                apiResult.getObjectIds().stream().map(id -> id.toString()).toList(),
+                conversion.getExternalToOpenBisIdentifiers());
     }
 
     private static ImportOptions getImportOptions(ImportParams importParams)

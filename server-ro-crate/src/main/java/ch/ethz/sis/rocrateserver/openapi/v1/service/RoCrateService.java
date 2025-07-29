@@ -18,7 +18,7 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
+import java.util.Map;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
@@ -53,7 +53,7 @@ public class RoCrateService {
     @Consumes({"application/ld+json", "application/zip"})
     @Path("import")
     @SneakyThrows
-    public List<String> import_(
+    public Map<String, String> import_(
             @BeanParam ImportParams headers,
             InputStream body)
     {
@@ -66,7 +66,8 @@ public class RoCrateService {
         }
 
         try {
-            return importDelegate.import_(openBIS, headers, body, false);
+            return importDelegate.import_(openBIS, headers, body, false)
+                    .getExternalToOpenBisIdentifiers();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {

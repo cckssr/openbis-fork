@@ -36,7 +36,7 @@ public class RoCrateSchemaValidationTest
     {
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
@@ -109,7 +109,7 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
@@ -181,7 +181,7 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
@@ -253,7 +253,7 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
@@ -322,7 +322,7 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
@@ -426,7 +426,7 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
         RoCrateSchemaValidation.ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);

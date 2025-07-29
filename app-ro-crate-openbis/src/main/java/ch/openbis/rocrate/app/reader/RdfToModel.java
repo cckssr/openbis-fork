@@ -428,8 +428,8 @@ public class RdfToModel
 
         }
 
-
-        return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of());
+        return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                identifierToOpenBisCode);
     }
 
     private static SampleTypeFetchOptions getSampleTypeFetchOptions()
