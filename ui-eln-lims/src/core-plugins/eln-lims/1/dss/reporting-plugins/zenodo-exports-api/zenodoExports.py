@@ -61,13 +61,13 @@ def exportAll(tr, params):
 
 def sendToZenodo(tr, params, tempZipFilePath, entities):
     depositRootUrl = str(getConfigurationProperty(tr, 'zenodoUrl')) + '/api/deposit/depositions'
-
+    httpProxyURL = str(getConfigurationProperty(tr, 'httpProxyURL'))
+    httpProxyPort = str(getConfigurationProperty(tr, 'httpProxyPort'))
     accessToken = params.get('accessToken')
-    operationLog.info('accessToken: %s' % accessToken)
 
     httpClient = None
     try:
-        httpClient = createHttpClient()
+        httpClient = createHttpClient(httpProxyURL, httpProxyPort)
 
         httpClient.setFollowRedirects(False)
         httpClient.start()
@@ -82,7 +82,7 @@ def sendToZenodo(tr, params, tempZipFilePath, entities):
         addMetadata(params, httpClient.newRequest(selfUrl), accessToken)
 
         entityPermIds = map(lambda entity: entity['permId'], entities)
-        zenodoCallable = ZenodoCallable(params, accessToken, selfUrl,
+        zenodoCallable = ZenodoCallable(params, accessToken, selfUrl, httpProxyURL, httpProxyPort,
                                         reduce(lambda str, permId: str + ',' + permId, entityPermIds))
         zenodoCallable.scheduleMetadataCheck()
 
@@ -154,9 +154,11 @@ def addAuthenticationHeader(accessToken, request):
     request.header('Authorization', 'Bearer ' + accessToken)
 
 
-def createHttpClient():
+def isNonEmptyString(s):
+    return isinstance(s, str) and bool(s.strip())
+
+def createHttpClient(httpProxyURL, httpProxyPort):
     jettyVersion = Jetty.VERSION
-    operationLog.info('Detected Jetty VERSION: %s' % jettyVersion)
 
     sslContextFactory = SslContextFactory.Client()
     sslContextFactory.setTrustAll(True)
@@ -172,8 +174,9 @@ def createHttpClient():
     else:
         raise ValueError('Unsupported Jetty version: %s. Only 9.x and 10.x are handled for HttpClient creation.' % jettyVersion)
 
-    proxyConfig = httpClient.getProxyConfiguration()
-    proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
+    if isNonEmptyString(httpProxyURL) and isNonEmptyString(httpProxyPort):
+        proxyConfig = httpClient.getProxyConfiguration()
+        proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
     return httpClient
 
 
@@ -181,12 +184,16 @@ class ZenodoCallable(object):
     params = None
     accessToken = None
     selfUrl = None
+    httpProxyURL = None
+    httpProxyPort = None
     permIdsStr = None
 
-    def __init__(self, params, accessToken, selfUrl, permIdsStr):
+    def __init__(self, params, accessToken, selfUrl, httpProxyURL, httpProxyPort, permIdsStr):
         self.params = params
         self.accessToken = accessToken
         self.selfUrl = selfUrl
+        self.httpProxyURL = httpProxyURL
+        self.httpProxyPort = httpProxyPort
         self.permIdsStr = permIdsStr
 
     def scheduleMetadataCheck(self):
@@ -199,7 +206,7 @@ class ZenodoCallable(object):
         actionCompleted = False
 
         try:
-            httpClient = createHttpClient()
+            httpClient = createHttpClient(self.httpProxyURL, self.httpProxyPort)
 
             httpClient.setFollowRedirects(False)
             httpClient.start()
