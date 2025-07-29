@@ -21,21 +21,22 @@ import java.util.stream.Stream;
  */
 public class RoCrateSchemaValidation
 {
+
     private RoCrateSchemaValidation()
     {
     }
 
     public static class ValidationResult
     {
-        private final Map<String, List<String>> entitiesToMissingProperties;
+        private final Map<String, List<PropertyProblem>> entitiesToMissingProperties;
 
-        private final Map<String, List<String>> entititesToUndefinedProperties;
+        private final Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
 
-        private final Map<String, List<String>> wrongDataTypes;
+        private final Map<String, List<PropertyProblem>> wrongDataTypes;
 
-        public ValidationResult(Map<String, List<String>> entitiesToMissingProperties,
-                Map<String, List<String>> entititesToUndefinedProperties,
-                Map<String, List<String>> wrongDataTypes)
+        public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
+                Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
+                Map<String, List<PropertyProblem>> wrongDataTypes)
         {
             this.entitiesToMissingProperties = entitiesToMissingProperties;
             this.entititesToUndefinedProperties = entititesToUndefinedProperties;
@@ -48,27 +49,43 @@ public class RoCrateSchemaValidation
                     && wrongDataTypes.isEmpty();
         }
 
-        public Map<String, List<String>> getEntitiesToMissingProperties()
+        public Map<String, List<PropertyProblem>> getEntitiesToMissingProperties()
         {
             return entitiesToMissingProperties;
         }
 
-        public Map<String, List<String>> getEntititesToUndefinedProperties()
+        public Map<String, List<PropertyProblem>> getEntititesToUndefinedProperties()
         {
             return entititesToUndefinedProperties;
         }
 
-        public Map<String, List<String>> getWrongDataTypes()
+        public Map<String, List<PropertyProblem>> getWrongDataTypes()
         {
             return wrongDataTypes;
         }
     }
 
+    public static class PropertyProblem
+    {
+        String node;
+
+        String property;
+
+        String message;
+
+        public PropertyProblem(String node, String property, String message)
+        {
+            this.node = node;
+            this.property = property;
+            this.message = message;
+        }
+    }
+
     public static ValidationResult validate(OpenBisModel openBisModel)
     {
-        Map<String, List<String>> entitiesToMissingProperties = new LinkedHashMap<>();
-        Map<String, List<String>> entititesToUndefinedProperties = new LinkedHashMap<>();
-        Map<String, List<String>> wrongDataTypes = new LinkedHashMap<>();
+        Map<String, List<PropertyProblem>> entitiesToMissingProperties = new LinkedHashMap<>();
+        Map<String, List<PropertyProblem>> entititesToUndefinedProperties = new LinkedHashMap<>();
+        Map<String, List<PropertyProblem>> wrongDataTypes = new LinkedHashMap<>();
 
         for (AbstractEntityPropertyHolder entity : openBisModel.getEntities().values())
         {
@@ -78,9 +95,9 @@ public class RoCrateSchemaValidation
                 IEntityType entityType =
                         openBisModel.getEntityTypes().get(sample.getType().getPermId());
                 SampleType sampleType = (SampleType) entityType;
-                List<String> unknownProperties = new ArrayList<>();
-                List<String> missingMandatoryProperties = new ArrayList<>();
-                List<String> currentWrongDataTypes = new ArrayList<>();
+                List<PropertyProblem> unknownProperties = new ArrayList<>();
+                List<PropertyProblem> missingMandatoryProperties = new ArrayList<>();
+                List<PropertyProblem> currentWrongDataTypes = new ArrayList<>();
                 Map<String, PropertyAssignment> codeToPropertyAssignment =
                         entityType.getPropertyAssignments().stream()
                                 .distinct()
@@ -94,7 +111,9 @@ public class RoCrateSchemaValidation
 
                     if (propertyAssignment == null)
                     {
-                        unknownProperties.add(property.getKey());
+                        unknownProperties.add(
+                                new PropertyProblem(sample.getCode(), property.getKey(),
+                                        "Property not in schema"));
                     }
 
                 }
@@ -111,15 +130,18 @@ public class RoCrateSchemaValidation
                     if (propertyAssignment.isMandatory() && maybePropertyValue.isEmpty())
                     {
                         missingMandatoryProperties.add(
-                                propertyAssignment.getPropertyType().getCode());
+                                new PropertyProblem(sampleType.getCode(),
+                                        propertyAssignment.getPropertyType().getCode(),
+                                        "Mandatory property missing"));
                         continue;
                     }
                     if (maybePropertyValue.isPresent() && !validateDataType(
                             propertyAssignment.getPropertyType().getDataType(),
                             maybePropertyValue.get()))
                     {
-                        currentWrongDataTypes.add(
-                                propertyAssignment.getPropertyType().getPermId().getPermId());
+                        currentWrongDataTypes.add(new PropertyProblem(sample.getCode(),
+                                propertyAssignment.getPropertyType().getPermId().getPermId(),
+                                "Wrong data type"));
 
                     }
 

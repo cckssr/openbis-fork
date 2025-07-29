@@ -40,11 +40,15 @@ public class ImportDelegate
 
         Map<String, String> externalToOpenBisIdentifiers;
 
+        RoCrateSchemaValidation.ValidationResult validationResult;
+
         public OpenBisImportResult(List<String> identifiers,
-                Map<String, String> externalToOpenBisIdentifiers)
+                Map<String, String> externalToOpenBisIdentifiers,
+                RoCrateSchemaValidation.ValidationResult validationResult)
         {
             this.identifiers = identifiers;
             this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+            this.validationResult = validationResult;
         }
 
         public List<String> getIdentifiers()
@@ -66,6 +70,17 @@ public class ImportDelegate
                 Map<String, String> externalToOpenBisIdentifiers)
         {
             this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
+        }
+
+        public RoCrateSchemaValidation.ValidationResult getValidationResult()
+        {
+            return validationResult;
+        }
+
+        public void setValidationResult(
+                RoCrateSchemaValidation.ValidationResult validationResult)
+        {
+            this.validationResult = validationResult;
         }
     }
 
@@ -96,7 +111,9 @@ public class ImportDelegate
 
         // Converting ro-crate model to openBIS model
         OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
-        if (!RoCrateSchemaValidation.validate(conversion).isOkay())
+        RoCrateSchemaValidation.ValidationResult validationResult =
+                RoCrateSchemaValidation.validate(conversion);
+        if (!validationResult.isOkay())
         {
             RoCrateExceptions.throwInstance(RoCrateExceptions.SCHEMA_VALIDATION_FAILED);
         }
@@ -106,7 +123,7 @@ public class ImportDelegate
         java.nio.file.Path modelAsExcel = java.nio.file.Path.of(UUID.randomUUID() + ".xlsx");
 
         if (validateOnly) {
-            return new OpenBisImportResult(List.of(), Map.of());
+            return new OpenBisImportResult(List.of(), Map.of(), validationResult);
         }
 
         // Import
@@ -120,7 +137,7 @@ public class ImportDelegate
         ImportResult apiResult = openBIS.executeImport(importData, getImportOptions(headers));
         return new OpenBisImportResult(
                 apiResult.getObjectIds().stream().map(id -> id.toString()).toList(),
-                conversion.getExternalToOpenBisIdentifiers());
+                conversion.getExternalToOpenBisIdentifiers(), validationResult);
     }
 
     private static ImportOptions getImportOptions(ImportParams importParams)

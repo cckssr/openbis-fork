@@ -6,8 +6,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.is;
-
+import static org.hamcrest.Matchers.*;
 
 public class EndToEndTests extends AbstractTest
 {
@@ -90,7 +89,8 @@ public class EndToEndTests extends AbstractTest
                 .body(roCrateMetadataJsonExample1.getBytes())
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
                 .then()
-                .body(is(expected))
+                .body(allOf(containsString("\"validationErrors\":[]"),
+                        containsString("\"isValid\":true")))
                 .statusCode(200);
     }
 

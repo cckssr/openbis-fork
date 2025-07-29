@@ -1,4 +1,4 @@
-package ch.ethz.sis.rocrateserver.openapi.v1.service.response;
+package ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation;
 
 public class PropertyError implements ValidationError
 {
@@ -49,4 +49,53 @@ public class PropertyError implements ValidationError
 
     private String message;
 
+    @Override
+    public String getErrorType()
+    {
+        return errorType.getValue();
+    }
+
+    public PropertyError(String nodeId, String property, String message)
+    {
+        this.errorType = ErrorTypeEnum.PROPERTY_ERROR;
+        this.nodeId = nodeId;
+        this.property = property;
+        this.message = message;
+    }
+
+    public void setErrorType(
+            ErrorTypeEnum errorType)
+    {
+        this.errorType = errorType;
+    }
+
+    public String getNodeId()
+    {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId)
+    {
+        this.nodeId = nodeId;
+    }
+
+    public String getProperty()
+    {
+        return property;
+    }
+
+    public void setProperty(String property)
+    {
+        this.property = property;
+    }
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String message)
+    {
+        this.message = message;
+    }
 }
