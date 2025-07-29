@@ -83,12 +83,14 @@ public class EndToEndTests extends AbstractTest
                 "changeit");
         System.out.println(openBIS.getSessionToken());
 
+        String expected = "{\"isValid\":true}";
         given()
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExample1.getBytes())
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
                 .then()
+                .body(is(expected))
                 .statusCode(200);
     }
 

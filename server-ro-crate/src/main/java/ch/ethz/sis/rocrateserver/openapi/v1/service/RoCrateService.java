@@ -9,6 +9,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISProvider;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ValidationReport;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -17,7 +18,7 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.List;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
@@ -77,7 +78,7 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes({"application/ld+json", "application/zip"})
     @Path("validate")
-    public Boolean validate(
+    public String validate(
             @BeanParam ImportParams headers,
             InputStream body)
             throws IOException
@@ -92,9 +93,9 @@ public class RoCrateService {
 
         try {
             importDelegate.import_(openBIS, headers, body, true);
-            return Boolean.TRUE;
+            return ValidationReport.serialize(new ValidationReport(true));
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            return ValidationReport.serialize(new ValidationReport(false));
         } finally {
             SessionWorkSpace.clear(headers.getApiKey());
         }
