@@ -113,10 +113,6 @@ public class ImportDelegate
         OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
         RoCrateSchemaValidation.ValidationResult validationResult =
                 RoCrateSchemaValidation.validate(conversion);
-        if (!validationResult.isOkay())
-        {
-            RoCrateExceptions.throwInstance(RoCrateExceptions.SCHEMA_VALIDATION_FAILED);
-        }
 
         // Convert openbis model to openbis excel format for import
         byte[] importExcel = ExcelWriter.convert(ExcelWriter.Format.EXCEL, conversion);
@@ -124,6 +120,10 @@ public class ImportDelegate
 
         if (validateOnly) {
             return new OpenBisImportResult(List.of(), Map.of(), validationResult);
+        }
+        if (!validationResult.isOkay())
+        {
+            RoCrateExceptions.throwInstance(RoCrateExceptions.SCHEMA_VALIDATION_FAILED);
         }
 
         // Import
