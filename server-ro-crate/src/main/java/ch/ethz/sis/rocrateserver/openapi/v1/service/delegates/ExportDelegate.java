@@ -22,15 +22,14 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.openbis.rocrate.app.writer.Writer;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.HttpMethod;
 import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.http.HttpClientTransportOverHTTP;
+import org.eclipse.jetty.client.util.InputStreamResponseListener;
 import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
@@ -101,6 +100,23 @@ public class ExportDelegate
         String downloadUrl = exportResult.getDownloadURL();
         System.out.println("Download url: " + downloadUrl);
 
+        java.nio.file.Path realPathToExcel = downloadExcel(openBIS, headers, downloadUrl);
+
+        // Convert openBIS Excel to Ro-Crate
+        OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
+
+        Writer writer = new Writer();
+        java.nio.file.Path tempRoCratePath =
+                java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
+        java.nio.file.Path realTempRoCratePath =
+                SessionWorkSpace.getRealPath(headers.getApiKey(), tempRoCratePath);
+        writer.write(openBisModel, realTempRoCratePath);
+        return SessionWorkSpace.read(headers.getApiKey(), tempRoCratePath);
+    }
+
+    private static java.nio.file.Path downloadExcel(OpenBIS openBIS, ExportParams headers,
+            String downloadUrl) throws Exception
+    {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setTrustAll(true);
         ClientConnector clientConnector = new ClientConnector();
@@ -109,32 +125,26 @@ public class ExportDelegate
         HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP(clientConnector));
         httpClient.start();
 
+        InputStreamResponseListener listener = new InputStreamResponseListener();
+
         Request request =
                 httpClient.newRequest(
                                 downloadUrl)
                         .headers(httpFields -> httpFields.add("sessionToken",
                                 openBIS.getSessionToken()));
         request.method(HttpMethod.GET);
-        ContentResponse response = request.send();
+        request.send(listener);
         System.out.println("Got a response!:");
-        byte[] excelExport = response.getContent();
+
 
         // Write openBIS export to disk
         // TODO: Extract this part with previous
         java.nio.file.Path pathToExcel = java.nio.file.Path.of("metadata.xlsx");
-        SessionWorkSpace.write(headers.getApiKey(), pathToExcel, new ByteArrayInputStream(excelExport));
+        SessionWorkSpace.write(headers.getApiKey(), pathToExcel, listener.getInputStream());
         java.nio.file.Path realPathToExcel = SessionWorkSpace.getRealPath(headers.getApiKey(), pathToExcel);
+        return realPathToExcel;
 
-        // Convert openBIS Excel to Ro-Crate
-        OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
-
-        Writer writer = new Writer();
-        java.nio.file.Path tempRoCratePath = java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
-        java.nio.file.Path realTempRoCratePath = SessionWorkSpace.getRealPath(headers.getApiKey(), tempRoCratePath);
-        writer.write(openBisModel, realTempRoCratePath);
-        return SessionWorkSpace.read(headers.getApiKey(), tempRoCratePath);
     }
-
 
     private Set<String> getIdentifierAnnotationPropertyTypes(
             OpenBIS v3,
