@@ -119,7 +119,13 @@ public class RoCrateService {
 
         try {
             return exportDelegate.export(openBIS, headers, body);
-        } catch (Exception ex) {
+        } catch (WebApplicationException e)
+        {
+            throw e;
+        } catch (Exception ex)
+        {
+
+
             throw new RuntimeException(ex);
         } finally {
             SessionWorkSpace.clear(headers.getApiKey());

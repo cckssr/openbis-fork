@@ -17,6 +17,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISProvider;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
@@ -81,7 +82,7 @@ public class ExportDelegate
         SearchResult<Sample> searchResults = openBIS.searchSamples(criteria, new SampleFetchOptions());
 
         if (searchResults.getTotalCount() < 1) {
-            throw new IllegalArgumentException("No results found");
+            RoCrateExceptions.throwInstance(RoCrateExceptions.NO_RESULTS_FOUND);
         }
 
         // Request openBIS export for found samples

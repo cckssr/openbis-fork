@@ -170,6 +170,6 @@ public class EndToEndTests extends AbstractTest
                 .body("[\"NOT-AN-IDENTIFIER\"]")
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
                 .then()
-                .statusCode(500);
+                .statusCode(404);
     }
 }
