@@ -21,6 +21,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.fetchoptions.PluginFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
@@ -38,6 +40,9 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
 
     @JsonProperty
     private SemanticAnnotationFetchOptions semanticAnnotations;
+
+    @JsonProperty
+    private TypeGroupAssignmentFetchOptions typeGroupAssignments;
 
     @JsonProperty
     private PluginFetchOptions validationPlugin;
@@ -87,6 +92,25 @@ public class SampleTypeFetchOptions extends FetchOptions<SampleType> implements 
     public boolean hasSemanticAnnotations()
     {
         return semanticAnnotations != null;
+    }
+
+    public TypeGroupAssignmentFetchOptions withTypeGroupAssignments()
+    {
+        if (typeGroupAssignments == null)
+        {
+            typeGroupAssignments = new TypeGroupAssignmentFetchOptions();
+        }
+        return typeGroupAssignments;
+    }
+
+    public TypeGroupAssignmentFetchOptions withTypeGroupAssignmentsUsing(TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        return typeGroupAssignments = fetchOptions;
+    }
+
+    public boolean hasTypeGroupAssignments()
+    {
+        return typeGroupAssignments != null;
     }
 
     public PluginFetchOptions withValidationPlugin()

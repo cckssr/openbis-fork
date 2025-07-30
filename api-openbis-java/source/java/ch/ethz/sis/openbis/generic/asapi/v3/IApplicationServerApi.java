@@ -249,6 +249,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
@@ -265,18 +268,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.common.api.IRpcService;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 
@@ -1256,6 +1259,24 @@ public interface IApplicationServerApi extends IRpcService
             TypeGroupFetchOptions fetchOptions);
 
     /**
+     * Gets type groups for the provided {@code ITypeGroupId} ids. A result map contains an entry for a given id only if a type group for
+     * that id has been found and that type group can be accessed by the user.
+     * <p>
+     * By default the returned type groups contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code TypeGroupFetchOptions}.
+     * </p>
+     * <ul>
+     * Required access rights:
+     * <li>all groups - {@code INSTANCE_ADMIN}</li>
+     * </ul>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(
+            String sessionToken, List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions);
+
+    /**
      * Searches for spaces basing on the provided {@code SpaceSearchCriteria}.
      * <p>
      * By default the returned spaces contain only basic information. Any additional information to be fetched has to be explicitly requested via
@@ -1749,6 +1770,21 @@ public interface IApplicationServerApi extends IRpcService
      */
     public SearchResult<TypeGroup> searchTypeGroups(String sessionToken, TypeGroupSearchCriteria searchCriteria,
             TypeGroupFetchOptions fetchOptions);
+
+    /**
+     * Searches for type groups basing on the provided {@code TypeGroupSearchCriteria}.
+     * <p>
+     * By default the returned type groups contain only basic information. Any additional information to be fetched has to be explicitly requested
+     * via {@code TypeGroupFetchOptions}.
+     * </p>
+     * <p>
+     * Required access rights: {@code PROJECT_OBSERVER} or stronger
+     * </p>
+     *
+     * @throws UserFailureException in case of any problems
+     */
+    public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(String sessionToken, TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions);
 
     /**
      * Permanently deletes spaces with the provided {@code ISpaceId} ids. Additional deletion options (e.g. deletion reason) can be set via
