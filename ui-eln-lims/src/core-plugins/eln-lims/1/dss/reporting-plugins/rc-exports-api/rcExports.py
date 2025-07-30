@@ -42,7 +42,7 @@ from org.eclipse.jetty.client.util import BasicAuthentication
 
 
 
-from exportsApi import displayResult, getConfigurationProperty, addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService
+from exportsApi import displayResult, getConfigurationProperty, addToZipFile, checkResponseStatus, cleanUp, getDownloadUrlFromASService, isNonEmptyString
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.rcExports.py')
 
@@ -191,8 +191,12 @@ def authenticateUserJava(url, tr):
     else:
         raise ValueError('Unsupported Jetty version: %s. Only 9.x and 10.x are handled for HttpClient creation.' % jettyVersion)
 
-    proxyConfig = httpClient.getProxyConfiguration()
-    proxyConfig.getProxies().add(HttpProxy('proxy.ethz.ch', 3128))
+    httpProxyURL = str(getConfigurationProperty(tr, 'httpProxyURL'))
+    httpProxyPort = str(getConfigurationProperty(tr, 'httpProxyPort'))
+    if isNonEmptyString(httpProxyURL) and isNonEmptyString(httpProxyPort):
+        proxyConfig = httpClient.getProxyConfiguration()
+        proxyConfig.getProxies().add(HttpProxy(httpProxyURL, int(httpProxyPort)))
+
     uri = URI(url)
     user = getConfigurationProperty(tr, 'user')
     password = getConfigurationProperty(tr, 'password')
