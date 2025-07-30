@@ -140,7 +140,16 @@ public class SchemaOrgReader
 
         }
 
+        Map<IType, List<IType>> subClasses = new LinkedHashMap<>();
+        for (IType iType : idsToTypes.values())
+        {
+        }
+
+
+
+
         Map<IType, List<IPropertyType>> typeToProperties = new LinkedHashMap<>();
+        Map<IPropertyType, Set<IType>> propertyToSublcasses = new LinkedHashMap<>();
         for (IPropertyType propertyType : idsToProperties.values())
         {
             if (propertyType.getDomain() == null)
@@ -154,9 +163,44 @@ public class SchemaOrgReader
                         typeToProperties.getOrDefault(type, new ArrayList<>());
                 propertyTypes.add(propertyType);
                 typeToProperties.put(type, propertyTypes);
+
+                Set<String> allSubClassesIncludingTransitive =
+                        getAllSubClassesIncludingTransitive(ontModel, type);
+                for (String subTypeId : allSubClassesIncludingTransitive)
+                {
+                    IType subType = idsToTypes.get(subTypeId);
+                    List<IPropertyType> subTypeProperties =
+                            typeToProperties.getOrDefault(subType, new ArrayList<>());
+                    if (!subTypeProperties.contains(propertyType))
+                    {
+                        subTypeProperties.add(propertyType);
+                    }
+                    typeToProperties.put(subType, subTypeProperties);
+
+                }
+
+                propertyToSublcasses.put(propertyType, new LinkedHashSet<>(
+                        allSubClassesIncludingTransitive.stream().map(x -> idsToTypes.get(x))
+                                .filter(Objects::nonNull) // there might be EnumerationMembers
+                                .collect(
+                                        Collectors.toList())));
+
             }
 
         }
+        for (Map.Entry<IPropertyType, Set<IType>> propertyAndSubclasses : propertyToSublcasses.entrySet())
+        {
+            List<IType> domain = propertyAndSubclasses.getKey().getDomain();
+            for (IType type : propertyAndSubclasses.getValue())
+            {
+                if (!domain.contains(type))
+                {
+                    domain.add(type);
+                }
+            }
+
+        }
+
 
         return new SchemaOrgInformation(idsToTypes, idsToProperties, typeToProperties, superTypes);
     }
@@ -227,6 +271,33 @@ public class SchemaOrgReader
                 .map(x -> "schema:" + x.getLocalName()).forEach(res::add);
 
         return res;
+
+    }
+
+    private static Set<String> getAllSubClassesIncludingTransitive(OntModel ontModel, IType type)
+    {
+        String query = """ 
+                                PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+                PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                PREFIX schema: <https://schema.org/>
+
+                SELECT ?x
+                WHERE {
+                  ?x rdfs:subClassOf+ 
+                                """ + type.getId() + """
+                .
+                }
+                """;
+        ResultSet resultSet =
+                QueryExecutionFactory.create(query, ontModel.getBaseModel()).execSelect();
+        Set<String> solutions = new LinkedHashSet<>();
+        while (resultSet.hasNext())
+        {
+            QuerySolution solution = resultSet.next();
+            solutions.add(solution.get("x").toString());
+        }
+        return solutions;
 
     }
 

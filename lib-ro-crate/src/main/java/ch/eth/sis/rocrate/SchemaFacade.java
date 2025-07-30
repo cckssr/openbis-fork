@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
+import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 
 import java.io.File;
@@ -63,6 +64,10 @@ public class SchemaFacade implements ISchemaFacade
     private Map<String, IPropertyType> propertyTypes;
 
     private Map<String, IMetadataEntry> metadataEntries;
+
+    private Map<String, String> identifiersToEnlong;
+
+    private Map<String, String> identifiersToShorten;
 
     private final RoCrate crate;
 
@@ -259,7 +264,10 @@ public class SchemaFacade implements ISchemaFacade
 
     private boolean matchClasses(String queryClassId, IMetadataEntry entry)
     {
-        if (entry.getTypes().stream().anyMatch(x -> x.equals(queryClassId)))
+
+        if (entry.getTypes().stream()
+                .map(x -> Optional.ofNullable(identifiersToShorten.get(x)).orElse(x))
+                .anyMatch(x -> x.equals(queryClassId)))
         {
             return true;
         }
@@ -290,7 +298,18 @@ public class SchemaFacade implements ISchemaFacade
             schema_org_information = SchemaOrgReader.read(fileInputStream);
         }
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
+
         Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());
+        this.identifiersToEnlong = keyValuePairs.entrySet().stream()
+                .filter(x -> x.getValue().contains("https://schema.org") || x.getValue()
+                        .contains("http://schema.org"))
+                .collect(Collectors.toMap(x -> x.getKey(), x -> "schema:" + x.getKey()));
+        this.identifiersToShorten = keyValuePairs.entrySet().stream()
+                .filter(x -> x.getValue().contains("https://schema.org") || x.getValue()
+                        .contains("http://schema.org"))
+                .collect(Collectors.toMap(x -> "schema:" + x.getKey(), x -> x.getKey()));
+
+
         for (var keyValPair : keyValuePairs.entrySet())
         {
             if (keyValPair.getValue().equals("http://schema.org/rangeIncludes"))
@@ -430,15 +449,38 @@ public class SchemaFacade implements ISchemaFacade
 
         }
 
-
-        for (var entity : crate.getAllDataEntities())
+        List<AbstractEntity> entities = new ArrayList<>();
+        entities.addAll(crate.getAllDataEntities());
+        entities.addAll(crate.getAllContextualEntities());
+        for (AbstractEntity entity : entities)
         {
+
             Set<String> type = parseTypes(entity);
+            for (String typeId : type)
+            {
+                String schemafiedTypeId = "https://schema.org/" + typeId;
+
+                if (!idsToTypes.containsKey(
+                        typeId) && schema_org_information.getIdentifiersToDataTypes()
+                        .containsKey(schemafiedTypeId))
+                {
+                    IType schemaOrgType = schema_org_information.getIdentifiersToDataTypes()
+                            .get(schemafiedTypeId);
+                    idsToTypes.put(typeId, schemaOrgType);
+                    List<IPropertyType> propertyTypes1 =
+                            schema_org_information.getTypeToProperties().get(schemaOrgType);
+                    for (IPropertyType propertyType : propertyTypes1)
+                    {
+                        properties.putIfAbsent(propertyType.getId(), propertyType);
+                    }
+                    types.put(typeId, schemaOrgType);
+                }
+            }
 
             String id =
                     entity.getProperty("@id")
                             .asText();
-            if (!doesTypeExist(type, idsToTypes, localPrefix))
+            if (!doesTypeExist(schema_org_information, type, idsToTypes, localPrefix))
             {
                 continue;
             }
@@ -454,9 +496,12 @@ public class SchemaFacade implements ISchemaFacade
                     objectMapper.readValue(entity.getProperties().toString(), HashMap.class);
             for (Map.Entry<String, Serializable> a : keyVals.entrySet())
             {
-                if (properties.containsKey(a.getKey()))
+                String key =
+                        properties.containsKey(a.getKey()) ? a.getKey() : "schema:" + a.getKey();
+
+                if (properties.containsKey(key))
                 {
-                    IPropertyType property = properties.get(a.getKey());
+                    IPropertyType property = properties.get(key);
                     if (property.getRange().stream().anyMatch(x -> x.startsWith("xsd:")))
                     {
                         entryProperties.put(a.getKey(), a.getValue().toString());
@@ -471,6 +516,7 @@ public class SchemaFacade implements ISchemaFacade
             entry.setReferences(references);
             entries.put(id, entry);
         }
+
         System.out.println("Done");
         this.types = idsToTypes;
         this.propertyTypes = properties;
@@ -485,7 +531,8 @@ public class SchemaFacade implements ISchemaFacade
         LinkedHashSet newTypes = new LinkedHashSet();
         for (String type : types)
         {
-            newTypes.add(placeholderPattern.matcher(type).replaceAll(localPrefix));
+
+            newTypes.add(resolvePrefixSingleValue(type));
 
         }
         return newTypes;
@@ -493,12 +540,24 @@ public class SchemaFacade implements ISchemaFacade
 
     private String resolvePrefixSingleValue(String type)
     {
+        if (identifiersToEnlong.containsKey(type))
+        {
+            return identifiersToEnlong.get(type);
+        }
+        Map<String, String> shorten = identifiersToEnlong.entrySet().stream()
+                .collect(Collectors.toMap(x -> x.getValue(), x -> x.getKey()));
+        if (shorten.containsKey(type))
+        {
+            return shorten.get(type);
+        }
+
+
         Pattern placeholderPattern = Pattern.compile("^_:");
 
         return placeholderPattern.matcher(type).replaceAll(localPrefix);
     }
 
-    private List<String> parseMultiValued(DataEntity dataEntity, String key)
+    private List<String> parseMultiValued(AbstractEntity dataEntity, String key)
     {
         JsonNode node = dataEntity.getProperty(key);
         if (node instanceof ObjectNode)
@@ -517,7 +576,7 @@ public class SchemaFacade implements ISchemaFacade
 
     }
 
-    private Set<String> parseTypes(DataEntity entity)
+    private Set<String> parseTypes(AbstractEntity entity)
     {
         JsonNode typeResult = entity.getProperty("@type");
         if (typeResult.isTextual())
@@ -581,7 +640,8 @@ public class SchemaFacade implements ISchemaFacade
         return "";
     }
 
-    boolean doesTypeExist(Set<String> types, Map<String, IType> classes, String localPrefix)
+    boolean doesTypeExist(SchemaOrgInformation schemaOrgInformation, Set<String> types,
+            Map<String, IType> classes, String localPrefix)
     {
         p = Pattern.compile("^" + localPrefix + ":", Pattern.CASE_INSENSITIVE);
 
@@ -596,6 +656,11 @@ public class SchemaFacade implements ISchemaFacade
                 typeFound = true;
             }
             if (classes.containsKey(m.replaceAll("_:")))
+            {
+                typeFound = true;
+            }
+            if (schemaOrgInformation.getIdentifiersToDataTypes().containsKey(type)
+            )
             {
                 typeFound = true;
             }
