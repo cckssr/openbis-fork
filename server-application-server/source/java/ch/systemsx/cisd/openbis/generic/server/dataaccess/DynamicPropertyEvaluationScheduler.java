@@ -18,6 +18,7 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+    import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -25,6 +26,8 @@ import ch.systemsx.cisd.common.collection.IExtendedBlockingQueue;
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueFactory;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 
 /**
  * @author Piotr Buczek
@@ -60,16 +63,20 @@ public class DynamicPropertyEvaluationScheduler implements
 
     private final IExtendedBlockingQueue<DynamicPropertyEvaluationOperation> evaluatorQueue;
 
-    public DynamicPropertyEvaluationScheduler()
+    private final CodePluginsConfiguration codePluginsConfiguration;
+
+    public DynamicPropertyEvaluationScheduler(ExposablePropertyPlaceholderConfigurer propertyConfigurer)
     {
         final File queueFile = getEvaluatorQueueFile();
         operationLog.info(String.format("Evaluator queue file: %s.", queueFile.getAbsolutePath()));
         evaluatorQueue = createEvaluatorQueue(queueFile);
+        codePluginsConfiguration = new CodePluginsConfiguration(propertyConfigurer.getResolvedProps());
     }
 
-    public DynamicPropertyEvaluationScheduler(IExtendedBlockingQueue<DynamicPropertyEvaluationOperation> evaluatorQueue)
+    public DynamicPropertyEvaluationScheduler(IExtendedBlockingQueue<DynamicPropertyEvaluationOperation> evaluatorQueue, Properties properties)
     {
         this.evaluatorQueue = evaluatorQueue;
+        this.codePluginsConfiguration = new CodePluginsConfiguration(properties);
     }
 
     private static IExtendedBlockingQueue<DynamicPropertyEvaluationOperation> createEvaluatorQueue(
@@ -103,6 +110,9 @@ public class DynamicPropertyEvaluationScheduler implements
     @Override
     public void scheduleUpdate(DynamicPropertyEvaluationOperation operation)
     {
+        if(!codePluginsConfiguration.areEnabled()){
+            return;
+        }
         threadDebugLog("Scheduling update: " + operation);
         List<DynamicPropertyEvaluationOperation> threadOperations = getThreadOperations();
         threadOperations.add(operation);

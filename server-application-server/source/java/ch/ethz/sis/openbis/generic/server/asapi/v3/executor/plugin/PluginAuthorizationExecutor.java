@@ -15,12 +15,17 @@
  */
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.plugin;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.id.IPluginId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.Capability;
 import ch.systemsx.cisd.openbis.generic.server.authorization.annotation.RolesAllowed;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 
@@ -30,6 +35,17 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
 @Component
 public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
 {
+
+    @Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
+    private ExposablePropertyPlaceholderConfigurer configurer;
+
+    private CodePluginsConfiguration codePluginsConfiguration;
+
+    @PostConstruct
+    private void init()
+    {
+        codePluginsConfiguration = new CodePluginsConfiguration(configurer.getResolvedProps());
+    }
 
     @Override
     @RolesAllowed({ RoleWithHierarchy.PROJECT_OBSERVER, RoleWithHierarchy.SPACE_ETL_SERVER })
@@ -50,6 +66,7 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     @Capability("CREATE_PLUGIN")
     public void canCreate(IOperationContext context)
     {
+        checkAllowedUser(context);
     }
 
     @Override
@@ -57,6 +74,7 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     @Capability("UPDATE_PLUGIN")
     public void canUpdate(IOperationContext context, IPluginId id, ScriptPE entity)
     {
+        checkAllowedUser(context);
     }
 
     @Override
@@ -64,6 +82,7 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     @Capability("DELETE_PLUGIN")
     public void canDelete(IOperationContext context, IPluginId entityId, ScriptPE entity)
     {
+        checkAllowedUser(context);
     }
 
     @Override
@@ -71,6 +90,17 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     @Capability("EVALUATE_PLUGIN")
     public void canEvaluate(IOperationContext context)
     {
+        checkEnabled(context);
+    }
+
+    private void checkEnabled(IOperationContext context)
+    {
+        codePluginsConfiguration.checkEnabled();
+    }
+
+    private void checkAllowedUser(IOperationContext context)
+    {
+        codePluginsConfiguration.checkAllowedUser(context.getSession().getUserName());
     }
 
 }
