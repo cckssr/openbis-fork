@@ -17,9 +17,9 @@
 
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
-import ch.systemsx.cisd.openbis.generic.shared.basic.ComplexIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 
 public interface ITypeGroupAssignmentTable extends IBusinessObject
 {
-    public void deleteById(ComplexIdHolder typeGroupAssignmentId);
+    public void deleteById(SampleTypeTypeGroupsTechId typeGroupAssignmentTechId);
 }

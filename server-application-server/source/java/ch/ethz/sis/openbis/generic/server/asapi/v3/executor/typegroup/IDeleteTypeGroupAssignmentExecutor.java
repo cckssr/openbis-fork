@@ -17,8 +17,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IDeleteEntityExecutor;
 
 public interface IDeleteTypeGroupAssignmentExecutor extends IDeleteEntityExecutor<Void, ITypeGroupAssignmentId, TypeGroupAssignmentDeletionOptions>

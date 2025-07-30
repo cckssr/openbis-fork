@@ -17,7 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.AbstractListObjectById;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ITypeGroupDAO;

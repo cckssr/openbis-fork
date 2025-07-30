@@ -17,20 +17,14 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get.AbstractMapObjectByIdExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.ISpaceAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.IListObjectById;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupAssignmentById;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupByName;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupByTechId;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ITypeGroupAssignmentDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ITypeGroupDAO;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

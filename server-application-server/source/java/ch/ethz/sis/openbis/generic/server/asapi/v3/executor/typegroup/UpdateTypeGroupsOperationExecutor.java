@@ -19,10 +19,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.UpdateObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.UpdateObjectsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.UpdateTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.UpdateTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.UpdateTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.UpdateTypeGroupsOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.update.UpdateObjectsOperationExecutor;
 import org.springframework.beans.factory.annotation.Autowired;

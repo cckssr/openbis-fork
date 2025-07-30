@@ -17,8 +17,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IUpdateEntityExecutor;
 
 public interface IUpdateTypeGroupExecutor extends IUpdateEntityExecutor<TypeGroupUpdate, TypeGroupId>

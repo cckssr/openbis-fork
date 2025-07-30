@@ -21,11 +21,10 @@ import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import javax.persistence.Embeddable;
 import java.io.Serializable;
 
-
-public class SampleTypeTypeGroupsId implements Serializable
+/// Class made to handle complex table ids without synthetic id in Hibernate
+public class SampleTypeTypeGroupsId implements Serializable, ICompositeIdHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
 

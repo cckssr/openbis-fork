@@ -17,7 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 

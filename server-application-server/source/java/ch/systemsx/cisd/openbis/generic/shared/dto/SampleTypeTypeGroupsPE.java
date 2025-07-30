@@ -33,7 +33,7 @@ import java.io.Serializable;
                 { ColumnNames.SAMPLE_TYPE_COLUMN, ColumnNames.TYPE_GROUP_COLUMN }) })
 @IdClass(SampleTypeTypeGroupsId.class)
 public final class SampleTypeTypeGroupsPE extends HibernateAbstractRegistrationHolder implements
-        Serializable, ICustomIdHolder<SampleTypeTypeGroupsId>
+        Serializable, ICustomIdHolder<SampleTypeTypeGroupsTechId>
 {
     private static final long serialVersionUID = IServer.VERSION;
 
@@ -104,11 +104,9 @@ public final class SampleTypeTypeGroupsPE extends HibernateAbstractRegistrationH
 
     @Override
     @Transient
-    public SampleTypeTypeGroupsId getId()
+    public SampleTypeTypeGroupsTechId getId()
     {
-        SampleTypeTypeGroupsId id = new SampleTypeTypeGroupsId();
-        id.setTypeGroup(typeGroup);
-        id.setSampleType(sampleType);
+        SampleTypeTypeGroupsTechId id = new SampleTypeTypeGroupsTechId(sampleType.getId(), typeGroup.getId());
         return id;
     }
 

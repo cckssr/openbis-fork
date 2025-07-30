@@ -19,11 +19,11 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.get.GetObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.get.GetObjectsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get.GetObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get.IMapObjectByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;

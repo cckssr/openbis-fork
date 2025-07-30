@@ -17,16 +17,20 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ComplexIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 
 import java.util.Collection;
 import java.util.List;
 
-public interface ITypeGroupAssignmentDAO extends ICustomIdDAO<SampleTypeTypeGroupsPE, ComplexIdHolder>
+public interface ITypeGroupAssignmentDAO
+        extends ICustomIdDAO<SampleTypeTypeGroupsPE, ComplexIdHolder>
 {
     public void createTypeGroupAssignment(SampleTypeTypeGroupsPE typeGroupAssignment);
 
     public List<SampleTypeTypeGroupsPE> findByIds(Collection<TypeGroupAssignmentId> ids);
+
+    public List<SampleTypeTypeGroupsPE> findByTechId(List<SampleTypeTypeGroupsTechId> ids);
 }

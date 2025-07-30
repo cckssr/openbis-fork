@@ -27,6 +27,8 @@ import java.util.List;
 
 public interface TypeGroupQuery extends ObjectQuery
 {
+    //Type Groups
+
     @Select(sql = "select tg.id, tg.name, tg.registration_timestamp as registrationDate, "
             + "tg.modification_timestamp as modificationDate, tg.is_managed_internally as managedInternally, "
             + "tg.meta_data as metaData "
@@ -38,4 +40,19 @@ public interface TypeGroupQuery extends ObjectQuery
 
     @Select(sql = "select tg.id as objectId, tg.pers_id_modifier as relatedId from type_groups tg where tg.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getModifierIds(LongSet typeGroupIds);
+
+    // Type Group Assignments
+
+    @Select(sql = "select sttg.saty_id as sampleTypeId, sttg.tg_id as typeGroupId, sttg.registration_timestamp as registrationDate, "
+            + " sttg.is_managed_internally as managedInternally "
+            + "from sample_type_type_groups sttg where sttg.tg_id = ?1 and sttg.saty_id = ?2", fetchSize = FETCH_SIZE)
+    public List<TypeGroupAssignmentBaseRecord> getTypeGroupAssignment(
+            Long typeGroupId, Long sampleTypeId);
+
+    @Select(sql = "select tg_id as objectId, saty_id as relatedId from sample_type_type_groups where tg_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getTypeGroupAssignmentIds(LongSet typeGroupIds);
+
+    @Select(sql = "select sttg.tg_id as objectId, sttg.pers_id_registerer as relatedId from sample_type_type_groups sttg where sttg.tg_id = ?1 and sttg.saty_id = ?2", fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getAssignmentRegistratorId(Long typeGroup, Long sampleType);
 }

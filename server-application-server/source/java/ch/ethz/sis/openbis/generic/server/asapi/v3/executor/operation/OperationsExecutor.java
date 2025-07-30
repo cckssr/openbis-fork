@@ -520,6 +520,9 @@ public class OperationsExecutor implements IOperationsExecutor
     private IGetTypeGroupsOperationExecutor getTypeGroupsExecutor;
 
     @Autowired
+    private IGetTypeGroupAssignmentsOperationExecutor getTypeGroupAssignmentsExecutor;
+
+    @Autowired
     private ISearchSpacesOperationExecutor searchSpacesExecutor;
 
     @Autowired
@@ -629,6 +632,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchTypeGroupsOperationExecutor searchTypeGroupsExecutor;
+
+    @Autowired
+    private ISearchTypeGroupAssignmentsOperationExecutor searchTypeGroupAssignmentsExecutor;
 
     @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
@@ -802,6 +808,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchPersonalAccessTokensExecutor.execute(context, operations));
         resultMap.putAll(searchSessionInformationExecutor.execute(context, operations));
         resultMap.putAll(searchTypeGroupsExecutor.execute(context, operations));
+        resultMap.putAll(searchTypeGroupAssignmentsExecutor.execute(context, operations));
     }
 
     private void executeGets(List<? extends IOperation> operations,
@@ -835,6 +842,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getServerPublicInformationExecutor.execute(context, operations));
         resultMap.putAll(getPersonalAccessTokensExecutor.execute(context, operations));
         resultMap.putAll(getTypeGroupsExecutor.execute(context, operations));
+        resultMap.putAll(getTypeGroupAssignmentsExecutor.execute(context, operations));
     }
 
     private void verify(List<? extends IOperation> operations,

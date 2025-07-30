@@ -17,7 +17,7 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.AbstractListTechIdByPermId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.TechIdStringIdentifierRecord;
 import net.lemnik.eodsql.QueryTool;

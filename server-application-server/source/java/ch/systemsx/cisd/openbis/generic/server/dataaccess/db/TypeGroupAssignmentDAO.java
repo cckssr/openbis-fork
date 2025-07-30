@@ -18,21 +18,17 @@
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.common.reflection.MethodUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ITypeGroupAssignmentDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
-import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ComplexIdHolder;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import org.apache.log4j.Logger;
-import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.DetachedCriteria;
@@ -73,6 +69,31 @@ final class TypeGroupAssignmentDAO extends AbstractGenericEntityWithCustomIdDAO<
         {
             operationLog.debug(String.format("ADD: type group assignment '%s'.", typeGroupAssignment));
         }
+    }
+
+    @Override
+    public List<SampleTypeTypeGroupsPE> findByTechId(List<SampleTypeTypeGroupsTechId> ids)
+    {
+        final DetachedCriteria criteria = DetachedCriteria.forClass(SampleTypeTypeGroupsPE.class);
+        criteria.createAlias("sampleType", "st");
+        criteria.createAlias("typeGroup", "tg");
+        Disjunction disjunction = Restrictions.disjunction();
+        for(SampleTypeTypeGroupsTechId id : ids) {
+
+            Conjunction andClause = Restrictions.conjunction(
+                    Restrictions.eq("st.id", id.getSampleTypeTechId()),
+                    Restrictions.eq("tg.id", id.getTypeGroupTechId()));
+            disjunction.add(andClause);
+
+        }
+        criteria.add(disjunction);
+        final List<SampleTypeTypeGroupsPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
+        if (operationLog.isDebugEnabled())
+        {
+            operationLog.debug(String.format("%s(): %d type group assignment(s) have been found.", MethodUtils
+                    .getCurrentMethod().getName(), list.size()));
+        }
+        return list;
     }
 
     @Override

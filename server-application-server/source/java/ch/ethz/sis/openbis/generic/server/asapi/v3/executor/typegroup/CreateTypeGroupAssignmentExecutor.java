@@ -20,10 +20,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.IProgress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractCreateEntityWithCustomIdExecutor;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, TypeGroupAssignmentId, SampleTypeTypeGroupsId>
+public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, TypeGroupAssignmentId, SampleTypeTypeGroupsTechId>
         implements ICreateTypeGroupAssignmentExecutor
 {
 
@@ -49,6 +49,9 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
 
     @Autowired
     ISetAssignmentToTypeGroupExecutor setAssignmentToTypeGroupExecutor;
+
+    @Autowired
+    ITypeGroupAssignmentAuthorizationExecutor authorizationExecutor;
 
     @Override
     protected IObjectId getId(SampleTypeTypeGroupsPE entity)
@@ -93,21 +96,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     @Override
     protected void checkAccess(IOperationContext context, SampleTypeTypeGroupsPE entity)
     {
-//        ProjectPE project = entity.getProject();
-//        if (project != null)
-//        {
-//            authorizationExecutor.canCreateProjectRole(context, project);
-//        } else
-//        {
-//            SpacePE space = entity.getSpace();
-//            if (space != null)
-//            {
-//                authorizationExecutor.canCreateSpaceRole(context, space);
-//            } else
-//            {
-//                authorizationExecutor.canCreateInstanceRole(context);
-//            }
-//        }
+        authorizationExecutor.canCreate(context, entity);
     }
 
     @Override
@@ -156,7 +145,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
 
 
     @Override
-    protected List<SampleTypeTypeGroupsPE> list(IOperationContext context, Collection<SampleTypeTypeGroupsId> ids)
+    protected List<SampleTypeTypeGroupsPE> list(IOperationContext context, Collection<SampleTypeTypeGroupsTechId> ids)
     {
 //        Set<SampleTypeTypeGroupsId> idSet = CommonUtils.asSet(ids);
         List<SampleTypeTypeGroupsPE> result = new ArrayList<>();

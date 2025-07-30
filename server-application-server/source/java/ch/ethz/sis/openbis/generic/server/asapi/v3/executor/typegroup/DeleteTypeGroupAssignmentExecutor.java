@@ -17,19 +17,12 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITypeGroupAssignmentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ITypeGroupBO;
-import ch.systemsx.cisd.openbis.generic.shared.basic.ComplexIdHolder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +37,8 @@ public class DeleteTypeGroupAssignmentExecutor extends AbstractDeleteEntityExecu
     @Autowired
     private IMapSampleTypeTypeGroupsByIdExecutor mapTypeGroupAssignmentsByIdExecutor;
 
-//    @Autowired
-//    private ITypeGroupAuthorizationExecutor authorizationExecutor;
+    @Autowired
+    private ITypeGroupAssignmentAuthorizationExecutor authorizationExecutor;
 
     @Override
     protected Map<ITypeGroupAssignmentId, SampleTypeTypeGroupsPE> map(
@@ -57,7 +50,7 @@ public class DeleteTypeGroupAssignmentExecutor extends AbstractDeleteEntityExecu
     @Override
     protected void checkAccess(IOperationContext context, ITypeGroupAssignmentId entityId, SampleTypeTypeGroupsPE entity)
     {
-//        authorizationExecutor.canDelete(context, entityId, entity);
+        authorizationExecutor.canDelete(context, entityId, entity);
     }
 
     @Override
@@ -72,7 +65,7 @@ public class DeleteTypeGroupAssignmentExecutor extends AbstractDeleteEntityExecu
         ITypeGroupAssignmentTable assignmentTable = businessObjectFactory.createTypeGroupAssignmentTable(context.getSession());
         for (SampleTypeTypeGroupsPE typeGroupAssignment : typeGroupAssignments)
         {
-            assignmentTable.deleteById(new ComplexIdHolder(typeGroupAssignment.getId()));
+            assignmentTable.deleteById(typeGroupAssignment.getId());
         }
         return null;
     }

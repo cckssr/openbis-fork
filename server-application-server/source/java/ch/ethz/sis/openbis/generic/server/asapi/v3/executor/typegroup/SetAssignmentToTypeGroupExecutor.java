@@ -18,12 +18,13 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupAssignmentCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractSetEntityToOneRelationWithCustomIdExecutor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,8 @@ import java.util.Map;
 
 @Component
 public class SetAssignmentToTypeGroupExecutor extends
-        AbstractSetEntityToOneRelationWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, ITypeGroupId, TypeGroupPE, SampleTypeTypeGroupsId>
+//        AbstractSetEntityToOneRelationWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, ITypeGroupId, TypeGroupPE, SampleTypeTypeGroupsId>
+        AbstractSetEntityToOneRelationWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, ITypeGroupId, TypeGroupPE, SampleTypeTypeGroupsTechId>
         implements ISetAssignmentToTypeGroupExecutor
 {
     @Autowired

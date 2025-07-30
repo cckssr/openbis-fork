@@ -17,9 +17,10 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupTechId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupTechId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.TranslationContext;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 
 @Component
 public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGroup, TypeGroupFetchOptions>
@@ -43,6 +45,9 @@ public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGro
     @Autowired
     private ITypeGroupModifierTranslator modifierTranslator;
 
+    @Autowired
+    private ITypeGroupTypeGroupAssignmentTranslator typeGroupAssignmentTranslator;
+
     @Override
     protected TypeGroup createObject(TranslationContext context, Long input,
             TypeGroupFetchOptions fetchOptions)
@@ -51,12 +56,6 @@ public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGro
         typeGroup.setFetchOptions(fetchOptions);
         return typeGroup;
     }
-
-//    @Override
-//    protected Set<Long> shouldTranslate(TranslationContext context, Collection<Long> typeGroupIds, TypeGroupFetchOptions fetchOptions)
-//    {
-//        return authorizationValidator.validate(context.getSession().tryGetPerson(), typeGroupIds);
-//    }
 
     @Override
     protected Object getObjectsRelations(TranslationContext context, Collection<Long> typeGroupIds, TypeGroupFetchOptions fetchOptions)
@@ -74,6 +73,12 @@ public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGro
         if (fetchOptions.hasModifier())
         {
             relations.put(ITypeGroupModifierTranslator.class, modifierTranslator.translate(context, typeGroupIds, fetchOptions.withModifier()));
+        }
+
+        if(fetchOptions.hasTypeGroupAssignments())
+        {
+            relations.put(ITypeGroupTypeGroupAssignmentTranslator.class,
+                    typeGroupAssignmentTranslator.translate(context, typeGroupIds, fetchOptions.withTypeGroupAssignments()));
         }
 
         return relations;
@@ -103,6 +108,13 @@ public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGro
         {
             result.setModifier(relations.get(ITypeGroupModifierTranslator.class, typeGroupId));
             result.getFetchOptions().withModifierUsing(fetchOptions.withModifier());
+        }
+
+        if(fetchOptions.hasTypeGroupAssignments())
+        {
+            result.setTypeGroupAssignments((List<TypeGroupAssignment>) relations.get(
+                    ITypeGroupTypeGroupAssignmentTranslator.class, typeGroupId));
+            result.getFetchOptions().withTypeGroupAssignmentsUsing(fetchOptions.withTypeGroupAssignments());
         }
     }
 }

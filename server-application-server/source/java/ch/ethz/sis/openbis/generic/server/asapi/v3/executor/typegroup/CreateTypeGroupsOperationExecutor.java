@@ -19,10 +19,10 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.CreateObjectsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.CreateObjectsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.CreateTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.CreateTypeGroupsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.TypeGroupCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.CreateTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.CreateTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.create.CreateObjectsOperationExecutor;
 import org.springframework.beans.factory.annotation.Autowired;

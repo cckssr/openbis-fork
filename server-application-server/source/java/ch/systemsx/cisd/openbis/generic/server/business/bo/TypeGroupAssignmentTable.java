@@ -21,12 +21,14 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.util.DataSetTypeWithoutExperimentChecker;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.shared.basic.ComplexIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.managed_property.IManagedPropertyEvaluatorFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
+
+import java.util.List;
 
 public class TypeGroupAssignmentTable extends AbstractBusinessObject implements ITypeGroupAssignmentTable
 {
@@ -41,16 +43,11 @@ public class TypeGroupAssignmentTable extends AbstractBusinessObject implements 
     }
 
     @Override
-    public void deleteById(ComplexIdHolder typeGroupAssignmentId)
+    public void deleteById(SampleTypeTypeGroupsTechId typeGroupAssignmentTechId)
     {
-        loadByTechId(typeGroupAssignmentId);
+        loadByTechId(typeGroupAssignmentTechId);
         try
         {
-            //            PersonPE[] persons = authorizationGroup.getPersons().toArray(new PersonPE[0]);
-            //            for (PersonPE personPE : persons)
-            //            {
-            //                authorizationGroup.removePerson(personPE);
-            //            }
             getTypeGroupAssignmentDAO().delete(typeGroupAssignmentPE);
         } catch (final DataAccessException ex)
         {
@@ -59,12 +56,11 @@ public class TypeGroupAssignmentTable extends AbstractBusinessObject implements 
         }
     }
 
-//    @Override
-    public void loadByTechId(ComplexIdHolder typeGroupAssignmentId)
+    public void loadByTechId(SampleTypeTypeGroupsTechId typeGroupAssignmentId)
     {
         try
         {
-            typeGroupAssignmentPE = getTypeGroupAssignmentDAO().getById(typeGroupAssignmentId);
+            typeGroupAssignmentPE = getTypeGroupAssignmentDAO().findByTechId(List.of(typeGroupAssignmentId)).get(0);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(String.format(

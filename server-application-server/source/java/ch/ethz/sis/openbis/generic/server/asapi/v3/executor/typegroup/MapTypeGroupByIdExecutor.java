@@ -17,13 +17,11 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get.AbstractMapObjectByIdExecutor;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.space.ISpaceAuthorizationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.IListObjectById;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupTechIdByName;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -33,13 +31,10 @@ public class MapTypeGroupByIdExecutor extends AbstractMapObjectByIdExecutor<ITyp
         implements IMapTypeGroupByIdExecutor
 {
 
-    @Autowired
-    private ISpaceAuthorizationExecutor authorizationExecutor;
-
     @Override
     protected void checkAccess(IOperationContext context)
     {
-        authorizationExecutor.canGet(context);
+        // nothing to do?
     }
 
     @Override

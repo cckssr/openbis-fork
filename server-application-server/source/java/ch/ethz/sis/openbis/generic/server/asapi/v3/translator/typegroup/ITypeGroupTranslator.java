@@ -17,8 +17,8 @@
 
 package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.typegroup;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.ITranslator;
 
 public interface ITypeGroupTranslator extends ITranslator<Long, TypeGroup, TypeGroupFetchOptions>

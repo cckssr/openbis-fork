@@ -21,24 +21,28 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.TypeGroup;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.create.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.DeleteTypeGroupAssignmentsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.DeleteTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupAssignmentDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.delete.TypeGroupDeletionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.fetchoptions.TypeGroupFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.get.GetTypeGroupsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.ITypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupAssignmentId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.id.TypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.SearchTypeGroupsOperation;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.SearchTypeGroupsOperationResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.search.TypeGroupSearchCriteria;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.TypeGroupUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.typegroup.update.UpdateTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.DeleteTypeGroupAssignmentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.DeleteTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+//import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupAssignmentsOperation;
+//import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupAssignmentsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupAssignmentsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupAssignmentsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupsOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.get.GetTypeGroupsOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.UpdateTypeGroupsOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -811,7 +815,8 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     @Override
     @Transactional public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> creations)
     {
-        CreateTypeGroupsOperationResult result = executeOperation(sessionToken, new CreateTypeGroupsOperation(creations));
+        CreateTypeGroupsOperationResult
+                result = executeOperation(sessionToken, new CreateTypeGroupsOperation(creations));
         return result.getObjectIds();
     }
 
@@ -1181,6 +1186,16 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     }
 
     @Override
+    public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(
+            String sessionToken, List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        GetTypeGroupAssignmentsOperationResult result =
+                executeOperation(sessionToken, new GetTypeGroupAssignmentsOperation(ids, fetchOptions));
+        return result.getObjectMap();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
@@ -1373,6 +1388,16 @@ public class ApplicationServerApi extends AbstractServer<IApplicationServerApi> 
     {
         SearchTypeGroupsOperationResult result =
                 executeOperation(sessionToken, new SearchTypeGroupsOperation(searchCriteria, fetchOptions));
+        return result.getSearchResult();
+    }
+
+    @Override
+    public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(String sessionToken,
+            TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        SearchTypeGroupAssignmentsOperationResult result =
+                executeOperation(sessionToken, new SearchTypeGroupAssignmentsOperation(searchCriteria, fetchOptions));
         return result.getSearchResult();
     }
 
