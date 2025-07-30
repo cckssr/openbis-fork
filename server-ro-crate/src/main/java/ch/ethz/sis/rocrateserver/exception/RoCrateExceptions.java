@@ -24,7 +24,7 @@ import static ch.ethz.sis.rocrateserver.exception.ExceptionType.UserUsageError;
 
 public enum RoCrateExceptions {
     // DefaultAuthenticator
-    UNAVAILABLE_API_KEY(List.of(UserUsageError), 90001, 400, "Unavailable api-key"),
+    UNAVAILABLE_API_KEY(List.of(UserUsageError), 90001, 401, "Unavailable api-key"),
     SCHEMA_VALIDATION_FAILED(List.of(UserUsageError), 90002, 400, "Schema validation failed"),
 
     NO_RESULTS_FOUND(List.of(UserUsageError), 90003, 404, "No results found");
