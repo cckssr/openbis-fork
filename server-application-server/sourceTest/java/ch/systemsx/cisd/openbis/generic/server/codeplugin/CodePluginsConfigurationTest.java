@@ -12,9 +12,10 @@ public class CodePluginsConfigurationTest
     public void testNoValues()
     {
         CodePluginsConfiguration configuration = new CodePluginsConfiguration(new Properties());
-        Assert.assertTrue(configuration.areEnabled());
-        Assert.assertTrue(configuration.isAllowedUser("test1"));
-        Assert.assertTrue(configuration.isAllowedUser("test2"));
+        Assert.assertFalse(configuration.areEnabled());
+        Assert.assertTrue(configuration.isAllowedUser("system"));
+        Assert.assertFalse(configuration.isAllowedUser("test1"));
+        Assert.assertFalse(configuration.isAllowedUser("test2"));
     }
 
     @Test
