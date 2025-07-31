@@ -24,7 +24,5 @@ public enum RoCrateServerParameter
     maxReadSizeInBytes,
 
     openBISUrl,
-    openBISTimeout,
-    openBISUser,
-    openBISPassword,
+    openBISTimeout
 }
