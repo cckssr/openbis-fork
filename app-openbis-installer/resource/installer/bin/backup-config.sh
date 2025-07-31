@@ -61,3 +61,8 @@ copyIfExists $ROOT/datastore_server/ext-lib $CONF
 copyFileIfExists $ROOT/afs-server/etc/afs_server.conf $CONF/afs_server.conf
 copyFileIfExists $ROOT/afs-server/etc/logging.properties $CONF/afs-logging.properties
 copyFileIfExists $ROOT/afs-server/etc/service.properties $CONF/afs-service.properties
+
+# -- RoCS
+copyFileIfExists $ROOT/server-ro-crate/etc/server_ro_crate.conf $CONF/server_ro_crate.conf
+copyFileIfExists $ROOT/server-ro-crate/etc/logging.properties $CONF/rocs-logging.properties
+copyFileIfExists $ROOT/server-ro-crate/etc/service.properties $CONF/rocs-service.properties

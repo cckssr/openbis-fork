@@ -62,3 +62,8 @@ copyIfExists $CONF/ext-lib $ROOT/datastore_server
 restore $CONF/afs_server.conf $ROOT/afs-server/etc afs_server.conf
 restore $CONF/afs-logging.properties $ROOT/afs-server/etc logging.properties
 restore $CONF/afs-service.properties $ROOT/afs-server/etc service.properties
+
+# -- RoCS
+restore $CONF/server_ro_crate.conf $ROOT/server-ro-crate/etc server_ro_crate.conf
+restore $CONF/rocs-logging.properties $ROOT/server-ro-crate/etc logging.properties
+restore $CONF/rocs-service.properties $ROOT/server-ro-crate/etc service.properties
