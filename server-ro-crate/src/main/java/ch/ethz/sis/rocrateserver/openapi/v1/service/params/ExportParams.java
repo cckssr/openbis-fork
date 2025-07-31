@@ -15,7 +15,7 @@ public class ExportParams {
     @HeaderParam("api-key")
     private String apiKey;
 
-    @HeaderParam("identifier-annotations")
+    @HeaderParam("openbis.identifier-annotations")
     private String identifierAnnotations;
 
     @HeaderParam("openbis.with-Levels-below")
