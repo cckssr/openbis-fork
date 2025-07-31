@@ -18,9 +18,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISProvider;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
+import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
+import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.HttpMethod;
@@ -122,7 +123,8 @@ public class ExportDelegate
         sslContextFactory.setTrustAll(true);
         ClientConnector clientConnector = new ClientConnector();
         clientConnector.setSslContextFactory(sslContextFactory);
-        clientConnector.setIdleTimeout(Duration.ofMillis(OpeBISProvider.getTimeOut()));
+        clientConnector.setIdleTimeout(Duration.ofMillis(StartupMain.getConfiguration()
+                .getIntegerProperty(RoCrateServerParameter.openBISTimeout)));
         HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP(clientConnector));
         httpClient.start();
 

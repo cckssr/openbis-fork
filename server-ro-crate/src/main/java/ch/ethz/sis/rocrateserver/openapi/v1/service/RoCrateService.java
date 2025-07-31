@@ -5,7 +5,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISProvider;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.ValidationErrorMapping;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
@@ -42,7 +42,7 @@ public class RoCrateService {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("test-openbis-connection")
     public String testOpenbisConnection(@QueryParam(value = "api-key") String apiKey) {
-        OpenBIS openBIS = OpeBISProvider.createClient(apiKey);
+        OpenBIS openBIS = OpeBISFactory.createOpenBIS(apiKey);
         try {
             return openBIS.getSessionInformation().getUserName();
         } finally {
@@ -61,7 +61,7 @@ public class RoCrateService {
     {
         OpenBIS openBIS = null;
         try {
-            openBIS = OpeBISProvider.createClient(headers.getApiKey());
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
         } catch (Exception ex) {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
@@ -88,7 +88,7 @@ public class RoCrateService {
     {
         OpenBIS openBIS = null;
         try {
-            openBIS = OpeBISProvider.createClient(headers.getApiKey());
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
         } catch (Exception ex) {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
@@ -116,7 +116,7 @@ public class RoCrateService {
     {
         OpenBIS openBIS = null;
         try {
-            openBIS = OpeBISProvider.createClient(headers.getApiKey());
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
         } catch (Exception ex) {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
