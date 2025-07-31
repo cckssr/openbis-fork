@@ -24,7 +24,7 @@ public class AbstractTest
         if (StartupMain.getConfiguration() == null) {
             Map<Enum, String> vals = new LinkedHashMap<>();
             vals.put(httpServerPort, "8085");
-            vals.put(sessionWorkSpace, "/tmp/ro-crate-server/");
+            vals.put(sessionWorkSpace, "/tmp/server-ro-crate/");
 
             vals.put(httpMaxContentLength, "1540165/");
             vals.put(maxReadSizeInBytes, "1048576");

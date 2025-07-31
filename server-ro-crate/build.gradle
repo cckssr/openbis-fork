@@ -52,7 +52,7 @@ test {
     useTestNG()
 }
 
-mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
+mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
@@ -63,4 +63,25 @@ task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
              '--add-opens=java.base/java.nio=ALL-UNNAMED',
              '-Dio.netty.tryReflectionSetAccessible=true',
              '-Xmx512M', '-ea'])
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': mainClassName
+        )
+    }
+}
+
+task RoCrateServerZip(type: Zip, dependsOn: compileJava) {
+    archiveBaseName = 'server-ro-crate'
+    from(jar) {
+        into('server-ro-crate/lib/')
+    }
+    from(configurations.runtimeClasspath) {
+        into('server-ro-crate/lib/')
+    }
+    from('dist') {
+        into 'server-ro-crate/'
+    }
 }

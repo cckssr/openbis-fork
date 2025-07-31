@@ -30,7 +30,9 @@ start(){
     exit 1
   fi
   mkdir -p $LOG_FOLDER
-  java -jar "$JAR" $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
+  CLASSPATH="$BASE/lib/*"
+  MAIN_CLASS="ch.ethz.sis.rocrateserver.startup.StartupMain"
+  java -cp "$CLASSPATH" $MAIN_CLASS $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
   echo $! >"$PIDFILE"
   echo "Started, pid: $(cat "$PIDFILE")"
 

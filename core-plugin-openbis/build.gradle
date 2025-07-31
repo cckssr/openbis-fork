@@ -40,6 +40,7 @@ evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
 evaluationDependsOn(':server-external-data-store')
 evaluationDependsOn(':server-data-store')
+evaluationDependsOn(':server-ro-crate')
 evaluationDependsOn(':ui-admin')
 evaluationDependsOn(':ui-eln-lims')
 
@@ -474,6 +475,11 @@ task zipDss(type: Zip, dependsOn: [copyJarsForWebStart,signWebStartJars]) {
 
 }
 
+task zipRoCrateServer(type: Zip, dependsOn: project(':server-ro-crate').tasks.named('RoCrateServerZip')) {
+    archiveBaseName = 'server-ro-crate'
+    from zipTree('../server-ro-crate/build/distributions/server-ro-crate.zip')
+}
+
 task zipBdlServer(type: Zip, dependsOn: project(':server-external-data-store').tasks.distZip) {
     archiveBaseName = 'big_data_link_server'
     from zipTree('../server-external-data-store/build/distributions/server-external-data-store.zip')
@@ -607,6 +613,7 @@ task generateJavadoc(type: Javadoc) {
 
 build.dependsOn zip
 build.dependsOn zipDss
+build.dependsOn zipRoCrateServer
 build.dependsOn zipBdlServer
 build.dependsOn clientsAndApis
 build.dependsOn dssUploadGuiStandaloneZip
