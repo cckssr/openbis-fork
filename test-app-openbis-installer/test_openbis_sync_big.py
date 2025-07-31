@@ -480,6 +480,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.setDummyAuthentication()
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
+        openbis_harvester.asProperties['code-plugins.allowed-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
         openbis_harvester.createTestDatabase('openbis')
         openbis_harvester.enableCorePlugin("openbis-sync")
