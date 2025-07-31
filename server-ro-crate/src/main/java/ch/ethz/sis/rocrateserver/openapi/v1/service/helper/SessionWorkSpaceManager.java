@@ -7,9 +7,9 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
-public class SessionWorkSpace
+public class SessionWorkSpaceManager
 {
-    private SessionWorkSpace()
+    private SessionWorkSpaceManager()
     {
     }
 

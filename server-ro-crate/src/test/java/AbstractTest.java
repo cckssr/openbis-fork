@@ -31,21 +31,12 @@ public class AbstractTest
 
             vals.put(openBISUrl, "http://localhost:8888");
             vals.put(openBISTimeout, Integer.toString(Integer.MAX_VALUE));
-            vals.put(openBISUser, "system");
-            vals.put(openBISPassword, "changeit");
+
             Configuration configuration = new Configuration(vals);
             StartupMain.setConfiguration(configuration);
         }
 
         return StartupMain.getConfiguration();
-    }
-
-    public static OpenBIS getOpenBis()
-    {
-        Configuration configuration = getConfiguration();
-        return new OpenBIS(configuration.getStringProperty(openBISUrl),
-                Integer.parseInt(configuration.getStringProperty(openBISTimeout)));
-
     }
 
 }

@@ -22,14 +22,14 @@ import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import jakarta.ws.rs.Produces;
 
-public class OpeBISProvider
+public class OpeBISFactory
 {
-    private OpeBISProvider()
+    private OpeBISFactory()
     {
     }
 
     @Produces
-    public static OpenBIS createClient(String personalAccessToken) {
+    public static OpenBIS createOpenBIS(String personalAccessToken) {
         String openBISUrl =
                 StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
         int openBISTimeout = StartupMain.getConfiguration()
@@ -37,16 +37,5 @@ public class OpeBISProvider
         OpenBIS openBIS = new OpenBIS(openBISUrl, openBISTimeout);
         openBIS.setSessionToken(personalAccessToken);
         return openBIS;
-    }
-
-    public static String getUrl()
-    {
-        return StartupMain.getConfiguration().getStringProperty(RoCrateServerParameter.openBISUrl);
-    }
-
-    public static int getTimeOut()
-    {
-        return StartupMain.getConfiguration()
-                .getIntegerProperty(RoCrateServerParameter.openBISTimeout);
     }
 }
