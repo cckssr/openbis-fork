@@ -14,7 +14,7 @@ import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.RoCrateSchemaValidation;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -94,11 +94,11 @@ public class ImportDelegate
 
         // Unpack ro-crate
         java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
-        SessionWorkSpace.write(headers.getApiKey(), roCrateMetadata, body);
+        SessionWorkSpaceManager.write(headers.getApiKey(), roCrateMetadata, body);
 
         // Reading ro-crate model
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-        RoCrate crate = roCrateFolderReader.readCrate(SessionWorkSpace.getRealPath(headers.getApiKey(), null).toString());
+        RoCrate crate = roCrateFolderReader.readCrate(SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
 
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
         List<IType> types = schemaFacade.getTypes();
@@ -127,8 +127,8 @@ public class ImportDelegate
         }
 
         // Import
-        SessionWorkSpace.write(openBIS.getSessionToken(), modelAsExcel, new ByteArrayInputStream(importExcel));
-        java.nio.file.Path realPath = SessionWorkSpace.getRealPath(openBIS.getSessionToken(), modelAsExcel);
+        SessionWorkSpaceManager.write(openBIS.getSessionToken(), modelAsExcel, new ByteArrayInputStream(importExcel));
+        java.nio.file.Path realPath = SessionWorkSpaceManager.getRealPath(openBIS.getSessionToken(), modelAsExcel);
         openBIS.uploadToSessionWorkspace(realPath);
 
         ImportData importData = new ImportData();

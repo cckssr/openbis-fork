@@ -18,7 +18,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpace;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
@@ -111,9 +111,9 @@ public class ExportDelegate
         java.nio.file.Path tempRoCratePath =
                 java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
         java.nio.file.Path realTempRoCratePath =
-                SessionWorkSpace.getRealPath(headers.getApiKey(), tempRoCratePath);
+                SessionWorkSpaceManager.getRealPath(headers.getApiKey(), tempRoCratePath);
         writer.write(openBisModel, realTempRoCratePath);
-        return SessionWorkSpace.read(headers.getApiKey(), tempRoCratePath);
+        return SessionWorkSpaceManager.read(headers.getApiKey(), tempRoCratePath);
     }
 
     private static java.nio.file.Path downloadExcel(OpenBIS openBIS, ExportParams headers,
@@ -143,8 +143,8 @@ public class ExportDelegate
         // Write openBIS export to disk
         // TODO: Extract this part with previous
         java.nio.file.Path pathToExcel = java.nio.file.Path.of("metadata.xlsx");
-        SessionWorkSpace.write(headers.getApiKey(), pathToExcel, listener.getInputStream());
-        java.nio.file.Path realPathToExcel = SessionWorkSpace.getRealPath(headers.getApiKey(), pathToExcel);
+        SessionWorkSpaceManager.write(headers.getApiKey(), pathToExcel, listener.getInputStream());
+        java.nio.file.Path realPathToExcel = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), pathToExcel);
         return realPathToExcel;
 
     }
