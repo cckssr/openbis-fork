@@ -17,7 +17,7 @@
 #
 
 BASE=$(dirname "$0")/..
-PIDFILE=$BASE/afs_server.pid
+PIDFILE=$BASE/ro_crate_server.pid
 JAR=$BASE/lib/server-ro-crate.jar
 SERVICE_PROPERTIES_FILE=$BASE/etc/service.properties
 LOG_FOLDER=$BASE/log
