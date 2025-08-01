@@ -73,13 +73,10 @@ jar {
     }
 }
 
-task RoCrateServerZip(type: Zip, dependsOn: compileJava) {
+task RoCrateServerZip(type: Zip, dependsOn: quarkusBuild) {
     archiveBaseName = 'server-ro-crate'
-    from(jar) {
-        into('server-ro-crate/lib/')
-    }
-    from(configurations.runtimeClasspath) {
-        into('server-ro-crate/lib/')
+    from('build/quarkus-app') {
+        into 'server-ro-crate/quarkus-app'
     }
     from('dist') {
         into 'server-ro-crate/'

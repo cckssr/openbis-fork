@@ -18,7 +18,7 @@
 
 BASE=$(dirname "$0")/..
 PIDFILE=$BASE/ro_crate_server.pid
-JAR=$BASE/lib/server-ro-crate.jar
+QUARKUS_RUN_JAR=$BASE/quarkus-app/quarkus-run.jar
 SERVICE_PROPERTIES_FILE=$BASE/etc/service.properties
 LOG_FOLDER=$BASE/log
 LOG_FILE=$LOG_FOLDER/ro_crate.log
@@ -30,9 +30,7 @@ start(){
     exit 1
   fi
   mkdir -p $LOG_FOLDER
-  CLASSPATH="$BASE/lib/*"
-  MAIN_CLASS="ch.ethz.sis.rocrateserver.startup.StartupMain"
-  java -cp "$CLASSPATH" $MAIN_CLASS $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
+  java -jar $QUARKUS_RUN_JAR $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
   echo $! >"$PIDFILE"
   echo "Started, pid: $(cat "$PIDFILE")"
 
