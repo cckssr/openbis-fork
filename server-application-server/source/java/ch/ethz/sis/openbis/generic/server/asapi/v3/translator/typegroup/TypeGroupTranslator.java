@@ -20,6 +20,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.translator.typegroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupTechId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.AbstractCachingTranslator;
@@ -91,7 +92,7 @@ public class TypeGroupTranslator extends AbstractCachingTranslator<Long, TypeGro
         TranslationResults relations = (TranslationResults) objectRelations;
         TypeGroupBaseRecord baseRecord = relations.get(ITypeGroupBaseTranslator.class, typeGroupId);
 
-        result.setId(new TypeGroupTechId(baseRecord.id));
+        result.setId(new TypeGroupId(baseRecord.name));
         result.setName(baseRecord.name);
         result.setManagedInternally(baseRecord.managedInternally);
         result.setMetaData(CommonUtils.asMap(baseRecord.metaData));

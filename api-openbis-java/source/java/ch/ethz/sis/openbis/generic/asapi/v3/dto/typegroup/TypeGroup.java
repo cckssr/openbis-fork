@@ -21,6 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
@@ -39,7 +40,7 @@ public class TypeGroup implements Serializable, INameHolder, IModificationDateHo
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
-    private TypeGroupTechId id;
+    private TypeGroupId id;
 
     @JsonProperty
     private TypeGroupFetchOptions fetchOptions;
@@ -69,12 +70,12 @@ public class TypeGroup implements Serializable, INameHolder, IModificationDateHo
     private Map<String, String> metaData;
 
     @JsonIgnore
-    public TypeGroupTechId getId()
+    public TypeGroupId getId()
     {
         return id;
     }
 
-    public void setId(TypeGroupTechId id)
+    public void setId(TypeGroupId id)
     {
         this.id = id;
     }

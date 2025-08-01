@@ -42,6 +42,11 @@ public class TypeGroupAuthorizationExecutor implements ITypeGroupAuthorizationEx
 //    @DatabaseCreateOrDeleteModification(value = DatabaseModificationKind.ObjectKind.TYPE_GROUP)
     public void canCreate(IOperationContext context, TypeGroupPE typeGroup)
     {
+        if (typeGroup.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            throw new AuthorizationFailureException(
+                    "Internal type groups can be managed only by the system user.");
+        }
 
     }
 
@@ -83,7 +88,11 @@ public class TypeGroupAuthorizationExecutor implements ITypeGroupAuthorizationEx
     @Capability("DELETE_TYPE_GROUP")
     public void canDelete(IOperationContext context, ITypeGroupId id, TypeGroupPE typeGroup)
     {
-
+        if (typeGroup.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            throw new AuthorizationFailureException(
+                    "Internal type groups can be managed only by the system user.");
+        }
     }
 
     @Override

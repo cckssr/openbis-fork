@@ -2687,6 +2687,12 @@ CREATE TABLE spaces (
     frozen_for_proj boolean_char DEFAULT false NOT NULL,
     frozen_for_samp boolean_char DEFAULT false NOT NULL
 );
+CREATE SEQUENCE type_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 CREATE TABLE type_groups (
     id TECH_ID NOT NULL,
     name CODE NOT NULL,
@@ -2697,12 +2703,6 @@ CREATE TABLE type_groups (
     is_managed_internally BOOLEAN_CHAR DEFAULT false NOT NULL,
     meta_data JSONB
 );
-CREATE SEQUENCE type_groups_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 CREATE TABLE sample_type_type_groups (
     saty_id TECH_ID NOT NULL,
     tg_id TECH_ID NOT NULL,
@@ -2719,7 +2719,7 @@ CREATE SEQUENCE stpt_id_seq
 SELECT pg_catalog.setval('attachment_content_id_seq', 12, true);
 SELECT pg_catalog.setval('attachment_id_seq', 12, true);
 SELECT pg_catalog.setval('authorization_group_id_seq', 1, true);
-SELECT pg_catalog.setval('type_groups_id_seq', 1, true);
+SELECT pg_catalog.setval('type_groups_id_seq', 3, true);
 SELECT pg_catalog.setval('code_seq', 8, true);
 SELECT pg_catalog.setval('content_copies_id_seq', 4, true);
 SELECT pg_catalog.setval('controlled_vocabulary_id_seq', 6, true);
