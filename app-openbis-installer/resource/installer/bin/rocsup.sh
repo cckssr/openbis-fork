@@ -1,5 +1,5 @@
 #!/bin/bash
-# Starts up openBIS, DSS, AFS and RoCS
+# Starts up RoCrate Server
 
 if [ -n "$(readlink $0)" ]; then
    # handle symbolic links
@@ -16,8 +16,4 @@ if [ ${BASE#/} == ${BASE} ]; then
     BASE="`pwd`/${BASE}"
 fi
 
-$BASE/bisup.sh || exit 1;
-$BASE/dssup.sh || exit 2;
-$BASE/afsup.sh || exit 3;
-$BASE/rocsup.sh || exit 4;
-
+$BASE/../servers/server-ro-crate/bin/ro-crate.sh start

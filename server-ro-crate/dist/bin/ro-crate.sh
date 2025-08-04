@@ -17,8 +17,8 @@
 #
 
 BASE=$(dirname "$0")/..
-PIDFILE=$BASE/afs_server.pid
-JAR=$BASE/lib/server-ro-crate.jar
+PIDFILE=$BASE/ro_crate_server.pid
+QUARKUS_RUN_JAR=$BASE/quarkus-app/quarkus-run.jar
 SERVICE_PROPERTIES_FILE=$BASE/etc/service.properties
 LOG_FOLDER=$BASE/log
 LOG_FILE=$LOG_FOLDER/ro_crate.log
@@ -30,7 +30,7 @@ start(){
     exit 1
   fi
   mkdir -p $LOG_FOLDER
-  java -jar "$JAR" $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
+  java -jar $QUARKUS_RUN_JAR $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
   echo $! >"$PIDFILE"
   echo "Started, pid: $(cat "$PIDFILE")"
 

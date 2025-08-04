@@ -1,12 +1,14 @@
 package ch.ethz.sis.rocrateserver.startup;
 
-import io.quarkus.runtime.Quarkus;
-import io.quarkus.runtime.QuarkusApplication;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.QuarkusApplication;
+import io.quarkus.runtime.annotations.QuarkusMain;
+
+@QuarkusMain
 public class StartupMain implements QuarkusApplication
 {
     private static Configuration configuration;

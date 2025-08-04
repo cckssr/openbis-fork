@@ -130,18 +130,18 @@ tasks.register("RoCrateServerZip", Zip) {
 
     dependsOn(bootJar)
 
-    archiveBaseName.set("ro-crate-server")
+    archiveBaseName.set("server-ro-crate")
 
     from(bootJar.archiveFile) {
-        into("ro-crate-server/lib")
+        into("server-ro-crate/lib")
     }
 
     from(configurations.runtimeClasspath) {
-        into("ro-crate-server/lib")
+        into("server-ro-crate/lib")
     }
 
     from("dist") {
-        into("ro-crate-server")
+        into("server-ro-crate")
     }
 }
 

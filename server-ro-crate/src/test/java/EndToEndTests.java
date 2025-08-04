@@ -34,7 +34,7 @@ public class EndToEndTests extends AbstractTest
 
         given()
                 .param("message", "Hello World")
-                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test-echo")
+                .when().get("http://localhost:8086/openbis/open-api/ro-crate/test-echo")
                 .then()
                 .body(is("Hello World"))
                 .statusCode(200);
@@ -51,7 +51,7 @@ public class EndToEndTests extends AbstractTest
 
         given()
                 .param("api-key", openBIS.getSessionToken())
-                .when().get("http://localhost:8085/openbis/open-api/ro-crate/test-openbis-connection")
+                .when().get("http://localhost:8086/openbis/open-api/ro-crate/test-openbis-connection")
                 .then()
                 .body(is(username))
                 .statusCode(200);
@@ -70,7 +70,7 @@ public class EndToEndTests extends AbstractTest
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExample1.getBytes())
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/import")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/import")
                 .then()
                 .statusCode(200);
     }
@@ -89,7 +89,7 @@ public class EndToEndTests extends AbstractTest
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExample1.getBytes())
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
                 .body(allOf(containsString("\"validationErrors\":[]"),
                         containsString("\"isValid\":true")))
@@ -110,7 +110,7 @@ public class EndToEndTests extends AbstractTest
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
                 .body(roCrateMetadataJsonExampleWrongDataType.getBytes())
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
                 .body(allOf(containsString("\"validationErrors\":[{"),
                         containsString("\"isValid\":true"), containsString("NUMBEROFFILES")))
@@ -132,7 +132,7 @@ public class EndToEndTests extends AbstractTest
                 .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
                 .body("[\"https://doi.org/10.1038/s41586-020-3010-5\"]")
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);
     }
@@ -151,7 +151,7 @@ public class EndToEndTests extends AbstractTest
                 .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
                 .body("[\"/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29\"]")
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);
     }
@@ -173,7 +173,7 @@ public class EndToEndTests extends AbstractTest
                 .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
                 .body("[\"20250728111931402-94\"]")
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(200);
     }
@@ -192,7 +192,7 @@ public class EndToEndTests extends AbstractTest
                 .header("openbis.with-Levels-below", "true")
                 .header("Content-Type", "application/json")
                 .body("[\"NOT-AN-IDENTIFIER\"]")
-                .when().post("http://localhost:8085/openbis/open-api/ro-crate/export")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
                 .then()
                 .statusCode(404);
     }
