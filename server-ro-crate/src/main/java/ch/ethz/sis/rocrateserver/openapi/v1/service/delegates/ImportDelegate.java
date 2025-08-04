@@ -13,8 +13,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.RoCrateSchemaValidation;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
@@ -40,11 +41,11 @@ public class ImportDelegate
 
         Map<String, String> externalToOpenBisIdentifiers;
 
-        RoCrateSchemaValidation.ValidationResult validationResult;
+        ValidationResult validationResult;
 
         public OpenBisImportResult(List<String> identifiers,
                 Map<String, String> externalToOpenBisIdentifiers,
-                RoCrateSchemaValidation.ValidationResult validationResult)
+                ValidationResult validationResult)
         {
             this.identifiers = identifiers;
             this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
@@ -72,13 +73,13 @@ public class ImportDelegate
             this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
         }
 
-        public RoCrateSchemaValidation.ValidationResult getValidationResult()
+        public ValidationResult getValidationResult()
         {
             return validationResult;
         }
 
         public void setValidationResult(
-                RoCrateSchemaValidation.ValidationResult validationResult)
+                ValidationResult validationResult)
         {
             this.validationResult = validationResult;
         }
@@ -111,7 +112,7 @@ public class ImportDelegate
 
         // Converting ro-crate model to openBIS model
         OpenBisModel conversion = RdfToModel.convert(types, propertyTypes, entryList, "DEFAULT", "DEFAULT");
-        RoCrateSchemaValidation.ValidationResult validationResult =
+        ValidationResult validationResult =
                 RoCrateSchemaValidation.validate(conversion);
 
         // Convert openbis model to openbis excel format for import

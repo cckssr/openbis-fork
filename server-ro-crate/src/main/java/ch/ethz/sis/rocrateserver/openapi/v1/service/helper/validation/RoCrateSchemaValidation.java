@@ -1,4 +1,4 @@
-package ch.ethz.sis.rocrateserver.openapi.v1.service.helper;
+package ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.entity.AbstractEntityPropertyHolder;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
@@ -24,61 +24,6 @@ public class RoCrateSchemaValidation
 
     private RoCrateSchemaValidation()
     {
-    }
-
-    public static class ValidationResult
-    {
-        private final Map<String, List<PropertyProblem>> entitiesToMissingProperties;
-
-        private final Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
-
-        private final Map<String, List<PropertyProblem>> wrongDataTypes;
-
-        public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
-                Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
-                Map<String, List<PropertyProblem>> wrongDataTypes)
-        {
-            this.entitiesToMissingProperties = entitiesToMissingProperties;
-            this.entititesToUndefinedProperties = entititesToUndefinedProperties;
-            this.wrongDataTypes = wrongDataTypes;
-        }
-
-        public boolean isOkay()
-        {
-            return entitiesToMissingProperties.isEmpty() && entititesToUndefinedProperties.isEmpty()
-                    && wrongDataTypes.isEmpty();
-        }
-
-        public Map<String, List<PropertyProblem>> getEntitiesToMissingProperties()
-        {
-            return entitiesToMissingProperties;
-        }
-
-        public Map<String, List<PropertyProblem>> getEntititesToUndefinedProperties()
-        {
-            return entititesToUndefinedProperties;
-        }
-
-        public Map<String, List<PropertyProblem>> getWrongDataTypes()
-        {
-            return wrongDataTypes;
-        }
-    }
-
-    public static class PropertyProblem
-    {
-        String node;
-
-        String property;
-
-        String message;
-
-        public PropertyProblem(String node, String property, String message)
-        {
-            this.node = node;
-            this.property = property;
-            this.message = message;
-        }
     }
 
     public static ValidationResult validate(OpenBisModel openBisModel)
