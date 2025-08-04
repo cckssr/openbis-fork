@@ -114,4 +114,34 @@ task copyV3Api(type: Copy, dependsOn: [compileGWTToTemp, ':api-openbis-javascrip
 task openBISDevelopmentEnvironmentASPrepare(type: Copy, dependsOn: [copyV3Api]) {
     from "${gwtTempPath}/ch.systemsx.cisd.openbis.OpenBIS"
     into "targets/www/openbis-test"
+    doLast {
+        def Files = java.nio.file.Files
+        def Paths = java.nio.file.Paths
+
+        def targetLinkDirs = [
+                Paths.get("${project(':server-application-server').projectDir}/source/core-plugins"),
+                Paths.get("${project(':server-original-data-store').projectDir}/source/core-plugins")
+        ]
+
+        def sourceSymlinksMap = [
+                "admin":   "${project(':ui-admin').projectDir}/src/core-plugins/admin",
+                "eln-lims":"${project(':ui-eln-lims').projectDir}/src/core-plugins/eln-lims",
+                "imaging": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/imaging"
+        ]
+
+        targetLinkDirs.each { targetLinkDir ->
+            sourceSymlinksMap.each { linkName, targetPath ->
+                def link = targetLinkDir.resolve(linkName)
+                def target = Paths.get(targetPath)
+
+                if (Files.exists(target)) {
+                    Files.deleteIfExists(link)
+                    println "Creating symlink: ${link} -> ${target}"
+                    Files.createSymbolicLink(link, target)
+                } else {
+                    println "WARNING: Target for symlink '${linkName}' not found, skipping. Path: ${target}"
+                }
+            }
+        }
+    }
 }
