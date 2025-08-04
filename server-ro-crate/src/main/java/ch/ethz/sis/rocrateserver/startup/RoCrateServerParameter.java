@@ -18,6 +18,7 @@ package ch.ethz.sis.rocrateserver.startup;
 public enum RoCrateServerParameter
 {
     httpServerPort,
+    httpServerTimeout,
     sessionWorkSpace,
 
     httpMaxContentLength,

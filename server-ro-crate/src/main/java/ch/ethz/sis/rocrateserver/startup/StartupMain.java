@@ -21,32 +21,36 @@ public class StartupMain implements QuarkusApplication
     }
 
     public static void main(String[] args) throws IOException {
+        System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
+        System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
+        configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
+        validate(configuration);
+
+        System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
+        System.setProperty("quarkus.http.test-port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
+        System.setProperty("quarkus.http.test-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+        System.setProperty("quarkus.http.idle-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+        System.setProperty("quarkus.http.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+        System.setProperty("quarkus.http.request-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+        System.setProperty("quarkus.class-loading.parent-first-artifacts", "stax:stax-api");
+
         Quarkus.run(StartupMain.class, args);
     }
 
     @Override
     public int run(String... args) throws Exception
     {
-        System.setProperty("quarkus.http.port", "8085");
-        System.setProperty("quarkus.transaction-manager.default-transaction-timeout", "120s");
-        System.setProperty("quarkus.rest-client.connect-timeout", "120s");
-        System.setProperty("quarkus.rest-client.read-timeout", "120s");
-        System.setProperty("quarkus.http.request-timeout", "120s");
-        System.setProperty("quarkus.http.test-timeout", "120s");
-        System.setProperty("quarkus.datasource.jdbc.idle-timeout", "120s");
+//
+//        System.setProperty("quarkus.transaction-manager.default-transaction-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+//        System.setProperty("quarkus.rest-client.connect-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
+//        System.setProperty("quarkus.rest-client.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
 
-
-
-        System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
-        System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
-        configuration = new Configuration(List.of(RoCrateServerParameter.class), args[0]);
-        validate(configuration);
         System.out.println(">> Quarkus app running. Press Ctrl+C to exit.");
         Quarkus.waitForExit();
         return 0;
     }
 
-    private void validate(Configuration configuration) throws IllegalArgumentException {
+    private static void validate(Configuration configuration) throws IllegalArgumentException {
         if (configuration.getStringProperty(RoCrateServerParameter.sessionWorkSpace) == null)
         {
             throw new IllegalArgumentException("Setting a session workspace is mandatory! ");
