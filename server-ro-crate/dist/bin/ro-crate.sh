@@ -22,7 +22,7 @@ QUARKUS_RUN_JAR=$BASE/quarkus-app/quarkus-run.jar
 SERVICE_PROPERTIES_FILE=$BASE/etc/service.properties
 LOG_FOLDER=$BASE/log
 LOG_FILE=$LOG_FOLDER/ro_crate.log
-SUCCESS_MSG="Server started"
+SUCCESS_MSG="Quarkus app running"
 
 start(){
   if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
@@ -32,20 +32,19 @@ start(){
   mkdir -p $LOG_FOLDER
   java -jar $QUARKUS_RUN_JAR $SERVICE_PROPERTIES_FILE "$@" > $LOG_FILE 2>&1 &
   echo $! >"$PIDFILE"
-  echo "Started, pid: $(cat "$PIDFILE")"
+  echo "Starting RO-CRATE server (pid $(cat "$PIDFILE"))"
 
   # Now tail the log in the foreground
-  echo "Tailing log ..."
   tail -n0 -F "$LOG_FILE" | while IFS= read -r line; do
     echo "$line"
     # check for your success marker
     if [[ "$line" == *"$SUCCESS_MSG"* ]]; then
-      echo "Server ready detected – stopping log tail."
+      echo "Server up and running."
       break
     fi
     # check for any ERROR or Exception
     if echo "$line" | grep -q -E 'ERROR|Exception'; then
-      echo "Error detected – stopping log tail."
+      echo "Startup failed."
       break
     fi
   done
@@ -55,7 +54,7 @@ stop(){
   if [ -f "$PIDFILE" ]; then
     kill $(cat "$PIDFILE")
     rm "$PIDFILE"
-    echo "Stopped."
+    echo "Stopped RO-CRATE server."
   else
     echo "Not running."
   fi
