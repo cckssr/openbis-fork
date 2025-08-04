@@ -103,15 +103,15 @@ public class SampleTypeTypeGroupAssignmentTranslator
 
     @Override
     protected Map<Long, TypeGroupAssignment> translateRelated(TranslationContext context,
-            Collection<Long> typeGroupIds, TypeGroupAssignmentFetchOptions annotationFetchOptions)
+            Collection<Long> typeGroupIds, TypeGroupAssignmentFetchOptions fetchOptions)
     {
         throw new RuntimeException("Not implemented!");
     }
 
     private Map<SampleTypeTypeGroupsTechId, TypeGroupAssignment> translateRelatedNew(TranslationContext context,
-            Collection<SampleTypeTypeGroupsTechId> typeGroupIds, TypeGroupAssignmentFetchOptions annotationFetchOptions)
+            Collection<SampleTypeTypeGroupsTechId> typeGroupIds, TypeGroupAssignmentFetchOptions fetchOptions)
     {
-          return  typeGroupAssignmentTranslator.translate(context, typeGroupIds, annotationFetchOptions);
+          return  typeGroupAssignmentTranslator.translate(context, typeGroupIds, fetchOptions);
     }
 
     @Override

@@ -18,6 +18,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -30,14 +31,14 @@ public class TypeGroupAssignmentSearchCriteria extends AbstractObjectSearchCrite
     {
     }
 
-    public TypeGroupSearchCriteria withTypeGroupName()
+    public TypeGroupSearchCriteria withTypeGroup()
     {
         return with(new TypeGroupSearchCriteria());
     }
 
-    public CodeSearchCriteria withSampleTypeCode()
+    public SampleTypeSearchCriteria withSampleType()
     {
-        return with(new CodeSearchCriteria());
+        return with(new SampleTypeSearchCriteria());
     }
 
 

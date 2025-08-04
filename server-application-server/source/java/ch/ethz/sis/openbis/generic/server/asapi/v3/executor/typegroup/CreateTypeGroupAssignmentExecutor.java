@@ -18,6 +18,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
@@ -56,7 +57,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     @Override
     protected IObjectId getId(SampleTypeTypeGroupsPE entity)
     {
-        IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId());
+        IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId(), EntityKind.SAMPLE);
         ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getName());
         return new TypeGroupAssignmentId(sampleTypeId, typeGroupId);
 //        entity
@@ -125,7 +126,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     @Override
     protected TypeGroupAssignmentId createPermId(IOperationContext context, SampleTypeTypeGroupsPE entity)
     {
-        IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId());
+        IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId(), EntityKind.SAMPLE);
         ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getName());
         return new TypeGroupAssignmentId(sampleTypeId, typeGroupId);
     }

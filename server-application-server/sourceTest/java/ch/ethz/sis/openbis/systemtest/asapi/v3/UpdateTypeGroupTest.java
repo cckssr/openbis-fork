@@ -17,10 +17,16 @@
 
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
@@ -28,6 +34,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
@@ -99,12 +106,54 @@ public class UpdateTypeGroupTest extends AbstractTest
         assertEquals(after.getName(), update.getName().getValue());
     }
 
+    @Test
+    public void testUpdateWithTypeGroupAssignment()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setName("MY_TYPE_GROUP_FOR_UPDATE");
+        newGroup.setMetaData(Map.of("key", "value"));
+        newGroup.setManagedInternally(false);
+
+        TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
+        assertEquals(group.getPermId(), newGroup.getName());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("SAMPLE_TYPE_WITH_TYPE_GROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        EntityTypePermId sampleTypeId = v3api.createSampleTypes(sessionToken, Arrays.asList(newType)).get(0);
+        assertEquals(sampleTypeId.getPermId(), newType.getCode());
+
+        TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+        creation.setTypeGroupId(group);
+        creation.setSampleTypeId(sampleTypeId);
+
+        List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+        TypeGroup before = getTypeGroup(TEST_USER, group);
+        assertEquals(before.getName(), newGroup.getName());
+        assertEquals(before.getTypeGroupAssignments().size(), 1);
+
+        TypeGroupAssignmentDeletionOptions options = new TypeGroupAssignmentDeletionOptions();
+        options.setReason("test reason");
+        v3api.deleteTypeGroupAssignments(sessionToken, ids, options);
+
+        TypeGroup after = getTypeGroup(TEST_USER, group);
+        assertEquals(after.getName(), newGroup.getName());
+        assertEquals(after.getTypeGroupAssignments().size(), 0);
+
+    }
+
     private TypeGroup getTypeGroup(String user, ITypeGroupId id)
     {
         TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
         fetchOptions.withRegistrator();
         fetchOptions.withModifier();
-        fetchOptions.withTypeGroupAssignments();
+        TypeGroupAssignmentFetchOptions options = fetchOptions.withTypeGroupAssignments();
+        options.withTypeGroup();
+        options.withSampleType();
 
         String sessionToken = SYSTEM_USER.equals(user) ? v3api.loginAsSystem() :  v3api.login(user, PASSWORD);
         Map<ITypeGroupId, TypeGroup> tags = v3api.getTypeGroups(sessionToken, Arrays.asList(id), fetchOptions);

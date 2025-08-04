@@ -41,6 +41,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -938,6 +939,16 @@ public class AbstractTest extends SystemTestCase
             }
         }
         assertEquals(count, expectedSameObjectCount);
+    }
+
+    protected void assertTypeGroups(Collection<TypeGroup> typeGroups, String... expectedTypeGroupPermIds)
+    {
+        Set<String> actualPermIds = new HashSet<String>();
+        for (TypeGroup typeGroup : typeGroups)
+        {
+            actualPermIds.add(typeGroup.getId().getPermId());
+        }
+        assertCollectionContainsOnly(actualPermIds, expectedTypeGroupPermIds);
     }
 
     protected void assertTags(Collection<Tag> tags, String... expectedTagPermIds)

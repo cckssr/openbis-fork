@@ -19,13 +19,19 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.AbstractSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.ISearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.IdSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectManuallyExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.ISearchObjectExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.Matcher;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.SimpleFieldMatcher;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.sample.ISearchSampleTypeExecutor;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +77,35 @@ public class SearchTypeGroupAssignmentExecutor extends AbstractSearchObjectManua
             return new TypeGroupMatcher();
         } else if(criteria instanceof SampleTypeSearchCriteria) {
             return new SampleTypeMatcher();
+        } else if(criteria instanceof IdSearchCriteria) {
+            return new IdMatcher();
         } else
         {
             throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());
+        }
+    }
+
+    private class IdMatcher extends SimpleFieldMatcher<SampleTypeTypeGroupsPE>
+    {
+        @Override
+        protected boolean isMatching(IOperationContext context, SampleTypeTypeGroupsPE object, ISearchCriteria criteria)
+        {
+            Object id = ((IdSearchCriteria<?>) criteria).getId();
+
+            if (id == null)
+            {
+                return true;
+            } else if (id instanceof TypeGroupAssignmentId)
+            {
+                TypeGroupAssignmentId assignmentId = (TypeGroupAssignmentId) id;
+                EntityTypePermId objectSampleTypeId = new EntityTypePermId(object.getSampleType().getPermId(), EntityKind.SAMPLE);
+                TypeGroupId objectTypeGroupId = new TypeGroupId(object.getTypeGroup().getName());
+                return objectSampleTypeId.equals(assignmentId.getSampleTypeId()) &&
+                        objectTypeGroupId.equals(assignmentId.getTypeGroupId());
+            } else
+            {
+                throw new IllegalArgumentException("Unknown id: " + criteria.getClass());
+            }
         }
     }
 
