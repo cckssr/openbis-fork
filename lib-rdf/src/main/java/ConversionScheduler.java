@@ -24,17 +24,18 @@ public class ConversionScheduler
         System.out.println("Queue: " + filesToDo.stream().collect(Collectors.joining(",")));
 
         String commandTemplate =
-                "java %3$s -i TTL -o ZIP -f %2$s -dangling -f %1$s -r out/%1$s.zip";
+                "java -jar %3$s -i TTL -o ZIP -f %2$s -dangling -f %1$s -r /cluster/work/swisspkcdw/rdf_kispi_dataset/kispi_all_ttls/out/%1$s.zip -noschema 1> log-%1$s.txt 2> error--%1$s.txt";
 
         System.out.println("Before sempaphores " + new Date());
         while (!filesToDo.isEmpty())
         {
             semaphore.acquire();
-            System.out.println("Semaphore acquired " + new Date());
+            System.out.println(
+                    "Semaphore acquired " + new Date() + " " + filesToDo.size() + " files left in queue");
             String inFile = filesToDo.poll();
             Thread thread = new Thread(
                     new CommandExecutor(commandTemplate,
-                            new String[] { inFile, args[0], args[1] }));
+                            new String[] { inFile.replaceFirst("./", ""), args[0], args[1] }));
             thread.start();
         }
 
@@ -58,6 +59,7 @@ public class ConversionScheduler
         {
             String formattedCommand = String.format(commandTemplate, (Object[]) parameters);
             System.out.println("Started file " + parameters[0] + " " + new Date());
+            System.out.println(formattedCommand);
 
             try
             {
