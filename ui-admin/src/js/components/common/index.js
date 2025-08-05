@@ -24,6 +24,7 @@ import ContentTabs from '@src/js/components/common/content/ContentTabs.jsx'
 import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 import ContentController from '@src/js/components/common/content/ContentController.js'
 import openbis from '@src/js/services/openbis.js'
+import ChatBotAssistant from '@src/js/components/common/chat-bot-assistant/ChatBotAssistant.jsx'
 
 export default {
   ThemeProvider,
@@ -50,5 +51,6 @@ export default {
   ContentTabs,
   ContentTab,
   ContentController,
-  openbis
+  openbis,
+  ChatBotAssistant
 }

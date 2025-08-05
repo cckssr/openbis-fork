@@ -26,11 +26,10 @@ import LogoutIcon from '@mui/icons-material/PowerSettingsNew'
 import { alpha } from '@mui/material/styles';
 import withStyles from '@mui/styles/withStyles';
 import AppController from '@src/js/components/AppController.js'
-import Button from '@src/js/components/common/form/Button.jsx'
-import pages from '@src/js/common/consts/pages.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 import Typography from "@mui/material/Typography";
+import ChatBotAssistant from '@src/js/components/common/chat-bot-assistant/ChatBotAssistant.jsx'
 
 import { faBarcode } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -43,7 +42,7 @@ const styles = theme => ({
   toolBar: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
-    backgroundColor: '#3f51b5'
+    backgroundColor: theme.palette.primary.main
   },
   tabs: {
     flexGrow: 1,
@@ -64,27 +63,27 @@ const styles = theme => ({
     paddingLeft: theme.spacing(1) / 2,
     paddingRight: theme.spacing(1),
     cursor: 'default',
-    color:'white'
+    color: 'white'
   },
   searchClear: {
     cursor: 'pointer',
-    color:'white'
+    color: 'white'
   },
   userInfo: {
     margin: '0px 10px 0px 5px'
   },
   button: {
-      marginRight: theme.spacing(1),
-      backgroundColor: '#3f51b5',
-      color: 'white',
+    marginRight: theme.spacing(1),
+    backgroundColor: theme.palette.primary.main,
+    color: 'white',
     '&:hover': {
       backgroundColor: alpha(theme.palette.background.paper, 0.15)
     }
   },
   logo: {
     marginRight: theme.spacing(1),
-    width:'80px',
-    height:'35px'
+    width: '80px',
+    height: '35px'
   }
 })
 
@@ -95,40 +94,41 @@ class Menu extends React.PureComponent {
     this.searchRef = React.createRef()
 
     let searchDomain = null;
-    if(this.props.searchDomains && this.props.searchDomains.length > 0) {
-        searchDomain = this.props.searchDomains[0].label;
+    if (this.props.searchDomains && this.props.searchDomains.length > 0) {
+      searchDomain = this.props.searchDomains[0].label;
     }
 
-    if(this.props.controller) {
-            this.props.controller.attach(this)
-        }
+    if (this.props.controller) {
+      this.props.controller.attach(this)
+    }
 
     this.state = {
-        currentPage: this.props.currentPage,
-        searchText: this.props.searchText || '',
-        searchDomain: searchDomain,
-        anchorEl: null,
-        menuOpen: false,
-        selectedIndex: 0,
+      currentPage: this.props.currentPage,
+      searchText: this.props.searchText || '',
+      searchDomain: searchDomain,
+      anchorEl: null,
+      menuOpen: false,
+      selectedIndex: 0,
+      chatbotOpen: false,
     }
 
   }
 
   getSearchDomainLabel() {
-    if(this.props.searchDomains && this.props.searchDomains.length > 0) {
-            return this.props.searchDomains[this.state.selectedIndex].label + " ";
-        }
+    if (this.props.searchDomains && this.props.searchDomains.length > 0) {
+      return this.props.searchDomains[this.state.selectedIndex].label + " ";
+    }
     return "";
   }
 
   handlePageChange(event, value) {
-    this.setState({currentPage: value})
+    this.setState({ currentPage: value })
     this.props.pageChangeFunction(event, value)
   }
 
   handleSearchChange(event) {
-      this.setState({searchText: event.target.value})
-      AppController.getInstance().searchChange(event.target.value)
+    this.setState({ searchText: event.target.value })
+    AppController.getInstance().searchChange(event.target.value)
   }
 
   handleSearchKeyPress(event) {
@@ -139,16 +139,19 @@ class Menu extends React.PureComponent {
 
   handleSearchClear(event) {
     event.preventDefault()
-    this.setState({searchText: ''})
+    this.setState({ searchText: '' })
     AppController.getInstance().searchChange('')
     this.searchRef.current.focus()
   }
 
   handleSearchDomainChange(event) {
-      this.setState({searchDomain: event.target.value})
-      this.props.searchDomainChangeFunction(event)
+    this.setState({ searchDomain: event.target.value })
+    this.props.searchDomainChangeFunction(event)
   }
 
+  setChatbotOpen(open) {
+    this.setState({ chatbotOpen: open })
+  }
 
   render() {
     logger.log(logger.DEBUG, 'Menu.render')
@@ -169,8 +172,8 @@ class Menu extends React.PureComponent {
             indicatorColor='secondary'
           >
             {_.map(tabs, tab => {
-                return this.renderTab(tab)
-              })}
+              return this.renderTab(tab)
+            })}
           </Tabs>
           {this.renderChatbot()}
           {this.renderBarcode()}
@@ -186,175 +189,177 @@ class Menu extends React.PureComponent {
   }
 
   renderSearchField() {
-     if(!this.props.searchFunction){
-       return null;
-     }
+    if (!this.props.searchFunction) {
+      return null;
+    }
     const { classes, searchDomains, menuStyles } = this.props
 
     return (
-            <>
-            <div >
-                <TextField
-                    placeholder={this.getSearchDomainLabel() + messages.get(messages.SEARCH)}
-                    value={this.state.searchText || ''}
-                    onChange={this.handleSearchChange}
-                    onKeyPress={this.handleSearchKeyPress}
-                    variant='standard'
-                    slotProps={{
-                      input: {
-                        inputRef: this.searchRef,
-                        disableUnderline: true,
-                        startAdornment: this.renderStartAdornment(searchDomains),
-                        endAdornment: this.renderSearchClearIcon(),
-                        classes: {
-                          root: classes.search
-                        },
-                        sx: menuStyles.searchField
-                      }
-                    }}
-                    sx={this.props.menuStyles.searchBox}
-                  />
-                  </div>
-              </>
-              )
+      <>
+        <div >
+          <TextField
+            placeholder={this.getSearchDomainLabel() + messages.get(messages.SEARCH)}
+            value={this.state.searchText || ''}
+            onChange={this.handleSearchChange}
+            onKeyPress={this.handleSearchKeyPress}
+            variant='standard'
+            slotProps={{
+              input: {
+                inputRef: this.searchRef,
+                disableUnderline: true,
+                startAdornment: this.renderStartAdornment(searchDomains),
+                endAdornment: this.renderSearchClearIcon(),
+                classes: {
+                  root: classes.search
+                },
+                sx: menuStyles.searchField
+              }
+            }}
+            sx={this.props.menuStyles.searchBox}
+          />
+        </div>
+      </>
+    )
   }
 
   renderLogout() {
-    if(!this.props.logoutFunction){
+    if (!this.props.logoutFunction) {
       return null;
     }
     const { classes } = this.props
     return (<IconButton
-                onClick={this.props.logoutFunction}
-                classes={{ root: classes.button }}
-              >
-                <LogoutIcon fontSize='small' />
-              </IconButton>
-              )
+      onClick={this.props.logoutFunction}
+      classes={{ root: classes.button }}
+    >
+      <LogoutIcon fontSize='small' />
+    </IconButton>
+    )
   }
 
   renderChatbot() {
-      if(!this.props.chatbotFunction) {
-          return null;
-      }
-      const { classes } = this.props
-      return (<IconButton
-            onClick={this.props.chatbotFunction}
-            classes={{ root: classes.button }}
-          >
-          <QuestionAnswerIcon fontSize='medium' sx={{ color: 'white' }} />
-          </IconButton>)
-  }
-  renderBarcode() {
-    if(!this.props.barcodeFunction) {
-        return null;
+    if (!this.props.chatbotFunction) {
+      return null;
     }
     const { classes } = this.props
     return (<IconButton
-                  onClick={this.props.barcodeFunction}
-                  classes={{ root: classes.button }}
-                >
-                  <FontAwesomeIcon icon={faBarcode} />
-                </IconButton>)
+      onClick={() => this.setState({ chatbotOpen: !this.state.chatbotOpen })}
+      classes={{ root: classes.button }}
+    >
+      <QuestionAnswerIcon fontSize='medium' sx={{ color: 'white' }} />
+      <ChatBotAssistant open={this.state.chatbotOpen} setOpen={this.setChatbotOpen} theme={this.props.theme} />
+    </IconButton>)
+  }
+  renderBarcode() {
+    if (!this.props.barcodeFunction) {
+      return null;
+    }
+    const { classes } = this.props
+    return (<IconButton
+      onClick={this.props.barcodeFunction}
+      classes={{ root: classes.button }}
+    >
+      <FontAwesomeIcon icon={faBarcode} />
+    </IconButton>)
 
   }
 
   renderTab(tab) {
-      return (
-            <Tab value={tab.page} label={tab.label} icon={tab.icon}/>
-          )
+    return (
+      <Tab value={tab.page} label={tab.label} icon={tab.icon} />
+    )
   }
 
   renderStartAdornment(searchDomains) {
-      const { classes, searchText } = this.props
-      return (
-          <>
-              {this.renderSearchDomainIcon(searchDomains)}
-              {this.renderSearchIcon()}
-          </>
-          )
+    const { classes, searchText } = this.props
+    return (
+      <>
+        {this.renderSearchDomainIcon(searchDomains)}
+        {this.renderSearchIcon()}
+      </>
+    )
   }
 
   handleMenu = event => {
-      this.setState({ anchorEl: event.currentTarget });
+    this.setState({ anchorEl: event.currentTarget });
   };
 
   handleClose = () => {
-      this.setState({ anchorEl: null, menuOpen: !this.state.menuOpen });
+    this.setState({ anchorEl: null, menuOpen: !this.state.menuOpen });
   };
 
   handleMenuItemClick = (event, index) => {
-      this.setState({ anchorEl: null,
-          selectedIndex: index,
-          menuOpen: !this.state.menuOpen,
-          searchDomain: event.target.value
-      });
-      this.props.searchDomainChangeFunction(event)
+    this.setState({
+      anchorEl: null,
+      selectedIndex: index,
+      menuOpen: !this.state.menuOpen,
+      searchDomain: event.target.value
+    });
+    this.props.searchDomainChangeFunction(event)
   };
 
   renderSearchDomainIcon(searchDomains) {
-      if(!this.props.searchDomainChangeFunction || !searchDomains) {
-          return null;
-      }
+    if (!this.props.searchDomainChangeFunction || !searchDomains) {
+      return null;
+    }
 
-      return (
-          <div>
-              <IconButton
-                  onClick={(event) => {
-                          this.searchRef.current.focus()
-                          const anchorEl = event.currentTarget
-                          this.setState({ anchorEl: anchorEl, menuOpen: !this.state.menuOpen });
-                      } }
-              >
-                 <KeyboardArrowDownIcon fontSize='medium' sx={{ color: 'white' }} />
-              </IconButton>
-              <DropdownMenu
-                    anchorEl={this.state.anchorEl}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-                    open={this.state.menuOpen}
-                    onClose={this.handleClose}
-              >
-                  {searchDomains.map((option, index) => {
-                     return (<MenuItem value={index}
-                               selected={index === this.state.selectedIndex}
-                               onClick={(event) => this.handleMenuItemClick(event, index)}
-                             >
-                               { index === this.state.selectedIndex && (
-                                   <ListItemIcon>
-                                    <Check />
-                                   </ListItemIcon>)}
-                               {option.label}
-                             </MenuItem>)
-                         })}
-              </DropdownMenu>
-           </div>
-      )
+    return (
+      <div>
+        <IconButton
+          onClick={(event) => {
+            this.searchRef.current.focus()
+            const anchorEl = event.currentTarget
+            this.setState({ anchorEl: anchorEl, menuOpen: !this.state.menuOpen });
+          }}
+        >
+          <KeyboardArrowDownIcon fontSize='medium' sx={{ color: 'white' }} />
+        </IconButton>
+        <DropdownMenu
+          anchorEl={this.state.anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+          open={this.state.menuOpen}
+          onClose={this.handleClose}
+        >
+          {searchDomains.map((option, index) => {
+            return (<MenuItem value={index}
+              selected={index === this.state.selectedIndex}
+              onClick={(event) => this.handleMenuItemClick(event, index)}
+            >
+              {index === this.state.selectedIndex && (
+                <ListItemIcon>
+                  <Check />
+                </ListItemIcon>)}
+              {option.label}
+            </MenuItem>)
+          })}
+        </DropdownMenu>
+      </div>
+    )
 
   }
 
 
 
   renderSearchIcon() {
-      const { classes } = this.props
-      return (
-        <InputAdornment position='start' >
-          <SearchIcon classes={{ root: classes.searchIcon }} sx={{width: '32px', height: '24px'}} />
-        </InputAdornment>
-      )
-    }
+    const { classes } = this.props
+    return (
+      <InputAdornment position='start' >
+        <SearchIcon classes={{ root: classes.searchIcon }} sx={{ width: '32px', height: '24px' }} />
+      </InputAdornment>
+    )
+  }
 
   renderSearchClearIcon() {
     const { classes, searchText } = this.props
     if (this.state.searchText) {
       return (
-            <InputAdornment position='end'>
-              <CloseIcon
-                classes={{ root: classes.searchClear }}
-                onMouseDown={this.handleSearchClear}
-                sx={{fontSize: '20px'}}
-              />
-            </InputAdornment>
+        <InputAdornment position='end'>
+          <CloseIcon
+            classes={{ root: classes.searchClear }}
+            onMouseDown={this.handleSearchClear}
+            sx={{ fontSize: '20px' }}
+          />
+        </InputAdornment>
       )
     } else {
       return <React.Fragment></React.Fragment>
