@@ -19,8 +19,10 @@ function MainHeaderView(controller) {
         if(profile.mainMenu.showBarcodes) {
             barcodeFunction = () => { BarcodeUtil.readBarcodeFromScannerOrCamera(); }
         }
-        //TODO configure chatbot function here
         var chatbotFunction = null;
+        if(profile.mainMenu.showChatAgent) {
+            chatbotFunction = () => { toggleChatAssistant(); }
+        }
 
         var searchDomains = profile.getSearchDomains();
 
