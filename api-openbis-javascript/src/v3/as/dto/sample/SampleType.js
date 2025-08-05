@@ -41,7 +41,7 @@ define(['stjs', "util/Exceptions"], function (stjs, exceptions) {
             )
           }
       }
-      prototype.setPropertyAssignments = function (typeGroupAssignments) {
+      prototype.setTypeGroupAssignments = function (typeGroupAssignments) {
         this.typeGroupAssignments = typeGroupAssignments
       }
       prototype.getPropertyAssignments = function () {
