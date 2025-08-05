@@ -64,7 +64,7 @@ public class PsiExcel2Json
                 "numberOfFiles",
                 "sizeOfArchive");
 
-        assertEquals(12, openBisModel.getEntities().size());
+        assertEquals(13, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(1, openBisModel.getSpaces().size());
         assertEquals(1, openBisModel.getProjects().size());

@@ -631,7 +631,7 @@ public class SchemaFacade implements ISchemaFacade
         Map<String, String> keyVals = getKeyValPairsFromMetadata(jsonMetaData);
         for (Map.Entry<String, String> entry : keyVals.entrySet())
         {
-            if (entry.getValue().equals("_:"))
+            if (entry.getValue().startsWith("_:"))
             {
                 return entry.getKey() + ":";
             }
