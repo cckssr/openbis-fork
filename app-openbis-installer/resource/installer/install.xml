@@ -231,6 +231,13 @@
             <parsable targetfile="$INSTALL_PATH/servers/afs-server/etc/service.properties"/>
         </pack>
 
+        <pack name="RoCrate Server" required="yes" loose="yes">
+            <description>The Ro-Crate server</description>
+            <file src="@{installer.dist.dir}/server-ro-crate"
+                  targetdir="$INSTALL_PATH/servers"/>
+            <parsable targetfile="$INSTALL_PATH/servers/server-ro-crate/etc/service.properties"/>
+        </pack>
+
         <pack name="Administration Scripts" required="yes" loose="yes">
             <description>Scripts to facilitate openBIS administration</description>
             <file src="@{installer.dist.dir}/bin" targetdir="$INSTALL_PATH"/>

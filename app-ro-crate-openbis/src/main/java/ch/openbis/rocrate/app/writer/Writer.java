@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.contextual.ContextualEntity;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
+import edu.kit.datamanager.ro_crate.writer.ZipWriter;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -50,9 +51,18 @@ public class Writer
         addSchema(schemaFacade, rdfsRepresentation);
         addMetaData(schemaFacade, rdfsRepresentation);
         RoCrate roCrate = schemaFacade.getCrate();
-        FolderWriter folderRoCrateWriter = new FolderWriter();
-        folderRoCrateWriter.save(roCrate, outPath.toString());
 
+        if (outPath.toString().endsWith(".zip"))
+        {
+            ZipWriter zipWriter = new ZipWriter();
+            zipWriter.save(roCrate, outPath.toString());
+
+        } else
+        {
+            FolderWriter folderRoCrateWriter = new FolderWriter();
+
+            folderRoCrateWriter.save(roCrate, outPath.toString());
+        }
     }
 
     private void addContextEntities(OpenBisModel openBisModel)

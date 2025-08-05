@@ -34,6 +34,10 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PropertyTypeSearcher
@@ -48,6 +52,22 @@ public class PropertyTypeSearcher
     public static final String SAMPLE_DATA_TYPE_MANDATORY_TYPE = ":";
 
     public static final String VARIABLE_PREFIX = "$";
+
+    public static final String PROPERTY_VALUE_SEPARATOR = ",";
+
+    public static final String SAMPLE_PROPERTY_VALUE_SEPARATOR = "\n";
+
+    /*
+     * This regex improves over the original "\n" by supporting also "," and mixing both of them
+     */
+    public static final String SAMPLE_PROPERTY_VALUE_SEPARATOR_REGEX = ",\\s*\\n|\\n\\s*,|\\s*\\n\\s*|\\s*,\\s*";
+
+    public static final Pattern SAMPLE_PROPERTY_VALUE_SEPARATOR_PATTERN = Pattern.compile(SAMPLE_PROPERTY_VALUE_SEPARATOR_REGEX, Pattern.MULTILINE);
+
+    public static String[] parseSamplePropertyValues(String values) {
+        final Matcher matcher = SAMPLE_PROPERTY_VALUE_SEPARATOR_PATTERN.matcher(values);
+        return matcher.replaceAll(SAMPLE_PROPERTY_VALUE_SEPARATOR).split(SAMPLE_PROPERTY_VALUE_SEPARATOR);
+    }
 
     private static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
 
@@ -114,7 +134,7 @@ public class PropertyTypeSearcher
     {
         if(propertyType.isMultiValue()) {
             if(value == null || value.trim().isEmpty()){
-                return getPropertyValueInternal(propertyType, value);
+                return parseSinglePropertyValue(propertyType, value);
             }
             if(propertyType.getDataType() == DataType.JSON) {
                 List<Serializable> results = new ArrayList<>();
@@ -129,16 +149,20 @@ public class PropertyTypeSearcher
                 } catch (Exception e) {
                     throw new UserFailureException(String.format("Multi-value json property '%s' could not be imported!", value));
                 }
+            } else if (propertyType.getDataType() == DataType.SAMPLE) {
+                return parseSamplePropertyValues(value);
             }
-            return Stream.of(value.split(","))
+
+            return Stream.of(value.split(PROPERTY_VALUE_SEPARATOR))
                     .map(String::trim)
-                    .map(x -> getPropertyValueInternal(propertyType, x))
+                    .map(x -> parseSinglePropertyValue(propertyType, x))
                     .toArray(Serializable[]::new);
         } else {
-            return getPropertyValueInternal(propertyType, value);
+            return parseSinglePropertyValue(propertyType, value);
         }
     }
-    private static Serializable getPropertyValueInternal(PropertyType propertyType, String value)
+
+    private static Serializable parseSinglePropertyValue(PropertyType propertyType, String value)
     {
         if (propertyType.getDataType() == DataType.CONTROLLEDVOCABULARY)
         {

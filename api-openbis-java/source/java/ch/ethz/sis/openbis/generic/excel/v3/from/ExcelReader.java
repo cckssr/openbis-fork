@@ -407,7 +407,7 @@ public class ExcelReader
         setSemanticAnnotations(schema, semanticAnnotationByKind);
 
         return new OpenBisModel(Map.of(), schema, spaceResult, projectResult, metadata,
-                scriptHelper.getResults(), miscellaneous);
+                scriptHelper.getResults(), miscellaneous, Map.of());
     }
 
     private void setSemanticAnnotations(Map<EntityTypePermId, IEntityType> schema,

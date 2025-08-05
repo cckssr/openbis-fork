@@ -3492,11 +3492,20 @@ var FormUtil = new function() {
             var renderTooltip = null
 
             if(customWidget === 'Word Processor'){
-                var valueLowerCase = value.toLowerCase()
+                // Start of Heuristic: Removes leading titles from DOCUMENT properties rendered in table cells
+                if(
+                (propertyType.code === 'DOCUMENT' || propertyType.code === '$DOCUMENT') &&
+                value.startsWith('<h2>')
+                ) {
+                    var indexOfEndH2 = value.indexOf('</h2>');
+                    value = value.substring(indexOfEndH2 + '</h2>'.length);
+                }
+                // End of Heuristic
+                var valueLowerCase = value.toLowerCase();
                 if(valueLowerCase.includes("<img") || valueLowerCase.includes("<table")){
                     $value = $("<img>", { src : "./img/file-richtext.svg", "width": "24px", "height": "24px"})
                     renderTooltip = function(){
-                        var valueSanitized = FormUtil.sanitizeRichHTMLText(value)
+                        var valueSanitized = FormUtil.sanitizeRichHTMLText(value);
                         $tooltip = FormUtil.getFieldForPropertyType(propertyType, valueSanitized);
                         $tooltip = FormUtil.activateRichTextProperties($tooltip, undefined, propertyType, valueSanitized, true);
                         return $tooltip

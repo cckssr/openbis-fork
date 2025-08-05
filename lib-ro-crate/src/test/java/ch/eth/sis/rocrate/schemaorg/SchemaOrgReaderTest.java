@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Objects;
 
 public class SchemaOrgReaderTest extends TestCase
 {
@@ -33,14 +34,22 @@ public class SchemaOrgReaderTest extends TestCase
         assertTrue(firstNameType.getRange().contains("xsd:string"));
         assertEquals(1, firstNameType.getRange().size());
 
+        {
+            IPropertyType nameType =
+                    information.getIdentifiersToPropertyTypes().get("schema:name");
+            assertTrue(nameType.getRange().contains("xsd:string"));
+            assertTrue(nameType.getDomain().contains(person));
+            assertEquals(1, nameType.getRange().size());
+        }
+
         assertTrue(firstNameType.getDomain().contains(person));
-        assertEquals(1, firstNameType.getDomain().size());
+        assertEquals(2, firstNameType.getDomain().size()); //Person and Patient
 
         {
             IPropertyType propertyType =
                     information.getIdentifiersToPropertyTypes().get("schema:isicV4");
             assertTrue(propertyType.getRange().contains("xsd:string"));
-            assertEquals(3, propertyType.getDomain().size());
+            assertEquals(167, propertyType.getDomain().size());
 
         }
 
@@ -125,6 +134,12 @@ public class SchemaOrgReaderTest extends TestCase
             assertTrue(superTypes.stream().anyMatch(x -> x.getId().equals("schema:Thing")));
             assertTrue(superTypes.stream().anyMatch(x -> x.getId().equals("schema:MedicalEntity")));
             assertEquals(1, type.getSubClassOf().size());
+
+        }
+        {
+            IPropertyType propertyType =
+                    information.getIdentifiersToPropertyTypes().get("schema:vatID");
+            assertTrue(propertyType.getDomain().stream().noneMatch(Objects::isNull));
 
         }
 

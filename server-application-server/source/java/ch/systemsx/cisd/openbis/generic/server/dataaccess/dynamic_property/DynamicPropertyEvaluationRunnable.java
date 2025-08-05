@@ -27,6 +27,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.DynamicPropertyEvaluationOperation;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDynamicPropertyEvaluationSchedulerWithQueue;
@@ -54,14 +56,18 @@ public final class DynamicPropertyEvaluationRunnable implements
 
     private final TransactionTemplate transactionTemplate;
 
+    private final CodePluginsConfiguration codePluginsConfiguration;
+
     public DynamicPropertyEvaluationRunnable(final PlatformTransactionManager transactionManager,
             final IDAOFactory daoFactory,
             final IDynamicPropertyEvaluationSchedulerWithQueue evaluationQueue,
             final IDynamicPropertyCalculatorFactory dynamicPropertyCalculatorFactory,
-            final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            final ExposablePropertyPlaceholderConfigurer propertyConfigurer)
     {
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.evaluationQueue = evaluationQueue;
+        this.codePluginsConfiguration = new CodePluginsConfiguration(propertyConfigurer.getResolvedProps());
         evaluator =
                 new DefaultBatchDynamicPropertyEvaluator(BATCH_SIZE, daoFactory,
                         dynamicPropertyCalculatorFactory, managedPropertyEvaluatorFactory);
@@ -75,6 +81,12 @@ public final class DynamicPropertyEvaluationRunnable implements
     @SuppressWarnings("unchecked")
     public final synchronized void run()
     {
+        if (!codePluginsConfiguration.areEnabled())
+        {
+            operationLog.info("Code plugins are disabled, therefore dynamic properties evaluation is disabled.");
+            return;
+        }
+
         operationLog.info("Start dynamic properties evaluator queue.");
         try
         {
@@ -96,13 +108,13 @@ public final class DynamicPropertyEvaluationRunnable implements
                     if (operation.isDeletion() == false)
                     {
                         modifiedIds = transactionTemplate.execute(new TransactionCallback<List<Long>>()
+                        {
+                            @Override
+                            public List<Long> doInTransaction(TransactionStatus status)
                             {
-                                @Override
-                                public List<Long> doInTransaction(TransactionStatus status)
-                                {
-                                    return evaluate(operation, clazz);
-                                }
-                            });
+                                return evaluate(operation, clazz);
+                            }
+                        });
                     }
                     stopWatch.stop();
                 } catch (RuntimeException e)

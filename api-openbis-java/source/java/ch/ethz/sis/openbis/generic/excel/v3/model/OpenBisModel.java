@@ -38,12 +38,14 @@ public class OpenBisModel
     final Map<String, List<Path>> miscellaneous;
             // e.g. "file-service", Path to file -> "/eln-lims/29/be/e4/29bee495-9ec6-492e-995a-554b84a4f13a/1a975eb7-5c73-4553-a295-4d9ce9b43d23.jpeg"
 
+    final Map<String, String> externalToOpenBisIdentifiers;
+
     public OpenBisModel(Map<VocabularyPermId, Vocabulary> vocabularyTypes,
             Map<EntityTypePermId, IEntityType> entityTypes, Map<SpacePermId, Space> spaces,
             Map<ProjectIdentifier, Project> projects,
             Map<ObjectIdentifier, AbstractEntityPropertyHolder> entities,
             Map<PluginPermId, Plugin> plugins,
-            Map<String, List<Path>> miscellaneous)
+            Map<String, List<Path>> miscellaneous, Map<String, String> externalToOpenBisIdentifiers)
     {
         this.vocabularyTypes = vocabularyTypes;
         this.entityTypes = entityTypes;
@@ -52,6 +54,7 @@ public class OpenBisModel
         this.entities = entities;
         this.plugins = plugins;
         this.miscellaneous = miscellaneous;
+        this.externalToOpenBisIdentifiers = externalToOpenBisIdentifiers;
     }
 
     public Map<VocabularyPermId, Vocabulary> getVocabularyTypes() {
@@ -96,4 +99,8 @@ public class OpenBisModel
                 .collect(Collectors.groupingBy(x -> new EntityTypePermId(x.getType().getCode(),EntityKind.SAMPLE)));
     }
 
+    public Map<String, String> getExternalToOpenBisIdentifiers()
+    {
+        return externalToOpenBisIdentifiers;
+    }
 }

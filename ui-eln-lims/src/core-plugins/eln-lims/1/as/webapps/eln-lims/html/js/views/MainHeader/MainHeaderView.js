@@ -19,6 +19,10 @@ function MainHeaderView(controller) {
         if(profile.mainMenu.showBarcodes) {
             barcodeFunction = () => { BarcodeUtil.readBarcodeFromScannerOrCamera(); }
         }
+        var chatbotFunction = null;
+        if(profile.mainMenu.showChatAgent) {
+            chatbotFunction = () => { toggleChatAssistant(); }
+        }
 
         var searchDomains = profile.getSearchDomains();
 
@@ -42,6 +46,7 @@ function MainHeaderView(controller) {
                 {page: "tools", label: "Tools"},
             ],
             barcodeFunction: barcodeFunction,
+            chatbotFunction: chatbotFunction,
             searchDomains: searchDomains,
             searchDomainChangeFunction: this._controller.handleSearchDomainChange,
             menuStyles: {

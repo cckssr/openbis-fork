@@ -18,6 +18,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationResult;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -35,8 +37,8 @@ public class RoCrateSchemaValidationTest
     {
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of(),
-                        Map.of());
-        RoCrateSchemaValidation.ValidationResult result =
+                        Map.of(), Map.of());
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
@@ -108,9 +110,9 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
-        RoCrateSchemaValidation.ValidationResult result =
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
@@ -180,9 +182,9 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
-        RoCrateSchemaValidation.ValidationResult result =
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
@@ -252,9 +254,9 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
-        RoCrateSchemaValidation.ValidationResult result =
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertFalse(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());
@@ -321,9 +323,9 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
-        RoCrateSchemaValidation.ValidationResult result =
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertFalse(result.getEntititesToUndefinedProperties().isEmpty());
@@ -425,9 +427,9 @@ public class RoCrateSchemaValidationTest
 
         OpenBisModel openBisModel =
                 new OpenBisModel(Map.of(), entityTypes, Map.of(), Map.of(), entities, Map.of(),
-                        Map.of());
+                        Map.of(), Map.of());
 
-        RoCrateSchemaValidation.ValidationResult result =
+        ValidationResult result =
                 RoCrateSchemaValidation.validate(openBisModel);
         Assert.assertTrue(result.getEntitiesToMissingProperties().isEmpty());
         Assert.assertTrue(result.getEntititesToUndefinedProperties().isEmpty());

@@ -131,3 +131,7 @@ def checkResponseStatus(response):
     if status >= 300:
         reason = response.getReason()
         raise ValueError('Unsuccessful response from the server: %s %s' % (status, reason))
+
+
+def isNonEmptyString(s):
+    return isinstance(s, str) and bool(s.strip())

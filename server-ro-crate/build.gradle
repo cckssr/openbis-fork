@@ -28,24 +28,32 @@ dependencies {
             'lombok:lombok:1.18.22',
             project(':lib-logging'),
             project(':lib-ro-crate'),
-            project(':app-ro-crate-openbis'),
             project(':api-openbis-java'),
-            enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"), // Any dependencies coming from quarkus take precedence
-            'io.quarkus:quarkus-resteasy:3.23.0',
-            'edu.kit.datamanager:ro-crate-java:2.0.1',
-            'com.networknt:json-schema-validator:1.5.7',
-            'net.lingala.zip4j:zip4j:2.11.5',
-            'com.fasterxml.jackson.core:jackson-core:2.18.0',
-            'com.fasterxml.jackson.core:jackson-databind:2.18.0';
+            project(':app-ro-crate-openbis')
 
-    testImplementation 'testng:testng:6.8-CISD'
+
+    // Quarkus
+    implementation enforcedPlatform("io.quarkus:quarkus-bom:3.23.0"), // Any dependencies coming from quarkus take precedence
+            'io.quarkus:quarkus-resteasy:3.23.0'
+
+    // Ro-crate library
+    implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
+            'com.fasterxml.jackson.core:jackson-core:2.18.1',
+            'com.fasterxml.jackson.core:jackson-databind:2.18.1',
+            'com.fasterxml.jackson.core:jackson-annotations:2.18.1',
+            'com.networknt:json-schema-validator:1.5.7',
+            'net.lingala.zip4j:zip4j:2.11.5'
+
+    testImplementation 'testng:testng:6.8-CISD',
+                        'io.rest-assured:rest-assured:5.5.5'
 }
 
 test {
     useTestNG()
 }
 
-mainClassName = "ch.ethz.sis.openbis.ros.startup.StartupMain"
+mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
+
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
     mainClass = mainClassName
@@ -55,4 +63,22 @@ task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
              '--add-opens=java.base/java.nio=ALL-UNNAMED',
              '-Dio.netty.tryReflectionSetAccessible=true',
              '-Xmx512M', '-ea'])
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': mainClassName
+        )
+    }
+}
+
+task RoCrateServerZip(type: Zip, dependsOn: quarkusBuild) {
+    archiveBaseName = 'server-ro-crate'
+    from('build/quarkus-app') {
+        into 'server-ro-crate/quarkus-app'
+    }
+    from('dist') {
+        into 'server-ro-crate/'
+    }
 }

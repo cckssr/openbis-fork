@@ -7,14 +7,22 @@ public class Config
 
     private final boolean removeDanglingReferences;
 
-    public Config(boolean removeDanglingReferences)
+    private final boolean writeSchema;
+
+    public Config(boolean removeDanglingReferences, boolean writeSchema)
     {
         this.removeDanglingReferences = removeDanglingReferences;
+        this.writeSchema = writeSchema;
     }
 
-    public static void setConfig(boolean removeDanglingReferences)
+    public boolean isWriteSchema()
     {
-        INSTANCE = new Config(removeDanglingReferences);
+        return writeSchema;
+    }
+
+    public static void setConfig(boolean removeDanglingReferences, boolean writeSchema)
+    {
+        INSTANCE = new Config(removeDanglingReferences, writeSchema);
 
     }
 

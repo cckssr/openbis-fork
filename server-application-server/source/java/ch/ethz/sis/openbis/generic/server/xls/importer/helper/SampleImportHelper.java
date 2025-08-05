@@ -15,9 +15,6 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.VARIABLE_PREFIX;
-import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.getPropertyValue;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,6 +48,10 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.utils.IAttribute;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.ImportUtils;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+
+import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.VARIABLE_PREFIX;
+import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.getPropertyValue;
+import static ch.ethz.sis.openbis.generic.server.xls.importer.utils.PropertyTypeSearcher.parseSamplePropertyValues;
 
 public class SampleImportHelper extends BasicImportHelper
 {
@@ -238,7 +239,7 @@ public class SampleImportHelper extends BasicImportHelper
         if (parents != null && !parents.isEmpty())
         {
             List<ISampleId> parentIds = new ArrayList<>();
-            for (String parent : parents.split("\n"))
+            for (String parent : parseSamplePropertyValues(parents))
             {
                 if (parent.startsWith(VARIABLE_PREFIX))
                 {
@@ -253,7 +254,7 @@ public class SampleImportHelper extends BasicImportHelper
         if (children != null && !children.isEmpty())
         {
             List<ISampleId> childrenIds = new ArrayList<>();
-            for (String child : children.split("\n"))
+            for (String child : parseSamplePropertyValues(children))
             {
                 if (child.startsWith(VARIABLE_PREFIX))
                 {
@@ -336,7 +337,7 @@ public class SampleImportHelper extends BasicImportHelper
                 // Delete missing = all
             } else // Delete missing
             {
-                for (String parent : parents.split("\n"))
+                for (String parent : parseSamplePropertyValues(parents))
                 {
                     if (parent.startsWith(VARIABLE_PREFIX))
                     {
@@ -370,7 +371,7 @@ public class SampleImportHelper extends BasicImportHelper
                 // Delete missing = all
             } else // Delete missing
             {
-                for (String child : children.split("\n"))
+                for (String child : parseSamplePropertyValues(children))
                 {
                     if (child.startsWith(VARIABLE_PREFIX))
                     {

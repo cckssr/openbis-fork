@@ -480,6 +480,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis_harvester.setDummyAuthentication()
         openbis_harvester.setDataStoreServerProperty("host-address", "https://localhost")
         openbis_harvester.asProperties['max-number-of-sessions-per-user'] = '0'
+        openbis_harvester.asProperties['code-plugins.allowed-users'] = '.*'
         openbis_harvester.dssProperties['database.kind'] = openbis_harvester.databaseKind
         openbis_harvester.createTestDatabase('openbis')
         openbis_harvester.enableCorePlugin("openbis-sync")
@@ -505,7 +506,7 @@ class TestCase(systemtest.testcase.TestCase):
             monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfiles[-1], timeOutInMinutes=30)
             monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
             monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
-            time.sleep(60)
+            time.sleep(120)
         else:
             raise Exception('Synchronization log file not found in %s. Waited for %s seconds.' % (openbis_harvester.installPath, str(timeoutPeriod)))
 

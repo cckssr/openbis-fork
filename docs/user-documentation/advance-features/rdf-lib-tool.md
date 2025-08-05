@@ -56,6 +56,7 @@ java -jar rdf-lib-tool.jar [options]
 -h, --help: displays the help message.
 -a, --additionalfiles: specifies additional file paths for resolving ontologies and terminology.  
 -dangling, --remove-dangling-references: removes references that can't be resolved. Use with caution. 
+-noschema, --omit-schema: does not write the schema to the excel file. Use this if the schema is already registered.
 ```
 
 Other mandatory parameters must be provided based on what output format has been chosen:

@@ -84,6 +84,7 @@ import java.util.zip.ZipEntry;
 import javax.annotation.Resource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
+import ch.ethz.sis.openbis.generic.server.xls.export.*;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.log4j.Logger;
@@ -160,10 +161,6 @@ import ch.ethz.sis.openbis.generic.server.FileServiceServlet;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
-import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
-import ch.ethz.sis.openbis.generic.server.xls.export.ExportablePermId;
-import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
-import ch.ethz.sis.openbis.generic.server.xls.export.XLSExport;
 import ch.ethz.sis.openbis.generic.server.xls.export.helper.AbstractXLSExportHelper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.logging.LogCategory;
@@ -227,6 +224,19 @@ public class ExportExecutor implements IExportExecutor
 
     private long dataLimit = -1;
 
+    private boolean doExportDataRequiresExpansion(ExportOptions exportOptions) {
+        boolean withLevelsAbove = Boolean.TRUE.equals(exportOptions.isWithLevelsAbove());
+        boolean withLevelsBelow = Boolean.TRUE.equals(exportOptions.isWithLevelsBelow());
+        boolean withObjectsAndDataSetsParents =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsParents());
+        boolean withObjectsAndDataSetsOtherSpaces =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsOtherSpaces());
+        return withLevelsAbove ||
+                withLevelsBelow ||
+                withObjectsAndDataSetsParents ||
+                withObjectsAndDataSetsOtherSpaces;
+    }
+
     @Override
     public ExportResult doExport(final IOperationContext context, final ExportOperation operation)
     {
@@ -236,7 +246,18 @@ public class ExportExecutor implements IExportExecutor
             final ExportOptions exportOptions = operation.getExportOptions();
             final String sessionToken = context.getSession().getSessionToken();
 
-            return doExport(sessionToken, exportData, exportOptions);
+            /*
+             * Collect additional permIds in base to options and execute the export without them after
+             */
+            final ExportData expandedExportData;
+            if (doExportDataRequiresExpansion(exportOptions)) {
+                expandedExportData = XLSExportEntityCollector.collectEntities(
+                        CommonServiceProvider.getApplicationServerApi(), sessionToken, exportData, exportOptions);
+            } else {
+                expandedExportData = exportData;
+            }
+
+            return doExport(sessionToken, expandedExportData, exportOptions);
         } catch (final IOException e)
         {
             throw UserFailureException.fromTemplate(e, "IO exception exporting.");
@@ -289,7 +310,7 @@ public class ExportExecutor implements IExportExecutor
                 exportablePermIds, exportFields, TextFormatting.valueOf(exportOptions.getXlsTextFormat().name()), exportOptions.getFormats(),
                 exportOptions.isWithReferredTypes(),
                 exportOptions.isWithImportCompatibility(),
-                exportOptions.isZipForSingleFiles()
+                exportOptions.isZipSingleFiles()
         );
     }
 

@@ -115,4 +115,17 @@ public class MetadataEntry implements IMetadataEntry
     {
         return Objects.hash(id, types);
     }
+
+    @Override
+    public String toString()
+    {
+        return "MetadataEntry{" +
+                "id='" + id + '\'' +
+                ", types=" + types +
+                ", props=" + props +
+                ", references=" + references +
+                ", childrenIdentifiers=" + childrenIdentifiers +
+                ", parentIdentifiers=" + parentIdentifiers +
+                '}';
+    }
 }

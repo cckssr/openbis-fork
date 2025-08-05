@@ -235,6 +235,7 @@ public class RdfToOpenBisMapper
                                         labelToProperty.get(x.label).getPropertyType(),
                                         sample.getSpace().getCode(), sample.getProject().getCode()),
                                 (existing, replacement) -> existing + "," + replacement));
+
                 if (!proppies.containsKey("Name"))
                 {
                     proppies.put("Name", sampleObject.name);
@@ -249,8 +250,9 @@ public class RdfToOpenBisMapper
 
         }
 
+        Map<String, String> externalToOpenBisIdentifiers = new LinkedHashMap<>();
         return new OpenBisModel(vocabularyMap, schema, spaces, projects, metadata, Map.of(),
-                Map.of());
+                Map.of(), externalToOpenBisIdentifiers);
 
     }
 

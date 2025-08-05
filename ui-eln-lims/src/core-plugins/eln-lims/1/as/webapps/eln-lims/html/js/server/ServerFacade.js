@@ -1259,6 +1259,14 @@ function ServerFacade(openbisServer) {
 		this.customASService(parameters, callbackFunction, "as-eln-lims-api", null, async);
 	}
 
+	this.sendChatBotMessage = function(message, sessionId, callbackFunction) {
+		this.customASService({
+		"method" : "ask" ,
+		"query" : message,
+		"session_id" : sessionId
+		}, callbackFunction, "chat-bot-api", null, true);
+	}
+
 	this.createReportFromAggregationService = function(dataStoreCode, parameters, callbackFunction, service) {
  		if(!service) {
  			service = "eln-lims-api";

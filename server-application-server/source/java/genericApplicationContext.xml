@@ -67,6 +67,7 @@
 		<constructor-arg ref="dynamic-property-calculator-factory" />
 		<constructor-arg ref="managed-property-evaluator-factory" />
 		<constructor-arg ref="session-manager" />
+		<constructor-arg ref="propertyConfigurer" />
 		<property name="sessionFactory" ref="hibernate-session-factory" />
 		<property name="dynamicPropertiesInterceptor">
 			<ref bean="dynamic-properties-interceptor" />
@@ -85,6 +86,7 @@
 		<constructor-arg ref="dynamic-property-scheduler" />
 		<constructor-arg ref="dynamic-property-calculator-factory" />
 		<constructor-arg ref="managed-property-evaluator-factory" />
+		<constructor-arg ref="propertyConfigurer" />
 	</bean>
 
 	<bean id="relationship-service"

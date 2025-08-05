@@ -257,10 +257,13 @@
 						dropdownOptionsModel.push({
 							label : "Dataset upload helper tool for eln-lims dropbox",
 							action : function() {
+								var space = _this._sampleFormModel.sample.spaceCode;
+								var project = IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier);
+								var prefix = (project)?"O":"S";
 								var nameElements = [
-									"O",
-									_this._sampleFormModel.sample.spaceCode,
-									IdentifierUtil.getProjectCodeFromSampleIdentifier(_this._sampleFormModel.sample.identifier),
+									prefix,
+									space,
+									project,
 									_this._sampleFormModel.sample.code,
 								];
 								FormUtil.showDropboxFolderNameDialog(nameElements);

@@ -16,12 +16,17 @@
  */
 
 define(["stjs"], function (stjs) {
-  var ExportOptions = function(formats, xlsTextFormat, withReferredTypes, withImportCompatibility, zipSingleFiles) {
+  var ExportOptions = function(formats, xlsTextFormat, withReferredTypes, withImportCompatibility, zipSingleFiles,
+                                withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces) {
     this.formats = formats;
     this.xlsTextFormat = xlsTextFormat;
     this.withReferredTypes = withReferredTypes;
     this.withImportCompatibility = withImportCompatibility;
     this.zipSingleFiles = zipSingleFiles;
+    this.withLevelsAbove = withLevelsAbove;
+    this.withLevelsBelow = withLevelsBelow;
+    this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+    this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
   }
 
   stjs.extend(
@@ -37,6 +42,10 @@ define(["stjs"], function (stjs) {
       prototype.withReferredTypes = null;
       prototype.withImportCompatibility = null;
       prototype.zipSingleFiles = null;
+      prototype.withLevelsAbove = null;
+      prototype.withLevelsBelow = null;
+      prototype.withObjectsAndDataSetsParents = null;
+      prototype.withObjectsAndDataSetsOtherSpaces = null;
 
       prototype.getFormats = function() {
         return this.formats;
@@ -77,6 +86,39 @@ define(["stjs"], function (stjs) {
       prototype.setZipSingleFiles = function(zipSingleFiles) {
         this.zipSingleFiles = zipSingleFiles;
       };
+
+      prototype.isWithLevelsAbove = function() {
+        return withLevelsAbove;
+      };
+
+      prototype.setWithLevelsAbove = function(withLevelsAbove) {
+        this.withLevelsAbove = withLevelsAbove;
+      };
+
+      prototype.isWithLevelsBelow = function() {
+        return withLevelsBelow;
+      };
+
+      prototype.setWithLevelsBelow = function(withLevelsBelow) {
+        this.withLevelsBelow = withLevelsBelow;
+      };
+
+      prototype.isWithObjectsAndDataSetsParents = function() {
+        return withObjectsAndDataSetsParents;
+      };
+
+      prototype.setWithObjectsAndDataSetsParents = function(withObjectsAndDataSetsParents) {
+        this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+      };
+
+      prototype.isWithObjectsAndDataSetsOtherSpaces = function() {
+        return withObjectsAndDataSetsOtherSpaces;
+      };
+
+      prototype.setWithObjectsAndDataSetsOtherSpaces = function(withObjectsAndDataSetsOtherSpaces) {
+        this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
+      };
+
     },
     {
       formats: {

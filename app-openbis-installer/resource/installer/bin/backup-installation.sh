@@ -98,6 +98,11 @@ if [ -d $ROOT_DIR/afs-server ]; then
   mv $ROOT_DIR/afs-server $BACKUP_DIR/afs-server
 fi
 
+if [ -d $ROOT_DIR/server-ro-crate ]; then
+  echo "mv $ROOT_DIR/server-ro-crate $BACKUP_DIR/server-ro-crate"
+  mv $ROOT_DIR/server-ro-crate $BACKUP_DIR/server-ro-crate
+fi
+
 echo "cp -R $ROOT_DIR/core-plugins $BACKUP_DIR/core-plugins"
 cp -R $ROOT_DIR/core-plugins $BACKUP_DIR/core-plugins
 rm -rf $BACKUP_DIR/core-plugins/eln-lims/bin

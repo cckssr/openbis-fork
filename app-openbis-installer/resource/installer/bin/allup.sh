@@ -1,5 +1,5 @@
 #!/bin/bash
-# Starts up openBIS, DSS and AFS
+# Starts up openBIS, DSS, AFS and RoCS
 
 if [ -n "$(readlink $0)" ]; then
    # handle symbolic links
@@ -19,3 +19,5 @@ fi
 $BASE/bisup.sh || exit 1;
 $BASE/dssup.sh || exit 2;
 $BASE/afsup.sh || exit 3;
+$BASE/rocsup.sh || exit 4;
+

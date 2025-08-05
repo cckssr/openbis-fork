@@ -33,6 +33,7 @@ import org.eclipse.jetty.client.util.BytesContentProvider;
 import org.eclipse.jetty.client.util.FutureResponseListener;
 import org.eclipse.jetty.client.util.InputStreamContentProvider;
 import org.eclipse.jetty.client.util.InputStreamResponseListener;
+import org.springframework.lang.Nullable;
 import org.springframework.remoting.httpinvoker.AbstractHttpInvokerRequestExecutor;
 import org.springframework.remoting.httpinvoker.HttpInvokerClientConfiguration;
 import org.springframework.remoting.rmi.CodebaseAwareObjectInputStream;
@@ -115,7 +116,7 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
     protected ObjectInputStream createObjectInputStream(final InputStream is,
             final String codebaseUrl) throws IOException
     {
-        return new SourceStreamPreservingObjectInputStream(is, codebaseUrl);
+        return new SourceStreamPreservingObjectInputStream(is, getBeanClassLoader(), codebaseUrl);
     }
 
     @Override
@@ -279,6 +280,17 @@ public class JettyHttpInvokerRequestExecutor extends AbstractHttpInvokerRequestE
             // overriding close() to ensure that ObjectInputStream has a chance to
             // clear out itself when close() is called.
             super(new CloseShieldedInputStream(in), codebaseUrl);
+            this.sourceInputStream = in;
+        }
+
+        public SourceStreamPreservingObjectInputStream(final InputStream in, ClassLoader classLoader,
+                final String codebaseUrl) throws IOException
+        {
+            // Prevent the source InputStream from being closed when the
+            // ObjectInputStream is closed. We do it this way rather than
+            // overriding close() to ensure that ObjectInputStream has a chance to
+            // clear out itself when close() is called.
+            super(new CloseShieldedInputStream(in), classLoader, codebaseUrl);
             this.sourceInputStream = in;
         }
 

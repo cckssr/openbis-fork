@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ import org.hibernate.type.Type;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.common.conversation.context.ServiceConversationsThreadContext;
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.DynamicPropertyEvaluator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyCalculatorFactory;
@@ -79,16 +81,20 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
 
     private final IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory;
 
+    private final CodePluginsConfiguration codePluginsConfiguration;
+
     public EntityValidationInterceptor(IHibernateTransactionManagerCallback callback,
             IDAOFactory daoFactory, IEntityValidatorFactory entityValidationFactory,
             IDynamicPropertyCalculatorFactory dynamicPropertyCalculatorFactory,
-            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory)
+            IManagedPropertyEvaluatorFactory managedPropertyEvaluatorFactory,
+            Properties properties)
     {
         this.callback = callback;
         this.daoFactory = daoFactory;
         this.entityValidationFactory = entityValidationFactory;
         this.dynamicPropertyCalculatorFactory = dynamicPropertyCalculatorFactory;
         this.managedPropertyEvaluatorFactory = managedPropertyEvaluatorFactory;
+        this.codePluginsConfiguration = new CodePluginsConfiguration(properties);
         initializeLists();
 
         totalEntitiesToValidateCount = 0;
@@ -335,7 +341,8 @@ public class EntityValidationInterceptor extends EmptyInterceptor implements
 
         IEntityValidator entityValidator =
                 entityValidationFactory.createEntityValidator(entity.getEntityType(), this);
-        if (entityValidator != null)
+
+        if (entityValidator != null && codePluginsConfiguration.areEnabled())
         {
             try
             {

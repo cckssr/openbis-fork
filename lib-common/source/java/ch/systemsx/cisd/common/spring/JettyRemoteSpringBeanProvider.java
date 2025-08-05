@@ -39,6 +39,7 @@ public class JettyRemoteSpringBeanProvider implements IRemoteSpringBeanProvider
     public <T> T create(Class<T> serviceInterface, String serviceURL, long serverTimeoutInMillis)
     {
         JettyHttpInvokerRequestExecutor jettyExecutor = new JettyHttpInvokerRequestExecutor(client, serverTimeoutInMillis);
+        jettyExecutor.setBeanClassLoader(serviceInterface.getClassLoader());
         HttpInvokerProxyFactoryBean httpInvokerProxy = new StreamSupportingHttpInvokerProxyFactoryBean(jettyExecutor);
         httpInvokerProxy.setBeanClassLoader(serviceInterface.getClassLoader());
         httpInvokerProxy.setServiceUrl(serviceURL);

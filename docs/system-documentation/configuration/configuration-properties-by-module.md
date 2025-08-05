@@ -504,6 +504,8 @@ e.g
 | rc-exports-api-service-document-url                                                  |               |                   |
 | rc-exports-api-user                                                                  |               |                   |
 | rc-exports-api-password                                                              |               |                   |
+| rc-exports-api-http-proxy-url                                                        |               |                   |
+| rc-exports-api-http-proxy-port                                                       |               |                   |
 | dataset-uploader.h5-folders                                                          |               |                   |
 | dataset-uploader.h5ar-folders                                                        |               |                   |
 | default-incoming-share-id                                                            | 1             |                   |
@@ -511,6 +513,8 @@ e.g
 | download-url                                                                         |               |                   |
 | zenodo-exports-api-limit-data-size-megabytes                                         | 4000          |                   |
 | zenodo-exports-api-zenodoUrl                                                         |               |                   |
+| zenodo-exports-api-http-proxy-url                                                    |               |                   |
+| zenodo-exports-api-http-proxy-port                                                   |               |                   |
 | zenodo-exports-api-accessToken                                                       |               |                   |
 
 ### ADMIN
