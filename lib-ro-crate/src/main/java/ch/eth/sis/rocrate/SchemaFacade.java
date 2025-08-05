@@ -310,17 +310,6 @@ public class SchemaFacade implements ISchemaFacade
                 .collect(Collectors.toMap(x -> "schema:" + x.getKey(), x -> x.getKey()));
 
 
-        for (var keyValPair : keyValuePairs.entrySet())
-        {
-            if (keyValPair.getValue().equals("http://schema.org/rangeIncludes"))
-            {
-                rangeIdentifier = keyValPair.getKey();
-            }
-            if (keyValPair.getValue().equals("http://schema.org/domainIncludes"))
-            {
-                domainIdentifier = keyValPair.getKey();
-            }
-        }
 
 
 
