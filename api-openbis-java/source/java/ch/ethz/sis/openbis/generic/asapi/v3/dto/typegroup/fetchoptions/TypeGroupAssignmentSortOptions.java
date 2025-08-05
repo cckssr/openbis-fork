@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.SortOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.typegroup.fetchoptions.TypeGroupSortOptions")
+@JsonObject("as.dto.typegroup.fetchoptions.TypeGroupAssignmentSortOptions")
 public class TypeGroupAssignmentSortOptions extends SortOptions<TypeGroupAssignment>
 {
     private static final long serialVersionUID = 1L;
