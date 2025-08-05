@@ -760,9 +760,10 @@ public class RdfToModel
         if (isUrl)
         {
             String[] parts = identifier.split("/");
-            return sampleType.getCode() + "_" + parts[parts.length - 1];
+            return OpenBisModel.makeOpenBisCodeCompliant(
+                    sampleType.getCode() + "_" + parts[parts.length - 1]);
         }
-        return identifier;
+        return OpenBisModel.makeOpenBisCodeCompliant(identifier);
 
     }
 

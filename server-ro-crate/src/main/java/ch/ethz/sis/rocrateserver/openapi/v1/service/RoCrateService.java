@@ -6,7 +6,6 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationErrorMapping;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
@@ -72,7 +71,7 @@ public class RoCrateService {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
 
@@ -101,7 +100,7 @@ public class RoCrateService {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
 
@@ -132,7 +131,7 @@ public class RoCrateService {
 
             throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
 
 
