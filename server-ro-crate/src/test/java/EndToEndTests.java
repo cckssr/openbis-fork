@@ -129,6 +129,31 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(200);
     }
 
+    @Test
+    public void testValidateWrong()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/WrongDataType.json";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        String expected = "{\"isValid\":true}";
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/ld+json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
+                .then()
+                .body(allOf(containsString("\"validationErrors\":[{"),
+                        containsString("\"isValid\":false"), containsString("NUMBEROFFILES")))
+                .statusCode(200);
+    }
+
 
     @Test
     public void testExportDOI()
