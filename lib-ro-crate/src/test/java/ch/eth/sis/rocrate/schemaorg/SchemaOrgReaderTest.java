@@ -150,6 +150,13 @@ public class SchemaOrgReaderTest extends TestCase
                     .anyMatch(x -> x.getId().contains("CreativeWork")));
         }
 
+        {
+            IPropertyType propertyType =
+                    information.getIdentifiersToPropertyTypes().get("schema:name");
+            assertTrue(propertyType.getDomain().stream()
+                    .anyMatch(x -> x.getId().contains("CreativeWork")));
+        }
+
 
 
     }

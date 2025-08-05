@@ -19,7 +19,6 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 
 @Path("/openbis/open-api/ro-crate")
@@ -100,7 +99,7 @@ public class RoCrateService {
             return ValidationReport.serialize(new ValidationReport(true,
                     ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
         } catch (Exception ex) {
-            return ValidationReport.serialize(new ValidationReport(false, List.of()));
+            throw new RuntimeException(ex);
         } finally {
             SessionWorkSpaceManager.clear(headers.getApiKey());
         }

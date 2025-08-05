@@ -54,7 +54,7 @@ public class RoCrateSchemaValidation
                     PropertyAssignment propertyAssignment =
                             codeToPropertyAssignment.get(property.getKey());
 
-                    if (propertyAssignment == null)
+                    if (propertyAssignment == null && !property.getKey().equalsIgnoreCase("name"))
                     {
                         unknownProperties.add(
                                 new PropertyProblem(sample.getCode(), property.getKey(),
