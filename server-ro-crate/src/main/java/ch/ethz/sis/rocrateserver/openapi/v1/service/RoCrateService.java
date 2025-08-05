@@ -95,7 +95,8 @@ public class RoCrateService {
         try {
             ImportDelegate.OpenBisImportResult openBisImportResult =
                     importDelegate.import_(openBIS, headers, body, true);
-            return ValidationReport.serialize(new ValidationReport(true,
+            return ValidationReport.serialize(
+                    new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
                     ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
