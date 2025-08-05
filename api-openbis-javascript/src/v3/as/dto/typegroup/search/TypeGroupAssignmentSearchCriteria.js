@@ -7,13 +7,13 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 	stjs.extend(TypeGroupAssignmentSearchCriteria, AbstractObjectSearchCriteria, [ AbstractObjectSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.typegroup.search.TypeGroupAssignmentSearchCriteria';
 		constructor.serialVersionUID = 1;
-		prototype.withTypeGroupName = function() {
+		prototype.withTypeGroup = function() {
 			var TypeGroupSearchCriteria = require("as/dto/typegroup/search/TypeGroupSearchCriteria");
 			return this.addCriteria(new TypeGroupSearchCriteria());
 		};
-		prototype.withSampleTypeCode = function() {
-            var CodeSearchCriteria = require("as/dto/common/search/CodeSearchCriteria");
-            return this.addCriteria(new CodeSearchCriteria());
+		prototype.withSampleType = function() {
+            var SampleTypeSearchCriteria = require("as/dto/sample/search/SampleTypeSearchCriteria");
+            return this.addCriteria(new SampleTypeSearchCriteria());
         };
 	}, {
 		criteria : {

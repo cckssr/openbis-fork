@@ -39,6 +39,7 @@ public class TypeGroupAssignmentId implements ITypeGroupAssignmentId
         setTypeGroupId(typeGroupId);
     }
 
+    @JsonIgnore
     @Override
     public int hashCode()
     {
@@ -46,6 +47,7 @@ public class TypeGroupAssignmentId implements ITypeGroupAssignmentId
                 + ((getTypeGroupId() == null) ? 0 : getTypeGroupId().hashCode());
     }
 
+    @JsonIgnore
     @Override
     public boolean equals(Object obj)
     {

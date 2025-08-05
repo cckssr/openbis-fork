@@ -93,12 +93,15 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
         }
 	}, {
 		fetchOptions : "TypeGroupFetchOptions",
-		id : "TypeGroupTechId",
+		id : "TypeGroupId",
 		registrationDate : "Date",
 		modificationDate : "Date",
 		registrator : "Person",
 		modifier : "Person",
-		typeGroupAssignments : "TypeGroupAssignment",
+		typeGroupAssignments: {
+          name: 'List',
+          arguments: ['TypeGroupAssignment']
+        },
 		metaData: {
             name: "Map",
             arguments: ["String", "String"]
