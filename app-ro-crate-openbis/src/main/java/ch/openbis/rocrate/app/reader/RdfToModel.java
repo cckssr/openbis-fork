@@ -401,7 +401,7 @@ public class RdfToModel
                 sample.getProperties().put(deRdfIdentifier(reference.getKey()),
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
-                                        .map(x -> fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
+                                        .map(x -> "/" + fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
                                         .collect(
                                                 Collectors.toList())));
             }

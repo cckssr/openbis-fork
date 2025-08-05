@@ -159,13 +159,13 @@ public class RoCrateSchemaValidation
                 {
 
                     String[] parts = identifier.toString().split("/");
-                    if (parts.length != 3)
+                    if (parts.length != 4)
                     {
                         return false;
                     }
-                    String space = parts[0];
-                    String project = parts[1];
-                    String code = parts[2];
+                    String space = parts[1];
+                    String project = parts[2];
+                    String code = parts[3];
                 }
                 return true;
             case BOOLEAN:
