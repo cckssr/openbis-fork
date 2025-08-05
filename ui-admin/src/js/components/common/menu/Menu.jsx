@@ -9,6 +9,7 @@ import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 
 import IconButton from '@mui/material/IconButton'
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 
 import SvgIcon from '@mui/material/SvgIcon';
 import Logo from '@src/resources/img/openbis-logo-alt-transparent.png'
@@ -171,6 +172,7 @@ class Menu extends React.PureComponent {
                 return this.renderTab(tab)
               })}
           </Tabs>
+          {this.renderChatbot()}
           {this.renderBarcode()}
           {this.renderSearchField()}
           <Typography variant="body1" classes={{ root: classes.userInfo }}>
@@ -231,6 +233,18 @@ class Menu extends React.PureComponent {
               )
   }
 
+  renderChatbot() {
+      if(!this.props.chatbotFunction) {
+          return null;
+      }
+      const { classes } = this.props
+      return (<IconButton
+            onClick={this.props.chatbotFunction}
+            classes={{ root: classes.button }}
+          >
+          <QuestionAnswerIcon fontSize='medium' sx={{ color: 'white' }} />
+          </IconButton>)
+  }
   renderBarcode() {
     if(!this.props.barcodeFunction) {
         return null;
