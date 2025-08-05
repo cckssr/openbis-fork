@@ -506,7 +506,7 @@ class TestCase(systemtest.testcase.TestCase):
             monitor = util.LogMonitor("%s synchronization" % openbis_harvester.instanceName, synclogfiles[-1], timeOutInMinutes=30)
             monitor.addNotificationCondition(util.RegexCondition('OPERATION.EntitySynchronizer'))
             monitor.waitUntilEvent(util.RegexCondition('Saving the timestamp of sync start to file'), delay = 60)
-            time.sleep(60)
+            time.sleep(120)
         else:
             raise Exception('Synchronization log file not found in %s. Waited for %s seconds.' % (openbis_harvester.installPath, str(timeoutPeriod)))
 
