@@ -193,7 +193,7 @@ public class RdfToModel
                             getPropertyAssignment(propertyType, sampleType,
                                     maybeRestriction.filter(x -> x.getMinCardinality() == 1)
                                             .isPresent(),
-                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 1)
+                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 0)
                                             .isPresent());
 
                     newAssignments.add(curProperty);
