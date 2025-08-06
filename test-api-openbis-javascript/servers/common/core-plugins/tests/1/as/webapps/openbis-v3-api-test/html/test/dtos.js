@@ -1002,7 +1002,7 @@ var fullTypes = [
 "as/dto/typegroup/search/SearchTypeGroupsOperation",
 "as/dto/typegroup/search/SearchTypeGroupsOperationResult",
 "as/dto/typegroup/search/TypeGroupAssignmentSearchCriteria",
-"as/dto/typegroup/search/TypeGroupNameSearchCriteria",
+"as/dto/typegroup/search/TypeGroupCodeSearchCriteria",
 "as/dto/typegroup/search/TypeGroupSearchCriteria",
 "as/dto/typegroup/update/TypeGroupUpdate",
 "as/dto/typegroup/update/UpdateTypeGroupsOperation",
