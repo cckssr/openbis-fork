@@ -1,4 +1,4 @@
-define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/typegroup/search/TypeGroupNameSearchCriteria",
+define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria", "as/dto/typegroup/search/TypeGroupCodeSearchCriteria",
 		"as/dto/common/search/AbstractCompositeSearchCriteria" ], function(require, stjs, AbstractObjectSearchCriteria) {
 	var TypeGroupSearchCriteria = function() {
 		AbstractObjectSearchCriteria.call(this);
@@ -6,9 +6,9 @@ define([ "require", "stjs", "as/dto/common/search/AbstractObjectSearchCriteria",
 	stjs.extend(TypeGroupSearchCriteria, AbstractObjectSearchCriteria, [ AbstractObjectSearchCriteria ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.typegroup.search.TypeGroupSearchCriteria';
 		constructor.serialVersionUID = 1;
-		prototype.withName = function() {
-			var TypeGroupNameSearchCriteria = require("as/dto/typegroup/search/TypeGroupNameSearchCriteria");
-			return this.addCriteria(new TypeGroupNameSearchCriteria());
+		prototype.withCode = function() {
+			var TypeGroupCodeSearchCriteria = require("as/dto/typegroup/search/TypeGroupCodeSearchCriteria");
+			return this.addCriteria(new TypeGroupCodeSearchCriteria());
 		};
 	}, {
 		criteria : {

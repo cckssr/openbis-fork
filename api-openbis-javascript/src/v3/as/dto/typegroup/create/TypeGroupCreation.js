@@ -4,15 +4,15 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 	stjs.extend(TypeGroupCreation, null, [], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.typegroup.create.TypeGroupCreation';
 		constructor.serialVersionUID = 1;
-		prototype.name = null;
+		prototype.code = null;
 		prototype.metaData = null;
         prototype.managedInternally = null;
 
-		prototype.getName = function() {
-			return this.name;
+		prototype.getCode = function() {
+			return this.code;
 		};
-		prototype.setName = function(name) {
-			this.name = name;
+		prototype.setCode = function(code) {
+			this.code = code;
 		};
         prototype.getMetaData = function() {
             return this.metaData;
@@ -27,7 +27,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
             this.managedInternally = managedInternally;
         };
         prototype.toString = function () {
-            return '[' + this.name + ', ' + this.managedInternally + ']';
+            return '[' + this.code + ', ' + this.managedInternally + ']';
         }
 	}, {
 		metaData: {

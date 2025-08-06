@@ -4,17 +4,17 @@ define([ "require", "stjs", "as/dto/common/fetchoptions/SortOptions" ], function
 	};
 
 	var fields = {
-		NAME : "NAME",
+		CODE : "CODE",
 	};
 
 	stjs.extend(TypeGroupSortOptions, SortOptions, [ SortOptions ], function(constructor, prototype) {
 		prototype['@type'] = 'as.dto.typegroup.fetchoptions.TypeGroupSortOptions';
 		constructor.serialVersionUID = 1;
-		prototype.name = function() {
-			return this.getOrCreateSorting(fields.NAME);
+		prototype.code = function() {
+			return this.getOrCreateSorting(fields.CODE);
 		};
-		prototype.getName = function() {
-			return this.getSorting(fields.NAME);
+		prototype.getCode = function() {
+			return this.getSorting(fields.CODE);
 		};
 	}, {});
 	return TypeGroupSortOptions;

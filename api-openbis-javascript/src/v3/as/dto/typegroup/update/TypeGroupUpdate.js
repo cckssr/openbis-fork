@@ -7,7 +7,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype['@type'] = 'as.dto.typegroup.update.TypeGroupUpdate';
 		constructor.serialVersionUID = 1;
 		prototype.typeGroupId = null;
-		prototype.name = null;
+		prototype.code = null;
 		prototype.metaData = null;
 
 		prototype.getObjectId = function() {
@@ -19,18 +19,18 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/
 		prototype.setTypeGroupId = function(typeGroupId) {
 			this.typeGroupId = typeGroupId;
 		};
-		prototype.getName = function() {
-			return this.name;
+		prototype.getCode = function() {
+			return this.code;
 		};
-		prototype.setName = function(name) {
-			this.name.setValue(name);
+		prototype.setCode = function(code) {
+			this.code.setValue(code);
 		};
 		prototype.getMetaData = function() {
 			return this.metaData;
 		};
 	}, {
 		typeGroupId : "ITypeGroupId",
-		name : {
+		code : {
 			name : "FieldUpdateValue",
 			arguments : [ "String" ]
 		},

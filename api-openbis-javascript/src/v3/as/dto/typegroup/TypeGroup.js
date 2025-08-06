@@ -7,7 +7,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.id = null;
 		prototype.fetchOptions = null;
 
-		prototype.name = null;
+		prototype.code = null;
 		prototype.registrator = null;
 		prototype.registrationDate = null;
 		prototype.modifier = null;
@@ -28,11 +28,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setId = function(id) {
 			this.id = id;
 		};
-		prototype.getName = function() {
-			return this.name;
+		prototype.getCode = function() {
+			return this.code;
 		};
-		prototype.setName = function(name) {
-			this.name = name;
+		prototype.setCode = function(code) {
+			this.code = code;
 		};
 		prototype.getRegistrationDate = function() {
 			return this.registrationDate;
