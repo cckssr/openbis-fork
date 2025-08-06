@@ -24,7 +24,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
 
 import java.util.Map;
 
-@JsonObject("as.dto.typegroup.get.GetTypeGroupAssignmentsOperation")
+@JsonObject("as.dto.typegroup.get.GetTypeGroupAssignmentsOperationResult")
 public class GetTypeGroupAssignmentsOperationResult extends GetObjectsOperationResult<ITypeGroupAssignmentId, TypeGroupAssignment>
 {
 
