@@ -46,7 +46,7 @@ public class SearchTypeGroupTest extends AbstractTest
     public void testSearchWithNameContaining()
     {
         TypeGroupSearchCriteria criteria = new TypeGroupSearchCriteria();
-        criteria.withName().thatContains("TEST-TYPE");
+        criteria.withCode().thatContains("TEST-TYPE");
         testSearchTypeGroup(TEST_USER, criteria, "TEST-TYPE-GROUP", "TEST-TYPE-GROUP-MODIFIED");
     }
 
@@ -95,7 +95,7 @@ public class SearchTypeGroupTest extends AbstractTest
     public void testSearchAssignmentsWithTypeGroup()
     {
         TypeGroupAssignmentSearchCriteria criteria = new TypeGroupAssignmentSearchCriteria();
-        criteria.withTypeGroup().withName().thatEquals("TYPE-GROUP-INTERNAL");
+        criteria.withTypeGroup().withCode().thatEquals("TYPE-GROUP-INTERNAL");
         List<TypeGroupAssignment> results = searchTypeGroupAssignments(TEST_USER, criteria);
         assertEquals(results.size(), 2);
     }

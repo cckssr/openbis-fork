@@ -109,6 +109,8 @@ public class XLSImport
 
     private final SemanticAnnotationImportHelper semanticAnnotationImportHelper;
 
+    private final TypeGroupImportHelper typeGroupImportHelper;
+
     private final DatabaseConsistencyChecker dbChecker;
 
     private final boolean shouldCheckVersionsOnDatabase;
@@ -152,6 +154,7 @@ public class XLSImport
         this.propertyHelper = new PropertyTypeImportHelper(this.delayedExecutor, mode, options, afterVersions, annotationCache);
         this.propertyAssignmentHelper = new PropertyAssignmentImportHelper(this.delayedExecutor, mode, options, beforeVersions, annotationCache);
         this.semanticAnnotationImportHelper = new SemanticAnnotationImportHelper(this.delayedExecutor, mode, options, annotationCache);
+        this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
         // File Parsing
@@ -374,6 +377,9 @@ public class XLSImport
                         case PROPERTY_TYPE:
                             propertyHelper.importBlock(page, pageNumber, lineNumber, blockEnd);
                             semanticAnnotationImportHelper.importBlockForPropertyType(page, pageNumber, lineNumber, blockEnd);
+                            break;
+                        case TYPE_GROUP:
+                            typeGroupImportHelper.importBlock(page, pageNumber, lineNumber, blockEnd);
                             break;
                         default:
                             throw new UserFailureException("Unknown type: " + blockType);

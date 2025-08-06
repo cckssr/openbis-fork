@@ -18,11 +18,7 @@ package ch.ethz.sis.openbis.generic.server.xls.export;
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.DATA_SET;
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.EXPERIMENT;
 import static ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind.SAMPLE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.EXPORTABLE_KIND_BY_ENTITY_TYPE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.MASTER_DATA_EXPORTABLE_KINDS;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.PROJECT;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.SPACE;
-import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.VOCABULARY_TYPE;
+import static ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind.*;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -43,6 +39,8 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -166,7 +164,7 @@ public class XLSExport
         }
 
         final Collection<Collection<ExportablePermId>> groupedExportablePermIds =
-                putVocabulariesFirst(group(exportablePermIds));
+                reorderExportItemIds(group(exportablePermIds));
 
         int rowNumber = 0;
         final Map<String, String> scripts = new HashMap<>();
@@ -247,15 +245,26 @@ public class XLSExport
             final IEntityType entityType = entityHelper.getEntityType(api, sessionToken, exportablePermId.getPermId().getPermId());
             if (entityType != null)
             {
+                Stream<ExportablePermId> resultStream;
                 final ExportableKind exportableKindFromEntityType = EXPORTABLE_KIND_BY_ENTITY_TYPE.get(entityType.getClass());
-                final Stream<ExportablePermId> entityTypeRelatedExportablePermIdStream;
                 if (exportableKindFromEntityType != null)
                 {
-                    entityTypeRelatedExportablePermIdStream = Stream.of(new ExportablePermId(exportableKindFromEntityType,
+                    resultStream = Stream.of(new ExportablePermId(exportableKindFromEntityType,
                             (EntityTypePermId) entityType.getPermId()));
                 } else
                 {
-                    entityTypeRelatedExportablePermIdStream = Stream.of();
+                    resultStream = Stream.of();
+                }
+
+                if(exportableKindFromEntityType == SAMPLE_TYPE)
+                {
+                    SampleType sampleType = (SampleType) entityType;
+                    if(!sampleType.getTypeGroupAssignments().isEmpty()) {
+                        resultStream =Stream.concat(sampleType.getTypeGroupAssignments().stream().flatMap(assignment -> {
+                            final TypeGroup typeGroup = assignment.getTypeGroup();
+                            return Stream.of(new ExportablePermId(TYPE_GROUP, typeGroup.getCode()));
+                        }), resultStream);
+                    }
                 }
 
                 return Stream.concat(entityType.getPropertyAssignments().stream().flatMap(propertyAssignment ->
@@ -279,7 +288,7 @@ public class XLSExport
                                     return Stream.empty();
                                 }
                             }
-                        }), entityTypeRelatedExportablePermIdStream);
+                        }), resultStream);
             }
         }
 
@@ -350,28 +359,47 @@ public class XLSExport
         return result;
     }
 
-    static Collection<Collection<ExportablePermId>> putVocabulariesFirst(
+    static Collection<Collection<ExportablePermId>> reorderExportItemIds(
             final Collection<Collection<ExportablePermId>> exportablePermIds)
     {
         final List<Collection<ExportablePermId>> result = new ArrayList<>(exportablePermIds.size());
 
+        List<Collection<ExportablePermId>> vocabList = new ArrayList<>();
+        List<Collection<ExportablePermId>> typeGroupList = new ArrayList<>();
+        List<Collection<ExportablePermId>> rest = new ArrayList<>();
+
         // Adding vocabularies first
         for (final Collection<ExportablePermId> group : exportablePermIds)
         {
-            if (group.iterator().next().getExportableKind() == VOCABULARY_TYPE)
-            {
-                result.add(group);
+            switch (group.iterator().next().getExportableKind()) {
+                case VOCABULARY_TYPE:
+                    vocabList.add(group);
+                    break;
+                case TYPE_GROUP:
+                    typeGroupList.add(group);
+                    break;
+                default:
+                    rest.add(group);
             }
+//            if (group.iterator().next().getExportableKind() == VOCABULARY_TYPE)
+//            {
+//                result.add(group);
+//                vocabList.add(group);
+//            } else if()
         }
 
-        // Adding other items
-        for (final Collection<ExportablePermId> group : exportablePermIds)
-        {
-            if (group.iterator().next().getExportableKind() != VOCABULARY_TYPE)
-            {
-                result.add(group);
-            }
-        }
+        result.addAll(vocabList);
+        result.addAll(typeGroupList);
+        result.addAll(rest);
+
+//        // Adding other items
+//        for (final Collection<ExportablePermId> group : exportablePermIds)
+//        {
+//            if (group.iterator().next().getExportableKind() != VOCABULARY_TYPE)
+//            {
+//                result.add(group);
+//            }
+//        }
 
         return result;
     }

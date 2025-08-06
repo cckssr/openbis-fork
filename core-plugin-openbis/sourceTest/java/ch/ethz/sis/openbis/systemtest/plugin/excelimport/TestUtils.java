@@ -52,6 +52,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleTypeSearchCr
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
@@ -116,6 +120,8 @@ public class TestUtils
         PropertyAssignmentFetchOptions propCriteria = fo.withPropertyAssignments();
         propCriteria.withPlugin().withScript();
         propCriteria.withPropertyType().withVocabulary();
+        TypeGroupAssignmentFetchOptions typeGroupOptions = fo.withTypeGroupAssignments();
+        typeGroupOptions.withTypeGroup();
 
         SearchResult<SampleType> result = v3api.searchSampleTypes(sessionToken, criteria, fo);
 
@@ -378,6 +384,29 @@ public class TestUtils
         }
 
         return sortedPropertyAssignments;
+    }
+
+    static TypeGroup getTypeGroup(IApplicationServerInternalApi v3api, String sessionToken, String code)
+    {
+        TypeGroupSearchCriteria criteria = new TypeGroupSearchCriteria();
+        criteria.withCode().thatEquals(code);
+
+        TypeGroupFetchOptions fo = new TypeGroupFetchOptions();
+        fo.withRegistrator();
+        fo.withModifier();
+        TypeGroupAssignmentFetchOptions assignmentCriteria = fo.withTypeGroupAssignments();
+        assignmentCriteria.withSampleType();
+
+
+        SearchResult<TypeGroup> result = v3api.searchTypeGroups(sessionToken, criteria, fo);
+
+        if (result.getObjects().size() > 0)
+        {
+            return result.getObjects().get(0);
+        } else
+        {
+            return null;
+        }
     }
 
 }

@@ -61,7 +61,7 @@ public class DeleteTypeGroupTest extends AbstractDeletionTest
     public void testDeleteWithNullOptions()
     {
         TypeGroupCreation creation = new TypeGroupCreation();
-        creation.setName("TYPE_GROUP_TO_DELETE");
+        creation.setCode("TYPE_GROUP_TO_DELETE");
 
         TypeGroup before = createTypeGroup(TEST_USER, creation);
 
@@ -72,7 +72,7 @@ public class DeleteTypeGroupTest extends AbstractDeletionTest
     public void testDeleteWithNullReason()
     {
         TypeGroupCreation creation = new TypeGroupCreation();
-        creation.setName("TYPE_GROUP_TO_DELETE");
+        creation.setCode("TYPE_GROUP_TO_DELETE");
 
         TypeGroup before = createTypeGroup(TEST_USER, creation);
 
@@ -85,7 +85,7 @@ public class DeleteTypeGroupTest extends AbstractDeletionTest
     public void testDeleteWithEmptyTypeGroup()
     {
         TypeGroupCreation creation = new TypeGroupCreation();
-        creation.setName("TYPE_GROUP_TO_DELETE");
+        creation.setCode("TYPE_GROUP_TO_DELETE");
 
         TypeGroup before = createTypeGroup(TEST_USER, creation);
 
@@ -100,7 +100,7 @@ public class DeleteTypeGroupTest extends AbstractDeletionTest
     public void testDeleteInternalTypeGroupAsSystem()
     {
         TypeGroupCreation creation = new TypeGroupCreation();
-        creation.setName("TYPE_GROUP_TO_DELETE_INTERNAL");
+        creation.setCode("TYPE_GROUP_TO_DELETE_INTERNAL");
         creation.setManagedInternally(true);
 
         TypeGroup before = createTypeGroup(SYSTEM_USER, creation);
@@ -116,7 +116,7 @@ public class DeleteTypeGroupTest extends AbstractDeletionTest
     public void testDeleteInternalTypeGroupWithoutRights()
     {
         TypeGroupCreation creation = new TypeGroupCreation();
-        creation.setName("TYPE_GROUP_TO_DELETE_INTERNAL_2");
+        creation.setCode("TYPE_GROUP_TO_DELETE_INTERNAL_2");
         creation.setManagedInternally(true);
 
         TypeGroup before = createTypeGroup(SYSTEM_USER, creation);

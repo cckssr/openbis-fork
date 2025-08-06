@@ -255,6 +255,21 @@ public class XLSExportData
                                     List.of(),
                                     true
                             },
+//                            {
+//                                    "export-sample-with-type-group.xlsx",
+//                                    Map.of(
+//                                            "test", TEST_SCRIPT_CONTENT,
+//                                            "test-dynamic", TEST_SCRIPT_CONTENT
+//                                    ),
+//                                    SampleTypeExpectations.class,
+//                                    List.of(new ExportablePermId(SAMPLE_TYPE,
+//                                            new EntityTypePermId("ENTRY", EntityKind.SAMPLE))),
+//                                    true,
+//                                    null,
+//                                    XLSExport.TextFormatting.PLAIN,
+//                                    List.of(),
+//                                    false
+//                            },
                             {
                                     "export-experiment-type.xlsx",
                                     Map.of("test", TEST_SCRIPT_CONTENT),

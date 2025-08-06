@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssign
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractSetEntityToOneRelationWithCustomIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.IMapEntityTypeByIdExecutor;
+import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,10 @@ public class SetAssignmentToSampleTypeExecutor extends
     @Override
     protected void check(IOperationContext context, SampleTypeTypeGroupsPE entity, IEntityTypeId relatedId, EntityTypePE related)
     {
+        if(entity.isManagedInternally() && !related.isManagedInternally())
+        {
+            throw new UserFailureException("Internal type group assignment can be performed only on internal sample types!");
+        }
     }
 
     @Override

@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractSetEntityToOneRelationWithCustomIdExecutor;
+import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
@@ -61,6 +62,10 @@ public class SetAssignmentToTypeGroupExecutor extends
     @Override
     protected void check(IOperationContext context, SampleTypeTypeGroupsPE entity, ITypeGroupId relatedId, TypeGroupPE related)
     {
+        if(entity.isManagedInternally() && !related.isManagedInternally())
+        {
+            throw new UserFailureException("Internal type group assignment can be performed only on internal type groups!");
+        }
     }
 
     @Override

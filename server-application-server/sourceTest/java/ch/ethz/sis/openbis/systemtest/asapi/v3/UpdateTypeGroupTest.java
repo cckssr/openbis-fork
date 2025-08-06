@@ -59,7 +59,7 @@ public class UpdateTypeGroupTest extends AbstractTest
             {
                 TypeGroupUpdate update = new TypeGroupUpdate();
                 update.setTypeGroupId(id);
-                update.setName("SOME_NEW_NAME");
+                update.setCode("SOME_NEW_NAME");
                 updateTypeGroup(TEST_USER, update);
             }
         }, id);
@@ -76,7 +76,7 @@ public class UpdateTypeGroupTest extends AbstractTest
             {
                 TypeGroupUpdate update = new TypeGroupUpdate();
                 update.setTypeGroupId(id);
-                update.setName("SOME_NEW_NAME");
+                update.setCode("SOME_NEW_NAME");
                 updateTypeGroup(TEST_SPACE_USER, update);
             }
         }, id);
@@ -88,22 +88,22 @@ public class UpdateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setName("MY_TYPE_GROUP_FOR_UPDATE");
+        newGroup.setCode("MY_TYPE_GROUP_FOR_UPDATE");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
         TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
 
         TypeGroup before = getTypeGroup(TEST_USER, group);
-        assertEquals(before.getName(), "MY_TYPE_GROUP_FOR_UPDATE");
+        assertEquals(before.getCode(), "MY_TYPE_GROUP_FOR_UPDATE");
 
         TypeGroupUpdate update = new TypeGroupUpdate();
         update.setTypeGroupId(before.getId());
-        update.setName("MY_TYPE_GROUP_FOR_UPDATE_RENAMED");
+        update.setCode("MY_TYPE_GROUP_FOR_UPDATE_RENAMED");
 
         TypeGroup after = updateTypeGroup(TEST_USER, update);
 
-        assertEquals(after.getName(), update.getName().getValue());
+        assertEquals(after.getCode(), update.getCode().getValue());
     }
 
     @Test
@@ -112,12 +112,12 @@ public class UpdateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setName("MY_TYPE_GROUP_FOR_UPDATE");
+        newGroup.setCode("MY_TYPE_GROUP_FOR_UPDATE");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
         TypeGroupId group = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup)).get(0);
-        assertEquals(group.getPermId(), newGroup.getName());
+        assertEquals(group.getPermId(), newGroup.getCode());
 
         SampleTypeCreation newType = new SampleTypeCreation();
         newType.setCode("SAMPLE_TYPE_WITH_TYPE_GROUP");
@@ -133,7 +133,7 @@ public class UpdateTypeGroupTest extends AbstractTest
         List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
 
         TypeGroup before = getTypeGroup(TEST_USER, group);
-        assertEquals(before.getName(), newGroup.getName());
+        assertEquals(before.getCode(), newGroup.getCode());
         assertEquals(before.getTypeGroupAssignments().size(), 1);
 
         TypeGroupAssignmentDeletionOptions options = new TypeGroupAssignmentDeletionOptions();
@@ -141,7 +141,7 @@ public class UpdateTypeGroupTest extends AbstractTest
         v3api.deleteTypeGroupAssignments(sessionToken, ids, options);
 
         TypeGroup after = getTypeGroup(TEST_USER, group);
-        assertEquals(after.getName(), newGroup.getName());
+        assertEquals(after.getCode(), newGroup.getCode());
         assertEquals(after.getTypeGroupAssignments().size(), 0);
 
     }
@@ -166,6 +166,6 @@ public class UpdateTypeGroupTest extends AbstractTest
 
         v3api.updateTypeGroups(sessionToken, Arrays.asList(update));
 
-        return getTypeGroup(user, new TypeGroupId(update.getName().getValue()));
+        return getTypeGroup(user, new TypeGroupId(update.getCode().getValue()));
     }
 }

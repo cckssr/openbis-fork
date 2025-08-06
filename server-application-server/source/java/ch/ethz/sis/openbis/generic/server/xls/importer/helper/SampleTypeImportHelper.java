@@ -15,8 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.importer.helper;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,7 +26,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleTypeUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.xls.importer.ImportOptions;
 import ch.ethz.sis.openbis.generic.server.xls.importer.delay.DelayedExecutionDecorator;
 import ch.ethz.sis.openbis.generic.server.xls.importer.enums.ImportModes;
@@ -53,6 +58,7 @@ public class SampleTypeImportHelper extends BasicImportHelper
         OntologyId("Ontology Id", false, false),
         OntologyVersion("Ontology Version", false, false),
         OntologyAnnotationId("Ontology Annotation Id", false, false),
+        TypeGroup("Type Group", false, false),
         Internal("Internal", false, false);
 
         private final String headerName;
@@ -206,6 +212,19 @@ public class SampleTypeImportHelper extends BasicImportHelper
         creation.setManagedInternally(ImportUtils.isTrue(internal));
 
         delayedExecutor.createSampleType(creation, page, line);
+
+        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroup, "\n");
+        if(typeGroups != null) {
+            List<TypeGroupAssignmentCreation> typeGroupAssignmentCreations = new ArrayList<>();
+            for(String typeGroup : typeGroups)
+            {
+                TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
+                assignmentCreation.setSampleTypeId(new EntityTypePermId(code, EntityKind.SAMPLE));
+                assignmentCreation.setTypeGroupId(new TypeGroupId(typeGroup));
+                typeGroupAssignmentCreations.add(assignmentCreation);
+            }
+            delayedExecutor.createTypeGroupAssignments(typeGroupAssignmentCreations, page, line);
+        }
     }
 
     @Override protected void updateObject(Map<String, Integer> header, List<String> values, int page, int line)
@@ -250,6 +269,48 @@ public class SampleTypeImportHelper extends BasicImportHelper
         }
 
         delayedExecutor.updateSampleType(update, page, line);
+
+        String[] typeGroups = getMultiValueByColumnName(header, values, Attribute.TypeGroup, "\n");
+        if(typeGroups != null) {
+            TypeGroupAssignmentFetchOptions fetchOptions = new TypeGroupAssignmentFetchOptions();
+            fetchOptions.withTypeGroup();
+            List<TypeGroupAssignment> assignments = delayedExecutor.getTypeGroupAssignmentsForSampleType(code, fetchOptions);
+            Set<String> existingGroups = assignments.stream().map(x -> x.getTypeGroup().getCode()).collect(
+                    Collectors.toSet());
+            Set<String> newGroups = new HashSet<>(List.of(typeGroups));
+            List<ITypeGroupAssignmentId> typeGroupAssignmentIds = new ArrayList<>();
+            TypeGroupAssignmentDeletionOptions deletionOptions = new TypeGroupAssignmentDeletionOptions();
+            for(TypeGroupAssignment assignment : assignments)
+            {
+                if(!newGroups.contains(assignment.getTypeGroup().getCode()))
+                {
+                    // delete assignments
+                    TypeGroupAssignmentId id = new TypeGroupAssignmentId(permId, new TypeGroupId(assignment.getTypeGroup().getCode()));
+                    typeGroupAssignmentIds.add(id);
+                }
+            }
+            if(!typeGroupAssignmentIds.isEmpty())
+            {
+                delayedExecutor.deleteTypeGroupAssignments(typeGroupAssignmentIds, deletionOptions);
+            }
+
+            List<TypeGroupAssignmentCreation> typeGroupAssignmentCreations = new ArrayList<>();
+            for(String typeGroup : typeGroups)
+            {
+                if(!existingGroups.contains(typeGroup))
+                {
+                    //create assignment
+                    TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
+                    assignmentCreation.setSampleTypeId(new EntityTypePermId(code, EntityKind.SAMPLE));
+                    assignmentCreation.setTypeGroupId(new TypeGroupId(typeGroup));
+                    typeGroupAssignmentCreations.add(assignmentCreation);
+                }
+            }
+            if(!typeGroupAssignmentCreations.isEmpty())
+            {
+                delayedExecutor.createTypeGroupAssignments(typeGroupAssignmentCreations, page, line);
+            }
+        }
     }
 
     @Override protected void validateHeader(Map<String, Integer> header)

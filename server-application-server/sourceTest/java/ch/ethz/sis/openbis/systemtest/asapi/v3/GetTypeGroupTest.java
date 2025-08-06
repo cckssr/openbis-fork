@@ -163,11 +163,11 @@ public class GetTypeGroupTest extends AbstractTest
 
         assertEquals(typeGroup.getTypeGroupAssignments().size(), 2);
         TypeGroupAssignment assignment = typeGroup.getTypeGroupAssignments().get(0);
-        assertEquals(assignment.getTypeGroup().getName(), "TYPE-GROUP-INTERNAL");
+        assertEquals(assignment.getTypeGroup().getCode(), "TYPE-GROUP-INTERNAL");
         assertEquals(assignment.getSampleType().getCode(), "MASTER_PLATE");
 
         assignment = typeGroup.getTypeGroupAssignments().get(1);
-        assertEquals(assignment.getTypeGroup().getName(), "TYPE-GROUP-INTERNAL");
+        assertEquals(assignment.getTypeGroup().getCode(), "TYPE-GROUP-INTERNAL");
         assertEquals(assignment.getSampleType().getCode(), "INTERNAL_TEST");
         assertTrue(assignment.isManagedInternally());
 

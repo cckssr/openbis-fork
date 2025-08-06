@@ -50,7 +50,7 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setName("MY_TYPE_GROUP");
+        newGroup.setCode("MY_TYPE_GROUP");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
@@ -58,14 +58,14 @@ public class CreateTypeGroupTest extends AbstractTest
         List<TypeGroupId> groups = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup));
 
         // Then
-        assertEquals(groups.get(0).getPermId(), newGroup.getName());
+        assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
         fetchOptions.withRegistrator();
 
 
         TypeGroup group = v3api.getTypeGroups(sessionToken, groups, fetchOptions).get(groups.get(0));
-        assertEquals(group.getName(), newGroup.getName());
+        assertEquals(group.getCode(), newGroup.getCode());
         assertEquals(group.getRegistrator().getUserId(), TEST_USER);
         Map<String, String> meta = group.getMetaData();
 
@@ -82,7 +82,7 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.loginAsSystem();
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setName("INTERNAL_TYPE_GROUP");
+        newGroup.setCode("INTERNAL_TYPE_GROUP");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(true);
 
@@ -90,14 +90,14 @@ public class CreateTypeGroupTest extends AbstractTest
         List<TypeGroupId> groups = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup));
 
         // Then
-        assertEquals(groups.get(0).getPermId(), newGroup.getName());
+        assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
         fetchOptions.withRegistrator();
 
 
         TypeGroup group = v3api.getTypeGroups(sessionToken, groups, fetchOptions).get(groups.get(0));
-        assertEquals(group.getName(), newGroup.getName());
+        assertEquals(group.getCode(), newGroup.getCode());
         assertEquals(group.getRegistrator().getUserId(), SYSTEM_USER);
         Map<String, String> meta = group.getMetaData();
         assertEquals(meta, Map.of("key", "value"));
@@ -133,7 +133,7 @@ public class CreateTypeGroupTest extends AbstractTest
             public void execute()
             {
                 TypeGroupCreation creation = new TypeGroupCreation();
-                creation.setName("MY_TYPE_GROUP");
+                creation.setCode("MY_TYPE_GROUP");
                 creation.setManagedInternally(true);
 
                 String sessionToken = v3api.login(TEST_USER, PASSWORD);
@@ -150,14 +150,14 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setName("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
         List<TypeGroupId> groups = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup));
 
         // Then
-        assertEquals(groups.get(0).getPermId(), newGroup.getName());
+        assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         SampleTypeCreation newType = new SampleTypeCreation();
         newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
@@ -181,12 +181,12 @@ public class CreateTypeGroupTest extends AbstractTest
 
         
         TypeGroup group = v3api.getTypeGroups(sessionToken, groups, fetchOptions).get(groups.get(0));
-        assertEquals(group.getName(), newGroup.getName());
+        assertEquals(group.getCode(), newGroup.getCode());
         assertEquals(group.getTypeGroupAssignments().size(), 1);
         TypeGroupAssignment assignment = group.getTypeGroupAssignments().get(0);
         
         assertEquals(assignment.getSampleType().getCode(), newType.getCode());
-        assertEquals(assignment.getTypeGroup().getName(), newGroup.getName());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
 
         //Check if type group assignment is fetched from sample type
         SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
@@ -196,13 +196,13 @@ public class CreateTypeGroupTest extends AbstractTest
         assertEquals(sampleType.getTypeGroupAssignments().size(), 1);
         assignment = sampleType.getTypeGroupAssignments().get(0);
         assertEquals(assignment.getSampleType().getCode(), newType.getCode());
-        assertEquals(assignment.getTypeGroup().getName(), newGroup.getName());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
 
         //Check if type group assignment is fetched from dedicated method
         Map<ITypeGroupAssignmentId, TypeGroupAssignment> assignmentMap = v3api.getTypeGroupAssignments(sessionToken, ids, options);
         assignment = assignmentMap.get(ids.get(0));
         assertEquals(assignment.getSampleType().getCode(), newType.getCode());
-        assertEquals(assignment.getTypeGroup().getName(), newGroup.getName());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
 
 
         v3api.logout(sessionToken);
