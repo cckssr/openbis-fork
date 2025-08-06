@@ -99,7 +99,7 @@ public class SearchTypeGroupAssignmentExecutor extends AbstractSearchObjectManua
             {
                 TypeGroupAssignmentId assignmentId = (TypeGroupAssignmentId) id;
                 EntityTypePermId objectSampleTypeId = new EntityTypePermId(object.getSampleType().getPermId(), EntityKind.SAMPLE);
-                TypeGroupId objectTypeGroupId = new TypeGroupId(object.getTypeGroup().getName());
+                TypeGroupId objectTypeGroupId = new TypeGroupId(object.getTypeGroup().getCode());
                 return objectSampleTypeId.equals(assignmentId.getSampleTypeId()) &&
                         objectTypeGroupId.equals(assignmentId.getTypeGroupId());
             } else

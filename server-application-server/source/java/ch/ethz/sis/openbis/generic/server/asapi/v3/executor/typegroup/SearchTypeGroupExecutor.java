@@ -18,7 +18,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.*;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupNameSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupCodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.*;
@@ -51,9 +51,9 @@ public class SearchTypeGroupExecutor extends AbstractSearchObjectManuallyExecuto
     @Override
     protected Matcher<TypeGroupPE> getMatcher(ISearchCriteria criteria)
     {
-        if (criteria instanceof NameSearchCriteria || criteria instanceof TypeGroupNameSearchCriteria)
+        if (criteria instanceof CodeSearchCriteria || criteria instanceof TypeGroupCodeSearchCriteria)
         {
-            return new NameMatcher<>();
+            return new CodeMatcher<>();
         }  else
         {
             throw new IllegalArgumentException("Unknown search criteria: " + criteria.getClass());

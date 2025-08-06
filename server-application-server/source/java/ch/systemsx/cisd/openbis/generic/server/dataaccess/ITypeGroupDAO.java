@@ -29,6 +29,6 @@ public interface ITypeGroupDAO extends IGenericDAO<TypeGroupPE>
 
     List<TypeGroupPE> findByIds(Collection<Long> ids);
 
-    List<TypeGroupPE> findByNames(Collection<String> ids);
+    List<TypeGroupPE> findByCodes(Collection<String> ids);
 
 }

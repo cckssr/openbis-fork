@@ -62,24 +62,24 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
     @Override
     protected TypeGroupId getPermId(TypeGroupPE entity)
     {
-        return new TypeGroupId(entity.getName());
+        return new TypeGroupId(entity.getCode());
     }
 
     @Override
     protected void checkData(IOperationContext context, TypeGroupUpdate update)
     {
-        if (update.getName() == null)
+        if (update.getCode() == null)
         {
-            throw new UserFailureException("Type group name cannot be null.");
+            throw new UserFailureException("Type group code cannot be null.");
         }
-        String newValue = update.getName().getValue();
+        String newValue = update.getCode().getValue();
         if(newValue == null )
         {
-            throw new UserFailureException("Type group name cannot be null.");
+            throw new UserFailureException("Type group code cannot be null.");
         }
         if(newValue.trim().isEmpty())
         {
-            throw new UserFailureException("Type group name cannot be empty.");
+            throw new UserFailureException("Type group code cannot be empty.");
         }
     }
 
@@ -99,9 +99,9 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
             TypeGroupUpdate update = entry.getKey();
             TypeGroupPE typeGroup = entry.getValue();
 
-            if (update.getName() != null && update.getName().isModified())
+            if (update.getCode() != null && update.getCode().isModified())
             {
-                typeGroup.setName(update.getName().getValue());
+                typeGroup.setCode(update.getCode().getValue());
             }
         }
 

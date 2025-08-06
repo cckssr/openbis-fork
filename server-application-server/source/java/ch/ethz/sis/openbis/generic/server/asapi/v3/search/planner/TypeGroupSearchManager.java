@@ -57,13 +57,7 @@ public class TypeGroupSearchManager extends AbstractLocalSearchManager<TypeGroup
 
             final AbstractCompositeSearchCriteria parentCriteria, final String idsColumnName)
     {
-
-
         return super.searchForIDs(userId, authorisationInformation, criteria, idsColumnName, TableMapper.TYPE_GROUP);
-        // If we have results, we use them
-        // If we don't have results and criteria are not empty, there are no results.
-//        final Set<Long> resultBeforeFiltering = containsValues(mainCriteriaIntermediateResults) ? mainCriteriaIntermediateResults : Collections.emptySet();
-//        return resultBeforeFiltering;
     }
 
     @Override

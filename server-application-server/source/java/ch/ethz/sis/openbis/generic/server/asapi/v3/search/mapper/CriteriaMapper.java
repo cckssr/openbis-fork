@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupNameSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupCodeSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.translator.condition.*;
 import org.springframework.context.ApplicationContext;
@@ -291,7 +291,7 @@ public class CriteriaMapper
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventEntityRegistratorSearchCriteria.class, stringFieldSearchConditionTranslator);
         CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(EventEntityRegistrationDateSearchCriteria.class, dateFieldSearchConditionTranslator);
 
-        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(TypeGroupNameSearchCriteria.class, new SimpleColumnSearchConditionTranslator(NAME_COLUMN));
+        CRITERIA_TO_CONDITION_TRANSLATOR_MAP.put(TypeGroupCodeSearchCriteria.class, new SimpleColumnSearchConditionTranslator(CODE_COLUMN));
 
         // When adding a new manager to CRITERIA_TO_IN_COLUMN_MAP, create the manager as a bean in
         // genericApplicationContext.xml and add the corresponding record in initCriteriaToManagerMap().

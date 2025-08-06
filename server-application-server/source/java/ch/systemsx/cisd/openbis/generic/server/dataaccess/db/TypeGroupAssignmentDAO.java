@@ -109,7 +109,7 @@ final class TypeGroupAssignmentDAO extends AbstractGenericEntityWithCustomIdDAO<
 
             Conjunction andClause = Restrictions.conjunction(
                     Restrictions.eq("st.code", st.getPermId()),
-                    Restrictions.eq("tg.name", tg.getPermId()));
+                    Restrictions.eq("tg.code", tg.getPermId()));
             disjunction.add(andClause);
 
         }

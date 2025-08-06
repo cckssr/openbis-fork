@@ -55,15 +55,15 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
     @Override
     protected IObjectId getId(TypeGroupPE entity)
     {
-        return new TypeGroupId(entity.getName());
+        return new TypeGroupId(entity.getCode());
     }
 
     @Override
     protected void checkData(IOperationContext context, TypeGroupCreation creation)
     {
-        if (StringUtils.isEmpty(creation.getName()))
+        if (StringUtils.isEmpty(creation.getCode()))
         {
-            throw new UserFailureException("Name cannot be empty.");
+            throw new UserFailureException("Code cannot be empty.");
         }
     }
 
@@ -91,7 +91,7 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
             public void process(TypeGroupCreation object)
             {
                 TypeGroupPE typeGroup = new TypeGroupPE();
-                typeGroup.setName(object.getName());
+                typeGroup.setCode(object.getCode());
                 typeGroup.setManagedInternally(object.isManagedInternally());
                 typeGroup.setMetaData(object.getMetaData());
                 typeGroup.setRegistrator(context.getSession().tryGetPerson());
@@ -111,7 +111,7 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
     @Override
     protected TypeGroupId createPermId(IOperationContext context, TypeGroupPE entity)
     {
-        return new TypeGroupId(entity.getName());
+        return new TypeGroupId(entity.getCode());
     }
 
     @Override
@@ -127,12 +127,6 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
     {
 
     }
-
-//    @Override
-//    protected List<TypeGroupPE> list(IOperationContext context, Collection<String> ids)
-//    {
-//        return daoFactory.getTypeGroupDAO().findByNames(ids);
-//    }
 
     @Override
     protected List<TypeGroupPE> list(IOperationContext context, Collection<Long> ids)

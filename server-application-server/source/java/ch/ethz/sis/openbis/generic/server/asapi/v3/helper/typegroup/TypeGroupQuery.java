@@ -26,7 +26,7 @@ import java.util.List;
 
 public interface TypeGroupQuery extends ObjectQuery
 {
-    @Select(sql = "select id, name as identifier from type_groups where name = any(?{1})", parameterBindings = {
+    @Select(sql = "select id, code as identifier from type_groups where code = any(?{1})", parameterBindings = {
             StringArrayMapper.class }, fetchSize = FETCH_SIZE)
-    public List<TechIdStringIdentifierRecord> listTypeGroupTechIdsByNames(String[] names);
+    public List<TechIdStringIdentifierRecord> listTypeGroupTechIdsByCodes(String[] codes);
 }

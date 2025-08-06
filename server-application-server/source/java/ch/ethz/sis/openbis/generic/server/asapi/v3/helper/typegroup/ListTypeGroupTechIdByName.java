@@ -36,12 +36,12 @@ public class ListTypeGroupTechIdByName extends AbstractListTechIdByPermId<TypeGr
     protected List<TechIdStringIdentifierRecord> queryTechIds(String[] names)
     {
         TypeGroupQuery query = QueryTool.getManagedQuery(TypeGroupQuery.class);
-        return query.listTypeGroupTechIdsByNames(names);
+        return query.listTypeGroupTechIdsByCodes(names);
     }
 
     @Override
-    protected TypeGroupId createPermId(String name)
+    protected TypeGroupId createPermId(String code)
     {
-        return new TypeGroupId(name);
+        return new TypeGroupId(code);
     }
 }

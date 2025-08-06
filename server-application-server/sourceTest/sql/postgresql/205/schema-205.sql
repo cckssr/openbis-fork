@@ -2695,7 +2695,7 @@ CREATE SEQUENCE type_groups_id_seq
     CACHE 1;
 CREATE TABLE type_groups (
     id TECH_ID NOT NULL,
-    name CODE NOT NULL,
+    code CODE NOT NULL,
     pers_id_registerer TECH_ID NOT NULL,
     registration_timestamp TIME_STAMP_DFL DEFAULT now() NOT NULL,
     pers_id_modifier TECH_ID,

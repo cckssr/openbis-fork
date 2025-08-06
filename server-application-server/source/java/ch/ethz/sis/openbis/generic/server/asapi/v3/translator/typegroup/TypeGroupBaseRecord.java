@@ -23,7 +23,7 @@ import java.util.Date;
 
 public class TypeGroupBaseRecord extends ObjectBaseRecord
 {
-    public String name;
+    public String code;
 
     public Date registrationDate;
 

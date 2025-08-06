@@ -49,7 +49,7 @@ public class ListTypeGroupAssignmentById extends AbstractListObjectById<TypeGrou
     public TypeGroupAssignmentId createId(SampleTypeTypeGroupsPE typeGroupAssignment)
     {
         IEntityTypeId sampleTypeId = new EntityTypePermId(typeGroupAssignment.getSampleType().getPermId(), EntityKind.SAMPLE);
-        ITypeGroupId typeGroupId = new TypeGroupId(typeGroupAssignment.getTypeGroup().getName());
+        ITypeGroupId typeGroupId = new TypeGroupId(typeGroupAssignment.getTypeGroup().getCode());
         return new TypeGroupAssignmentId(sampleTypeId,  typeGroupId);
     }
 

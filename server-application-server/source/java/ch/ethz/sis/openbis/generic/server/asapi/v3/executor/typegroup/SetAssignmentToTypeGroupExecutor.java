@@ -34,7 +34,6 @@ import java.util.Map;
 
 @Component
 public class SetAssignmentToTypeGroupExecutor extends
-//        AbstractSetEntityToOneRelationWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, ITypeGroupId, TypeGroupPE, SampleTypeTypeGroupsId>
         AbstractSetEntityToOneRelationWithCustomIdExecutor<TypeGroupAssignmentCreation, SampleTypeTypeGroupsPE, ITypeGroupId, TypeGroupPE, SampleTypeTypeGroupsTechId>
         implements ISetAssignmentToTypeGroupExecutor
 {

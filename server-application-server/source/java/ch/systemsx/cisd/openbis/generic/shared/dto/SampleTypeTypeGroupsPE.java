@@ -91,14 +91,14 @@ public final class SampleTypeTypeGroupsPE extends HibernateAbstractRegistrationH
         SampleTypeTypeGroupsPE castOther = (SampleTypeTypeGroupsPE) other;
         return new EqualsBuilder()
                 .append(this.sampleType.getId(), castOther.sampleType.getId())
-                .append(this.typeGroup.getName(), castOther.typeGroup.getName())
+                .append(this.typeGroup.getCode(), castOther.typeGroup.getCode())
                 .isEquals();
     }
 
     @Override
     public int hashCode()
     {
-        return new HashCodeBuilder().append(sampleType.getId()).append(typeGroup.getName())
+        return new HashCodeBuilder().append(sampleType.getId()).append(typeGroup.getCode())
                 .toHashCode();
     }
 

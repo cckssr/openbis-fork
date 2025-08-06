@@ -17,9 +17,9 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.INameHolder;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -39,10 +39,10 @@ import java.util.Map;
 
 @Entity
 @Table(name = TableNames.TYPE_GROUPS_TABLE, uniqueConstraints = {
-        @UniqueConstraint(columnNames = { ColumnNames.NAME_COLUMN }) })
+        @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class TypeGroupPE implements Serializable,
-        IIdHolder, INameHolder,
+        IIdHolder, ICodeHolder,
         IModifierAndModificationDateBean, Comparable<TypeGroupPE>, IMetaDataHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
@@ -53,10 +53,10 @@ public final class TypeGroupPE implements Serializable,
     private Long id;
 
 //    @Id
-    @Column(name = ColumnNames.NAME_COLUMN, unique = true)
+    @Column(name = ColumnNames.CODE_COLUMN, unique = true)
 //    @NaturalId(mutable=true)
     @NotBlank
-    private String name;
+    private String code;
 
 
     @OptimisticLock(excluded = true)
@@ -76,14 +76,14 @@ public final class TypeGroupPE implements Serializable,
     private Map<String, String> metaData;
 
     @Override
-    public String getName()
+    public String getCode()
     {
-        return name;
+        return code;
     }
 
-    public void setName(final String name)
+    public void setCode(final String code)
     {
-        this.name = name;
+        this.code = code;
     }
 
     @Override
@@ -209,7 +209,7 @@ public final class TypeGroupPE implements Serializable,
         }
         final TypeGroupPE that = (TypeGroupPE) obj;
         final EqualsBuilder builder = new EqualsBuilder();
-        builder.append(getName(), that.getName());
+        builder.append(getCode(), that.getCode());
         return builder.isEquals();
     }
 
@@ -217,7 +217,7 @@ public final class TypeGroupPE implements Serializable,
     public final int hashCode()
     {
         final HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(getName());
+        builder.append(getCode());
         return builder.toHashCode();
     }
 
@@ -227,7 +227,7 @@ public final class TypeGroupPE implements Serializable,
         final ToStringBuilder builder =
                 new ToStringBuilder(this,
                         ModifiedShortPrefixToStringStyle.MODIFIED_SHORT_PREFIX_STYLE);
-        builder.append("name", getName());
+        builder.append("code", getCode());
         builder.append("managedInternally", isManagedInternally());
         return builder.toString();
     }
@@ -242,8 +242,8 @@ public final class TypeGroupPE implements Serializable,
     @Override
     public int compareTo(TypeGroupPE that)
     {
-        final String thatName = that.getName();
-        final String thisName = getName();
+        final String thatName = that.getCode();
+        final String thisName = getCode();
         if (thisName == null)
         {
             return thatName == null ? 0 : -1;

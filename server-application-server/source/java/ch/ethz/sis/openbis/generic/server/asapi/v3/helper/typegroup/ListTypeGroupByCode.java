@@ -26,11 +26,11 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import java.util.LinkedList;
 import java.util.List;
 
-public class ListTypeGroupByName extends AbstractListObjectById<TypeGroupId, TypeGroupPE>
+public class ListTypeGroupByCode extends AbstractListObjectById<TypeGroupId, TypeGroupPE>
 {
     private ITypeGroupDAO typeGroupDAO;
 
-    public ListTypeGroupByName(ITypeGroupDAO typeGroupDAO)
+    public ListTypeGroupByCode(ITypeGroupDAO typeGroupDAO)
     {
         this.typeGroupDAO = typeGroupDAO;
     }
@@ -44,7 +44,7 @@ public class ListTypeGroupByName extends AbstractListObjectById<TypeGroupId, Typ
     @Override
     public TypeGroupId createId(TypeGroupPE typeGroup)
     {
-        return new TypeGroupId(typeGroup.getName());
+        return new TypeGroupId(typeGroup.getCode());
     }
 
     @Override
@@ -57,6 +57,6 @@ public class ListTypeGroupByName extends AbstractListObjectById<TypeGroupId, Typ
             names.add(id.getPermId());
         }
 
-        return typeGroupDAO.findByNames(names);
+        return typeGroupDAO.findByCodes(names);
     }
 }

@@ -58,7 +58,7 @@ public class TypeGroupAuthorizationExecutor implements ITypeGroupAuthorizationEx
         if (typeGroup.isManagedInternally() && isSystemUser(context.getSession()) == false)
         {
             boolean isModified =
-                    isFieldUpdated(update.getName(), typeGroup.getName());
+                    isFieldUpdated(update.getCode(), typeGroup.getCode());
 
             if (!isModified && update.getMetaData() != null && update.getMetaData().hasActions())
             {

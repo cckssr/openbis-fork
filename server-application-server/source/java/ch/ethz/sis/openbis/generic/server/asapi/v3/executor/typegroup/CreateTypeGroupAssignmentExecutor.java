@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.Collectio
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.CollectionBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CreateProgress;
+import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,35 +59,21 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     protected IObjectId getId(SampleTypeTypeGroupsPE entity)
     {
         IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId(), EntityKind.SAMPLE);
-        ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getName());
+        ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getCode());
         return new TypeGroupAssignmentId(sampleTypeId, typeGroupId);
-//        entity
-//        // Note, we can not return an instance of RoleAssignmentId because entity.getId() == null
-//        return new ObjectIdentifier(renderAssignment(entity))
-//        {
-//            private static final long serialVersionUID = 1L;
-//        };
     }
 
     @Override
     protected void checkData(IOperationContext context, TypeGroupAssignmentCreation creation)
     {
-//        if (creation.getRole() == null)
-//        {
-//            throw new UserFailureException("Unspecified role.");
-//        }
-//        if (creation.getUserId() == null && creation.getAuthorizationGroupId() == null)
-//        {
-//            throw new UserFailureException("Either a user or an authorization group has to be specified.");
-//        }
-//        if (creation.getUserId() != null && creation.getAuthorizationGroupId() != null)
-//        {
-//            throw new UserFailureException("A user and an authorization group have been specified.");
-//        }
-//        if (creation.getSpaceId() != null && creation.getProjectId() != null)
-//        {
-//            throw new UserFailureException("A space and a project have been specified.");
-//        }
+        if (creation.getSampleTypeId() == null)
+        {
+            throw new UserFailureException("Sample type needs to be specified.");
+        }
+        if (creation.getTypeGroupId() == null)
+        {
+            throw new UserFailureException("Type group needs to be specified.");
+        }
     }
 
     @Override
@@ -127,7 +114,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     protected TypeGroupAssignmentId createPermId(IOperationContext context, SampleTypeTypeGroupsPE entity)
     {
         IEntityTypeId sampleTypeId = new EntityTypePermId(entity.getSampleType().getPermId(), EntityKind.SAMPLE);
-        ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getName());
+        ITypeGroupId typeGroupId = new TypeGroupId(entity.getTypeGroup().getCode());
         return new TypeGroupAssignmentId(sampleTypeId, typeGroupId);
     }
 
@@ -148,7 +135,6 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     @Override
     protected List<SampleTypeTypeGroupsPE> list(IOperationContext context, Collection<SampleTypeTypeGroupsTechId> ids)
     {
-//        Set<SampleTypeTypeGroupsId> idSet = CommonUtils.asSet(ids);
         List<SampleTypeTypeGroupsPE> result = new ArrayList<>();
         List<SampleTypeTypeGroupsPE> entities = daoFactory.getTypeGroupAssignmentDAO().listAllEntities();
         for (SampleTypeTypeGroupsPE typeGroupAssignment : entities)

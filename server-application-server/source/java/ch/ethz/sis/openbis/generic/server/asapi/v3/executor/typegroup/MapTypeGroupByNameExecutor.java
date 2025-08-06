@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.get.AbstractMapObjectByIdExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.IListObjectById;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupByName;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupByCode;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.typegroup.ListTypeGroupByTechId;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ITypeGroupDAO;
@@ -48,7 +48,7 @@ public class MapTypeGroupByNameExecutor extends AbstractMapObjectByIdExecutor<IT
     protected void addListers(IOperationContext context, List<IListObjectById<? extends ITypeGroupId, TypeGroupPE>> listers)
     {
         listers.add(new ListTypeGroupByTechId(typeGroupDAO));
-        listers.add(new ListTypeGroupByName(typeGroupDAO));
+        listers.add(new ListTypeGroupByCode(typeGroupDAO));
     }
 
     @Autowired

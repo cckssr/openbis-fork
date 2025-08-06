@@ -180,7 +180,7 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
             args.add(((PropertyTypePermId) entityId).getPermId());
         } else if (entityId.getClass() == TypeGroupId.class)
         {
-            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(NAME_COLUMN).append(EQ).append(QU);
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((TypeGroupId) entityId).getPermId());
         } else
         {

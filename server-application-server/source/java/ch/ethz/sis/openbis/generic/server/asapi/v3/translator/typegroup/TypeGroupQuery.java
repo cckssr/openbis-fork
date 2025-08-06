@@ -29,7 +29,7 @@ public interface TypeGroupQuery extends ObjectQuery
 {
     //Type Groups
 
-    @Select(sql = "select tg.id, tg.name, tg.registration_timestamp as registrationDate, "
+    @Select(sql = "select tg.id, tg.code, tg.registration_timestamp as registrationDate, "
             + "tg.modification_timestamp as modificationDate, tg.is_managed_internally as managedInternally, "
             + "tg.meta_data as metaData "
             + "from type_groups tg where tg.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)

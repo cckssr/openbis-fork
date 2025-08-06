@@ -50,7 +50,7 @@ public class TypeGroupBO extends AbstractBusinessObject implements ITypeGroupBO
             getTypeGroupDAO().delete(typeGroupPE);
         } catch (final DataAccessException ex)
         {
-            throwException(ex, String.format("type group '%s'", typeGroupPE.getName()));
+            throwException(ex, String.format("type group '%s'", typeGroupPE.getCode()));
         }
     }
 

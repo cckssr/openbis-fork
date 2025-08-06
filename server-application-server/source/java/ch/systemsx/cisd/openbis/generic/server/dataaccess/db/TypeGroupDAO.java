@@ -75,10 +75,10 @@ final class TypeGroupDAO extends AbstractGenericEntityDAO<TypeGroupPE> implement
     }
 
     @Override
-    public List<TypeGroupPE> findByNames(Collection<String> ids)
+    public List<TypeGroupPE> findByCodes(Collection<String> ids)
     {
         final DetachedCriteria criteria = DetachedCriteria.forClass(TypeGroupPE.class);
-        criteria.add(Restrictions.in("name", ids));
+        criteria.add(Restrictions.in("code", ids));
 
         final List<TypeGroupPE> list = cast(getHibernateTemplate().findByCriteria(criteria));
         if (operationLog.isDebugEnabled())
