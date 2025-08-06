@@ -2577,11 +2577,11 @@ TypeGroupAssignmentFetchOptions
 TypeGroupAssignmentId
 TypeGroupAssignmentSearchCriteria
 TypeGroupAssignmentSortOptions
+TypeGroupCodeSearchCriteria
 TypeGroupCreation
 TypeGroupDeletionOptions
 TypeGroupFetchOptions
 TypeGroupId
-TypeGroupNameSearchCriteria
 TypeGroupSearchCriteria
 TypeGroupSortOptions
 TypeGroupTechId
