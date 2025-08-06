@@ -32,7 +32,7 @@ public class TypeGroupCreation implements ICreation, IObjectCreation
     private static final long serialVersionUID = 1L;
 
     @JsonProperty
-    private String name;
+    private String code;
 
     @JsonProperty
     private boolean managedInternally;
@@ -41,14 +41,14 @@ public class TypeGroupCreation implements ICreation, IObjectCreation
     private Map<String, String> metaData;
 
     @JsonIgnore
-    public String getName()
+    public String getCode()
     {
-        return name;
+        return code;
     }
 
-    public void setName(String name)
+    public void setCode(String code)
     {
-        this.name = name;
+        this.code = code;
     }
 
     @JsonIgnore
@@ -76,7 +76,7 @@ public class TypeGroupCreation implements ICreation, IObjectCreation
     @Override
     public String toString()
     {
-        return new ObjectToString(this).append("name", name)
+        return new ObjectToString(this).append("code", code)
                 .append("managedInternally", managedInternally).toString();
     }
 }

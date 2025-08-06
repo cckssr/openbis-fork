@@ -21,13 +21,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchFieldType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.StringFieldSearchCriteria;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.typegroup.search.TypeGroupNameSearchCriteria")
-public class TypeGroupNameSearchCriteria extends StringFieldSearchCriteria
+@JsonObject("as.dto.typegroup.search.TypeGroupCodeSearchCriteria")
+public class TypeGroupCodeSearchCriteria extends StringFieldSearchCriteria
 {
     private static final long serialVersionUID = 1L;
 
-    public TypeGroupNameSearchCriteria()
+    public TypeGroupCodeSearchCriteria()
     {
-        super("name", SearchFieldType.ATTRIBUTE);
+        super("code", SearchFieldType.ATTRIBUTE);
     }
 }

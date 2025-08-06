@@ -30,16 +30,16 @@ public class TypeGroupSortOptions extends SortOptions<TypeGroup>
     private static final long serialVersionUID = 1L;
 
     @JsonIgnore
-    public static final String NAME = "NAME";
+    public static final String CODE = "CODE";
 
-    public SortOrder name()
+    public SortOrder code()
     {
-        return getOrCreateSorting(NAME);
+        return getOrCreateSorting(CODE);
     }
 
-    public SortOrder getName()
+    public SortOrder getCode()
     {
-        return getSorting(NAME);
+        return getSorting(CODE);
     }
 
 }

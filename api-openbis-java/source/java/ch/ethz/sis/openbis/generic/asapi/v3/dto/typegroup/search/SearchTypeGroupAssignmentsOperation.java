@@ -21,7 +21,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchObjectsOpera
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
-@JsonObject("as.dto.typegroup.search.SearchTypeGroupsOperation")
+@JsonObject("as.dto.typegroup.search.SearchTypeGroupAssignmentsOperation")
 public class SearchTypeGroupAssignmentsOperation extends SearchObjectsOperation<TypeGroupAssignmentSearchCriteria, TypeGroupAssignmentFetchOptions>
 {
     private static final long serialVersionUID = 1L;

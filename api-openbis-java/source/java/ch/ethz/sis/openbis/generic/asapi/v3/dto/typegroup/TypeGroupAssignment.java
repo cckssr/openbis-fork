@@ -127,7 +127,7 @@ public class TypeGroupAssignment implements Serializable, IRegistrationDateHolde
     {
         return new ObjectToString(this)
                 .append("sampleType", sampleType != null ? sampleType.getCode() : null)
-                .append("typeGroup", typeGroup != null ? typeGroup.getName() : null)
+                .append("typeGroup", typeGroup != null ? typeGroup.getCode() : null)
                 .append("managedInternally", managedInternally).toString();
     }
 }

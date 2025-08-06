@@ -25,8 +25,8 @@ public class TypeGroupId extends ObjectPermId implements ITypeGroupId
 {
     private static final long serialVersionUID = 1L;
 
-    public TypeGroupId(String name) {
-        super(name != null ? name.toUpperCase() : null);
+    public TypeGroupId(String code) {
+        super(code != null ? code.toUpperCase() : null);
     }
 
     //

@@ -19,7 +19,15 @@ package ch.systemsx.cisd.openbis.generic.shared.basic;
 
 import java.io.Serializable;
 
+/**
+ * Read-only interface for beans with a unique technical Id.
+ */
 public interface ICustomIdHolder<E extends Serializable>
 {
+    /**
+     * Returns the technical ID of this instance.
+     *
+     * @return <code>null</code> if there is no Id.
+     */
     public E getId();
 }

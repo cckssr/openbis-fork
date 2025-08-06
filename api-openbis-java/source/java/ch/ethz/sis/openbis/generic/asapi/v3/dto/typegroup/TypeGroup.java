@@ -22,7 +22,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.*;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.Person;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupTechId;
 import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonObject("as.dto.typegroup.TypeGroup")
-public class TypeGroup implements Serializable, INameHolder, IModificationDateHolder,
+public class TypeGroup implements Serializable, IModificationDateHolder, ICodeHolder,
         IModifierHolder, IRegistrationDateHolder, IRegistratorHolder
 {
     private static final long serialVersionUID = 1L;
@@ -46,7 +45,7 @@ public class TypeGroup implements Serializable, INameHolder, IModificationDateHo
     private TypeGroupFetchOptions fetchOptions;
 
     @JsonProperty
-    private String name;
+    private String code;
 
     @JsonProperty
     private Person registrator;
@@ -93,15 +92,14 @@ public class TypeGroup implements Serializable, INameHolder, IModificationDateHo
     }
 
     @JsonIgnore
-    @Override
-    public String getName()
+    public String getCode()
     {
-        return name;
+        return code;
     }
 
-    public void setName(String name)
+    public void setCode(String code)
     {
-        this.name = name;
+        this.code = code;
     }
 
     @JsonIgnore
@@ -195,7 +193,7 @@ public class TypeGroup implements Serializable, INameHolder, IModificationDateHo
     @Override
     public String toString()
     {
-        return new ObjectToString(this).append("name", name)
+        return new ObjectToString(this).append("name", code)
                 .append("managedInternally", managedInternally).toString();
     }
 }

@@ -30,9 +30,9 @@ public class TypeGroupSearchCriteria extends AbstractObjectSearchCriteria<ITypeG
     {
     }
 
-    public TypeGroupNameSearchCriteria withName()
+    public TypeGroupCodeSearchCriteria withCode()
     {
-        return with(new TypeGroupNameSearchCriteria());
+        return with(new TypeGroupCodeSearchCriteria());
     }
 
 

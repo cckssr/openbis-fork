@@ -36,7 +36,7 @@ public class TypeGroupUpdate implements IUpdate, IObjectUpdate<ITypeGroupId>, IM
     private ITypeGroupId typeGroupId;
 
     @JsonProperty
-    private FieldUpdateValue<String> name = new FieldUpdateValue<String>();
+    private FieldUpdateValue<String> code = new FieldUpdateValue<String>();
 
     @JsonProperty
     private ListUpdateMapValues metaData = new ListUpdateMapValues();
@@ -61,15 +61,15 @@ public class TypeGroupUpdate implements IUpdate, IObjectUpdate<ITypeGroupId>, IM
     }
 
     @JsonIgnore
-    public FieldUpdateValue<String> getName()
+    public FieldUpdateValue<String> getCode()
     {
-        return name;
+        return code;
     }
 
     @JsonIgnore
-    public void setName(String name)
+    public void setCode(String code)
     {
-        this.name.setValue(name);
+        this.code.setValue(code);
     }
 
     @JsonIgnore
