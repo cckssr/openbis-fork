@@ -39,7 +39,6 @@ public class TypeGroupImportHelper extends BasicImportHelper
 {
     private enum Attribute implements IAttribute
     {
-        CurrentCode("Current Code", false, true),
         Code("Code", true, true),
         Internal("Internal", false, false);
 
@@ -110,14 +109,7 @@ public class TypeGroupImportHelper extends BasicImportHelper
     @Override
     protected boolean isObjectExist(Map<String, Integer> header, List<String> values)
     {
-        String id;
-        String currentCode = getValueByColumnName(header, values, Attribute.CurrentCode);
-        if(currentCode != null)
-        {
-            id = currentCode;
-        } else {
-            id = getValueByColumnName(header, values, Attribute.Code);
-        }
+        String id = getValueByColumnName(header, values, Attribute.Code);
 
         final ITypeGroupId typeGroupId = new TypeGroupId(id);
         return delayedExecutor.getTypeGroup(typeGroupId, new TypeGroupFetchOptions()) != null;
@@ -141,16 +133,10 @@ public class TypeGroupImportHelper extends BasicImportHelper
     protected void updateObject(Map<String, Integer> header, List<String> values, int page,
             int line)
     {
-        String currentCode = getValueByColumnName(header, values, Attribute.CurrentCode);
         String code = getValueByColumnName(header, values, Attribute.Code);
 
         TypeGroupUpdate update = new TypeGroupUpdate();
-        TypeGroupId typeGroupId;
-        if(currentCode != null) {
-            typeGroupId = new TypeGroupId(currentCode);
-        } else {
-            typeGroupId = new TypeGroupId(code);
-        }
+        TypeGroupId typeGroupId = new TypeGroupId(code);
         update.setTypeGroupId(typeGroupId);
         update.setCode(code);
 

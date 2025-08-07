@@ -221,6 +221,8 @@ public class SampleTypeImportHelper extends BasicImportHelper
                 TypeGroupAssignmentCreation assignmentCreation = new TypeGroupAssignmentCreation();
                 assignmentCreation.setSampleTypeId(new EntityTypePermId(code, EntityKind.SAMPLE));
                 assignmentCreation.setTypeGroupId(new TypeGroupId(typeGroup));
+                //TODO how to handle internal type group assignments
+//                assignmentCreation.setManagedInternally(false);
                 typeGroupAssignmentCreations.add(assignmentCreation);
             }
             delayedExecutor.createTypeGroupAssignments(typeGroupAssignmentCreations, page, line);

@@ -269,13 +269,12 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
         setDataSetDataStoreExecutor.set(context, batch);
         setDataSetSampleExecutor.set(context, batch);
         setDataSetExperimentExecutor.set(context, batch);
-//        updateEntityPropertyExecutor.update(context, batch);
+        updateEntityPropertyExecutor.update(context, batch);
     }
 
     @Override
     protected void updateAll(IOperationContext context, MapBatch<DataSetCreation, DataPE> batch)
     {
-        updateEntityPropertyExecutor.update(context, batch);
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();
 
         for (Map.Entry<DataSetCreation, DataPE> entry : batch.getObjects().entrySet())
@@ -301,9 +300,6 @@ public class CreateDataSetExecutor extends AbstractCreateEntityExecutor<DataSetC
         setDataSetParentsExecutor.set(context, batch);
         setDataSetComponentsExecutor.set(context, batch);
         setDataSetContainerExecutor.set(context, batch);
-
-        //update datasets in db
-        daoFactory.getDataDAO().createDataSets(new ArrayList<>(batch.getObjects().values()), context.getSession().tryGetPerson());
     }
 
     @Override
