@@ -41,7 +41,7 @@ import static org.testng.Assert.assertEquals;
 
 public class UpdateTypeGroupTest extends AbstractTest
 {
-    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type group name cannot be null.*")
+    @Test(expectedExceptions = UserFailureException.class, expectedExceptionsMessageRegExp = "(?s).*Type group code cannot be null.*")
     public void testUpdateWithTypeGroupIdNull()
     {
         TypeGroupUpdate update = new TypeGroupUpdate();

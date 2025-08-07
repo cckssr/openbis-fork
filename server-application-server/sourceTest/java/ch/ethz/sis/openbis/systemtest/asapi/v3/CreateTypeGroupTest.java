@@ -108,7 +108,7 @@ public class CreateTypeGroupTest extends AbstractTest
     }
 
     @Test
-    public void testCreateWithNameNull()
+    public void testCreateWithCodeNull()
     {
         assertUserFailureException(new IDelegatedAction()
         {
@@ -121,7 +121,7 @@ public class CreateTypeGroupTest extends AbstractTest
                 v3api.createTypeGroups(sessionToken, Arrays.asList(creation));
 
             }
-        }, "Name cannot be empty");
+        }, "Code cannot be empty");
     }
 
     @Test

@@ -22,8 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractSetEntityToOneRelationWithCustomIdExecutor;
-import ch.systemsx.cisd.openbis.generic.client.web.client.exception.UserFailureException;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsId;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.SampleTypeTypeGroupsTechId;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
