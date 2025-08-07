@@ -1,6 +1,6 @@
 define([ "stjs", "as/dto/common/update/FieldUpdateValue", "as/dto/common/update/ListUpdateMapValues" ], function(stjs, FieldUpdateValue, ListUpdateMapValues) {
 	var TypeGroupUpdate = function() {
-		this.name = new FieldUpdateValue();
+		this.code = new FieldUpdateValue();
 		this.metaData = new ListUpdateMapValues();
 	};
 	stjs.extend(TypeGroupUpdate, null, [], function(constructor, prototype) {
