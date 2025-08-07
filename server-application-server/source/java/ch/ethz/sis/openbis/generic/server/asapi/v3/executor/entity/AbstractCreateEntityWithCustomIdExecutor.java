@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
 import javax.persistence.PersistenceException;
+import javax.validation.ConstraintViolationException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -82,9 +83,8 @@ public abstract class AbstractCreateEntityWithCustomIdExecutor<CREATION extends 
         {
             Throwable endOfChain = ch.systemsx.cisd.common.exceptions.ExceptionUtils.getEndOfChain(e);
             throw new UserFailureException(endOfChain.getMessage(), endOfChain);
-        } catch (RuntimeException e) {
-            int a = 1;
-            throw e;
+        } catch (ConstraintViolationException e) {
+            throw new UserFailureException(e.getMessage());
         }
     }
 
