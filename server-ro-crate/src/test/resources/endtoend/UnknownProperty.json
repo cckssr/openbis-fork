@@ -150,6 +150,7 @@
       "scicat:relatedPublications": "E. Borisova, G. Lovrić, A. Miettinen, L. Fardin, S. Bayat, A. Larsson, M. Stampanoni, J. C. Schittny, and C. M. Schlepütz. Micrometer-resolution X-ray tomographic full-volume reconstruction of an intact post-mortem juvenile rat lung. Histochem Cell Biol (2020). https://doi.org/10.1007/s00418-020-01868-8",
       "scicat:numberOfFiles": 0,
       "scicat:sizeOfArchive": 0,
+      "scicat:wrong": "should not be here ",
       "scicat:scicatUser": "schlepuetz_c",
       "@id": "https://doi.org/10.16907/7eb141d3-11f1-47a6-9d0e-76f8832ed1b2",
       "@type": [
