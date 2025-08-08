@@ -5,3 +5,4 @@ Design Documents
    :maxdepth: 4
 
    type-groups
+   app-openbis-drive
