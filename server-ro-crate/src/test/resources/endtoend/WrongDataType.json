@@ -9,7 +9,6 @@
       "about": "http://schema.org/about",
       "description": "http://schema.org/description",
       "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-      "title": "http://schema.org/title",
       "dateCreated": "http://schema.org/dateCreated",
       "rangeIncludes": "http://schema.org/rangeIncludes",
       "creativeWorkStatus": "http://schema.org/creativeWorkStatus",
@@ -76,14 +75,12 @@
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F7f8adb54-6abe-4c02-a1ad-c9b4a6d60f97",
       "name": "PSI-2018-R2-6_segmented_cropped_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions; cropped to the maximum extent of the lung structure and segmented to separate air spaces from lung tissue",
-      "contentSize": "302324856686",
       "@type": "Dataset"
     },
     {
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F07f633c1-7b3d-4e0e-bdce-491d57defce3",
       "name": "data_final_volume_fullresolution/PSI-2018-R2-6_full_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions",
-      "contentSize": "1173381773872",
       "@type": "Dataset"
     },
     {
@@ -128,7 +125,7 @@
         }
       ],
       "datePublished": "2020",
-      "title": "Micrometer-resolution X-ray tomographic imaging of a complete intact post mortem juvenile rat lung",
+      "name": "Micrometer-resolution X-ray tomographic imaging of a complete intact post mortem juvenile rat lung",
       "abstract": "In the associate article to these data sets, we present an X-ray tomographic imaging method that is well suited for pulmonary disease studies in animal models, to resolve the full pathway from gas intake to gas exchange. Current state-of-the-art synchrotron-based tomographic phase-contrast imaging methods allow for three-dimensional microscopic imaging data to be acquired non-destructively in scan times of the order of seconds with good soft tissue contrast. However, when studying multi-scale hierarchically structured objects, such as the mammalian lung, the overall sample size typically exceeds the field of view illuminated by the X-rays in a single scan, and the necessity for achieving a high spatial resolution conflicts with the need to image the whole sample. Several image-stitching and calibration techniques to achieve extended high-resolution fields of view have been reported, but those approaches tend to fail when imaging non-stable samples, thus precluding tomographic measurements of large biological samples, which are prone to degradation and motion during extended scan times. In this work, we demonstrate a full-volume three-dimensional reconstruction of an intact rat lung under immediate post mortem conditions and at an isotropic voxel size of (2.75 µm)^3. We present the methodology for collecting multiple local tomographies with 360 degree extended field of view scans followed by locally non-rigid volumetric stitching. Applied to the lung, it allows to resolve the entire pulmonary structure from the trachea down to the parenchyma in a single dataset.",
       "additionalType": "derived",
       "sdDatePublished": "2020-02-03T08:44:00.000Z",
@@ -160,7 +157,6 @@
       "@id": "https://dacat.psi.ch/api/v3/datasets/20.500.11935%2F904aa555-ac63-488e-9250-0fbeb6d9267c",
       "name": "PSI-2018-R2-6_cropped_volume",
       "description": "Full-volume high-resolution x-ray tomographic microscopy reconstruction of a juvenile rat lung in fresh post mortem conditions; cropped to the maximum extent of the lung structure",
-      "contentSize": "604648500482",
       "@type": "Dataset"
     },
     {
