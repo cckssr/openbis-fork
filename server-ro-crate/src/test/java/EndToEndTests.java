@@ -105,7 +105,7 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
-    public void testValidateUnknwon()
+    public void testValidateUnknown()
             throws Exception
     {
         getConfiguration();
@@ -117,7 +117,6 @@ public class EndToEndTests extends AbstractTest
         String resourceName = "endtoend/UnknownProperty.json";
         File file = new File(classLoader.getResource(resourceName).getFile());
 
-        String expected = "{\"isValid\":true}";
         given()
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
@@ -125,7 +124,9 @@ public class EndToEndTests extends AbstractTest
                 .when().post("http://localhost:8085/openbis/open-api/ro-crate/validate")
                 .then()
                 .body(allOf(containsString("\"validationErrors\":[{"),
-                        containsString("\"isValid\":false"), containsString("NUMBEROFFILES")))
+                        containsString("\"isValid\":false"),
+                        containsString("\"property\":\"wrong\""),
+                        containsString("\"message\":\"Property not in schema\"")))
                 .statusCode(200);
     }
 
