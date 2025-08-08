@@ -1,13 +1,16 @@
 package ch.openbis.drive.notifications;
 
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.db.NotificationDAOImpl;
 import ch.openbis.drive.model.Notification;
 import junit.framework.TestCase;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,8 +24,15 @@ public class NotificationManagerSqliteImplTest {
 
 
     public NotificationManagerSqliteImplTest() throws Exception {
-        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent());
+        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("notification-manager-sqlite-impl-test"));
+        createDatabaseDirectoryIfNotExists();
         notificationManager = new NotificationManagerSqliteImpl(configuration);
+    }
+
+    public void createDatabaseDirectoryIfNotExists() throws Exception {
+        if(!Files.exists(configuration.getLocalAppDirectory())) {
+            Files.createDirectories(configuration.getLocalAppDirectory());
+        }
     }
 
     @Test

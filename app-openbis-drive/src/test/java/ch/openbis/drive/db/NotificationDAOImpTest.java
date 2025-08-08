@@ -18,27 +18,25 @@ import java.util.stream.Collectors;
 public class NotificationDAOImpTest {
     private final String localDirectoryRoot = Path.of(
             this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent()
+            .resolve("notification-dao-impl-test")
             .toAbsolutePath().toString();
 
     private final Configuration configuration = new Configuration(Path.of(localDirectoryRoot));
 
     @Before
-    public void clearDatabase() throws IOException {
+    synchronized public void clearDatabase() throws Exception {
+        createDatabaseDirectoryIfNotExists();
         Files.deleteIfExists(Path.of(localDirectoryRoot, NotificationDAOImpl.DB_FILE_NAME));
     }
 
-    @Test
-    public void createDatabaseIfNotExists() throws Exception {
+    public void createDatabaseDirectoryIfNotExists() throws Exception {
         if(!Files.exists(Path.of(localDirectoryRoot))) {
             Files.createDirectories(Path.of(localDirectoryRoot));
         }
-        NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
-        notificationDAOImpl.createDatabaseIfNotExists();
     }
 
     @Test
-    public void insertOrUpdate() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void insertOrUpdate() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
@@ -61,8 +59,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void selectByTypeAndLocalDirAndFiles() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void selectByTypeAndLocalDirAndFiles() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
@@ -84,8 +81,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void removeByTypeAndLocalDirAndFiles() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void removeByTypeAndLocalDirAndFiles() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
@@ -118,8 +114,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void selectLast() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void selectLast() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
@@ -153,8 +148,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void removeByLocalDir() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void removeByLocalDir() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
@@ -188,8 +182,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void testRemoveOldEntriesByType() throws Exception {
-        createDatabaseIfNotExists();
+    synchronized public void testRemoveOldEntriesByType() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
         notificationDAOImpl.clearAll();
@@ -233,9 +226,7 @@ public class NotificationDAOImpTest {
     }
 
     @Test
-    public void clearAll() throws Exception {
-        createDatabaseIfNotExists();
-
+    synchronized public void clearAll() throws Exception {
 
         NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
 
