@@ -90,9 +90,9 @@ public class SchemaFacade implements ISchemaFacade
                 new RoCrate.RoCrateBuilder(name, description, dateString,
                         licenseIdentifier);
         roCrateBuilder.addValuePairToContext("schema",
-                "https://www.w3.org/TR/rdf-schema");
+                "https://schema.org");
         roCrateBuilder.addValuePairToContext("owl",
-                "https://www.w3.org/TR/owl-ref");
+                "http://www.w3.org/2002/07/owl#");
         for (Map.Entry<String, String> keyVal : context.entrySet()
         )
         {
