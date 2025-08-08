@@ -440,8 +440,9 @@ public class RoCrateSchemaValidationTest
                             .contains(propertyAssignmentCase.baseName + "CORRECT"),
                     "Data type " + propertyAssignmentCase.dataType.name() + " with property name \"" + propertyAssignmentCase.baseName + "CORRECT\" does not recognize correct value " + propertyAssignmentCase.correctValue);
             Assert.assertTrue(result.getWrongDataTypes().get(entityType.getPermId().getPermId())
-                            .contains(propertyAssignmentCase.baseName + "WRONG"),
-                    "Data type " + propertyAssignmentCase.dataType.name() + " with property name \"" + propertyAssignmentCase.baseName + "WRONG\" does not recognize correct value " + propertyAssignmentCase.incorrectValue);
+                            .stream().anyMatch(
+                                    x -> x.getProperty().equals(propertyAssignmentCase.baseName + "WRONG")),
+                    "Data type " + propertyAssignmentCase.dataType.name() + " with property name \"" + propertyAssignmentCase.baseName + "WRONG\" does not recognize incorrect value " + propertyAssignmentCase.incorrectValue);
         }
 
 

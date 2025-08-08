@@ -31,6 +31,9 @@ public class PsiExcel2Json
             PUBLICATION_TYPE_PERMID =
             new EntityTypePermId("SCICAT_PUBLISHEDDATA", EntityKind.SAMPLE);
 
+    public static final EntityTypePermId PUBLICATION_INTERSECTION_TYPE =
+            new EntityTypePermId("SCHEMA_CREATIVEWORK_SCICAT_PUBLISHEDDATA", EntityKind.SAMPLE);
+
 
     @Test
     public void testPsiCrate() throws JsonProcessingException
@@ -61,7 +64,7 @@ public class PsiExcel2Json
                 "numberOfFiles",
                 "sizeOfArchive");
 
-        assertEquals(12, openBisModel.getEntities().size());
+        assertEquals(13, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(1, openBisModel.getSpaces().size());
         assertEquals(1, openBisModel.getProjects().size());
@@ -79,12 +82,15 @@ public class PsiExcel2Json
         assertEquals("schlepuetz_c", entity.getProperties().get("scicatUser").toString());
         assertEquals("0", entity.getProperties().get("sizeOfArchive").toString());
 
-
-
-
-
-
-
+        Optional<IEntityType>
+                maybePublicationIntersectionType =
+                openBisModel.getEntityTypes().values().stream().filter(x -> x.getPermId().equals(
+                        PUBLICATION_INTERSECTION_TYPE)).findFirst();
+        assertTrue(maybePublicatioNType.isPresent());
+        IEntityType intersectionEntitytype = maybePublicationIntersectionType.get();
+        assertTrue(intersectionEntitytype.getPropertyAssignments().stream()
+                .map(x -> x.getPropertyType())
+                .filter(x -> x.getCode().contains("abstract")).findFirst().isPresent());
 
     }
 

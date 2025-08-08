@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.entities.AbstractEntity;
 import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +26,8 @@ import java.util.stream.Collectors;
 
 public class SchemaFacade implements ISchemaFacade
 {
+
+    private static Logger logger = LoggerFactory.getLogger(SchemaFacade.class);
 
     private final static String RDFS_CLASS = "rdfs:Class";
 
@@ -310,17 +314,6 @@ public class SchemaFacade implements ISchemaFacade
                 .collect(Collectors.toMap(x -> "schema:" + x.getKey(), x -> x.getKey()));
 
 
-        for (var keyValPair : keyValuePairs.entrySet())
-        {
-            if (keyValPair.getValue().equals("http://schema.org/rangeIncludes"))
-            {
-                rangeIdentifier = keyValPair.getKey();
-            }
-            if (keyValPair.getValue().equals("http://schema.org/domainIncludes"))
-            {
-                domainIdentifier = keyValPair.getKey();
-            }
-        }
 
 
 
@@ -499,10 +492,15 @@ public class SchemaFacade implements ISchemaFacade
                 String key =
                         properties.containsKey(a.getKey()) ? a.getKey() : "schema:" + a.getKey();
 
-                if (properties.containsKey(key))
+                if (!a.getKey().equals("@type") && !a.getKey().equals("@id"))
                 {
                     IPropertyType property = properties.get(key);
-                    if (property.getRange().stream().anyMatch(x -> x.startsWith("xsd:")))
+                    if (property == null)
+                    {
+                        logger.warn(
+                                "No PropertyType found for property " + key + " in entry " + entry.getId());
+                        entryProperties.put(a.getKey(), a.getValue());
+                    } else if (property.getRange().stream().anyMatch(x -> x.startsWith("xsd:")))
                     {
                         entryProperties.put(a.getKey(), a.getValue().toString());
                     } else
@@ -631,7 +629,7 @@ public class SchemaFacade implements ISchemaFacade
         Map<String, String> keyVals = getKeyValPairsFromMetadata(jsonMetaData);
         for (Map.Entry<String, String> entry : keyVals.entrySet())
         {
-            if (entry.getValue().equals("_:"))
+            if (entry.getValue().startsWith("_:"))
             {
                 return entry.getKey() + ":";
             }
