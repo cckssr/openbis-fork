@@ -17,6 +17,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 	this._freeFormTableController = freeFormTableController;
 	this._freeFormTableModel = freeFormTableModel;
 	this._container = null;
+
+	var _refreshableFields = [];
+
+    this.refresh = function() {
+        for(var field of _refreshableFields) {
+            field.refresh();
+        }
+    }
 	
 	this._getDefaultSizesDropdown = function(tableData, $wrappedTable) {
 		var _this = this;
@@ -39,6 +47,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 		}
 		$component.change(changeEvent(tableData, $wrappedTable));
 		Select2Manager.add($component);
+
+		$component.refresh = function() {
+		    this.unbind();
+            this.change(changeEvent(tableData, $wrappedTable));
+            Select2Manager.add(this);
+        }
+        _refreshableFields.push($component);
+
 		return $component;
 	}
 	
@@ -63,6 +79,11 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 		}
 		
 		$switch.change(changeEvent(tableData, $wrappedTable));
+		$switch.refresh = function() {
+            this.unbind();
+            this.change(changeEvent(tableData, $wrappedTable));
+        }
+        _refreshableFields.push($switch);
 		
 		$switch
 			.append($("<input>", {"value" : "detailed", "id" : "tableModeDetailed_" + uniqueId,"name" : "tableMode_" + uniqueId, "type" : "radio", "checked" : ""}))
@@ -124,8 +145,17 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 						_this._freeFormTableController.save();
 					};
 				}
-				$textField.keyup(keyUpEvent(i, tableData.modelMini));
-				$textField.focus(_this._getFocusEvent(tableData, null, i));
+				//TODO
+				let keyUp = keyUpEvent(i, tableData.modelMini);
+				let focusEvent = _this._getFocusEvent(tableData, null, i);
+				$textField.keyup(keyUp);
+				$textField.focus(focusEvent);
+				$textField.refresh = function() {
+                    this.unbind();
+                    this.keyup(keyUp);
+                    this.focus(focusEvent);
+                }
+                _refreshableFields.push($textField);
 //				$textField.blur(_this._getBlurEvent());
 				$colsContainer.append(FormUtil.getFieldForComponentWithLabel($textField, "Column " + (i+1)));
 			} else {
@@ -145,8 +175,16 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 						_this._freeFormTableController.save();
 					};
 				}
-				$textField.keyup(keyUpEvent(i, tableData.modelMini));
-				$textField.focus(_this._getFocusEvent(tableData, i, null));
+				let keyUp = keyUpEvent(i, tableData.modelMini);
+                let focusEvent = _this._getFocusEvent(tableData, i, null);
+				$textField.keyup(keyUp);
+				$textField.focus(focusEvent);
+				$textField.refresh = function() {
+                    this.unbind();
+                    this.keyup(keyUp);
+                    this.focus(focusEvent);
+                }
+                 _refreshableFields.push($textField);
 //				$textField.blur(_this._getBlurEvent());
 				$rowsContainer.append(FormUtil.getFieldForComponentWithLabel($textField, "Row " + (i+1)));
 			} else {
@@ -175,15 +213,22 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 				if(this._freeFormTableModel.isEnabled) {
 					var $textField = FormUtil._getInputField('text', null, "Pos (" + (i+1) + "," + (j+1) + ")", null, false);
 					$textField.val(tableData.modelDetailed[i][j]);
-					
 					var keyUpEvent = function(rowIdx, columIdx, modelDetailed) {
 						return function() {
 							modelDetailed[rowIdx][columIdx] = $(this).val();
 							_this._freeFormTableController.save();
 						};
 					}
-					$textField.keyup(keyUpEvent(i, j, tableData.modelDetailed));
-					$textField.focus(_this._getFocusEvent(tableData, i, j));
+					let keyUp = keyUpEvent(i, j, tableData.modelDetailed);
+                    let focusEvent = _this._getFocusEvent(tableData, i, j);
+                    $textField.keyup(keyUp);
+                    $textField.focus(focusEvent);
+                    $textField.refresh = function() {
+                        this.unbind();
+                        this.keyup(keyUp);
+                        this.focus(focusEvent);
+                    }
+                    _refreshableFields.push($textField);
 //					$textField.blur(_this._getBlurEvent());
 					
 					$column.append($textField);
@@ -208,13 +253,20 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 		if(this._freeFormTableModel.isEnabled) {
 			$title = $("<input>", { 'type' : 'text', 'style' : 'width:250px;' });
 			$title.val(tableData.name);
+
 			var keyUpEvent = function(tableData) {
 				return function() {
 					tableData.name = $(this).val();
 					_this._freeFormTableController.save();
 				};
 			}
-			$title.keyup(keyUpEvent(tableData));
+			let keyUp = keyUpEvent(tableData);
+            $title.keyup(keyUp);
+            $title.refresh = function() {
+                this.unbind();
+                this.keyup(keyUp);
+            }
+            _refreshableFields.push($title);
 		} else {
 			$title = $("<h3>");
 			$title.append(tableData.name);
@@ -230,20 +282,34 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 		// TXT events
 		//
 		var $toolBarBtnUcsv = FormUtil.getButtonWithText('Imp. TXT' ,null).attr('title', 'Import from TXT').tooltipster();
+
 		var clickUcsvFunc = function(tableData, $wrappedTable) {
 			return function() {
 				_this._freeFormTableController.importCSV(tableData, $wrappedTable); 
 			}
 		}
-		$toolBarBtnUcsv.click(clickUcsvFunc(tableData, $wrappedTable));
+		let toolBarBtnUcsvClick = clickUcsvFunc(tableData, $wrappedTable);
+        $toolBarBtnUcsv.click(toolBarBtnUcsvClick);
+        $toolBarBtnUcsv.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnUcsvClick);
+        }
+        _refreshableFields.push($toolBarBtnUcsv);
 		
 		var $toolBarBtnDcsv = FormUtil.getButtonWithText('Exp. TXT' ,null).attr('title', 'Export to TXT').tooltipster();
+
 		var clickDcsvFunc = function(tableData, $wrappedTable) {
 			return function() {
 				_this._freeFormTableController.exportCSV(tableData, $wrappedTable); 
 			}
 		}
-		$toolBarBtnDcsv.click(clickDcsvFunc(tableData, $wrappedTable));
+		let toolBarBtnDcsvClick = clickDcsvFunc(tableData, $wrappedTable);
+        $toolBarBtnDcsv.click(toolBarBtnDcsvClick);
+        $toolBarBtnDcsv.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnDcsvClick);
+        }
+        _refreshableFields.push($toolBarBtnDcsv);
 		
 		//
 		// Size Modifier
@@ -259,7 +325,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 				function(selectedField) { return selectedField.columnIdx !== null; },
 				function(selectedField) { _this._freeFormTableController.addColumn(tableData, $wrappedTable, selectedField.columnIdx); }
 		);
-		$toolBarBtnTACL.click(focusEventTACL);
+
+		let toolBarBtnTACLClick = focusEventTACL;
+        $toolBarBtnTACL.click(toolBarBtnTACLClick);
+        $toolBarBtnTACL.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTACLClick);
+        }
+        _refreshableFields.push($toolBarBtnTACL);
 		
 		var $toolBarBtnTACR = FormUtil.getButtonWithImage('./img/table-add-column-right.png' ,null).attr('title', 'Add Column on the right.').tooltipster();
 		var focusEventTACR = this._getFocusEventAction(
@@ -267,7 +340,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 				function(selectedField) { return selectedField.columnIdx !== null; },
 				function(selectedField) { _this._freeFormTableController.addColumn(tableData, $wrappedTable, selectedField.columnIdx + 1); }
 		);
-		$toolBarBtnTACR.click(focusEventTACR);
+
+		let toolBarBtnTACRClick = focusEventTACR;
+        $toolBarBtnTACR.click(toolBarBtnTACRClick);
+        $toolBarBtnTACR.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTACRClick);
+        }
+        _refreshableFields.push($toolBarBtnTACR);
 		
 		var $toolBarBtnTDC = FormUtil.getButtonWithImage('./img/table-delete-column.png' ,null).attr('title', 'Delete Column.').tooltipster();
 		var focusEventTDC = this._getFocusEventAction(
@@ -278,7 +358,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 					_this._freeFormTableModel.selectedField = null;
 				}
 		);
-		$toolBarBtnTDC.click(focusEventTDC);
+
+		let toolBarBtnTDCClick = focusEventTDC;
+        $toolBarBtnTDC.click(toolBarBtnTDCClick);
+        $toolBarBtnTDC.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTDCClick);
+        }
+        _refreshableFields.push($toolBarBtnTDC);
 		
 		//
 		// Row events
@@ -289,7 +376,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 				function(selectedField) { return selectedField.rowIdx !== null; },
 				function(selectedField) { _this._freeFormTableController.addRow(tableData, $wrappedTable, selectedField.rowIdx); }
 		);
-		$toolBarBtnTARA.click(focusEventTARA);
+
+		let toolBarBtnTARAClick = focusEventTARA;
+        $toolBarBtnTARA.click(toolBarBtnTARAClick);
+        $toolBarBtnTARA.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTARAClick);
+        }
+        _refreshableFields.push($toolBarBtnTARA);
 		
 		var $toolBarBtnTARB = FormUtil.getButtonWithImage('./img/table-add-row-below.png' ,null).attr('title', 'Add Row below.').tooltipster();
 		var focusEventTARB = this._getFocusEventAction(
@@ -297,7 +391,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 				function(selectedField) { return selectedField.rowIdx !== null; },
 				function(selectedField) { _this._freeFormTableController.addRow(tableData, $wrappedTable, selectedField.rowIdx + 1); }
 		);
-		$toolBarBtnTARB.click(focusEventTARB);
+
+		let toolBarBtnTARBClick = focusEventTARB;
+        $toolBarBtnTARB.click(toolBarBtnTARBClick);
+        $toolBarBtnTARB.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTARBClick);
+        }
+        _refreshableFields.push($toolBarBtnTARB);
 		
 		var $toolBarBtnTDR = FormUtil.getButtonWithImage('./img/table-delete-row.png' ,null).attr('title', 'Delete Row.').tooltipster();
 		var focusEventTDR = this._getFocusEventAction(
@@ -308,7 +409,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 					_this._freeFormTableModel.selectedField = null;
 				}
 		);
-		$toolBarBtnTDR.click(focusEventTDR);
+
+		let toolBarBtnTDRClick = focusEventTDR;
+        $toolBarBtnTDR.click(toolBarBtnTDRClick);
+        $toolBarBtnTDR.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnTDRClick);
+        }
+        _refreshableFields.push($toolBarBtnTDR);
 		
 		//
 		// Table events
@@ -317,13 +425,27 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 		var addTableFunc = function(tableData, $tableContainer) {
 			return function() { _this._freeFormTableController.addTable(tableData, $tableContainer); };
 		}
-		$toolBarBtnAT.click(addTableFunc(tableData, $tableContainer));
+
+		let toolBarBtnATClick = addTableFunc(tableData, $tableContainer);
+        $toolBarBtnAT.click(toolBarBtnATClick);
+        $toolBarBtnAT.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnATClick);
+        }
+        _refreshableFields.push($toolBarBtnAT);
 		
 		var $toolBarBtnDT = FormUtil.getButtonWithText('- Table' ,null).attr('title', 'Delete Table.').tooltipster();
 		var removeTableFunc = function(tableData, $tableContainer) {
 			return function() { _this._freeFormTableController.deleteTable(tableData, $tableContainer); };
 		}
-		$toolBarBtnDT.click(removeTableFunc(tableData, $tableContainer));
+
+		let toolBarBtnDTClick = removeTableFunc(tableData, $tableContainer);
+        $toolBarBtnDT.click(toolBarBtnDTClick);
+        $toolBarBtnDT.refresh = function() {
+            this.unbind();
+            this.click(toolBarBtnDTClick);
+        }
+        _refreshableFields.push($toolBarBtnDT);
 		
 		if(this._freeFormTableModel.isEnabled) {
 			$toolBar
@@ -383,7 +505,14 @@ function FreeFormTableView(freeFormTableController, freeFormTableModel) {
 			var addTableFunc = function(tableData, $tableContainer) {
 				return function() { _this._freeFormTableController.addTable(tableData, $tableContainer); };
 			}
-			$addTableWhenEmptyBtn.click(addTableFunc(null, null));
+
+			let addTableWhenEmptyBtnClick = addTableFunc(null, null);
+            $addTableWhenEmptyBtn.click(addTableWhenEmptyBtnClick);
+            $addTableWhenEmptyBtn.refresh = function() {
+                this.unbind();
+                this.click(addTableWhenEmptyBtnClick);
+            }
+            _refreshableFields.push($addTableWhenEmptyBtn);
 		}
 		
 		$legend.text("Free Form Tables ").append($addTableWhenEmptyBtn);

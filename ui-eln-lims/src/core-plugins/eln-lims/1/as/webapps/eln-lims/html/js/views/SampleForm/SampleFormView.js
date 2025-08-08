@@ -717,7 +717,7 @@
 			//
 			// Extra Content
 			//
-			$formColumn.append($("<div>", { 'id' : 'sample-form-content-extra' }));
+			$formColumn.append($("<div>", { 'id' : 'sample-form-content-extra-'+_this._viewId }));
 	
 			// Plugin Hook
 			var $sampleFormBottom = new $('<div>');
@@ -926,7 +926,10 @@
 			//
 			//Extra components
 			try {
-				profile.sampleFormContentExtra(this._sampleFormModel.sample.sampleTypeCode, this._sampleFormModel.sample, "sample-form-content-extra");
+				var extraContent = profile.sampleFormContentExtra(this._sampleFormModel.sample.sampleTypeCode, this._sampleFormModel.sample, "sample-form-content-extra-" + this._viewId);
+				if(extraContent) {
+				    _refreshableFields.push(extraContent);
+				}
 			} catch(err) {
 				Util.manageError(err);
 			}
@@ -1249,15 +1252,22 @@
 			//
 			var $codeField = null;
 			if(this._sampleFormModel.mode === FormMode.CREATE) {
-				var $textField = FormUtil._getInputField('text', 'codeId', "Code", null, true);
-				$textField.keyup(function(event){
-					var textField = $(this);
-					var caretPosition = this.selectionStart;
-					textField.val(textField.val().toUpperCase());
-					this.selectionStart = caretPosition;
-					this.selectionEnd = caretPosition;
-					_this._sampleFormModel.sample.code = textField.val();
-				});
+				var $textField = FormUtil._getInputField('text', 'codeId-'+_this._viewId, "Code", null, true);
+				var keyupFunction = function(event){
+                                        var textField = $(this);
+                                        var caretPosition = this.selectionStart;
+                                        textField.val(textField.val().toUpperCase());
+                                        this.selectionStart = caretPosition;
+                                        this.selectionEnd = caretPosition;
+                                        _this._sampleFormModel.sample.code = textField.val();
+                                    };
+				$textField.keyup(keyupFunction);
+                $textField.refresh = function() {
+                    this.unbind();
+                    this.keyup(keyupFunction);
+                }
+                _refreshableFields.push($textField);
+
 				$codeField = FormUtil.getFieldForComponentWithLabel($textField, "Code");
 	
 				if(sampleType.automaticCodeGeneration) {
