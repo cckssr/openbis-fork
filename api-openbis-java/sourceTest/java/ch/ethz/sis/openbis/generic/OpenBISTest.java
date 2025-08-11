@@ -29,7 +29,6 @@ public class OpenBISTest
 {
 
     private DummyHttpServer httpServer;
-    private OpenBIS openBIS;
     private final int PORT = 8818;
     private final String URL = "http://localhost:" + PORT;
 
@@ -55,7 +54,7 @@ public class OpenBISTest
 
         final String responseToken = "admin-12345";
 
-        httpServer.setNextResponse(responseToken); //setIdleTime
+        httpServer.setNextResponse(responseToken);
 
         OpenBIS openBIS = new OpenBIS(URL, timeout);
         String token = openBIS.login("admin", "aaa");
