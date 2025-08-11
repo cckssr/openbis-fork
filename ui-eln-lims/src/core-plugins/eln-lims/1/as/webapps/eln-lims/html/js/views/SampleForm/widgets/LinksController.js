@@ -83,7 +83,7 @@ function LinksController(title, sampleTypeHints, isDisabled, samplesToEdit, show
 	this.isValid = function() {
 		if(sampleTypeHints) {
 
-            var allOwnerAnnotations = linksView.stateObj;
+            var allOwnerAnnotations = linksModel.stateObj;
 
 			for(var typeIdx = 0; typeIdx < sampleTypeHints.length; typeIdx++) {
 				var sampleTypeHint = sampleTypeHints[typeIdx];
