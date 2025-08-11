@@ -159,7 +159,7 @@ public final class ProjectBO extends AbstractBusinessObject implements IProjectB
         if (projectId instanceof ProjectTechIdId)
         {
             ProjectTechIdId techIdId = (ProjectTechIdId) projectId;
-            return getProjectDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getProjectDAO().tryGetById(new TechId(techIdId.getTechId()));
         }
         throw new IllegalArgumentException("Unsupported project id: " + projectId);
     }
@@ -211,7 +211,7 @@ public final class ProjectBO extends AbstractBusinessObject implements IProjectB
     {
         try
         {
-            project = getProjectDAO().getByTechId(projectId);
+            project = getProjectDAO().getById(projectId);
         } catch (ObjectRetrievalFailureException exception)
         {
             throw new UserFailureException(String.format("Project with ID '%s' does not exist.",

@@ -135,7 +135,7 @@ public class OpenBisSessionManager extends DefaultSessionManager<Session> implem
     {
         if (oldPerson != null && !oldPerson.isSystemUser())
         {
-            PersonPE newPerson = daoFactory.getPersonDAO().tryGetByTechId(new TechId(oldPerson.getId()));
+            PersonPE newPerson = daoFactory.getPersonDAO().tryGetById(new TechId(oldPerson.getId()));
             if (newPerson != null)
             {
                 HibernateUtils.initialize(newPerson.getAllPersonRoles());

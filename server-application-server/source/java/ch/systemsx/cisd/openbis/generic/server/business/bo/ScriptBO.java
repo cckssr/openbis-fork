@@ -115,7 +115,7 @@ public final class ScriptBO extends AbstractBusinessObject implements IScriptBO
     {
         try
         {
-            script = getScriptDAO().getByTechId(id);
+            script = getScriptDAO().getById(id);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

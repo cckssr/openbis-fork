@@ -1,9 +1,6 @@
 package ch.eth.sis.rocrate.schemaorg;
 
-import ch.eth.sis.rocrate.facade.IPropertyType;
-import ch.eth.sis.rocrate.facade.IType;
-import ch.eth.sis.rocrate.facade.PropertyType;
-import ch.eth.sis.rocrate.facade.Type;
+import ch.eth.sis.rocrate.facade.*;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -199,6 +196,22 @@ public class SchemaOrgReader
                 }
             }
 
+        }
+
+        for (IPropertyType propertyType : idsToProperties.values())
+        {
+
+            if (propertyType.getDomain() == null)
+            {
+                continue;
+            }
+            for (IType type : propertyType.getDomain())
+            {
+
+                Type type1 = (Type) type;
+                type1.addRestriction(
+                        new Restriction(UUID.randomUUID().toString(), propertyType, 0, 0));
+            }
         }
 
 

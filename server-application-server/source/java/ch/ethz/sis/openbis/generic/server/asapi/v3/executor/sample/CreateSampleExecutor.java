@@ -321,6 +321,7 @@ public class CreateSampleExecutor extends AbstractCreateEntityExecutor<SampleCre
     @Override
     protected void updateAll(IOperationContext context, MapBatch<SampleCreation, SamplePE> batch)
     {
+
         Map<AttachmentHolderPE, Collection<? extends AttachmentCreation>> attachmentMap =
                 new HashMap<AttachmentHolderPE, Collection<? extends AttachmentCreation>>();
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();

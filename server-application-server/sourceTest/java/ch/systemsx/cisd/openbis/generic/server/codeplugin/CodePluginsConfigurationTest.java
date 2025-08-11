@@ -12,7 +12,7 @@ public class CodePluginsConfigurationTest
     public void testNoValues()
     {
         CodePluginsConfiguration configuration = new CodePluginsConfiguration(new Properties());
-        Assert.assertFalse(configuration.areEnabled());
+        Assert.assertTrue(configuration.areEnabled());
         Assert.assertTrue(configuration.isAllowedUser("system"));
         Assert.assertFalse(configuration.isAllowedUser("test1"));
         Assert.assertFalse(configuration.isAllowedUser("test2"));
@@ -23,7 +23,7 @@ public class CodePluginsConfigurationTest
     {
         Properties properties = new Properties();
         properties.setProperty(CodePluginsConfiguration.ENABLED_PROPERTY, String.valueOf(false));
-        properties.setProperty(CodePluginsConfiguration.ALLOWED_USERS_PROPERTY, "test1, test2");
+        properties.setProperty(CodePluginsConfiguration.ALLOWED_EDITING_USERS_PROPERTY, "test1, test2");
 
         CodePluginsConfiguration configuration = new CodePluginsConfiguration(properties);
         Assert.assertFalse(configuration.areEnabled());
@@ -38,7 +38,7 @@ public class CodePluginsConfigurationTest
     {
         Properties properties = new Properties();
         properties.setProperty(CodePluginsConfiguration.ENABLED_PROPERTY, String.valueOf(false));
-        properties.setProperty(CodePluginsConfiguration.ALLOWED_USERS_PROPERTY, "test.*, hello");
+        properties.setProperty(CodePluginsConfiguration.ALLOWED_EDITING_USERS_PROPERTY, "test.*, hello");
 
         CodePluginsConfiguration configuration = new CodePluginsConfiguration(properties);
         Assert.assertFalse(configuration.areEnabled());

@@ -418,13 +418,13 @@ public final class SampleDAOTest extends AbstractDAOTest
         deleteSamples(sampleToDelete);
 
         // test successful deletion of sample
-        assertNull(sampleDAO.tryGetByTechId(TechId.create(sampleToDelete)));
+        assertNull(sampleDAO.tryGetById(TechId.create(sampleToDelete)));
 
         // deleted sample had objects connected that should not be deleted:
         // - a parent
-        assertNotNull(sampleDAO.tryGetByTechId(new TechId(HibernateUtils.getId(generatedFrom))));
+        assertNotNull(sampleDAO.tryGetById(new TechId(HibernateUtils.getId(generatedFrom))));
         // - an experiment
-        assertNotNull(daoFactory.getExperimentDAO().tryGetByTechId(
+        assertNotNull(daoFactory.getExperimentDAO().tryGetById(
                 new TechId(HibernateUtils.getId(experiment))));
     }
 
@@ -439,8 +439,8 @@ public final class SampleDAOTest extends AbstractDAOTest
         { sample1, sample2 });
 
         // test successful deletion of sample
-        assertNull(sampleDAO.tryGetByTechId(TechId.create(sample1)));
-        assertNull(sampleDAO.tryGetByTechId(TechId.create(sample2)));
+        assertNull(sampleDAO.tryGetById(TechId.create(sample1)));
+        assertNull(sampleDAO.tryGetById(TechId.create(sample2)));
     }
 
     private void deleteSamples(SamplePE... samples)
@@ -508,7 +508,7 @@ public final class SampleDAOTest extends AbstractDAOTest
         deleteSamples(sampleToDelete);
 
         // test successful deletion of sample
-        assertNull(sampleDAO.tryGetByTechId(TechId.create(sampleToDelete)));
+        assertNull(sampleDAO.tryGetById(TechId.create(sampleToDelete)));
 
         // test successful deletion of sample properties
         int afterDeletionPropertiesRowCount = countRowsInTable(TableNames.SAMPLE_PROPERTIES_TABLE);
@@ -539,12 +539,12 @@ public final class SampleDAOTest extends AbstractDAOTest
         deleteSamples(sampleToDelete);
 
         // test successful deletion of sample
-        assertNull(sampleDAO.tryGetByTechId(TechId.create(sampleToDelete)));
+        assertNull(sampleDAO.tryGetById(TechId.create(sampleToDelete)));
 
         // test successful deletion of attachments & their contents
         for (TechId attachmentId : attachmentIds)
         {
-            assertNull(daoFactory.getAttachmentDAO().tryGetByTechId(attachmentId));
+            assertNull(daoFactory.getAttachmentDAO().tryGetById(attachmentId));
         }
         assertEquals(rowsInAttachmentContents, countRowsInTable(ATT_CONTENTS_TABLE));
     }

@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 public class RdfToOpenBisMapper
 {
 
-    public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
 
     public static OpenBisModel convert(ModelRDF modelRDF, String projectIdentifier)
     {
@@ -224,7 +223,7 @@ public class RdfToOpenBisMapper
                         (ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType) sampleType;
 
                 sample.setType(sampleType1);
-                sample.setCode(makeOpenBisCodeCompliant(sampleObject.code));
+                sample.setCode(OpenBisModel.makeOpenBisCodeCompliant(sampleObject.code));
                 Map<String, PropertyAssignment>
                         labelToProperty = sampleType1.getPropertyAssignments().stream()
                         .collect(Collectors.toMap(x -> x.getPropertyType().getLabel(), x -> x));
@@ -256,13 +255,6 @@ public class RdfToOpenBisMapper
 
     }
 
-    static String makeOpenBisCodeCompliant(String candiate)
-    {
-        return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
-                .replaceAll("%[0-9A-Fa-f]{2}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
-                .replaceAll("\\\\u([0-9A-Fa-f]{2}){6}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
-                .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
-    }
 
 
 

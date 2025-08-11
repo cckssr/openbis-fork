@@ -53,7 +53,7 @@ public class GridCustomFilterBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(filterDAO).getByTechId(TECH_ID);
+                    one(filterDAO).getById(TECH_ID);
                     will(returnValue(filter));
 
                     filter.setName(updates.getName());

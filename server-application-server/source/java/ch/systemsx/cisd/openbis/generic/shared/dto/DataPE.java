@@ -64,7 +64,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.HibernateUtils;
 public class DataPE extends AbstractIdAndCodeHolder<DataPE> implements
         IEntityInformationWithPropertiesHolder, IMatchingEntity, IIdentifierHolder, IDeletablePE,
         IEntityWithMetaprojects, IModifierAndModificationDateBean, IIdentityHolder,
-        IEntityWithMetaData
+        IMetaDataHolder
 {
 
     private static final long serialVersionUID = IServer.VERSION;

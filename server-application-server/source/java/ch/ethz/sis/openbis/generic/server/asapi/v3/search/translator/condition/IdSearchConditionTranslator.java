@@ -31,6 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAn
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagCode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.FullSampleIdentifier;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.sample.SampleIdentifierParts;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.mapper.TableMapper;
@@ -177,6 +178,10 @@ public class IdSearchConditionTranslator implements IConditionTranslator<IdSearc
         {
             sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
             args.add(((PropertyTypePermId) entityId).getPermId());
+        } else if (entityId.getClass() == TypeGroupId.class)
+        {
+            sqlBuilder.append(SearchCriteriaTranslator.MAIN_TABLE_ALIAS).append(PERIOD).append(CODE_COLUMN).append(EQ).append(QU);
+            args.add(((TypeGroupId) entityId).getPermId());
         } else
         {
             throw new IllegalArgumentException("Unknown id: class " + entityId.getClass().getSimpleName());

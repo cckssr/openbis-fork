@@ -17,6 +17,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.ProgressDetails;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 
 /**
@@ -29,7 +30,7 @@ public class UpdateRelationProgress extends EntityProgress
 
     private IUpdate update;
 
-    public UpdateRelationProgress(IUpdate update, IIdentityHolder entity, String relationName, int numItemsProcessed, int totalItemsToProcess)
+    public UpdateRelationProgress(IUpdate update, ICustomIdHolder entity, String relationName, int numItemsProcessed, int totalItemsToProcess)
     {
         super("updating relation " + relationName, entity, numItemsProcessed, totalItemsToProcess);
         this.update = update;

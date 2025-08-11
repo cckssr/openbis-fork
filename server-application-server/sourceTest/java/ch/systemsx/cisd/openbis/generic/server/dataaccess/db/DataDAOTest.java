@@ -391,7 +391,7 @@ public final class DataDAOTest extends AbstractDAOTest
         dataDAO.delete(deletedData);
 
         // test successful deletion of data set
-        assertNull(dataDAO.tryGetByTechId(TechId.create(deletedData)));
+        assertNull(dataDAO.tryGetById(TechId.create(deletedData)));
 
         // test successful deletion of data set properties
         assertFalse(deletedData.getProperties().isEmpty());
@@ -440,7 +440,7 @@ public final class DataDAOTest extends AbstractDAOTest
         dataDAO.delete(deletedData);
 
         // test successful deletion of data set
-        assertNull(dataDAO.tryGetByTechId(TechId.create(deletedData)));
+        assertNull(dataDAO.tryGetById(TechId.create(deletedData)));
 
         // deleted data set had child connected that should not have been deleted
         for (String child : childrenCodes)

@@ -15,19 +15,10 @@
  */
 package ch.ethz.sis.openbis.generic.server.xls.export;
 
+import ch.ethz.sis.openbis.generic.server.xls.export.helper.*;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.IXLSExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSDataSetExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSDataSetTypeExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSExperimentExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSExperimentTypeExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSProjectExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSSampleExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSSampleTypeExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSSpaceExportHelper;
-import ch.ethz.sis.openbis.generic.server.xls.export.helper.XLSVocabularyExportHelper;
 
 public class ExportHelperFactory
 {
@@ -50,6 +41,8 @@ public class ExportHelperFactory
 
     private final XLSDataSetExportHelper dataSetExportHelper;
 
+    private final XLSTypeGroupExportHelper typeGroupExportHelper;
+
     final Workbook wb;
 
     ExportHelperFactory(final Workbook wb)
@@ -65,6 +58,7 @@ public class ExportHelperFactory
         experimentExportHelper = new XLSExperimentExportHelper(wb);
         sampleExportHelper = new XLSSampleExportHelper(wb);
         dataSetExportHelper = new XLSDataSetExportHelper(wb);
+        typeGroupExportHelper = new XLSTypeGroupExportHelper(wb);
     }
 
     IXLSExportHelper<? extends IEntityType> getHelper(final ExportableKind exportableKind)
@@ -106,6 +100,10 @@ public class ExportHelperFactory
             case DATASET:
             {
                 return dataSetExportHelper;
+            }
+            case TYPE_GROUP:
+            {
+                return typeGroupExportHelper;
             }
             default:
             {

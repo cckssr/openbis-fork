@@ -113,7 +113,7 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
         } else if (metaprojectId instanceof MetaprojectTechIdId)
         {
             MetaprojectTechIdId techIdId = (MetaprojectTechIdId) metaprojectId;
-            return getMetaprojectDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getMetaprojectDAO().tryGetById(new TechId(techIdId.getTechId()));
         } else
         {
             throw new IllegalArgumentException("Unsupported metaproject id: " + metaprojectId);
@@ -125,7 +125,7 @@ public class MetaprojectBO extends AbstractBusinessObject implements IMetaprojec
     {
         try
         {
-            metaproject = getMetaprojectDAO().getByTechId(metaprojectId);
+            metaproject = getMetaprojectDAO().getById(metaprojectId);
         } catch (ObjectRetrievalFailureException exception)
         {
             throw new UserFailureException(String.format(

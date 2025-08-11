@@ -17,6 +17,10 @@
 function FreeFormTableController(sample, isEnabled) {
 	this._freeFormTableModel = new FreeFormTableModel(sample, isEnabled);
 	this._freeFormTableView = new FreeFormTableView(this, this._freeFormTableModel);
+
+	this.refresh = function () {
+	    this._freeFormTableView.refresh();
+    }
 	
 	this.init = function($container) {
 		this.load();

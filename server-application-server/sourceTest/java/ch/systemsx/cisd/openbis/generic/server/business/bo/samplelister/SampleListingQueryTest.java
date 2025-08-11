@@ -203,7 +203,7 @@ public class SampleListingQueryTest extends AbstractDAOTest
             final String msg = "id: " + sample.id;
             final SampleRecord sample2 = query.getSample(sample.id);
             assertTrue(msg, EqualsBuilder.reflectionEquals(sample, sample2));
-            final SamplePE samplePE = daoFactory.getSampleDAO().getByTechId(new TechId(sample.id));
+            final SamplePE samplePE = daoFactory.getSampleDAO().getById(new TechId(sample.id));
             assertEquals(msg, samplePE.getCode(), sample.code);
             assertEquals(msg, samplePE.getPermId(), sample.perm_id);
             assertEquals(msg, samplePE.getRegistrator().getId().longValue(),

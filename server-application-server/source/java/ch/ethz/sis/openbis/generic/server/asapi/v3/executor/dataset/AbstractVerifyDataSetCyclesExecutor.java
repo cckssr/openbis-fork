@@ -47,7 +47,7 @@ public abstract class AbstractVerifyDataSetCyclesExecutor extends AbstractVerify
     @Override
     protected String getIdentifier(Long entityId)
     {
-        DataPE dataSet = daoFactory.getDataDAO().getByTechId(new TechId(entityId));
+        DataPE dataSet = daoFactory.getDataDAO().getById(new TechId(entityId));
         return dataSet.getCode();
     }
 

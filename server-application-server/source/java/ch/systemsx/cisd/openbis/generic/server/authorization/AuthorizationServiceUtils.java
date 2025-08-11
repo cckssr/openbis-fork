@@ -242,17 +242,17 @@ public class AuthorizationServiceUtils
 
         if (EntityKind.EXPERIMENT.equals(entityKind))
         {
-            ExperimentPE experiment = daoFactory.getExperimentDAO().getByTechId(entityId);
+            ExperimentPE experiment = daoFactory.getExperimentDAO().getById(entityId);
             checkEntityNotNull(experiment, entityKind, entityId);
             canAccess = canAccessExperiment(experiment);
         } else if (EntityKind.SAMPLE.equals(entityKind))
         {
-            SamplePE sample = daoFactory.getSampleDAO().getByTechId(entityId);
+            SamplePE sample = daoFactory.getSampleDAO().getById(entityId);
             checkEntityNotNull(sample, entityKind, entityId);
             canAccess = canAccessSample(sample);
         } else if (EntityKind.DATA_SET.equals(entityKind))
         {
-            DataPE dataSet = daoFactory.getDataDAO().getByTechId(entityId);
+            DataPE dataSet = daoFactory.getDataDAO().getById(entityId);
             checkEntityNotNull(dataSet, entityKind, entityId);
             canAccess = canAccessDataSet(dataSet);
         } else if (EntityKind.MATERIAL.equals(entityKind))

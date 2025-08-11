@@ -128,7 +128,7 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
         } else if (dataSetId instanceof DataSetTechIdId)
         {
             DataSetTechIdId techIdId = (DataSetTechIdId) dataSetId;
-            return getDataDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getDataDAO().tryGetById(new TechId(techIdId.getTechId()));
         } else
         {
             throw new IllegalArgumentException("Unsupported data set id: " + dataSetId);
@@ -171,7 +171,7 @@ public class DataBO extends AbstractDataSetBusinessObject implements IDataBO
     {
         String[] connections =
                 { PROPERTY_TYPES, DATA_SET_TYPE };
-        data = getDataDAO().tryGetByTechId(datasetId, connections);
+        data = getDataDAO().tryGetById(datasetId, connections);
         if (data == null)
         {
             throw new UserFailureException(String.format("Data set with ID '%s' does not exist.",

@@ -26,7 +26,7 @@ public final class DatabaseVersionHolder
     /**
      * Current version of the database.
      */
-    private static final String DATABASE_VERSION = "204";
+    private static final String DATABASE_VERSION = "205";
 
     /** Current version of the database INDICES. */
     private static final String DATABASE_FULL_TEXT_SEARCH_DOCUMENT_VERSION = "002";

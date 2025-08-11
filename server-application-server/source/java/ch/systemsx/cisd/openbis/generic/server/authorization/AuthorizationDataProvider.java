@@ -141,7 +141,7 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
     @Override
     public ExperimentPE tryGetExperimentByTechId(TechId techId)
     {
-        return daoFactory.getExperimentDAO().tryGetByTechId(techId);
+        return daoFactory.getExperimentDAO().tryGetById(techId);
     }
 
     @Override
@@ -222,7 +222,7 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
     @Override
     public ProjectPE tryGetProjectByTechId(TechId techId)
     {
-        return daoFactory.getProjectDAO().tryGetByTechId(techId);
+        return daoFactory.getProjectDAO().tryGetById(techId);
     }
 
     @Override
@@ -390,13 +390,13 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
         switch (kind)
         {
             case EXPERIMENT:
-                ExperimentPE experiment = daoFactory.getExperimentDAO().getByTechId(techId);
+                ExperimentPE experiment = daoFactory.getExperimentDAO().getById(techId);
                 return experiment.getProject().getSpace();
             case SPACE:
-                SpacePE space = daoFactory.getSpaceDAO().getByTechId(techId);
+                SpacePE space = daoFactory.getSpaceDAO().getById(techId);
                 return space;
             case PROJECT:
-                ProjectPE project = daoFactory.getProjectDAO().getByTechId(techId);
+                ProjectPE project = daoFactory.getProjectDAO().getById(techId);
                 return project.getSpace();
         }
         return null;
@@ -441,25 +441,25 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
     @Override
     public SamplePE getSample(TechId techId)
     {
-        return daoFactory.getSampleDAO().getByTechId(techId);
+        return daoFactory.getSampleDAO().getById(techId);
     }
 
     @Override
     public GridCustomFilterPE getGridCustomFilter(TechId techId)
     {
-        return daoFactory.getGridCustomFilterDAO().getByTechId(techId);
+        return daoFactory.getGridCustomFilterDAO().getById(techId);
     }
 
     @Override
     public GridCustomColumnPE getGridCustomColumn(TechId techId)
     {
-        return daoFactory.getGridCustomColumnDAO().getByTechId(techId);
+        return daoFactory.getGridCustomColumnDAO().getById(techId);
     }
 
     @Override
     public QueryPE getQuery(TechId techId)
     {
-        return daoFactory.getQueryDAO().getByTechId(techId);
+        return daoFactory.getQueryDAO().getById(techId);
     }
 
     @Override
@@ -471,7 +471,7 @@ final public class AuthorizationDataProvider implements IAuthorizationDataProvid
     @Override
     public MetaprojectPE getMetaproject(TechId id)
     {
-        return daoFactory.getMetaprojectDAO().getByTechId(id);
+        return daoFactory.getMetaprojectDAO().getById(id);
     }
 
     /**

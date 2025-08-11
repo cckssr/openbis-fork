@@ -142,7 +142,7 @@ public class MetaprojectDAOTest extends AbstractDAOTest
     public void testUpdateMetaproject()
     {
         MetaprojectPE updatedMetaproject =
-                daoFactory.getMetaprojectDAO().getByTechId(new TechId(1L));
+                daoFactory.getMetaprojectDAO().getById(new TechId(1L));
 
         updatedMetaproject.setDescription("New description");
         daoFactory.getMetaprojectDAO().createOrUpdateMetaproject(updatedMetaproject,
@@ -172,7 +172,7 @@ public class MetaprojectDAOTest extends AbstractDAOTest
     @Test
     public void testListMetaprojectsForEntity()
     {
-        ExperimentPE experiment = daoFactory.getExperimentDAO().getByTechId(new TechId(4));
+        ExperimentPE experiment = daoFactory.getExperimentDAO().getById(new TechId(4));
         Collection<MetaprojectPE> connectedMetaprojects =
                 daoFactory.getMetaprojectDAO().listMetaprojectsForEntity(getTestPerson(),
                         experiment);
@@ -188,8 +188,8 @@ public class MetaprojectDAOTest extends AbstractDAOTest
     @Test
     public void testListMetaprojectsForEntities()
     {
-        ExperimentPE experiment1 = daoFactory.getExperimentDAO().getByTechId(new TechId(4));
-        ExperimentPE experiment2 = daoFactory.getExperimentDAO().getByTechId(new TechId(23));
+        ExperimentPE experiment1 = daoFactory.getExperimentDAO().getById(new TechId(4));
+        ExperimentPE experiment2 = daoFactory.getExperimentDAO().getById(new TechId(23));
 
         Collection<MetaprojectAssignmentPE> assignments =
                 daoFactory.getMetaprojectDAO().listMetaprojectAssignmentsForEntities(

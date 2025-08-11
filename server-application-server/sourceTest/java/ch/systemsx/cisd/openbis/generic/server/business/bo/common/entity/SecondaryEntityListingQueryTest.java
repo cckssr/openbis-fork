@@ -106,7 +106,7 @@ public class SecondaryEntityListingQueryTest extends AbstractDAOTest
     public void testListSamples()
     {
         LongSet idsOfSelfAndDescendants = dao.getSampleDescendantIdsAndSelf(SAMPLE_ROOT_ID.getId());
-        SamplePE rootSample = daoFactory.getSampleDAO().getByTechId(SAMPLE_ROOT_ID);
+        SamplePE rootSample = daoFactory.getSampleDAO().getById(SAMPLE_ROOT_ID);
         Set<SamplePE> descendantsAndSelf = new HashSet<SamplePE>();
         checkContainsDescendantIdsAndSelf(rootSample, idsOfSelfAndDescendants, descendantsAndSelf);
         assertEquals(descendantsAndSelf.size(), idsOfSelfAndDescendants.size());

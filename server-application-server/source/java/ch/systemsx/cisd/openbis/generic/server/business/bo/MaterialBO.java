@@ -89,7 +89,7 @@ public final class MaterialBO extends AbstractMaterialBusinessObject implements 
         } else if (materialId instanceof MaterialTechIdId)
         {
             MaterialTechIdId techIdId = (MaterialTechIdId) materialId;
-            return getMaterialDAO().tryGetByTechId(new TechId(techIdId.getTechId()));
+            return getMaterialDAO().tryGetById(new TechId(techIdId.getTechId()));
         } else
         {
             throw new IllegalArgumentException("Unsupported material id: " + materialId);

@@ -60,7 +60,7 @@ public class PersonWebAppSettingsTranslator extends AbstractCachingTranslator<Lo
     protected void updateObject(TranslationContext context, Long personId, ObjectHolder<Map<String, WebAppSettings>> result, Object relations,
             PersonFetchOptions fetchOptions)
     {
-        PersonPE person = daoFactory.getPersonDAO().getByTechId(new TechId(personId));
+        PersonPE person = daoFactory.getPersonDAO().getById(new TechId(personId));
 
         if (person == null)
         {

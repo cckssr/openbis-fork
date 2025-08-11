@@ -83,7 +83,7 @@ abstract class AbstractContentLoader
     protected final ExperimentReference loadExperimentByTechId(TechId experimentTechId)
     {
         final ExperimentPE experiment =
-                daoFactory.getExperimentDAO().tryGetByTechId(experimentTechId);
+                daoFactory.getExperimentDAO().tryGetById(experimentTechId);
         return createExperimentReference(experiment, "id = " + experimentTechId);
     }
 

@@ -275,7 +275,7 @@ public class ExperimentDAOTest extends AbstractDAOTest
         experimentDAO.delete(deletedExperiment);
 
         // test successful deletion of experiment
-        assertNull(experimentDAO.tryGetByTechId(TechId.create(deletedExperiment)));
+        assertNull(experimentDAO.tryGetById(TechId.create(deletedExperiment)));
 
         int afterDeletionPropertiesRowCount =
                 countRowsInTable(TableNames.EXPERIMENT_PROPERTIES_TABLE);
@@ -311,8 +311,8 @@ public class ExperimentDAOTest extends AbstractDAOTest
         experimentDAO.delete(deletedExperiment);
 
         // test successful deletion of experiment, attachment & content
-        assertNull(experimentDAO.tryGetByTechId(TechId.create(deletedExperiment)));
-        assertNull(daoFactory.getAttachmentDAO().tryGetByTechId(TechId.create(attachment)));
+        assertNull(experimentDAO.tryGetById(TechId.create(deletedExperiment)));
+        assertNull(daoFactory.getAttachmentDAO().tryGetById(TechId.create(attachment)));
 
         // We deleted the attachment we added as well as the one that was already connected to the
         // experiment

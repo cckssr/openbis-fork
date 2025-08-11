@@ -249,6 +249,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
@@ -265,6 +268,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.openbis.common.spring.IInvocationLoggerContext;
 import ch.systemsx.cisd.openbis.generic.shared.AbstractServerLogger;
@@ -479,6 +494,20 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         return null;
     }
 
+    @Override public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> creations)
+    {
+        logAccess(sessionToken, "create-type-groups", "NEW_TYPE_GROUPS(%s)", abbreviate(creations));
+        return null;
+    }
+
+    @Override
+    public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken,
+            List<TypeGroupAssignmentCreation> newTypeGroupAssignments)
+    {
+        logAccess(sessionToken, "create-type-group-assignments", "NEW_TYPE_GROUP_ASSIGNMENTS(%s)", abbreviate(newTypeGroupAssignments));
+        return null;
+    }
+
     @Override
     public void updateSpaces(String sessionToken, List<SpaceUpdate> spaceUpdates)
     {
@@ -591,6 +620,12 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     public void updateSemanticAnnotations(String sessionToken, List<SemanticAnnotationUpdate> annotationUpdates)
     {
         logAccess(sessionToken, "update-semantic-annotations", "SEMANTIC_ANNOTATION_UPDATES(%s)", abbreviate(annotationUpdates));
+    }
+
+    @Override
+    public void updateTypeGroups(String sessionToken, List<TypeGroupUpdate> updates)
+    {
+        logAccess(sessionToken, "update-type-groups", "TYPE_GROUP_UPDATES(%s)", abbreviate(updates));
     }
 
     @Override
@@ -778,6 +813,25 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     }
 
     @Override
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-type-groups", "TYPE_GROUP_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(typeGroupIds),
+                fetchOptions);
+        return null;
+    }
+
+    @Override
+    public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(
+            String sessionToken, List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "get-type-group-assignments", "TYPE_GROUP_ASSIGNMENT_IDS(%s) FETCH_OPTIONS(%s)", abbreviate(ids),
+                fetchOptions);
+        return null;
+    }
+
+    @Override
     public SearchResult<Space> searchSpaces(String sessionToken, SpaceSearchCriteria searchCriteria, SpaceFetchOptions fetchOptions)
     {
         logAccess(sessionToken, "search-spaces", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
@@ -927,6 +981,22 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
         return null;
     }
 
+    @Override public SearchResult<TypeGroup> searchTypeGroups(String sessionToken,
+            TypeGroupSearchCriteria searchCriteria, TypeGroupFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-type-groups", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
+    @Override
+    public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(String sessionToken,
+            TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        logAccess(sessionToken, "search-type-group-assignments", "SEARCH_CRITERIA:\n%s\nFETCH_OPTIONS:\n%s\n", searchCriteria, fetchOptions);
+        return null;
+    }
+
     @Override
     public void deleteSpaces(String sessionToken, List<? extends ISpaceId> spaceIds, SpaceDeletionOptions deletionOptions)
     {
@@ -1073,6 +1143,23 @@ public class ApplicationServerApiLogger extends AbstractServerLogger implements
     {
         logAccess(sessionToken, "delete-personal-access-tokens", "PERSONAL_ACCESS_TOKEN_IDS(%s) DELETION_OPTIONS(%s)",
                 abbreviate(personalAccessTokenIds), deletionOptions);
+    }
+
+    @Override
+    public void deleteTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-type-groups", "TYPE_GROUP_IDS(%s) DELETION_OPTIONS(%s)",
+                abbreviate(typeGroupIds), deletionOptions);
+    }
+
+    @Override
+    public void deleteTypeGroupAssignments(String sessionToken,
+            List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions)
+    {
+        logAccess(sessionToken, "delete-type-group-assignments", "TYPE_GROUP_ASSIGNMENT_IDS(%s) DELETION_OPTIONS(%s)",
+                abbreviate(typeGroupAssignmentIds), deletionOptions);
     }
 
     @Override

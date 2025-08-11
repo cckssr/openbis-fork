@@ -195,7 +195,7 @@ public class EventDAOTest extends AbstractDAOTest
         System.out.println("ACTIVE: " + TestTransaction.isActive());
         daoFactory.getDataDAO().delete(
                 Arrays.asList(new TechId(13), new TechId(14), new TechId(15)),
-                daoFactory.getPersonDAO().getByTechId(new TechId(1)),
+                daoFactory.getPersonDAO().getById(new TechId(1)),
                 "Test deletion of data set container");
         List<DeletedDataSet> events = listDataDeletionEvents(null);
         Collections.sort(events, new Comparator<DeletedDataSet>()

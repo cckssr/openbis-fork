@@ -74,7 +74,7 @@ public class ExperimentPE extends AttachmentHolderPE implements
         IEntityInformationWithPropertiesHolder, IIdAndCodeHolder, Comparable<ExperimentPE>,
         IModifierAndModificationDateBean, IMatchingEntity, IDeletablePE, IEntityWithMetaprojects,
         IIdentityHolder,
-        Serializable, IEntityWithMetaData
+        Serializable, IMetaDataHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
 

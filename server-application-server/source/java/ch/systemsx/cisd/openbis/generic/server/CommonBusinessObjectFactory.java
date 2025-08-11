@@ -20,65 +20,7 @@ import ch.systemsx.cisd.openbis.generic.server.business.IDataStoreServiceFactory
 import ch.systemsx.cisd.openbis.generic.server.business.IEntityOperationChecker;
 import ch.systemsx.cisd.openbis.generic.server.business.IRelationshipService;
 import ch.systemsx.cisd.openbis.generic.server.business.IServiceConversationClientManagerLocal;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.AbstractBusinessObjectFactory;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.AttachmentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.AuthorizationGroupBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.CorePluginTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DataBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DataSetTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DataStoreBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DeletedDataSetTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.DeletionTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.EntityTypePropertyTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ExperimentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.GridCustomColumnBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.GridCustomFilterBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IAttachmentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IAuthorizationGroupBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ICommonBusinessObjectFactory;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ICorePluginTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataSetTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IDataStoreBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IDeletedDataSetTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IDeletionTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IEntityTypePropertyTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IExperimentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IGridCustomFilterOrColumnBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMaterialTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IMetaprojectBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IProjectBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IPropertyTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IPropertyTypeTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IRoleAssignmentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ISampleTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IScriptBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ISearchDomainSearcher;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ISpaceBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ITrashBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.IVocabularyTermBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.MaterialBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.MaterialTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.MetaprojectBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ProjectBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.PropertyTypeBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.PropertyTypeTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.RoleAssignmentTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.SampleBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.SampleTable;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.ScriptBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.SearchDomainSearcher;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.SpaceBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.TrashBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.VocabularyBO;
-import ch.systemsx.cisd.openbis.generic.server.business.bo.VocabularyTermBO;
+import ch.systemsx.cisd.openbis.generic.server.business.bo.*;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.DatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.datasetlister.IDatasetLister;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.materiallister.IMaterialLister;
@@ -381,4 +323,17 @@ public final class CommonBusinessObjectFactory extends AbstractBusinessObjectFac
                 dataSetTypeWithoutExperimentChecker, relationshipService);
     }
 
+    @Override
+    public ITypeGroupBO createTypeGroupBO(Session session)
+    {
+        return new TypeGroupBO(getDaoFactory(), session, getManagedPropertyEvaluatorFactory(),
+                dataSetTypeWithoutExperimentChecker, relationshipService);
+    }
+
+    @Override
+    public ITypeGroupAssignmentTable createTypeGroupAssignmentTable(Session session)
+    {
+        return new TypeGroupAssignmentTable(getDaoFactory(), session, getManagedPropertyEvaluatorFactory(),
+                dataSetTypeWithoutExperimentChecker, relationshipService);
+    }
 }

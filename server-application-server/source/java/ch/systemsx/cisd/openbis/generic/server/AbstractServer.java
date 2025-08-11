@@ -37,7 +37,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.AbstractSearchObjectsOperationExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.common.search.cache.ICacheManager;
 import ch.systemsx.cisd.authentication.DefaultSessionManager;
 import ch.systemsx.cisd.authentication.IPrincipalProvider;
@@ -60,7 +59,6 @@ import ch.systemsx.cisd.openbis.generic.server.authorization.validator.Expressio
 import ch.systemsx.cisd.openbis.generic.server.business.IDataStoreServiceFactory;
 import ch.systemsx.cisd.openbis.generic.server.business.IPropertiesBatchManager;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IRoleAssignmentDAO;
 import ch.systemsx.cisd.openbis.generic.server.plugin.DataSetServerPluginRegistry;
 import ch.systemsx.cisd.openbis.generic.server.plugin.IDataSetTypeSlaveServerPlugin;
 import ch.systemsx.cisd.openbis.generic.server.plugin.ISampleTypeSlaveServerPlugin;
@@ -1015,7 +1013,7 @@ public abstract class AbstractServer<T> extends AbstractServiceWithLogger<T> imp
         {
             SpacePE homeGroup =
                     groupIdOrNull == null ? null
-                            : getDAOFactory().getSpaceDAO().getByTechId(
+                            : getDAOFactory().getSpaceDAO().getById(
                                     groupIdOrNull);
             person.setHomeSpace(homeGroup);
             getDAOFactory().getPersonDAO().updatePerson(person);

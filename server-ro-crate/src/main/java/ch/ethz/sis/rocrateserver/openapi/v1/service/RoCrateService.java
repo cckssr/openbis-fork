@@ -6,7 +6,6 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationErrorMapping;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
@@ -19,7 +18,6 @@ import lombok.SneakyThrows;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 
 @Path("/openbis/open-api/ro-crate")
@@ -73,7 +71,7 @@ public class RoCrateService {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
 
@@ -97,12 +95,13 @@ public class RoCrateService {
         try {
             ImportDelegate.OpenBisImportResult openBisImportResult =
                     importDelegate.import_(openBIS, headers, body, true);
-            return ValidationReport.serialize(new ValidationReport(true,
+            return ValidationReport.serialize(
+                    new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
                     ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
         } catch (Exception ex) {
-            return ValidationReport.serialize(new ValidationReport(false, List.of()));
+            throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
 
@@ -133,7 +132,7 @@ public class RoCrateService {
 
             throw new RuntimeException(ex);
         } finally {
-            SessionWorkSpaceManager.clear(headers.getApiKey());
+            //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
 
 

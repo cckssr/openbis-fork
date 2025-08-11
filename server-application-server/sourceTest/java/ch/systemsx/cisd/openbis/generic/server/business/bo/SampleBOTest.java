@@ -1082,7 +1082,7 @@ public final class SampleBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(sampleDAO).tryGetByTechId(with(new TechId(sample.getId())),
+                    one(sampleDAO).tryGetById(with(new TechId(sample.getId())),
                             with(any(String[].class)));
                     will(returnValue(sample));
                 }

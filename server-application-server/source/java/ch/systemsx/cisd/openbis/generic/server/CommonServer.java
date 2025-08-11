@@ -3652,7 +3652,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     public Script getScriptInfo(String sessionToken, TechId scriptId)
     {
         getSession(sessionToken);
-        ScriptPE script = getDAOFactory().getScriptDAO().getByTechId(scriptId);
+        ScriptPE script = getDAOFactory().getScriptDAO().getById(scriptId);
         return ScriptTranslator.enhancePredeployedPlugin(ScriptTranslator.translate(script),
                 entityValidationFactory, dynamicPropertyCalculatorFactory,
                 managedPropertyEvaluatorFactory);
@@ -4049,7 +4049,7 @@ public final class CommonServer extends AbstractCommonServer<ICommonServerForInt
     {
         checkSession(sessionToken);
         Date modificationDate =
-                getDAOFactory().getMaterialDAO().tryGetByTechId(entityId).getModificationDate();
+                getDAOFactory().getMaterialDAO().tryGetById(entityId).getModificationDate();
         Map<String, String> properties = createPropertiesMap(modifiedProperties);
         updateMaterial(sessionToken, entityId,
                 EntityHelper.translatePropertiesMapToList(properties), null, modificationDate);
