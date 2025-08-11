@@ -176,7 +176,7 @@ public class ConfirmDeletionExecutor implements IConfirmDeletionExecutor
             deleteExperiments(context, deletion);
 
             // WORKAROUND to get the fresh deletion and fix org.hibernate.NonUniqueObjectException
-            DeletionPE freshDeletion = deletionDAO.getByTechId(TechId.create(deletion));
+            DeletionPE freshDeletion = deletionDAO.getById(TechId.create(deletion));
             deletionDAO.delete(freshDeletion);
         }
 

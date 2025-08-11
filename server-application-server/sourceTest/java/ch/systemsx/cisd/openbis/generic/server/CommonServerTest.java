@@ -2030,7 +2030,7 @@ public final class CommonServerTest extends AbstractServerTestCase
                     mySession.setPerson(person);
                     will(returnValue(mySession));
 
-                    one(groupDAO).getByTechId(groupId);
+                    one(groupDAO).getById(groupId);
                     will(returnValue(group));
 
                     allowing(personDAO).updatePerson(person);

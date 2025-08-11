@@ -26,8 +26,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.create.SemanticAnnotationCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.fetchoptions.SemanticAnnotationFetchOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAnnotationPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import org.apache.commons.io.FilenameUtils;
@@ -42,6 +42,8 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.testng.Assert.*;
 
@@ -89,6 +91,12 @@ public class ImportSampleTypesTest extends AbstractImportTest
 
     private static final String SAMPLE_TYPES_UPDATE_BY_SEMANTIC_ANNOTATIONS =
             "sample_types/sample_type_update_by_semantic_annotations.xls";
+
+    private static final String SAMPLE_TYPES_WITH_TYPE_GROUPS_NORMAL =
+            "sample_types/sample_type_with_type_groups_normal.xls";
+
+    private static final String SAMPLE_TYPES_WITH_TYPE_GROUPS_DELAYED =
+            "sample_types/sample_type_with_type_groups_delayed.xls";
 
 
 
@@ -558,6 +566,54 @@ public class ImportSampleTypesTest extends AbstractImportTest
 
         List<PropertyAssignment> assignments = antibody.getPropertyAssignments();
         assertEquals(assignments.size(), 3);
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSampleTypeWithTypeGroupNormal() throws IOException
+    {
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR,
+                        SAMPLE_TYPES_WITH_TYPE_GROUPS_NORMAL));
+
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY_WITH_TYPE_GROUPS_NORMAL");
+
+        List<PropertyAssignment> assignments = antibody.getPropertyAssignments();
+        assertEquals(assignments.size(), 1);
+
+        List<TypeGroupAssignment> typeGroupAssignments = antibody.getTypeGroupAssignments();
+        assertEquals(typeGroupAssignments.size(), 2);
+        Set<String> groups = typeGroupAssignments.stream().map(x -> x.getTypeGroup().getCode()).collect(Collectors.toSet());
+        assertEquals(groups, Set.of("TEST_GROUP_1", "TEST_GROUP_2"));
+    }
+
+    @Test
+    @DirtiesContext
+    public void testSampleTypeWithTypeGroupDelayed() throws IOException
+    {
+        sessionToken = v3api.loginAsSystem();
+
+        // GIVEN
+        final String sessionWorkspaceFilePath = uploadToAsSessionWorkspace(sessionToken,
+                FilenameUtils.concat(FILES_DIR,
+                        SAMPLE_TYPES_WITH_TYPE_GROUPS_DELAYED));
+
+        TestUtils.createFrom(v3api, sessionToken, Paths.get(sessionWorkspaceFilePath));
+
+        SampleType antibody = TestUtils.getSampleType(v3api, sessionToken, "ANTIBODY_WITH_TYPE_GROUPS_DELAYED");
+
+        List<PropertyAssignment> assignments = antibody.getPropertyAssignments();
+        assertEquals(assignments.size(), 1);
+
+        List<TypeGroupAssignment> typeGroupAssignments = antibody.getTypeGroupAssignments();
+        assertEquals(typeGroupAssignments.size(), 2);
+        Set<String> groups = typeGroupAssignments.stream().map(x -> x.getTypeGroup().getCode()).collect(Collectors.toSet());
+        assertEquals(groups, Set.of("TEST_GROUP_1", "TEST_GROUP_2"));
     }
 
 

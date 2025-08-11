@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.ProgressDetails;
-import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 
 /**
  * @author pkupczyk
@@ -32,19 +32,19 @@ public class CheckAccessProgress extends EntityProgress
 
     private IUpdate update;
 
-    public CheckAccessProgress(IIdHolder entity, ICreation creation, int numItemsProcessed, int totalItemsToProcess)
+    public CheckAccessProgress(ICustomIdHolder entity, ICreation creation, int numItemsProcessed, int totalItemsToProcess)
     {
         this(entity, numItemsProcessed, totalItemsToProcess);
         this.creation = creation;
     }
 
-    public CheckAccessProgress(IIdHolder entity, IUpdate update, int numItemsProcessed, int totalItemsToProcess)
+    public CheckAccessProgress(ICustomIdHolder entity, IUpdate update, int numItemsProcessed, int totalItemsToProcess)
     {
         this(entity, numItemsProcessed, totalItemsToProcess);
         this.update = update;
     }
 
-    private CheckAccessProgress(IIdHolder entity, int numItemsProcessed, int totalItemsToProcess)
+    private CheckAccessProgress(ICustomIdHolder entity, int numItemsProcessed, int totalItemsToProcess)
     {
         super("checking access", entity, numItemsProcessed, totalItemsToProcess);
     }

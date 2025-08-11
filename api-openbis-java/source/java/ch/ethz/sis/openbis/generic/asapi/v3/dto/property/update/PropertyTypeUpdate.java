@@ -15,6 +15,7 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.property.update;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,7 +32,8 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.property.update.PropertyTypeUpdate")
-public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeId>
+public class PropertyTypeUpdate implements IUpdate, IObjectUpdate<IPropertyTypeId>,
+        IMetaDataUpdateHolder
 {
     private static final long serialVersionUID = 1L;
 

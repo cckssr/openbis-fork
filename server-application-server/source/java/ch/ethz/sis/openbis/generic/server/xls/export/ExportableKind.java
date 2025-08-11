@@ -26,7 +26,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 
 public enum ExportableKind
 {
-    SAMPLE_TYPE, EXPERIMENT_TYPE, DATASET_TYPE, VOCABULARY_TYPE,
+    SAMPLE_TYPE, EXPERIMENT_TYPE, DATASET_TYPE, VOCABULARY_TYPE, TYPE_GROUP,
     SPACE, PROJECT, SAMPLE, EXPERIMENT, DATASET;
 //    TODO:
 //    USER, GROUP

@@ -133,4 +133,13 @@ public interface IDAOFactory extends IAuthorizationDAOFactory
      */
     public ISemanticAnnotationDAO getSemanticAnnotationDAO();
 
+    /**
+     * Returns an implementation of {@link ITypeGroupDAO}.
+     */
+    public ITypeGroupDAO getTypeGroupDAO();
+
+    /**
+     * Returns an implementation of {@link ITypeGroupAssignmentDAO}.
+     */
+    public ITypeGroupAssignmentDAO getTypeGroupAssignmentDAO();
 }

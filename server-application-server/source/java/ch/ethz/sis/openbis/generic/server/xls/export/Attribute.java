@@ -86,6 +86,8 @@ public enum Attribute
 
     URL_TEMPLATE("URL Template", false, false, true),
 
+    TYPE_GROUP("Type Group", true, false, true),
+
     VALIDATION_SCRIPT("Validation script", true, true, true);
 
     final String name;

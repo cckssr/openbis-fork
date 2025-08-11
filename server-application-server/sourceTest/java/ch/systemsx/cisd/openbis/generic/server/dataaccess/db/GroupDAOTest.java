@@ -106,7 +106,7 @@ public final class GroupDAOTest extends AbstractDAOTest
         groupDAO.delete(deletedGroup);
 
         // test successful deletion of group
-        assertNull(groupDAO.tryGetByTechId(TechId.create(deletedGroup)));
+        assertNull(groupDAO.tryGetById(TechId.create(deletedGroup)));
     }
 
     @Test(expectedExceptions = DataIntegrityViolationException.class)

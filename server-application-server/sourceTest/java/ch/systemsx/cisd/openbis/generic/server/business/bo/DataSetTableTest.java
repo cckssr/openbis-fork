@@ -197,7 +197,7 @@ public final class DataSetTableTest extends AbstractBOTest
                     allowing(daoFactory).getSampleDAO();
                     will(returnValue(sampleDAO));
 
-                    one(sampleDAO).getByTechId(sampleId);
+                    one(sampleDAO).getById(sampleId);
                     will(returnValue(sample));
 
                     one(dataDAO).listDataSets(sample);
@@ -221,7 +221,7 @@ public final class DataSetTableTest extends AbstractBOTest
                     allowing(daoFactory).getExperimentDAO();
                     will(returnValue(experimentDAO));
 
-                    one(experimentDAO).getByTechId(experimentId);
+                    one(experimentDAO).getById(experimentId);
                     will(returnValue(experimentPE));
 
                     one(dataDAO).listDataSets(experimentPE);

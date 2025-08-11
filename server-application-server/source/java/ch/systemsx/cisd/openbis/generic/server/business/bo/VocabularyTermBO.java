@@ -98,7 +98,7 @@ public final class VocabularyTermBO extends AbstractBusinessObject implements IV
     {
         try
         {
-            vocabularyTermPE = getVocabularyTermDAO().getByTechId(vocabularyTermId);
+            vocabularyTermPE = getVocabularyTermDAO().getById(vocabularyTermId);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

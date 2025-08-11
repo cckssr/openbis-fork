@@ -19,8 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
-import ch.systemsx.cisd.openbis.generic.shared.basic.CodeConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +55,9 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
     @Autowired
     private ISampleTypeSemanticAnnotationTranslator annotationTranslator;
 
+    @Autowired
+    private ISampleTypeTypeGroupAssignmentTranslator sampleTypeGroupTranslator;
+
     @Override
     protected SampleType createObject(TranslationContext context, Long typeId, SampleTypeFetchOptions fetchOptions)
     {
@@ -85,6 +88,11 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
         {
             relations.put(ISampleTypeSemanticAnnotationTranslator.class,
                     annotationTranslator.translate(context, typeIds, fetchOptions.withSemanticAnnotations()));
+        }
+        if(fetchOptions.hasTypeGroupAssignments())
+        {
+            relations.put(ISampleTypeTypeGroupAssignmentTranslator.class,
+                    sampleTypeGroupTranslator.translate(context, typeIds, fetchOptions.withTypeGroupAssignments()));
         }
 
         return relations;
@@ -125,6 +133,12 @@ public class SampleTypeTranslator extends AbstractCachingTranslator<Long, Sample
         {
             result.setSemanticAnnotations((List<SemanticAnnotation>) relations.get(ISampleTypeSemanticAnnotationTranslator.class, typeId));
             result.getFetchOptions().withSemanticAnnotationsUsing(fetchOptions.withSemanticAnnotations());
+        }
+        if(fetchOptions.hasTypeGroupAssignments())
+        {
+            result.setTypeGroupAssignments((List<TypeGroupAssignment>) relations.get(
+                    ISampleTypeTypeGroupAssignmentTranslator.class, typeId));
+            result.getFetchOptions().withTypeGroupAssignmentsUsing(fetchOptions.withTypeGroupAssignments());
         }
     }
 

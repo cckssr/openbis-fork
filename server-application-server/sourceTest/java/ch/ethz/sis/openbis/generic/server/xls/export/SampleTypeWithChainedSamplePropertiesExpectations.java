@@ -71,7 +71,7 @@ class SampleTypeWithChainedSamplePropertiesExpectations extends Expectations
                     sampleType.setSubcodeUnique(true);
                     sampleType.setModificationDate(modificationDate);
                     sampleType.setPropertyAssignments(getDepartmentPropertyAssignments(fetchOptions));
-
+                    sampleType.setTypeGroupAssignments(List.of());
                     return Collections.singletonMap(sampleType.getPermId(), sampleType);
                 }
 
@@ -104,6 +104,7 @@ class SampleTypeWithChainedSamplePropertiesExpectations extends Expectations
                     sampleType.setManagedInternally(false);
                     sampleType.setModificationDate(modificationDate);
                     sampleType.setPropertyAssignments(getPersonPropertyAssignments(fetchOptions));
+                    sampleType.setTypeGroupAssignments(List.of());
                     return Collections.singletonMap(sampleType.getPermId(), sampleType);
                 }
 
@@ -131,6 +132,7 @@ class SampleTypeWithChainedSamplePropertiesExpectations extends Expectations
                 sampleType.setSubcodeUnique(true);
                 sampleType.setModificationDate(modificationDate);
                 sampleType.setPropertyAssignments(getCoursePropertyAssignments(fetchOptions));
+                sampleType.setTypeGroupAssignments(List.of());
                 final Plugin validationPlugin = new Plugin();
                 validationPlugin.setFetchOptions(fetchOptions.withValidationPlugin());
                 validationPlugin.setName("date_range_validation");

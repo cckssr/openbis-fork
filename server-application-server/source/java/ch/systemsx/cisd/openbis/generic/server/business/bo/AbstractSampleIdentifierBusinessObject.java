@@ -157,6 +157,6 @@ abstract class AbstractSampleIdentifierBusinessObject extends AbstractBusinessOb
     {
         String[] connections =
                 { PROPERTY_TYPES, EXPERIMENT };
-        return getSampleDAO().tryGetByTechId(sampleId, connections);
+        return getSampleDAO().tryGetById(sampleId, connections);
     }
 }

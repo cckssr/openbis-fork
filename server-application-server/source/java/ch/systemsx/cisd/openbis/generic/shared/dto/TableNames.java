@@ -178,6 +178,10 @@ public final class TableNames
     
     public static final String SEMANTIC_ANNOTATIONS_TABLE = "semantic_annotations";
 
+    public static final String TYPE_GROUPS_TABLE = "type_groups";
+
+    public static final String SAMPLE_TYPE_TYPE_GROUPS_TABLE = "sample_type_type_groups";
+
     private TableNames()
     {
         // This class can not be instantiated.

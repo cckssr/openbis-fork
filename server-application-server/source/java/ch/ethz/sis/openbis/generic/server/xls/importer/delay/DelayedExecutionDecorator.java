@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -91,6 +92,18 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.update.SpaceUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
@@ -270,6 +283,9 @@ public class DelayedExecutionDecorator
         } else if (clazz == PropertyTypeUpdate.class)
         {
             // no delay for PropertyTypeUpdate
+        } else if(clazz == TypeGroupAssignmentCreation.class)
+        {
+            createTypeGroupAssignments(List.of((TypeGroupAssignmentCreation)delayedExecution.getCreationOrUpdate()), delayedExecution.getPage(), delayedExecution.getLine());
         }
     }
 
@@ -1222,6 +1238,76 @@ public class DelayedExecutionDecorator
         { // Execute
             v3.createSemanticAnnotations(sessionToken, List.of(creation));
         }
+    }
+
+
+    public TypeGroup getTypeGroup(ITypeGroupId typeGroupId, TypeGroupFetchOptions fetchOptions)
+    {
+        return v3.getTypeGroups(this.sessionToken, List.of(typeGroupId), fetchOptions).getOrDefault(typeGroupId, null);
+    }
+
+    public Map<ITypeGroupId, TypeGroup> getTypeGroups(List<ITypeGroupId> typeGroupIds, TypeGroupFetchOptions fetchOptions)
+    {
+        return v3.getTypeGroups(this.sessionToken, typeGroupIds, fetchOptions);
+    }
+
+
+    public void createTypeGroup(TypeGroupCreation creation)
+    {
+        addIdsAndExecuteDelayed(v3.createTypeGroups(this.sessionToken, List.of(creation)).get(0), ImportTypes.TYPE_GROUP, null);
+    }
+
+    public void updateTypeGroup(TypeGroupUpdate update)
+    {
+        v3.updateTypeGroups(this.sessionToken, List.of(update));
+    }
+
+    public TypeGroupAssignment getTypeGroupAssignment(ITypeGroupAssignmentId typeGroupAssignmentId, TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        return v3.getTypeGroupAssignments(this.sessionToken, List.of(typeGroupAssignmentId), fetchOptions).getOrDefault(typeGroupAssignmentId, null);
+    }
+
+    public List<TypeGroupAssignment> getTypeGroupAssignmentsForSampleType(String sampleTypeId, TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        TypeGroupAssignmentSearchCriteria criteria = new TypeGroupAssignmentSearchCriteria();
+        criteria.withSampleType().withCode().thatEquals(sampleTypeId);
+        SearchResult<TypeGroupAssignment> result = v3.searchTypeGroupAssignments(this.sessionToken, criteria, fetchOptions);
+        return result.getObjects();
+    }
+
+    public void deleteTypeGroupAssignments(List<ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions)
+    {
+        v3.deleteTypeGroupAssignments(this.sessionToken, typeGroupAssignmentIds, deletionOptions);
+    }
+
+
+    public void createTypeGroupAssignments(List<TypeGroupAssignmentCreation> creations, int page, int line)
+    {
+        Map<ITypeGroupId, TypeGroupAssignmentCreation> creationMap = creations.stream()
+                .collect(Collectors.toMap(TypeGroupAssignmentCreation::getTypeGroupId, x -> x));
+        Map<ITypeGroupId, TypeGroup> existingTypeGroups = getTypeGroups(
+                new ArrayList<>(creationMap.keySet()), new TypeGroupFetchOptions());
+        List<TypeGroupAssignmentCreation> readyCreations = new ArrayList<>();
+        for(Map.Entry<ITypeGroupId, TypeGroupAssignmentCreation> entry : creationMap.entrySet()) {
+            if(!existingTypeGroups.containsKey(entry.getKey()))
+            {
+                DelayedExecution delayedExecution = new DelayedExecution(null, entry.getKey(),
+                        entry.getValue(), page, line);
+                delayedExecution.addDependencies(List.of(entry.getKey()));
+                addDelayedExecution(delayedExecution);
+            } else {
+                readyCreations.add(entry.getValue());
+            }
+        }
+
+        if(!readyCreations.isEmpty())
+        {
+            v3.createTypeGroupAssignments(this.sessionToken, readyCreations);
+        }
+
+
+
     }
 
 }

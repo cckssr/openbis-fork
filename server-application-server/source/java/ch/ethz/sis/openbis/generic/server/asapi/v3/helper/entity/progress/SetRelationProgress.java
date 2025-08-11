@@ -17,7 +17,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.ProgressDetails;
-import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 
 /**
  * @author pkupczyk
@@ -29,7 +29,7 @@ public class SetRelationProgress extends EntityProgress
 
     private ICreation creation;
 
-    public SetRelationProgress(IIdHolder entity, ICreation creation, String relationName, int numItemsProcessed, int totalItemsToProcess)
+    public SetRelationProgress(ICustomIdHolder entity, ICreation creation, String relationName, int numItemsProcessed, int totalItemsToProcess)
     {
         super("setting relation " + relationName, entity, numItemsProcessed, totalItemsToProcess);
         this.creation = creation;

@@ -94,6 +94,9 @@ public interface ICommonBusinessObjectFactory extends IAbstractBussinessObjectFa
 
     public IMetaprojectBO createMetaprojectBO(Session session);
 
+    public ITypeGroupBO createTypeGroupBO(Session session);
+
+    public ITypeGroupAssignmentTable createTypeGroupAssignmentTable(Session session);
     /**
      * Returns the entity resolver.
      */

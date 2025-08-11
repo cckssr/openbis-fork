@@ -38,71 +38,9 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
  */
 @Component
 public abstract class AbstractSetEntityToOneRelationExecutor<ENTITY_CREATION extends ICreation, ENTITY_PE extends IIdHolder, RELATED_ID, RELATED_PE>
-        implements ISetEntityRelationsExecutor<ENTITY_CREATION, ENTITY_PE>
+        extends AbstractSetEntityToOneRelationWithCustomIdExecutor<ENTITY_CREATION, ENTITY_PE, RELATED_ID, RELATED_PE, Long>
 {
 
-    @Autowired
-    protected IRelationshipService relationshipService;
 
-    @Override
-    public void set(final IOperationContext context, MapBatch<ENTITY_CREATION, ENTITY_PE> batch)
-    {
-        List<RELATED_ID> relatedIds = new LinkedList<RELATED_ID>();
-
-        for (ENTITY_CREATION creation : batch.getObjects().keySet())
-        {
-            RELATED_ID relatedId = getRelatedId(creation);
-
-            if (relatedId != null)
-            {
-                relatedIds.add(relatedId);
-            }
-        }
-
-        final Map<RELATED_ID, RELATED_PE> relatedMap = map(context, relatedIds);
-
-        new MapBatchProcessor<ENTITY_CREATION, ENTITY_PE>(context, batch)
-            {
-                @Override
-                public void process(ENTITY_CREATION creation, ENTITY_PE entity)
-                {
-                    RELATED_ID relatedId = getRelatedId(creation);
-
-                    if (relatedId == null)
-                    {
-                        check(context, entity, null, null);
-                        set(context, entity, null);
-                    } else
-                    {
-                        RELATED_PE related = relatedMap.get(relatedId);
-
-                        if (related == null)
-                        {
-                            throw new ObjectNotFoundException((IObjectId) relatedId);
-                        }
-
-                        check(context, entity, relatedId, related);
-                        set(context, entity, related);
-                    }
-                }
-
-                @Override
-                public IProgress createProgress(ENTITY_CREATION creation, ENTITY_PE entity, int objectIndex, int totalObjectCount)
-                {
-                    return new SetRelationProgress(entity, creation, getRelationName(), objectIndex, totalObjectCount);
-                }
-
-            };
-    }
-
-    protected abstract String getRelationName();
-
-    protected abstract RELATED_ID getRelatedId(ENTITY_CREATION creation);
-
-    protected abstract Map<RELATED_ID, RELATED_PE> map(IOperationContext context, List<RELATED_ID> relatedIds);
-
-    protected abstract void check(IOperationContext context, ENTITY_PE entity, RELATED_ID relatedId, RELATED_PE related);
-
-    protected abstract void set(IOperationContext context, ENTITY_PE entity, RELATED_PE related);
 
 }

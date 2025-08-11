@@ -16,7 +16,11 @@
 
 function NewProductsController() {
 	this._newProductsModel = new NewProductsModel();
-	this._newProductsView = new NewProductsView(this, this._newProductsModel);
+	this._newProductsView = new NewProductsView(this, this._newProductsModel, mainController.getNextId());
+
+	this.refresh = function () {
+        this._newProductsView.refresh();
+    }
 	
 	this.init = function($container, spaceCode) {
 		this._newProductsView.repaint($container, spaceCode);

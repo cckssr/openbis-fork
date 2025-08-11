@@ -451,7 +451,6 @@ function LinksView(linksController, linksModel, viewId) {
                 linksController.addSample({ identifier : selected[sIdx].identifier.identifier });
             }
             if (selected.length > 0 ) {
-                console.log(selected.length);
                 searchDropdown.clearSelection();
             }
         });

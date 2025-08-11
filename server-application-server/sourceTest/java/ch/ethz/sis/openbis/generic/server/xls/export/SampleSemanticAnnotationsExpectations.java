@@ -81,6 +81,7 @@ class SampleSemanticAnnotationsExpectations extends Expectations
                 final SampleTypeFetchOptions fetchOptions =
                         (SampleTypeFetchOptions) invocation.getParameter(2);
                 fetchOptions.withPropertyAssignments();
+                fetchOptions.withTypeGroupAssignments();
                 final PropertyAssignment namePropertyAssignment = getNamePropertyAssignment();
 
                 final Space space = new Space();
@@ -196,6 +197,7 @@ class SampleSemanticAnnotationsExpectations extends Expectations
             LocalDateTime dateTime = LocalDateTime.parse("2018-05-05T11:50:55");
             var instant = dateTime.toInstant(ZoneOffset.UTC);
             type.setModificationDate(Date.from(instant));
+            type.setTypeGroupAssignments(List.of());
             type.setSubcodeUnique(false);
 
         }

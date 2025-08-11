@@ -57,7 +57,7 @@ public class ListPersonByMe extends AbstractListObjectById<Me, PersonPE>
         }
         // The session user has to be loaded from the database because it isn't in the Hibernate session.
         // This is important for example when adding the session user to an authorization group.
-        PersonPE reloadedPerson = personDAO.getByTechId(TechId.create(person));
+        PersonPE reloadedPerson = personDAO.getById(TechId.create(person));
         return Collections.nCopies(ids.size(), reloadedPerson);
     }
 

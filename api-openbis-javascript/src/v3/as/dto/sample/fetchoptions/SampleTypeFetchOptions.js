@@ -2,8 +2,10 @@
  * Class automatically generated with
  * {@link ch.ethz.sis.openbis.generic.shared.api.v3.dto.generators.DtoGenerator}
  */
-define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetchoptions/SampleTypeSortOptions", "as/dto/property/fetchoptions/PropertyAssignmentFetchOptions",
-         "as/dto/plugin/fetchoptions/PluginFetchOptions", "as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions" ], function(stjs, FetchOptions) {
+define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetchoptions/SampleTypeSortOptions",
+         "as/dto/property/fetchoptions/PropertyAssignmentFetchOptions", "as/dto/plugin/fetchoptions/PluginFetchOptions",
+         "as/dto/semanticannotation/fetchoptions/SemanticAnnotationFetchOptions", "as/dto/typegroup/fetchoptions/TypeGroupAssignmentFetchOptions"
+         ], function(stjs, FetchOptions) {
 	var SampleTypeFetchOptions = function() {
 	};
 	stjs.extend(SampleTypeFetchOptions, FetchOptions, [ FetchOptions ], function(constructor, prototype) {
@@ -13,6 +15,20 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetch
 		prototype.propertyAssignments = null;
 		prototype.validationPlugin = null;
 		prototype.semanticAnnotations = null;
+		prototype.typeGroupAssignments = null;
+		prototype.withTypeGroupAssignments = function() {
+            if (this.typeGroupAssignments == null) {
+                var TypeGroupAssignmentFetchOptions = require("as/dto/typegroup/fetchoptions/TypeGroupAssignmentFetchOptions");
+                this.typeGroupAssignments = new TypeGroupAssignmentFetchOptions();
+            }
+            return this.typeGroupAssignments;
+        };
+        prototype.withTypeGroupAssignmentsUsing = function(fetchOptions) {
+            return this.typeGroupAssignments = fetchOptions;
+        };
+        prototype.hasTypeGroupAssignments = function() {
+            return this.typeGroupAssignments != null;
+        };
 		prototype.withPropertyAssignments = function() {
 			if (this.propertyAssignments == null) {
 				var PropertyAssignmentFetchOptions = require("as/dto/property/fetchoptions/PropertyAssignmentFetchOptions");
@@ -66,6 +82,7 @@ define([ "stjs", "as/dto/common/fetchoptions/FetchOptions", "as/dto/sample/fetch
 		propertyAssignments : "PropertyAssignmentFetchOptions",
 		validationPlugin : "PluginFetchOptions",
 		semanticAnnotations : "SemanticAnnotationFetchOptions",
+		typeGroupAssignments : "TypeGroupAssignmentFetchOptions",
 		sort : "SampleTypeSortOptions"
 	});
 	return SampleTypeFetchOptions;

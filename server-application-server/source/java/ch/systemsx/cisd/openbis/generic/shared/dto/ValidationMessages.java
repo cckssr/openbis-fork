@@ -250,6 +250,8 @@ public final class ValidationMessages
 
     public static final String DETAILS_PATH_NOT_RELATIVE = "Details path is not relative";
 
+    public static final String TYPE_GROUP_NOT_NULL_MESSAGE = "Type group" + CAN_NOT_BE_NULL;
+
     private ValidationMessages()
     {
         // Can not be instantiated.

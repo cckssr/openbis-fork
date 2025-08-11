@@ -159,6 +159,7 @@ public class CreateExperimentExecutor extends AbstractCreateEntityExecutor<Exper
     @Override
     protected void updateAll(IOperationContext context, MapBatch<ExperimentCreation, ExperimentPE> batch)
     {
+
         Map<AttachmentHolderPE, Collection<? extends AttachmentCreation>> attachmentMap =
                 new HashMap<AttachmentHolderPE, Collection<? extends AttachmentCreation>>();
         Map<IEntityWithMetaprojects, Collection<? extends ITagId>> tagMap = new HashMap<IEntityWithMetaprojects, Collection<? extends ITagId>>();

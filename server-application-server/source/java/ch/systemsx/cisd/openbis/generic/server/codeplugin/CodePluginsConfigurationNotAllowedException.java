@@ -6,7 +6,7 @@ public class CodePluginsConfigurationNotAllowedException extends UserFailureExce
 {
     public CodePluginsConfigurationNotAllowedException(final String userId)
     {
-        super("User '" + userId + "' is not allowed to change code plugins configuration. Use '" + CodePluginsConfiguration.ALLOWED_USERS_PROPERTY
+        super("User '" + userId + "' is not allowed to change code plugins configuration. Use '" + CodePluginsConfiguration.ALLOWED_EDITING_USERS_PROPERTY
                 + "' property in AS service.properties to change the list of allowed users.");
     }
 }

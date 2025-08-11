@@ -58,11 +58,13 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 		}
 		
 		this.sampleFormContentExtra = function(sampleTypeCode, sample, containerId) {
+		    var extraContent = null;
 			var sampleType = this.getSampleTypeForSampleTypeCode(sampleTypeCode);
 			if(this.getPropertyTypeFromSampleType(sampleType, "FREEFORM_TABLE_STATE")) {
 				var isEnabled = mainController.currentView._sampleFormModel.mode !== FormMode.VIEW;
 				var freeFormTableController = new FreeFormTableController(sample, isEnabled);
 				freeFormTableController.init($("#" + containerId));
+				extraContent = freeFormTableController;
 			} else if(sampleTypeCode === "ORDER") {
 				var isExisting = mainController.currentView._sampleFormModel.mode === FormMode.VIEW;
 				var isFromState = false;
@@ -289,8 +291,8 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 							for(var pageIdx = 0; pageIdx < orderPages.length; pageIdx++) {
 								Util.downloadTextFile(orderPages[pageIdx], "order_" + sample.code + "_p" + pageIdx + ".txt");
 							}
-							
-						}, "Print Order", null, "print-order-id");
+
+						}, "Print Order", null, "print-order-id-" + mainController.getNextId());
 						
 						//
 						// Order Summary Grid
@@ -452,11 +454,15 @@ $.extend(StandardProfile.prototype, DefaultProfile.prototype, {
 			} else if(sampleTypeCode === "REQUEST") {
 				var isEnabled = mainController.currentView._sampleFormModel.mode !== FormMode.VIEW;
 				if(isEnabled) {
+
 					var $newProductsController = new NewProductsController();
 						$newProductsController.init($("#" + containerId), sample.spaceCode);
 						mainController.currentView._newProductsController = $newProductsController;
+                    extraContent = $newProductsController;
 				}
 			}
+
+			return extraContent;
 		}
 		
 

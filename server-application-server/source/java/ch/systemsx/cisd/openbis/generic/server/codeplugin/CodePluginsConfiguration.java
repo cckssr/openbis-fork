@@ -11,9 +11,9 @@ public class CodePluginsConfiguration
 
     public static final String ENABLED_PROPERTY = "code-plugins.enabled";
 
-    public static final boolean ENABLED_DEFAULT = false;
+    public static final boolean ENABLED_DEFAULT = true;
 
-    public static final String ALLOWED_USERS_PROPERTY = "code-plugins.allowed-users";
+    public static final String ALLOWED_EDITING_USERS_PROPERTY = "code-plugins.allowed-editing-users";
 
     public static final String ALLOWED_USERS_DEFAULT = "system";
 
@@ -25,7 +25,7 @@ public class CodePluginsConfiguration
     {
         this.enabled = PropertyUtils.getBoolean(properties, ENABLED_PROPERTY, ENABLED_DEFAULT);
 
-        List<String> allowedUsers = PropertyUtils.tryGetListInOriginalCase(properties, ALLOWED_USERS_PROPERTY);
+        List<String> allowedUsers = PropertyUtils.tryGetListInOriginalCase(properties, ALLOWED_EDITING_USERS_PROPERTY);
         if (allowedUsers == null)
         {
             allowedUsers = Collections.singletonList(ALLOWED_USERS_DEFAULT);

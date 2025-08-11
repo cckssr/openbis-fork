@@ -73,7 +73,7 @@ public class VerifySampleParentsExecutor extends AbstractVerifyEntityCyclesExecu
     @Override
     protected String getIdentifier(Long entityId)
     {
-        SamplePE sample = daoFactory.getSampleDAO().tryGetByTechId(new TechId(entityId));
+        SamplePE sample = daoFactory.getSampleDAO().tryGetById(new TechId(entityId));
         return sample.getIdentifier();
     }
 

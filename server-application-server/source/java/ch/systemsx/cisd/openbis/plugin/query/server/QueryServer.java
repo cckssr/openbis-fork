@@ -199,7 +199,7 @@ public class QueryServer extends AbstractServer<IQueryServer> implements IQueryS
         {
             for (TechId techId : queryIds)
             {
-                QueryPE query = queryDAO.getByTechId(techId);
+                QueryPE query = queryDAO.getById(techId);
                 QueryAccessController.checkWriteAccess(session, query.getQueryDatabaseKey(),
                         "delete");
                 queryDAO.delete(query);
@@ -221,7 +221,7 @@ public class QueryServer extends AbstractServer<IQueryServer> implements IQueryS
         try
         {
             IQueryDAO queryDAO = getDAOFactory().getQueryDAO();
-            QueryPE query = queryDAO.getByTechId(TechId.create(updates));
+            QueryPE query = queryDAO.getById(TechId.create(updates));
             if (query.getModificationDate().equals(updates.getModificationDate()) == false)
             {
                 throw new UserFailureException("Unfortunately this query definition "
@@ -278,7 +278,7 @@ public class QueryServer extends AbstractServer<IQueryServer> implements IQueryS
         try
         {
             IQueryDAO queryDAO = getDAOFactory().getQueryDAO();
-            QueryPE query = queryDAO.getByTechId(queryId);
+            QueryPE query = queryDAO.getById(queryId);
             String dbKey = query.getQueryDatabaseKey();
             String expression = StringEscapeUtils.unescapeHtml4(query.getExpression());
             QueryAccessController.checkReadAccess(session, dbKey);

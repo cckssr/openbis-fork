@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -89,6 +90,9 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
 
     @JsonProperty
     private List<SemanticAnnotation> semanticAnnotations;
+
+    @JsonProperty
+    private List<TypeGroupAssignment> typeGroupAssignments;
 
     @JsonProperty
     private Plugin validationPlugin;
@@ -270,7 +274,7 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
             return propertyAssignments;
         } else
         {
-            throw new NotFetchedException("Property assigments have not been fetched.");
+            throw new NotFetchedException("Property assignments have not been fetched.");
         }
     }
 
@@ -298,6 +302,24 @@ public class SampleType implements Serializable, ICodeHolder, IDescriptionHolder
     public void setSemanticAnnotations(List<SemanticAnnotation> semanticAnnotations)
     {
         this.semanticAnnotations = semanticAnnotations;
+    }
+
+    @JsonIgnore
+    public List<TypeGroupAssignment> getTypeGroupAssignments()
+    {
+        if (getFetchOptions() != null && getFetchOptions().hasTypeGroupAssignments())
+        {
+            return typeGroupAssignments;
+        } else
+        {
+            throw new NotFetchedException("Type group assignments have not been fetched.");
+        }
+    }
+
+    public void setTypeGroupAssignments(
+            List<TypeGroupAssignment> typeGroupAssignments)
+    {
+        this.typeGroupAssignments = typeGroupAssignments;
     }
 
     @JsonIgnore

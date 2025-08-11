@@ -494,7 +494,7 @@ public class TrashBO extends AbstractBusinessObject implements ITrashBO
         {
             if (entry.getValue().contains(dataSet.getId()))
             {
-                return getDataDAO().getByTechId(new TechId(entry.getKey())).getCode();
+                return getDataDAO().getById(new TechId(entry.getKey())).getCode();
             }
         }
         return null;
@@ -518,7 +518,7 @@ public class TrashBO extends AbstractBusinessObject implements ITrashBO
     {
         try
         {
-            deletion = getDeletionDAO().getByTechId(deletionId);
+            deletion = getDeletionDAO().getById(deletionId);
             getDeletionDAO().revert(deletion, session.tryGetPerson());
         } catch (final DataAccessException ex)
         {

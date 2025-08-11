@@ -18,5 +18,7 @@ dependencies {
             project(path: ':lib-common', configuration: 'tests'),
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
-            'reflections:reflections:0.9.10'
+            'reflections:reflections:0.9.10',
+            'slf4j:slf4j-api:1.7.24',
+            'eclipse:jetty-proxy:10.0.25'
 }

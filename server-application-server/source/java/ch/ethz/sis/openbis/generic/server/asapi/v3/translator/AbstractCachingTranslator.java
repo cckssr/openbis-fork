@@ -22,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.ICompositeIdHolder;
 import org.apache.log4j.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.fetchoptions.FetchOptions;
@@ -147,6 +148,8 @@ public abstract class AbstractCachingTranslator<I, O, F extends FetchOptions<?>>
         } else if (input instanceof Long)
         {
             return (Long) input;
+        } else if (input instanceof ICompositeIdHolder) {
+            return input.hashCode();
         } else
         {
             final String message = (input != null) ? "Unsupported input type: " + input.getClass()

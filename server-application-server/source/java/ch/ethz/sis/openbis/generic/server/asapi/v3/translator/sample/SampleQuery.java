@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.MaterialP
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyAssignmentRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.PropertyRecord;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.property.SamplePropertyRecord;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.translator.typegroup.TypeGroupAssignmentBaseRecord;
 import ch.systemsx.cisd.common.db.mapper.LongSetMapper;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.common.HistoryPropertyRecordDataObjectBinding;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.common.PropertyRecordDataObjectBinding;
@@ -189,6 +190,10 @@ public interface SampleQuery extends ObjectQuery
     @Select(sql = "select saty_id as objectId, id as relatedId from sample_type_property_types where saty_id = any(?{1})", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<ObjectRelationRecord> getPropertyAssignmentIds(LongSet sampleTypeIds);
+
+    @Select(sql = "select saty_id as objectId, tg_id as relatedId from sample_type_type_groups where saty_id = any(?{1})", parameterBindings = {
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
+    public List<ObjectRelationRecord> getTypeGroupAssignmentIds(LongSet sampleTypeIds);
 
     @Select(sql = "select pt.code as prty_code, pt.is_managed_internally as prty_is_managed_internally, 'SAMPLE' as kind_code, st.id as type_id, st.code as type_code, stpt.is_managed_internally_namespace as is_managed_internally_assignment, stpt.* from sample_type_property_types stpt, property_types pt, sample_types st where stpt.id = any(?{1}) and stpt.prty_id = pt.id and stpt.saty_id = st.id", parameterBindings = {
             LongSetMapper.class }, fetchSize = FETCH_SIZE)

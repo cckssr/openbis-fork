@@ -126,7 +126,7 @@ public final class SpaceBO extends AbstractBusinessObject implements ISpaceBO
     {
         try
         {
-            space = getSpaceDAO().getByTechId(spaceId);
+            space = getSpaceDAO().getById(spaceId);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

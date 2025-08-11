@@ -63,6 +63,9 @@ public class RdfToModel
 
         List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes = new ArrayList<>();
 
+        Map<String, Sample> roCrateIdsToObjects = new LinkedHashMap<>();
+
+
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
         for (IType type : types)
         {
@@ -190,7 +193,7 @@ public class RdfToModel
                             getPropertyAssignment(propertyType, sampleType,
                                     maybeRestriction.filter(x -> x.getMinCardinality() == 1)
                                             .isPresent(),
-                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 1)
+                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 0)
                                             .isPresent());
 
                     newAssignments.add(curProperty);
@@ -328,11 +331,10 @@ public class RdfToModel
 
                 }
 
-                for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
-                {
-                    properties.put(deRdfIdentifier(reference.getKey()),
-                            String.join("\n", reference.getValue()));
-                }
+                roCrateIdsToObjects.put(entry.getId(), sample);
+
+
+
                 metadata.put(objectIdentifier, entity);
                 sample.setProperties(properties);
                 properties.get("SPACE");
@@ -382,6 +384,30 @@ public class RdfToModel
             }
 
         }
+        for (IMetadataEntry entry : entries)
+        {
+            Optional<EntityKind> entityKind =
+                    matchEntityKind(entry, typeToInheritanceChain);
+
+            if (!entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
+            {
+                continue;
+            }
+            Sample sample = roCrateIdsToObjects.get(entry.getId());
+
+            // resolving object references needs another pass after creating all objects
+            for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
+            {
+                sample.getProperties().put(deRdfIdentifier(reference.getKey()),
+                        String.join(",",
+                                reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
+                                        .map(x -> "/" + fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
+                                        .collect(
+                                                Collectors.toList())));
+            }
+        }
+
+
         {
             SpacePermId spacePermId = new SpacePermId(fallbackSpaceCode);
 
@@ -734,9 +760,10 @@ public class RdfToModel
         if (isUrl)
         {
             String[] parts = identifier.split("/");
-            return sampleType.getCode() + "_" + parts[parts.length - 1];
+            return OpenBisModel.makeOpenBisCodeCompliant(
+                    sampleType.getCode() + "_" + parts[parts.length - 1]);
         }
-        return identifier;
+        return OpenBisModel.makeOpenBisCodeCompliant(identifier);
 
     }
 

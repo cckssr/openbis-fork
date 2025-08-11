@@ -19,14 +19,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.listener.IOperationListener;
+import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.ConcurrentOperation;
 import ch.systemsx.cisd.openbis.generic.server.IConcurrentOperationLimiter;
+import ch.systemsx.cisd.openbis.generic.server.codeplugin.CodePluginsConfiguration;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,10 +43,21 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
     @Autowired
     protected IConcurrentOperationLimiter operationLimiter;
 
+    @Resource(name = ExposablePropertyPlaceholderConfigurer.PROPERTY_CONFIGURER_BEAN_NAME)
+    private ExposablePropertyPlaceholderConfigurer configurer;
+
+    private CodePluginsConfiguration codePluginsConfiguration;
+
     private static List<IOperationListener<IOperation, IOperationResult>> operationListeners;
 
     public static void setOperationListeners(List<IOperationListener<IOperation, IOperationResult>> operationListeners) {
         OperationExecutor.operationListeners = operationListeners;
+    }
+
+    @PostConstruct
+    private void init()
+    {
+        codePluginsConfiguration = new CodePluginsConfiguration(configurer.getResolvedProps());
     }
 
     @SuppressWarnings("unchecked")
@@ -118,7 +134,7 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
     protected abstract RESULT doExecute(IOperationContext context, OPERATION operation);
 
     private void beforeOperation(Session session, OPERATION operation) {
-        if (operationListeners != null && !operationListeners.isEmpty()) {
+        if (operationListeners != null && !operationListeners.isEmpty() && codePluginsConfiguration.areEnabled()) {
             IApplicationServerInternalApi applicationServerApi = CommonServiceProvider.getApplicationServerApi();
             String sessionToken = null;
             if (session != null) {
@@ -131,7 +147,7 @@ public abstract class OperationExecutor<OPERATION extends IOperation, RESULT ext
     }
 
     private void afterOperation(Session session, OPERATION operation, RESULT result, RuntimeException runtimeException) {
-        if (operationListeners != null && !operationListeners.isEmpty()) {
+        if (operationListeners != null && !operationListeners.isEmpty() && codePluginsConfiguration.areEnabled()) {
             IApplicationServerInternalApi applicationServerApi = CommonServiceProvider.getApplicationServerApi();
             String sessionToken = null;
             if (session != null) {

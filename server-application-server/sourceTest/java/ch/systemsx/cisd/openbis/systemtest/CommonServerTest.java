@@ -2131,7 +2131,7 @@ public class CommonServerTest extends SystemTestCase
         metaproject.setName("TEST_LIST_METAPROJECT_EXPERIMENTS");
         metaproject.setOwner(person);
 
-        ExperimentPE experiment = daoFactory.getExperimentDAO().tryGetByTechId(new TechId(23L));
+        ExperimentPE experiment = daoFactory.getExperimentDAO().tryGetById(new TechId(23L));
         experiment.addMetaproject(metaproject);
 
         daoFactory.getMetaprojectDAO().createOrUpdateMetaproject(metaproject, person);
@@ -2174,7 +2174,7 @@ public class CommonServerTest extends SystemTestCase
         metaproject.setName("TEST_LIST_METAPROJECT_SAMPLES");
         metaproject.setOwner(person);
 
-        SamplePE sample = daoFactory.getSampleDAO().tryGetByTechId(new TechId(1055L)); // /TEST-SPACE/EV-TEST
+        SamplePE sample = daoFactory.getSampleDAO().tryGetById(new TechId(1055L)); // /TEST-SPACE/EV-TEST
         sample.addMetaproject(metaproject);
 
         daoFactory.getMetaprojectDAO().createOrUpdateMetaproject(metaproject, person);

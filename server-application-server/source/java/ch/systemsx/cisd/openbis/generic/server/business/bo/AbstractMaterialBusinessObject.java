@@ -61,7 +61,7 @@ public class AbstractMaterialBusinessObject extends AbstractBusinessObject
         assert materialId != null : "Material technical id unspecified.";
         String[] connections =
                 { PROPERTY_TYPES };
-        final MaterialPE result = getMaterialDAO().tryGetByTechId(materialId, connections);
+        final MaterialPE result = getMaterialDAO().tryGetById(materialId, connections);
         if (result == null)
         {
             throw new UserFailureException(String.format("Material with ID '%s' does not exist.",

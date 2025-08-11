@@ -2,6 +2,7 @@
 const WEB_APP_ID = 'admin'
 const WEB_APP_SERVICE = 'admin-service'
 const EXPORT_SERVICE = 'xls-export'
+const CHATBOT_SERVICE = 'chat-bot-api'
 
 // grids
 const OBJECT_TYPES_GRID_ID = 'object_types_grid'
@@ -50,7 +51,7 @@ export default {
   // service,
   WEB_APP_SERVICE,
   EXPORT_SERVICE,
-
+  CHATBOT_SERVICE,
   // grids
   OBJECT_TYPES_GRID_ID,
   COLLECTION_TYPES_GRID_ID,

@@ -235,6 +235,19 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroup;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.TypeGroupAssignment;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupDeletionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupAssignmentId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupAssignmentSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.search.TypeGroupSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.update.TypeGroupUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
@@ -251,6 +264,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.typescript.TypeScriptMethod;
 import ch.ethz.sis.openbis.generic.typescript.TypeScriptObject;
 
@@ -483,6 +498,12 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     @TypeScriptMethod
     @Override public List<PersonalAccessTokenPermId> createPersonalAccessTokens(final String sessionToken,
             final List<PersonalAccessTokenCreation> newPersonalAccessTokens)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public List<TypeGroupId> createTypeGroups(final String sessionToken, final List<TypeGroupCreation> newTypeGroups)
     {
         return null;
     }
@@ -1352,6 +1373,63 @@ public class OpenBISJavaScriptFacade implements IApplicationServerApi
     @TypeScriptMethod(sessionToken = false)
     public void uploadToSessionWorkspace(final Object file)
     {
+    }
+
+    @TypeScriptMethod @Override public List<TypeGroupAssignmentId> createTypeGroupAssignments(String sessionToken,
+            List<TypeGroupAssignmentCreation> newTypeGroupAssignments)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public void updateTypeGroups(String sessionToken, List<TypeGroupUpdate> typeGroupUpdates)
+    {
+
+    }
+
+    @TypeScriptMethod
+    @Override public Map<ITypeGroupId, TypeGroup> getTypeGroups(String sessionToken,
+            List<? extends ITypeGroupId> typeGroupIds, TypeGroupFetchOptions fetchOptions)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public Map<ITypeGroupAssignmentId, TypeGroupAssignment> getTypeGroupAssignments(
+            String sessionToken, List<? extends ITypeGroupAssignmentId> ids,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public SearchResult<TypeGroup> searchTypeGroups(String sessionToken,
+            TypeGroupSearchCriteria searchCriteria, TypeGroupFetchOptions fetchOptions)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public SearchResult<TypeGroupAssignment> searchTypeGroupAssignments(String sessionToken,
+            TypeGroupAssignmentSearchCriteria searchCriteria,
+            TypeGroupAssignmentFetchOptions fetchOptions)
+    {
+        return null;
+    }
+
+    @TypeScriptMethod
+    @Override public void deleteTypeGroups(String sessionToken, List<? extends ITypeGroupId> typeGroupIds,
+            TypeGroupDeletionOptions deletionOptions)
+    {
+
+    }
+
+    @TypeScriptMethod
+    @Override public void deleteTypeGroupAssignments(String sessionToken,
+            List<? extends ITypeGroupAssignmentId> typeGroupAssignmentIds,
+            TypeGroupAssignmentDeletionOptions deletionOptions)
+    {
+
     }
 
     @TypeScriptMethod(sessionToken = false)

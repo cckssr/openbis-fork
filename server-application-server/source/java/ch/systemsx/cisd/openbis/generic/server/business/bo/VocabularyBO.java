@@ -464,7 +464,7 @@ public class VocabularyBO extends AbstractBusinessObject implements IVocabularyB
     {
         try
         {
-            vocabularyPE = getVocabularyDAO().getByTechId(vocabularyId);
+            vocabularyPE = getVocabularyDAO().getById(vocabularyId);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

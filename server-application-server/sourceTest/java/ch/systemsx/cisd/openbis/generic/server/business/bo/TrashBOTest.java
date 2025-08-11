@@ -49,7 +49,6 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.AbstractExternalData;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataSetType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.EntityType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListOrSearchSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy.RoleCode;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
@@ -167,7 +166,7 @@ public final class TrashBOTest extends AbstractBOTest
                 {
                     DeletionPE dummyDeletion = new DeletionPE();
 
-                    one(deletionDAO).getByTechId(deletionId);
+                    one(deletionDAO).getById(deletionId);
                     will(returnValue(dummyDeletion));
 
                     one(deletionDAO).revert(dummyDeletion, session.tryGetPerson());
@@ -362,7 +361,7 @@ public final class TrashBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    allowing(dataDAO).getByTechId(with(handler));
+                    allowing(dataDAO).getById(with(handler));
                     will(handler);
                 }
             });

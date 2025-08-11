@@ -73,6 +73,7 @@ class SampleTypeWithVocabularyPropertyExpectations extends Expectations
                 sampleType.setManagedInternally(false);
                 sampleType.setModificationDate(modificationDate);
                 sampleType.setPropertyAssignments(getPropertyAssignments(fetchOptions));
+                sampleType.setTypeGroupAssignments(List.of());
                 return Collections.singletonMap(sampleType.getPermId(), sampleType);
             }
 
@@ -111,6 +112,7 @@ class SampleTypeWithVocabularyPropertyExpectations extends Expectations
                 sampleType.setModificationDate(modificationDate);
                 sampleType.setManagedInternally(false);
                 sampleType.setPropertyAssignments(getPropertyAssignments(fetchOptions));
+                sampleType.setTypeGroupAssignments(List.of());
                 return Collections.singletonMap(sampleType.getPermId(), sampleType);
             }
 

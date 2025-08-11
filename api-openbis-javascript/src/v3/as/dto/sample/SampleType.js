@@ -28,6 +28,22 @@ define(['stjs', "util/Exceptions"], function (stjs, exceptions) {
       prototype.validationPlugin = null
       prototype.metaData = null;
       prototype.managedInternally = null;
+      prototype.typeGroupAssignments = null;
+      prototype.getTypeGroupAssignments = function () {
+          if (
+            this.getFetchOptions() &&
+            this.getFetchOptions().hasTypeGroupAssignments()
+          ) {
+            return this.typeGroupAssignments
+          } else {
+            throw new exceptions.NotFetchedException(
+              'Type group assignments have not been fetched.'
+            )
+          }
+      }
+      prototype.setTypeGroupAssignments = function (typeGroupAssignments) {
+        this.typeGroupAssignments = typeGroupAssignments
+      }
       prototype.getPropertyAssignments = function () {
         if (
           this.getFetchOptions() &&
@@ -168,6 +184,10 @@ define(['stjs', "util/Exceptions"], function (stjs, exceptions) {
       propertyAssignments: {
         name: 'List',
         arguments: ['PropertyAssignment']
+      },
+      typeGroupAssignments: {
+        name: 'List',
+        arguments: ['TypeGroupAssignment']
       },
       semanticAnnotations: {
         name: 'List',

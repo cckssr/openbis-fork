@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -58,7 +57,6 @@ import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DisplaySettings;
-import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstants;
 
 /**
  * A <i>Persistence Entity</i> which represents a person.
@@ -72,7 +70,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 @Friend(toClasses = RoleAssignmentPE.class)
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class PersonPE extends HibernateAbstractRegistrationHolder implements
-        Comparable<PersonPE>, IIdentityHolder, Serializable, IEntityWithMetaData
+        Comparable<PersonPE>, IIdentityHolder, Serializable, IMetaDataHolder
 {
     private static final long serialVersionUID = IServer.VERSION;
 

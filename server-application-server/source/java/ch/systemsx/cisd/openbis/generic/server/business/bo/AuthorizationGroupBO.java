@@ -151,7 +151,7 @@ public class AuthorizationGroupBO extends AbstractBusinessObject implements IAut
     {
         try
         {
-            authorizationGroup = getAuthorizationGroupDAO().getByTechId(techId);
+            authorizationGroup = getAuthorizationGroupDAO().getById(techId);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(String.format(

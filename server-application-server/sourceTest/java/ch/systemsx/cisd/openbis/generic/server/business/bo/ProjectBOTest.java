@@ -203,7 +203,7 @@ public final class ProjectBOTest extends AbstractBOTest
         context.checking(new Expectations()
             {
                 {
-                    one(projectDAO).getByTechId(EXAMPLE_PROJECT_ID);
+                    one(projectDAO).getById(EXAMPLE_PROJECT_ID);
                     will(returnValue(EXAMPLE_PROJECT));
 
                 }

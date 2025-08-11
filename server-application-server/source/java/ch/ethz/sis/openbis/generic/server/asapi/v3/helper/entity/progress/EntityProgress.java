@@ -18,7 +18,7 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.Progress;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.context.ProgressDetails;
 import ch.systemsx.cisd.common.action.IDelegatedAction;
-import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IPermIdHolder;
 
@@ -30,9 +30,9 @@ public class EntityProgress extends Progress
 
     private static final long serialVersionUID = 1L;
 
-    private IIdHolder entity;
+    private ICustomIdHolder entity;
 
-    public EntityProgress(String label, IIdHolder entity, int numItemsProcessed, int totalItemsToProcess)
+    public EntityProgress(String label, ICustomIdHolder entity, int numItemsProcessed, int totalItemsToProcess)
     {
         super(label, numItemsProcessed, totalItemsToProcess);
         this.entity = entity;

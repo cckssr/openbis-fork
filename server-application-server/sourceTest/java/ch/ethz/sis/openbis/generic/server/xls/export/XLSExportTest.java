@@ -131,7 +131,7 @@ public class XLSExportTest
 
         Collections.shuffle(permIds);
 
-        final Collection<Collection<ExportablePermId>> reorderedPermIds = XLSExport.putVocabulariesFirst(permIds);
+        final Collection<Collection<ExportablePermId>> reorderedPermIds = XLSExport.reorderExportItemIds(permIds);
         boolean nonVocabularyFound = false;
 
         assertEquals(reorderedPermIds.size(), permIds.size(), "The size after reordering should not change.");

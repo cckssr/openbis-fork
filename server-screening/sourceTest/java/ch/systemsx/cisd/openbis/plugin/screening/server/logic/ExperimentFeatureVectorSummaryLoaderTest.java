@@ -271,7 +271,7 @@ public class ExperimentFeatureVectorSummaryLoaderTest extends AbstractServerTest
         context.checking(new Expectations()
             {
                 {
-                    one(experimentDAO).tryGetByTechId(EXPERIMENT_ID);
+                    one(experimentDAO).tryGetById(EXPERIMENT_ID);
                     ExperimentPE experiment = new ExperimentPE();
                     experiment.setId(EXPERIMENT_ID.getId());
                     experiment.setPermId("123-" + EXPERIMENT_ID);

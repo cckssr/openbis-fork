@@ -80,7 +80,7 @@ public class GridCustomColumnBO extends AbstractBusinessObject implements
     {
         try
         {
-            column = getGridCustomColumnDAO().getByTechId(id);
+            column = getGridCustomColumnDAO().getById(id);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

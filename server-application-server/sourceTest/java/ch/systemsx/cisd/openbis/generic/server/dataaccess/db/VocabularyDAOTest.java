@@ -172,7 +172,7 @@ public final class VocabularyDAOTest extends AbstractDAOTest
         vocabularyDAO.delete(deletedVocabulary);
 
         // test successful deletion of vocabulary
-        assertNull(vocabularyDAO.tryGetByTechId(TechId.create(deletedVocabulary)));
+        assertNull(vocabularyDAO.tryGetById(TechId.create(deletedVocabulary)));
 
         // test successful deletion of vocabulary terms
         assertFalse(deletedVocabulary.getTerms().isEmpty());

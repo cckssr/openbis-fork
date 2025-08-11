@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAs
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -60,6 +61,8 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
     static void configureFetchOptions(final SampleTypeFetchOptions fetchOptions)
     {
         fetchOptions.withValidationPlugin().withScript();
+        final TypeGroupAssignmentFetchOptions typeGroupAssignmentFetchOptions = fetchOptions.withTypeGroupAssignments();
+        typeGroupAssignmentFetchOptions.withTypeGroup();
         final PropertyAssignmentFetchOptions propertyAssignmentFetchOptions = fetchOptions.withPropertyAssignments();
         final PropertyTypeFetchOptions propertyTypeFetchOptions = propertyAssignmentFetchOptions.withPropertyType();
         propertyTypeFetchOptions.withVocabulary();
@@ -73,7 +76,7 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
     {
         return new Attribute[] { CODE, INTERNAL, DESCRIPTION, AUTO_GENERATE_CODES, VALIDATION_SCRIPT,
                 GENERATED_CODE_PREFIX, UNIQUE_SUBCODES, MODIFICATION_DATE, ONTOLOGY_ID,
-                ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION };
+                ONTOLOGY_ANNOTATION_ID, ONTOLOGY_VERSION, TYPE_GROUP };
     }
 
     @Override
@@ -137,6 +140,12 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
                         sampleType.getCode(), null).stream()
                         .map(x -> x.getDescriptorAccessionId()).collect(
                                 Collectors.joining("\n"));
+            }
+            case TYPE_GROUP:
+            {
+                return sampleType.getTypeGroupAssignments().stream()
+                        .map(x -> x.getTypeGroup().getCode())
+                        .collect(Collectors.joining("\n"));
             }
             default:
             {

@@ -241,13 +241,13 @@ public class ProjectDAOTest extends AbstractDAOTest
         projectDAO.delete(deletedProject);
 
         // test successful deletion of project
-        assertNull(projectDAO.tryGetByTechId(TechId.create(deletedProject)));
+        assertNull(projectDAO.tryGetById(TechId.create(deletedProject)));
 
         // deleted project had objects connected that should not have been deleted:
         // - a group
         SpacePE group = deletedProject.getSpace();
         assertNotNull(group);
-        assertNotNull(daoFactory.getSpaceDAO().tryGetByTechId(
+        assertNotNull(daoFactory.getSpaceDAO().tryGetById(
                 new TechId(HibernateUtils.getId(group))));
     }
 

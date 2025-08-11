@@ -24,7 +24,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.UpdateRelationProgress;
-import ch.systemsx.cisd.openbis.generic.shared.dto.IEntityWithMetaData;
+import ch.systemsx.cisd.openbis.generic.shared.basic.ICustomIdHolder;
+import ch.systemsx.cisd.openbis.generic.shared.dto.IMetaDataHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -33,7 +34,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
-public class UpdateMetaDataForEntityExecutor<ENTITY_UPDATE extends IMetaDataUpdateHolder, ENTITY_PE extends IEntityWithMetaData>
+public class UpdateMetaDataForEntityExecutor<ENTITY_UPDATE extends IMetaDataUpdateHolder, ENTITY_PE extends IMetaDataHolder & ICustomIdHolder>
         implements IUpdateMetaDataForEntityExecutor<ENTITY_UPDATE, ENTITY_PE>
 {
     @Override

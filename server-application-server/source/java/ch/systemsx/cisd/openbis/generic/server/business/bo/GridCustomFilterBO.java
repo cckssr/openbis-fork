@@ -64,7 +64,7 @@ public class GridCustomFilterBO extends AbstractBusinessObject implements
     {
         try
         {
-            filter = getGridCustomFilterDAO().getByTechId(id);
+            filter = getGridCustomFilterDAO().getById(id);
         } catch (DataRetrievalFailureException exception)
         {
             throw new UserFailureException(exception.getMessage());

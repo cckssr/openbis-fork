@@ -28,7 +28,8 @@ public enum ImportTypes
     EXPERIMENT(null, true),
     SAMPLE(null, true),
     SCRIPT(null, false),
-    SEMANTIC_ANNOTATION(null, true);
+    SEMANTIC_ANNOTATION(null, true),
+    TYPE_GROUP(null, false);
 
     private String type;
 

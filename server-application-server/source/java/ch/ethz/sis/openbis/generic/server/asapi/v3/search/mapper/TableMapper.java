@@ -117,7 +117,10 @@ public enum TableMapper
             null, null, null, null, null, null, null, null, true, false, false),
 
     EVENT(EVENTS_SEARCH_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, true, false, false);
+            null, null, true, false, false),
+
+    TYPE_GROUP(TYPE_GROUPS_TABLE, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, true, true, false);
 
     static
     {

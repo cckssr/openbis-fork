@@ -77,6 +77,8 @@ public final class SequenceNameMapper extends StandardSequenceNameMapper
                 SequenceNames.DATA_SET_RELATIONSHIPS_HISTORY_SEQUENCE);
         map.put(TableNames.POST_REGISTRATION_DATASET_QUEUE_TABLE,
                 SequenceNames.POST_REGISTRATION_DATASET_QUEUE_SEQUENCE);
+        map.put(TableNames.TYPE_GROUPS_TABLE,
+                SequenceNames.TYPE_GROUPS_SEQUENCE);
         // legacy code to make migration tests from db version 018 work
         map.put("sample_component_materials", "SCMA_ID_SEQ");
         return Collections.unmodifiableMap(map);
@@ -95,6 +97,7 @@ public final class SequenceNameMapper extends StandardSequenceNameMapper
         add(set, TableNames.LINK_DATA_TABLE);
         add(set, TableNames.AUTHORIZATION_GROUP_PERSONS_TABLE);
         add(set, TableNames.CONTENT_COPIES_TABLE);
+        add(set, TableNames.SAMPLE_TYPE_TYPE_GROUPS_TABLE);
         return Collections.unmodifiableSet(set);
     }
 

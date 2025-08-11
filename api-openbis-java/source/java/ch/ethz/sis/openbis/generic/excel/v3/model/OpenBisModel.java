@@ -40,6 +40,9 @@ public class OpenBisModel
 
     final Map<String, String> externalToOpenBisIdentifiers;
 
+    public static final String CODE_SPECIAL_CHARACTER_REPLACEMENT = "_";
+
+
     public OpenBisModel(Map<VocabularyPermId, Vocabulary> vocabularyTypes,
             Map<EntityTypePermId, IEntityType> entityTypes, Map<SpacePermId, Space> spaces,
             Map<ProjectIdentifier, Project> projects,
@@ -103,4 +106,13 @@ public class OpenBisModel
     {
         return externalToOpenBisIdentifiers;
     }
+
+    public static String makeOpenBisCodeCompliant(String candiate)
+    {
+        return candiate.replaceAll("\\|", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("%[0-9A-Fa-f]{2}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("\\\\u([0-9A-Fa-f]{2}){6}", CODE_SPECIAL_CHARACTER_REPLACEMENT)
+                .replaceAll("\\\\u([0-9A-Fa-f]{2}){3}", CODE_SPECIAL_CHARACTER_REPLACEMENT);
+    }
+
 }

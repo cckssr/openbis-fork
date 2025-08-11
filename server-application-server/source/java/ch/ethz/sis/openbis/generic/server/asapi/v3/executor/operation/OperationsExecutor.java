@@ -23,6 +23,7 @@ import java.util.Map;
 
 import javax.persistence.PersistenceException;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.typegroup.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -267,6 +268,12 @@ public class OperationsExecutor implements IOperationsExecutor
     private IDeletePersonalAccessTokensOperationExecutor deletePersonalAccessTokensExecutor;
 
     @Autowired
+    private IDeleteTypeGroupsOperationExecutor deleteTypeGroupsOperationExecutor;
+
+    @Autowired
+    private IDeleteTypeGroupAssignmentsOperationExecutor deleteTypeGroupAssignmentsExecutor;
+
+    @Autowired
     private ICreateSpacesOperationExecutor createSpacesExecutor;
 
     @Autowired
@@ -339,6 +346,12 @@ public class OperationsExecutor implements IOperationsExecutor
     private ICreatePersonalAccessTokensOperationExecutor createPersonalAccessTokensExecutor;
 
     @Autowired
+    private ICreateTypeGroupsOperationExecutor createTypeGroupsExecutor;
+
+    @Autowired
+    private ICreateTypeGroupAssignmentsOperationExecutor createTypeGroupAssignmentsExecutor;
+
+    @Autowired
     private IUpdateSpacesOperationExecutor updateSpacesExecutor;
 
     @Autowired
@@ -403,6 +416,9 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IUpdatePersonalAccessTokensOperationExecutor updatePersonalAccessTokensExecutor;
+
+    @Autowired
+    private IUpdateTypeGroupsOperationExecutor updateTypeGroupsExecutor;
 
     @Autowired
     private IVerifyExperimentsOperationExecutor verifyExperimentsExecutor;
@@ -499,6 +515,12 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private IGetPersonalAccessTokensOperationExecutor getPersonalAccessTokensExecutor;
+
+    @Autowired
+    private IGetTypeGroupsOperationExecutor getTypeGroupsExecutor;
+
+    @Autowired
+    private IGetTypeGroupAssignmentsOperationExecutor getTypeGroupAssignmentsExecutor;
 
     @Autowired
     private ISearchSpacesOperationExecutor searchSpacesExecutor;
@@ -607,6 +629,12 @@ public class OperationsExecutor implements IOperationsExecutor
 
     @Autowired
     private ISearchSessionInformationOperationExecutor searchSessionInformationExecutor;
+
+    @Autowired
+    private ISearchTypeGroupsOperationExecutor searchTypeGroupsExecutor;
+
+    @Autowired
+    private ISearchTypeGroupAssignmentsOperationExecutor searchTypeGroupAssignmentsExecutor;
 
     @Autowired
     private IExecuteCustomASServiceOperationExecutor executeCustomASServiceExecutor;
@@ -779,6 +807,8 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(searchQueryDatabasesExecutor.execute(context, operations));
         resultMap.putAll(searchPersonalAccessTokensExecutor.execute(context, operations));
         resultMap.putAll(searchSessionInformationExecutor.execute(context, operations));
+        resultMap.putAll(searchTypeGroupsExecutor.execute(context, operations));
+        resultMap.putAll(searchTypeGroupAssignmentsExecutor.execute(context, operations));
     }
 
     private void executeGets(List<? extends IOperation> operations,
@@ -811,6 +841,8 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(getServerInformationExecutor.execute(context, operations));
         resultMap.putAll(getServerPublicInformationExecutor.execute(context, operations));
         resultMap.putAll(getPersonalAccessTokensExecutor.execute(context, operations));
+        resultMap.putAll(getTypeGroupsExecutor.execute(context, operations));
+        resultMap.putAll(getTypeGroupAssignmentsExecutor.execute(context, operations));
     }
 
     private void verify(List<? extends IOperation> operations,
@@ -828,6 +860,7 @@ public class OperationsExecutor implements IOperationsExecutor
         resultMap.putAll(updateSemanticAnnotationsExecutor.execute(context, operations));
         resultMap.putAll(updateOperationExecutionsExecutor.execute(context, operations));
         resultMap.putAll(updatePluginsExecutor.execute(context, operations));
+        resultMap.putAll(updateTypeGroupsExecutor.execute(context, operations));
         resultMap.putAll(updateVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(updatePropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(updateVocabularyTermsExecutor.execute(context, operations));
@@ -854,11 +887,13 @@ public class OperationsExecutor implements IOperationsExecutor
     {
         resultMap.putAll(createPersonsExecutor.execute(context, operations));
         resultMap.putAll(createPluginsExecutor.execute(context, operations));
+        resultMap.putAll(createTypeGroupsExecutor.execute(context, operations));
         resultMap.putAll(createVocabulariesExecutor.execute(context, operations));
         resultMap.putAll(createVocabularyTermsExecutor.execute(context, operations));
         resultMap.putAll(createPropertyTypesExecutor.execute(context, operations));
         resultMap.putAll(createExperimentTypesExecutor.execute(context, operations));
         resultMap.putAll(createSampleTypesExecutor.execute(context, operations));
+        resultMap.putAll(createTypeGroupAssignmentsExecutor.execute(context, operations));
         resultMap.putAll(createDataSetTypesExecutor.execute(context, operations));
         resultMap.putAll(createMaterialTypesExecutor.execute(context, operations));
         resultMap.putAll(createMaterialsExecutor.execute(context, operations));
@@ -883,6 +918,8 @@ public class OperationsExecutor implements IOperationsExecutor
     {
         resultMap.putAll(deleteQueriesExecutor.execute(context, operations));
         resultMap.putAll(deleteSemanticAnnotationsExecutor.execute(context, operations));
+        resultMap.putAll(deleteTypeGroupAssignmentsExecutor.execute(context, operations));
+        resultMap.putAll(deleteTypeGroupsOperationExecutor.execute(context, operations));
         resultMap.putAll(deleteExperimentsExecutor.execute(context, operations));
         resultMap.putAll(deleteSamplesExecutor.execute(context, operations));
         resultMap.putAll(deleteDataSetsExecutor.execute(context, operations));

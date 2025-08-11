@@ -15,8 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business.bo;
 
-import static ch.systemsx.cisd.openbis.generic.shared.translator.ExternalDataTranslator.translateToDescription;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -304,7 +302,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     public final void loadBySampleTechId(final TechId sampleId)
     {
         assert sampleId != null : "Unspecified sample id";
-        final SamplePE sample = getSampleDAO().getByTechId(sampleId);
+        final SamplePE sample = getSampleDAO().getById(sampleId);
         dataSets = new ArrayList<DataPE>();
         dataSets.addAll(getDataDAO().listDataSets(sample));
     }
@@ -313,7 +311,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     public final void loadBySampleTechIdWithoutRelationships(final TechId sampleId)
     {
         assert sampleId != null : "Unspecified sample id";
-        final SamplePE sample = getSampleDAO().getByTechId(sampleId);
+        final SamplePE sample = getSampleDAO().getById(sampleId);
         dataSets = new ArrayList<DataPE>();
         dataSets.addAll(getDataDAO().listDataSetsWithoutRelationships(sample));
     }
@@ -323,7 +321,7 @@ public final class DataSetTable extends AbstractDataSetBusinessObject implements
     {
         assert experimentId != null : "Unspecified experiment id";
 
-        ExperimentPE experiment = getExperimentDAO().getByTechId(experimentId);
+        ExperimentPE experiment = getExperimentDAO().getById(experimentId);
         dataSets = new ArrayList<DataPE>();
         dataSets.addAll(getDataDAO().listDataSets(experiment));
     }

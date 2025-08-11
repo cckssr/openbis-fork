@@ -222,7 +222,7 @@ public final class PropertyTypeDAOTest extends AbstractDAOTest
         propertyTypeDAO.delete(deletedPropertyType);
 
         // test successful deletion of vocabulary
-        assertNull(propertyTypeDAO.tryGetByTechId(TechId.create(deletedPropertyType)));
+        assertNull(propertyTypeDAO.tryGetById(TechId.create(deletedPropertyType)));
     }
 
     @Test(expectedExceptions = DataIntegrityViolationException.class)

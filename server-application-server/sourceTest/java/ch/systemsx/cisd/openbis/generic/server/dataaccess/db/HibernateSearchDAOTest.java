@@ -173,7 +173,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
         for (MatchingEntity matchingEntity : hits)
         {
             MaterialPE material =
-                    daoFactory.getMaterialDAO().getByTechId(new TechId(matchingEntity.getId()));
+                    daoFactory.getMaterialDAO().getById(new TechId(matchingEntity.getId()));
             ensureContains(material.getProperties(), propertyValue);
         }
     }
@@ -261,7 +261,7 @@ public final class HibernateSearchDAOTest extends AbstractDAOTest
     // of using ids.
     private ExternalDataPE tryGetDataSetById(Long datasetId)
     {
-        return daoFactory.getDataDAO().getByTechId(new TechId(datasetId)).tryAsExternalData();
+        return daoFactory.getDataDAO().getById(new TechId(datasetId)).tryAsExternalData();
     }
 
     // NOTE: such a check depends strongly on the test database content. Use it only when the better
