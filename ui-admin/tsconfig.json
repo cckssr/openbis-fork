@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "ESNext",
+    "lib": ["dom", "esnext"],
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "baseUrl": "./",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@srcTest/*": ["./srcTest/*"],
+      "@srcV3/*": ["./srcV3/*"],
+      "@srcDss/*": ["./srcDss/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "srcV3/**/*",
+    "srcDss/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
+}
