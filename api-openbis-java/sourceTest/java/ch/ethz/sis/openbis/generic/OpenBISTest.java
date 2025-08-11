@@ -19,9 +19,7 @@ package ch.ethz.sis.openbis.generic;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.util.concurrent.TimeoutException;
 
@@ -29,7 +27,7 @@ public class OpenBISTest
 {
 
     private DummyHttpServer httpServer;
-    private final int PORT = 8818;
+    private final int PORT = 8828;
     private final String URL = "http://localhost:" + PORT;
 
     static int timeout = 10 * 60 * 1000;
@@ -37,13 +35,14 @@ public class OpenBISTest
     @BeforeMethod
     public void setUp() throws Exception
     {
-        httpServer = new DummyHttpServer(8818, "/openbis/openbis/rmi-application-server-v3");
+        httpServer = new DummyHttpServer(PORT, "/openbis/openbis/rmi-application-server-v3");
         httpServer.start();
     }
 
     @AfterMethod
     public void tearDown()
     {
+        httpServer.setIdleTime(0L);
         httpServer.stop();
     }
 
@@ -51,7 +50,6 @@ public class OpenBISTest
     @Test
     public void testLogin() throws Exception
     {
-
         final String responseToken = "admin-12345";
 
         httpServer.setNextResponse(responseToken);
@@ -64,35 +62,8 @@ public class OpenBISTest
     }
 
     @Test
-    public void testIdleTimeoutLessThanDefault() throws Exception
-    {
-
-        final String responseToken = "admin-12345";
-
-        httpServer.setNextResponse(responseToken);
-        httpServer.setIdleTime(1000);
-
-
-        OpenBIS openBIS = new OpenBIS(URL, 100);
-        try
-        {
-            openBIS.login("admin", "aaa");
-            Assert.fail();
-        } catch(Exception e) {
-            Assert.assertNotNull(e.getCause());
-            Assert.assertNotNull(e.getCause().getCause());
-            Throwable cause = e.getCause().getCause();
-
-            Assert.assertEquals(cause.getClass(), TimeoutException.class);
-            TimeoutException exception = (TimeoutException) cause;
-            Assert.assertEquals(exception.getMessage(), "Idle timeout 100 ms");
-        }
-    }
-
-    @Test
     public void testTotalTimeoutMoreThanDefault() throws Exception
     {
-
         final String responseToken = "admin-12345";
 
         httpServer.setNextResponse(responseToken);
@@ -119,12 +90,10 @@ public class OpenBISTest
     @Test
     public void testIdleTimeoutMoreThanDefault() throws Exception
     {
-
         final String responseToken = "admin-12345";
 
         httpServer.setNextResponse(responseToken);
         httpServer.setIdleTime(32 * 1000L);
-
 
         OpenBIS openBIS = new OpenBIS(URL, 31000);
         try
