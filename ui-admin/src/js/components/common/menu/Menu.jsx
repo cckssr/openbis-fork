@@ -237,7 +237,7 @@ class Menu extends React.PureComponent {
   }
 
   renderChatbot() {
-    if (!this.props.chatbotFunction) {
+    if (!this.props.showChatbot) {
       return null;
     }
     const { classes } = this.props
@@ -246,9 +246,12 @@ class Menu extends React.PureComponent {
       classes={{ root: classes.button }}
     >
       <QuestionAnswerIcon fontSize='medium' sx={{ color: 'white' }} />
-      <ChatBotAssistant open={this.state.chatbotOpen} setOpen={this.setChatbotOpen} theme={this.props.theme} />
+      <ChatBotAssistant open={this.state.chatbotOpen} setOpen={this.setChatbotOpen}
+        theme={this.props.theme}
+        sendMessageCallback={this.props.sendMessageCallback} />
     </IconButton>)
   }
+
   renderBarcode() {
     if (!this.props.barcodeFunction) {
       return null;
@@ -260,7 +263,6 @@ class Menu extends React.PureComponent {
     >
       <FontAwesomeIcon icon={faBarcode} />
     </IconButton>)
-
   }
 
   renderTab(tab) {
@@ -337,8 +339,6 @@ class Menu extends React.PureComponent {
     )
 
   }
-
-
 
   renderSearchIcon() {
     const { classes } = this.props

@@ -22,11 +22,14 @@ import ComponentContext from '@src/js/components/common/ComponentContext.js'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fab } from '@fortawesome/free-brands-svg-icons'
-import { faFolder, faFile, faFileArchive, faFileAudio, faFileImage, faFileText,
+import {
+  faFolder, faFile, faFileArchive, faFileAudio, faFileImage, faFileText,
   faFileVideo, faFileCode, faFilePdf, faFileWord, faFileExcel,
-  faFilePowerpoint } from '@fortawesome/free-regular-svg-icons'
+  faFilePowerpoint
+} from '@fortawesome/free-regular-svg-icons'
 
-import LogoutIcon from '@mui/icons-material/PowerSettingsNew'
+import openbis from '@src/js/services/openbis.js'
+import ids from '@src/js/common/consts/ids.js'
 
 library.add(fab, faFolder, faFile, faFileAudio, faFileText, faFileVideo,
   faFileCode, faFileImage, faFileArchive, faFilePdf, faFileWord, faFileExcel,
@@ -59,11 +62,11 @@ const pageToComponent = {
 }
 
 const tabs = [
-        {page: pages.DATABASE, label: messages.get(messages.DATABASE)},
-        {page: pages.TYPES, label: messages.get(messages.TYPES)},
-        {page: pages.USERS, label: messages.get(messages.USERS)},
-        {page: pages.TOOLS, label: messages.get(messages.TOOLS)}
-    ]
+  { page: pages.DATABASE, label: messages.get(messages.DATABASE) },
+  { page: pages.TYPES, label: messages.get(messages.TYPES) },
+  { page: pages.USERS, label: messages.get(messages.USERS) },
+  { page: pages.TOOLS, label: messages.get(messages.TOOLS) }
+]
 
 
 class App extends React.Component {
@@ -123,41 +126,54 @@ class App extends React.Component {
   }
 
   userNameLoginFunction(userName, password) {
-      AppController.getInstance().login(
-          userName,
-          password
-     )
+    AppController.getInstance().login(
+      userName,
+      password
+    )
+  }
+
+  async sendMessage(message, sessionId) {
+    const serviceId = new openbis.CustomASServiceCode(ids.CHATBOT_SERVICE)
+
+    const serviceOptions = new openbis.CustomASServiceExecutionOptions()
+    serviceOptions.withParameter('method', 'ask')
+    serviceOptions.withParameter('query', message)
+    serviceOptions.withParameter('session_id', sessionId)
+
+    return await openbis.executeService(serviceId, serviceOptions)
   }
 
   renderPage() {
     const classes = this.props.classes
     let menuStyles = {
-        searchBox: {
-            width: '200px',
-            transition: "width 0.3s",
-            '&:focus-within': {
-                  width: '300px',
-                },
-            '&:hover': {
-                width: '300px',
-                },
+      searchBox: {
+        width: '200px',
+        transition: "width 0.3s",
+        '&:focus-within': {
+          width: '300px',
         },
-        searchField: {
-            fontSize: '14px'
-        }
+        '&:hover': {
+          width: '300px',
+        },
+      },
+      searchField: {
+        fontSize: '14px'
+      }
     }
     if (AppController.getInstance().getSession()) {
       return (
         <div className={classes.container}>
           <Menu userName={AppController.getInstance().getSession().userName}
-                tabs={tabs}
-                pageChangeFunction={this.handlePageChange}
-                searchFunction={this.searchFunction}
-                logoutFunction={this.handleLogout}
-                currentPage={AppController.getInstance().getCurrentPage()}
-                searchText={AppController.getInstance().getSearch()}
-                menuStyles={menuStyles}
-                />
+            tabs={tabs}
+            pageChangeFunction={this.handlePageChange}
+            searchFunction={this.searchFunction}
+            logoutFunction={this.handleLogout}
+            currentPage={AppController.getInstance().getCurrentPage()}
+            searchText={AppController.getInstance().getSearch()}
+            menuStyles={menuStyles}
+            showChatbot={true}
+            sendMessageCallback={this.sendMessage}
+          />
           {_.map(pageToComponent, (PageComponent, page) => {
             let visible = AppController.getInstance().getCurrentPage() === page
             return (
@@ -176,10 +192,10 @@ class App extends React.Component {
       )
     } else {
       return <Login disabled={AppController.getInstance().getLoading()}
-                    title={'Admin Dashboard'}
-                    loginFunction={this.userNameLoginFunction}
+        title={'Admin Dashboard'}
+        loginFunction={this.userNameLoginFunction}
 
-                    />
+      />
     }
   }
 }

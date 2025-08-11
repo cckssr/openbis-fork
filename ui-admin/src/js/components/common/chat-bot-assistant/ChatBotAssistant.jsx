@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Fab, Dialog, DialogTitle, DialogContent, IconButton, TextField, Paper, Typography, Box, CircularProgress, InputAdornment } from '@mui/material';
+import { IconButton, TextField, Typography, Box, InputAdornment } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
-import openbis from '@src/js/services/openbis.js'
 import ids from '@src/js/common/consts/ids.js'
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 
@@ -130,7 +129,7 @@ const Dot = styled('span')(({ theme }) => ({
   margin: '0 2px',
 }));
 
-export default function ChatBotAssistant({ open, setOpen, theme }) {
+export default function ChatBotAssistant({ open, setOpen, theme, sendMessageCallback }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -178,18 +177,25 @@ export default function ChatBotAssistant({ open, setOpen, theme }) {
     setLoading(true);
 
     try {
-      const response = await sendMessage(userMessage, sessionId);
+      const currentSessionId = sessionId || '';
+      const response = await sendMessageCallback(userMessage, currentSessionId);
+       
       setLoading(false);
-      if (response.sessionId) {
+      
+      if (response && response.sessionId) {
         setSessionId(response.sessionId);
         localStorage.setItem(ChatbotConfig.sessionStorageKey, response.sessionId);
       }
-      setMessages((prev) => [...prev, { role: 'assistant', content: response.answer }]);
-
+      
+      if (response && response.answer) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: response.answer }]);
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, I received an invalid response from the server.' }]);
+      }
     } catch (error) {
       setLoading(false);
       let errorMessage = `Sorry, I'm having trouble connecting to the server. `;
-      if (error.message.includes('Failed to fetch')) {
+      if (error.message && error.message.includes('Failed to fetch')) {
         errorMessage += 'Please check if the chatbot backend is running and accessible.';
       } else {
         errorMessage += 'Please try again later.';
@@ -197,20 +203,6 @@ export default function ChatBotAssistant({ open, setOpen, theme }) {
       setMessages((prev) => [...prev, { role: 'assistant', content: errorMessage }]);
     }
   };
-
-  const sendMessage = async (message, sessionId) => {
-
-    const serviceId = new openbis.CustomASServiceCode(ids.CHATBOT_SERVICE)
-
-    const serviceOptions = new openbis.CustomASServiceExecutionOptions()
-    serviceOptions.withParameter('method', 'ask')
-    serviceOptions.withParameter('query', message)
-    serviceOptions.withParameter('session_id', sessionId)
-
-    const result = await openbis.executeService(serviceId, serviceOptions)
-
-    return result
-  }
 
   if (!open) return null;
 
@@ -268,23 +260,22 @@ export default function ChatBotAssistant({ open, setOpen, theme }) {
           onKeyDown={handleKeyDown}
           disabled={loading}
           sx={{
-            '& .MuiInputBase-root': {
-              padding: 0,
-            },
-            '& .MuiInputBase-input': {
-              padding: '0 0 0 10px',
-            },
+            '& .MuiInputBase-root': { padding: 0 },
+            '& .MuiInputBase-input': { padding: '0 0 0 10px' },
           }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton color="primary" onClick={handleSend} disabled={loading || !input.trim()}>
-                  <SendIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton color="primary" onClick={handleSend} disabled={loading || !input.trim()}>
+                    <SendIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }
           }}
-        /></InputBox>
+        />
+      </InputBox>
     </ChatbotContainer>
   );
 } 

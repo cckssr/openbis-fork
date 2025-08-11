@@ -19,14 +19,27 @@ function MainHeaderView(controller) {
         if(profile.mainMenu.showBarcodes) {
             barcodeFunction = () => { BarcodeUtil.readBarcodeFromScannerOrCamera(); }
         }
-        var chatbotFunction = null;
-        if(profile.mainMenu.showChatAgent) {
-            chatbotFunction = () => { toggleChatAssistant(); }
-        }
 
         var searchDomains = profile.getSearchDomains();
 
         this._controller.setSearchDomains(searchDomains);
+
+        // Need to convert the callback-based API to a Promise-based one
+        var sendChatBotMessage = function(message, sessionId) {
+            return new Promise((resolve, reject) => {
+                try {
+                    mainController.serverFacade.sendChatBotMessage(message, sessionId, function(response) {
+                        if (response && response.result) {
+                            resolve(response.result);
+                        } else {
+                            reject(new Error('Invalid response from server'));
+                        }
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
 
         let props = {
             pageChangeFunction: this._controller.handlePageChange,
@@ -46,7 +59,8 @@ function MainHeaderView(controller) {
                 {page: "tools", label: "Tools"},
             ],
             barcodeFunction: barcodeFunction,
-            chatbotFunction: chatbotFunction,
+            showChatbot: profile.mainMenu.showChatAgent,
+            sendMessageCallback: sendChatBotMessage,
             searchDomains: searchDomains,
             searchDomainChangeFunction: this._controller.handleSearchDomainChange,
             menuStyles: {
