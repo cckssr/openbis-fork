@@ -76,7 +76,7 @@ public final class ScriptBOTest extends AbstractBOTest
     private final ScriptBO createScriptBO()
     {
         Properties properties = new Properties();
-        properties.setProperty(CodePluginsConfiguration.ALLOWED_USERS_PROPERTY, ManagerTestTool.EXAMPLE_SESSION.getUserName() + ", another_person");
+        properties.setProperty(CodePluginsConfiguration.ALLOWED_EDITING_USERS_PROPERTY, ManagerTestTool.EXAMPLE_SESSION.getUserName() + ", another_person");
 
         return new ScriptBO(daoFactory, ManagerTestTool.EXAMPLE_SESSION, scriptFactory,
                 managedPropertyEvaluatorFactory, null, null, new TestJythonEvaluatorPool(), properties);
