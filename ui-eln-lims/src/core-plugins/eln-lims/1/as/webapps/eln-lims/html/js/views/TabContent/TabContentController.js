@@ -59,14 +59,17 @@ function TabContentController(controller) {
         var tab = _this._model.currentTab;
 
         if(tab && tab.id) {
+
+            if(mainController.currentView && mainController.currentView.tabId) {
+                if(tab.id == mainController.currentView.tabId) {
+                    this._model.views[tab.id] = mainController.currentView;
+                }
+            }
             var currentView = _this._model.views[tab.id];
             if(currentView && currentView.refresh) {
                 currentView.refresh();
             }
         }
-//        if(mainController.currentView && mainController.currentView.refresh) {
-//            mainController.currentView.refresh(mainController.views)
-//        }
     }
 
     this.updateCurrentTabInfo = function(tabInfo) {
@@ -106,10 +109,7 @@ function TabContentController(controller) {
             if(mainController.currentView && mainController.currentView.refresh) {
                 mainController.currentView.refresh(mainController.views)
             }
-        } else {
-            //todo
         }
-
     }
 
     this.handleTabSelect = function(tab) {
