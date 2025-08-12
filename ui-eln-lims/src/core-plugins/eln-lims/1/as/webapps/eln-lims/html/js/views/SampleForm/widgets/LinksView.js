@@ -284,7 +284,7 @@ function LinksView(linksController, linksModel, viewId) {
 	}
 	
 	linksView.getCustomField = function(propertyType) {
-		var propertyAnnotationCode = profile.getInternalNamespacePrefix() + "ANNOTATION::" + propertyType.code;
+		var propertyAnnotationCode = "ANNOTATION::" + propertyType.code;
 		return {
 			label : propertyType.label,
 			property : propertyAnnotationCode,
@@ -363,7 +363,7 @@ function LinksView(linksController, linksModel, viewId) {
 					$copyAndLink.click(function(e) {
 						stopEventsBuble(e);
 						var copyAndLink = function(code) {
-							var newSampleIdentifier = IdentifierUtil.getSampleIdentifier(mainController.currentView._sampleFormModel.sample.spaceCode, 
+							var newSampleIdentifier = IdentifierUtil.getSampleIdentifier(mainController.currentView._sampleFormModel.sample.spaceCode,
 																			   mainController.currentView._sampleFormModel.sample.projectCode,
 																			   code);
 							Util.blockUI();
