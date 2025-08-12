@@ -16,6 +16,7 @@
 package ch.systemsx.cisd.openbis.generic.shared.basic.dto;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * Criteria for archiving <i>data sets</i>.
@@ -29,15 +30,15 @@ public class ArchiverDataSetCriteria implements Serializable
     // number of days before current date
     private final int olderThan;
 
-    private final String dataSetTypeCodeOrNull;
+    private final Set<String> dataSetTypeCodes;
 
     private final boolean presentInArchive;
 
-    public ArchiverDataSetCriteria(int olderThan, String dataSetTypeCodeOrNull,
+    public ArchiverDataSetCriteria(int olderThan, Set<String> dataSetTypeCodes,
             boolean presentInArchive)
     {
         this.olderThan = olderThan;
-        this.dataSetTypeCodeOrNull = dataSetTypeCodeOrNull;
+        this.dataSetTypeCodes = dataSetTypeCodes;
         this.presentInArchive = presentInArchive;
     }
 
@@ -46,9 +47,9 @@ public class ArchiverDataSetCriteria implements Serializable
         return olderThan;
     }
 
-    public String tryGetDataSetTypeCode()
+    public Set<String> getDataSetTypeCodes()
     {
-        return dataSetTypeCodeOrNull;
+        return dataSetTypeCodes;
     }
 
     public boolean isPresentInArchive()
@@ -59,7 +60,7 @@ public class ArchiverDataSetCriteria implements Serializable
     @Override
     public String toString()
     {
-        return "older than: " + olderThan + "; data set type: " + dataSetTypeCodeOrNull;
+        return "older than: " + olderThan + "; data set type: " + dataSetTypeCodes;
     }
 
 }
