@@ -1168,7 +1168,7 @@
 				$legend.remove();
 			}
 	
-			$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + sampleTypeCode + "-" + propertyTypeGroup.name));
+			$legend.prepend(FormUtil.getShowHideButton($fieldset, "SAMPLE-" + sampleTypeCode + "-" + propertyTypeGroup.name + "-" + _this._viewId));
 			$formColumn.append($fieldsetOwner);
 	
 			return false;
