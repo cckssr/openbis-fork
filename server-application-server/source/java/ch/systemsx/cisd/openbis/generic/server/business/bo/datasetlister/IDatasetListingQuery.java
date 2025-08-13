@@ -180,7 +180,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
     @Select(sql = SELECT_ALL_EXTERNAL_DATAS
             + "    WHERE data.dast_id = ?{1} AND external_data.status = 'AVAILABLE' "
             + "    AND data.registration_timestamp < ?{2} AND external_data.present_in_archive=?{3} "
-            + "    AND data.dsty_id = ?{4}", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
+            + "    AND data.dsty_id = any(?{4})", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public DataIterator<DatasetRecord> getAvailableExtDatasRegisteredBeforeWithDataSetType(
             long dataStoreId, Date lastModificationDate, boolean presentInArchive,
@@ -201,7 +201,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
     @Select(sql = SELECT_ALL_EXTERNAL_DATAS
             + "    WHERE data.dast_id = ?{1} AND external_data.status = 'AVAILABLE' "
             + "    AND data.access_timestamp < ?{2} AND external_data.present_in_archive=?{3} "
-            + "    AND data.dsty_id = ?{4}", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
+            + "    AND data.dsty_id = any(?{4})", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
             LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public DataIterator<DatasetRecord> getAvailableExtDatasAccessedBeforeWithDataSetType(
             long dataStoreId, Date lastAccessDate, boolean presentInArchive,
