@@ -26,7 +26,7 @@ function LinksView(linksController, linksModel, viewId) {
 	var $savedContainer = null;
 	
 	var dataGrids = [];
-	
+	var _refreshableFields = [];
 	//
 	// External API
 	//
@@ -174,6 +174,9 @@ function LinksView(linksController, linksModel, viewId) {
 		dataGrids.forEach(function(dataGrid) {
 			dataGrid.refresh();
 		});
+		for(var field of _refreshableFields) {
+            field.refresh();
+        }
 	}
 	
 	this.repaint = function($container) {
@@ -314,13 +317,19 @@ function LinksView(linksController, linksModel, viewId) {
 					}
 
 					var id = propertyType.label.split(" ").join("-").toLowerCase();
-					id = id + "-" + sample.code.toLowerCase();
+					id = id + "-" + sample.code.toLowerCase() + "-" + viewId;
 					$field.attr("id", id); //Fix for current summernote behaviour
-					$field.change(function() {
-						var $field = $(this);
-						propertyTypeValue = FormUtil.getFieldValue(propertyType, $field);
-						linksModel.writeState(sample, propertyType.code, propertyTypeValue, false);
-					});
+					var changeFunction = function() {
+                        var $field = $(this);
+                        propertyTypeValue = FormUtil.getFieldValue(propertyType, $field);
+                        linksModel.writeState(sample, propertyType.code, propertyTypeValue, false);
+                    }
+					$field.change(changeFunction);
+					$field.refresh = function() {
+					    this.unbind();
+                        this.change(changeFunction);
+					}
+					_refreshableFields.push($field);
 					return $field;
 				}
 				
@@ -454,6 +463,7 @@ function LinksView(linksController, linksModel, viewId) {
                 searchDropdown.clearSelection();
             }
         });
+        _refreshableFields.push(searchDropdown);
 		searchDropdown.setGetSelectsSamplesCriteria(function() {
                 var advancedSampleSearchCriteria = {
                     entityKind : "SAMPLE",

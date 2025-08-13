@@ -281,6 +281,10 @@ function AdvancedEntitySearchDropdown(isMultiple,
 		}
 	}
 
+	this.refresh = function() {
+	    this.initSelect2();
+	}
+
 	this.initSelect2 = function() {
 
 	    $select.select2({

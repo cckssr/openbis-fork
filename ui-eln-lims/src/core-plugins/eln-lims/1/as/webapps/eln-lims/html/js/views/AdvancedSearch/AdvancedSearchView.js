@@ -269,9 +269,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 	this._paintTypeSelectionPanel = function($menuPanelContainer) {
 	    var _this = this;
 		this._$entityTypeDropdown = this._getEntityTypeDropdown();
-		this._$entityTypeDropdown.refresh = function() {
-		    Select2Manager.add(_this._$entityTypeDropdown);
-		}
+
 		var entityTypeDropdownFormGroup = FormUtil.getFieldForComponentWithLabel(this._$entityTypeDropdown, "Search For", null, true);
 		entityTypeDropdownFormGroup.css("width","50%");
 		$menuPanelContainer.append(entityTypeDropdownFormGroup);
@@ -279,13 +277,17 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 		var andOrOptions = [{value : "AND", label : "AND", selected : true}, {value : "OR", label : "OR"}];
 		andOrDropdownId = 'logical-operator-dropdown-'+_this._viewId;
 		this._$andOrDropdownComponent = FormUtil.getDropdown(andOrOptions, "Select logical operator", andOrDropdownId);
-        this._$andOrDropdownComponent.refresh = function() {
-            Select2Manager.add(_this._$andOrDropdownComponent);
-        }
-        $("body").off("change", "#"+andOrDropdownId);
-		$("body").on("change", "#"+andOrDropdownId, function() {
+
+
+		var andOrOptionsChangeFunction = function() {
 			_this._advancedSearchModel.criteria.logicalOperator = $(this).val();
-		});
+		}
+		this._$andOrDropdownComponent.change(andOrOptionsChangeFunction);
+		this._$andOrDropdownComponent.refresh = function() {
+		    this.off();
+		    this.change(andOrOptionsChangeFunction);
+            Select2Manager.add(this);
+        }
 
 		$menuPanelContainer.append(FormUtil.getFieldForComponentWithLabel(this._$andOrDropdownComponent, "Using", null, true));
 
@@ -1001,8 +1003,7 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
         var dropdownId = 'entity-type-dropdown-'+_this._viewId;
         var $dropdown = FormUtil.getDropdown(model, 'Select Entity Type to search for', dropdownId);
 
-        $("body").off("change", "#"+dropdownId)
-        $("body").on("change", "#"+dropdownId, function() {
+        var changeFunction =  function() {
             var value = $(this).val();
             var isGlobalSearch = value.startsWith('ALL');
             if (isGlobalSearch) {
@@ -1040,7 +1041,14 @@ function AdvancedSearchView(advancedSearchController, advancedSearchModel) {
 			} else {
 				_this._advancedSearchModel.isSampleTypeForced = false;
 			}
-		});
+		}
+
+        $dropdown.change(changeFunction);
+		$dropdown.refresh = function() {
+		    this.off()
+		    this.change(changeFunction)
+            Select2Manager.add(this);
+        }
 
 		return $dropdown;
 	}

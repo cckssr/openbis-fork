@@ -76,11 +76,11 @@ var FormUtil = new function() {
 	}
 	
 	this.getAnnotationsFromSampleV1 = function(sample, type) {
-		var field = sample.properties["ANNOTATIONS_STATE"];
+		var field = sample.properties[profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"];
 		var stateFieldValue = Util.getEmptyIfNull(field);
 		if(stateFieldValue === "") {
 			stateFieldValue = undefined;
-			sample.properties["ANNOTATIONS_STATE"] = undefined;
+			sample.properties[profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE"] = undefined;
 		}
 		var allAnnotations = this.getAnnotationsFromField(stateFieldValue);
 		var typeAnnotations = {};
