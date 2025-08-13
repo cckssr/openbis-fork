@@ -16,8 +16,10 @@
 package ch.systemsx.cisd.etlserver.plugins;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -58,6 +60,8 @@ public class AutoArchiverTask implements IMaintenanceTask
     private static final String CLASS_PROPERTY_NAME = "class";
 
     private static final String DATA_SET_TYPE_PROPERTY_NAME = "data-set-type";
+
+    private static final String DATA_SET_TYPES_PROPERTY_NAME = "data-set-types";
 
     private static final String OLDER_THAN_PROPERTY_NAME = "older-than";
 
@@ -120,10 +124,17 @@ public class AutoArchiverTask implements IMaintenanceTask
 
     private ArchiverDataSetCriteria createCriteria(Properties properties)
     {
+        Set<String> dataSetTypeCodes = new HashSet<>(PropertyUtils.getList(properties, DATA_SET_TYPES_PROPERTY_NAME));
         String dataSetTypeCodeOrNull = properties.getProperty(DATA_SET_TYPE_PROPERTY_NAME);
+
+        if (dataSetTypeCodeOrNull != null && !dataSetTypeCodeOrNull.isBlank())
+        {
+            dataSetTypeCodes.add(dataSetTypeCodeOrNull);
+        }
+
         int olderThan =
                 PropertyUtils.getInt(properties, OLDER_THAN_PROPERTY_NAME, DEFAULT_OLDER_THAN);
-        return new ArchiverDataSetCriteria(olderThan, dataSetTypeCodeOrNull, false);
+        return new ArchiverDataSetCriteria(olderThan, dataSetTypeCodes, false);
     }
 
     private IArchiveCandidateDiscoverer createArchiveDatasetDiscoverer(SectionProperties discoverySectionProperties)

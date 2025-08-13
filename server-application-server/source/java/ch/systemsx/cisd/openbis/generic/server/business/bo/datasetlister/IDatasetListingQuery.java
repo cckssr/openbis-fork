@@ -38,7 +38,7 @@ import net.lemnik.eodsql.TypeMapper;
  * <p>
  * This interface is intended to be used only in this package. The <code>public</code> modifier is needed for creating a dynamic proxy by the EOD SQL
  * library.
- * 
+ *
  * @author Tomasz Pylak
  */
 @Private
@@ -180,10 +180,11 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
     @Select(sql = SELECT_ALL_EXTERNAL_DATAS
             + "    WHERE data.dast_id = ?{1} AND external_data.status = 'AVAILABLE' "
             + "    AND data.registration_timestamp < ?{2} AND external_data.present_in_archive=?{3} "
-            + "    AND data.dsty_id = ?{4}", fetchSize = FETCH_SIZE)
+            + "    AND data.dsty_id = any(?{4})", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public DataIterator<DatasetRecord> getAvailableExtDatasRegisteredBeforeWithDataSetType(
             long dataStoreId, Date lastModificationDate, boolean presentInArchive,
-            long dataSetTypeId);
+            LongSet dataSetTypeIds);
 
     /**
      * Returns datasets from store with given id that have status equal 'AVAILABLE' and were accessed before given date.
@@ -200,10 +201,11 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
     @Select(sql = SELECT_ALL_EXTERNAL_DATAS
             + "    WHERE data.dast_id = ?{1} AND external_data.status = 'AVAILABLE' "
             + "    AND data.access_timestamp < ?{2} AND external_data.present_in_archive=?{3} "
-            + "    AND data.dsty_id = ?{4}", fetchSize = FETCH_SIZE)
+            + "    AND data.dsty_id = any(?{4})", parameterBindings = { TypeMapper.class, TypeMapper.class, TypeMapper.class,
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public DataIterator<DatasetRecord> getAvailableExtDatasAccessedBeforeWithDataSetType(
             long dataStoreId, Date lastAccessDate, boolean presentInArchive,
-            long dataSetTypeId);
+            LongSet dataSetTypeIds);
 
     /**
      * Returns the directly connected dataset ids for the given sample id.
@@ -339,7 +341,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     /**
      * Returns all generic property values of all datasets specified by <var>entityIds</var>.
-     * 
+     *
      * @param entityIds The set of sample ids to get the property values for.
      */
     @Select(sql = "SELECT pr.ds_id as entity_id, etpt.prty_id, etpt.script_id, pr.value, "
@@ -353,8 +355,8 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
 
     /**
      * Returns property values for specified type code of all datasets specified by <var>entityIds</var>.
-     * 
-     * @param entityIds The set of sample ids to get the property values for.
+     *
+     * @param entityIds        The set of sample ids to get the property values for.
      * @param propertyTypeCode type code f properties we want to fetch
      */
     @Select(sql = "SELECT pr.ds_id as entity_id, etpt.prty_id, etpt.script_id, pr.value "
@@ -362,7 +364,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             + "      JOIN data_set_type_property_types etpt ON pr.dstpt_id=etpt.id"
             + "      JOIN property_types pt ON etpt.prty_id=pt.id"
             + "     WHERE pr.value is not null AND pr.ds_id = any(?{1}) AND pt.code = ?{2}", parameterBindings = { LongSetMapper.class,
-                    TypeMapper.class }, fetchSize = FETCH_SIZE)
+            TypeMapper.class }, fetchSize = FETCH_SIZE)
     public DataIterator<GenericEntityPropertyRecord> getEntityPropertyGenericValues(
             LongSet entityIds, String propertyTypeCode);
 
@@ -386,7 +388,7 @@ public interface IDatasetListingQuery extends BaseQuery, IPropertyListingQuery
             + " m.private as is_private, m.creation_date as creation_date, ma.data_id as entity_id "
             + " from metaprojects m, metaproject_assignments ma, persons p "
             + " where ma.data_id = any(?{1}) and m.owner = ?{2} and m.id = ma.mepr_id and m.owner = p.id", parameterBindings = {
-                    LongSetMapper.class }, fetchSize = FETCH_SIZE)
+            LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<MetaProjectWithEntityId> getMetaprojects(LongSet entityIds, Long userId);
 
     @Select(sql = "SELECT edms.id AS edms_id, edms.code AS edms_code, edms.label AS edms_label, edms.address AS edms_address, "

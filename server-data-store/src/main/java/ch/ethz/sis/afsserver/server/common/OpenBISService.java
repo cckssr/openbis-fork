@@ -44,7 +44,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.fetchoptions.TagFetchOptions
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
-import ch.ethz.sis.openbis.messages.UnarchiveDataSetMessage;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
@@ -480,9 +479,9 @@ public class OpenBISService implements IOpenBISService
         accessDate.add(Calendar.DAY_OF_MONTH, -archiverCriteria.getOlderThan());
         criteria.withAccessDate().thatIsEarlierThan(accessDate.getTime());
 
-        if (archiverCriteria.tryGetDataSetTypeCode() != null)
+        if (archiverCriteria.getDataSetTypeCodes() != null && !archiverCriteria.getDataSetTypeCodes().isEmpty())
         {
-            criteria.withType().withCode().thatEquals(archiverCriteria.tryGetDataSetTypeCode());
+            criteria.withType().withCodes().thatIn(archiverCriteria.getDataSetTypeCodes());
         }
 
         return listDataSets(criteria);

@@ -17,6 +17,7 @@ package ch.systemsx.cisd.etlserver.plugins;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -151,7 +152,7 @@ public class AutoArchiverTaskTest extends AssertJUnit
 
         assertLogs(nothingLog());
         assertEquals(30, criteriaRecorder.recordedObject().getOlderThan());
-        assertEquals(null, criteriaRecorder.recordedObject().tryGetDataSetTypeCode());
+        assertEquals(Collections.emptySet(), criteriaRecorder.recordedObject().getDataSetTypeCodes());
         context.assertIsSatisfied();
     }
 
@@ -166,7 +167,7 @@ public class AutoArchiverTaskTest extends AssertJUnit
 
         assertLogs(applyLog(1), archivingLog("ds1"));
         assertEquals(30, criteriaRecorder.recordedObject().getOlderThan());
-        assertEquals(null, criteriaRecorder.recordedObject().tryGetDataSetTypeCode());
+        assertEquals(Collections.emptySet(), criteriaRecorder.recordedObject().getDataSetTypeCodes());
         context.assertIsSatisfied();
     }
 
@@ -182,7 +183,7 @@ public class AutoArchiverTaskTest extends AssertJUnit
 
         assertLogs(applyLog(1), nothingLog());
         assertEquals(30, criteriaRecorder.recordedObject().getOlderThan());
-        assertEquals(null, criteriaRecorder.recordedObject().tryGetDataSetTypeCode());
+        assertEquals(Collections.emptySet(), criteriaRecorder.recordedObject().getDataSetTypeCodes());
         context.assertIsSatisfied();
     }
 
@@ -205,7 +206,7 @@ public class AutoArchiverTaskTest extends AssertJUnit
 
         assertLogs(applyLog(3), archivingLog("ds1", "ds3"));
         assertEquals(10, criteriaRecorder.recordedObject().getOlderThan());
-        assertEquals("MY-TYPE", criteriaRecorder.recordedObject().tryGetDataSetTypeCode());
+        assertEquals(Collections.singleton("MY-TYPE"), criteriaRecorder.recordedObject().getDataSetTypeCodes());
         context.assertIsSatisfied();
     }
 

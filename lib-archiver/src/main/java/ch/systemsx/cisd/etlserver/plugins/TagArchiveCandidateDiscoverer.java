@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -78,7 +79,7 @@ public class TagArchiveCandidateDiscoverer implements IArchiveCandidateDiscovere
         }
 
         List<AbstractExternalData> result = new ArrayList<AbstractExternalData>();
-        String dataSetTypeCode = criteria.tryGetDataSetTypeCode();
+        Set<String> dataSetTypeCodes = criteria.getDataSetTypeCodes();
         for (MetaprojectIdentifier identifier : identifiers)
         {
             String name = identifier.getMetaprojectName();
@@ -90,7 +91,7 @@ public class TagArchiveCandidateDiscoverer implements IArchiveCandidateDiscovere
                 List<AbstractExternalData> list = openbis.listNotArchivedDatasetsWithMetaproject(metaprojectId);
                 for (AbstractExternalData dataSet : list)
                 {
-                    if (matches(dataSet, dataSetTypeCode))
+                    if (matches(dataSet, dataSetTypeCodes))
                     {
                         result.add(dataSet);
                     }
@@ -100,9 +101,9 @@ public class TagArchiveCandidateDiscoverer implements IArchiveCandidateDiscovere
         return result;
     }
 
-    private boolean matches(AbstractExternalData dataSet, String dataSetTypeCode)
+    private boolean matches(AbstractExternalData dataSet, Set<String> dataSetTypeCodes)
     {
-        if (dataSetTypeCode != null && dataSet.getDataSetType().getCode().equals(dataSetTypeCode) == false)
+        if (dataSetTypeCodes != null && !dataSetTypeCodes.isEmpty() && !dataSetTypeCodes.contains(dataSet.getDataSetType().getCode()))
         {
             return false;
         }
