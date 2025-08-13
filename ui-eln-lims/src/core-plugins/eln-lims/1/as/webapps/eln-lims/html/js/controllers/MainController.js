@@ -1101,10 +1101,11 @@ function MainController(profile) {
 				case "EXTRA_PLUGIN_UTILITY":
 				    var uniqueViewName = arg;
 				    this.mainHeader.navigateToTab("TOOLS");
-				    var viewContainers = mainController._getNewViewModel(true, true, false);
-                    var pluginUtility = profile.getPluginUtility(uniqueViewName);
+				    var pluginUtility = profile.getPluginUtility(uniqueViewName);
+				    var tabInfo = TabContentUtil.getExtraUtilityTabInfo(pluginUtility.label, pluginUtility.icon)
+				    var viewContainers = mainController._getNewViewModel(true, true, false, tabInfo);
                     pluginUtility.paintView(viewContainers.header, viewContainers.content);
-				    break
+				    break;
 				default:
 					window.alert("The system tried to create a non existing view: " + newViewChange);
 					break;

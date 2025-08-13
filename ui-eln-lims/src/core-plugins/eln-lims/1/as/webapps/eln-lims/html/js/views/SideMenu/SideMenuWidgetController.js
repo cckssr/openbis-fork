@@ -285,6 +285,9 @@ function SideMenuWidgetController(mainController) {
 
     this.addSubSideMenu = function (subSideMenu, subSideMenuViewer) {
         // Remove old from DOM if present
+        if(this._sideMenuWidgetModel.subSideMenu) {
+            this.removeSubSideMenu();
+        }
         var elementId = subSideMenu.attr("id")
         $("#" + elementId).remove()
         // Add new
