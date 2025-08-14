@@ -176,7 +176,7 @@ class ChecksumGeneratorGitAnnex(ChecksumGenerator):
         git_dir = os.path.join(self.metadata_path, '.git')
         annex_result = run_shell(
             ['git', '--work-tree', self.data_path, '--git-dir', git_dir, 'annex', 'info', '-j',
-             file], raise_exception_on_failure=True)
+             file], raise_exception_on_failure=False)
         if 'Not a valid object name' in annex_result.output:
             return self.checksum_generator_supplement.get_checksum(file)
         annex_info = json.loads(annex_result.output)
