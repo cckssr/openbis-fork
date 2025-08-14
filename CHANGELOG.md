@@ -10,6 +10,7 @@
 - Bugfix: openbis-sync - ConstraintViolationException when re-running sync (BIS-1633)
 
 ### ELN-LIMS
+- New Feature: ELN UI changes: change ELN UI style to match Admin UI; lift hierarchy restrictions in ELN data model (BIS-1785)
 - Bugfix: "mandatory" field in annotations of parents and children is not acknowledged (BIS-2067)
 - Bugfix: Export to Zenodo network error (BIS-1891)
 - Bugfix: Issues with editing the Name field in Entry object type (BIS-1888)
