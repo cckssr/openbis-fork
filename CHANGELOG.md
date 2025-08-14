@@ -9,7 +9,6 @@
 - Bugfix: DSS fails to initiate the multi_dataset_archive_prod database if MultiDatasetArchiver is enabled (BIS-1859)
 - Bugfix: openbis-sync - ConstraintViolationException when re-running sync (BIS-1633)
 
-
 ### ELN-LIMS
 - Bugfix: "mandatory" field in annotations of parents and children is tow acknoledged (BIS-2067)
 - Bugfix: Preview not displayed after saving on +Dataset action (BIS-2042)
@@ -40,7 +39,6 @@
 - Bugfix: Cannot see menu tool bar in some spaces (BIS-2029)
 - Bugfix: Tab that opens when running a search on "Dataset files" has no name (BIS-1996)
 - Bugfix: When I create new entries in Inventory, after saving, a new tab is opened for the entity and the "CREATE_SAMPLE" tab remains opened (BIS-1995)
-
 - Improvement: Changes to user management maintenance task in multi-group instances (BIS-1989, BIS-1899)
 - Improvement: "Document" field in Collection table of Entries shows title + document text, should show only document (BIS-1986)
 - Improvement: Parents keep in Templates when creating a new object from an existing object (BIS-1960)
@@ -65,10 +63,8 @@
 - Improvement: Hide navigation panel when people is using forms (BIS-1723)
 - Improvement: Unify menus for moving objects from collection table of object form  (BIS-1080)
 - Improvement: Collapse navigation bar (BIS-777)
-
 - removed: "Generate Items" button from Object in ELN removed (BIS-1963)
 - removed: remove "Export metadata" and "Export metadata and data" buttons from Lab Notebook removed (BIS-1808)
-
 
 ## Admin
 - Improvement: Updated Login page Title to match master (BIS-2075)
@@ -88,7 +84,6 @@
 - Improvement: Move addition of new widget for properties in ELN Settings to top of list (BIS-918)
 - Improvement: Login with SSO/SwitchAAI was not showing the loading spinning clock (BIS-1488)
 - Improvement: "+New" dropdown list in forms replaced, this improves usability in small screens/tables (BIS-1512)
-
 - Bugfix: Now experiments from Experiments/Collections table in Project page can be deleted (BIS-983)
 - Bugfix: Uniqueness of QRcodes was only checked against objects a user has access to, now to all (BIS-1038)
 - Bugfix: URL display in text fields changed in 20.10.9 (BIS-1461)
