@@ -70,7 +70,7 @@ public class SciCatExportTest
                 "numberOfFiles",
                 "sizeOfArchive");
 
-        assertEquals(13, openBisModel.getEntities().size());
+        assertEquals(6, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(1, openBisModel.getSpaces().size());
         assertEquals(1, openBisModel.getProjects().size());
