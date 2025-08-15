@@ -15,6 +15,7 @@ import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +38,14 @@ public class SciCatExportTest
     @Test
     public void testSciCatCrate20250815() throws JsonProcessingException
     {
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "scicat/example-export-2025-08-15";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-        RoCrate crate = roCrateFolderReader.readCrate(INPUT);
+        RoCrate crate = roCrateFolderReader.readCrate(file.getPath());
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
 
         List<IType> types = schemaFacade.getTypes();
