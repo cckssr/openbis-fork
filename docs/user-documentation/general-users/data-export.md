@@ -10,30 +10,12 @@ Export
 
   
 All levels of the *Lab Notebook* and *Inventory* can be exported, using
-the **Export** option in the **More..** drop down, as shown below.  
-
-**Space**
-
-![image info](img/new-export-space-2.png)
-
-**Project**
-
-![image info](img/new-export-project-2.png)
+the **Export** option in the **More..** drop down, as shown below for a *Space*.  
 
 
-**Experiment/Collection**
 
-![image info](img/new-export-experiment-2.png)
+![image info](img/201012-export-space.png)
 
-
-**Object**
-
-![image info](img/new-export-object-2.png)
-
-
-**Dataset**
-
-![image info](img/new-export-dataset-2.png)
 
 
 In each case, the following export options are available: 
@@ -47,15 +29,15 @@ In each case, the following export options are available: 
 
 - **Export metadata as XLSX**. Metadata are exported in one **xlsx** folder. The folder contains the metadata of all exported entities and the corresponding masterdata in a **metadata.xlsx** file. If **Make import compatible** is selected, this file is suitable for re-import in openBIS. If not, the file contains some fields which are not compatible with re-imports. These fields are: PermId of entities, registrator, registration date, modifier, modification date. In addition to the metadata.xlsx file, the **xlsx** folder might contain additional folders:
     - a **scripts** folder, which contains scripts associated with types in the metadata.xlsx file, if these are present;
-    - a **data** folder which holds the content of spreadsheet fields and large text fields that exceed the size of an Excel cell;
+    - a **data** folder which holds the content of large text fields that exceed the size of an Excel cell;
     - a **miscellaneous** folder which contain images embedded in text of exported entries, if present.
 
 - **Export data**. The default maximum size of all datasets to be exported is 10GB. This can be configured by a system admin in the [AS service.properties file](../../system-documentation/configuration/optional-application-server-configuration.md). We recommend to use [sftp](../general-users/lab-notebook.md#data-access) to download large datasets. 
 If **Make import compatible** is selected, datasets are exported in a **data** folder in a format ready to be uploaded in openBIS using the default eln-lims dropbox. If not, the datasets are exported in a **hiearchy** folder that matches the ELN hierarchy.
 
-- **Include levels below from same space**. If selected, all hierachy levels below the selected entity and belonging to the same Space are exported.
+- **Include levels below from same space**. If selected, all hierachy levels below the selected entity and belonging to the same *Space* are exported.
 
-- **Include Object and Dataset parents from same space**. If selected, Object parents and Dataset parents from the same Space are exported. Example: I export Object A, in Experiment A, in Space 1. Object B in Experiment B also in Space 1 is parent of Object A. When this option is selected, Object B is also exported, otherwise it is not.
+- **Include Object and Dataset parents from same space**. If selected, Object parents and Dataset parents from the same *Space* are exported. Example: I export Object A, in Experiment A, in Space 1. Object B in Experiment B also in Space 1 is parent of Object A. When this option is selected, Object B is also exported, otherwise it is not.
 
 - **Include Objects and Datasets parents and children from different spaces**. This allows to export Object and Dataset parents and children that belong to a different Space than the Space from where Objects and Datasets are being exported. Example: I export Object A in Space 1, which has parents in Space 2. If this option is selected, the parents in Space 2 are also exported, otherwise they are not.
 
@@ -78,13 +60,12 @@ We select all options from the export widget, as shown below.
 
  ![image info](img/space-export-all-options-import-compatible.png)
 
-We export a Space called CATERINA in the Lab Notebook with all its sublevels (see below). 
+We export a *Space* called BARILLAC in the Lab Notebook with all its sublevels (see below). 
 
-![image info](img/export_example-lab-notebook.png)
+![image info](img/201012-export-barillac-space.png)
 
-One Object in this Space has a parent in a Space called METHODS (see below). 
+One *Object* in this *Space* has a protocol as parent, and this is in the METHODS *Space*. 
 
-![image info](img/export_example-inventory.png)
 
 The exported zip file contains 3 folders:
 
@@ -93,29 +74,33 @@ The exported zip file contains 3 folders:
 This contains the datasets in the correct format to be uploaded via eln-lims dropbox, as shown below.
 
 
-![image info](img/IC-20109-export-data-folder-v2.png)
+![image info](img/201012-export-data-folder.png)
 
 
 **B.** **hiearchy** folder
 
-This contains folders that match the openBIS hierarchy (Space/Project/Experiment/Object).
+This contains folders that match the openBIS hierarchy (*Space, Project, Experiment/Collection, Object*).
 
-In this case 2 Space folders are present:
+In this case 2 *Space* folders are present:
 
-1. **CATERINA**: is the exported space.
-2. **METHODS**: contains an Object which is parent of an Object in the Space CATERINA. This was exported because the option **Include Objects and Datasets parents and children from different spaces** was selected for export.
+1. **BARILLAC**: is the exported space.
 
-![image info](img/IC-20109-export-hierarchy-1.png)
 
-![image info](img/IC-20109-export-hiearchy-2.png)
+![image info](img/201012-export-hierarchy-barillac.png)
+
+2. **METHODS**: contains a protocol which is parent of a measurement in the *Space* BARILLAC. This was exported because the option **Include Objects and Datasets parents and children from different spaces** was selected for export.
+
+
+
+![image info](img/201012-export-hierarchy-methods.png)
 
 
 Inside each folder, there is a pdf of the corresponding entity. Example: 
 
-- in the Space folder **CATERINA** there is a **CATERINA.pdf** file that contains the metadata of the Space;
+- in the Space folder **BARILLAC** there is a **BARILLAC.pdf** file that contains the metadata of the *Space*;
+- in the **Measurement 1 (ENTRY8)** folder there is a **Measurement 1 (ENTRY8).pdf** file that contains the metadata of this *Object*;
 - in the Project folder **PROJECT_1** there is a **PROJECT_1.pdf** file that contains the metadata of the Project;
-- in the Experiment folder **My second experiment (PROJECT_1_EXP_1)** there is a **My second experiment (PROJECT_1_EXP_1).pdf** file with the metadata of the Experiment;
-- in the Object folder **Step A (EXP4)**  there is a **Step A(EXP4).pdf** file with the metadata of the Object and a **20240726094631217-68.pdf** file that contains the metadata of the dataset that belongs to this Object.
+
 
 
 **C.** **xlsx** folder. 
@@ -123,48 +108,43 @@ Inside each folder, there is a pdf of the corresponding entity. Example:
 This contains:
 
 - a **metadata.xlsx** file which has the metadata of the exported entities and the corresponding masterdata (types and properties) in the correct format to be re-imported in another openBIS instance;
+
+![image info](img/201012-export-xlsx-folder-xlsx-file.png)
+
 - a **scripts** folder that contains evaluation plugins associated to two types defined in the metadata.xlsx file. This folder is present only if the exported types have plugins associated with them.
-- a **data** folder that contains the information stored in the spreadsheet field of one of the Objects in this Space. This folder is present only if the exported entities contain information in spreadsheet or if there are text fields with more than 32,767 characters (this is the limit of the Excel cells).
+
+![image info](img/201012-export-xlsx-folder-scripts.png)
+
 - a **miscellaneous** folder that contains images that are embedded in text fields of the exported entities. This folder is present only if exported entities contain images embedded in text.
 
-![image info](img/IC-20109-export-xlsx-scripts.png)
-
-![image info](img/IC-20109-export-xlsx-data.png)
+![image info](img/201012-export-xlsx-folder-miscellaneous.png)
 
 
-![image info](img/IC-20109-export-miscellaneous.png)
+If the entities you are exporting contain very large txt with more than 32,767 characters (Excel limit for cell size), these are exported separately to a **data** folder inside the **xlsx** folder.
 
 
 ### **2. Non import-compatible export of a Space selecting all options**
 
-We export the same Space as described in Example 1, with all options selected, but the export this time is not import-compatible, as shown below.
+We export the same *Space* as described in Example 1, with all options selected, but the export this time is not import-compatible, as shown below.
 
  ![image info](img/space-export-all-options-non-import-compatible.png)
 
  
-In this case the exported zip file contains only 2 folders: **hierarchy** and **xlsx**. Data are exported inside the **hierachy** folder, instead of being in a separate **data** folder.
+In this case the exported *.zip* file contains only 2 folders: **hierarchy** and **xlsx**. Data are exported inside the **hierachy** folder, instead of being in a separate **data** folder.
 
 **A.** **hierarchy** folder
 
-This contains the same folder structure as described above. In addition, in this case, inside the Object **Step A (EXP4)** folder there is a **data** folder that contains the dataset belonging to this Object, as shown below. The metadata of the dataset is provided as a metadata.json file inside the data folder and as pdf file inside the Object folder (**Step A (EXP4)**).
+This contains the same folder structure as described above. In addition, in this case, if an *Object* or an *Experiment/Collection* contains a dataset, this is exported in a **data** folder inside the entity it belongs to.
 
 
-![image info](img/NIC-20109-hiearchy-folder.png)
 
 **B.** **xlsx** folder 
 
-This contains the same files and folders as described in Example 1 (see below). The only difference in this case is that the metadata.xlsx is not import-compatible. It contains some fields which are not compatible with openBIS re-import, as explained above.
+This contains the same files and folders as described in Example 1. The only difference in this case is that the metadata.xlsx is not import-compatible. It contains some fields which are not compatible with openBIS re-import, as explained above.
 
-![image info](img/NIC-20109-xlsx-scripts.png)
 
-![image info](img/NIC-20109-xlsx-data.png)
-
-![image info](img/NIC-20109-miscellaneous.png)
  
 ## Export to Zenodo
-
-
-
   
 openBIS provides an integration with the **Zenodo** data
 repository ([https://zenodo.org/).](https://zenodo.org/)
@@ -195,14 +175,13 @@ below:
 After creating the personal access token in Zenodo, this needs to be
 stored in openBIS, with the following procedure:
 
-1.  Go to **User Profile** under **Utilities** in the main menu.
+1.  Go to **User Profile** under **Utilities** in the main menu, in the **Tools** tab.
 2.  Enable editing.
-3.  Add the personal access token from Zenodo.
+3.  Add the Zenodo API Token.
 4.  **Save.**
-
  
 
-![image info](img/user-profile-session-token.png)
+![image info](img/201012-user-profile.png)
 
 
 ### Export data to Zenodo
@@ -211,21 +190,24 @@ stored in openBIS, with the following procedure:
 To export data to Zenodo:
 
 1.  Go to **Exports** -> **Export to Zenodo** under **Utilities** in
-    the main menu.
-2.  Select the data you want to export from the menu.
-3.  Enter a **Submission** **Title.**
-4.  Click **Export Selected** on top of the export form.
-5.  The selected data are transferred as a zip file to Zenodo. You are
+    the main menu, in the **Tools** tab.
+2.  Select the Export options you want to use:
+    - **Make import compatible**: export can be imported in openBIS.
+    - **Export metadata as PDF**: metadata of selected entries is exported in pdf files.
+    - **Export metadata as XLSX**: metadata of selected entries is exported in an xlsx file.
+    - **Export data**: export datasets.    
+3.  Select the entities you want to export from the menu.
+4.  Enter a **Submission** **Title.**
+5.  Click **Export Selected** on top of the export form.
+6.  The selected data are transferred as a *.zip* file to Zenodo. You are
     now redirected to Zenodo, where you should fill in additional
     metadata information.
-6.  Publish the entry in Zenodo.
+7.  Publish the entry in Zenodo.
 
  
 
-![image info](img/export-to-zenodo-1024x862.png)
+![image info](img/201012-zenodo-export-builder.png)
 
- 
-The data exported to Zenodo is a .zip file that contains the metadata of the exported entries in 4 formats (.txt, .html, .doc, .json) and the data. The hiearchy (i.e.folder structure) used in the ELN is preserved in the exported .zip file.
  
 
 After you hit the **Publish** button in Zenodo, a new entry with the
@@ -235,31 +217,28 @@ minutes.
 
  
 
-![image info](img/publications-collection.png)
+![image info](img/201012-inventory-publications-collection.png)
 
 
 ## Export data to Zenodo in a multi-group instance
 
 If you export data from a multi-group instance where you have access to more than one group, you need to select the group under which the new publication entry should be created. 
 
-In the example below we see 3 group names: GENERAL, DEMO, TEST.
+In the example below we see 3 group names: GENERAL, ETHRDH, RDM.
 
-![image info](img/export-to-zenodo-multigroup.png)
+![image info](img/201012-zenodo-export-multigroup.png)
 
-If you select GENERAL, the publication entry will be created under the PUBLICATION Space (if present).
+If you select GENERAL, the publication entry will be created under the PUBLICATION *Space* (if present).
 
-If you select DEMO, the publication entry will be created under the DEMO_PUBLICATION Space. 
+If you select ETHRDH, the publication entry will be created under the ETHRDH_PUBLICATION *Space*. 
 
-If you select TEST, the publication entry will be created under the TEST_PUBLICATION Space. 
+If you select RDM, the publication entry will be created under the RDM_PUBLICATION *Space*. 
 
 
 
  
 ## Export to ETH Research Collection
 
-
-
- 
 
 The [ETH Research Collection](https://www.research-collection.ethz.ch/)
 is a FAIR repository for publications and research data provided by ETH
@@ -274,33 +253,38 @@ ETH Zurich**. This export feature is only available to ETHZ members.
 
 To export data to the ETH Research Collection:
 
-![image info](img/export-to-research-collection-1024x818.png)
 
-1.  Go to **Utilities** -> **Exports** -> **Export to Research
-    Collection**.
-2.  Select what to export from the tree.
-3.  Select the **Submission Type** from the available list: *Data
+1.  Go to **Exports** -> **Export to Research Collection** under **Utilities** in
+    the main menu, in the **Tools** tab.
+2.  Select the Export options you want to use:
+    - **Make import compatible**: export is compatible with import in openBIS.
+    - **Export metadata as PDF**: metadata of selected entries is exported in pdf files.
+    - **Export metadata as XLSX**: metadata of selected entries is exported in an xlsx file.
+    - **Export data**: export datasets.
+3.  Select what to export from the tree.
+4.  Select the **Submission Type** from the available list: *Data
     collection, Dataset, Image, Model, Sound, Video, Other Research
     Data*.
-4.  Select the **Retention Period** that will be used in the ETH
+5.  Select the **Retention Period** that will be used in the ETH
     Research Collection: *10 years, 15 years, indefinite.* This is time
     for which the data will be preserved in the Research Collection.
-5.  Click the **Export Selected** button on top of the page.
-6.  The selected data are transferred as zip file to the ETH Research
+6.  Click the **Export Selected** button on top of the page.
+7.  The selected data are transferred as *.zip* file to the ETH Research
     Collection. You will be redirected to the ETH Research Collection
     and will need to complete the submission process there.
 
  
 
-![image info](img/publications-collection.png)
+![image info](img/201012-research-collection-export-builder.png)
 
 
-The data exported to the Research Collection is a .zip file that contains the metadata of the exported entries in 4 formats (.txt, .html, .doc, .json) and the data. The hiearchy (i.e.folder structure) used in the ELN is preserved in the exported .zip file.
+
 
 A new entry with the details of this submission will be created in the
 **Publications** folder in the **Inventory** after the submission
 process in complete. This may take a few minutes.
 
+![image info](img/201012-inventory-publications-collection.png)
  
 
 The size limit for one single export to the ETH Research Collection is

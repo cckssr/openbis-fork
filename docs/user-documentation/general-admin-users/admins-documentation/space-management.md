@@ -3,39 +3,33 @@ Space Management
  
 ## Create new Inventory Spaces
   
-The default Inventory contains two
-folders: **Materials** and **Methods**. These are openBIS *Spaces*.
+The default Inventory contains three
+folders: **Materials**, **Methods**, **Publications**. These are openBIS *Spaces*.
 
 Additional *Spaces* can be created by an *Instance admin*.
 
-### Create a new Inventory Space from the ELN UI
-
- 
-
-From openBIS version 20.10.4 it is possible to create *Spaces* directly
-from the ELN interface.
-
 To create a new *Space* under the Inventory:
 
- 
 
 1.  Select **Inventory** in the main menu
-2.  Click on **+New Inventory Space** in the Inventory page
+2.  Click on **+Space** in the Inventory page
 
  
 
-![image info](img/new-inventory-space.png)
+![image info](img/201012-new-inventory-space.png)
 
  
 
 3\. Enter the **Code** for the *Space*, e.g. EQUIPMENT. Please note that
 codes only accept alphanumeric characters, –, . , \_.
 
+You have the option to choose if the space should be read-only for all users, except admins.
+
 4\. **Save**
 
  
 
-![image info](img/create-space.png)
+![image info](img/201012-create-inventory-space.png)
 
  
 
@@ -65,75 +59,17 @@ create a new *Space*:
 ![image info](img/create-space-groups-dropdown.png)
 
  
-
-### Create a new Inventory Space from the core UI
-
- 
-
-In the core UI:
-
- 
-
-1.  Select **Admin -> Spaces**
-2.  Click **Add Space** at the bottom of the page
-3.  Enter the *Space* **Code**, e.g. **EQUIPMENT**
-4.  **Save**
-
- 
-
- 
-
-![image info](img/spaces-admin-UI-300x158.png)
-
-
-#### Set Inventory Spaces
-
-  
-When new *Spaces* are created in the core UI, they are automatically
-displayed under the *Lab Notebook* part of the ELN main menu.
-
-It is possible to move a new *Space* to the Inventory, by editing the
-**Settings** under **Utilities** in the **ELN UI:**
-
- 
-
-1.  Go to the **Settings** and click **Edit.**
-2.  Go to the **Inventory Spaces** section in the **Settings** and click
-    the **+** button as shown below.
-3.  Select the *Space* you want to move to the *Inventory* from the list
-    of available *Spaces*.
-4.  **Save** the Settings.
-5.  Refresh the browser.
-
- 
-
-![image info](img/move-space-to-inventory-1024x426.png)
-
- 
-
-Updated on April 26, 2023
  
-## Create new ELN Spaces
-
-
-
-
-### Create a new Lab Notebook Space from the ELN UI
-
+## Create new Lab Notebook Spaces
  
-
-From openBIS version 20.10.4 it is possible to create *Spaces* directly
-from the ELN interface. To create a new Space under the Inventory:
-
- 
+To create a new *Space* under the Lab Notebook:
 
 1.  Select **Lab Notebook** in the main menu
-2.  Click on **+New** **Space** in the Lab Notebook page
+2.  Click on **+Space** in the Lab Notebook page
 
  
-
    
-![image info](img/new-lab-notebook-space.png)
+![image info](img/201012-create-space-ELN.png)
 
  
 
@@ -189,47 +125,18 @@ The rights for *Spaces* not belonging to any group need to be manually
 assigned by an *Instance admin*.
 
  
-
-### Create a new Lab Notebook Space from the core UI
-
- 
-
-In the core UI:  
-
- 
-
-1.  Select **Admin -> Spaces**
-2.  Click **Add Space** at the bottom of the page
-3.  Enter the Space **Code**, e.g. **EQUIPMENT**
-4.  **Save**
-
- 
-
-![image info](img/spaces-admin-UI-300x158.png)
-
- 
-
-By default all *Spaces* created in the core UI are shown under the Lab
-Notebook part of the ELN UI.
-
-Updated on April 26, 2023
  
 ## Delete Spaces
-
-
-
- 
 
 *Spaces* can be deleted by *Instance admins* or by *Space admins*.
 
  
-
 To delete a *Space*:
 
-1.  Click on the **Space** in the main menu
+1.  Click on the **Space** you want to delete in the navigation menu
 2.  Select **Delete** from the **More..** dropdown
 
-![image info](img/delete-space-1.png)
+![image info](img/201012-delete-space.png)
 
  
 
@@ -237,35 +144,22 @@ To delete a *Space*:
 
 4\. **Accept**
 
- 
-
- 
+  
 
 Notes:
 
-*Spaces* are not moved to the trashcan, but they are permanently deleted
-straight away.
+*Spaces* are not moved to the trashcan, but they are permanently deleted straight away.
 
-*Spaces* can only be deleted when they are empty and no entries
-previously belonging to the *Space* are in the trashcan.
+*Spaces* can only be deleted when they are empty and no entries previously belonging to the *Space* are in the trashcan.
 
  
 
- 
-
- 
-
-Updated on April 26, 2023
  
 ## Move Spaces between Lab Notebook and Inventory
 
 
-
- 
-
 If a *Space* belongs to the Inventory, this information is stored in the
 **ELN Settings,** under the section **Inventory Spaces.**
-
  
 
 To move a *Space* from the Lab Notebook to the Inventory, click on the
@@ -273,19 +167,16 @@ To move a *Space* from the Lab Notebook to the Inventory, click on the
 *Space* you want to move and **Save** the Settings.
 
  
-
 To move a *Space* from the Inventory to the Lab Notebook, click on the
 **–** button next to the *Space* you want to remove in the **Inventory
 Spaces** section and **Save** the Settings.
-
  
 
-ELN Settings can be edited by Instance admins, group admins in
+ELN Settings can be edited by *Instance admins*, *group admins* in
 multi-group instances and by anyone with admin rights to the
 ELN\_SETTINGS *Space*.
-
  
 
 ![image info](img/move-space-to-inventory-1024x426.png)
 
-Updated on August 2, 2022
+

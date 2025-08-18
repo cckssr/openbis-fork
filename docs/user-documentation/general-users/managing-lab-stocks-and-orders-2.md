@@ -8,7 +8,7 @@ buy. The requests can be converted into orders by the lab manager or the
 person responsible for purchases in the lab. The orders created with
 openBIS contain the information that can be sent to the suppliers.
   
-![image info](img/stock-navigation-menu.png)
+![image info](img/201012-stock-main-menu.png)
 
 In the **Stock Catalog** folder, a lab can create one collection of all
 products purchased in the lab and one collection of all suppliers used
@@ -40,10 +40,10 @@ To build the catalog of all suppliers used for purchasing products by
 the lab:
 
 1.  Go to the **Supplier Collection** folder under **Stock** -> **Stock Catalog** -> **Suppliers** in the main menu.
-2.  Click on the **+ New Supplier** button in the *Collection* page.
+2.  Click on the **+Supplier** button in the *Collection* page.
 3.  Follow the steps explained in the [Register Entries](./inventory-of-materials-and-methods.md#register-single-entries-in-a-collection) documentation page.
 
-![image info](img/stock-new-supplier.png)
+![image info](img/201012-stock-new-supplier.png)
 
 To register several suppliers at once, follow the steps described in
 [Batch register entries in a Collection.](./inventory-of-materials-and-methods.md#batch-register-entries-in-a-collection)
@@ -55,17 +55,18 @@ To register several suppliers at once, follow the steps described in
 To build the catalog of all products purchased in the lab:
 
 1.  Go to the **Product Collection** folder under **Stock** -> **Stock Catalog** -> **Products** in the main menu.
-2.  Click the **+ New Product** button in the *Collection* page.
+2.  Click the **+Product** button in the *Collection* page.
 
 
-![image info](img/stock-new-product-1.png)
+![image info](img/201012-stock-new-product.png)
 
  
 
-3. For each product it is necessary to register one supplier as parent. Select the correct supplier from the list of suppliers registered in the **Supplier Collection.** The process for adding parents is the same as described for Experimental Steps: [Add parents](./lab-notebook.md#add-parents-and-children-to-experimental-steps).
+3. For each product it is necessary to register one supplier as parent. Select the correct supplier from the list of suppliers registered in the **Supplier Collection.** 
+The process for adding suppliers is the same as described in [Add parents](./parent-child-relationship.md).
 
 
-![image info](img/stock-new-product.png)
+![image info](img/201012-stock-product.png)
 
  
 
@@ -81,11 +82,11 @@ Every lab member can create requests for products that need to be
 ordered:
 
 1.  Go to the **Request Collection** folder under **Stock** -> **Stock Catalog** -> **Requests** in the main menu.
-2.  Click the **+ New Request** button in the *Collection* page.
+2.  Click the **+Request** button in the *Collection* page.
 
  
 
-![image info](img/stock-new-request-1.png)
+![image info](img/201012-stock-new-request.png)
 
 3. When you fill in the form the following information needs to be provided:
 
@@ -97,7 +98,7 @@ ordered:
 
  
 
-![image info](img/stock-new-request.png)
+![image info](img/201012-stock-request.png)
 
 4. Click **Save** on top of the form.
 
@@ -117,38 +118,41 @@ based on the requests created in the Stock Catalog by every lab member.
 To create orders of products from requests created in the Stock Catalog:
 
 1.  Go to the **Order Collection** folder under **Stock** ->  **Stock Orders** -> **Orders** in the main menu.
-2.  Click the **+ New Order** button in the *Collection* page.
+2.  Click the **+Order** button in the *Collection* page.
 
-![image info](img/stock-new-order-1.png)
+![image info](img/201012-stock-new-order.png)
 
 3. If you do not see the **Code** in the form, select **Show Identification Info** from the **More..** dropdown
 
-![image info](img/stock-new-order-identification-info.png)
+![image info](img/201012-stock-order-show-identification-info.png)
 
 
 4. Enter a **Code** for the order
 
-![image info](img/stock-new-order-code.png)
+![image info](img/201012-stock-order-code.png)
 
-3. If an **order** **template** form is available (see [Create Templates for Objects](../general-admin-users/admins-documentation/create-templates-for-objects.md)), this template can be used and most fields will be automatically filled (see [Use templates for Experimental Steps](./lab-notebook.md#use-templates-for-experimental-steps)). If no template is available, the relevant fields in the form need to be filled in with the relevant information.
+5. If an **order** **template** form is available (see [Create Templates for Objects](../general-admin-users/admins-documentation/create-templates-for-objects.md)), this template can be used and most fields will be automatically filled (see [Use templates for Experimental Steps](./lab-notebook.md#use-templates-for-experimental-steps)). If no template is available, the relevant fields in the form need to be filled in with the relevant information.
 
  
 
-![image info](img/create-new-order.png)
+![image info](img/201012-stock-order-template.png)
 
-4. Enter the **Order Status.** This field is mandatory. Available options are **Delivered**, **Paid**, **Ordered**, **Not yet ordered**. When you first create the order, you should set the status to **Not yet ordered**.
-5. Add one or more requests to the Order. Only requests with Order Status set to **Not yet ordered** will be displayed and can be selected.
-6. Click **Save** on top of the form. 
+6. Enter the **Order Status.** This field is mandatory. Available options are **Delivered**, **Paid**, **Ordered**, **Not yet ordered**. When you first create the order, you should set the status to **Not yet ordered**.
+7. Add one or more requests to the Order. Only requests with Order Status set to **Not yet ordered** will be displayed and can be selected.
+8. Click **Save** on top of the form. 
 
-![image info](img/order-form-1-1024x556.png)
 
 If the price information is available in the products, the total cost of
 the order is calculated by openBIS and displayed in the order form, as
-shown above.
+shown below.
 
 By using the **Print Order** button in the order form, the order can be
 printed as text file that can be sent to the suppliers for purchasing
 the products.
+
+
+![image info](img/201012-stock-order.png)
+
 
 To simplify the process of ordering multiple products from the same
 supplier, all information related to the same supplier is grouped in one
@@ -168,4 +172,3 @@ Once the order is processed, you should change the **Order Status** to
 connected requests. Requests with this oder status cannot be added to
 additional orders.
 
-Updated on April 25, 2023

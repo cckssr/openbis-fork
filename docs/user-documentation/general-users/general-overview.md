@@ -56,7 +56,7 @@ configuration file, during the installation by a system admin.
 When file based and/or LDAP authentication are used in openBIS, the login interface is as shown below. Users need to provide their username and password to login.
 Only registered users with assigned rights can login to openBIS.
 
-![](img/ELN-regular-login.png)
+![](img/201012-ELN-login.png)
 
 
 
@@ -67,13 +67,13 @@ When SWITCHaai (SSO) authentication is used in addition to file based and/or LDA
 
 SWITCHaai is selected by default. In this case, users need to click on **Login** and they will be redirected to the SWITCHaai login page.
 
-![](img/ELN-login-SSO-1.png)
+![](img/201012-ELN-login-SSO.png)
 
 If a user would like to authenticate with a file-based account or LDAP (depending on system configuration), they need to select **Default Login Service** from the dropdown and provide username and password.
 
-![](img/ELN-login-SSO-2.png)
+![](img/201012-ELN-login-SSO-dropdown.png)
 
 
-![](img/ELN-login-SSO-3.png)
+![](img/201012-ELN-login-default-authentication.png)
 
 openBIS also supports SWITCH edu-id authentication and the login process is the same as described in this section.

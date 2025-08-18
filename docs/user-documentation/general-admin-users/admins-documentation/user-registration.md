@@ -6,10 +6,10 @@ User Registration
 
 Users can only be registered by someone with *Instance admin* role:
 
-1.  Go to the **User Manager**, under **Utilities**.
-2.  Click the  +**New** **User** button. 
+1.  Go to the **User Manager**, under **Utilities** in the **Tools** tab.
+2.  Click the  **+ User** button. 
 
-![image](img/new-user-eln-ui-1024x455.png)
+![image](img/201012-new-user-registration-ELN.png)
 
 3. Select the **Authentication Service**:
 
@@ -34,10 +34,8 @@ the name of the user is automatically created under the Lab Notebook
 main menu. The user is also assigned some default roles:
 
 1.  *Space admin* of the *Space* created for him/her under the notebook.
-2.  *Space user of* the Inventory *Spaces* (MATERIALS, METHODS by
-    default), the STOCK\_CATALOG and the STORAGE *Spaces*.
-3.  *Space Observer* of the STOCK\_ORDERS, ELN\_SETTINGS and
-    PUBLICATIONS S*paces*.
+2.  *Space user of* the Inventory *Spaces* (MATERIALS, METHODS by default), the STOCK\_CATALOG and the STORAGE *Spaces*.
+3.  *Space Observer* of the STOCK\_ORDERS, ELN\_SETTINGS and PUBLICATIONS S*paces*.
 
 
 Modification to default rights can be granted by an *Instance admin*
@@ -56,22 +54,16 @@ assigned.
 
 To register new users from the admin UI:
 
-1.  go to the **Users** tab. The **Users** and **Groups** will show in
-    the main menu on left had side.
-2.  Click on **Users** in the menu: the **Add** button at the bottom of
-    the menu will become active (blue)
+1.  go to the **Users** tab. The **Users** and **Groups** will show in the main menu on left had side.
+2.  Click on **Users** in the menu: the **Add** button at the bottom of the menu will become active (blue)
 3.  Click the **Add** button
-4.  Enter the U**ser Id**. This is the LDAP username, when LDAP
-    authentication is used, or the email address with "@" replaced by "\_AT\_" if SSO authetication is used (e.g. name.surname_AT_institution.com). 
+4.  Enter the U**ser Id**. This is the LDAP username, when LDAP authentication is used, or the email address with "@" replaced by "\_AT\_" if SSO authetication is used (e.g. name.surname_AT_institution.com). 
    
     Please note that file-based authentication (where username and password can
     be created) is NOT supported by the admin UI.
-5.  **Home space**: this sets the default folder a user sees marked as
-    **My Space** in the Lab Notebook.
-6.  Click the **Add Role** button at the bottom of the page to assign a
-    role to the user.
-7.  Click the **Add Group** button at the bottom of the page to assign a
-    user to a group of users.
+5.  **Home space**: this sets the home space for the user in the Lab Notebook.
+6.  Click the **Add Role** button at the bottom of the page to assign a role to the user.
+7.  Click the **Add Group** button at the bottom of the page to assign a user to a group of users.
 
 ![](img/admin-ui-add-users.png)
 
@@ -124,16 +116,11 @@ Users can be removed in the admin UI, by selecting the user in the left menu of 
 
 It is possible to create groups of users and assign rights to a group:
 
-1.  go to the **Users** tab. The **Users** and **Groups** will show in
-    the main menu on left had side.
-2.  Click on **Groups** in the menu: the **Add** button at the bottom of
-    the menu will become active (blue)
+1.  go to the **Users** tab. The **Users** and **Groups** will show in the main menu on left had side.
+2.  Click on **Groups** in the menu: the **Add** button at the bottom of the menu will become active (blue)
 3.  Click the **Add** button
-4.  Enter a **Code** for the group. This is the equivalent of a name,
-    but Codes can only contain numbers, letters and the following
-    symbols: . – \_
-5.  You can now assign registered users to the group and assign Roles as
-    explained above.
+4.  Enter a **Code** for the group. This is the equivalent of a name, but Codes can only contain numbers, letters and the following symbols: . – \_
+5.  You can now assign registered users to the group and assign Roles as explained above.
 
 ![](img/admin-ui-groups-1-1024x559.png)
 
@@ -243,10 +230,9 @@ Can do everything that Space/Project Admin and additionally:
 Please note that this role cannot be assigned via the ELN UI, only via
 admin UI.
 
-Updated on April 26, 2023
- 
-## User Profile
 
+
+## User Profile
 
 
 In the User Profile, a user who is logged in into openBIS can find the
@@ -258,8 +244,7 @@ following information:
 2.  **Last Name**
 3.  **Email**
 4.  **openBIS session token**
-5.  **Zenodo API Token** ([Export to
-    Zenodo](../../general-users/data-export.md#export-to-zenodo))
+5.  **Zenodo API Token** ([Export to Zenodo](./docs/user-documentation/general-users/data-export.md#export-to-zenodo))
 
  
 
@@ -271,7 +256,7 @@ here directly from the user.
 
  
 
-![image info](img/Screenshot-2022-06-28-at-10.15.39.png)
+![image info](img/201012-user-profile.png)
 
  
 
@@ -282,32 +267,26 @@ here, from the **Change Password** option under the **More..** dropdown.
 
 ![image info](img/change-pwd.png)
 
-Updated on June 28, 2022
  
 ## Assign home space to a user
 
 
+When a home space is assigned to a user, this is visible the lab notebook, as shown below.
 
  
 
-When a home space is assigned to a user, this becomes marked as **My
-Space** for that user in the lab notebook, as shown below.
-
- 
-
-![image info](img/menu-my-space.png)
+![image info](img/201012-navigation-menu-ELN.png)
 
  
 
 When users are registered via the ELN UI, a *Space* with their username
-is created (see [User
-Registration)](./user-registration.md)
+is created (see [User Registration)](./user-registration.md)
 and this is automatically set as home space for the user.
 
 The same happens in multi-group instances where spaces are created for
 each user in the lab notebook section.
 
-An *instance admin* can change the home space of a user or assign one to
+An *Instance admin* can change the home space of a user or assign one to
 a user that does not have a home space assigned from the admin UI, as
 shown below.
 
@@ -318,14 +297,11 @@ shown below.
  
 
 Please note that when a user is inactivated, the home space assigned to
-that user is moved in the ELN UI to the folder **Others (disabled).** If
+that user is moved in the ELN UI to the folder **Inactive Spaces.** If
 this is not desired, the space should be removed as home space from the
-inactivated user. This can be done by an *instance admin*.
+inactivated user. This can be done by an *Instance admin*.
 
  
 
- 
 
  
-
-Updated on April 26, 2023

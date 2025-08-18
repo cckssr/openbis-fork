@@ -1,4 +1,4 @@
-# Enable Transfer to Data Repositories
+# Enable Transfer to Zenodo
 
 
 
@@ -14,14 +14,13 @@ file](../../../system-documentation/configuration/configuration-properties-by-mo
 
 If this is done, the Zenodo Export needs to be made visible in the ELN
 UI by a lab manager, who has should have admin rights for the
-**Settings**. This can be done by a *group admin*, in case of a
+**ELN Settings**. This can be done by a *group admin*, in case of a
 multi-group instance set up.
 
   
 Procedure:  
   
-
-1.  Edit the **Settings** under **Utilities.**
+1.  Edit the **Settings** under **Utilities** in the **Tools** tab.
 2.  Select **showZenodoExportBuilder** in the **Main Menu** section.
 3.  **Save.**
 
@@ -35,6 +34,5 @@ see the change):
 
  
 
-![image info](img/export-to-zenodo-1024x862.png)
+![image info](img/201012-zenod-export-builder.png)
 
-Updated on April 26, 2023

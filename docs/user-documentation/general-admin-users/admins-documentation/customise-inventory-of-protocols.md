@@ -4,32 +4,20 @@ Customise Inventory Of Protocols
 ## Create Collections of Protocols
 
 
-
+In the **Methods** *Space* in the inventory, you can create one or more collections for the protocols used in the labs.
+If you have several protocols for one specific operation (e.g. microscopy, PCR), you can create one *Collection* for each protocol type, to group protocols of the same type together.
   
-*Collections* are folders used to organise *Objects* in the **Methods**
-Inventory. In this case, *Objects* are protocols.
+If we want to create a collection of lab protocols, we need to adopt the following steps:
+
+- Register a first *Project* folder called PROTOCOLS in the **Methods** *Space*.
+
+![image info](img/201012-inventory-space-methods-new-project.png)
+
+- In the **Protocols** folder, register a *Collection* called **Lab Protocols**
 
  
 
-*Collections* need to be created inside another folder, called
-*Project*, in the **Methods** *Space* in the inventory.
-
- 
-
-For example, if we want to create a collection of lab protocols for
-microscopy and Mass spec, we need to adopt the following steps:
-
-1.  Register a first *Project* folder called PROTOCOLS in the
-    **Methods** *Space*.
-
-![image info](img/create-project-methods.png)
-
-1.  In the **Protocols** folder, you can register two additional
-    Collections called Microscopy Protocols and MS Protocols
-
- 
-
-![image info](img/inventory-protocol-collection-registration.png)
+![image info](img/201012-inventory-lab-protocols-collection.png)
 
   
 The steps for the registration of the folders are the same as explained
@@ -37,18 +25,13 @@ in [Create Collections of
 Materials](./customise-inventory-of-materials-and-samples.md#create-collections-of-materials)  
   
 
- 
-
-Updated on April 26, 2023
  
 ## Enable Protocols in Settings
-
-
 
   
 If a new *Object type* for a protocol is created by an *Instance admin*
 in the admin interface, it is advisable to set the *Object type* to
-**Protocol** in the **Settings**, under **Utilities**.
+**Protocol** in the **Settings**, under **Utilities** in the **Tools** tab.
 
   
 For this, follow the steps below:  
@@ -59,11 +42,11 @@ For this, follow the steps below:
 3.  Scroll to the last section of the **Settings**: **Object Type
     definitions Extension**
 4.  Open the *Object type* corresponding to your protocol, e.g.
-    **General Protocol**
+    **Protocol**
 5.  Select **Use as Protocol**
 6.  **Save**
 
-![image info](img/settings-enable-protocol-1024x488.png)
+![image info](img/201012-settings-enable-protocol.png)
 
   
 This is done to be able to create local copies of protocols from the
@@ -71,4 +54,3 @@ This is done to be able to create local copies of protocols from the
 described in [How to use protocols in Experimental
 Steps](../../general-users/lab-notebook.md#how-to-use-protocols-in-experimental-steps)
 
-Updated on April 26, 2023

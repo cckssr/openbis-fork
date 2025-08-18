@@ -1,30 +1,19 @@
 Additional Functionalities
 ==========================
  
-## Print PDF 
-
-For every entity in openBIS it is possible to generate a pdf using the **Print PDF** option from the **More..** dropdown menu. 
-
-The generated pdf file can be printed or downloaded from the browser. 
-
-An example for a Space is shown in the picture below.
-
-![image info](img/print-pdf-2.png)
-
 
 ## Visualise Relationships
-
 
 
   
 Parent-child relationships between *Objects* can be visualised as trees
 or tables in the ELN.
 
-To see the genealogical tree, select the **Hierarchy Graph** option from the **More…** dropdown in an entity form.
+To see the genealogical tree, select the **Hierarchy Graph** option from the **More…** dropdown in an *Object* form.
 
  
 
-![image info](img/Screenshot-2020-03-10-at-11.14.21-300x229.png)
+![image info](img/201012-visualize-relationships.png)
 
  
 
@@ -38,244 +27,141 @@ and/or children and which types to show.
 To view the genealogy of an *Object* in a tabular format, select the **Hierarchy Table** option from the **More…** dropdown.
 
 
- 
-## Tables
+## Copy Objects
+
+To create a copy of an existing entry, select **Copy** from the
+**More..** drop down menu in the *Object* page.
+
+![image info](img/201012-copy-sample.png)
+
+
+
+![image info](img/201012-copy-entry.png)
+
+
+When an *Object* is copied, the user has the following options:
+
+- **Copy Comments Log**: If the comments log is available in the *Object* being copied, the user can choose whether to copy this or not.
+- **Link Parents**: the copied *Object* will keep the links to the parents present in the orginal *Object*. 
+- **Children**:
+    - **Do NOT Copy or Link**: children are not copied nor linked.
+    - **Link**: the copied *Object* will keep the links to the children present in the orginal *Object*. 
+    - **Copy into parents collection**: children present in the original *Object* are copied into the same entity (*Space, Project, Collection*) the *Object* belongs to and will be linked to the copied *Object*.
 
 
 
 
-  
-All tables in the ELN have a similar format and functionalities. The
-tables have been redesigned for the 20.10.3 release of openBIS.
+All these options are disabled by default.
 
-Here we give an overview of the main functionalities of the tables.
-
- 
-
-### Filters
-
-Two filter options are available form the **Filters** button: **Filter
-Per Column** and **Global Filter**. The first allows to filter on
-individual columns, or multiple columns, whereas the second filters
-terms across the entire table using the **AND** or **OR** operator. 
+![image info](img/201012-object-copy-options.png)
 
 
-![image info](img/filter-per-column-tables-1024x248.png)
+*Objects* are always copied in the entity they belong to (*Space, Project, Collection*). 
+After copying, you can move entries to a different entity.
 
-![image info](img/global-filter-tables-1024x219.png)
+## Move Objects
+
+*Objects* can be moved from one entity to another, either from the *Object* form or from a *Collection* table, if they belong to a *Collection*.
 
 
-### Sorting
+### Move from entry form
 
-It is possible to sort individual columns or also multiple columns. For
-multi-column sorting, you should click on the column header and press
-the **Cmd** keyboard key. The order of sorting is shown by a number in
-each column, as shown below.
+To move *Objects* to a different entity, select **Move** from the
+**More…** drop down menu in the *Object* form.
 
- 
 
-![image info](img/multi-colums-sorting-1024x334.png)
+![image info](img/201012-move-sample.png)
+
+![image info](img/201012-move-entry.png)
 
 
 
-### Exports
-
-Tables can be exported in different ways, using the export button shown
-below.
+You have the option to move to an existing entity (*Space, Project, Collection*)
 
 
-
-![image info](img/export-tables-1024x419.png)
-
->  
->
-> 1.  1.  **Import Compatible**:
->         1.  **Yes**: in this case some columns which are incompatible
->             with imports (i.e. registration date, registrator,
->             modification date, modifier) are not exported even if
->             selected; some columns that are required by openBIS for
->             imports are added to the exported file even if not
->             selected (i.e. code, identifier, $ column). Moreover text
->             fields are exported in HTML, to keep the formatting upon
->             import.
->         2.  **No**: in this case all columns or selected columns are
->             exported.
->
->  
->
-![image info](img/export-tables-import-compatible.png)
->
->  
->
->  
->
-> 2\. **Columns**:
->
-> 1.  1.  1.  **All (default order)**. All columns are exported, in
->             accordance with the selection explained above for import
->             compatibility.
->         2.  **Selected (shown order)**. Selected columns are exported,
->             in accordance with the selection explained above for
->             import compatibility.
->
-![image info](img/export-table-columns.png)
->
->  
->
->  3. **Rows**:
->
-> 1.  1.  1.  1.  **All Pages**. All pages of the table are exported.
->             2.  **Current Page**. Only the currently visible page of
->                 the table is exported.
->             3.  **Selected Rows**. Only selected rows in the table are
->                 exported.
->
-![image info](img/export-table-rows.png)
->
-> 4\. **Value**:
->
-> 1.  1.  1.  **Plain Text**. Text fields are exported in plain text,
->             without any formatting. This option is not available if
->             the export is import-compatible.
->         2.  **Rich Text**. Text fields are exported in HTML format.
->
-![image info](img/export-table-values.png)
->
->  
->
-> Tables are exported to **XLS** format. Exported tables can be used for
-> updates via the **XLS Batch Update Objects**. 
->
+![image info](img/201012-move-widget-to-exiting-entity.png)
 
 
-Note: Excel has a character limit of 32767 characters in each cell. If you export entries where a field exceeds this limit, you get a warning and the exported Excel file will not contain the content of the cell which is above this limit and the cell is highlighted in red, as shown below.
+or to move to a new *Collection*.
 
-![image info](img/Excel-character-limit-warning.png)
-
-
-![image info](img/Excel-download-exceeded-chraracter-limit.png)
+![image info](img/201012-move-widget-to-new-collection.png)
 
 
-### Columns
-
-Users can select which properties to display in the table clicking on
-the **Columns** button. It is also possible to show all properties or
-hide all properties. The position of the columns can also be changed by
-placing the cursor next to the = sign in the list and moving the fields.
-This information is stored in the database for each user.
-
- 
-
-![image info](img/columns-in-tables-1024x571.png)
-
- 
-
-#### **Spreadsheets**
-
-If a table contains *Objects* which have a spreadsheet field which is
-filled in, a spreadsheet icon is displayed in the table. Upon clicking
-on the icon, the content of the spreadsheet can be expanded.  
-
->  
->
-![image info](img/Screenshot-2022-03-02-at-00.16.41-1024x411.png)
->
-![image info](img/Screenshot-2022-03-02-at-00.17.26-1024x467.png)
->
->  
-
-#### Text fields
-
-If a table contains Objects which have long text fields, only the
-beginning of the text is shown and can be expanded. If the text contains
-a picture or a table, an icon is shown in the table and the content of
-the text becomes visible by clicking on the icon.
-
->  
->
-![image info](img/Screenshot-2022-03-01-at-23.57.58-1024x398.png)
->
->  
-
-### **Selection of entries in table**
-
-Single entries in a table can be selected using the checkbox in the row.
-By clicking the checkbox in the table header, all entries of the table
-are selected. After selection of entries, some actions become available:
-
-> -   **Delete**: allows to move the selected entries to the trashcan.
-> -   **Move**: allows to move the selected entries to a different existing
->     *Collection/Experiment* or to a new one.
-> -   **Generate barcodes**: allows to generate custom barcodes for the
->     selected entries.
-> -   **Update custom barcodes/QR codes**: allows to update existing custom
->     barcodes of the selected entries.
-> -   **Clear selection**: allows to clear the selection made.
-
- 
-
-![image info](img/Object-table-buttons-on-selection.png)
-
- 
-
-In *Object* tables inside *Experiments/Collections* there is an
-**Operations** column, which allow users to perform certain tasks on an
-*Object*:
-
-> 1.  Upload a file to the *Object*
-> 2.  Move the *Object* to another exiting *Experiment/Collection*.
-> 3.  Update Barcode/QR code.
-> 4.  Open the hierarchy graph. This is the graph showing parent/child
->     connections of the *Object*.
-> 5.  Open the hierarchy table. This is the table showing parent/child
->     connections of the *Object*.
-
- 
-
-![image info](img/Object-table-operations-column.png)
 
 
- 
+### Move from Collection Table
+
+It is also possible to move *Objects* beloging to *Collections* from *Collection* tables. You can
+select one or multiple entries from a table and click on the **Move**
+button.
+
+
+![image info](img/201012-tables-operations-options.png)
+
+
+
+Also in this case you can move to an existing entity or create a
+new *Collection*.
+
+
+## Templates
+
+It is possible to have templates for given *Object* types in openBIS. Templates have prefilled values.
+This is useful when performing repetitive tasks, where some fields are always the same, or would require only minor changes.   
+
+Templates need to be crated by the lab manager in the [**ELN Settings**](../general-admin-users/admins-documentation/create-templates-for-objects.md). 
+If templates have been created for a given *Object* type, you can choose from the list of available templates by clicking the **Template** button on the *Object* form, as shown below.  
+
+
+![image info](img/201012-object-template.png)
+
+If the template you use contains predefined Parents/Children and you alreday have some parents/children defined in your *Object* that you wish to preserve, 
+you should leave the option "Merge current parents/children" selected. 
+This can happen for example in the Lab Notebook, when you register one *Object* starting from another *Object* and a parent/child relationship is automatically created. See [**Lab Notebook**](./lab-notebook.md). 
+
+
+
+
 ## Browse Entries by Type
 
-
-
   
-The **Object Browser** under the **Utilities** main menu allows to see
-all entries of the same type and all *Experimental Steps*, which may be
-contained in different *Experiments/Collections* and *Projects*. 
+The **Object Browser** under the **Tools** main menu allows to see
+all entities of the same type, which may be
+contained in different *Spaces*, *Projects*, *Experiments/Collections*. 
 
-![image info](img/Screenshot-2020-02-27-at-14.52.07-300x248.png)
+![image info](img/201012-object-browser.png)
 
-This is useful when there are entries of a certain type that belong to
-different *Collections* (e.g. protocols of the same type stored in two
-different protocol collections), or to have an overview of all
-*Experimental Steps*, independently of the *Experiment* they belong to.
 
  
+![image info](img/201012-entry-object-browser.png)
 
-![image info](img/exp-step-object-browser-1024x646.png)
 
 From the **Object Browser** page, it is also possible to **Batch
 register** or **Batch update** *Objects* using an XLS or TSV template.
 
  
 
-![image info](img/batch-register-entries-object-browser-2.png)
+![image info](img/201012-object-browser-batch-operations.png)
 
  
 
- 
+## Print PDF 
+
+For every entity in openBIS it is possible to generate a pdf using the **Print PDF** option from the **More..** dropdown menu. 
+
+The generated pdf file can be printed or downloaded from the browser. 
+
+An example for a *Space* is shown in the picture below.
+
+![image info](img/201012-print-pdf-space.png) 
 
 
  
 ## Trashcan
 
-
-
   
 When *Experiments*, *Objects* and *Datasets* are deleted, they are moved
-to the openBIS **trashcan**, under the **Utilities** main menu. Items
+to the openBIS **trashcan**, under the **Utilities** menu in the **Tools** tab. Items
 can be removed from the trashcan only by someone with *Space admin* or
 *Instance admin* role. Deletion from the trashcan is **IRREVERSIBLE**.
 
@@ -295,8 +181,8 @@ Operations dropdown:
 
 -   **delete permanently**: deletes permanently only the selected entry.
 -   **delete permanently (including dependent deletions)**: if the
-    selected entry had children which are also in the trashcan, this
-    option allows to permanently delete both the entry and its children.
+selected entry had children which are also in the trashcan, this
+option allows to permanently delete both the entry and its children.
 
  
 
@@ -306,26 +192,24 @@ the **Operations** drop down in the table.
 
  
 
-![image info](img/trashcan-1024x302.png)
+![image info](img/201012-trashcan.png)
 
 
  
 ## Visualize Available Storage Space
 
-The storage space available in an openBIS instance can be visualized by navigating to **Other Tools** in the navigation menu and clicking on the **Show available storage space** button.
+The storage space available in an openBIS instance can be visualized by navigating to **Other Tools** in the menu under the **Tools** tab and clicking on the **Show available storage space** button.
 
-![image info](img/Tools-available-storage-space.png)
+![image info](img/201012-available-storage.png)
 
 Before uploading large datasets, the available storage space should always be checked.
 
  
 ## Vocabulary Browser
 
-
-
   
-The **Vocabulary browser** is accessible from the **Utilities** main
-menu. This shows all controlled vocabularies registered in openBIS and
+The **Vocabulary browser** is accessible from the **Utilities** 
+menu under the **Tools** tab. This shows all controlled vocabularies registered in openBIS and
 the terms they contain. Vocabularies are predefined lists of values to
 choose from in given fields. Vocabularies can be created/modified by an
 openBIS *Instance admin* (see [New Entity Type
@@ -339,24 +223,22 @@ case for XLS Batch registration or update, where labels can be used.
 
  
 
-![image info](img/vocabulary-browser-1024x483.png)
+![image info](img/201012-vocabulary-browser.png)
 
  
 ## Freeze Entities
 
-
-
   
-Each level of the openBIS hierarchy (Space, Project,
-Experiment/Collection, Object, Dataset) can be frozen, so it can be no
+Each level of the openBIS hierarchy (*Space, Project,
+Experiment/Collection, Object, Dataset*) can be frozen, so it can be no
 longer edited and/or deleted.
 
 At every level, everything contained underneath is selected by default
-to be frozen. E.g. if I choose to freeze a Space, everything contained
-in the Space is automatically selected to be frozen. Single entities can
+to be frozen. E.g. if I choose to freeze a *Space*, everything contained
+in the *Space* is automatically selected to be frozen. Single entities can
 be manually unselected.
 
-A Space admin role is necessary to freeze entities in a given Space.  
+A *Space admin* role is necessary to freeze entities in a given *Space*.  
   
 
 **IMPORTANT: the freezing is IRREVERSIBLE!**  
@@ -375,11 +257,7 @@ available under the **More..** dropdown menu. See the example for a
 
  
 
-![image info](img/freeze-space.png)
-
- 
-
- 
+![image info](img/201012-freeze-space.png)
 
  
 
@@ -388,16 +266,13 @@ selected will be presented to you, as shown below. By default everything
 is selected, so you need to unselect entries that you do not want to
 freeze.
 
- 
+  
+
+![image info](img/201012-freeze-entities-widget.png)
 
  
 
-![image info](img/freze-selection-1024x469.png)
-
- 
-
-To freeze one or several entities, you need to provide your login
-password and save.
+To freeze one or several entities, you need to enter the result of The operation presented in the widget. 
 
 
 **Rules for freezing**
@@ -427,7 +302,7 @@ password and save.
 |Copy Object||x|
 |Export|x||
 
-1.  **Freeze Project only**
+2.  **Freeze Project only**
 
 ||Allowed|Not allowed|
 |--- |--- |--- |
@@ -448,7 +323,7 @@ password and save.
 |Copy Object||x|
 |Export|x||
 
-**3. Freeze Experiment/Collection only**
+3. **Freeze Experiment/Collection only**
 
 ||Allowed|Not allowed|
 |--- |--- |--- |
@@ -466,7 +341,7 @@ password and save.
 |Copy Object||x|
 |Export|x||
 
-**4. Freeze Object only**
+4. **Freeze Object only**
 
 ||Allowed|Not allowed|
 |--- |--- |--- |
@@ -479,7 +354,7 @@ password and save.
 |Copy Object|x (only if the Experiment is not frozen)||
 |Export|x||
 
-**5. Freeze Dataset only**  
+5. **Freeze Dataset only**  
 
 ||Allowed|Not allowed|
 |--- |--- |--- |
@@ -490,118 +365,13 @@ password and save.
 
 
  
-## Navigation menu
-
-
-
- 
-
-openBIS 20.10.6 features a new navigation menu.
-
- 
-
-![image info](img/navigation-menu.png)
-
- 
-
-This has the following functionalities:
-
- 
-
-**1.Filter**. You can filter the menu by names or codes.
-
- 
-
-![image info](img/menu-filter.png)
-
- 
-
- 
-
-**2. Root nodes**. If you do not want to navigate the full menu, but
-only a section of it, you can set the section you want to navigate as
-root node, by clicking the icon shown in the picture below.
-
- 
-
-![image info](img/menu-select-root-node.png)
-
- 
-
-This now becomes the root node, as shown below. To restore the full menu
-view, you can click on the root node icon shown below.
-
- 
-
-![image info](img/menu-selected-root-node.png)
-
-**3. Sorting**. The default sorting of the menu is in alphabetical. It
-is now possible to sort separately individual sections of the menu
-(*ELN, Inventory, Stock*) and individual nodes inside those sections. It
-is possible to do a custom sorting by moving around (drag&drop) entities
-in the menu. Please note that this is only possible inside a given
-level, i.e. you can re-organise *Objects* inside a
-*Collection/Experiment*; *Collections/Experiments* inside a *Project*;
-*Projects* inside a *Space*. However, you cannot move entities from one
-level to another, i.e. you cannot move an *Object* to a different
-*Collection/Experiment*; a *Collection/Experimen*t to a different
-*Project*; a *Project* to a different *Space*. This can only be done
-from the **Move** option under the **More..** dropdown menu in the
-forms.
-
- 
-
-![image info](img/menu-change-sorting.png)
-
- 
-
- 
-
-![image info](img/menu-sorting-options.png)
-
- 
-
- 
-
-**4. Collapse/Expand.** The full menu or individual nodes can be
-expanded or collapsed, with the button shown below.
-
- 
-
- 
-
-![image info](img/menu-collapse.png)
-
- 
-
- 
-
-**5. Scroll to selected node**. In some cases, the view in the main ELN
-page does not correspond to an entry selected in the menu. You can
-scroll to the selected node in the menu, using the button shown below.
-
- 
-
-![image info](img/menu-scroll-to-selected-node-1.png)
-
- 
-
-The state of the menu is saved. Every time you change something in the
-menu, this change will be saved and when you login next time you will
-see the menu in the state you last saved it.
-
 
  
 ## Custom Imports
-
-
-
  
-
 From openBIS version 20.10.4, Custom Imports, previously available only
 in the core UI, are available in the ELN UI.
 
- 
 
 Custom imports allow users to import metadata in a custom way, by using
 a dropbox script in the background. You can use this if you want to
@@ -609,27 +379,19 @@ parse a file in a given format and import the information from this file
 as metadata in openBIS.
 
  
-
 Custom imports are not available by default, but need to be enabled on
 the server side by a *system admin*, and a dropbox script needs to be
 associated with an import (see [Custom
 Imports](../../software-developer-documentation/legacy-server-side-extensions/custom-import.md)).
-
  
 
 If one or more custom imports are configured in openBIS, the **Custom
-Import** option is available under the **Utilities** in the **main
+Import** option is available under the **Tools** in the **navigation
 menu**.
 
 The available custom imports can be selected from the **Custom Import
-Service** drop down menu in the Custom Import page (see below).
-
-![image info](img/custom-imports-1024x459.png)
-
+Service** drop down menu in the Custom Import page.
  
-
- 
-
 If the available custom import provides a template that can be used as
 input for the import, the template will be available to download from
 the Custom Import page.
@@ -667,9 +429,7 @@ moved.
 The **History** of changes of each entity is now available in the ELN
 UI. In versions prior to openBIS 20.10.3 this was only available in the
 core UI.
-
  
-
  
 
 ### History table for Collections
@@ -681,7 +441,7 @@ In a *Collection* page, the **History** can be accessed from the
 
  
 
-![image info](img/history-collection-dropdown.png)
+![image info](img/201012-dropdown-history-collection.png)
 
  
 
@@ -726,7 +486,7 @@ For every *Object*, the history of changes can be accessed from the
 
  
 
-![image info](img/object-history-dropdown.png)
+![image info](img/201012-dropdown-history-object.png)
 
  
 
@@ -748,7 +508,7 @@ For every dataset, the history of changes can be accessed from the
 
  
 
-![image info](img/dataset-history-dropdown.png)
+![image info](img/201012-dropdown-history-dataset.png)
 
  
 
@@ -756,6 +516,8 @@ For a *Dataset*, the **PermID** (Permanent Identifier) of the
 *Object*/*Collection* it belongs to is shown. If a *Dataset* is moved
 from one *Object*/*Collection* to another, the PermID of the old and new
 *Objects*/*Collections* are shown in the history table.
+
+
 
 
 
@@ -773,13 +535,15 @@ It is possible to import an openBIS Object into the spreadsheet, with the **impo
 Please note that if the Object is updated in openBIS, it will NOT be automatically updated in the spreadsheet.
 
 
+
+
 ## Session Token
 
-When users log in to openBIS, a session token is generated. The session token is visible in the ELN UI, under the **User Profile**, in the **navigation menu**.
+When users log in to openBIS, a session token is generated. The session token is visible in the ELN UI, under the **User Profile**, in the **Tools** navigation menu.
 
-![image info](img/user-profile-main-menu.png) 
+![image info](img/201012-user-profile-session-token.png) 
 
-![image info](img/session-token-ELN-UI.png) 
+
 
 
 The session token is needed to connect to openBIS via pyBIS or obis, in cases where SSO (e.g. SWITCHaai) is used for authentication. See [pyBIS](../../software-developer-documentation/apis/python-v3-api.md#connect-to-openbis).
