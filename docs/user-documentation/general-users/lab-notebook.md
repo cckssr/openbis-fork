@@ -10,7 +10,7 @@ In the navigation menu, we see the **Home Space** on top and **Active Spaces** a
 
 
 
-# Home Space
+## Home Space
 
 In the default settings, every user has a **Home Space**, which is their personal lab notebook folder.
 
@@ -32,7 +32,7 @@ At the *Project* level one can control access (see [openBIS data model](./docs/u
 4.    Any **Other Object**. These are *Objects* of other types available in your openBIS, which can contain specific metadata for your measurements/experiments. These are created by an _Instance admin_.
 
 
-# Project
+## Project
 
 Inside a *Project*, you can create the following:
 
@@ -48,14 +48,14 @@ Inside a *Project*, you can create the following:
 
 
 
-## When to use Projects:
+### When to use Projects:
 
 - If you are working on multiple research projects, you can create an openBIS _Project_ for each of them.
 - If you need to control access to some of information in your lab notebook. In openBIS access can be controlled at the level of _Spaces_ and _Projects_ (see [openBIS data model](./docs/user-documentation/advance-features/openbis-data-modelling.md)).
 
 
 
-# Experiment/Collection
+## Experiment/Collection
 
 An openBIS _Experiment/Collection_ is defined as a specific scientific question. The individual attempts to answer this question, are _Objects_ of type _Entry_, _Experimental Step_ or other custom _Objects_. 
 
@@ -69,7 +69,7 @@ Inside an _Experiement/Collection_ you can create:
 
 
 
-## Difference between Default Experiment and Collection.
+### Difference between Default Experiment and Collection.
 
 *Default Experiment* and *Collection* are two different types of _Experiment/Collection_
 (see [openBIS data model](../advance-features/openbis-data-modelling.md)
@@ -98,7 +98,7 @@ To see the *Objects* belonging to the *Default Experiment* also in a table in th
 
 
 
-# Entry
+## Entry
 
 This is an empty page, which resembles a Word document.
 
@@ -110,7 +110,7 @@ It can be used to describe measurements/experiments when no specific metadata ne
 
 
 
-# Experimental Step
+## Experimental Step
 
 This is a *Default Type* provided by openBIS (see [ELN Types](./docs/user-documentation/general-users/ELN-types.md)), with some generic metadata fields, such as _start date, end date, goals, description, results_, etc. 
 
@@ -124,11 +124,11 @@ An *Instance admin* can create additional *Object* types with specific metadata 
 
 
  
-# Datasets
+## Datasets
 
 Datasets can be considered as folders where data files are stored (see [openBIS data model](./docs/user-documentation/advance-features/openbis-data-modelling.md)).
 
-## Datasets tables
+### Datasets tables
 
 Since openBIS version 20.10.7, a dataset table has been added to the *Experiment/Collection* and *Object* pages.
 
@@ -139,7 +139,7 @@ This table shows the metadata of the datasets. The content of the datasets can b
 
 
  
-## Move Datasets
+### Move Datasets
  
 
 It is possible to move a *Dataset* from one *Experiment/Object* to
@@ -163,7 +163,7 @@ another *Experiment/Object*.
   
 
  
-# Move one Experiment/Collection to a different Project
+## Move one Experiment/Collection to a different Project
 
  
 It is possible to move one *Experiment/Collection* and all contained *Objects* and
@@ -201,7 +201,7 @@ there.
 
 
  
-# Project Overview
+## Project Overview
 
 In the *Project* page you have the options to see:
 
@@ -225,7 +225,7 @@ Below you see an example of the visualisation of *Experiments* and
 
 
  
-# Edit and Delete Projects, Experiments, Experimental Steps
+## Edit and Delete Projects, Experiments, Experimental Steps
 
 *Projects*, *Experiments/Collections*, *Experimental Steps* and *Entries* can be edited at any
 time, by selecting the **Edit** icon from the toolbar of the relevant page.
@@ -251,7 +251,7 @@ capability role map](../../system-documentation/standalone/installation-and-conf
 
 
  
-# Sharing Lab Notebooks and Projects
+## Sharing Lab Notebooks and Projects
 
 
   
