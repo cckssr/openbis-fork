@@ -802,7 +802,7 @@ def relative_position(img,spec,**params):
     height = img.get_param('height')[0]
     [o_x,o_y] = [o_x*10**9,o_y*10**9]
 
-    angle = float(img.get_param('scan_angle'))*-1* np.pi/180
+    angle = float(img.get_param('scan_angle')[0])*-1* np.pi/180
 
 
     x_spec = spec.get_param('x')[0]
