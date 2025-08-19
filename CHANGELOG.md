@@ -1,6 +1,6 @@
 # OpenBIS Change Log
 
-## Version 20.10.12 (Aug 2025)
+## Version 20.10.12 (19 Aug 2025)
 
 ### Core
 - Bugfix: AS property collect-statistics ignored if passed via container environment (BIS-1890)
