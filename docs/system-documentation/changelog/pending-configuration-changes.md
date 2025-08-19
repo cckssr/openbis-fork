@@ -2,15 +2,15 @@
 
 ## Version 20.10.12
 
-#### 1. Cycle Detection in Hierarchy Graphs
+After the 20.10.12 upgrade, if cycles are found in the database, openBIS might fail to start. We encourage you to run the query below before upgrading. If it returns nothing, you are in the clear; if something is found, fix it before upgrading.
 
-In rare cases, hierarchy graphs may not display due to cycles in the database. To check for cycles, run the provided SQL query.
+### 1. Cycle Detection in Hierarchy Graphs
 
 Note:
-If the query runs indefinitely or causes memory/disk issues, an error will be shown but the system will continue to function normally.
+If the query runs indefinitely or runs out of memory or disk space, an error will be shown once the system runs out of resources. The space used will then be cleared automatically, and the system will continue to function normally. This is standard PostgreSQL behavior.
 
-Please report such errors to the openBIS team. A separate tool will be provided for reliable cycle detection.
- 
+Please report such errors to the openBIS team.
+
 ```sql
 
 (WITH RECURSIVE cycle_detector AS (
