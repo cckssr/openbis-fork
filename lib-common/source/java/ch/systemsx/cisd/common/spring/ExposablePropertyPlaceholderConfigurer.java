@@ -120,6 +120,18 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
             final ConfigurableListableBeanFactory beanFactoryToProcess, final Properties props)
             throws BeansException
     {
+        if(operationLog.isDebugEnabled())
+        {
+            for(Map.Entry<Object, Object> prop : props.entrySet())
+            {
+                String key = String.valueOf(prop.getKey());
+                String value = String.valueOf(prop.getValue());
+                if(key.contains("password")) {
+                    value =  "*****";
+                }
+                operationLog.debug(String.format("Passed property: ('%s', '%s')", key, value));
+            }
+        }
         resolvedProps = new ExtendedProperties();
         for (final Object key : props.keySet())
         {
