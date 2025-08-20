@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.plugin.query.client.web.client.dto;
 
-import ch.systemsx.cisd.openbis.plugin.query.client.web.client.application.module.QueryBrowserGrid;
+// import ch.systemsx.cisd.openbis.plugin.query.client.web.client.application.module.QueryBrowserGrid;
 
 /**
  * Column IDs for {@link QueryBrowserGrid}.

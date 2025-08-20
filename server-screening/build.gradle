@@ -17,7 +17,6 @@ dependencies {
             project(':server-original-data-store'),
             project(':lib-pathinfo'),
             'openhms:jackcess:1.2.2',
-            'reveregroup:gwt-image-loader:1.1.4',
             'imagej:ij:1.43u'
             //'bioformats:bioformats:6.5.2'
 //      api ('ome:formats-gpl:6.5.1') {
@@ -42,9 +41,7 @@ dependencies {
             'springframework:spring-test:5.3.39',
             'startnet:apgdiff:2.3',
             'bioformats:bioformats:6.5.2'
-    testImplementation(project(path: ':server-application-server', configuration: 'tests')) {
-        exclude group: 'google', module: 'gwt-user'
-    }
+    testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 }
 
 sourceSets {
@@ -116,89 +113,6 @@ task systemTestSuite(type: Test) {
 import org.gradle.api.tasks.bundling.Compression
 import org.gradle.api.tasks.bundling.Tar
 
-def gwtArchive = file("../core-plugin-openbis/resource/gwt.tar.gz")
-def gwtTempDir = layout.buildDirectory.dir("gwt-temp-dir").get().asFile
-def gwtArchiveOutput = file("../core-plugin-openbis/resource/gwtJDK21.tar.gz")
-
-tasks.register("untarGwt", Copy) {
-    from tarTree(resources.gzip(gwtArchive))
-    into gwtTempDir
-
-    doFirst {
-        println("untarGwt archive used : " + gwtArchive)
-        if (gwtTempDir.exists()) {
-            println("Deleting existing temp dir: $gwtTempDir")
-            gwtTempDir.deleteDir()
-        }
-    }
-
-
-    onlyIf {
-        gwtArchive.exists()
-    }
-}
-
-tasks.register('verifyGwtCrc', JavaExec) {
-    dependsOn tasks.named("untarGwt")
-    group = 'verification'
-    description = 'Verifies and fixes GWT serialization signatures'
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'ch.systemsx.cisd.openbis.utils.gwt.GWTTypeCRC32VerifierAndFixer'
-
-    doFirst {
-        def rpcFileArg = gwtTempDir.absolutePath + "/ch.systemsx.cisd.openbis.OpenBIS/D92B876EF6D622EDAED05608D2D8D122.gwt.rpc"
-        // Automatically pass gwtTempDir as sourceDir
-        args gwtTempDir.absolutePath, rpcFileArg
-        println("verifyGwtCrc args: ${args}")
-    }
-}
-
-
-
-tasks.register("tarGwt", Tar) {
-    dependsOn tasks.named("verifyGwtCrc")
-    group = "build"
-    description = "Re-packages the verified GWT output into a tar.gz archive"
-
-    from(gwtTempDir)
-    destinationDirectory.set(gwtArchiveOutput.parentFile)
-    archiveFileName.set(gwtArchiveOutput.name)
-
-    compression = Compression.GZIP
-    archiveExtension.set("tar.gz")
-
-    doFirst {
-        println("Creating new GWT tarball at: ${gwtArchiveOutput}")
-    }
-
-    doLast {
-        println "Fixing completed. Cleaning up temp dir: $gwtTempDir"
-        if (gwtTempDir.exists()) {
-            gwtTempDir.deleteDir()
-        }
-    }
-}
-
-if (System.getProperty("java.version").startsWith("21")) {
-    tasks.register("patchGwtTypeSignaturesJdk21") {
-        dependsOn tasks.named("tarGwt")
-        group = "verification"
-        description = "Fixes GWT Type IDs for Java 21 and re-packages the archive"
-
-        def javaVersion = System.getProperty("java.version")
-
-        doFirst {
-            println "Fixing GWT serialization type IDs for Java version: $javaVersion"
-        }
-
-        doLast {
-            println "Fixing completed and GWT archive re-packaged."
-        }
-    }
-}
-
 
 test.dependsOn(systemTestSuite)
 test.dependsOn(copyTestData)
-
-apply from: 'gwtdev.gradle'

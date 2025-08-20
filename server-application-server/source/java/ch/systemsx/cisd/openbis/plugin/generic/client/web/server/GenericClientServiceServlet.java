@@ -23,7 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
+//import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.IGenericClientService;
 import ch.systemsx.cisd.openbis.plugin.generic.shared.ResourceNames;
@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.plugin.generic.shared.ResourceNames;
  * @author Christian Ribeaud
  */
 @Controller
-public final class GenericClientServiceServlet extends GWTRPCServiceExporter
+public final class GenericClientServiceServlet //extends GWTRPCServiceExporter
 {
     private static final long serialVersionUID = 1L;
 
@@ -49,10 +49,11 @@ public final class GenericClientServiceServlet extends GWTRPCServiceExporter
     public final ModelAndView handleRequestExposed(final HttpServletRequest request,
             final HttpServletResponse response) throws Exception
     {
-        return super.handleRequest(request, response);
+       // return super.handleRequest(request, response);
+        throw new RuntimeException("GWTRPCServiceExporter removed");
     }
 
-    @Override
+    //@Override
     protected final Object getService()
     {
         return service;

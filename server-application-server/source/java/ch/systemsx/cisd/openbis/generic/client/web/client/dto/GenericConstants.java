@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.Dictionary;
+//import com.google.gwt.core.client.GWT;
+//import com.google.gwt.i18n.client.Dictionary;
 
 import ch.systemsx.cisd.openbis.generic.shared.basic.AttachmentDownloadConstants;
 
@@ -40,9 +40,9 @@ public final class GenericConstants
      */
     public static final String ID_PREFIX = "openbis_";
 
-    private static final String DEPLOYED_APPLICATION_NAME = Dictionary.getDictionary("common").get("deployedAppName");
+    private static final String DEPLOYED_APPLICATION_NAME = "gwt-removed";//Dictionary.getDictionary("common").get("deployedAppName");
 
-    private static final String SPRING_APPLICATION_NAME = Dictionary.getDictionary("common").get("springApplicationName");
+    private static final String SPRING_APPLICATION_NAME = "gwt-removed"; //Dictionary.getDictionary("common").get("springApplicationName");
 
     public static final String COMMON_SERVER_NAME = createServicePath("common");
 
@@ -51,13 +51,14 @@ public final class GenericConstants
      */
     public final static String createServicePath(final String serviceName)
     {
-        if (GWT.isProdMode()) // Is Production
-        {
-            return "/" + DEPLOYED_APPLICATION_NAME + "/" + SPRING_APPLICATION_NAME + "/" + serviceName;
-        } else
-        {
-            return "/" + SPRING_APPLICATION_NAME + "/" + serviceName;
-        }
+//        if (GWT.isProdMode()) // Is Production
+//        {
+//            return "/" + DEPLOYED_APPLICATION_NAME + "/" + SPRING_APPLICATION_NAME + "/" + serviceName;
+//        } else
+//        {
+//            return "/" + SPRING_APPLICATION_NAME + "/" + serviceName +;
+//        }
+        return "/" + "gwt-removed";
     }
 
     /** Name of the servlet to download an experiment attachment. */

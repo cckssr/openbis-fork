@@ -35,13 +35,12 @@ check layeringOf generic.shared generic.client-server
 
 {generic.web} = ${generic}.client.web
 
-[generic.web.client] = ${generic.web}.client.application.*
-[generic.web.shared] = ${generic.web}.client.* excluding [generic.web.client]
+[generic.web.shared] = ${generic.web}.client.*
 [generic.web.server] = ${generic.web}.server.*
 
-check sets [generic.web.client] [generic.web.server] [generic.web.shared]
+check sets [generic.web.server] [generic.web.shared]
 
-layer generic.web.client-server = [generic.web.client] [generic.web.server]
+layer generic.web.client-server = [generic.web.server]
 layer generic.web.shared = [generic.web.shared]
 
 check layeringOf generic.web.shared generic.web.client-server
@@ -162,12 +161,11 @@ layer plugin.${pn}.shared = [plugin.${pn}.shared]
 check layeringOf plugin.${pn}.shared plugin.${pn}.client-server
 
 # Dependencies between 'web.client' and 'web.server' packages
-[plugin.${pn}.web.client] = ${plugin}.${pn}.client.web.client.application.*
 [plugin.${pn}.web.server] = ${plugin}.${pn}.client.web.server.*
 
-check sets [plugin.${pn}.web.client] [plugin.${pn}.web.server]
+check sets [plugin.${pn}.web.server]
 
-layer plugin.${pn}.web.client-server = [plugin.${pn}.web.client] [plugin.${pn}.web.server]
+layer plugin.${pn}.web.client-server = [plugin.${pn}.web.server]
 
 check layeringOf plugin.${pn}.web.client-server
 
@@ -177,26 +175,19 @@ check layeringOf plugin.${pn}.web.client-server
 {pn} = demo
 
 # Dependencies between 'client', 'server' and 'shared' packages
-[plugin.${pn}.client] = ${plugin}.${pn}.client.*
 [plugin.${pn}.server] = ${plugin}.${pn}.server.*
 [plugin.${pn}.shared] = ${plugin}.${pn}.shared.*
 
-check sets [plugin.${pn}.client] [plugin.${pn}.server] [plugin.${pn}.shared]
+check sets [plugin.${pn}.server] [plugin.${pn}.shared]
 
-layer plugin.${pn}.client-server = [plugin.${pn}.client] [plugin.${pn}.server]
+layer plugin.${pn}.client-server = [plugin.${pn}.server]
 layer plugin.${pn}.shared = [plugin.${pn}.shared]
 
 check layeringOf plugin.${pn}.shared plugin.${pn}.client-server
 
 # Dependencies between 'web.client' and 'web.server' packages
-[plugin.${pn}.web.client] = ${plugin}.${pn}.client.web.client.application.*
-[plugin.${pn}.web.server] = ${plugin}.${pn}.client.web.server.*
 
-check sets [plugin.${pn}.web.client] [plugin.${pn}.web.server]
 
-layer plugin.${pn}.web.client-server = [plugin.${pn}.web.client] [plugin.${pn}.web.server]
-
-check layeringOf plugin.${pn}.web.client-server
 
 ###########################################
 # query plugin
@@ -216,12 +207,11 @@ layer plugin.${pq}.shared = [plugin.${pq}.shared]
 check layeringOf plugin.${pq}.shared plugin.${pq}.client-server
 
 # Dependencies between 'web.client' and 'web.server' packages
-[plugin.${pq}.web.client] = ${plugin}.${pq}.client.web.client.application.*
 [plugin.${pq}.web.server] = ${plugin}.${pq}.client.web.server.*
 
-check sets [plugin.${pq}.web.client] [plugin.${pq}.web.server]
+check sets [plugin.${pq}.web.server]
 
-layer plugin.${pq}.web.client-server = [plugin.${pq}.web.client] [plugin.${pq}.web.server]
+layer plugin.${pq}.web.client-server = [plugin.${pq}.web.server]
 
 check layeringOf plugin.${pq}.web.client-server
 

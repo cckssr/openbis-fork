@@ -26,7 +26,7 @@ import java.util.List;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.string.ToStringComparator;
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.SampleBrowserTest;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.SampleBrowserTest;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListSampleDisplayCriteria;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ResultSetWithEntityTypes;

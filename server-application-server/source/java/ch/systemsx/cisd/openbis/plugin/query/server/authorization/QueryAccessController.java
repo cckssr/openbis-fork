@@ -44,6 +44,16 @@ public class QueryAccessController
 
     private static Map<String, DatabaseDefinition> definitionsByDbKey;
 
+    public static IDAOFactory getDaoFactory()
+    {
+        return daoFactory;
+    }
+
+    public static Map<String, DatabaseDefinition> getDefinitionsByDbKey()
+    {
+        return definitionsByDbKey;
+    }
+
     public static void initialize(IDAOFactory factory, Map<String, DatabaseDefinition> definitions)
     {
         QueryAccessController.daoFactory = factory;

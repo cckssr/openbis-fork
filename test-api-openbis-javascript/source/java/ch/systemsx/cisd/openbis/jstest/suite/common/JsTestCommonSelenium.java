@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.List;
 
 import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.systemsx.cisd.openbis.uitest.selenium.Location;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
@@ -28,7 +29,6 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsserver.server.Server;
-import ch.ethz.sis.afsserver.server.observer.impl.DummyServerObserver;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.base.unix.Unix;
@@ -36,8 +36,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.openbis.jstest.layout.OpenbisJsWebappLocation;
 import ch.systemsx.cisd.openbis.jstest.layout.OpenbisV3JsWebappLocation;
 import ch.systemsx.cisd.openbis.jstest.page.OpenbisJsCommonWebapp;
-import ch.systemsx.cisd.openbis.uitest.dsl.SeleniumTest;
-import ch.systemsx.cisd.openbis.uitest.layout.Location;
+import ch.systemsx.cisd.openbis.uitest.selenium.SeleniumTest;
 import junit.framework.Assert;
 
 /**
@@ -130,18 +129,18 @@ public class JsTestCommonSelenium extends SeleniumTest
     {
         useGui();
 
-        login(ADMIN_USER, ADMIN_PASSWORD);
+        //login(ADMIN_USER, ADMIN_PASSWORD);
     }
 
     @AfterTest
     public void after()
     {
-        doAfter();
+        //doAfter();
     }
 
     protected void doAfter()
     {
-        logout();
+       // logout();
     }
 
     @Test(groups = { "js-test" })

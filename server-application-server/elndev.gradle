@@ -1,0 +1,70 @@
+def elnTempPath = "${project.projectDir.absolutePath}/targets/www/eln-temp"
+
+task deleteELN(type: Exec) {
+    executable "rm"
+    args "-rf", "${project.projectDir.absolutePath}/targets/www"
+}
+
+task prepareELN(type: Copy, dependsOn: [deleteELN, compileJava]) {
+    from 'resource/server'
+    into 'targets/www/WEB-INF'
+
+    from(project.configurations.runtimeOnly.files) {
+        into '../lib'
+        exclude 'cisd-cifex*'
+        exclude 'lib-common-*'
+        exclude 'lib-authentication-*'
+        exclude 'lib-dbmigration-*'
+        exclude 'lib-openbis-common-*'
+        exclude 'api-openbis-java-*'
+    }
+
+    from('source/java/service.properties') {
+        into 'classes'
+    }
+}
+
+task copyPublicToTemp(type: Copy, dependsOn: prepareELN) {
+    from "${project.projectDir.absolutePath}/source/java/ch/systemsx/cisd/openbis/public"
+    into "${elnTempPath}/ch.systemsx.cisd.openbis.OpenBIS"
+}
+
+task copyV3Api(type: Copy, dependsOn: [copyPublicToTemp, ':api-openbis-javascript:bundleOpenbisStaticResources']) {
+    from("${project(':api-openbis-javascript').projectDir}/src/v3")
+    into "${elnTempPath}/ch.systemsx.cisd.openbis.OpenBIS/resources/api/v3"
+}
+
+task openBISDevelopmentEnvironmentASPrepare(type: Copy, dependsOn: [copyV3Api]) {
+    from "${elnTempPath}/ch.systemsx.cisd.openbis.OpenBIS"
+    into "targets/www/openbis"
+    doLast {
+        def Files = java.nio.file.Files
+        def Paths = java.nio.file.Paths
+
+        def targetLinkDirs = [
+                Paths.get("${project(':server-application-server').projectDir}/source/core-plugins"),
+                Paths.get("${project(':server-original-data-store').projectDir}/source/core-plugins")
+        ]
+
+        def sourceSymlinksMap = [
+                "admin":   "${project(':ui-admin').projectDir}/src/core-plugins/admin",
+                "eln-lims":"${project(':ui-eln-lims').projectDir}/src/core-plugins/eln-lims",
+                "imaging": "${project(':core-plugin-openbis').projectDir}/dist/core-plugins/imaging"
+        ]
+
+        targetLinkDirs.each { targetLinkDir ->
+            sourceSymlinksMap.each { linkName, targetPath ->
+                def link = targetLinkDir.resolve(linkName)
+                def target = Paths.get(targetPath)
+
+                if (Files.exists(target)) {
+                    Files.deleteIfExists(link)
+                    println "Creating symlink: ${link} -> ${target}"
+                    Files.createSymbolicLink(link, target)
+                } else {
+                    println "WARNING: Target for symlink '${linkName}' not found, skipping. Path: ${target}"
+                }
+            }
+        }
+    }
+}

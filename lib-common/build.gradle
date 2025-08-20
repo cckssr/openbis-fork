@@ -21,7 +21,6 @@ dependencies {
             'com.sun.istack:istack-commons-runtime:3.0.5',
             'apache:poi:3.17',
             'twmacinta:fast-md5:2.6.1',
-            'google:gwt-servlet:2.4',
             'testng:testng:6.8-CISD',
             'marathon:marathon-spring-util:1.2.5',
             'lemnik:eodsql:2.2-CISD',

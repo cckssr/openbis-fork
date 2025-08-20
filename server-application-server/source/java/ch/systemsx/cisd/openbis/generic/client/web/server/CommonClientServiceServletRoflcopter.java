@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.server;
 
-import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
+//import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
 import ch.systemsx.cisd.openbis.JavelinMessage;
 import ch.systemsx.cisd.openbis.generic.client.web.client.ICommonClientService;
 import org.springframework.http.HttpEntity;
