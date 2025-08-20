@@ -22,15 +22,12 @@ java -jar app-openbis-cycle-finder.jar
 Download it here: [app-openbis-cycle-finder.tar.xz](https://sissource.ethz.ch/-/project/118/uploads/b88f0326c2baf661944a7ad9c7837627/app-openbis-cycle-finder.tar.xz)
 
 ## Assets
-
-[Source code (tar.gz)](https://sissource.ethz.ch/sispub/openbis/-/archive/20.10.12/openbis-20.10.12.tar.gz)
-[Source code (tar)](https://sissource.ethz.ch/sispub/openbis/-/archive/20.10.12/openbis-20.10.12.tar)
+- [Source code (tar.gz)](https://sissource.ethz.ch/sispub/openbis/-/archive/20.10.12/openbis-20.10.12.tar.gz)
+- [Source code (tar)](https://sissource.ethz.ch/sispub/openbis/-/archive/20.10.12/openbis-20.10.12.tar)
 
 ## Packages
-
-[openBIS-clients-and-APIs-20.10.12-r1755516626.zip](https://polybox.ethz.ch/index.php/s/Lzz4STFapLyQcyN/download)
+- [openBIS-clients-and-APIs-20.10.12-r1755516626.zip](https://polybox.ethz.ch/index.php/s/Lzz4STFapLyQcyN/download)
 
 ## Other Links
-
-[Documentation](https://openbis.readthedocs.io/en/20.10.12-plus/)
-[Change Log](https://sissource.ethz.ch/sispub/openbis/-/blob/20.10.x/CHANGELOG.md?ref_type=heads)
+- [Documentation](https://openbis.readthedocs.io/en/20.10.12-plus/)
+- [Change Log](https://sissource.ethz.ch/sispub/openbis/-/blob/20.10.x/CHANGELOG.md?ref_type=heads)
