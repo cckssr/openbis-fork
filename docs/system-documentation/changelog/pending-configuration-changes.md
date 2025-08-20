@@ -2,117 +2,20 @@
 
 ## Version 20.10.12
 
-After the 20.10.12 upgrade, if cycles are found in the database, openBIS might fail to start. We encourage you to run the query below before upgrading. If it returns nothing, you are in the clear; if something is found, fix it before upgrading.
+**Pre-Upgrade Checklist**
 
-### 1. Cycle Detection in Hierarchy Graphs
+We’ve resolved an issue that, in rare cases, could allow cycles to be created. To ensure a smooth upgrade, we recommend running the tool below beforehand.
+- If the tool doesn’t report anything, you’re all set.
+- If it does find something, please address it before upgrading.
 
-Note:
-If the query runs indefinitely or runs out of memory or disk space, an error will be shown once the system runs out of resources. The space used will then be cleared automatically, and the system will continue to function normally. This is standard PostgreSQL behavior.
+This step is important because openBIS 20.10.12 may not start properly if cycles remain in the database after the upgrade.
 
-Please report such errors to the openBIS team.
-
-```sql
-
-(WITH RECURSIVE cycle_detector AS (
-  SELECT
-    sample_id_child,
-    sample_id_parent,
-    relationship_id,
-    ARRAY[sample_id_child] AS path,
-    sample_id_child AS root
-  FROM sample_relationships_all
-  WHERE relationship_id IN (1,3)
-  
-  UNION ALL
-  
-  SELECT
-    sr.sample_id_child,
-    sr.sample_id_parent,
-    sr.relationship_id,
-    cd.path || sr.sample_id_child,
-    cd.root
-  FROM cycle_detector cd
-  JOIN sample_relationships_all sr
-    ON sr.sample_id_child = cd.sample_id_parent
-  AND sr.relationship_id = cd.relationship_id 
-    WHERE NOT sr.sample_id_child = ANY(cd.path)
-),
-
-cycles AS (
-  SELECT DISTINCT root, path || sample_id_parent AS cycle_path
-  FROM cycle_detector
-  WHERE sample_id_parent = root
-    AND root = (SELECT MIN(x) FROM unnest(path || sample_id_parent) AS x)
-)
-SELECT 
-  'sample_cycle' AS entity,
-  c.root AS cycle_root,
-  c.cycle_path,
-  COUNT(s.id) AS num_entities,
-  JSONB_AGG(
-    JSON_BUILD_OBJECT(
-      'entity_id', s.id,
-      'sample_identifier', s.sample_identifier,
-      'perm_id', s.perm_id     
-    )
-    ORDER BY array_position(c.cycle_path, s.id)
-  ) AS entities_details
-FROM cycles c
-LEFT JOIN samples_all s ON s.id = ANY(c.cycle_path)
-GROUP BY c.root, c.cycle_path)
-
-UNION 
-
-(WITH RECURSIVE cycle_detector AS (
-
-  SELECT
-    data_id_child,
-    data_id_parent,
-    relationship_id,
-    ARRAY[data_id_child] AS path,
-    data_id_child AS root
-  FROM data_set_relationships_all
-  WHERE relationship_id IN (1,3)
-  
-  UNION ALL
-  
-  SELECT
-    dr.data_id_child,
-    dr.data_id_parent,
-    dr.relationship_id,
-    cd.path || dr.data_id_child,
-    cd.root
-  FROM cycle_detector cd
-  JOIN data_set_relationships_all dr
-    ON dr.data_id_child = cd.data_id_parent
-    AND dr.relationship_id = cd.relationship_id 
-    WHERE NOT dr.data_id_child = ANY(cd.path)
-),
-
-cycles AS (
-  SELECT DISTINCT root, path || data_id_parent AS cycle_path
-  FROM cycle_detector
-  WHERE data_id_parent = root
-    AND root = (SELECT MIN(x) FROM unnest(path || data_id_parent) AS x)
-)
-
-SELECT 
-  'dataset_cycle' AS entity,
-  c.root AS cycle_root,
-  c.cycle_path,
-  COUNT(d.id) AS num_entities,
-  JSONB_AGG(
-    JSON_BUILD_OBJECT(
-      'entity_id', d.id,
-      'code', d.code
-    )
-    ORDER BY array_position(c.cycle_path, d.id)
-  ) AS entities_details
-FROM cycles c
-LEFT JOIN data_all d ON d.id = ANY(c.cycle_path)
-GROUP BY c.root, c.cycle_path);
-
+Run the tool from the command line:
 ```
+java -jar app-openbis-cycle-finder.jar
+```
+
+Download it here: [app-openbis-cycle-finder.tar.xz](/uploads/b88f0326c2baf661944a7ad9c7837627/app-openbis-cycle-finder.tar.xz)
 
 ## Version 20.10.10
 
