@@ -2,7 +2,7 @@
 
 ## Installer
 
-[openBIS-installer-20.10.12.tar.gz](https://polybox.ethz.ch/index.php/s/jWL7QJrcdZPosdj/download)
+[openbis-installer-20.10.12.tar.gz](https://polybox.ethz.ch/index.php/s/jWL7QJrcdZPosdj/download)
 
 ## Release notes
 
@@ -26,14 +26,14 @@ Download it here: [app-openbis-cycle-finder.tar.xz](https://sissource.ethz.ch/-/
 - [Source code (tar)](https://sissource.ethz.ch/sispub/openbis/-/archive/20.10.12/openbis-20.10.12.tar)
 
 ## Development Libraries
-- [java-api-20.10.12-dependencies-included.tar.gz]()
-- [java-api-20.10.12.tar.gz]()
-- [python3-api-20.10.12.tar.gz]()
-- [javascript-api-20.10.12-esm.tar.gz]()
+- [openbis-java-api-20.10.12-dependencies-included.tar.gz]()
+- [openbis-java-api-20.10.12.tar.gz]()
+- [openbis-python3-api-20.10.12.tar.gz]()
+- [openbis-javascript-api-20.10.12-esm.tar.gz]()
 
 ## Clients
-- [openBIS-command-line-tool-20.10.12.tar.gz]()
-- [openBIS-drive-20.10.12.tar.gz]()
+- [openbis-command-line-tool-20.10.12.tar.gz]()
+- [openbis-drive-20.10.12.tar.gz]()
 
 ## Useful Links
 - [Documentation](https://openbis.readthedocs.io/en/20.10.12-plus/)
