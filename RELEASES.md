@@ -2,6 +2,10 @@
 
 ## Installer
 
+Pre install requirements:
+- JDK 21
+- Postgres 17
+
 [openbis-installer-7.0.tar.gz]()
 
 ## Release notes
