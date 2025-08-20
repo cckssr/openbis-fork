@@ -15,7 +15,7 @@ Run the tool from the command line:
 java -jar app-openbis-cycle-finder.jar
 ```
 
-Download it here: [app-openbis-cycle-finder.tar.xz](/uploads/b88f0326c2baf661944a7ad9c7837627/app-openbis-cycle-finder.tar.xz)
+Download it here: [app-openbis-cycle-finder.tar.xz](https://sissource.ethz.ch/-/project/118/uploads/b88f0326c2baf661944a7ad9c7837627/app-openbis-cycle-finder.tar.xz)
 
 ## Version 20.10.10
 
