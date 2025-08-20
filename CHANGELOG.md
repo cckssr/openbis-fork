@@ -140,10 +140,8 @@
 - New Feature: Timezone of timestamp changed to database timezone (SSDM-14228) 
 - New Feature: EXCEL Master Data Importer API (preview, non final) (BIS-772, BIS-773, BIS-994, BIS-999, BIS-1010, BIS-1011, BIS-1025, BIS-1040)
 - New Feature: EXCEL Master Data Exporter API (preview, to be changed) (BIS-772, BIS-773, BIS-994, BIS-999, BIS-1010, BIS-1011, BIS-1025, BIS-1040)
-
 - Improvement: Excel Export - Add support for cells bigger than 32k (BIS-789, BIS-790)
 - Improvement: Excel Export - internal name space types are skipped from updates done by non system users (BIS-793)
-
 - Bugfix: Excel Import - Keep Dynamic Properties Dynamic (SSDM-14224)
 - Bugfix: UserManagementMaintenanceTask: role assignment error (SSDM-14261)
 - Bugfix: Deadlock on display settings (SSDM-14263)
@@ -169,7 +167,6 @@
 ## Version 20.10.7.3 (23 November 2023)
 
 ### ELN
-
 - Bugfix: Circular Annotations deletion (SSDM-14135)
 
 ### Admin
@@ -510,8 +507,8 @@
 - (SSDM-11602) V3 API - getRights: Adding DELETE and updating EDIT
 - (SSDM-11884) Permanent deletion should show dependent deletion sets
 - (SSDM-11885) Improve postregistration in case of error
-### ELN
 
+### ELN
 - (SSDM-10078) Bugfix: Non deletable datasets can't be moved to trashcan
 - (SSDM-10301) Bugfix: 2nd level of Parents/Children now shows on Parents/Children table
 - (SSDM-11425) Bugfix: Enter dates manually not always work
