@@ -28,8 +28,8 @@ Download it here: [app-openbis-cycle-finder.tar.xz](https://sissource.ethz.ch/-/
 ## Development Libraries
 - [openbis-java-api-20.10.12-dependencies-included.tar.gz]()
 - [openbis-java-api-20.10.12.tar.gz]()
-- [openbis-python3-api-20.10.12.tar.gz]()
 - [openbis-javascript-api-20.10.12-esm.tar.gz]()
+- [openbis-python3-api-20.10.12.tar.gz]()
 
 ## Clients
 - [openbis-command-line-tool-20.10.12.tar.gz]()
