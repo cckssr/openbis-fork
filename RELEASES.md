@@ -2,7 +2,7 @@
 
 ## Installer
 
-Pre install requirements:
+Installing Prerequisites:
 - JDK 21
 - Postgres 17
 
