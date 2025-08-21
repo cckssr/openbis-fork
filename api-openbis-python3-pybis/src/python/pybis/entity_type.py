@@ -515,7 +515,7 @@ class PropertyAssignment:
         return tabulate(lines, headers=headers)
 
     def get_property_type(self):
-        return PropertyType(openbis_obj=self, data=self.data["propertyType"])
+        return self.openbis.get_property_type(self.data["propertyType"]["code"])
 
     def _attrs(self):
         return [

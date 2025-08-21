@@ -1290,7 +1290,7 @@ class Openbis:
             ) from exc
         except requests.ConnectionError as exc:
             raise requests.ConnectionError(
-                "Could not connecto to the openBIS server. Please check your internet connection, the specified hostname and port."
+                "Could not connect to the openBIS server. Please check your internet connection, the specified hostname and port."
             ) from exc
         if resp.ok:
             resp = resp.json()
