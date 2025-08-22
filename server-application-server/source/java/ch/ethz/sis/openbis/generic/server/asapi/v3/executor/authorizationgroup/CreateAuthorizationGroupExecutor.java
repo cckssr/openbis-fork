@@ -97,6 +97,7 @@ public class CreateAuthorizationGroupExecutor
                     group.setCode(object.getCode());
                     group.setDescription(object.getDescription());
                     group.setRegistrator(context.getSession().tryGetCreatorPerson());
+                    group.setMetaData(object.getMetaData());
                     groups.add(group);
                 }
 

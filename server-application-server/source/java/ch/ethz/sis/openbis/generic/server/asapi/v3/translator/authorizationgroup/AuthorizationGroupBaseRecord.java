@@ -34,5 +34,7 @@ public class AuthorizationGroupBaseRecord extends ObjectBaseRecord
     public Date registrationDate;
 
     public Date modificationDate;
+
+    public String metaData;
     
 }

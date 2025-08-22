@@ -19,6 +19,7 @@ package ch.systemsx.cisd.openbis.generic.shared.dto;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,9 +38,13 @@ import javax.persistence.Version;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.Length;
 
 import ch.rinn.restrictions.Friend;
@@ -58,8 +63,9 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.SearchFieldConstant
 @Entity
 @Table(name = TableNames.AUTHORIZATION_GROUPS_TABLE)
 @Friend(toClasses = RoleAssignmentPE.class)
+@TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder implements
-        Comparable<AuthorizationGroupPE>, IIdAndCodeHolder, IIdentityHolder, Serializable
+        Comparable<AuthorizationGroupPE>, IIdAndCodeHolder, IIdentityHolder, IMetaDataHolder, Serializable
 {
     private static final long serialVersionUID = IServer.VERSION;
 
@@ -74,6 +80,8 @@ public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder im
     private Set<RoleAssignmentPE> roleAssignments = new HashSet<RoleAssignmentPE>();
 
     private Set<PersonPE> persons = new HashSet<PersonPE>();
+
+    private Map<String, String> metaData;
 
     public AuthorizationGroupPE()
     {
@@ -201,6 +209,20 @@ public class AuthorizationGroupPE extends HibernateAbstractRegistrationHolder im
     public final Set<PersonPE> getPersons()
     {
         return new UnmodifiableSetDecorator<PersonPE>(getPersonsInternal());
+    }
+
+    @Override
+    @Column(name = "meta_data")
+    @Type(type = "JsonMap")
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    @Override
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     public void removePerson(final PersonPE person)

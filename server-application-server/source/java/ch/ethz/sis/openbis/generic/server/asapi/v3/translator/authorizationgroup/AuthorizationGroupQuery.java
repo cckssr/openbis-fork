@@ -32,7 +32,7 @@ import net.lemnik.eodsql.Select;
 public interface AuthorizationGroupQuery extends ObjectQuery
 {
     @Select(sql = "select id, code, description, registration_timestamp as registrationDate, "
-            + "modification_timestamp as modificationDate "
+            + "modification_timestamp as modificationDate, meta_data as metaData "
             + "from authorization_groups where id = any(?{1})", 
             parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<AuthorizationGroupBaseRecord> getAuthorizationGroups(LongSet authorizationGroupIds);

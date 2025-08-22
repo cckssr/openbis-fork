@@ -21,6 +21,7 @@ import static org.testng.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -57,6 +58,32 @@ public class UpdateAuthorizationGroupTest extends AbstractTest
         fetchOptions.withRegistrator();
         AuthorizationGroup group = v3api.getAuthorizationGroups(sessionToken, Arrays.asList(id), fetchOptions).get(id);
         assertEquals(group.getDescription(), update.getDescription().getValue());
+        long diff = group.getModificationDate().getTime() - group.getRegistrationDate().getTime();
+        assertTrue(diff > 10000, "modification date (" + group.getModificationDate()
+                + ") is larger than registration date (" + group.getRegistrationDate() + ").");
+        assertEquals(group.getRegistrator().getUserId(), "test");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testUpdateMetaData()
+    {
+        // Given
+        String sessionToken = v3api.login("instance_admin", PASSWORD);
+        AuthorizationGroupUpdate update = new AuthorizationGroupUpdate();
+        AuthorizationGroupPermId id = new AuthorizationGroupPermId("AGROUP");
+        update.setAuthorizationGroupId(id);
+        update.getMetaData().add(Map.of("key", "value"));
+
+        // When
+        v3api.updateAuthorizationGroups(sessionToken, Arrays.asList(update));
+
+        // Then
+        AuthorizationGroupFetchOptions fetchOptions = new AuthorizationGroupFetchOptions();
+        fetchOptions.withRegistrator();
+        AuthorizationGroup group = v3api.getAuthorizationGroups(sessionToken, Arrays.asList(id), fetchOptions).get(id);
+        assertEquals(group.getMetaData(), Map.of("key", "value"));
         long diff = group.getModificationDate().getTime() - group.getRegistrationDate().getTime();
         assertTrue(diff > 10000, "modification date (" + group.getModificationDate()
                 + ") is larger than registration date (" + group.getRegistrationDate() + ").");
