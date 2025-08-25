@@ -202,7 +202,8 @@ public class OpenBISCreateDataSetsAPIServerObserver
 
     private boolean ownerExistsInTransaction(Worker<TransactionConnection> worker, String owner)
     {
-        return getOwnersCreatedInTransaction(worker).contains(owner);
+        final Set<String> ownersCreatedInTransaction = getOwnersCreatedInTransaction(worker);
+        return ownersCreatedInTransaction.contains(owner);
     }
 
     private boolean ownerExistsInStore(Worker<TransactionConnection> worker, String owner) throws Exception
@@ -332,7 +333,7 @@ public class OpenBISCreateDataSetsAPIServerObserver
             ownerPath = ownerPath.substring(storageRoot.length());
         }
 
-        Pattern compile = Pattern.compile("/\\d+/.+/../../../(.+)/.*");
+        Pattern compile = Pattern.compile("/\\d+/.+/../../../([0-9-]+)/.*");
         Matcher matcher = compile.matcher(ownerPath);
 
         if (matcher.matches())

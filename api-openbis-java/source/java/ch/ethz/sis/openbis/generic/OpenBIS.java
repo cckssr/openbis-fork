@@ -16,6 +16,36 @@
  */
 package ch.ethz.sis.openbis.generic;
 
+import static ch.ethz.sis.afsclient.client.ChunkEncoderDecoder.EMPTY_ARRAY;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BytesContentProvider;
+import org.eclipse.jetty.client.util.MultiPartContentProvider;
+import org.eclipse.jetty.client.util.PathContentProvider;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpMethod;
+
+import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.OperationsAPI;
 import ch.ethz.sis.afsapi.api.PublicAPI;
 import ch.ethz.sis.afsapi.dto.Chunk;
@@ -214,15 +244,29 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.id.SemanticAn
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.SemanticAnnotationSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.update.SemanticAnnotationUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.server.ServerInformation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.AggregationService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.CustomASServiceExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ProcessingService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.ReportingService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainService;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.SearchDomainServiceExecutionResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.AggregationServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ProcessingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.ReportingServiceExecutionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.execute.SearchDomainServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.AggregationServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.CustomASServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ProcessingServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.ReportingServiceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.fetchoptions.SearchDomainServiceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.ICustomASServiceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id.IDssServiceId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.*;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.AggregationServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.CustomASServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ProcessingServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.ReportingServiceSearchCriteria;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.service.search.SearchDomainServiceSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.SessionInformation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.fetchoptions.SessionInformationFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.session.search.SessionInformationSearchCriteria;
@@ -242,6 +286,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.ITagId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.id.TagPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.update.TagUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.create.VocabularyCreation;
@@ -258,8 +304,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularySear
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.search.VocabularyTermSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyTermUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.update.VocabularyUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.create.TypeGroupCreation;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.TypeGroupId;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.FullDataSetCreation;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.dataset.create.UploadedDataSetCreation;
@@ -278,26 +322,6 @@ import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.http.JettyHttpClientFactory;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.BytesContentProvider;
-import org.eclipse.jetty.client.util.MultiPartContentProvider;
-import org.eclipse.jetty.client.util.PathContentProvider;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http.HttpMethod;
-
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Proxy;
-import java.net.URI;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static ch.ethz.sis.afsclient.client.ChunkEncoderDecoder.EMPTY_ARRAY;
 
 public class OpenBIS
 {
@@ -316,7 +340,7 @@ public class OpenBIS
 
     private final AfsClient afsClientNoTransactions;
 
-    private final OperationsAPI afsClientWithTransactions;
+    private final AfsClient afsClientWithTransactions;
 
     private String interactiveSessionKey;
 
@@ -329,8 +353,6 @@ public class OpenBIS
     private final String dssURL;
 
     private final String afsURL;
-
-    private final int timeout;
 
     public OpenBIS(final String url)
     {
@@ -349,6 +371,11 @@ public class OpenBIS
 
     public OpenBIS(final String asURL, final String dssURL, final String afsURL, final int timeout)
     {
+        this(asURL, dssURL, afsURL, timeout, CHUNK_SIZE);
+    }
+
+    public OpenBIS(final String asURL, final String dssURL, final String afsURL, final int timeout, final int chunkSize)
+    {
         this.transactionCoordinator =
                 HttpInvokerUtils.createServiceStub(ITransactionCoordinatorApi.class, asURL + ITransactionCoordinatorApi.SERVICE_URL, timeout);
         this.asFacadeNoTransactions =
@@ -360,9 +387,10 @@ public class OpenBIS
 
         if (afsURL != null)
         {
-            this.afsClientNoTransactions = new AfsClient(URI.create(afsURL), timeout);
-            this.afsClientWithTransactions = createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
-                    afsClientNoTransactions);
+            this.afsClientNoTransactions = new AfsClient(URI.create(afsURL), chunkSize, timeout);
+            this.afsClientWithTransactions =
+                    new AfsClient(createTransactionalProxy(ITransactionCoordinatorApi.AFS_SERVER_PARTICIPANT_ID, PublicAPI.class,
+                            afsClientNoTransactions), chunkSize, timeout);
         } else
         {
             this.afsClientNoTransactions = null;
@@ -372,7 +400,6 @@ public class OpenBIS
         this.asURL = asURL;
         this.dssURL = dssURL;
         this.afsURL = afsURL;
-        this.timeout = timeout;
     }
 
     //
@@ -1510,20 +1537,11 @@ public class OpenBIS
         }
     }
 
-    public class AfsServerFacade
+    public class AfsServerFacade implements OperationsAPI, ClientAPI
     {
-
-        private final MessageDigest digest;
 
         private AfsServerFacade()
         {
-            try
-            {
-                this.digest = MessageDigest.getInstance("MD5");
-            } catch (Exception e)
-            {
-                throw new RuntimeException("Could not create afs server facade", e);
-            }
         }
 
         public ch.ethz.sis.afsapi.dto.File[] list(String owner, String source, Boolean recursively)
@@ -1531,6 +1549,20 @@ public class OpenBIS
             try
             {
                 return afsClientWithTransactions.list(owner, source, recursively);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Chunk[] read(Chunk[] chunks) throws Exception
+        {
+            try
+            {
+                return afsClientWithTransactions.read(chunks);
             } catch (RuntimeException e)
             {
                 throw e;
@@ -1556,12 +1588,56 @@ public class OpenBIS
             }
         }
 
+        public void resumeRead(String owner, String source,
+                Path destination, Long offset) throws Exception
+        {
+            try
+            {
+                afsClientWithTransactions.resumeRead(owner, source, destination, offset);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Boolean write(Chunk[] chunks) throws Exception
+        {
+            try
+            {
+                return afsClientWithTransactions.write(chunks);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
         public Boolean write(String owner, String source, Long offset, byte[] data)
         {
             try
             {
                 Chunk[] chunksRequest = new Chunk[] { new Chunk(owner, source, offset, data.length, data) };
                 return afsClientWithTransactions.write(chunksRequest);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Boolean resumeWrite(String owner, String destination,
+                Path source, Long offset) throws Exception
+        {
+            try
+            {
+                return afsClientWithTransactions.resumeWrite(owner, destination, source, offset);
             } catch (RuntimeException e)
             {
                 throw e;
@@ -1641,16 +1717,36 @@ public class OpenBIS
             }
         }
 
-        private byte[] calculateMD5(byte[] data)
+        public Boolean upload(Path sourcePath, String destinationOwner,
+                final Path destinationPath, FileCollisionListener fileCollisionListener,
+                TransferMonitorListener transferMonitorListener) throws Exception
         {
             try
             {
-                digest.reset();
-                digest.update(data);
-                return digest.digest();
+                return afsClientWithTransactions.upload(sourcePath, destinationOwner, destinationPath, fileCollisionListener,
+                        transferMonitorListener);
+            } catch (RuntimeException e)
+            {
+                throw e;
             } catch (Exception e)
             {
-                throw new RuntimeException("Checksum calculation failed", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Boolean download(String sourceOwner, Path sourcePath,
+                Path destinationPath, FileCollisionListener fileCollisionListener,
+                TransferMonitorListener transferMonitorListener) throws Exception
+        {
+            try
+            {
+                return afsClientWithTransactions.download(sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
             }
         }
 
@@ -1673,6 +1769,10 @@ public class OpenBIS
         if (afsClientNoTransactions != null)
         {
             this.afsClientNoTransactions.setSessionToken(sessionToken);
+        }
+        if (afsClientWithTransactions != null)
+        {
+            this.afsClientWithTransactions.setSessionToken(sessionToken);
         }
     }
 
