@@ -3,6 +3,7 @@ package ch.ethz.sis.rdf.main.mappers.openBis;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.rdf.main.mappers.rdf.NamedIndividualMapper;
 import ch.ethz.sis.rdf.main.model.xlsx.SampleObjectProperty;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Literal;
@@ -41,6 +42,11 @@ public class ValueMapper
                             OpenBisModel.makeOpenBisCodeCompliant(referenceValue))
                     .toUpperCase(
                             Locale.ROOT);
+        }
+        if (propertyType.getDataType() == DataType.CONTROLLEDVOCABULARY)
+        {
+            return NamedIndividualMapper.getVocabEntryCode(value);
+
         }
 
         //System.out.println("MAPPED: " + sampleObjectProperty + ", CONTAINS: " + vocabularyOptionList.contains(sampleObjectProperty.value) + ", OBJ: " + sampleObjectProperty.value);
