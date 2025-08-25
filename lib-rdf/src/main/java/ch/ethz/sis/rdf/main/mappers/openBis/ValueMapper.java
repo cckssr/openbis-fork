@@ -31,6 +31,11 @@ public class ValueMapper
         String value = sampleObjectProperty.value;
         if (propertyType.getDataType() == DataType.SAMPLE)
         {
+            if (sampleObjectProperty.valueURI == null)
+            {
+                return null;
+            }
+
             String referenceValue = SplitIRI.localname(sampleObjectProperty.valueURI);
             return String.join("/", project,
                             OpenBisModel.makeOpenBisCodeCompliant(referenceValue))

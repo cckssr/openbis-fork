@@ -229,6 +229,7 @@ public class RdfToOpenBisMapper
                         .collect(Collectors.toMap(x -> x.getPropertyType().getLabel(), x -> x));
 
                 Map<String, Serializable> proppies = sampleObject.getProperties().stream()
+                        .filter(x -> x.valueURI != null || x.value != null)
                         .collect(Collectors.toMap(x -> x.getLabel(),
                                 x -> convertValue(vocabularyOptionList, x,
                                         labelToProperty.get(x.label).getPropertyType(),

@@ -246,6 +246,7 @@ public class RDFReader
                         if (Config.getINSTANCE().removeDanglingReferences())
                         {
                             valProperty.get().value = null;
+                            valProperty.get().valueURI = null;
 
                         }
                     }
