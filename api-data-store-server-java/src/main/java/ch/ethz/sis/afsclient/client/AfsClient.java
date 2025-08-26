@@ -511,7 +511,8 @@ public final class AfsClient implements PublicAPI, ClientAPI
     @NonNull public Boolean upload(@NonNull Path sourcePath, @NonNull String destinationOwner, @NonNull Path destinationPath,
             @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception
     {
-        return AfsClientUploadHelper.upload(this, sourcePath, destinationOwner, destinationPath, fileCollisionListener, transferMonitorListener);
+        return AfsClientUploadHelper.upload(this, sourcePath, destinationOwner,
+                destinationPath, fileCollisionListener, transferMonitorListener, serverApi != null);
     }
 
     @Override
