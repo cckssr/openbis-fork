@@ -20,10 +20,13 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import ch.systemsx.cisd.openbis.plugin.query.shared.DatabaseDefinition;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -74,6 +77,10 @@ public class QueryAccessControllerTest
     }
 
     // no person
+    // workaround to reset everything
+    private static IDAOFactory daoFactoryPrev;
+
+    private static Map<String, DatabaseDefinition> definitionsByDbKeyPrev;
 
     @BeforeClass
     public void setUp()
@@ -87,7 +94,17 @@ public class QueryAccessControllerTest
                     will(returnValue(new TestAuthorizationConfig(false, false)));
                 }
             });
+
+        daoFactoryPrev = QueryAccessController.getDaoFactory();
+        definitionsByDbKeyPrev = QueryAccessController.getDefinitionsByDbKey();
+
         QueryAccessController.initialize(daoFactory, new HashMap<>());
+    }
+
+
+    @AfterClass
+    public void afterClass() {
+        QueryAccessController.initialize(daoFactoryPrev, definitionsByDbKeyPrev);
     }
 
     @Test

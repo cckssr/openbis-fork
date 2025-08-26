@@ -1,49 +1,47 @@
 import os
 import re
 import warnings
-
 import matplotlib.pyplot as plt
 import numpy as np
 import spiepy
 import yaml
+import datetime
 from matplotlib.colors import LogNorm
-
 from . import nanonispy as nap
 
 
 class Spm:
-    DEFAULT_CONFIG = os.path.dirname(os.path.abspath(__file__)) + "/machine_config.yaml"
+    current_abspath = os.path.abspath(__file__)
+    current_directory = os.path.dirname(current_abspath)
+    DEFAULT_CONFIG = os.path.join(current_directory, "machine_config.yaml")
 
-    # constructor
     def __init__(self, path: str, config_file=DEFAULT_CONFIG):
-        """
-        Spm constructor
 
-        Parameters
-        ----------
-        path : str
-            SPM filepath.
-
-        Returns
-        -------
-        None.
-
-        """
-
+        # Configuration parameters
         config = self.load_machine_configuration_from_yaml_file(config_file)
 
-        # self.path = path.replace('//', '/')
+        # Get name, path, and file extension
         abspath = os.path.abspath(path)
-        self.path = "/".join(abspath.split("\\")[-4:])
+        split_abspath = abspath.split("\\")
+        self.path = "/".join(split_abspath)
         self.name = self.path.split("/")[-1]
-        file_extension = os.path.splitext(path)[1]
+        file_extension = os.path.splitext(self.name)[-1]
 
         if file_extension == ".sxm":
             self.napImport = nap.read.Scan(path)
+            self.napImport.header["z-controller>tiplift (m)"] = self.napImport.header.get("z-controller>tiplift (m)", 0)
+            self.napImport.header["z-controller>setpoint"] = float(self.napImport.header["z-controller"]["Setpoint"][0].split(" ")[0])
             self.type = "scan"
+            self.header = self.napImport.header
+            self.record_datetime = datetime.datetime.strptime(f"{self.header['rec_date']} {self.header['rec_time']}", "%d.%m.%Y %H:%M:%S")
         elif file_extension == ".dat":
             self.napImport = nap.read.Spec(path)
             self.type = "spec"
+            self.header = self.napImport.header
+            if "Saved Date" in self.header:
+                self.record_datetime = datetime.datetime.strptime(self.header["Saved Date"], "%d.%m.%Y %H:%M:%S")
+            elif "Date" in self.header:
+                self.record_datetime = datetime.datetime.strptime(self.header["Date"], "%d.%m.%Y %H:%M:%S")
         elif file_extension == ".3ds":
             self.napImport = nap.read.Grid(path)
             self.type = "grid"
@@ -51,38 +49,40 @@ class Spm:
             print("Datatype not supported.")
             return
 
-        self.SignalsList = []
+        self.signals = {}
         for key in self.napImport.signals.keys():
-            in_config = key in config["Channels"]
-            self.SignalsList.append(
-                {
-                    "ChannelName": key,
-                    "ChannelNickname": config["Channels"][key]["nickname"]
-                    if in_config
-                    else key,
-                    "ChannelScaling": config["Channels"][key]["scaling"]
-                    if in_config
-                    else 1.0,
-                    "ChannelUnit": config["Channels"][key]["unit"]
-                    if in_config
-                    else "N/A",
-                }
-            )
+            channel_name = key
+            channel_nickname = key
+            channel_scaling = 1.0
+            channel_unit = "N/A"
 
-        self.channels = [c["ChannelNickname"] for c in self.SignalsList]
+            if key in config["Channels"]:
+                channel_nickname = config["Channels"][key]["nickname"]
+                channel_scaling = config["Channels"][key]["scaling"]
+                channel_unit = config["Channels"][key]["unit"]
 
-        self.ParamListReference = []
+            channel_info = {
+                "ChannelName": channel_name,
+                "ChannelScaling": channel_scaling,
+                "ChannelUnit": channel_unit
+            }
+
+            self.signals[channel_nickname] = channel_info
+
+        self.parameters = {}
         for key in config["Parameters"].keys():
-            self.ParamListReference.append(
-                {
-                    "ParamName": key,
-                    "ParamNickname": config["Parameters"][key]["nickname"],
-                    "ParamScaling": config["Parameters"][key]["scaling"],
-                    "ParamUnit": config["Parameters"][key]["unit"],
-                }
-            )
+            parameter_nickname = config["Parameters"][key]["nickname"]
+            parameter_scaling = config["Parameters"][key]["scaling"]
+            parameter_unit = config["Parameters"][key]["unit"]
+            parameter_info = {
+                "ParamName": parameter_nickname,
+                "ParamScaling": parameter_scaling,
+                "ParamUnit": parameter_unit
+            }
+            self.parameters[key] = parameter_info
+            # self.parameters[parameter_nickname] = parameter_info
 
-        self.header = self.napImport.header
+        self.default_channels, self.measurement_type = self.__get_default_channels()
 
     def load_machine_configuration_from_yaml_file(self, filepath):
         """
@@ -130,15 +130,150 @@ class Spm:
     def __repr__(self):
         return self.path
 
+    def __get_default_channels(self):
+        measurement_type = ""
+        default_channels = []
+
+        if self.type == "scan":
+            """
+            Lock-in>Lock-in status: ON > dIdV vs V
+            Lock-in>Lock-in status: OFF:
+                Z-Ctrl hold: TRUE > z vs V
+                Z-Ctrl hold: FALSE:
+                    Oscillation Control>output off: TRUE > df vs V
+                    Oscillation Control>output off: FALSE > I vs V
+            """
+            # Get Lock-in status
+            lock_in_status = None
+            if "lock-in>lock-in status" in self.header:
+                if self.header["lock-in>lock-in status"] == "ON":
+                    lock_in_status = True
+                else:
+                    lock_in_status = False
+
+            # Get Z-controller status
+            z_controller_status = None
+            if "z-controller" in self.header:
+                if "on" in self.header["z-controller"]:
+                    if self.header["z-controller"]["on"][0] == "1":
+                        z_controller_status = True
+                    else:
+                        z_controller_status = False
+
+            # Get oscillation control output off status
+            oscillation_control_output_off = None
+            if "oscillation control>output off" in self.header:
+                if self.header["oscillation control>output off"] == "TRUE":
+                    oscillation_control_output_off = True
+                else:
+                    oscillation_control_output_off = False
+
+            try:
+                if lock_in_status:
+                    default_channel = "dIdV"
+                    measurement_type = "dI/dV image"
+                elif lock_in_status == False:
+                    if z_controller_status:
+                        default_channel = "z"
+                        measurement_type = "STM image"
+                    else:
+                        if oscillation_control_output_off:
+                            default_channel = "df"
+                            measurement_type = "AFM image"
+                        else:
+                            default_channel = "I"
+                            measurement_type = "Current image"
+                else:
+                    default_channel = "z" if "z" in self.signals else next(iter(self.signals)) # Select first channel available
+                    measurement_type = "Image"
+            except:
+                default_channel = next(iter(self.signals))
+                measurement_type = "Image"
+
+            default_channels = [default_channel]
+
+        elif self.type == "spec":
+            """
+            Bias spectroscopy:
+                Lock-in>Lock-in status: ON > dIdV vs V
+                Lock-in>Lock-in status: OFF
+                    Z-Ctrl hold: TRUE > z vs V
+                    Z-Ctrl hold: FALSE
+                        Oscillation Control>output off: TRUE > df vs V
+                        Oscillation Control>output off: FALSE > I vs V
+
+            Z spectroscopy:
+                Lock-in>Lock-in status: ON > dIdV vs z
+                Lock-in>Lock-in status: OFF
+                    Oscillation Control>output off: TRUE > df vs z
+                    Oscillation Control>output off: FALSE > I vs z
+            """
+
+            default_channels = []
+            measurement_type = ""
+            # Get Lock-in status
+            lock_in_status = None
+            if "Lock-in>Lock-in status" in self.header:
+                if lock_in_status == "ON":
+                    lock_in_status = True
+                else:
+                    lock_in_status = False
+
+            # Get Z-control hold status
+            z_control_hold = None
+            if "Z-Ctrl hold" in self.header:
+                if self.header["Z-Ctrl hold"] == "TRUE":
+                    z_control_hold = True
+                else:
+                    z_control_hold = False
+
+            # Get oscillation control output off status
+            oscillation_control_output_off = None
+            if "oscillation control>output off" in self.header:
+                if self.header["oscillation control>output off"] == "TRUE":
+                    oscillation_control_output_off = True
+                else:
+                    oscillation_control_output_off = False
+
+            measurement_type = self.header.get("Experiment")
+            if self.header.get("Experiment") == "bias spectroscopy":
+                if lock_in_status:
+                    if "V" in self.signals and "dIdV" in self.signals:
+                        measurement_type += " dIdV vs V"
+                        default_channels = ["V", "dIdV"]
+                elif lock_in_status == False:
+                    if z_control_hold == False:
+                        if "zspec" in self.signals and "V" in self.signals:
+                            measurement_type += " z vs V"
+                            default_channels = ["V", "zspec"]
+                    else:
+                        if oscillation_control_output_off:
+                            if "V" in self.signals and "df" in self.signals:
+                                measurement_type += " df vs V"
+                                default_channels = ["V", "df"]
+                        else:
+                            if "V" in self.signals and "I" in self.signals:
+                                measurement_type += " I vs V"
+                                default_channels = ["V", "I"]
+            elif self.header.get("Experiment") == "Z spectroscopy":
+                if lock_in_status:
+                    if "zspec" in self.signals and "dIdV" in self.signals:
+                        measurement_type += " dIdV vs z"
+                        default_channels = ["zspec", "dIdV"]
+                elif lock_in_status == False:
+                    if oscillation_control_output_off:
+                        if "zspec" in self.signals and "df" in self.signals:
+                            measurement_type += " df vs z"
+                            default_channels = ["zspec", "df"]
+                    else:
+                        if "zspec" in self.signals and "I" in self.signals:
+                            measurement_type += " I vs z"
+                            default_channels = ["zspec", "I"]
+
+        return default_channels, measurement_type
+
     # get channel
-    def get_channel(
-            self,
-            channel: str,
-            direction: str = "forward",
-            flatten: bool = False,
-            offset: bool = False,
-            zero: bool = False,
-    ):
+    def get_channel(self, channel: str, direction: str = "forward", flatten: bool = False, offset: bool = False, zero: bool = False):
         """
         Returns the measurement values and the channel unit.
 
@@ -163,11 +298,10 @@ class Spm:
         """
 
         if self.type == "scan":
-            chNum = [d["ChannelNickname"] for d in self.SignalsList].index(channel)
-            im = self.napImport.signals[self.SignalsList[chNum]["ChannelName"]][
-                direction
-            ]
-            im = im * self.SignalsList[chNum]["ChannelScaling"]
+            channel_name = self.signals[channel]["ChannelName"]
+            channel_scaling = self.signals[channel]["ChannelScaling"]
+            im = self.napImport.signals[channel_name][direction]
+            im = im * channel_scaling
 
             if flatten:
                 if ~np.isnan(np.sum(im)):
@@ -188,19 +322,19 @@ class Spm:
             if zero:
                 im = im + abs(np.min(im))
 
-            unit = self.SignalsList[chNum]["ChannelUnit"]
+            unit = self.signals[channel]["ChannelUnit"]
 
             return (im, unit)
 
         elif self.type == "spec":
             if direction == "backward":
                 channel = channel + "_bw"
-                # print(channel)
 
-            chNum = [d["ChannelNickname"] for d in self.SignalsList].index(channel)
-            data = self.napImport.signals[self.SignalsList[chNum]["ChannelName"]]
-            data = data * self.SignalsList[chNum]["ChannelScaling"]
-            unit = self.SignalsList[chNum]["ChannelUnit"]
+            channel_name = self.signals[channel]["ChannelName"]
+            channel_scaling = self.signals[channel]["ChannelScaling"]
+            data = self.napImport.signals[channel_name]
+            data = data * channel_scaling
+            unit = self.signals[channel]["ChannelUnit"]
 
             return (data, unit)
 
@@ -235,40 +369,28 @@ class Spm:
 
         """
 
-        if any(d["ParamNickname"] == param for d in self.ParamListReference):
-            paNum = [d["ParamNickname"] for d in self.ParamListReference].index(param)
+        if param in self.parameters:
+            parameter_scaling = self.parameters[param]["ParamScaling"]
 
-            if self.ParamListReference[paNum]["ParamScaling"] is None:
-                return self.napImport.header[
-                    self.ParamListReference[paNum]["ParamName"]
-                ]
-            else:
-                return (
-                    float(
-                        self.napImport.header[
-                            self.ParamListReference[paNum]["ParamName"]
-                        ]
-                    )
-                    * self.ParamListReference[paNum]["ParamScaling"],
-                    self.ParamListReference[paNum]["ParamUnit"],
-                )
-
-        elif param == "width" or param == "height":
-            # height, width = self.get_param('scan_range')
-            # height, width = [height*10**9, width*10**9]
-            scanfield = self.get_param("scan>scanfield")
-            width, height = (
-                float(scanfield.split(";")[2]) * 10**9,
-                float(scanfield.split(";")[3]) * 10**9,
-            )
-
-            return (eval(param), "nm")
-
-        else:
-            if param in self.napImport.header.keys():
+            if parameter_scaling is None:
                 return self.napImport.header[param]
             else:
-                return
+                value = np.float64(self.napImport.header[param]) * parameter_scaling
+                unit = self.parameters[param]["ParamUnit"]
+                return (value, unit)
+
+        elif param == "width" or param == "height":
+            unit = self.parameters['scan_range']["ParamUnit"]
+            parameter_scaling = self.parameters['scan_range']["ParamScaling"]
+            if param == "width":
+                value = self.get_param('scan_range')[0][0]
+            elif param == "height":
+                value = self.get_param('scan_range')[0][1]
+
+            return (value, unit)
+
+        else:
+            return self.napImport.header.get(param, None)
 
     # print essential parameters for plotting
     def print_params(self, show: bool = True):
@@ -302,6 +424,7 @@ class Spm:
                 "controller": "z-controller>controller name",
                 "date": "rec_date",
                 "time": "rec_time",
+                "acq_time": "acq_time"
             }
             for key, value in parameters.items():
                 try:
@@ -312,7 +435,6 @@ class Spm:
                     parameters[key] = "N/A"
 
             fb_enable = parameters["fb_enable"]
-
             bias = parameters["bias"]
             set_point = parameters["set_point"]
             z_offset = parameters["z_offset"]
@@ -333,9 +455,9 @@ class Spm:
                 bias[1] = "mV"
                 bias = tuple(bias)
 
+            label.append(f"Bias = {bias[0]:.2f}{bias[1]}")
             label.append(f"I = {set_point[0]:.0f}{set_point[1]}")
-            label.append(f"bias = {bias[0]:.2f}{bias[1]}")
-            # label.append(f'size: {width[0]}{width[1]} x {height[0]:.1f}{height[1]} ({angle[0]:.0f}{angle[1]})')
+            label.append(f"Measurement type = {self.measurement_type}")
             label.append(f"comment: {comment}")
             label.append(f"Date: {date} - {time}")
 
@@ -398,71 +520,145 @@ class Spm:
 
     def print_params_dict(self, show = True):
 
-        # import numpy as np
-
         label = dict()
 
         if self.type == 'scan':
-            fb_enable = self.get_param('z-controller>controller status')
-            fb_ctrl = self.get_param('z-controller>controller name')
-            bias = self.get_param('V')
-            set_point = self.get_param('setpoint')
-            height = self.get_param('height')
-            width = self.get_param('width')
-            angle = self.get_param('angle')
-            z_offset = self.get_param('z_offset')
-            comment = self.get_param('comments')
+            parameters = {
+                "z-controller_status": "z-controller>controller status",
+                "z-controller_name": "z-controller>controller name",
+                "bias": "bias",
+                "z-controller_setpoint": "z-controller>setpoint",
+                "comment": "comments",
+                "height": "height",
+                "width": "width",
+                "angle": "scan_angle",
+                "date": "rec_date",
+                "time": "rec_time",
+                "lock_in_amplitude": "lock-in>amplitude",
+                "lock_in_frequency": "lock-in>frequency (hz)",
+                "lock_in_phase": "lock-in>reference phase d1 (deg)",
+                "oscillation_control_frequency": "oscillation control>center frequency (hz)",
+                "oscillation_control_amplitude_ctrl": "oscillation control>amplitude controller on",
+                "oscillation_control_amplitude_setpoint": "oscillation control>amplitude setpoint (m)",
+            }
 
+            for key, value in parameters.items():
+                try:
+                    parameters[key] = self.get_param(value)
+                except Exception as err:
+                    if type(err) == type(KeyError()):
+                        print(f"Missing Header Key, {err}")
+                    parameters[key] = "N/A"
 
+            if parameters["z-controller_status"] is None:
+                parameters["z-controller_status"] = self.header['z-controller']['on'][0]
 
-            if fb_enable == 'OFF':
-                label['constant height'] = 'TRUE'
-                label['z-offset'] ='%.3f%s' % z_offset
+            if parameters["z-controller_setpoint"] is None:
+                setpoint_values = self.header['z-controller']["Setpoint"][0].split()
+                parameters["z-controller_setpoint"] = (np.float64(setpoint_values[0]), setpoint_values[1])
 
-            if np.abs(bias[0])<0.1:
-                bias = list(bias)
-                bias[0] = bias[0]*1000
-                bias[1] = 'mV'
-                bias = tuple(bias)
+            if self.measurement_type == "dI/dV image":
+                label['z-controller (status)'] = '%.2f %s' % parameters["z-controller_status"]
+                label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                label['lock-in (amplitude)'] = '%.2f %s' % parameters["lock_in_amplitude"]
+                label['lock-in (frequency)'] = '%.2f %s' % parameters["lock_in_frequency"]
+                label['lock-in (phase)'] = '%.2f %s' % parameters["lock_in_phase"]
 
-            label['I'] = '%.0f%s' % set_point
-            label['bias'] = '%.2f%s' % bias
-            label['size'] ='%.1f%s x %.1f%s (%.0f%s)' % (width+height+angle)
-            label['comment'] = '%s' % comment
+            elif self.measurement_type == "STM image":
+                label['z-controller (status)'] = parameters["z-controller_status"]
+                label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+
+            elif self.measurement_type == "AFM image":
+                label["oscillation control (center frequency)"] = '%.2f %s' % parameters["oscillation_control_frequency"]
+                label["oscillation control (amplitude controller)"] = parameters["oscillation_control_amplitude_ctrl"]
+                label["oscillation control (amplitude setpoint)"] = '%.2f %s' % parameters["oscillation_control_amplitude_setpoint"]
+
+            elif self.measurement_type == "Current image":
+                label['z-controller (status)'] = parameters["z-controller_status"]
+            else:
+                label['z-controller (status)'] = parameters["z-controller_status"]
+                label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+
+            label['bias'] = '%.2f %s' % parameters["bias"]
+            label['size'] ='%.2f %s x %.2f %s (%.2f%s)' % (parameters["width"] + parameters["height"] + parameters["angle"])
+            label['measurement type'] = self.measurement_type
+            label['start date'] = f"{parameters['date']} {parameters['time']}"
+            label['title'] = self.name
+            label['comment'] = parameters["comment"]
 
 
         elif self.type == 'spec':
+            parameters = {
+                "bias": "Bias>Bias (V)",
+                "date": "Saved Date",
+                "z-controller_hold": "Z-Ctrl hold",
+                "z-controller_setpoint": "Z-Controller>Setpoint",
+                "lock_in_amplitude": "Lock-in>Amplitude",
+                "lock_in_frequency": "Lock-in>Frequency (Hz)",
+                "lock_in_phase": "Lock-in>Reference Phase D1 (deg)",
+                "oscillation_control_frequency": "Oscillation Control>Center Frequency (Hz)",
+                "oscillation_control_amplitude_ctrl": "Oscillation Control>Amplitude controller on",
+                "oscillation_control_amplitude_setpoint": "Oscillation Control>Amplitude Setpoint (m)",
+            }
 
-            fb_enable = self.get_param('Z-Ctrl hold')
-            set_point = self.get_param('setpoint_spec')
-            bias = self.get_param('V_spec')
-            #lockin_status = self.get_param('Lock-in>Lock-in status')
-            lockin_amplitude = self.get_param('lockin_amplitude')
-            lockin_phase= self.get_param('lockin_phase')
-            lockin_frequency= self.get_param('lockin_frequency')
-            comment = self.get_param('comment_spec')
+            for key, value in parameters.items():
+                try:
+                    parameters[key] = self.get_param(value)
+                except Exception as err:
+                    if type(err) == type(KeyError()):
+                        print(f"Missing Header Key, {err}")
+                    parameters[key] = "N/A"
 
+            if "bias spectroscopy" in self.measurement_type:
+                if self.measurement_type == "bias spectroscopy dIdV vs V":
+                    label['lock-in (amplitude)'] = '%.2f %s' % parameters["lock_in_amplitude"]
+                    label['lock-in (frequency)'] = '%.2f %s' % parameters["lock_in_frequency"]
+                    label['lock-in (phase)'] = '%.2f %s' % parameters["lock_in_phase"]
+                    label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                    label['z-controller (hold)'] = parameters["z-controller_hold"]
 
-            #if lockin_status == 'ON':
-            label['lockin'] =  'A = %.0f%s (θ = %.0f%s, f = %.0f%s)' % (lockin_amplitude+lockin_phase+lockin_frequency)
+                elif self.measurement_type == "bias spectroscopy z vs V":
+                    label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                    label['z-controller (hold)'] = parameters["z-controller_hold"]
 
+                elif self.measurement_type == "bias spectroscopy df vs V":
+                    label['oscillation control (center frequency)'] = '%.2f %s' % parameters["oscillation_control_frequency"]
+                    label['oscillation control (amplitude controller)'] = parameters["oscillation_control_amplitude_ctrl"]
+                    label['oscillation control (amplitude setpoint)'] = '%.2f %s' % parameters["oscillation_control_amplitude_setpoint"]
 
-            if fb_enable == 'FALSE':
-                label['feedback'] = 'on'
+                elif self.measurement_type == "bias spectroscopy I vs V":
+                    label['z-controller (hold)'] = parameters["z-controller_hold"]
+                    if len(parameters['z-controller_setpoint']) == 2:
+                        label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                    else:
+                        label['z-controller (setpoint)'] = parameters["z-controller_setpoint"]
 
-            elif fb_enable == 'TRUE':
-                label['feedback'] = 'off'
+                else:
+                    label['z-controller (hold)'] = parameters["z-controller_hold"]
+                    if len(parameters['z-controller_setpoint']) == 2:
+                        label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                    else:
+                        label['z-controller (setpoint)'] = parameters["z-controller_setpoint"]
 
+            elif "Z spectroscopy" in self.measurement_type:
+                label['bias'] = '%.2f %s' % parameters["bias"]
 
-            label['setpoint'] = 'I = %.0f%s, V = %.1f%s' % (set_point+bias)
+                # There are files where this parameter is not available
+                if len(parameters['z-controller_setpoint']) == 2:
+                    label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                else:
+                    label['z-controller (setpoint)'] = parameters["z-controller_setpoint"]
 
-            label['comment'] = '%s' % comment
+                if self.measurement_type == "Z spectroscopy dIdV vs z":
+                    label['lock-in (amplitude)'] = '%.2f %s' % parameters["lock_in_amplitude"]
+                    label['lock-in (frequency)'] = '%.2f %s' % parameters["lock_in_frequency"]
+                    label['lock-in (phase)'] = '%.2f %s' % parameters["lock_in_phase"]
 
-        # label.append('path: %s' % self.path)
-        # label = '\n'.join(label)
-
-        # if show:
-        #     print('\n'.join(label))
+                elif self.measurement_type == "Z spectroscopy df vs z":
+                    label['z-controller (setpoint)'] = '%.2f %s' % parameters["z-controller_setpoint"]
+                    label['oscillation control (center frequency)'] = '%.2f %s' % parameters["oscillation_control_frequency"]
+                    label['oscillation control (amplitude controller)'] = parameters["oscillation_control_amplitude_ctrl"]
+                    label['oscillation control (amplitude setpoint)'] = '%.2f %s' % parameters["oscillation_control_amplitude_setpoint"]
 
         return label
 
@@ -509,7 +705,6 @@ class Spm:
             Figure of a channel of the Spm object
 
         """
-
         # cmaps = sorted(m for m in plt.cm.datad)
         # ['Accent', 'Accent_r', 'Blues', 'Blues_r', 'BrBG', 'BrBG_r', 'BuGn', 'BuGn_r', 'BuPu', 'BuPu_r', 'CMRmap', 'CMRmap_r', 'Dark2', 'Dark2_r', 'GnBu', 'GnBu_r', 'Greens', 'Greens_r', 'Greys', 'Greys_r', 'OrRd', 'OrRd_r', 'Oranges', 'Oranges_r', 'PRGn', 'PRGn_r', 'Paired', 'Paired_r', 'Pastel1', 'Pastel1_r', 'Pastel2', 'Pastel2_r', 'PiYG', 'PiYG_r', 'PuBu', 'PuBuGn', 'PuBuGn_r', 'PuBu_r', 'PuOr', 'PuOr_r', 'PuRd', 'PuRd_r', 'Purples', 'Purples_r', 'RdBu', 'RdBu_r', 'RdGy', 'RdGy_r', 'RdPu', 'RdPu_r', 'RdYlBu', 'RdYlBu_r', 'RdYlGn', 'RdYlGn_r', 'Reds', 'Reds_r', 'Set1', 'Set1_r', 'Set2', 'Set2_r', 'Set3', 'Set3_r', 'Spectral', 'Spectral_r', 'Wistia', 'Wistia_r', 'YlGn', 'YlGnBu', 'YlGnBu_r', 'YlGn_r', 'YlOrBr', 'YlOrBr_r', 'YlOrRd', 'YlOrRd_r', 'afmhot', 'afmhot_r', 'autumn', 'autumn_r', 'binary', 'binary_r', 'bone', 'bone_r', 'brg', 'brg_r', 'bwr', 'bwr_r', 'cool', 'cool_r', 'coolwarm', 'coolwarm_r', 'copper', 'copper_r', 'cubehelix', 'cubehelix_r', 'flag', 'flag_r', 'gist_earth', 'gist_earth_r', 'gist_gray', 'gist_gray_r', 'gist_heat', 'gist_heat_r', 'gist_ncar', 'gist_ncar_r', 'gist_rainbow', 'gist_rainbow_r', 'gist_stern', 'gist_stern_r', 'gist_yarg', 'gist_yarg_r', 'gnuplot', 'gnuplot2', 'gnuplot2_r', 'gnuplot_r', 'gray', 'gray_r', 'hot', 'hot_r', 'hsv', 'hsv_r', 'jet', 'jet_r', 'nipy_spectral', 'nipy_spectral_r', 'ocean', 'ocean_r', 'pink', 'pink_r', 'prism', 'prism_r', 'rainbow', 'rainbow_r', 'seismic', 'seismic_r', 'spectral', 'spectral_r', 'spring', 'spring_r', 'summer', 'summer_r', 'terrain', 'terrain_r', 'winter', 'winter_r']
 
@@ -586,9 +781,48 @@ class Spm:
             else:
                 zero = False
 
-            (chData, chUnit) = self.get_channel(
-                channel, direction=direction, flatten=flatten, offset=offset, zero=zero
-            )
+            ### >>>> PREMISE - specific modifications
+
+            if 'hide' in params:
+                hide = params['hide']
+            else:
+                hide = False
+
+            if 'color_scale' in params:
+                color_scale = params['color_scale']
+            else:
+                color_scale = False
+
+            if 'x_axis' in params:
+                x_axis = params['x_axis']
+            else:
+                x_axis = False
+
+            if 'y_axis' in params:
+                y_axis = params['y_axis']
+            else:
+                y_axis = False
+
+            if 'colormap_scaling' in params:
+                colormap_scaling = params['colormap_scaling']
+            else:
+                colormap_scaling = False
+
+            if 'data' in params:
+                data = params['data']
+            else:
+                data = False
+
+
+            if data is False:
+                (chData,chUnit) = self.get_channel(channel, direction = direction, flatten=flatten, offset=offset, zero=zero)
+            else:
+                (chData,chUnit) = data
+
+            ### ---- PREMISE - specific modifications
+            # (chData, chUnit) = self.get_channel(
+            #     channel, direction=direction, flatten=flatten, offset=offset, zero=zero
+            # )
 
             if "vmin" in params:
                 vmin = params["vmin"]
@@ -603,15 +837,29 @@ class Spm:
             if direction == "backward":
                 chData = np.fliplr(chData)
 
-            width = self.get_param("width")
-            height = self.get_param("height")
+            width = self.get_param("scan_range")[0]
+            height = self.get_param("scan_range")[1]
             pix_y, pix_x = np.shape(chData)
 
-            fig = plt.figure(figsize=(7, 8))
+            ### >>>> PREMISE - specific modifications
+            fig = plt.figure()
+            # fig = plt.gcf()
+            ### ---- PREMISE - specific modifications
+            # fig = plt.figure(figsize=(7, 8))
+
 
             ImgOrigin = "lower"
             if self.get_param("scan_dir") == "down":
                 ImgOrigin = "upper"
+
+            ### >>>> PREMISE - specific modifications
+            if color_scale:
+                chData = np.clip(chData, color_scale[0], color_scale[1])
+
+            if x_axis and y_axis:
+                plt.ylim(y_axis[0], y_axis[1])
+                plt.xlim(x_axis[0], x_axis[1])
+            ### ---- PREMISE - specific modifications
 
             if log:
                 im = plt.imshow(
@@ -621,6 +869,7 @@ class Spm:
                     cmap=cmap,
                     norm=LogNorm(),
                     origin=ImgOrigin,
+                    interpolation = 'none'
                 )
             else:
                 im = plt.imshow(
@@ -631,37 +880,49 @@ class Spm:
                     vmax=vmax,
                     cmap=cmap,
                     origin=ImgOrigin,
+                    interpolation = 'none'
                 )
 
             if clim:
                 plt.clim(clim)
 
-            im.axes.set_xticks([0, width[0]])
-            im.axes.set_xticklabels([0, np.round(width[0], 2)])
-            im.axes.set_yticks([0, height[0]])
-            im.axes.set_yticklabels([0, np.round(height[0], 2)])
+            ### >>>> PREMISE - specific modifications
+            ### ---- PREMISE - specific modifications
+            # im.axes.set_xticks([0, width[0]])
+            # im.axes.set_xticklabels([0, np.round(width[0], 2)])
+            # im.axes.set_yticks([0, height[0]])
+            # im.axes.set_yticklabels([0, np.round(height[0], 2)])
 
             if show_params:
                 title = self.print_params(show=False)
             else:
                 title = self.path
 
-            plt.title(title + "\n", loc="left")
+            ### >>>> PREMISE - specific modifications
+            ### ---- PREMISE - specific modifications
+            # plt.title(title + "\n", loc="left")
+
             plt.xlabel(f"x ({width[1]})")
             plt.ylabel(f"y ({height[1]})")
 
-            cbar = plt.colorbar(
-                im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
-            )
-            cbar.set_label(f"{channel} ({chUnit}")
+            ### >>>> PREMISE - specific modifications
+            cbar = plt.colorbar(im)
+            cbar.set_label(f'Channel: {channel} ({chUnit})')
+            ### ---- PREMISE - specific modifications
+            # cbar = plt.colorbar(
+            #     im, fraction=0.046, pad=0.02, format="%.2g", shrink=0.5, aspect=10
+            # )
+            # cbar.set_label(f"{channel} ({chUnit}")
 
             if show:
                 plt.show()
             # else:
             #     plt.close(fig)
 
-            if close_fig:
-                plt.close(fig)
+            ### >>>> PREMISE - specific modifications
+            ### ---- PREMISE - specific modifications
+            # if close_fig:
+            #     plt.close(fig)
 
             if save:
                 if save_name:
@@ -729,6 +990,31 @@ class Spm:
             else:
                 save_format = "png"
 
+            ### >>>> PREMISE - specific modifications
+            # if 'colormap' in params:
+            #     colormap = params['colormap']
+            #     cmap = plt.get_cmap(colormap)
+            #     color = cmap(np.linspace(0,1,len(specs)))
+            # else:
+            #     colormap = False
+            #
+            # if 'scaling' in params:
+            #     scaling = params['scaling']
+            # else:
+            #     scaling = False
+            #
+            # if 'x_axis' in params:
+            #     x_axis = params['x_axis']
+            # else:
+            #     x_axis = False
+            #
+            # if 'y_axis' in params:
+            #     y_axis = params['y_axis']
+            # else:
+            #     y_axis = False
+            ### ---- PREMISE - specific modifications
+            #
+
             (x_data, x_unit) = self.get_channel(channelx, direction=direction)
             (y_data, y_unit) = self.get_channel(channely, direction=direction)
 
@@ -758,8 +1044,8 @@ class Spm:
             # else:
             #     plt.close(fig)
 
-            if close_fig:
-                plt.close(fig)
+            # if close_fig:
+            #     plt.close(fig)
 
             if save:
                 if save_name:
@@ -771,7 +1057,7 @@ class Spm:
 
             return fig
 
-    def importall(FilePath: str, FilePrefix="", ImportOnly=""):
+    def importall(FilePath: str, ImportOnly=""):
         """
         Returns a list of Spm objects from a specific folder
 
@@ -799,15 +1085,15 @@ class Spm:
 
         for root, dirs, filenames in walk(FilePath):
             for file in filenames:
-                if file.endswith(".sxm") and file.startswith(FilePrefix):
+                if file.endswith(".sxm"):
                     if not ((ImportOnly == "spec") or (ImportOnly == "grid")):
                         files.append(Spm(root + "/" + file))
                         NumScan = NumScan + 1
-                elif file.endswith(".dat") and file.startswith(FilePrefix):
+                elif file.endswith(".dat"):
                     if not ((ImportOnly == "scan") or (ImportOnly == "grid")):
                         files.append(Spm(root + "/" + file))
                         NumSpec = NumSpec + 1
-                elif file.endswith(".3ds") and file.startswith(FilePrefix):
+                elif file.endswith(".3ds"):
                     if not ((ImportOnly == "scan") or (ImportOnly == "spec")):
                         files.append(Spm(root + "/" + file))
                         NumGrid = NumGrid + 1

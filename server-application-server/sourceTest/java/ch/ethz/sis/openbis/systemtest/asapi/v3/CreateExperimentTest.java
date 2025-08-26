@@ -1359,6 +1359,35 @@ public class CreateExperimentTest extends AbstractExperimentTest
     }
 
     @Test
+    public void testCreateWithUniqueProperty()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+        PropertyTypePermId propertyType = createAPropertyType(sessionToken, DataType.VARCHAR);
+
+        EntityTypePermId experimentType = createAnExperimentType(sessionToken, true, true, propertyType, PLATE_GEOMETRY);
+
+        ExperimentCreation creation = new ExperimentCreation();
+        creation.setCode("EXPERIMENT_WITH_UNIQUE_PROPERTY_1");
+        creation.setTypeId(experimentType);
+        creation.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation.setStringProperty(propertyType.getPermId(), "A");
+
+        ExperimentCreation creation2 = new ExperimentCreation();
+        creation2.setCode("EXPERIMENT_WITH_UNIQUE_PROPERTY_2");
+        creation2.setTypeId(experimentType);
+        creation2.setProjectId(new ProjectIdentifier("/CISD/NEMO"));
+        creation2.setProperty(PLATE_GEOMETRY.getPermId(), "384_WELLS_16X24");
+        creation2.setStringProperty(propertyType.getPermId(), "A");
+
+        // When
+        assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(creation, creation2)),
+            // Then
+            "Insert/Update of experiment failed because controlled vocabulary property contains value that is not unique!");
+    }
+
+    @Test
     public void testCreateWithPropertyOfTypeArrayTimestamp()
     {
         // Given

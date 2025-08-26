@@ -23,7 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
+//import ch.systemsx.cisd.common.servlet.GWTRPCServiceExporter;
 import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.IScreeningClientService;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.ResourceNames;
 
@@ -33,7 +33,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.ResourceNames;
  * @author Christian Ribeaud
  */
 @Controller
-public final class ScreeningClientServiceServlet extends GWTRPCServiceExporter
+public final class ScreeningClientServiceServlet //extends GWTRPCServiceExporter
 {
     private static final long serialVersionUID = 1L;
 
@@ -44,10 +44,11 @@ public final class ScreeningClientServiceServlet extends GWTRPCServiceExporter
     public final ModelAndView handleRequestExposed(final HttpServletRequest request,
             final HttpServletResponse response) throws Exception
     {
-        return super.handleRequest(request, response);
+        //return super.handleRequest(request, response);
+        throw new RuntimeException("GWT Removed");
     }
 
-    @Override
+    //@Override
     protected final Object getService()
     {
         return service;

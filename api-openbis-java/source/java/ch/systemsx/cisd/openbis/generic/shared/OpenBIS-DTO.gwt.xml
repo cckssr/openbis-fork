@@ -1,7 +1,0 @@
-<module>
-  <!--
-    // Source path elements to Java classes to be compiled to JavaScript
-  -->
-  <source path="basic" />
-
-</module>

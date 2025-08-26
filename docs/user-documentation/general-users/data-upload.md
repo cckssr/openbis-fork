@@ -2,18 +2,18 @@ Data Upload
 ====
 
 
-Data can be uploaded to Datasets in openBIS to *Experiments* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types.
+Data can be uploaded to *Datasets* in openBIS to *Experiments/Collections* and *Objects* (e.g., *Experimental Steps*). openBIS is agnostic of file formats and types.
 
-Small data files can be uploaded via the web user interface, larger data files can be uploaded via dropbox mechanism.
+Small data files can be uploaded via the web user interface, larger data files can be uploaded via the openBIS dropbox.
 
  
 ## Data upload via web UI
 
 To upload data via the web interface: 
 
-1.Click the **Upload** button in the form, as shown below.
+1.Click the **+Dataset** button in the form, as shown below.
 
-![image info](img/Screenshot-2022-02-25-at-16.32.27-1024x359.png)
+![image info](img/201012-dataset-upload-button.png)
 
 2\. Select the dataset type (e.g. Attachment).
 
@@ -42,19 +42,15 @@ there are two options:
 1.  Zip using  the following command on the command-line: `zip -r folder-name.zip folder-name/\*  -x “\.DS\_Store”`
 2.  Use an external archiver (e.g. Stuffit Deluxe).
 
-Updated on March 23, 2023
- 
+
 ## Data upload via dropbox
 
 Web upload of data files is only suitable for files of limited size (few GB). To upload larger data, openBIS uses dropbox scripts that run in the background (see [Dropboxes](../../software-developer-documentation/server-side-extensions/dss-dropboxes.md)). A default dropbox script is provided with the openBIS ELN-LIMS plugin, and the dropbox folder needs to be set up by a *system admin*.
 
-If this is available, users need to organise their data in a specific way:
+If this is set up, users need to organise their data in a specific way, prior to upload:
 
 
-**Folder 1**
-
-**Data** (can be single files or folders)
-
+![image info](img/folder1-data.png)
  
 
 **Folder 1** needs to have a specific name that encodes the information
@@ -63,13 +59,12 @@ of where the data should be uploaded to openBIS.
 The name of **Folder 1** can be generated from the ELN interface:
  
 
-1.  From the page where you want to upload data, select **Dataset upload
-    helper tool for eln-lims dropbox** from the **More…** dropdown and
-    follow the instructions on screen.
+1.  From the page where you want to upload data, select **Dataset upload helper tool for eln-lims dropbox** from the **More…** dropdown 
+and follow the instructions on screen.
 
  
 
-![image info](img/dataset-uploader-helper-tool-more-dropdown.png)
+![image info](img/201012-dataset-uploader-helper-tool-more-dropdown.png)
 
  
 
@@ -101,7 +96,6 @@ on the eln-lims-dropbox folder.
  
 
 ### Dropbox with markerfile
-
  
 
 In case of uploads of data >100GB we recommend to configure the
@@ -125,10 +119,6 @@ The marker file should be named:
 .MARKER\_is\_finished\_O+BARILLAC+PROJECT\_1+EXP1+RAW\_DATA+test
 
 
- 
-
- 
-
 
 #### **How to create the Marker file in Windows**
 
@@ -146,7 +136,6 @@ You can create the Marker file in Windows using a text editor such as
 
  
 
-
 #### **How to create the Marker file on Mac**
 
  
@@ -155,19 +144,14 @@ If you are not familiar with the command line, you can create an empty
 text file using for example the **TextEdit** application in a Mac. Any
 other text editor will also work.
 
-1.  Open the **TextEdit** application and save an empty file with a name
-    such as
+1.  Open the **TextEdit** application and save an empty file with a name such as
     *.MARKER\_is\_finished\_O+BARILLAC+PROJECT\_1+EXP1+RAW\_DATA+test*.
 2.  Save to any format.
-3.  You will get a message to say that files starting with “.” are
-    reserved for the system and will be hidden. Confirm that you want to
+3.  You will get a message to say that files starting with “.” are reserved for the system and will be hidden. Confirm that you want to
     use “.”
-4.  To show these hidden files, open the Finder and press **Command +
-    Shift + . (period)**.
-5.  The file you saved before has an extension, that needs to be
-    removed. If the extension is not shown in your Finder, go to Finder
-    > Preferences menu, select the Advanced tab, and check the “Show
-    all filename extensions” box.
+4.  To show these hidden files, open the Finder and press **Command + Shift + . (period)**.
+5.  The file you saved before has an extension, that needs to be removed. If the extension is not shown in your Finder, go to Finder
+    Preferences menu, select the Advanced tab, and check the “Show all filename extensions” box.
 6.  Remove the extension from the file.
 
  
@@ -175,9 +159,8 @@ other text editor will also work.
 ### Dropbox monitor
 
  
-
 It is possible to check the status of the upload via dropbox using the
-**Dropbox Monitor** under **Utilities** in the main menu.
+**Dropbox Monitor** under **Utilities** in the main men, in the **Tools** tab.
 
 The Dropbox Monitor shows a table with all available dropboxes for a
 given openBIS instance. By default, *default-dropbox, eln-lims-dropbox
@@ -190,7 +173,7 @@ data import.
 
  
 
-![image info](img/dropbox-monitor-menu-1024x491.png)
+![image info](img/201012-dropbox-monitor.png)
 
  
 
@@ -200,7 +183,7 @@ the log with the error is shown.
 
  
 
-![image info](img/dropbox-monitor-details-1024x457.png)
+![image info](img/201012-dropbox-monitor-logs.png)
 
  
 
@@ -246,11 +229,10 @@ the main menu.
 
  
 
-![image info](img/download-metadata-template.png)
+![image info](img/201012-other-tools-metadata-json-file.png)
 
  
 
-![image info](img/Select-dataset.png)
 
  
 
@@ -263,4 +245,4 @@ future data upload, especially large data.
 
 ![image info](img/available-storage-1024x149.png)
 
-Updated on April 26, 2023
+

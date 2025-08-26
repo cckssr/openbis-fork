@@ -17,15 +17,16 @@ package ch.systemsx.cisd.openbis.jstest.layout;
 
 import ch.systemsx.cisd.openbis.jstest.page.OpenbisJsCommonWebapp;
 
-import ch.systemsx.cisd.openbis.uitest.dsl.SeleniumTest;
-import ch.systemsx.cisd.openbis.uitest.layout.Location;
-import ch.systemsx.cisd.openbis.uitest.menu.TopBar;
-import ch.systemsx.cisd.openbis.uitest.menu.UtilitiesMenu;
-import ch.systemsx.cisd.openbis.uitest.webdriver.Pages;
+import ch.systemsx.cisd.openbis.uitest.selenium.Location;
+import ch.systemsx.cisd.openbis.uitest.selenium.Pages;
+import ch.systemsx.cisd.openbis.uitest.selenium.SeleniumTest;
+import ch.systemsx.cisd.openbis.uitest.selenium.TopBar;
+import ch.systemsx.cisd.openbis.uitest.selenium.UtilitiesMenu;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-public class ELNJsWebappLocation implements Location<OpenbisJsCommonWebapp> {
+public class ELNJsWebappLocation implements Location<OpenbisJsCommonWebapp>
+{
 
     @Override
     public void moveTo(Pages pages)

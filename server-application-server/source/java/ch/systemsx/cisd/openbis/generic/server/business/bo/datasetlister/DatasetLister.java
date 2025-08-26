@@ -343,13 +343,13 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
     {
         TableMap<Long, Sample> samplesByID =
                 new TableMap<Long, Sample>(samples, new IKeyExtractor<Long, Sample>()
+                {
+                    @Override
+                    public Long getKey(Sample e)
                     {
-                        @Override
-                        public Long getKey(Sample e)
-                        {
-                            return e.getId();
-                        }
-                    });
+                        return e.getId();
+                    }
+                });
         Map<Sample, List<AbstractExternalData>> result =
                 new HashMap<Sample, List<AbstractExternalData>>();
         Set<Long> sampleIDs = new HashSet<Long>();
@@ -507,7 +507,7 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
         // with the same registration timestamp, no matter how many of them there are.
         while (data == null
                 || (data.get(0).getRegistrationDate().equals(data.get(data.size() - 1)
-                        .getRegistrationDate())) && lastSize != data.size())
+                .getRegistrationDate())) && lastSize != data.size())
         {
             lastSize = data != null ? data.size() : 0;
             data =
@@ -616,26 +616,26 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
     private List<AbstractExternalData> orderByDate(List<AbstractExternalData> list)
     {
         Collections.sort(list, new Comparator<AbstractExternalData>()
+        {
+            @Override
+            public int compare(AbstractExternalData o1, AbstractExternalData o2)
             {
-                @Override
-                public int compare(AbstractExternalData o1, AbstractExternalData o2)
-                {
-                    return o1.getRegistrationDate().compareTo(o2.getRegistrationDate());
-                }
-            });
+                return o1.getRegistrationDate().compareTo(o2.getRegistrationDate());
+            }
+        });
         return list;
     }
 
     private List<AbstractExternalData> orderByCode(List<AbstractExternalData> list)
     {
         Collections.sort(list, new Comparator<AbstractExternalData>()
+        {
+            @Override
+            public int compare(AbstractExternalData o1, AbstractExternalData o2)
             {
-                @Override
-                public int compare(AbstractExternalData o1, AbstractExternalData o2)
-                {
-                    return o1.getCode().compareTo(o2.getCode());
-                }
-            });
+                return o1.getCode().compareTo(o2.getCode());
+            }
+        });
         return list;
     }
 
@@ -687,32 +687,32 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
         loadSmallConnectedTables();
         final Long dataStoreId = extractDataStoreId(dataStoreCode);
         final Date lastAccessDate = extractLastAccessDate(criteria);
-        final String dataSetTypeCodeOrNull = criteria.tryGetDataSetTypeCode();
+        final Set<String> dataSetTypeCodes = criteria.getDataSetTypeCodes();
         final boolean presentInArchive = criteria.isPresentInArchive();
 
         if (dataDAO.isAccessTimestampEnabled())
         {
-            if (dataSetTypeCodeOrNull == null)
+            if (dataSetTypeCodes == null || dataSetTypeCodes.isEmpty())
             {
                 return enrichDatasets(query.getAvailableExtDatasAccessedBefore(dataStoreId,
                         lastAccessDate, presentInArchive));
             } else
             {
-                Long dataSetTypeId = extractDataSetTypeId(dataSetTypeCodeOrNull);
+                LongSet dataSetTypeIds = extractDataSetTypeIds(dataSetTypeCodes);
                 return enrichDatasets(query.getAvailableExtDatasAccessedBeforeWithDataSetType(
-                        dataStoreId, lastAccessDate, presentInArchive, dataSetTypeId));
+                        dataStoreId, lastAccessDate, presentInArchive, dataSetTypeIds));
             }
         } else
         {
-            if (dataSetTypeCodeOrNull == null)
+            if (dataSetTypeCodes == null || dataSetTypeCodes.isEmpty())
             {
                 return enrichDatasets(query.getAvailableExtDatasRegisteredBefore(dataStoreId,
                         lastAccessDate, presentInArchive));
             } else
             {
-                Long dataSetTypeId = extractDataSetTypeId(dataSetTypeCodeOrNull);
+                LongSet dataSetTypeIds = extractDataSetTypeIds(dataSetTypeCodes);
                 return enrichDatasets(query.getAvailableExtDatasRegisteredBeforeWithDataSetType(
-                        dataStoreId, lastAccessDate, presentInArchive, dataSetTypeId));
+                        dataStoreId, lastAccessDate, presentInArchive, dataSetTypeIds));
             }
         }
     }
@@ -734,16 +734,38 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
         throw new UserFailureException("Data store '" + dataStoreCode + "' unknown.");
     }
 
-    private Long extractDataSetTypeId(String dataSetTypeCode)
+    private LongSet extractDataSetTypeIds(Set<String> dataSetTypeCodes)
     {
+        Map<String, Long> knownDataSetTypeCodes = new HashMap<>();
+
         for (Entry<Long, DataSetType> entry : dataSetTypes.entrySet())
         {
-            if (dataSetTypeCode.equalsIgnoreCase(entry.getValue().getCode()))
+            knownDataSetTypeCodes.put(entry.getValue().getCode().toLowerCase(), entry.getKey());
+        }
+
+        LongSet dataSetTypeIds = new LongOpenHashSet();
+        Set<String> unknownDataSetTypeCodes = new HashSet<>();
+
+        for (String dataSetTypeCode : dataSetTypeCodes)
+        {
+            Long dataSetTypeId = knownDataSetTypeCodes.get(dataSetTypeCode.toLowerCase());
+
+            if (dataSetTypeId != null)
             {
-                return entry.getKey();
+                dataSetTypeIds.add(dataSetTypeId);
+            } else
+            {
+                unknownDataSetTypeCodes.add(dataSetTypeCode);
             }
         }
-        throw new UserFailureException("Data Set type '" + dataSetTypeCode + "' unknown.");
+
+        if (unknownDataSetTypeCodes.isEmpty())
+        {
+            return dataSetTypeIds;
+        } else
+        {
+            throw new UserFailureException("Data Set types '" + unknownDataSetTypeCodes + "' unknown.");
+        }
     }
 
     private List<AbstractExternalData> enrichDatasets(Iterable<DatasetRecord> datasets)
@@ -903,13 +925,13 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
     private void enrichWithProperties(final Long2ObjectMap<AbstractExternalData> resultMap)
     {
         propertiesEnricher.enrich(resultMap.keySet(), new IEntityPropertiesHolderResolver()
+        {
+            @Override
+            public AbstractExternalData get(long id)
             {
-                @Override
-                public AbstractExternalData get(long id)
-                {
-                    return resultMap.get(id);
-                }
-            });
+                return resultMap.get(id);
+            }
+        });
     }
 
     private void enrichWithParents(Long2ObjectMap<AbstractExternalData> datasetMap,
@@ -1087,7 +1109,7 @@ public class DatasetLister extends AbstractLister implements IDatasetLister
     {
         List<AbstractExternalData> dataSets = listByDatasetIds(dataSetIds);
         return new TableMap<Long, AbstractExternalData>(dataSets,
-                KeyExtractorFactory.<AbstractExternalData> createIdKeyExtractor());
+                KeyExtractorFactory.<AbstractExternalData>createIdKeyExtractor());
     }
 
     private void addContainer(AbstractExternalData component, AbstractExternalData container, DatasetRelationRecord record)

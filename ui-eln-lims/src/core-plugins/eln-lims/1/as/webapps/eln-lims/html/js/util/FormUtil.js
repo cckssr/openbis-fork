@@ -779,8 +779,8 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
-            $("body").off("click", "#"+id);
-            $("body").on("click", "#"+id, clickEvent)
+            $("body").off("click", "[id='"+id+"']");
+            $("body").on("click", "[id='"+id+"']", clickEvent)
         } else if(clickEvent) {
             $btn.click(clickEvent);
         }
@@ -1303,7 +1303,8 @@ var FormUtil = new function() {
             format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
             extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
             useCurrent : false,
-            defaultDate : date
+            defaultDate : date,
+            locale: 'en-GB',
         });
 
 		$component.append($subComponent);
@@ -1313,7 +1314,8 @@ var FormUtil = new function() {
                 format : isDateOnly ? 'YYYY-MM-DD' : (excludeTimeZone ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD HH:mm:ss ZZ'),
                 extraFormats: isDateOnly ? [] : [ 'YYYY-MM-DD HH:mm:ss' ],
                 useCurrent : false,
-                defaultDate : date
+                defaultDate : date,
+//                locale: 'en-GB',
             });
 		}
 

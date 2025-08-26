@@ -12,7 +12,7 @@ evaluationDependsOn(':lib-authentication')
 evaluationDependsOn(':lib-dbmigration')
 evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
-evaluationDependsOn(':test-ui-core')
+//evaluationDependsOn(':test-ui-core')
 evaluationDependsOn(':server-screening')
 
 apply from: '../build/javaproject.gradle'
@@ -43,7 +43,7 @@ dependencies {
             project(path: ':core-plugin-openbis'),
             project(path: ':server-data-store'),
             project(path: ':lib-transactional-file-system'),
-            project(path: ':test-ui-core', configuration: 'tests'),
+            //project(path: ':test-ui-core', configuration: 'tests'),
             'reflections:reflections:0.9.10',
             'fasterxml:jackson-core:2.9.10',
             'fasterxml:jackson-annotations:2.9.10',
@@ -52,8 +52,6 @@ dependencies {
             'selenium:selenium-java:3.141.59'
 
     testRuntimeFirst 'javax:servlet-api:4.0.1', 'reflections:reflections:0.9.10', 'apache:commons-lang3:3.14'
-
-    testRuntimeSecond 'google:gwt-user:2.4'
 
     externalDss project(':server-screening')
 

@@ -541,6 +541,7 @@ class OpenbisController(_Controller):
         if os.path.exists(self.asServicePropertiesFile):
             self.asProperties = util.readProperties(self.asServicePropertiesFile)
             self.asProperties['database.kind'] = self.databaseKind
+            self.asProperties['code-plugins.allowed-editing-users'] = '.*'
             self.asPropertiesModified = True
         self.dssServicePropertiesFile = "%s/servers/datastore_server/etc/service.properties" % installPath
         self.dssProperties = util.readProperties(self.dssServicePropertiesFile)

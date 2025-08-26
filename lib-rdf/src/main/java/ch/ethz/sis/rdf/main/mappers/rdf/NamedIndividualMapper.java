@@ -25,7 +25,7 @@ public class NamedIndividualMapper
         Map<String, List<VocabularyType>> groupedByCode = getVocabularyTypeListGroupedByType(model);
 
         List<VocabularyType> mergedList = groupedByCode.entrySet().stream().map(entry -> {
-            String code = entry.getKey().length() > 50 ? entry.getKey().substring(0, 49) : entry.getKey();
+            String code = getVocabEntryCode(entry.getKey());
             List<VocabularyTypeOption> mergedOptions = new ArrayList<>();
 
             entry.getValue().forEach(vocabularyType -> mergedOptions.addAll(vocabularyType.getOptions()));
@@ -38,6 +38,11 @@ public class NamedIndividualMapper
         //mergedList.forEach(System.out::println);
 
         return mergedList;
+    }
+
+    public static String getVocabEntryCode(String key)
+    {
+        return key.length() > 50 ? key.substring(0, 49) : key;
     }
 
     public static Map<String, List<VocabularyType>> getVocabularyTypeListGroupedByType(Model model)

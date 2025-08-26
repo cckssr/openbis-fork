@@ -1,6 +1,6 @@
 configurations.create('screeningApiJarExternalLibs')
 dependencies {
-    screeningApiJarExternalLibs 'google:gwt-user:2.4'
+    //screeningApiJarExternalLibs 'google:gwt-user:2.4'
 }
 
 task screeningApiJar(type: Jar) {
@@ -34,10 +34,10 @@ task screeningApiJar(type: Jar) {
         include "ch/systemsx/cisd/openbis/common/**/*.class"
     }
 
-    from zipTree(configurations.screeningApiJarExternalLibs.files.iterator().next()).matching {
-        include '**/com/google/gwt/user/client/rpc/IsSerializable.class'
-        include '**/com/google/gwt/user/client/rpc/SerializableException.class'
-    }
+//    from zipTree(configurations.screeningApiJarExternalLibs.files.iterator().next()).matching {
+//        // include '**/com/google/gwt/user/client/rpc/IsSerializable.class'
+//        // include '**/com/google/gwt/user/client/rpc/SerializableException.class'
+//    }
 
     manifest {
         attributes("Main-Class": "ch.systemsx.cisd.openbis.plugin.screening.client.api.v1.ScreeningClientApiTest",

@@ -1,23 +1,39 @@
 Inventory Of Materials And Methods
 ====
 
-The default Inventory contains two folders: **Materials** and **Methods**.
+The default Inventory contains three folders: **Materials**, **Methods**, **Publications**.
 
-These are used to organise respectively samples and materials of any type and lab protocols.
 
-Samples, materials and protocols are modelled in openBIS as **Objects.**
+![image info](img/201012-inventory-menu.png)
 
-In the **openBIS ELN-LIMS for life sciences**, the following Object types are provided:
+These are used to organise respectively:
 
-*Antibodies, Chemicals, Enzymes, Media, Solutions and Buffers, Plasmids, Plants, Oligos, RNAs, Bacteria, Cell lines, Flies, Yeasts, General protocols, PCR protocols, Western blotting protocols.*
+- **Materials**: samples and materials of any type used in the lab.
+- **Methods**: protocols and procedures that need to be shared with all lab members.
+- **Publications**: this folder contains the **Public Repositories** *Collection*, used to collect entries published in Zenodo or in the ETH Research Collection (for ETH users only). See [Data export](./docs/user-documentation/general-users/data-export.md).
 
-These Objects are organised in **Collections** in the **Materials** and **Methods** sections of the Inventory.
+Samples, materials and protocols are modelled in openBIS as *Objects*.
 
-![image](img/inventory-materials-life-sciences-1.png)
+For life sciences, following *Object* types are provided:
 
-![image](img/inventory-methods-life-sciences-2.png)
+ 
 
-The generic openBIS ELN-LIMS only has one predefined Object type for the Inventory, _General Protocol_, in the General Protocols Collection in the Methods folder. The Material folder is empty. Additional Object types and Collections must be created by an openBIS instance admin, based on the needs of the lab(s).
+    Antibodies, Chemicals, Enzymes, Media, Solutions and Buffers, Plasmids, Plants, Oligos, 
+    RNAs, Bacteria, Cell lines, Flies, Yeasts, General protocols, PCR protocols, Western blotting protocols.
+
+ 
+
+These *Objects* are organised in *Collections* in the **Materials** and
+**Methods** sections of the Inventory. See [ELN types](./docs/user-documentation/general-users/ELN-types.md).
+
+ 
+
+
+
+Additional *Object* types and the corresponding *Collections* must be
+created by the *Instance admin*, based on the needs of the lab.
+
+
 
  
 ## Customise Collection View
@@ -27,13 +43,13 @@ It is possible customise the view of *Collections* in the ELN.
 The default *Collection* can have a **Form View** or a **List View**.
 Depending on this selection, the collection view will be different.
 
-![image info](img/customize-collection-view.png)
+![image info](img/201012-collection-default-view-options.png)
 
 **Form View:** This shows the metadata of the *Collection* along with
 the table of objects. This view is useful when a user wants to see
 specific metadata for a *Collection*.
 
-![image info](img/collections-form-view-1024x575.png)
+![image info](img/201012-inventory-collection-form-view.png)
 
  
 
@@ -42,7 +58,7 @@ enable this by selecting **Show Objects** from the **More..** dropdown
 
  
 
-![image info](img/collection-form-view-show-objects.png)
+![image info](img/201012-collection-show-objects.png)
 
  
 
@@ -51,7 +67,7 @@ view, but only the table of objects is shown.
 
  
 
-![image info](img/collection-list-view-1024x408.png)
+![image info](img/201012-inventory-collection-list-view.png)
 
  
 
@@ -61,9 +77,9 @@ In this case a user would need to click on **More..**, and **Edit**
 
  
 
-![image info](img/collection-list-view-edit-collection.png)
+![image info](img/201012-edit-collection.png)
 
-Updated on April 25, 2023
+
  
 ## Register single entries in a Collection
 
@@ -75,16 +91,16 @@ should be followed to register any other *Object* in other
 *Collections*.
 
 1.  Click on the **Raw Samples** *Collection* folder in the main menu.
-2.  Click the **New Sample** in the main page
+2.  Click the **+Sample** in the main page
 3.  Fill in the form
 4.  **Save**
 
-Please note that the *Object type* shown in the **+New** button (in this
-case **Sample**), is what is defined as *default object type* for the
+Please note that the *Object type* shown in the **++** button (in this
+case **+ Sample**), is what is defined as *Default object type* for the
 *Collection*. If this is missing in the *Collection,* the button will
 not be present.
 
-![image info](img/register-single-entry-collection-button-1024x299.png)
+![image info](img/201012-new-sample-button-collection.png)
 
 To register a different object type in the Collection:
 
@@ -94,9 +110,9 @@ To register a different object type in the Collection:
 3.  Fill in the form
 4.  **Save**
 
-![image info](img/register-single-entry-collection-more-1024x300.png)
+![image info](img/201012-collection-more-new-object.png)
 
-Updated on April 25, 2023
+
  
 ## Batch register entries in a Collection
 
@@ -105,12 +121,10 @@ Updated on April 25, 2023
 It is possible to register several samples at once via file upload. Two
 methods are currently available:
 
-1.  Batch registration via Excel template file (XLS Batch Register
-    Objects)
-2.  Batch registration via TSV template file (TSV Batch Register
-    Objects)
+1.  Batch registration via Excel template file (XLS Batch Register Objects)
+2.  Batch registration via TSV template file (TSV Batch Register Objects)
 
-![image info](img/batch-register-entries-one-collection-1024x300.png)
+![image info](img/201012-collection-object-batch-registration.png)
 
 ```{warning}
 In openBIS versions prior to 20.10.6, the XLS batch registration is not
@@ -151,7 +165,7 @@ Excel file.
 Please note that codes are not case-sensitive, but labels are.
 
 Codes and labels of vocabulary terms can be seen under
-**Utilities -> Vocabulary Browser**.
+**Utilities -> Vocabulary Browser**, undet the **Tools** tab.
 
 #### Assign parents
 
@@ -244,7 +258,7 @@ together, as shown in the template provided above:
 The *old* batch register mode is being maintained for backward
 compatibility and will be phased out. 
 
-Updated on April 25, 2023
+
  
 ## Batch register entries in several Collections
 
@@ -253,7 +267,7 @@ Updated on April 25, 2023
 It is possible to batch register *Objects* that belong to different
 *Collections*.
 
-This can be done from the **Object Browser** page, under **Utilities**.
+This can be done from the **Object Browser** page, under **Utilities**, in the **Tools** tab.
 Two options are available:
 
 1.  **XLS Batch Register Objects**: batch registration via Excel
@@ -261,7 +275,7 @@ Two options are available:
 2.  **TSV Batch Register Objects**: batch registration via .tsv template
     file.
 
-![image info](img/batch-register-entries-object-browser.png)
+![image info](img/201012-object-browser-batch-registration.png)
 
 ### XLS Batch Register Objects
 
@@ -299,7 +313,7 @@ where identifiers can be automatically generated by openBIS.
 
 ![image info](img/Screenshot-tsv-file-batch-upload-1024x221.png)
 
-Updated on April 25, 2023
+
  
 ## Batch update entries in a Collection
 
@@ -318,7 +332,7 @@ objects simultaneously via batch update. This can be done in two ways:
     and the field(s) you want to update (e.g. **Source**), as shown
     below
 
-![image info](img/Batch-update-entries-one-collection-column-selection-1024x584.png)
+![image info](img/201012-collection-export-for-batch-update.png)
 
 3\. If you have several entries you can filter the table
 (see [Tables](./additional-functionalities.md#tables))
@@ -327,16 +341,16 @@ objects simultaneously via batch update. This can be done in two ways:
 Selected Columns; All pages/Current page/Selected rows** (depending on
 what you want to export)**.**
 
-![image info](img/export-tables-1024x419.png)
+![image info](img/201012-tables-export.png)
 
 5\. Modify the file you just exported and save it.
 
 6\. Select **XLS Batch Update Objects** from the **More..** dropdown
 
 
-![image info](img/collection-XLS-batch-update-menu.png)
+![image info](img/201012-XLS-batch-update.png)
 
-6\. Upload the file you saved before and click **Accept**. Your entries
+7\. Upload the file you saved before and click **Accept**. Your entries
 will be updated.
 
 **Note**: 
@@ -351,11 +365,11 @@ enter   
 
 ### TSV Batch Update Objects
 
-1.  Navigate to the relevant collection (e.g. **Raw Samples**).
+1. Navigate to the relevant collection (e.g. **Raw Samples**).
 
 2. Select **TSV** **Batch Update Objects** from the **More…** dropdown.
 
-![image info](img/collection-TSV-batch-update-menu.png)
+![image info](img/201012-TSV-batch-update.png)
 
 3. Select the relevant *Object* *type*, e.g. **Sample**
 
@@ -383,7 +397,7 @@ To delete a value/connection from openBIS one needs to enter
 ![image info](img/Screenshot-2022-10-13-at-15.59.01-1.png)
 **\_ \_DELETE\_ \_** into the corresponding cell in the file.
 
-Updated on April 25, 2023
+
  
 ## Batch update entries in several Collections
 
@@ -392,13 +406,13 @@ Updated on April 25, 2023
 It is possible to batch update *Objects* that belong to different
 *Collections*.
 
-This can be done from the **Object Browser** page, under **Utilities**.
+This can be done from the **Object Browser** page, under **Utilities**, in the **Tools** tab.
 Two options are available:
 
 1.  **XLS Batch Update Objects**: batch update via Excel template file.
 2.  **TSV Batch Update Objects**: batch update via .tsv template file.
 
-![image info](img/batch-register-entries-object-browser-1.png)
+![image info](img/201012-object-browser-batch-registration.png)
 
 ### XLS Batch Update Objects
 
@@ -439,76 +453,26 @@ are unique in openBIS, by providing them openBIS will know which
 
 ![image info](img/Screenshot-tsv-file-batch-upload-1024x221.png)
 
-Updated on April 25, 2023
+
  
-## Copy entries
-
-
- 
-To create a copy of an existing entry, select **Copy** from the
-**More..** drop down menu in the *Collection* page.
-
-![image info](img/copy-menu.png)
-
-  When an entry is copied, the user has the option to **link parents**,
-**copy children into the Parents’ collection** and **copy the comments
-log**.
-
-All these options are disabled by default.
-
-![image info](img/copy-entry.png)
-
-Updated on July 27, 2022
- 
-## Move entries to a different Collection
-
-
-
-You can move entries to a different *Collection* either from the e*ntry*
-form or from a *Collection* table.
-
-### Move from entry form
-
-To move entries to a different *Collection*, select **Move** from the
-**More…** drop down menu in the entry form.
-
-![image info](img/move-menu.png)
-
-You have the option to move to an existing *Collection* or to create a
-new *Collection*.
-
-![image info](img/move-options.png)
-
-### Move from Collection Table
-
-It is also possible to move objects from *Collection* tables. You can
-select one or multiple entries from a table and click on the **Move**
-button.
-
-Also in this case you can move to an existing *Collection* or create a
-new one.
-
-![image info](img/move-from-table-1-1024x412.png)
-
-Updated on July 27, 2022
 
 ## Register Protocols in the Methods Inventory
 
 Protocols are standard operating procedures (SOPs) used in the lab. If such procedures are in place, they should be organised in folders in the Methods Inventory which, by default, is accessible by all lab members.
 
-openBIS provides a General Protocol Object type that can be used. If different specific metadata is needed for protocols, new Object types can be created by an Instance admin in the admin UI and the corresponding Collections can be created in the ELN UI.
+openBIS provides a General Protocol *Object type* that can be used, if the Basic Default Types are enabled (see [ELN Types](./ELN-types.md)). If different specific metadata is needed for protocols, new *Object types can* be created by an Instance admin in the admin UI and the corresponding *Collections* can be created in the ELN UI.
 
 To register a new General Protocol in the General Protocols folder, follow these steps:
 
-1. Go to the General Protocols Collection in the Methods folder.
-2. Click the + New General Protocol button in the main page.
+1. Go to the **General Protocols Collection** in the **Methods** folder.
+2. Click the **+General Protocol** button in the main page.
 3. Fill in the relevant fields in the form or choose from available templates.
-4. Save
+4. **Save**
 
-![image info](img/register-protocol-1024x237.png)
+![image info](img/201012-inventory-new-general-protocol.png)
 
 ### LINKS TO SAMPLES, MATERIALS, OTHER PROTOCOLS
 
 When writing a protocol, it is possible to create links to samples, materials or other protocols stored in the Inventory. These are parent-child relationships in openBIS.
 
-Everything that is used in the protocol can be added as Parent of the protocol itself. This can be done as described fo Experimental Steps: [Add parents and children to Experimental Steps](./lab-notebook.md#add-parents-and-children-to-experimental-steps)
+Everything that is used in the protocol can be added as Parent of the protocol itself. This can be done as described in [Parent/child relationships](./parent-child-relationship.md).

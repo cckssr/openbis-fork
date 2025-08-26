@@ -41,16 +41,14 @@ check [screening_server] independentOf [other.client]
 
 # --------
 
-[screening_web_client] =  ${screening}.client.web.client.application.*
-[screening_web_shared] =  ${screening}.client.web.client.* excluding [screening_web_client]
+[screening_web_shared] =  ${screening}.client.web.client.*
 [screening_web_server] =  ${screening}.client.web.server.*
-check sets [screening_web_client] [screening_web_shared] [screening_web_server]
+check sets [screening_web_shared] [screening_web_server]
 
 layer s_web_shared = [screening_web_shared]
-layer s_web = [screening_web_server] [screening_web_client]
+layer s_web = [screening_web_server]
 
 check layeringOf s_web_shared s_web
-check [screening_web_client] independentOf [screening_server]
 
 # -------- check screening public API dependencies
 

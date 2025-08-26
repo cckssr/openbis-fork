@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.metadata.IUpdateMetaDataForEntityExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,9 @@ public class UpdateAuthorizationGroupExecutor
 
     @Autowired
     private IUpdateAuthorizationGroupUsersExecutor updateAuthorizationGroupUsersExecutor;
+
+    @Autowired
+    private IUpdateMetaDataForEntityExecutor<AuthorizationGroupUpdate, AuthorizationGroupPE> updateMetaDataExecutor;
     
     @Override
     protected IAuthorizationGroupId getId(AuthorizationGroupUpdate update)
@@ -94,6 +98,7 @@ public class UpdateAuthorizationGroupExecutor
             {
                 group.setDescription(update.getDescription().getValue());
             }
+            updateMetaDataExecutor.updateSpecific(update, group);
         }
     }
 

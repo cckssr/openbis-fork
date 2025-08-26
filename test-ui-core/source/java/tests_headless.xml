@@ -1,7 +1,0 @@
-<suite name="All" verbose="2" >
-  <test name="Headless" annotations="JDK">
-    <packages>
-      <package name="ch.systemsx.cisd.openbis.uitest.suite.headless.*" />
-    </packages>
-  </test>
-</suite>

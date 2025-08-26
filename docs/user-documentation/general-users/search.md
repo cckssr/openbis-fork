@@ -3,12 +3,11 @@
 ## Advanced search
 
 The **Advanced Search** can be accessed from the main menu, under
-**Utilities**. Alternatively, the advanced search can also be used after
+**Utilities** in the **Tools** tab. Alternatively, the advanced search can also be used after
 performing a global search (see
-[Search](./search.md)),
-to refine the obtained results.
+[Search](./search.md)), to refine the obtained results.
 
-![image info](img/advanced-search-navigation-menu-1024x448.png)
+![image info](img/201012-advanced-search.png)
 
 In the advanced search users can combine several search criteria using
 either the **AND** or **OR** operators. Users can choose to search for:
@@ -53,7 +52,7 @@ to restrict the search.
 
 Available **Field Types**:
 
-1.  **All**: search across all fields of all Experiments/Collections
+1.  **All**: search across all fields of all *Experiments/Collections*
 2.  **Property**: Can select a specific property to search on. This can
     be selected in the **Field Name**.
 
@@ -78,66 +77,65 @@ search.
 
 Available **Field Types**:
 
-1.  **All**: search across all fields of all Objects
+1.  **All**: search across all fields of all *Objects*.
 2.  **Property**: can select one or more specific properties to search
-    on. These can be selected in the **Field Name** (see above)
-3.  **Experiment/Collection**: search for Objects in a given
-    Experiment/Collection 
-4.  **Parent**: search for Objects that have the specified parents
-5.  **Children**: search for Objects that have the specified children
+    on. These can be selected in the **Field Name** (see above).
+3.  **Experiment/Collection**: search for *Objects* in a given
+    *Experiment/Collection*, 
+4.  **Parent**: search for *Objects* that have the specified parents.
+5.  **Children**: search for *Objects* that have the specified children.
 
 ![image info](img/adv-search-objects-1024x382.png)
 
 Also in this case, fields can be excluded from the search by selecting
-the NOT checkbox in the table.
+the **NOT** checkbox in the table.
 
 
 ### Search for: Dataset
 
 Available **Field Types**:
 
-1.  **All**: search across all fields of all Datasets
+1.  **All**: search across all fields of all *Datasets*.
 2.  **Property**: can select one or more specific properties to search
-    on. These can be selected in the **Field Name** (see above)
-3.  **Object**: search for Datasets in a given Object 
+    on. These can be selected in the **Field Name** (see above).
+3.  **Object**: search for Datasets in a given *Object*. 
 4.  **Experiment/Collection**: search for Datasets in a given
-    Experiment/Collection
+    *Experiment/Collection*.
 
 ![image info](img/adv-search-datasets-1024x349.png)
 
 Also in this case, fields can be excluded from the search by selecting
-the NOT checkbox in the table.
+the **NOT** checkbox in the table.
 
 ### Search for: specific Object Type (e.g Experimental Step)
 
 In this case, the available Field Types are the same as when searching
-for an Object.
+for an *Object*.
 
 Available **Field Types**:
 
-1.  **All**: search across all fields of the specific Object type (e.g.
-    Experimental Step)
+1.  **All**: search across all fields of the specific *Object type* (e.g.
+    Experimental Step).
 2.  **Property**: can select one or more specific properties to search
-    on. These can be selected in the **Field Name** (see above)
-3.  **Experiment/Collection**: search for Objects of the selected type
-    in a given Experiment/Collection 
-4.  **Parent**: search for Objects of the selected type that have the
-    specified parents
-5.  **Children**: search for Objects of the selected type that have the
-    specified children
+    on. These can be selected in the **Field Name** (see above).
+3.  **Experiment/Collection**: search for *Objects* of the selected type
+    in a given *Experiment/Collection*. 
+4.  **Parent**: search for *Objects* of the selected type that have the
+    specified parents.
+5.  **Children**: search for *Objects* of the selected type that have the
+    specified children.
 
 ![image info](img/adv-search-exp-step-1024x366.png)
 
 ### Search Collection
 
-It is possible to launch an advanced search limited to Objects of one
-Collection from a Collection page, by selecting **Search in Collection**
-from the **More** drop down. This redirects to the Advanced Search page
-where the Collection is already pre-defined.
+It is possible to launch an advanced search limited to *Objects* of one
+*Collection* from a *Collection* page, by selecting **Search in Collection**
+from the **More** drop down. This redirects to the **Advanced Search** page
+where the *Collection* is already pre-defined.
 
-![image info](img/search-in-collection-1024x378.png)
+![image info](img/201012-search-in-collection.png)
 
-Updated on July 5, 2023
 
 ## Search
   
@@ -148,50 +146,49 @@ Different types of searches are available from the main menu in openBIS:
 3.  Data Set Files Search
 4.  Advanced Search
 
-![image info](img/search-types-in-ELN-UI.png)
+![image info](img/201012-search-options.png)
 
 ### Global search
 
 This functionality, available from the main menu, performs a search
 across all database fields. Results are presented in a table in the
-**Advanced Search** page. The search can be also be further refined (see
-[Advanced
+**Advanced Search** page. The search can be also be further refined (see[Advanced
 search](./search.md#advanced-search)).
 
-![image info](img/general-search-1024x486.png)
+
+![image info](img/201012-global-search.png)
+
 
 ### BLAST search
 
 This performs a BLAST search over nucleotide sequences contained either
-in the **Sequence** property of an Object type (e.g Plasmid or Oligo) or
-in Datasets of type **SEQ\_FILES**. Results are shown in a table, sorted
+in the **Sequence** property of an *Object type* (e.g Plasmid or Oligo) or
+in *Datasets* of type **SEQ\_FILES**. Results are shown in a table, sorted
 by E-value.
 
 ### Data Set File search
 
 This search allows users to search across names of files stored in
-openBIS Datasets.
+openBIS *Datasets*.
 
 Please note that it is not possible to search the content of the files.
 
-In the example below, we search for files that contain “mass-loss” in
-the name, and we find 1 dataset that contains a file called
-mass-loss-data.csv.
+In the example below, we search for files that contain the word “screenshot” in
+the name, and we find 1 dataset that contains 1 file.
 
 By clicking on the table row that shows the Dataset containing the
 searched file, you will be redirected to the Dataset page.
 
-![image info](img/dataset-file-search-2-1024x292.png)
+![image info](img/201012-dataset-search.png)
 
-Updated on April 25, 2023
 
 ## Save and reuse searches
 
 It is possible to save and re-use searches created in the [Advanced
 search](./search.md#advanced-search).
-*Space* *admin* rights are required to save searches in a given Space.
+*Space* *admin* rights are required to save searches in a given *Space*.
 Searches can be used by anyone with *User* or *Observer* rights to a
-given Space.
+given *Space*.
 
 In the Advanced Search page, build your search criteria (see example
 below). To save the search, click the **Save** button and enter:
@@ -208,4 +205,4 @@ menu, at the top of the **Advanced Search** page.  
 
 ![image info](img/advanced-search-load-saved-query.png)
 
-Updated on July 28, 2022
+

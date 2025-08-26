@@ -335,7 +335,24 @@ public final class ExtendedProperties extends Properties
                 index = lastIndexOfPathDelimiter - 1;
             }
         }
+        if(result == null) {
+            result = getPropertyValueInOtherSources(key, result);
+        }
         return result == null ? null : expandValue(key, result, keys);
+    }
+
+    private String getPropertyValueInOtherSources(String key, String defaultValue) {
+        String result = System.getProperty(key);
+
+        if(result == null) {
+            result = System.getenv(key);
+        }
+
+        if(result != null) {
+            return result;
+        } else {
+            return defaultValue;
+        }
     }
 
     private void assertNoCyclicDependency(Set<String> keys, final String key)

@@ -23,6 +23,17 @@ var TabContentUtil = new function() {
 
     this._counter = 1000;
 
+    this.getExtraUtilityTabInfo = function(name, icon) {
+        var iconType = IconUtil.getNavigationIcon("CUSTOM", icon)
+        var icon = IconUtil.getIcon(iconType);
+        return {
+            label: name,
+            changed: false,
+            id: name + '-id',
+            icon: icon[0].outerHTML,
+        }
+    }
+
     this.getTopLevelTabInfo = function(name) {
         var iconType = IconUtil.getNavigationIcon(name)
         var icon = IconUtil.getIcon(iconType);

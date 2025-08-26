@@ -10,22 +10,22 @@ where openbis-xxx is the name of the server specified in the openBIS configurati
 When file based and/or LDAP authentication are used in openBIS, the login interface is as shown below. Users need to provide their username and password to login.
 Only registered users with assigned rights can login to openBIS.
 
-![](img/admin-regular-login.png)
+![](img/201012-admin-login.png)
 
 
 
 
-## SWITCHaai authentication
+## SSO authentication
 
-When SWITCHaai (SSO) authentication is used in addition to file based and/or LDAP authentication, the login interface is as shown below. 
+When SSO authentication, such as SWITCHaai or SWITCH Edu-ID, is used in addition to file based and/or LDAP authentication, the login interface is as shown below. 
 
-SWITCHaai is selected by default. In this case, users need to click on **Login** and they will be redirected to the SWITCHaai login page.
+SSO is selected by default. In this case, users need to click on **Login** and they will be redirected to the SWITCHaai/SWITCH Edu-ID login page.
 
-![](img/admin-login-SSO-1.png)
+![](img/201012-admin-login-SSO.png)
 
 If a user would like to authenticate with a file-based account or LDAP (depending on system configuration), they need to select **Default Login Service** from the dropdown and provide username and password.
 
-![](img/admin-login-SSO-2.png)
+![](img/201012-admin-login-SSO-dropdown.png)
 
 
-![](img/admin-login-SSO-3.png)
+![](img/201012-admin-login-default-authentication.png)

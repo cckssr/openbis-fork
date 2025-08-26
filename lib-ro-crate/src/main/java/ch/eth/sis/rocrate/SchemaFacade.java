@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SchemaFacade implements ISchemaFacade
 {
@@ -372,7 +373,11 @@ public class SchemaFacade implements ISchemaFacade
                     rdfsProperty.setOntologicalAnnotations(
                             parseMultiValued(entity, EQUIVALENT_CONCEPT));
 
-                    List<String> rawRange = parseMultiValued(entity, rangeIdentifier);
+                    List<String> rawRange =
+                            Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),
+                                    parseMultiValued(entity, "rangeIncludes").stream()).collect(
+                                    Collectors.toList());
+
 
                     List<IDataType> dataTypes = rawRange.stream()
                             .filter(LiteralType::isLiteralType)
@@ -388,8 +393,13 @@ public class SchemaFacade implements ISchemaFacade
                     dataTypes.stream().forEach(rdfsProperty::addDataType);
                     types.forEach(rdfsProperty::addType);
 
+                    Stream<String> domain =
+                            Stream.concat(parseMultiValued(entity, domainIdentifier).stream(),
+                                    parseMultiValued(entity, "domainIncludes").stream());
+
                     rdfsProperty.setDomainIncludes(
-                            parseMultiValued(entity, domainIdentifier).stream()
+
+                            domain
                                     .map(x -> resolvePrefixSingleValue(x))
                                     .map(idsToTypes::get).collect(
                                             Collectors.toList()));

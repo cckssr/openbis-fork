@@ -2,7 +2,7 @@ configurations.create('adminConsolePartialLibs')
 configurations.create('adminConsoleLibs')
 
 dependencies {
-    adminConsolePartialLibs 'google:gwt-user:2.4'
+    //adminConsolePartialLibs 'google:gwt-user:2.4'
 
     adminConsoleLibs 'sis:sis-base:23.06.0',
             'apache:httpclient:4.3.6',
@@ -52,10 +52,10 @@ task adminConsole(type: Jar) {
         include '**/*BuildAndEnvironmentInfo.class'
     }
 
-    from zipTree(configurations.adminConsolePartialLibs.files.iterator().next()).matching {
-        include '**/com/google/gwt/user/client/rpc/IsSerializable.class'
-        include '**/com/google/gwt/user/client/rpc/SerializableException.class'
-    }
+//    from zipTree(configurations.adminConsolePartialLibs.files.iterator().next()).matching {
+////        include '**/com/google/gwt/user/client/rpc/IsSerializable.class'
+////        include '**/com/google/gwt/user/client/rpc/SerializableException.class'
+//    }
 
     for (File f : configurations.adminConsoleLibs.files) {
         from zipTree(f).matching {

@@ -8,11 +8,11 @@
 
   
 The main menu can be customised from the **Settings**, under
-**Utilities**, to hide sections that are not needed by the lab.
+**Utilities**, in the **Tools** tab. This allows to hide sections that are not used by a lab.
 
  
 
-![image info](img/navigation-menu-settings.png)
+![image info](img/201012-navigation-menu-tools-settings.png)
 
  
 
@@ -84,16 +84,14 @@ The main menu can be customised from the **Settings**, under
 
 ## Lab Notebook menu
 
-It is also possible to customise which entities should be shown under
-*Experiments/Collections* in the main menu under the **Lab Notebook**
-section.
+It is also possible to customise which entities should be shown under the Lab Notebook menu.
 
 By default, only the *Object* types **Entry** and **Experimental Step**
 are shown (see picture below).
 
  
 
-![image info](img/settings-menu-shown-entities-in-menu.png)
+![image info](img/201012-EN-navigation-menu-objects.png)
 
  
 
@@ -121,4 +119,4 @@ the **Inventory** section, entries are never shown in the main menu,
 because inventories can potentially have thousands of entries, which are
 better visualised in tables, rather than in the main menu.
 
-Updated on April 26, 2023
+

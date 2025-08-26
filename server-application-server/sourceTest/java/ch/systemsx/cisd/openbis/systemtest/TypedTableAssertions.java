@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 
 import org.testng.AssertJUnit;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.TypedTableGrid;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.TypedTableGrid;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.GridRowModel;

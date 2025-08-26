@@ -12,7 +12,7 @@ var BarcodeUtil = new function() {
 
         if (_this.isValidBarcode(barcodeReader)) {
             var rules = {};
-            rules["UUIDv4-1"] = { type: "Property/Attribute", 	name: ["PROP." + profile.getInternalNamespacePrefix() + "BARCODE"], operator : "thatEqualsString", value: barcodeReader };
+            rules["UUIDv4-1"] = { type: "Property/Attribute", 	name: "PROP." + profile.getInternalNamespacePrefix() + "BARCODE", operator : "thatEqualsString", value: barcodeReader };
             rules["UUIDv4-2"] = { type: "Property/Attribute", 	name: "ATTR.PERM_ID",  operator : "thatEqualsString", value: barcodeReader };
 
             var criteria = {};

@@ -2,7 +2,7 @@ def includes11 = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-ja
                 'lib-db', 'lib-dbmigration', 'lib-messages-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-mail', 'lib-maintenance', 'lib-compress', 'lib-shuffling',
                 'lib-data-store-commonbase', 'lib-data-store-common', 'lib-hdf5', 'lib-hierarchical-content', 'lib-archiver-db', 'lib-archiver', 'lib-two-phase-transaction',
                 'server-application-server', 'server-original-data-store', 'server-screening',
-                'core-plugin-openbis', 'app-openbis-installer', 'lib-image-readers', 'test-ui-core',
+                'core-plugin-openbis', 'app-openbis-installer', 'lib-image-readers',
                 'test-api-openbis-javascript', 'server-external-data-store', 'ui-admin', 'lib-microservice-server',
                 'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
                 'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',

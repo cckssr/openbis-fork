@@ -54,3 +54,28 @@ tasks.register('buildRdfTool', Jar) {
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
 }
+
+
+tasks.register('buildRdfImport', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-rdf-import')
+    includeEmptyDirs = false
+
+    manifest {
+        attributes(
+                'Main-Class': 'BasicImport'
+        )
+    }
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}

@@ -1631,15 +1631,22 @@ public class AbstractTest extends SystemTestCase
         v3api.deleteSampleTypes(sessionToken, List.of(entityTypeIds), deletionOptions);
     }
 
+    protected EntityTypePermId createAnExperimentType(final String sessionToken, final boolean mandatory, final boolean unique,
+            final PropertyTypePermId... propertyTypes)
+    {
+        return createAnExperimentType(sessionToken, "EXPERIMENT-TYPE-" + System.currentTimeMillis(), mandatory, unique,
+                propertyTypes);
+    }
+
     protected EntityTypePermId createAnExperimentType(final String sessionToken, final boolean mandatory,
             final PropertyTypePermId... propertyTypes)
     {
-        return createAnExperimentType(sessionToken, "EXPERIMENT-TYPE-" + System.currentTimeMillis(), mandatory,
+        return createAnExperimentType(sessionToken, "EXPERIMENT-TYPE-" + System.currentTimeMillis(), mandatory, false,
                 propertyTypes);
     }
 
     protected EntityTypePermId createAnExperimentType(final String sessionToken, final String code,
-            final boolean mandatory, final PropertyTypePermId... propertyTypes)
+            final boolean mandatory, final boolean unique, final PropertyTypePermId... propertyTypes)
     {
         ExperimentTypeCreation creation = new ExperimentTypeCreation();
         creation.setCode(code);
@@ -1649,6 +1656,7 @@ public class AbstractTest extends SystemTestCase
             PropertyAssignmentCreation propertyAssignmentCreation = new PropertyAssignmentCreation();
             propertyAssignmentCreation.setPropertyTypeId(propertyType);
             propertyAssignmentCreation.setMandatory(mandatory);
+            propertyAssignmentCreation.setUnique(unique);
             assignments.add(propertyAssignmentCreation);
         }
         creation.setPropertyAssignments(assignments);

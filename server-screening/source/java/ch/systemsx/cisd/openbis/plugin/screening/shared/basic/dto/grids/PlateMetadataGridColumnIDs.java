@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.grids;
 
-import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.application.detailviewers.PlateMetadataBrowser;
+//import ch.systemsx.cisd.openbis.plugin.screening.client.web.client.application.detailviewers.PlateMetadataBrowser;
 
 /**
  * Defines IDs of {@link PlateMetadataBrowser}.

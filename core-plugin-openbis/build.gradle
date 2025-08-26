@@ -55,7 +55,6 @@ apply plugin: 'war'
 
 archivesBaseName = 'openBIS-server-standard-technologies'
 
-configurations.create('gwt')
 configurations.create('zipping')
 // TODO: find how configuration can be renamed into 'server-original-data-store'
 configurations.create('server_original_data_store')
@@ -72,8 +71,6 @@ def jettyDistributionVersion = '10.0.25'
 dependencies {
     api project(':server-screening')
 
-    providedCompile 'google:gwt-user:2.4'
-
     providedRuntime "eclipse:jetty-deploy:${jettyVersion}@jar",
             "eclipse:jetty-xml:${jettyVersion}@jar",
             "eclipse:jetty-webapp:${jettyVersion}@jar",
@@ -81,9 +78,6 @@ dependencies {
             "eclipse:jetty-security:${jettyVersion}@jar",
             "eclipse:jetty-server:${jettyVersion}@jar"
 
-
-    gwt 'reveregroup:gwt-image-loader:1.1.4',
-            'google:gwt-dev:2.4'
 
     zipping "eclipse:jetty-distribution:${jettyVersion}@zip"
 
@@ -121,9 +115,7 @@ dependencies {
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD',
             'springframework:spring-test:5.3.39'
-    testImplementation(project(path: ':server-application-server', configuration: 'tests')) {
-        exclude group: 'google', module: 'gwt-user'
-    }
+    testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     libOpenbisCommonJavadoc project(':lib-openbis-common')
     serverOriginalDataStoreJavadoc project(':server-original-data-store')
@@ -138,89 +130,21 @@ sourceSets {
     }
 }
 
-def gwtBuildDir = "${project.buildDir}/gwt"
-def gwtCacheBuildDir = "${project.buildDir}/gwt-unitCache"
-def gwtModuleName = 'ch.systemsx.cisd.openbis.OpenBIS'
-def gwtModuleBuildDir = "${gwtBuildDir}/${gwtModuleName}"
-def gwtArchivePath = 'resource'
-def javaVersion = System.getProperty("java.version")
-def isJdk21 = javaVersion.startsWith("21")
-def gwtArchiveFileName = isJdk21
-        ? 'gwtJDK21.tar.gz'
-        : 'gwt.tar.gz'
+def staticResourcesBuildDir = "${project.buildDir}/eln"
 
-task compileGwt(dependsOn: classes, type: JavaExec) {
-    ext.buildDir = gwtBuildDir
-    def extraDir = "${project.buildDir}/extra"
-
-    // inputs.source
-    sourceSets.main.java.srcDirs
-    // inputs.dir
-    sourceSets.main.output.resourcesDir
-    outputs.dir buildDir
-
-    doFirst {
-        file(buildDir).mkdirs()
-    }
-
-    mainClass = 'com.google.gwt.dev.Compiler'
-
-    classpath {
-        [
-                sourceSets.main.java.srcDirs,
-                project(":server-application-server").sourceSets.main.java.srcDirs,
-                project(":server-application-server").sourceSets.main.output.resourcesDir,
-                project(":server-application-server").sourceSets.main.output.classesDirs,
-                project(":server-application-server").sourceSets.main.compileClasspath,
-                project(":lib-common").sourceSets.main.java.srcDirs,
-                project(":api-openbis-java").sourceSets.main.java.srcDirs,
-                project(":server-screening").sourceSets.main.java.srcDirs,
-                project(":server-screening").sourceSets.main.output.resourcesDir,
-                configurations.gwt
-        ]
-    }
-
-    args =
-            [
-                    gwtModuleName,
-                    '-war', buildDir,
-                    '-logLevel', 'INFO',
-                    '-localWorkers', '2',
-                    '-compileReport',
-                    '-extra', extraDir,
-            ]
-
-    maxHeapSize = '1024m'
-
-    systemProperty "javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl"
-}
-
-task buildCoreUIPackageUsingJDK8(type: Tar, dependsOn: compileGwt) {
-    from gwtBuildDir
-    destinationDirectory = file(gwtArchivePath)
-    archiveFileName = gwtArchiveFileName
-    compression = Compression.GZIP
-    doLast { // Cleanup, the rest of the build should not use these
-        delete gwtBuildDir
-        delete gwtCacheBuildDir
-    }
-}
-
-task untarGwt(type: Copy) {
-    from tarTree(resources.gzip("${gwtArchivePath}/${gwtArchiveFileName}"))
-    into gwtBuildDir
-}
+def staticResourcesModuleName = 'staticResourcesEln'
+def staticResourcesModuleBuildDir = "${staticResourcesBuildDir}/${staticResourcesModuleName}"
+def staticResourcesArchivePath = 'resource'
 
 task copyOpenbisStaticResources(type: Copy) {
-    dependsOn 'untarGwt'
     from "${project(':server-application-server').projectDir}/source/java/ch/systemsx/cisd/openbis/public"
-    into gwtModuleBuildDir
+    into staticResourcesModuleBuildDir
 }
 
 task copyV3ApiResources(type: Copy, dependsOn: [copyOpenbisStaticResources, ':api-openbis-typescript:generateTypeScript', ':api-openbis-javascript:bundleOpenbisStaticResources']) {
     from("${project(':api-openbis-javascript').projectDir}/src/v3")
     from("${project(':api-data-store-server-javascript').projectDir}/src/js")
-    into "${gwtModuleBuildDir}/resources/api/v3"
+    into "${staticResourcesModuleBuildDir}/resources/api/v3"
 }
 
 ext.classpathEntries = files(
@@ -274,7 +198,7 @@ task checkFilesExist {
     }
 }
 
-war.dependsOn untarGwt
+//war.dependsOn untarGwt
 war.dependsOn copyOpenbisStaticResources
 war.dependsOn copyV3ApiResources
 war.dependsOn checkFilesExist
@@ -293,11 +217,11 @@ war {
         }
     }
 
-    from "${project.buildDir}/gwt/ch.systemsx.cisd.openbis.OpenBIS"
+    from "${project.buildDir}/eln/staticResourcesEln"
     from signedJarsFolder
     webXml = file('resource/server/web.xml')
     webInf {
-        from "${project.buildDir}/gwt/WEB-INF",
+        from "${project.buildDir}/eln/WEB-INF",
                 project(':server-application-server').file('resource/server/bis-common.xml'),
                 file('resource/server/spring-servlet.xml'),
                 file('resource/server/jetty-web.xml'),

@@ -1,7 +1,7 @@
 def includes = ['lib-common', 'lib-logging', 'lib-commonbase', 'lib-json', 'api-data-store-server-java',
  'lib-two-phase-transaction', 'api-openbis-java', 'api-openbis-javascript', 'lib-openbis-commonbase',
  'lib-data-store-commonbase', 'lib-hdf5', 'lib-compress', 'lib-mail', 'lib-maintenance', 'lib-hierarchical-content', 'lib-openbis-common',
- 'lib-db', 'lib-dbmigration', 'lib-authentication', 'api-data-store-server-javascript',
+ 'lib-db', 'lib-dbmigration', 'lib-messages-db', 'lib-openbis-messages', 'lib-authentication', 'api-data-store-server-javascript',
  'lib-pathinfo-db', 'lib-data-store-common', 'lib-pathinfo', 'lib-archiver-db', 'lib-archiver', 'lib-shuffling',
  'server-original-data-store', 'server-application-server'
 ]

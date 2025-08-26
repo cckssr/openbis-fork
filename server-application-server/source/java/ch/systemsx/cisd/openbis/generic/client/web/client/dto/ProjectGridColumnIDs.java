@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.project.ProjectGrid;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.project.ProjectGrid;
 
 /**
  * IDs of column of {@link ProjectGrid}.

@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.jstest.suite.dev;
 
 import ch.systemsx.cisd.openbis.jstest.page.OpenbisJsCommonWebapp;
 import ch.systemsx.cisd.openbis.jstest.suite.common.JsTestCommonSelenium;
-import ch.systemsx.cisd.openbis.uitest.layout.Location;
+import ch.systemsx.cisd.openbis.uitest.selenium.Location;
 
 /**
  * @author pkupczyk

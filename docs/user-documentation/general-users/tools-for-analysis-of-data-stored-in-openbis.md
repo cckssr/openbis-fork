@@ -4,8 +4,7 @@ Tools For Analysis Of Data Stored In Openbis
 ## Jupyter Notebooks
 
 
-
-  
+ 
 Jupyter notebooks are web applications that combine text, code and
 output ([https://jupyter.org/](https://jupyter.org/)). Jupyter supports
 over 40 programming languages.
@@ -34,10 +33,9 @@ Jupyter notebooks can be opened at every level of the openBIS hierarchy
 
  
 
-![image info](img/Screenshot-2020-05-29-at-09.31.49-300x202.png)
+![image info](img/201012-jupyter-notebook-more-dropdown.png)
 
  
-
 If you get a similar error as the one shown below when you try to launch
 a notebook from an entity, you need to start the JupyterHub server by
 going to the main menu **Utilities** -> **Jupyter Workspace**. This
@@ -53,12 +51,10 @@ the server. After this, you can open a notebook from any entity of the
 openBIS hierarchy as explained above (*Space, Project,
 Experiment/Collection, Object, Dataset*).
 
- 
+Jupyter notebooks can also be launched from the main menu, under
+**Utilities** in the **Tools** tab, as shown below.
 
- Jupyter notebooks can also be launched from the main menu, under
-**Utilities**, as shown below.
-
-![image info](img/jupyter-navigation-menu.png)
+![image info](img/201012-jupyter-notebooks-menu.png)
 
  
 
@@ -208,16 +204,12 @@ The JupyterLab openBIS extension is available from: [JupyterLab openBIS
 extension](https://www.npmjs.com/package/jupyterlab-openbis)
 
  
-
-Updated on April 25, 2023
  
 ## MATLAB toolbox
-
-
 
   
 The MATLAB toolbox for openBIS allows to access data stored in openBIS
 directly from MATALB. Full documentation can be found here: [MATLAB
 API](../../software-developer-documentation/apis/matlab-v3-api.md)
 
-Updated on April 17, 2023
+

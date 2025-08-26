@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
+// import ch.systemsx.cisd.openbis.generic.client.web.client.application.IViewContext;
 import ch.systemsx.cisd.openbis.generic.shared.basic.annotation.DoNotEscape;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DisplaySettings;
 

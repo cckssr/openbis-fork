@@ -1,7 +1,5 @@
 # Data archiving
 
-
-
  
 
 ## Dataset archiving
@@ -24,11 +22,7 @@ use the *Request or disallow archiving* button, as shown below.
 
  
 
-![image info](img/archiving-button.png)
-
- 
-
- 
+![image info](img/201012-dataset-menu-bar.png)
 
  
 
@@ -45,7 +39,6 @@ in a bundle, all other datasets will also be unarchived.
 ### Dataset archiving helper tool
 
  
-
 If you wish to archive multiple datasets, you can use the **Archiving
 Helper** tool under **Utilities** in the main menu. You can search for
 datasets and select multiple ones to be archived, by clicking the
@@ -53,7 +46,7 @@ datasets and select multiple ones to be archived, by clicking the
 
  
 
-![image info](img/archiving-helper-1024x529.png)
+![image info](img/201012-archiving-helper.png)
 
 It is possible to search datasets by size, by selecting *Property* in
 the **Field Type**, *Size (bytes)\[ATTR.SIZE\]*  in the **Field Name**
@@ -63,26 +56,22 @@ and the desired **Comparator Operator**, as shown below.
 
 ![image info](img/arciving-helper-search-by-size-1024x423.png)
 
+
+
 ## Dataset unarchiving
 
- 
-
-Once the dataset is archived on tapes, the button on the dataset page
+ Once the dataset is archived on tapes, the button on the dataset page
 changes to **Unarchive**, as shown below. Datasets can be unarchived by
 using this button.
 
  
 
-![image info](img/Unarchive.png)
-
- 
+![image info](img/201012-dataset-unarchive-button.png)
 
  
 
 
 ### Dataset unarchiving helper tool
-
- 
 
 To unarchive several datasets it is possible to use the **Unarchiving
 Helper** tool, under **Utilities** in the main menu, as shown below. You
@@ -90,7 +79,6 @@ can search for datasets and select multiple ones to be unarchived, using
 the **Unarchive** button on tope of the page.
 
  
+![image info](img/201012-unarchiving-helper.png)
 
-![image info](img/unarchiving-helper-1024x473.png)
 
-Updated on April 25, 2023

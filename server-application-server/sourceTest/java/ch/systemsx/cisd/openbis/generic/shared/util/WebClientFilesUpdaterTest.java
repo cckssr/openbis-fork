@@ -108,16 +108,17 @@ public final class WebClientFilesUpdaterTest extends AbstractFileSystemTestCase
                 FileUtils.readFileToString(openBISGwtXmlFile));
     }
 
-    @Test
-    public final void testUpdateClientPluginProvider() throws IOException
-    {
-        assertEquals(CLIENT_PLUGIN_PROVIDER_JAVA_FILE_CONTENT,
-                FileUtils.readFileToString(clientPluginProviderJavaFile));
-        filesUpdater.updateClientPluginProvider();
-        assertEquals("// Automatically generated part - START\n"
-                + "        registerPluginFactory(new ch.systemsx.cisd.openbis.plugin.demo."
-                + "client.web.client.application.ClientPluginFactory(originalViewContext));\n"
-                + "        // Automatically generated part - END\n",
-                FileUtils.readFileToString(clientPluginProviderJavaFile));
-    }
+//    Removed as part of GWT removal, no plugins can be added if there is no gwt
+//    @Test
+//    public final void testUpdateClientPluginProvider() throws IOException
+//    {
+//        assertEquals(CLIENT_PLUGIN_PROVIDER_JAVA_FILE_CONTENT,
+//                FileUtils.readFileToString(clientPluginProviderJavaFile));
+//        filesUpdater.updateClientPluginProvider();
+//        assertEquals("// Automatically generated part - START\n"
+//                + "        registerPluginFactory(new ch.systemsx.cisd.openbis.plugin.demo."
+//                + "client.web.client.application.ClientPluginFactory(originalViewContext));\n"
+//                + "        // Automatically generated part - END\n",
+//                FileUtils.readFileToString(clientPluginProviderJavaFile));
+//    }
 }

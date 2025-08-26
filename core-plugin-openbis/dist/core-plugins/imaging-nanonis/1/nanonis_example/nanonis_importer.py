@@ -131,7 +131,9 @@ def reorder_sxm_channels(channels, header):
 
 def create_sxm_dataset(openbis, experiment, file_path, sample=None):
     img = spm(file_path)
-    channels = [x['ChannelNickname'] for x in img.SignalsList]
+    # channels = [x['ChannelNickname'] for x in img.SignalsList]
+    channels = [x for x in img.signals]
+    # channels = [img.signals[x]['ChannelName'] for x in img.signals]
     header = img.header
 
     # Select default channel according to the measurement type
@@ -391,7 +393,7 @@ def _min_max_step(channel, data):
 
 def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experiment=None):
     assert experiment is not None or sample is not None, "Either sample or experiment needs to be provided!"
-    data = spm.importall(folder_path, file_prefix, 'spec')
+    data = spm.importall(folder_path, 'spec')
     if [] == data:
         raise ValueError(f"No nanonis .DAT files found in {folder_path}")
 
@@ -409,7 +411,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
             d.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S") if date_time is not None else datetime.now()
 
     data.sort(key=lambda da: da.date_time)
-    channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
+    # channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
+    # channels = list([set([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
 
@@ -588,7 +592,8 @@ def demo_sxm_flow(openbis, file_sxm, experiment=None, sample=None, permId=None):
 
     print(f'Computing preview for dataset: {perm_id}')
     img = spm(file_path)
-    channels = [x['ChannelNickname'] for x in img.SignalsList]
+    channels = [x for x in img.signals]
+
     header = img.header
 
     # Select default channel according to the measurement type
@@ -653,7 +658,8 @@ def demo_dat_flow(openbis, folder_path, permId=None):
 
     print(f'Computing previews for dataset: {perm_id}')
 
-    data = spm.importall(folder_path, '', 'spec')
+    # data = spm.importall(folder_path, '', 'spec')
+    data = spm.importall(folder_path,  'spec')
 
     for d in data:
         if d.type == 'scan':
@@ -667,7 +673,8 @@ def demo_dat_flow(openbis, folder_path, permId=None):
             d.date_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M:%S") if date_time is not None else datetime.now()
 
     data.sort(key=lambda da: da.date_time)
-    channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
+
+    channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
     channel_x = channels_x[0][0]

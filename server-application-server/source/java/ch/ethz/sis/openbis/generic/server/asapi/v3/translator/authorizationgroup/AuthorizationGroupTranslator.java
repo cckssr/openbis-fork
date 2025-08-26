@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -113,6 +114,7 @@ public class AuthorizationGroupTranslator extends AbstractCachingTranslator<Long
         group.setDescription(baseRecord.description);
         group.setRegistrationDate(baseRecord.registrationDate);
         group.setModificationDate(baseRecord.modificationDate);
+        group.setMetaData(CommonUtils.asMap(baseRecord.metaData));
         
         if (fetchOptions.hasRegistrator())
         {

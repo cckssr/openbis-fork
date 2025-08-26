@@ -7,7 +7,8 @@ When the eln-lims plugin is enabled the following types are installed by default
 
 ### Object types
 
-- General protocol
+- Entry
+- Folder
 - Storage
 - Storage position
 - Product
@@ -40,7 +41,7 @@ When the eln-lims plugin is enabled the following types are installed by default
 
 The following Object types are created if the **eln-lims-template-types** is enabled in core plugins. This can be enabled by a _system admin_ when openBIS is first installed (see [installation steps](docs/system-documentation/standalone/installation.md#installation-steps)) or at any time afterwards.
 
-- Entry
+- General protocol
 - Experimental Step
 - Default Experiment
 

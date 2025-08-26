@@ -246,6 +246,7 @@ public class RDFReader
                         if (Config.getINSTANCE().removeDanglingReferences())
                         {
                             valProperty.get().value = null;
+                            valProperty.get().valueURI = null;
 
                         }
                     }
@@ -642,7 +643,7 @@ public class RDFReader
                         CardinalityCheckResult.ResourceWithValues reference =
                                 new CardinalityCheckResult.ResourceWithValues(
                                         sampleObject.name, samplePropertyType.propertyLabel,
-                                        vals.stream().map(x -> x.getValue()).collect(
+                                        vals.stream().map(this::getResourceValue).collect(
                                                 Collectors.toSet()));
                         tooManyValues.add(reference);
                     }
@@ -651,7 +652,7 @@ public class RDFReader
                         CardinalityCheckResult.ResourceWithValues reference =
                                 new CardinalityCheckResult.ResourceWithValues(
                                         sampleObject.name, samplePropertyType.propertyLabel,
-                                        vals.stream().map(x -> x.getValue()).collect(
+                                        vals.stream().map(this::getResourceValue).collect(
                                                 Collectors.toSet()));
                         tooManyValues.add(reference);
                     }
@@ -695,6 +696,16 @@ public class RDFReader
         {
             System.out.println(a.resourceId + ", " + a.getPropertyLabel());
         }
+
+    }
+
+    String getResourceValue(SampleObjectProperty sampleObjectProperty)
+    {
+        if (sampleObjectProperty.valueURI != null)
+        {
+            return sampleObjectProperty.valueURI;
+        }
+        return sampleObjectProperty.value;
 
     }
 

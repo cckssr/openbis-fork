@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.script.ScriptGrid;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.script.ScriptGrid;
 
 /**
  * IDs of column of {@link ScriptGrid}.

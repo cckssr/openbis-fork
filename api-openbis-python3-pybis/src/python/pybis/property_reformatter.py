@@ -27,6 +27,7 @@ def is_of_openbis_supported_date_format(value):
         try:
             datetime.strptime(value, date_format)
             is_supported = True
+            break
         except ValueError:
             pass
     return is_supported
@@ -38,7 +39,9 @@ class PropertyReformatter:
 
     SUPPORTED_DATETIME_FORMATS = ["%Y-%m-%d", "%y-%m-%d",  # ShortDateFormat
                                   "%Y-%m-%d %H:%M", "%y-%m-%d %H:%M",  # NormalDateFormat
-                                  "%Y-%m-%d %H:%M:%S", "%y-%m-%d %H:%M:%S"]  # LongDateFormat
+                                  "%Y-%m-%d %H:%M:%S", "%y-%m-%d %H:%M:%S", # LongDateFormat
+                                  "%Y-%m-%d %H:%M:%S %z", "%y-%m-%d %H:%M:%S %z" # LongDateFormat with timezone
+                                  ]
 
     def __init__(self, openbis_obj):
         self.openbis = openbis_obj
@@ -53,7 +56,10 @@ class PropertyReformatter:
                 continue
             property_type = self.openbis.get_property_type(key)
             if property_type.dataType == 'TIMESTAMP':
-                properties[key] = self._format_timestamp(value)
+                if property_type.multiValue:
+                    properties[key] = [self._format_timestamp(x) for x in value]
+                else:
+                    properties[key] = self._format_timestamp(value)
             if property_type.dataType == 'SAMPLE':
                 if property_type.multiValue:
                     result = []

@@ -15,15 +15,13 @@
  */
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.update;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IMetaDataUpdateHolder;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.id.IAuthorizationGroupId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.FieldUpdateValue;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IObjectUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IUpdate;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.update.IdListUpdateValue;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.IPersonId;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 
@@ -31,7 +29,7 @@ import ch.systemsx.cisd.base.annotation.JsonObject;
  * @author Franz-Josef Elmer
  */
 @JsonObject("as.dto.authorizationgroup.update.AuthorizationGroupUpdate")
-public class AuthorizationGroupUpdate implements IUpdate, IObjectUpdate<IAuthorizationGroupId>
+public class AuthorizationGroupUpdate implements IMetaDataUpdateHolder, IObjectUpdate<IAuthorizationGroupId>
 {
     private static final long serialVersionUID = 1L;
 
@@ -43,6 +41,9 @@ public class AuthorizationGroupUpdate implements IUpdate, IObjectUpdate<IAuthori
 
     @JsonProperty
     private IdListUpdateValue<IPersonId> userIds = new IdListUpdateValue<IPersonId>();
+
+    @JsonProperty
+    private ListUpdateMapValues metaData = new ListUpdateMapValues();
 
     @Override
     @JsonIgnore
@@ -79,6 +80,13 @@ public class AuthorizationGroupUpdate implements IUpdate, IObjectUpdate<IAuthori
     public IdListUpdateValue<IPersonId> getUserIds()
     {
         return userIds;
+    }
+
+    @Override
+    @JsonIgnore
+    public ListUpdateMapValues getMetaData()
+    {
+        return metaData;
     }
 
     @Override

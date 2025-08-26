@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client;
 
 import java.util.List;
 
-import com.google.gwt.user.client.rpc.RemoteService;
+// import com.google.gwt.user.client.rpc.RemoteService;
 
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ApplicationInfo;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.SessionContext;
@@ -35,7 +35,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.displaysettings.IDispla
  * 
  * @author Christian Ribeaud
  */
-public interface IClientService extends RemoteService
+public interface IClientService
 {
 
     /**

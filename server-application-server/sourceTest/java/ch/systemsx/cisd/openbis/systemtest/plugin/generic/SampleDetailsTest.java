@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.commons.text.StringEscapeUtils;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.SampleBrowserTest;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.SampleBrowserTest;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DefaultResultSetConfig;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.GridRowModels;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.ListSampleDisplayCriteria;
@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ListSampleCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Sample;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SampleType;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.TableModelRowWithObject;
-import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.application.sample.GenericSampleViewerTest;
+//import ch.systemsx.cisd.openbis.plugin.generic.client.web.client.application.sample.GenericSampleViewerTest;
 
 /**
  * Headless system test counterpart to {@link GenericSampleViewerTest}. Not included:

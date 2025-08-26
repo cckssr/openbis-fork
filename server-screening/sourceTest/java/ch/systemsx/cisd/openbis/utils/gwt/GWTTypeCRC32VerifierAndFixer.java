@@ -17,8 +17,8 @@
 
 package ch.systemsx.cisd.openbis.utils.gwt;
 
-import com.google.gwt.user.server.rpc.impl.SerializabilityUtil;
-import com.google.gwt.user.server.rpc.impl.StandardSerializationPolicy;
+//import com.google.gwt.user.server.rpc.impl.SerializabilityUtil;
+//import com.google.gwt.user.server.rpc.impl.StandardSerializationPolicy;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -72,20 +72,22 @@ public class GWTTypeCRC32VerifierAndFixer
                 String oldSignature = matcher.group(3).trim();
                 classIdMap.put(className, oldSignature);
 
-                String newSignature = SerializabilityUtil.getSerializationSignature(
-                        clazz, new StandardSerializationPolicy(new HashMap<>(), new HashMap<>(), new HashMap<>())
-                );
+//                String newSignature = SerializabilityUtil.getSerializationSignature(
+//                        clazz, new StandardSerializationPolicy(new HashMap<>(), new HashMap<>(), new HashMap<>())
+//                );
 
-                if (!oldSignature.equals(newSignature)) {
-                    System.out.printf("%s expects(file): %s, but calculated: %s%n",
-                            className, oldSignature, newSignature);
-                    replaceSignatureInFiles(oldSignature, newSignature);
-                }
+//                if (!oldSignature.equals(newSignature)) {
+//                    System.out.printf("%s expects(file): %s, but calculated: %s%n",
+//                            className, oldSignature, newSignature);
+//                    replaceSignatureInFiles(oldSignature, newSignature);
+//                }
+
+                throw new RuntimeException("Removed com.google.gwt.user.server.rpc.impl.SerializabilityUtil ");
 
             } catch (ClassNotFoundException e) {
                 System.err.println("Class not found: " + className);
-            } catch (IOException e) {
-                throw new RuntimeException("File update failed for class: " + className, e);
+//            } catch (IOException e) {
+//                throw new RuntimeException("File update failed for class: " + className, e);
             } catch (Exception e) {
                 // Catch errors from serialization generation for non-compatible classes
                 System.err.println("Failed to compute signature for: " + className);

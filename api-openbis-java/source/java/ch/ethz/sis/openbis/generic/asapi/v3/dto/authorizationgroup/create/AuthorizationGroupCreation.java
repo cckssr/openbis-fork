@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup.create;
 
 import java.util.List;
+import java.util.Map;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.ObjectToString;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.create.ICreation;
@@ -36,6 +37,8 @@ public class AuthorizationGroupCreation implements ICreation, IObjectCreation
     private String description;
 
     private List<? extends IPersonId> userIds;
+
+    private Map<String, String> metaData;
 
     public String getCode()
     {
@@ -65,6 +68,16 @@ public class AuthorizationGroupCreation implements ICreation, IObjectCreation
     public void setUserIds(List<? extends IPersonId> users)
     {
         this.userIds = users;
+    }
+
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     @Override

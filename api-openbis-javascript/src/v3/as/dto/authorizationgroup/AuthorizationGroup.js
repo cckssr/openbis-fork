@@ -13,6 +13,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.registrationDate = null;
 		prototype.modificationDate = null;
 		prototype.registrator = null;
+		prototype.metaData = null;
 		prototype.getFetchOptions = function() {
 			return this.fetchOptions;
 		};
@@ -79,6 +80,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.setRegistrator = function(registrator) {
 			this.registrator = registrator;
 		};
+		prototype.getMetaData = function() {
+            return this.metaData;
+        };
+        prototype.setMetaData = function(metaData) {
+            this.metaData = metaData;
+        };
 	}, {
 		fetchOptions : "AuthorizationGroupFetchOptions",
 		permId : "AuthorizationGroupPermId",
@@ -92,7 +99,11 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		},
 		registrationDate : "Date",
 		modificationDate : "Date",
-		registrator : "Person"
+		registrator : "Person",
+		metaData: {
+            name: "Map",
+            arguments: ["String", "String"]
+        }
 	});
 	return AuthorizationGroup;
 })

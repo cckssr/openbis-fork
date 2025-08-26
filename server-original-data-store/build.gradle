@@ -15,9 +15,7 @@ configurations.create('datastoreExecRuntime')
 
 dependencies {
 
-    api(project(':server-application-server')) {
-        exclude group: 'google', module: 'gwt-user'
-    }
+    api(project(':server-application-server'))
 
     api project(':lib-commonbase'),
             project(':lib-common'),
@@ -97,17 +95,11 @@ dependencies {
             'fjelmer:classycle:1.4.2',
             'testng:testng:6.8-CISD'
 
-    testImplementation(project(path: ':server-application-server', configuration: 'tests')) {
-        exclude group: 'google', module: 'gwt-user'
-    }
+    testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     testRuntimeFirst 'javax:servlet-api:4.0.1'
-    testRuntimeSecond 'google:gwt-user:2.4'
 }
 
-configurations {
-    testRuntimeOnly.exclude group: 'google', module: 'gwt-servlet'
-}
 
 sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + configurations.testRuntimeSecond + sourceSets.test.runtimeClasspath
 

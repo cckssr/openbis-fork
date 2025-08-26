@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.sample.SampleBrowserGrid;
+// import ch.systemsx.cisd.openbis.generic.client.web.client.application.ui.sample.SampleBrowserGrid;
 
 /**
  * IDs of static columns of {@link SampleBrowserGrid}.

@@ -439,12 +439,10 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 
 		//Render Layout
 		renderer.layout(layout).run(g, svgG);
-		transition(d3.select('#svgMap-'+this._viewId))
-			.attr('width', containerWidth)
-			.attr('height', containerHeight);
-		
+		transition(d3.select('#svgMap-'+this._viewId));
+
 		//Zoom Function
-		d3.select('#svgMap-'+this._viewId).call(zoomFunc);
+		d3.select('#svgMapContainer-' + this._viewId).call(zoomFunc);
 	}
 	
 	this._makeSVG = function(tag, attrs) {
@@ -488,37 +486,17 @@ function SampleHierarchy(serverFacade, views, profile, sample) {
 		.translate(projection.translate)
 		.scale(projection.scale)
 		.on("zoom", move);
-	
+
 	function move() {
 		  var t = d3.event.translate,
 		      s = d3.event.scale;
-		  
 		  zoomFunc.translate(t);
 		  zoomFunc.scale(s);
 		  
 		  projection.translate = t; 
 		  projection.scale = s;
-		  
 		  d3.select('#svgMap-'+__this._viewId).attr('transform', 'translate(' + t + ') scale(' + s + ')');
 	}
-
-    this._move = function() {
-        var t = d3.event.translate,
-              s = d3.event.scale;
-
-          __this._zoomFunc.translate(t);
-          __this._zoomFunc.scale(s);
-
-          projection.translate = t;
-          projection.scale = s;
-
-          d3.select('#svgMap-'+__this._viewId).attr('transform', 'translate(' + t + ') scale(' + s + ')');
-    }
-
-    this._zoomFunc = d3.behavior.zoom()
-                        .translate(projection.translate)
-                        .scale(projection.scale)
-                        .on("zoom", __this._move);
 
 
 

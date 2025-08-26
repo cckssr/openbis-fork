@@ -371,6 +371,9 @@ var IconUtil = new function() {
             icon.type = "img";
             icon.url = "./img/folder-with-settings.svg";
 
+        } else if(type === "CUSTOM") {
+            icon.type = "font"
+            icon.class = optionalParameters
         }
 
         return icon;

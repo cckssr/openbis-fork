@@ -17,10 +17,7 @@ package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
 import static org.testng.Assert.assertEquals;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -58,6 +55,7 @@ public class CreateAuthorizationGroupTest extends AbstractTest
         newGroup.setCode("MY_TEST_GROUP");
         newGroup.setDescription("Testing");
         newGroup.setUserIds(Arrays.asList(new PersonPermId(TEST_OBSERVER_CISD), new Me()));
+        newGroup.setMetaData(Map.of("key", "value", "key2", "value2"));
 
         // When
         List<AuthorizationGroupPermId> groups = v3api.createAuthorizationGroups(sessionToken, Arrays.asList(newGroup));
@@ -74,6 +72,11 @@ public class CreateAuthorizationGroupTest extends AbstractTest
         List<Person> users = group.getUsers();
         Collections.sort(users, PERSON_COMPARATOR);
         assertEquals(users.toString(), "[Person observer_cisd, Person test]");
+        Map<String, String> meta = group.getMetaData();
+        assertEquals(meta.size(), 2);
+        assertEquals(meta.keySet(), Set.of("key", "key2"));
+        assertEquals(meta.get("key"), "value");
+        assertEquals(meta.get("key2"), "value2");
 
         v3api.logout(sessionToken);
     }

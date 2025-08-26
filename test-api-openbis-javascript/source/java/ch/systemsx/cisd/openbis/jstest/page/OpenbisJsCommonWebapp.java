@@ -17,11 +17,12 @@ package ch.systemsx.cisd.openbis.jstest.page;
 
 import java.util.concurrent.TimeUnit;
 
+import ch.systemsx.cisd.openbis.uitest.selenium.Locate;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import ch.systemsx.cisd.openbis.uitest.dsl.SeleniumTest;
-import ch.systemsx.cisd.openbis.uitest.webdriver.Locate;
+import ch.systemsx.cisd.openbis.uitest.selenium.SeleniumTest;
+
 
 /**
  * @author pkupczyk

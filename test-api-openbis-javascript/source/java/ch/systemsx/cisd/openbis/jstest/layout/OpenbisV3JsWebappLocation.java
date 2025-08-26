@@ -15,41 +15,62 @@
  */
 package ch.systemsx.cisd.openbis.jstest.layout;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
 import ch.systemsx.cisd.openbis.jstest.page.OpenbisJsCommonWebapp;
-import ch.systemsx.cisd.openbis.uitest.dsl.SeleniumTest;
-import ch.systemsx.cisd.openbis.uitest.layout.Location;
-import ch.systemsx.cisd.openbis.uitest.menu.TopBar;
-import ch.systemsx.cisd.openbis.uitest.menu.UtilitiesMenu;
-import ch.systemsx.cisd.openbis.uitest.webdriver.Pages;
+import ch.systemsx.cisd.openbis.uitest.selenium.Pages;
+import ch.systemsx.cisd.openbis.uitest.selenium.SeleniumTest;
+import ch.systemsx.cisd.openbis.uitest.selenium.UrlLocation;
+import org.openqa.selenium.WebDriver;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author pkupczyk
  */
-public class OpenbisV3JsWebappLocation implements Location<OpenbisJsCommonWebapp>
+public class OpenbisV3JsWebappLocation implements UrlLocation<OpenbisJsCommonWebapp>
 {
+    private String webappUrl;
 
     @Override
     public void moveTo(Pages pages)
     {
-        pages.load(TopBar.class).utilitiesMenu();
-        pages.load(UtilitiesMenu.class).openbisV3JsWebapp();
+        WebDriver driver = SeleniumTest.driver;
+        String currentUrl = driver.getCurrentUrl();
+
+        if (webappUrl == null)
+        {
+            try
+            {
+                //TODO check if this is always true
+                URL url = new URL(currentUrl);
+                String baseUrl = url.getProtocol() + "://" + url.getHost()
+                        + ((url.getPort() != -1) ? ":" + url.getPort() : "") + "/openbis/";
+                webappUrl = baseUrl + "webapp/openbis-v3-api-test/?webapp-code=openbis-v3-api-test";
+            }
+            catch (MalformedURLException e)
+            {
+                throw new RuntimeException("Failed to build webapp URL", e);
+            }
+        }
+
+        driver.get(webappUrl);
     }
 
     @Override
     public String getTabName()
     {
-        return "openbis-v3-api-test.js";
+        return null;
     }
 
     @Override
     public Class<OpenbisJsCommonWebapp> getPage()
     {
-        WebElement tabElement = SeleniumTest.driver.findElement(By.id("openbis_webapp_openbis-v3-api-test_tab"));
-        WebElement iframeElement = tabElement.findElement(By.tagName("iframe"));
-        SeleniumTest.driver.switchTo().frame(iframeElement);
         return OpenbisJsCommonWebapp.class;
+    }
+
+    @Override
+    public String getUrl()
+    {
+        return webappUrl;
     }
 }

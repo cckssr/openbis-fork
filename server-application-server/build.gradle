@@ -33,12 +33,9 @@ dependencies {
             'hibernate:hibernate-core:5.2.14.Final',
             'fasterxml:classmate:1.3.0',
             'eclipse:jetty-deploy:10.0.25',
-            'google:gwt-debug-panel:1.0',
             'javax.activation:activation:1.1.1',
             'javax:servlet-api:4.0.1',
             'javax:mail:1.6.2',
-            'google:gwt-user:2.4',
-            'reveregroup:gwt-image-loader:1.1.4',
             'springframework:spring-orm:5.3.39',
             'cisd:cisd-hotdeploy:13.01.0',
             'apache:poi-ooxml:3.17',
@@ -87,9 +84,6 @@ dependencies {
 
 sourceSets.test.runtimeClasspath = configurations.testRuntimeFirst + sourceSets.test.runtimeClasspath
 
-configurations {
-    testRuntime.exclude group: 'google', module: 'gwt-servlet'
-}
 
 sourceSets {
     main {
@@ -160,37 +154,6 @@ task testProjectSamplesEnabled(type: Test) {
     reports.html.destination = file("${project.buildDir}/reports/tests-project-samples")
 }
 
-// New task specifically for running individual tests from the IDE
-task ideTest(type: Test) {
-    description = "Runs individual tests from IDE without executing cleanDbSuite."
-    group = "verification" // Standard group for test tasks
-
-    // --- Configuration copied from 'test' or 'cleanDbSuite' tasks ---
-    // --- Adjust memory/settings if needed for single test runs ---
-    useTestNG()
-    systemProperty "ant.project.name", project.name
-    maxHeapSize = "1096m" // Maybe smaller than 'test', same as 'cleanDbSuite'? Adjust as needed.
-    jvmArgs += [
-            '-Duser.timezone=Europe/Zurich']
-    testLogging.showStandardStreams = true
-    // ignoreFailures = false // Default behavior: Fail the build on test failure
-
-    // --- Dependencies ---
-    // Ensure test data is available, like the main 'test' task requires
-    //dependsOn(copyTestData)
-    // IMPLICITLY depends on testClasses (compileTestJava, processTestResources)
-
-    // --- Classpath ---
-    // Use the same runtime classpath setup as the main 'test' task
-    // This ensures things like testRuntimeFirst are respected
-    classpath = sourceSets.test.runtimeClasspath
-
-    // --- IMPORTANT: NO dependsOn(cleanDbSuite) here! ---
-
-    // Optional: Define a separate report location if you want
-    // reports.html.destination = file("${project.buildDir}/reports/tests-ide")
-}
-
 // This task is here to make WebAppsPropertiesTest to work. It requires some data files
 // to be present on the same directory than the class file itself.
 task copyTestData(type: Copy, dependsOn: testClasses) {
@@ -225,4 +188,4 @@ test.jvmArgs += [
 test.dependsOn(copyTestData)
 test.dependsOn(cleanDbSuite)
 
-apply from: 'gwtdev.gradle'
+apply from: 'elndev.gradle'

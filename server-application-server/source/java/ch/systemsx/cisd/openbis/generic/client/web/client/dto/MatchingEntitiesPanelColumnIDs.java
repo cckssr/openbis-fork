@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.MatchingEntitiesPanel;
+// import ch.systemsx.cisd.openbis.generic.client.web.client.application.MatchingEntitiesPanel;
 
 /**
  * IDs of static columns of {@link MatchingEntitiesPanel}.

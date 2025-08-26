@@ -7,6 +7,7 @@ define([ "stjs" ], function(stjs) {
 		prototype.code = null;
 		prototype.description = null;
 		prototype.userIds = null;
+		prototype.metaData = null;
 
 		prototype.getCode = function() {
 			return this.code;
@@ -26,11 +27,21 @@ define([ "stjs" ], function(stjs) {
 		prototype.setUserIds = function(userIds) {
 			this.userIds = userIds;
 		};
+		prototype.getMetaData = function() {
+            return this.metaData;
+        };
+        prototype.setMetaData = function(metaData) {
+            this.metaData = metaData;
+        };
 	}, {
 		userIds : {
 			name : "List",
 			arguments : [ "Object" ]
-		}
+		},
+		metaData: {
+            name: "Map",
+            arguments: ["String", "String"]
+        }
 	});
 	return AuthorizationGroupCreation;
 })

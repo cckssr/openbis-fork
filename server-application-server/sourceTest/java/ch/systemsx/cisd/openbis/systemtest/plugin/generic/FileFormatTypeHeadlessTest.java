@@ -21,7 +21,7 @@ import static ch.systemsx.cisd.openbis.systemtest.TypedTableAssertions.assertTab
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.openbis.generic.client.web.client.application.FileFormatTypeGridTest;
+//import ch.systemsx.cisd.openbis.generic.client.web.client.application.FileFormatTypeGridTest;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.DefaultResultSetConfig;
 import ch.systemsx.cisd.openbis.generic.client.web.client.dto.TypedTableResultSet;
 import ch.systemsx.cisd.openbis.generic.shared.basic.Row;

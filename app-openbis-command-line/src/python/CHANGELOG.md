@@ -1,3 +1,7 @@
+# New in version 0.4.7
+
+* Minor fixes to git-annex related functionalities
+
 # New in version 0.4.6
 
 * Updated pybis dependency to version >= 1.37.2

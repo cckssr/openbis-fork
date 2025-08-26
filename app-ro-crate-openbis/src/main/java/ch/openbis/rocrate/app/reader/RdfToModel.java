@@ -401,6 +401,7 @@ public class RdfToModel
                 sample.getProperties().put(deRdfIdentifier(reference.getKey()),
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
+                                        .filter(Objects::nonNull)
                                         .map(x -> "/" + fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
                                         .collect(
                                                 Collectors.toList())));

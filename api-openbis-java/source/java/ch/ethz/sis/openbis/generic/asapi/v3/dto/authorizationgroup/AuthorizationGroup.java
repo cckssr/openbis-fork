@@ -18,6 +18,7 @@ package ch.ethz.sis.openbis.generic.asapi.v3.dto.authorizationgroup;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -71,6 +72,9 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
 
     @JsonProperty
     private List<RoleAssignment> roleAssignments;
+
+    @JsonProperty
+    private Map<String, String> metaData;
 
     @JsonIgnore
     public AuthorizationGroupFetchOptions getFetchOptions()
@@ -193,6 +197,17 @@ public class AuthorizationGroup implements Serializable, IPermIdHolder, ICodeHol
     public void setRoleAssignments(List<RoleAssignment> roleAssignments)
     {
         this.roleAssignments = roleAssignments;
+    }
+
+    @JsonIgnore
+    public Map<String, String> getMetaData()
+    {
+        return metaData;
+    }
+
+    public void setMetaData(Map<String, String> metaData)
+    {
+        this.metaData = metaData;
     }
 
     @Override
