@@ -1,5 +1,5 @@
 import openbis from '@srcV3/openbis.esm';
-import { EntityKind, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { EntityKind, Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormController } from '@src/js/components/database/new-forms/types/FormController';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
@@ -15,10 +15,10 @@ export class ProjectFormController implements FormController {
     this.openbisFacade = openbisFacade;
   }
 
-  async load(permId: string, entityKind?: string): Promise<Form> {
+  async load(permId: string, entityKind?: string, params?: any): Promise<Form> {
     console.log('ProjectFormController.load', permId, entityKind);
     if (entityKind === EntityKind.NEW_PROJECT) {
-      return ProjectFormModel.adaptNewProjectDtoToForm(permId);
+      return ProjectFormModel.adaptNewProjectDtoToForm(permId, params);
     }
     const { ProjectPermId, ProjectFetchOptions, ExperimentIdentifier, RightsFetchOptions } = this.openbisFacade;
     const id = new ProjectPermId(permId);
@@ -41,8 +41,24 @@ export class ProjectFormController implements FormController {
     return ProjectFormModel.adaptProjectDtoToForm(projectDto);
   }
 
-  async save(form: Form): Promise<number> {
-    return Promise.resolve(form.version + 1);
+  async save(form: Form, mode: FormMode): Promise<number> {
+    if (mode === FormMode.CREATE) {
+      console.log('ProjectFormController.save: CREATE');
+      const { ProjectIdentifier, ProjectCreation, SpacePermId } = this.openbisFacade;
+      const creation = new ProjectCreation();
+      creation.setCode(form.fields.find(field => field.label === 'Code')?.value as string);
+      creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
+      creation.setDescription(form.fields.find(field => field.label === 'Description')?.value as string);
+      const result = await this.openbisFacade.createProjects([creation]);
+      console.log('ProjectFormController.create', result);
+      //return result.length;
+      return Promise.resolve(form.version + 1);
+    } else if (mode === FormMode.EDIT) {
+      console.log('ProjectFormController.save: EDIT');
+    } else {
+      throw new Error(`Invalid form mode: ${mode}`);
+    }
+    //return Promise.resolve(form.version + 1);
   }
 
   async checkPermissions(form: Form) {

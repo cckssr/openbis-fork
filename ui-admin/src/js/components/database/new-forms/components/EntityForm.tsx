@@ -121,7 +121,6 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
     if (!field) return null;
     // Get the correct renderer component from the registry
     const FieldRenderer = FormEngineRegistry.getFieldRenderer(field.dataType);
-    console.log('field', field);
     if (!FieldRenderer) {
       return <div>Unsupported field type: {field.dataType}</div>;
     }
@@ -136,7 +135,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
   };
 
   return (
-    <div>
+    <>
       {renderToolbar()}
       {error && <div style={{ color: 'red' }}>Error: {error}</div>}
       {isSaving && <LoadingDialog loading={isSaving} />}
@@ -149,7 +148,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
             onCancel={() => setShowConflictDialog(false)}
           />
         )}
-    </div>
+    </>
   );
 };
 

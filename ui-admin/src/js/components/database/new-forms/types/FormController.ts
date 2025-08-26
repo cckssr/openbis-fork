@@ -1,4 +1,4 @@
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
 
 /**
  * Defines the contract for all entity-specific form controllers.
@@ -18,7 +18,7 @@ export interface FormController {
    * @param form The current form state.
    * @returns A promise that resolves with the new version of the entity.
    */
-  save(form: Form): Promise<number>;
+  save(form: Form, mode: FormMode): Promise<number>;
 
   /**
    * Checks the current user's permissions for various actions on the form's entity.

@@ -14,11 +14,11 @@ import { objectTypeToEntityKindMap } from '@src/js/components/database/new-forms
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
 
-export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, permId, initialMode, onEntityChange, onNewProject, onCloseForm }:
+export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, permId, initialMode, params, onEntityChange, onNewObject, onCloseForm }:
 	{
-		openbisFacade: any, entityKind: string, user: string, permId: string, initialMode: FormMode,
+		openbisFacade: any, entityKind: string, user: string, permId: string, initialMode: FormMode, params: any,
 		onEntityChange: (permId: string, isNew: boolean) => void,
-		onNewProject: () => void,
+		onNewObject: (newObjectType: string, fromId: string) => void,
 		onCloseForm: () => void
 	}) => {
 	const [form, setForm] = useState<Form | null>(null);
@@ -65,8 +65,9 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 	}, [permId, controller]);
 
 	const reloadForm = () => {
+		console.log('reloadForm', { permId }, { mappedEntityKind }, { params });
 		setLoading(true);
-		controller.load(permId, mappedEntityKind)
+		controller.load(permId, mappedEntityKind, params)
 			.then((loadedForm: Form) => {
 				setForm(loadedForm);
 				setInitialForm(loadedForm);
@@ -104,6 +105,7 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 	const handleAction = useCallback(async (actionName: string) => {
 		console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
 		const registeredActionHandler = FormEngineRegistry.getAction(actionName);
+		console.log(`[EntityFormContextProvider] Registered action handler: ${registeredActionHandler}`);
 		if (registeredActionHandler && form) {
 			const context: ActionContext = {
 				controller,
@@ -113,33 +115,34 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 				setMode,
 				permissions,
 				onAfterSave: () => {
+					console.log('onAfterSave');
 					// Reload or update state after save
 					setMode(FormMode.VIEW);
 					reloadForm();
 				},
 				openbisFacade,
-				onNewProject,
+				onNewObject,
 				onEntityChange,
 				closeForm: onCloseForm,
 				isAutoSaveEnabled,
 				setAutoSaveEnabled,
 			};
-
+			console.log(`[EntityFormContextProvider] Context: ${context}`);
 			// Special handling for actions that modify saving state
 			if (actionName.toLowerCase().includes('save')) {
 				setSaving(true);
 				setError(null);
-				try {
-					//await handler(context);
+				if (mode === FormMode.EDIT) {
+					console.log(`[EntityFormContextProvider] Invoking EDIT action handler: ${registeredActionHandler}`);
 					try {
 						const latestForm = await controller.load(form.entityPermId);
 						if (!conflictResolutionActive && checkModificationDateConflict(form, latestForm)) {
-						  // Use resolveConflicts to get merged fields with conflict info
-						  const conflicts = findConflicts(form, latestForm) as any[];
-				  
-						  setConflictFields(conflicts);
-						  setShowConflictDialog(true);
-						  return;
+							// Use resolveConflicts to get merged fields with conflict info
+							const conflicts = findConflicts(form, latestForm) as any[];
+
+							setConflictFields(conflicts);
+							setShowConflictDialog(true);
+							return;
 						}
 						// No conflicts, proceed to save
 						const newVersion = await registeredActionHandler(context); // await controller.save(form);
@@ -147,20 +150,30 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 						//setMode(FormMode.VIEW);
 						//setShowSuccess(true);
 						setConflictResolutionActive(false);
-						if (onEntityChange) onEntityChange(form.entityPermId, false);
+						//if (onEntityChange) onEntityChange(form.entityPermId, false);
 						if (context.onAfterSave) context.onAfterSave();
-					  } catch (error: any) {
+					} catch (error: any) {
 						if (error.status === 409) {
-						  const latestForm = await controller.load(form.entityPermId);
-						  resolveConflicts(form, latestForm);
+							const latestForm = await controller.load(form.entityPermId);
+							resolveConflicts(form, latestForm);
 						} else {
-						  console.error('Save failed:', error);
+							console.error('Save failed:', error);
+							setError(error.message);
 						}
-					  }
-				} catch (e: any) {
-					setError(e.message);
-				} finally {
+					} finally {
+						setSaving(false);
+					}
+				} else if (mode === FormMode.CREATE) {
+					console.log(`[EntityFormContextProvider] Invoking CREATE action handler: ${registeredActionHandler}`);
+					await registeredActionHandler(context);
 					setSaving(false);
+					/* try {
+						await registeredActionHandler(context);
+					} catch (e: any) {
+						setError(e.message);
+					} finally {
+						setSaving(false);
+					} */
 				}
 			} else if (actionName.toLowerCase().includes('edit')) {
 				try {
@@ -180,17 +193,17 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 		} else {
 			console.warn(`No action handler registered for '${actionName}'`);
 		}
-	}, [form, mode, permissions, openbisFacade, initialForm, onNewProject, onEntityChange]);
+	}, [form, mode, permissions, openbisFacade, initialForm, onNewObject, onEntityChange]);
 
 	const handleResolveConflicts = (resolved: Record<string, any>) => {
 		setForm(prevForm => {
 			if (!prevForm) return null;
 			return {
-			...prevForm,
-			fields: prevForm.fields.map(field =>
-				resolved.hasOwnProperty(field.id) ? { ...field, value: resolved[field.id] } : field
-			),
-		};
+				...prevForm,
+				fields: prevForm.fields.map(field =>
+					resolved.hasOwnProperty(field.id) ? { ...field, value: resolved[field.id] } : field
+				),
+			};
 		});
 		setShowConflictDialog(false);
 		setConflictResolutionActive(true);

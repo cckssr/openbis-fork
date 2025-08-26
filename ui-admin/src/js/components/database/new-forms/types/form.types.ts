@@ -127,7 +127,7 @@ export interface ActionContext {
   permissions: any;
   onAfterSave: () => void;
   openbisFacade: any; // Provide external dependencies
-  onNewProject: (spacePermId: string) => void;
+  onNewObject: (newObjectType: string, fromId: string) => void;
   onEntityChange: (permId: string, isNew: boolean) => void;
   closeForm: () => void;
   isAutoSaveEnabled: boolean;

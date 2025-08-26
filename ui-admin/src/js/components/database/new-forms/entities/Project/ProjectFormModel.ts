@@ -87,15 +87,15 @@ export class ProjectFormModel {
 		};
 	}
 	
-	static adaptNewProjectDtoToForm(spacePermId: string): Form {
-		const permId = spacePermId + '-newproject';
+	static adaptNewProjectDtoToForm(tmpPermId: string, params: any): Form {
+		const permId = tmpPermId + '-newproject';
 		return {
-			entityPermId: spacePermId,
+			entityPermId: tmpPermId,
 			entityType: 'NEWPROJECT',
 			title: `New Project`,
 			version: 1,
 			entityKind: 'NEWPROJECT',
-			meta: {},
+			meta: {spacePermId: params.parentId},
 			sections: [
 				{
 					section: FormSection.IDENTIFICATION_INFO,
@@ -111,8 +111,8 @@ export class ProjectFormModel {
 				},
 			],
 			fields: [
-				getCodeField({}, { readOnly: false, value: '', id: permId + '-code' }),
-				getDescriptionField({}, { column: 'center', value: '', id: permId + '-description' }),
+				getCodeField({permId:{permId:permId}}, { readOnly: false, value: '', id: permId + '-code' }),
+				getDescriptionField({permId:{permId:permId}}, { column: 'center', value: '', id: permId + '-description' }),
 			],
 			isDirty: false,
 			isValid: true,
@@ -144,12 +144,11 @@ export class ProjectFormModel {
 	}
 
 	static saveProjectAction = async (context: ActionContext) => {
-		const { form, openbisFacade, onAfterSave } = context;
-		console.log("Saving project:", form);
-		// Example of an API call
-		// await openbisFacade.updateProject(form.entityPermId, { ... });
-		await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async
-		console.log("Project saved successfully!");
+		console.log("Invoking saveProjectAction", context);
+		const { form, controller, onAfterSave, mode } = context;
+		await new Promise(resolve => setTimeout(resolve, 1000)); // to display the loading spinner
+		const newVersion = await controller.save(form, mode);
+		console.log("Project saved successfully! New version:", newVersion);
 		onAfterSave();
 	};
 }

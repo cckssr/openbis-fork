@@ -1,6 +1,7 @@
 import { ActionContext, Form, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
+import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
 
@@ -106,13 +107,12 @@ export class SpaceFormModel {
 	};
 
 	static newProjectAction = (context: ActionContext) => {
-		console.log("newProjectAction", context);
-		const { onNewProject, form } = context;
-		if (onNewProject) {
-			console.log("Invoking onNewProject callback...");
-			onNewProject(form.entityPermId);
+		const { onNewObject, form } = context;
+		if (onNewObject) {
+			console.log("Invoking onNewObject callback...");
+			onNewObject(objectType.NEW_PROJECT, form.entityPermId);
 		} else {
-			console.warn("onNewProject callback not provided to context.");
+			console.warn("onNewObject callback not provided to context.");
 		}
 	};
 }
