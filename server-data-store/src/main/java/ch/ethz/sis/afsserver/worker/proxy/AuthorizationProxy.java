@@ -122,6 +122,20 @@ public class AuthorizationProxy extends AbstractProxy {
         return nextProxy.free(owner, source);
     }
 
+    @Override
+    public String hash(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        validateUserRights(owner, source, IOUtils.readPermissions, OperationName.Hash);
+        return nextProxy.hash(owner, source);
+    }
+
+    @Override
+    public byte[] preview(@NonNull final String owner, @NonNull final String source) throws Exception
+    {
+        validateUserRights(owner, source, IOUtils.readPermissions, OperationName.Preview);
+        return nextProxy.preview(owner, source);
+    }
+
     //
     //
     //

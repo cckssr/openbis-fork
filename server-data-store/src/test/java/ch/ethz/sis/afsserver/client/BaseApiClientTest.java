@@ -26,15 +26,22 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.List;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.Chunk;
@@ -54,6 +61,12 @@ import ch.ethz.sis.afsapi.exception.ThrowableReason;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsserver.server.Server;
 import ch.ethz.sis.shared.io.IOUtils;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 public abstract class BaseApiClientTest
 {
@@ -1201,6 +1214,417 @@ public abstract class BaseApiClientTest
         Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
 
         afsClient.upload(Path.of("NON-EXISTING_LOCAL_PATH"), owner, Path.of("/uploads"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test
+    public void test_successful_checksums() throws Exception
+    {
+        login();
+
+        List<String> serverComputedChecksums = new ArrayList<>();
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+            serverComputedChecksums.add(afsClient.hash(owner, testFileName));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            afsClient.create(owner, subDirName, true);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                afsClient.create(owner, subsubDirName, true);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    afsClient.create(owner, testFileName, false);
+                    byte[] testFileContent;
+                    if(k != 4) {
+                        testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    } else {
+                        testFileContent = new byte[0];
+                    }
+                    afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+                    serverComputedChecksums.add(afsClient.hash(owner, testFileName));
+                }
+            }
+        }
+
+        int numberOfBigFiles = 3;
+        byte[][] bigFileSha256s = new byte[numberOfBigFiles][];
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            afsClient.create(owner, subDirName, true);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            int maxSize = 100000;
+            long j = 0;
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            while(j + getMaxUsableChunkSize() < maxSize) {
+                byte[] testFileContent = new byte[getMaxUsableChunkSize()];
+                Arrays.fill(testFileContent, (byte) j);
+                afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, j, testFileContent.length, testFileContent) });
+                messageDigest.update(testFileContent);
+                j += getMaxUsableChunkSize();
+            }
+            serverComputedChecksums.add(afsClient.hash(owner, testFileName));
+            bigFileSha256s[i] = messageDigest.digest();
+        }
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        List<String> locallyComputedChecksums = new ArrayList<>();
+        List<String> serverRecomputedChecksums = new ArrayList<>();
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            locallyComputedChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+            serverRecomputedChecksums.add(afsClient.hash(owner, testFileName));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+                    locallyComputedChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+                    serverRecomputedChecksums.add(afsClient.hash(owner, testFileName));
+                }
+            }
+        }
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            locallyComputedChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+            serverRecomputedChecksums.add(afsClient.hash(owner, testFileName));
+        }
+
+        Assert.assertEquals(locallyComputedChecksums, serverComputedChecksums);
+        Assert.assertEquals(serverComputedChecksums, serverRecomputedChecksums);
+
+        List<String> serverComputedNewChecksums = new ArrayList<>();
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("new_TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+            serverComputedNewChecksums.add(afsClient.hash(owner, testFileName));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    byte[] testFileContent;
+                    if(k != 4) {
+                        testFileContent = String.format("new_TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    } else {
+                        testFileContent = new byte[0];
+                    }
+                    afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+                    serverComputedNewChecksums.add(afsClient.hash(owner, testFileName));
+                }
+            }
+        }
+
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            int maxSize = 100000;
+            long j = 0;
+            while(j + getMaxUsableChunkSize() < maxSize) {
+                byte[] testFileContent = new byte[getMaxUsableChunkSize()];
+                Arrays.fill(testFileContent, (byte) (j + 1));
+                afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, j, testFileContent.length, testFileContent) });
+                j += getMaxUsableChunkSize();
+            }
+            serverComputedNewChecksums.add(afsClient.hash(owner, testFileName));
+        }
+
+        afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        List<String> locallyComputedNewChecksums = new ArrayList<>();
+        List<String> serverRecomputedNewChecksums = new ArrayList<>();
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            locallyComputedNewChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+            serverRecomputedNewChecksums.add(afsClient.hash(owner, testFileName));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/test_%s_%s_%s.txt", i, j, k);
+                    Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+                    locallyComputedNewChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+                    serverRecomputedNewChecksums.add(afsClient.hash(owner, testFileName));
+                }
+            }
+        }
+        for(int i = 0; i<numberOfBigFiles; i++) {
+            String subDirName = serverMainDirectory + String.format("/subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/bigfiletest_%s.txt", i);
+            Path filePath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY + testFileName).getPath());
+            locallyComputedNewChecksums.add(DigestUtils.md5Hex(new FileInputStream(filePath.toFile())));
+            serverRecomputedNewChecksums.add(afsClient.hash(owner, testFileName));
+        }
+
+        Assert.assertFalse(locallyComputedChecksums.equals(locallyComputedNewChecksums));
+        Assert.assertEquals(locallyComputedNewChecksums, serverComputedNewChecksums);
+        Assert.assertEquals(serverComputedNewChecksums, serverRecomputedNewChecksums);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void hash_with_failure_source_path_directory() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        afsClient.hash(owner, serverMainDirectory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void hash_with_failure_source_path_non_found() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        afsClient.hash(owner, serverMainDirectory + "/non-existent-file");
+    }
+
+    @Test()
+    public void preview_empty_for_non_image_file_extensions() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+        afsClient.create(owner, serverMainDirectory + "/example.txt", false);
+        afsClient.write(owner, serverMainDirectory + "/example.txt", 0L, new byte[] {'C', 'I', 'A', 'O', 1});
+        afsClient.create(owner, serverMainDirectory + "/example.json", false);
+        afsClient.write(owner, serverMainDirectory + "/example.json", 0L, new byte[] {'C', 'I', 'A', 'O', 2});
+        afsClient.create(owner, serverMainDirectory + "/example.csv", false);
+        afsClient.write(owner, serverMainDirectory + "/example.csv", 0L, new byte[] {'C', 'I', 'A', 'O', 3});
+        afsClient.create(owner, serverMainDirectory + "/example", false);
+        afsClient.write(owner, serverMainDirectory + "/example", 0L, new byte[] {'C', 'I', 'A', 'O', 4});
+
+        Assert.assertArrayEquals(new byte[0], afsClient.preview(owner, serverMainDirectory + "/example.txt"));
+        Assert.assertArrayEquals(new byte[0], afsClient.preview(owner, serverMainDirectory + "/example.json"));
+        Assert.assertArrayEquals(new byte[0], afsClient.preview(owner, serverMainDirectory + "/example.csv"));
+        Assert.assertArrayEquals(new byte[0], afsClient.preview(owner, serverMainDirectory + "/example"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void preview_with_failure_source_path_directory() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        afsClient.preview(owner, serverMainDirectory);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void preview_with_failure_source_path_non_found() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+
+        afsClient.preview(owner, serverMainDirectory + "/non-existent-file");
+    }
+
+    @Test()
+    public void preview_success_source_path_image() throws Exception
+    {
+        for ( String extension: List.of("tiff", "gif", "jpg", "jpeg", "png", "bmp")) {
+            final URL resource = getClass().getClassLoader().getResource("ch/ethz/sis/afsserver/client/image_example." + extension);
+            final java.io.File file = new java.io.File(resource.toURI());
+
+            BufferedImage originalImage = ImageIO.read(file);
+            int originalWidth = originalImage.getWidth();
+            int originalHeight = originalImage.getHeight();
+            long originalFileSize = Files.size(file.toPath());
+            double originalRatio = ((double) originalWidth) / ((double) originalHeight);
+            String originalContentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
+
+            login();
+
+            String serverMainDirectory = "/tobedownloaded";
+            String imageServerFileName = serverMainDirectory + "/image_example." + extension;
+            try {
+                afsClient.create(owner, serverMainDirectory, true);
+            } catch (Exception e) {}
+            afsClient.upload(Path.of(resource.getPath()), owner, Path.of(serverMainDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+            byte[] previewBytes = afsClient.preview(owner, imageServerFileName);
+            BufferedImage previewImage = ImageIO.read(new ByteArrayInputStream(previewBytes));
+            int previewWidth = previewImage.getWidth();
+            int previewHeight = previewImage.getHeight();
+            long previewFileSize = previewBytes.length;
+            double previewRatio = ((double) previewWidth) / ((double) previewHeight);
+            String previewContentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(previewBytes));
+
+            Assert.assertEquals(extension.equals("bmp") ? null : ( "image/" + (extension.equals("jpg") ? "jpeg" : extension)), originalContentType);
+            Assert.assertEquals("image/jpeg", previewContentType);
+            Assert.assertTrue(previewFileSize < originalFileSize);
+            Assert.assertTrue(previewWidth <= originalWidth);
+            Assert.assertTrue(previewHeight <= originalHeight);
+            Assert.assertEquals(previewRatio, originalRatio, 0.01);
+
+            byte[] repeatedPreviewBytes = afsClient.preview(owner, imageServerFileName);
+            Assert.assertArrayEquals(previewBytes, repeatedPreviewBytes);
+        }
+    }
+
+    @Test()
+    public void preview_changes_when_source_content_is_modified() throws Exception
+    {
+        final URL resource = getClass().getClassLoader().getResource("ch/ethz/sis/afsserver/client/image_example.jpeg");
+        final java.io.File file = new java.io.File(resource.toURI());
+
+        BufferedImage originalImage = ImageIO.read(file);
+
+        //Resize original image
+        Image scaledImage = originalImage.getScaledInstance(10, 10, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(scaledImage, 0, 0, null);
+        g2d.dispose();
+        // Compress to JPEG with lower quality
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+        writer.setOutput(ios);
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        if (param.canWriteCompressed()) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(0.5f); // Quality: 0.0 (lowest) to 1.0 (highest)
+        }
+        writer.write(null, new IIOImage(resizedImage, null, null), param);
+        writer.dispose();
+        ios.close();
+
+        byte[] changedOriginalImage = baos.toByteArray();
+        String newName = "changed_example_image.jpeg";
+        Path changedImagePath = file.toPath().getParent().resolve(newName);
+        Files.write(changedImagePath, changedOriginalImage, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        String imageServerFileName = serverMainDirectory + "/image_example.jpeg";
+        try {
+            afsClient.create(owner, serverMainDirectory, true);
+        } catch (Exception e) {}
+        afsClient.upload(Path.of(resource.getPath()), owner, Path.of(serverMainDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        byte[] previewBytes = afsClient.preview(owner, imageServerFileName);
+
+        afsClient.upload(changedImagePath, owner, Path.of(serverMainDirectory).resolve("image_example.jpeg"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        byte[] newPreviewBytes = afsClient.preview(owner, imageServerFileName);
+
+        Assert.assertFalse(Arrays.equals(previewBytes, newPreviewBytes));
+    }
+
+
+    @Test()
+    public void preview_from_image_with_big_dimensions() throws Exception
+    {
+        final URL resource = getClass().getClassLoader().getResource("ch/ethz/sis/afsserver/client/image_example.jpeg");
+        final java.io.File file = new java.io.File(resource.toURI());
+        BufferedImage initialImageToBeStretched = ImageIO.read(file);
+
+        //Resize original image
+        int originalWidth = 3000;
+        int originalHeight = 2500;
+        Image scaledImage = initialImageToBeStretched.getScaledInstance(originalWidth, originalHeight, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(originalWidth, originalHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(scaledImage, 0, 0, null);
+        g2d.dispose();
+        // Compress to JPEG with lower quality
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageOutputStream ios = ImageIO.createImageOutputStream(baos);
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpg").next();
+        writer.setOutput(ios);
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        if (param.canWriteCompressed()) {
+            param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            param.setCompressionQuality(0.5f); // Quality: 0.0 (lowest) to 1.0 (highest)
+        }
+        writer.write(null, new IIOImage(resizedImage, null, null), param);
+        writer.dispose();
+        ios.close();
+
+        byte[] changedOriginalImage = baos.toByteArray();
+        String newName =  "stretched_image.jpeg";
+        Path changedImagePath = file.toPath().getParent().resolve(newName);
+        Files.write(changedImagePath, changedOriginalImage, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+        long originalFileSize = Files.size(changedImagePath);
+        double originalRatio = ((double) originalWidth) / ((double) originalHeight);
+
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        String imageServerFileName = serverMainDirectory + "/" + newName;
+        try {
+            afsClient.create(owner, serverMainDirectory, true);
+        } catch (Exception e) {}
+        afsClient.upload(changedImagePath, owner, Path.of(serverMainDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        byte[] previewBytes = afsClient.preview(owner, imageServerFileName);
+
+        BufferedImage previewImage = ImageIO.read(new ByteArrayInputStream(previewBytes));
+        int previewWidth = previewImage.getWidth();
+        int previewHeight = previewImage.getHeight();
+        long previewFileSize = previewBytes.length;
+        double previewRatio = ((double) previewWidth) / ((double) previewHeight);
+
+        Assert.assertTrue(previewFileSize < originalFileSize);
+        Assert.assertTrue(previewWidth <= 1980);
+        Assert.assertTrue(previewHeight <= 1980);
+        Assert.assertEquals(previewRatio, originalRatio, 0.01);
+    }
+
+    @Test()
+    public void preview_from_image_file_with_wrong_content() throws Exception
+    {
+        byte[] wrongContent = "NOT_JPEG".getBytes(StandardCharsets.UTF_8);
+        String newName =  "wrong_image.jpeg";
+        final URL resource = getClass().getClassLoader().getResource("ch/ethz/sis/afsserver/client/");
+        final java.io.File file = new java.io.File(resource.toURI());
+        Path wrongImagePath = file.toPath().resolve(newName);
+        Files.write(wrongImagePath, wrongContent, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        String imageServerFileName = serverMainDirectory + "/" + newName;
+        try {
+            afsClient.create(owner, serverMainDirectory, true);
+        } catch (Exception e) {}
+        afsClient.upload(wrongImagePath, owner, Path.of(serverMainDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        byte[] previewBytes = afsClient.preview(owner, imageServerFileName);
+
+        Assert.assertArrayEquals(new byte[0], previewBytes);
     }
 
     protected String login() throws Exception

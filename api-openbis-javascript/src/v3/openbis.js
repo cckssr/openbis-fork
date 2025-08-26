@@ -656,6 +656,36 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
             }
 		}
 
+        this.hash = function(owner, source){
+            if(asFacade._private.transactionId){
+                return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
+                    data : {
+                        "method" : "hash",
+                        "params" : [ owner, source ]
+                    }
+                })  // return string promise
+            }else{
+                afsServer.useSession(asFacade._private.sessionToken)
+                const {promise} = afsServer.hash(owner, source);
+                return promise; // return string promise
+            }
+        }
+
+        this.preview = function(owner, source){
+            if(asFacade._private.transactionId){
+                return asFacade._private.ajaxRequestTransactional(afsServerTransactionParticipantId, {
+                    data : {
+                        "method" : "preview",
+                        "params" : [ owner, source ]
+                    }
+                }).then( previewAsB64String => new Blob ( [ AfsServer.prototype.Private.Base64.base64ToBytes(previewAsB64String) ] )) // return blob promise
+            }else{
+                afsServer.useSession(asFacade._private.sessionToken)
+                const {promise} = afsServer.preview(owner, source);
+                return promise; // return blob promise
+            }
+        }
+
 	}
 
 	var facade = function(asUrl, afsUrl) {

@@ -617,6 +617,48 @@ DataStoreServer.prototype.free = function(owner, source){
 }
 
 /**
+ * Get MD5 checksum (as hexadecimal lowercase string, such as: 48e1b59ac378e3f3098bbc0de9c19b9c) of AFS-server file, given owner and source
+ */
+DataStoreServer.prototype.hash = function(owner, source){
+	const data =  this.fillCommonParameters({
+		"method": "hash",
+		"owner" :  owner,
+		"source":  source,
+	});
+	const {promise, abortFn} = this._internal.sendHttpRequestAbortable(
+		"GET",
+		"application/octet-stream",
+		this._internal.buildGetUrl(data),
+		{}
+	)
+    return {
+        promise : promise, // string promise
+        abortFn
+    };
+}
+
+/**
+ * Get preview (JPEG smaller version of image): supported for a list of whitelisted image file-type extensions
+ */
+DataStoreServer.prototype.preview = function(owner, source){
+	const data =  this.fillCommonParameters({
+		"method": "preview",
+		"owner" :  owner,
+		"source":  source,
+	});
+	const {promise, abortFn} = this._internal.sendHttpRequestAbortable(
+		"GET",
+		"application/octet-stream",
+		this._internal.buildGetUrl(data),
+		{}
+	)
+    return {
+        promise : promise, // Return JPEG image as Blob
+        abortFn
+    };
+}
+
+/**
  * ==================================================================================
  * ch.ethz.sis.afsapi.api.TwoPhaseTransactionAPI methods
  * ==================================================================================
