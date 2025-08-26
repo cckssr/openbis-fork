@@ -66,7 +66,7 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.PROJECT
   }),
-  NEW_PROJECT: new Route('/new-project/:id', {
+  NEW_PROJECT: new Route('/new-project/:parentId/:id', {
     page: pages.DATABASE,
     type: objectTypes.NEW_PROJECT
   }),
@@ -266,6 +266,7 @@ const routes = {
 }
 
 function format(params) {
+  console.log('Routes.format', {params});
   let keys = Object.keys(routes)
   let best = { specificity: 0, path: null }
 
@@ -278,9 +279,10 @@ function format(params) {
       }
     } catch (err) {
       // ignore problems with incorrect params
+      console.log('Routes.format', {err});
     }
   }
-
+  console.log('Routes.format', {best});
   return best.path
 }
 

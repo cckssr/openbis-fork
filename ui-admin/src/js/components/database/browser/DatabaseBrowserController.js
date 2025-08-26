@@ -36,7 +36,8 @@ export default class DatabaseBrowserController extends BrowserController {
       AppController.getInstance().objectOpen(
         pages.DATABASE,
         object.type,
-        object.id
+        object.id,
+        object.params
       )
     }
   }

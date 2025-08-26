@@ -32,5 +32,6 @@ class DatabaseBrowser extends React.Component {
 }
 
 export default AppController.getInstance().withState(() => ({
-  selectedObject: AppController.getInstance().getSelectedObject(pages.DATABASE)
+  selectedObject: AppController.getInstance().getSelectedObject(pages.DATABASE),
+  thelastObjectModifications: AppController.getInstance().getLastObjectModifications()
 }))(DatabaseBrowser)

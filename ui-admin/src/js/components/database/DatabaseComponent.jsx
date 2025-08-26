@@ -4,7 +4,6 @@ import AppController from '@src/js/components/AppController.js'
 import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx'
 import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import logger from '@src/js/common/logger.js'
 import constants from '@src/js/components/common/imaging/constants.js'
 import pages from '@src/js/common/consts/pages'
@@ -43,7 +42,7 @@ class DatabaseComponent extends React.PureComponent {
   async componentDidMount() {
     try {
       const { object } = this.props
-      console.log(this.props);
+      console.log('DatabaseComponent.componentDidMount', this.props);
       let json = {}
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
@@ -107,7 +106,7 @@ class DatabaseComponent extends React.PureComponent {
   datasetOpenTab(id) {
     AppController.getInstance().objectOpen(
       pages.DATABASE,
-      objectTypes.DATA_SET,
+      objectType.DATA_SET,
       id
     )
   }
@@ -116,7 +115,7 @@ class DatabaseComponent extends React.PureComponent {
     console.log('imagingDatasetChange', { id }, { changed });
     AppController.getInstance().objectChange(
       pages.DATABASE,
-      objectTypes.DATA_SET,
+      objectType.DATA_SET,
       id,
       changed
     )
@@ -231,28 +230,21 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   spaceChange(id, changed) {
-    console.log('spaceChange', id, changed);
+    console.log('DatabaseComponent.spaceChange', id, changed);
     AppController.getInstance().objectChange(
       pages.DATABASE,
-      objectTypes.SPACE,
+      objectType.SPACE,
       id,
       changed
     )
   }
 
-  createProject(spacePermId) {
-    console.log('createProject for space: ', spacePermId);
-    /* AppController.getInstance().objectNew( 
+  createNewObject(newObjectType, fromObjectType, fromId) {
+    console.log('DatabaseComponent.createNewObject', newObjectType, fromObjectType, fromId);
+    AppController.getInstance().objectNew( 
       pages.DATABASE,
-      objectTypes.NEW_PROJECT,
-      { spacePermId }
-    ) */
-    AppController.getInstance().objectCreate(
-      pages.DATABASE,
-      objectTypes.SPACE,
-      spacePermId,
-      objectTypes.NEW_PROJECT,
-      1
+      newObjectType,
+      { parentId: fromId, parentType: fromObjectType }
     )
   }
 
@@ -260,21 +252,22 @@ class DatabaseComponent extends React.PureComponent {
     console.log('closeForm for space: ', spacePermId);
     AppController.getInstance().objectClose(
       pages.DATABASE,
-      objectTypes.NEW_PROJECT,
+      objectType.NEW_PROJECT,
       spacePermId
     )
   }
 
   renderJson() {
     const { object } = this.props
-
+    console.log('DatabaseComponent.renderJson', {object});
     return (<EntityFormContextProvider openbisFacade={openbis}
+      params={object.params}
       entityKind={object.type}
       permId={object.id}
       user={AppController.getInstance().getUser()}
       initialMode={String(object.type).includes('new') ? 'create' : 'view'}
       onEntityChange={this.spaceChange}
-      onNewProject={(spacePermId) => this.createProject(spacePermId)}
+      onNewObject={(newObjectType, fromId) => this.createNewObject(newObjectType, object.type, fromId)}
       onCloseForm={(spacePermId) => this.closeForm(spacePermId)}
     />)
   }
