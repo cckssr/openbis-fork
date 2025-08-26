@@ -131,6 +131,8 @@ test {
     println "TEST SUITE PATH: " + testSuitePath
     options.suites(testSuitePath)
 
+    environment.remove("DISPLAY")
+
     jvmArgs '-Xmx2048m', '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog', '-Duser.timezone=Europe/Zurich',
             '-Xdebug', '-Xrunjdwp:transport=dt_socket,address=20010,server=y,suspend=n',
             '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED'

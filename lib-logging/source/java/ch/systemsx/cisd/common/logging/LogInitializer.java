@@ -253,7 +253,7 @@ public class LogInitializer
             LoggerDiagnostics.info("Initializing handler: " + alias);
             try
             {
-                Handler handler = createHandler(alias, props);
+                Handler handler = createHandler(alias, props, logFile);
                 configureCommonProperties(handler, alias, props);
                 Logger.getLogger("").addHandler(handler);
                 LoggerDiagnostics.info("Handler added: " + handler);
@@ -284,7 +284,7 @@ public class LogInitializer
                 }
                 for (String loggerAlias : loggerAliases) {
                     try {
-                        Handler handler = createHandler(loggerAlias, props);
+                        Handler handler = createHandler(loggerAlias, props, logFile);
                         configureCommonProperties(handler, loggerAlias, props);
                         logger.setUseParentHandlers(useParentHandlers(loggerName, props));
                         logger.addHandler(handler);
@@ -441,14 +441,14 @@ public class LogInitializer
         }
     }
 
-    private static Handler createHandler(String alias, Properties props) throws Exception
+    private static Handler createHandler(String alias, Properties props, File logFile) throws Exception
     {
         LoggerDiagnostics.info("createHandler(alias=" + alias + ")");
         String className = props.getProperty(alias + ".class");
         LoggerDiagnostics.info("Handler class name=" + className);
         if (className == null)
         {
-            throw new IllegalArgumentException("No class defined for handler alias: \"" + alias + "\"");
+            throw new IllegalArgumentException("No class defined for handler alias: \"" + alias + "\" , log file : " + logFile.getAbsolutePath());
         }
         Class<?> hc = Class.forName(className);
         Handler handler;

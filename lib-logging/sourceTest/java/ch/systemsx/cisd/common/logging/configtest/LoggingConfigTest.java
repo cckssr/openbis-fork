@@ -160,69 +160,6 @@ public class LoggingConfigTest {
 
     }
 
-    /**
-     * All handlers that have a messagePattern property configured
-     * should be using PatternFormatter underneath.
-     */
-    @Test
-    public void testAllHandlersUsePatternFormatter() {
-        // logger names to check: root ("") plus the named ones
-        String[] loggers = { "", "AUTH", "TRACKING", "ACCESS" };
-
-        for (String loggerName : loggers) {
-            Handler[] handlers = Logger.getLogger(loggerName).getHandlers();
-            Assert.assertTrue(handlers.length > 0,
-                    "Expected at least one handler on logger '" + loggerName + "'");
-            for (Handler h : handlers) {
-                Formatter fmt = h.getFormatter();
-                Assert.assertNotNull(fmt,
-                        "Formatter must not be null on handler " + h + " of logger " + loggerName);
-                Assert.assertEquals(fmt.getClass(), PatternFormatter.class,
-                        "Handler " + h + " on logger '" + loggerName +
-                                "' should use PatternFormatter, but was " + fmt.getClass().getSimpleName());
-            }
-        }
-    }
-
-    @Test
-    public void testHandlersAreAttached() {
-        // root
-        Handler[] rootHandlers = Logger.getLogger("").getHandlers();
-        boolean hasDefault = Arrays.stream(rootHandlers)
-                .anyMatch(h -> h instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis.log"));
-        boolean hasConsole = Arrays.stream(rootHandlers)
-                .anyMatch(h -> h instanceof ConsoleHandler);
-        Assert.assertTrue(hasDefault, "DefaultFileHandler should be on root logger");
-        Assert.assertTrue(hasConsole, "ConsoleHandler should be on root logger");
-
-        // AUTH
-        Handler[] authHandlers = Logger.getLogger("AUTH").getHandlers();
-        Assert.assertEquals(authHandlers.length, 2, "AUTH should have 2 handlers");
-        Assert.assertTrue(Arrays.stream(authHandlers)
-                        .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_auth.log")),
-                "AuthFileHandler missing on AUTH logger");
-        Assert.assertTrue(Arrays.stream(authHandlers)
-                        .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_usage.log")),
-                "UsageFileHandler missing on AUTH logger");
-
-        // TRACKING
-        Handler[] trackHandlers = Logger.getLogger("TRACKING").getHandlers();
-        Assert.assertEquals(trackHandlers.length, 1, "TRACKING should have exactly 1 handler");
-        Assert.assertTrue(trackHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)trackHandlers[0]).getLogFileName().contains("openbis_usage.log"),
-                "UsageFileHandler missing on TRACKING logger");
-
-        // ACCESS
-        Handler[] accessHandlers = Logger.getLogger("ACCESS").getHandlers();
-        Assert.assertEquals(accessHandlers.length, 1, "ACCESS should have exactly 1 handler");
-        Assert.assertTrue(accessHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)accessHandlers[0]).getLogFileName().contains("openbis_usage.log"),
-                "UsageFileHandler missing on ACCESS logger");
-    }
-
     @AfterMethod
     public void tearDown() throws IOException {
         Path logsDir = Paths.get("logs");

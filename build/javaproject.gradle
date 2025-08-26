@@ -246,9 +246,11 @@ task deleteSymLinks {
 clean.dependsOn deleteSymLinks
 
 test {
+    environment.remove("DISPLAY")
     useTestNG {
         suites 'sourceTest/java/tests.xml'
     }
+    // remove DISPLAY completely
 
     systemProperty "ant.project.name", project.name
 

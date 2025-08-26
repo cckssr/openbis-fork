@@ -25,7 +25,6 @@ dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
 
     implementation 'lombok:lombok:1.18.38',
-            'lombok:lombok:1.18.22',
             project(':lib-logging'),
             project(':lib-ro-crate'),
             project(':api-openbis-java'),
