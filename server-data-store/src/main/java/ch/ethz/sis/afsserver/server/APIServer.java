@@ -329,9 +329,8 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
             logger.catching(ex);
         }
 
-        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished ||
-                (isValidNonInteractiveSession &&
-                        errorFound);
+        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished || isValidNonInteractiveSession;
+
         if (doCleanAndReturnWorker) {
             CONNECTION connection = null;
 

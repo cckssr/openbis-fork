@@ -314,7 +314,6 @@ public class ElnDropbox implements IFolderListener
             SamplePermId ownerId = openBIS.createSamples(List.of(ownerCreation)).get(0);
 
             // upload
-            // TODO upload fails as it tries to list files which are create within this transaction (this is not supported)
             if (itemsInFolder > 1)
             {
                 openBIS.getAfsServerFacade().upload(incoming, ownerId.getPermId(), Path.of("/default"), ClientAPI.overrideCollisionListener,

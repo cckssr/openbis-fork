@@ -1,26 +1,33 @@
 package ch.ethz.sis.afsclient.client;
 
-import ch.ethz.sis.afsapi.api.ClientAPI;
-import ch.ethz.sis.afsapi.dto.Chunk;
-import ch.ethz.sis.afsapi.dto.File;
-import ch.ethz.sis.transaction.api.TransactionOperationException;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
+import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.ClientAPI.FileCollisionListener;
 import ch.ethz.sis.afsapi.api.ClientAPI.TransferMonitorListener;
+import ch.ethz.sis.afsapi.dto.Chunk;
+import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper.ChunkIterable;
+import ch.ethz.sis.transaction.api.TransactionOperationException;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 
 public class AfsClientUploadHelper
 {
@@ -44,20 +51,22 @@ public class AfsClientUploadHelper
             throw new IllegalArgumentException("sourcePath must exist");
         }
 
-        File destinationInfo;
+        Optional<File> destinationInfo = getServerFilePresence(afsClient, destinationOwner, destinationPath.toString());
 
-        if (transactional)
+        if (destinationInfo.isEmpty() && !transactional)
         {
-            destinationInfo = new File(destinationOwner, destinationPath.toString(),
-                    destinationPath.getFileName() != null ? destinationPath.getFileName().toString() : null, true, null, null);
-        } else
-        {
-            destinationInfo = getServerFilePresence(afsClient, destinationOwner, destinationPath.toString()).orElseThrow(
-                    () -> new IllegalArgumentException("destinationPath not found"));
+            throw new IllegalArgumentException("destinationPath not found");
         }
 
         // Preliminary local-tree scan to compute total size
         doPreliminaryScanToInitializeUploadMonitor(afsClient, transferMonitorListener, sourcePath);
+
+        Cache cache = null;
+
+        if (transactional)
+        {
+            cache = doPreliminaryScanToInitializeCache(afsClient, sourcePath, destinationOwner, destinationPath, destinationInfo.orElse(null));
+        }
 
         // Initializer
         PathIterator pathIterator = new PathIterator(sourcePath);
@@ -74,14 +83,14 @@ public class AfsClientUploadHelper
             while (iterator.hasNext())
             {
                 Path nextFile = iterator.next();
-                String absoluteServerPath = computeAbsoluteServerPath(sourcePath, destinationPath, nextFile, destinationInfo);
+                String absoluteServerPath = computeAbsoluteServerPath(sourcePath, destinationPath, nextFile, destinationInfo.orElse(null));
 
                 if (!Files.isDirectory(nextFile))
                 {
                     long nextFileSize = Files.size(nextFile);
                     Optional<Path> precheckedNextFile =
                             checkAndPrepareRegularFilePaths(afsClient, nextFile, nextFileSize, destinationOwner, absoluteServerPath,
-                                    fileCollisionListener, transactional);
+                                    fileCollisionListener, transactional, cache);
 
                     if (precheckedNextFile.isPresent())
                     {
@@ -142,7 +151,7 @@ public class AfsClientUploadHelper
 
                 } else if (Files.isDirectory(nextFile))
                 {
-                    Optional<File> serverDirectory = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath);
+                    Optional<File> serverDirectory = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, cache);
 
                     if (fileCollisionListener.precheck(nextFile.toAbsolutePath(), Path.of(absoluteServerPath), serverDirectory.isPresent())
                             != ClientAPI.CollisionAction.Skip)
@@ -188,7 +197,7 @@ public class AfsClientUploadHelper
         String absoluteServerPath;
         Path relativeSourcePath = sourcePath.toAbsolutePath().relativize(nextFile.toAbsolutePath());
         //Deal with case: sourcePath regular file, destinationPath directory
-        if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && destinationInfo.getDirectory())
+        if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && destinationInfo != null && destinationInfo.getDirectory())
         {
             absoluteServerPath = destinationPath.resolve(nextFile.getFileName()).toString();
         } else
@@ -204,9 +213,9 @@ public class AfsClientUploadHelper
             @NonNull String destinationOwner,
             @NonNull String absoluteServerPath,
             @NonNull FileCollisionListener fileCollisionListener,
-            boolean transactional) throws Exception
+            boolean transactional, Cache cache) throws Exception
     {
-        Optional<File> serverFile = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath);
+        Optional<File> serverFile = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, cache);
 
         ClientAPI.CollisionAction collisionAction = fileCollisionListener.precheck(localFile, Path.of(absoluteServerPath), serverFile.isPresent());
 
@@ -215,12 +224,17 @@ public class AfsClientUploadHelper
 
             if (serverFile.isPresent())
             {
-                if (transactional)
-                {
-                    throw new RuntimeException(String.format("File %s already exists at the server", absoluteServerPath));
-                }
-
                 File presentServerFile = serverFile.get();
+
+                if (transactional && presentServerFile.getSize() < Files.size(localFile))
+                {
+                    // Within a transaction, once a file gets deleted it cannot be written to,
+                    // therefore without deleting we can only update an existing file if the new
+                    // content is longer and will fully overwrite the old content. Otherwise, fail.
+                    throw new RuntimeException(String.format(
+                            "File %s already exists at the server and it larger than the local file. It cannot be updated within a transaction.",
+                            absoluteServerPath));
+                }
 
                 if (presentServerFile.getDirectory())
                 {
@@ -306,23 +320,48 @@ public class AfsClientUploadHelper
             @NonNull String destinationOwner,
             @NonNull String absoluteServerPath) throws Exception
     {
+        return getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, null);
+    }
+
+    private static Optional<File> getServerFilePresence(@NonNull AfsClient afsClient,
+            @NonNull String destinationOwner,
+            @NonNull String absoluteServerPath, Cache cache) throws Exception
+    {
+        if (cache != null && cache.hasFile(destinationOwner, absoluteServerPath))
+        {
+            return Optional.ofNullable(cache.getFile(destinationOwner, absoluteServerPath));
+        }
+
         try
         {
             File[] files = afsClient.list(destinationOwner, absoluteServerPath, false);
 
+            Optional<File> file;
+
             if (files.length == 1 && files[0].getPath().equals(absoluteServerPath))
             {
-                return Optional.of(files[0]);
+                file = Optional.of(files[0]);
             } else
             {
-                return Optional.of(new File(destinationOwner, absoluteServerPath,
+                file = Optional.of(new File(destinationOwner, absoluteServerPath,
                         Optional.ofNullable(Path.of(absoluteServerPath).getFileName()).map(Objects::toString).orElse(""), true, null, null));
             }
 
+            if (cache != null)
+            {
+                cache.putFile(destinationOwner, absoluteServerPath, file.get());
+            }
+
+            return file;
         } catch (Exception e)
         {
             if (isPathNotInStoreError(e))
             {
+                if (cache != null)
+                {
+                    cache.putFile(destinationOwner, absoluteServerPath, null);
+                }
+
                 return Optional.empty();
             } else
             {
@@ -496,6 +535,21 @@ public class AfsClientUploadHelper
         return totalSize;
     }
 
+    private static Cache doPreliminaryScanToInitializeCache(AfsClient afsClient, final @NonNull Path sourcePath,
+            final @NonNull String destinationOwner, Path destinationPath, final File destinationInfo) throws Exception
+    {
+        PathIterator pathIterator = new PathIterator(sourcePath);
+        Cache cache = new Cache();
+
+        for (Path file : pathIterator)
+        {
+            String absoluteServerPath = computeAbsoluteServerPath(sourcePath, destinationPath, file, destinationInfo);
+            getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, cache);
+        }
+
+        return cache;
+    }
+
     @SneakyThrows
     synchronized public static Boolean uploadChunks(@NonNull AfsClient afsClient, @NonNull Chunk[] requestChunks)
     {
@@ -601,6 +655,27 @@ public class AfsClientUploadHelper
         {
             lastModificationTimestamps.put(from, lastModificationTs);
             totals.put(from, size);
+        }
+    }
+
+    static class Cache
+    {
+
+        private final Map<String, File> fileMap = new HashMap<>();
+
+        public void putFile(String owner, String path, File file)
+        {
+            fileMap.put(owner + path, file);
+        }
+
+        public boolean hasFile(String owner, String path)
+        {
+            return fileMap.containsKey(owner + path);
+        }
+
+        public File getFile(String owner, String path)
+        {
+            return fileMap.get(owner + path);
         }
     }
 
