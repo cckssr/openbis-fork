@@ -433,7 +433,8 @@ public class RdfToModel
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
                                         .filter(Objects::nonNull)
-                                        .map(x -> "/" + fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
+                                        .map(x -> mapIdentifier(fallbackSpaceCode,
+                                                fallbackProjectCode, spaces, projects, x.getCode()))
                                         .collect(
                                                 Collectors.toList())));
             }
@@ -823,6 +824,34 @@ public class RdfToModel
                     sampleType.getCode() + "_" + parts[parts.length - 1]);
         }
         return OpenBisModel.makeOpenBisCodeCompliant(identifier);
+
+    }
+
+    private static String mapIdentifier(String fallbackSpace, String fallBackProject,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, String code)
+    {
+
+        String[] parts = code.split("/");
+        if (parts.length != 3)
+        {
+            return code;
+
+        }
+        Space space = spaces.get(new SpacePermId(parts[0]));
+        if (space == null)
+        {
+            return List.of(fallbackSpace, fallBackProject, code).stream()
+                    .collect(Collectors.joining("/"));
+        }
+
+        Project project = projects.get(new ProjectIdentifier(space.getCode(), parts[1]));
+
+        if (project == null)
+        {
+            return List.of(fallbackSpace, fallBackProject, code).stream()
+                    .collect(Collectors.joining("/"));
+        }
+        return code;
 
     }
 
