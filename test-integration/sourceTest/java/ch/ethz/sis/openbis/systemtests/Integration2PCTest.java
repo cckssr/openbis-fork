@@ -91,6 +91,19 @@ public class Integration2PCTest extends AbstractIntegrationTest
         Space space = createSpace(openBISWithTr, ENTITY_CODE_PREFIX + UUID.randomUUID());
         Sample sample = createSample(openBISWithTr, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
+        // write incorrect data to AFS (test we can still work with the transaction after the failure)
+        try
+        {
+            openBISWithTr.getAfsServerFacade().write("i-dont-exist", "me-neither", 0L, new byte[0]);
+            fail();
+        } catch (Exception e)
+        {
+            assertTrue(e.getMessage()
+                    .startsWith("Transaction '" + transactionId + "' execute operation 'write' for participant 'afs-server' failed with error:"));
+            // this error comes from the observer which tries to check if "i-dont-exist" exists in the store
+            assertTrue(e.getMessage().contains("don't have rights [Read] over i-dont-exist  to perform the operation List"));
+        }
+
         // write data to AFS
         WriteData writeData = createWriteData(sample.getPermId().getPermId());
         openBISWithTr.getAfsServerFacade().write(writeData.owner, writeData.source, 0L, writeData.bytes);
@@ -508,8 +521,7 @@ public class Integration2PCTest extends AbstractIntegrationTest
             fail();
         } catch (Exception e)
         {
-            assertTrue(e.getMessage().startsWith("Transaction '" + transactionId
-                    + "' execute operation 'create' for participant 'afs-server' failed with error: owner is marked non-null but is null"));
+            assertTrue(e.getMessage().startsWith("owner is marked non-null but is null"));
         } finally
         {
             openBIS.rollbackTransaction();

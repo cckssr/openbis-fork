@@ -333,7 +333,7 @@ public class OpenBISCreateDataSetsAPIServerObserver
             ownerPath = ownerPath.substring(storageRoot.length());
         }
 
-        Pattern compile = Pattern.compile("/\\d+/.+/../../../([0-9-]+)/.*");
+        Pattern compile = Pattern.compile("/\\d+/.+/../../../([^/]+)/.*");
         Matcher matcher = compile.matcher(ownerPath);
 
         if (matcher.matches())
