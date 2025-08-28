@@ -1,5 +1,6 @@
 package ch.openbis.rocrate.app.reader.helper;
 
+import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -20,10 +22,23 @@ public class DataTypeMatcher
             List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.DATE,
                     DataType.SAMPLE, DataType.HYPERLINK, DataType.SAMPLE, DataType.VARCHAR);
 
-    public static DataType findDataType(Serializable value, Set<DataType> possibleTypes)
+    public static DataType findDataType(Serializable value, Set<DataType> possibleTypes,
+            Map<String, IMetadataEntry> entities)
     {
-        return orderedTypes.stream().filter(possibleTypes::contains).filter(x -> matches(value, x))
+        return orderedTypes.stream().filter(possibleTypes::contains)
+                .filter(x -> matches(value, x, entities))
                 .findFirst().orElseThrow();
+
+    }
+
+    public static boolean matches(Serializable value, DataType dataType,
+            Map<String, IMetadataEntry> entities)
+    {
+        if (dataType == DataType.SAMPLE)
+        {
+            return entities.containsKey(value.toString());
+        }
+        return matches(value, dataType);
 
     }
 
