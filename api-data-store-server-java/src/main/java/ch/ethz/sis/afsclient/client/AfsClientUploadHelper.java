@@ -65,6 +65,7 @@ public class AfsClientUploadHelper
 
         if (transactional)
         {
+            // Within a transaction we cannot list once we start writing. Therefore, we need to list all the existing files upfront.
             cache = doPreliminaryScanToInitializeCache(afsClient, sourcePath, destinationOwner, destinationPath, destinationInfo.orElse(null));
         }
 
@@ -226,14 +227,14 @@ public class AfsClientUploadHelper
             {
                 File presentServerFile = serverFile.get();
 
-                if (transactional && presentServerFile.getSize() < Files.size(localFile))
+                if (transactional)
                 {
                     // Within a transaction, once a file gets deleted it cannot be written to,
-                    // therefore without deleting we can only update an existing file if the new
-                    // content is longer and will fully overwrite the old content. Otherwise, fail.
+                    // therefore without deleting we could only update an existing file if the new
+                    // content was longer and would fully overwrite the old content.
+                    // To keep it simple, we fail whenever a file already exists at the server (no matter the size).
                     throw new RuntimeException(String.format(
-                            "File %s already exists at the server and it larger than the local file. It cannot be updated within a transaction.",
-                            absoluteServerPath));
+                            "File %s already exists at the server. It cannot be updated within a transaction.", absoluteServerPath));
                 }
 
                 if (presentServerFile.getDirectory())
