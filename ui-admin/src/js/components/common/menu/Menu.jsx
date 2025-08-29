@@ -267,7 +267,7 @@ class Menu extends React.PureComponent {
 
   renderTab(tab) {
     return (
-      <Tab value={tab.page} label={tab.label} icon={tab.icon} />
+      <Tab key={tab.page} value={tab.page} label={tab.label} icon={tab.icon} />
     )
   }
 
@@ -323,7 +323,7 @@ class Menu extends React.PureComponent {
           onClose={this.handleClose}
         >
           {searchDomains.map((option, index) => {
-            return (<MenuItem value={index}
+            return (<MenuItem key={index} value={index}
               selected={index === this.state.selectedIndex}
               onClick={(event) => this.handleMenuItemClick(event, index)}
             >
