@@ -19,12 +19,17 @@ export default class TypeBrowserControllerLoadNodes {
       if (!_.isNil(params.filter)) {
         const [
           objectTypes,
+          objectTypeGroups,
           collectionTypes,
           dataSetTypes,
           materialTypes,
           vocabularyTypes
         ] = await Promise.all([
           this.searchObjectTypes({
+            ...params,
+            limit: TypeBrowserCommon.LOAD_LIMIT
+          }),
+          this.searchObjectTypeGroups({
             ...params,
             limit: TypeBrowserCommon.LOAD_LIMIT
           }),
@@ -48,6 +53,7 @@ export default class TypeBrowserControllerLoadNodes {
 
         const totalCount =
           objectTypes.totalCount +
+          objectTypeGroups.totalCount +
           collectionTypes.totalCount +
           dataSetTypes.totalCount +
           materialTypes.totalCount +
@@ -66,6 +72,18 @@ export default class TypeBrowserControllerLoadNodes {
           const typesNodes = this.createNodes(
             objectTypes,
             objectType.OBJECT_TYPE
+          )
+          folderNode.children = typesNodes
+          folderNode.expanded = true
+          nodes.push(folderNode)
+        }
+
+        if (!_.isEmpty(objectTypeGroups.objects)) {
+
+          const folderNode = TypeBrowserCommon.objectTypeGroupsFolderNode()
+          const typesNodes = this.createNodes(
+            objectTypeGroups,
+            objectType.OBJECT_TYPE_GROUP
           )
           folderNode.children = typesNodes
           folderNode.expanded = true
@@ -123,6 +141,7 @@ export default class TypeBrowserControllerLoadNodes {
         return {
           nodes: [
             TypeBrowserCommon.objectTypesFolderNode(),
+            TypeBrowserCommon.objectTypeGroupsFolderNode(),
             TypeBrowserCommon.collectionTypesFolderNode(),
             TypeBrowserCommon.dataSetTypesFolderNode(),
             TypeBrowserCommon.materialTypesFolderNode(),
@@ -136,6 +155,8 @@ export default class TypeBrowserControllerLoadNodes {
 
       if (node.object.id === objectType.OBJECT_TYPE) {
         types = await this.searchObjectTypes(params)
+      } else if (node.object.id === objectType.OBJECT_TYPE_GROUP) {
+        types = await this.searchObjectTypeGroups(params)
       } else if (node.object.id === objectType.COLLECTION_TYPE) {
         types = await this.searchCollectionTypes(params)
       } else if (node.object.id === objectType.DATA_SET_TYPE) {
@@ -171,6 +192,45 @@ export default class TypeBrowserControllerLoadNodes {
     const fetchOptions = new openbis.SampleTypeFetchOptions()
 
     const result = await openbis.searchSampleTypes(criteria, fetchOptions)
+
+    if (!_.isEmpty(childrenNotIn)) {
+      const childrenNotInMap = {}
+      childrenNotIn.forEach(child => {
+        childrenNotInMap[child.object.id] = child
+      })
+      result.objects = result.objects.filter(object =>
+        _.isNil(childrenNotInMap[object.getCode()])
+      )
+      result.totalCount = result.objects.length
+    }
+
+    let objects = result.objects.map(o => ({
+      id: o.getCode(),
+      text: o.getCode()
+    }))
+
+    objects.sort((o1, o2) => compare(o1.text, o2.text))
+
+    if (!_.isNil(offset) && !_.isNil(limit)) {
+      objects = objects.slice(offset, offset + limit)
+    }
+
+    return {
+      objects: objects,
+      totalCount: result.totalCount
+    }
+  }
+
+  async searchObjectTypeGroups(params) {
+    const { filter, offset, limit, childrenIn, childrenNotIn } = params
+
+    const criteria = new openbis.TypeGroupSearchCriteria()
+    if (!_.isNil(filter)) {
+      criteria.withCode().thatContains(filter)
+    }
+    const fetchOptions = new openbis.TypeGroupFetchOptions()
+
+    const result = await openbis.searchTypeGroups(criteria, fetchOptions)
 
     if (!_.isEmpty(childrenNotIn)) {
       const childrenNotInMap = {}
