@@ -6,6 +6,7 @@ import TypeBrowser from '@src/js/components/types/browser/TypeBrowser.jsx'
 import TypeSearch from '@src/js/components/types/search/TypeSearch.jsx'
 import EntityTypeForm from '@src/js/components/types/form/entitytype/EntityTypeForm.jsx'
 import VocabularyTypeForm from '@src/js/components/types/form/vocabularytype/VocabularyTypeForm.jsx'
+import TypeGroupForm from '@src/js/components/types/form/typegroup/TypeGroupForm.jsx'
 import pages from '@src/js/common/consts/pages.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import messages from '@src/js/common/messages.js'
@@ -47,6 +48,10 @@ class Types extends React.PureComponent {
       object.type === objectType.NEW_VOCABULARY_TYPE
     ) {
       return <VocabularyTypeForm object={object} />
+    } else if (
+      object.type === objectType.OBJECT_TYPE_GROUP ||
+      object.type === objectType.NEW_OBJECT_TYPE_GROUP) {
+      return <TypeGroupForm object={object} />
     } else {
       return <EntityTypeForm object={object} />
     }
@@ -60,6 +65,7 @@ class Types extends React.PureComponent {
     if (object.type === objectType.OVERVIEW) {
       const labels = {
         [objectType.OBJECT_TYPE]: messages.get(messages.OBJECT_TYPES),
+        [objectType.OBJECT_TYPE_GROUP]: messages.get(messages.OBJECT_TYPE_GROUPS),
         [objectType.COLLECTION_TYPE]: messages.get(messages.COLLECTION_TYPES),
         [objectType.DATA_SET_TYPE]: messages.get(messages.DATA_SET_TYPES),
         [objectType.MATERIAL_TYPE]: messages.get(messages.MATERIAL_TYPES),
@@ -69,28 +75,22 @@ class Types extends React.PureComponent {
       label = labels[object.id]
     } else {
       const prefixes = {
-        [objectType.NEW_OBJECT_TYPE]:
-          messages.get(messages.NEW_OBJECT_TYPE) + ' ',
-        [objectType.NEW_COLLECTION_TYPE]:
-          messages.get(messages.NEW_COLLECTION_TYPE) + ' ',
-        [objectType.NEW_DATA_SET_TYPE]:
-          messages.get(messages.NEW_DATA_SET_TYPE) + ' ',
-        [objectType.NEW_MATERIAL_TYPE]:
-          messages.get(messages.NEW_MATERIAL_TYPE) + ' ',
-        [objectType.NEW_VOCABULARY_TYPE]:
-          messages.get(messages.NEW_VOCABULARY_TYPE) + ' ',
+        [objectType.NEW_OBJECT_TYPE]: messages.get(messages.NEW_OBJECT_TYPE) + ' ',
+        [objectType.NEW_OBJECT_TYPE_GROUP]: messages.get(messages.NEW_OBJECT_TYPE_GROUP) + ' ',
+        [objectType.NEW_COLLECTION_TYPE]: messages.get(messages.NEW_COLLECTION_TYPE) + ' ',
+        [objectType.NEW_DATA_SET_TYPE]: messages.get(messages.NEW_DATA_SET_TYPE) + ' ',
+        [objectType.NEW_MATERIAL_TYPE]: messages.get(messages.NEW_MATERIAL_TYPE) + ' ',
+        [objectType.NEW_VOCABULARY_TYPE]: messages.get(messages.NEW_VOCABULARY_TYPE) + ' ',
         [objectType.OBJECT_TYPE]: messages.get(messages.OBJECT_TYPE) + ': ',
-        [objectType.COLLECTION_TYPE]:
-          messages.get(messages.COLLECTION_TYPE) + ': ',
+        [objectType.OBJECT_TYPE_GROUP]: messages.get(messages.OBJECT_TYPE_GROUP) + ': ',
+        [objectType.COLLECTION_TYPE]: messages.get(messages.COLLECTION_TYPE) + ': ',
         [objectType.DATA_SET_TYPE]: messages.get(messages.DATA_SET_TYPE) + ': ',
         [objectType.MATERIAL_TYPE]: messages.get(messages.MATERIAL_TYPE) + ': ',
-        [objectType.VOCABULARY_TYPE]:
-          messages.get(messages.VOCABULARY_TYPE) + ': ',
+        [objectType.VOCABULARY_TYPE]: messages.get(messages.VOCABULARY_TYPE) + ': ',
         [objectType.SEARCH]: messages.get(messages.SEARCH) + ': '
       }
       label = prefixes[object.type] + object.id
     }
-
     return <ContentTab label={label} changed={changed} />
   }
 }

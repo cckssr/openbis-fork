@@ -9,6 +9,7 @@ import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.
 import EntityTypesGrid from '@src/js/components/types/common/EntityTypesGrid.jsx'
 import VocabularyTypesGrid from '@src/js/components/types/common/VocabularyTypesGrid.jsx'
 import PropertyTypesGrid from '@src/js/components/types/common/PropertyTypesGrid.jsx'
+import TypeGroupsGrid from '@src/js/components/types/common/TypeGroupsGrid.jsx'
 import Message from '@src/js/components/common/form/Message.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import objectTypes from '@src/js/common/consts/objectType.js'
@@ -43,6 +44,7 @@ class TypeSearch extends React.Component {
     try {
       await Promise.all([
         this.loadObjectTypes(),
+        this.loadObjectTypeGroups(),
         this.loadCollectionTypes(),
         this.loadDataSetTypes(),
         this.loadMaterialTypes(),
@@ -90,6 +92,36 @@ class TypeSearch extends React.Component {
 
     this.setState({
       objectTypes: types
+    })
+  }
+
+  async loadObjectTypeGroups() {
+    if (!this.shouldLoad(objectTypes.OBJECT_TYPE_GROUP)) {
+      return
+    }
+
+    const result = await openbis.searchTypeGroups(
+      new openbis.TypeGroupSearchCriteria(),
+      new openbis.TypeGroupFetchOptions()
+    )
+    const types = util
+      .filter(result.objects, this.props.searchText, ['code'])
+      .map(object => ({
+        id: _.get(object, 'code'),
+        exportableId: {
+          exportable_kind: GridExportOptions.EXPORTABLE_KIND.OBJECT_TYPE_GROUP,
+          perm_id: object.getId().getPermId()
+        },
+        code: _.get(object, 'code'),
+        internal: _.get(object, 'managedInternally'),
+        registrator: _.get(object, 'registrator.userId'),
+        registrationDate: _.get(object, 'registrationDate'),
+        modifier: _.get(object, 'modifier.userId'),
+        modificationDate: _.get(object, 'modificationDate')
+      }))
+
+    this.setState({
+      objectTypeGroups: types
     })
   }
 
@@ -365,6 +397,7 @@ class TypeSearch extends React.Component {
       <GridContainer onClick={this.handleContainerClick}>
         {this.renderNoResultsFoundMessage()}
         {this.renderObjectTypes()}
+        {this.renderObjectTypeGroups()}
         {this.renderCollectionTypes()}
         {this.renderDataSetTypes()}
         {this.renderMaterialTypes()}
@@ -378,6 +411,7 @@ class TypeSearch extends React.Component {
     const { objectType } = this.props
     const {
       objectTypes = [],
+      objectTypeGroups = [],
       collectionTypes = [],
       dataSetTypes = [],
       materialTypes = [],
@@ -388,6 +422,7 @@ class TypeSearch extends React.Component {
     if (
       !objectType &&
       objectTypes.length === 0 &&
+      objectTypeGroups.length === 0 &&
       collectionTypes.length === 0 &&
       dataSetTypes.length === 0 &&
       materialTypes.length === 0 &&
@@ -425,6 +460,28 @@ class TypeSearch extends React.Component {
             }}
             onSelectedRowChange={this.handleSelectedRowChange(
               objectTypes.OBJECT_TYPE
+            )}
+          />
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderObjectTypeGroups() {
+    if (this.shouldRender(objectTypes.OBJECT_TYPE_GROUP, this.state.objectTypeGroups)) {
+      const { classes } = this.props
+      return (
+        <div className={classes.grid}>
+          <TypeGroupsGrid
+            id={ids.OBJECT_TYPE_GROUPS_GRID_ID}
+            controllerRef={controller =>
+              (this.gridControllers[objectTypes.OBJECT_TYPE_GROUP] = controller)
+            }
+            rows={this.state.objectTypeGroups}
+            onSelectedRowChange={this.handleSelectedRowChange(
+              objectTypes.OBJECT_TYPE_GROUP
             )}
           />
         </div>

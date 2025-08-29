@@ -26,6 +26,28 @@ function objectTypeNode(typeCode) {
   }
 }
 
+function objectTypeGroupsFolderNode() {
+  return {
+    text: messages.get(messages.OBJECT_TYPE_GROUPS),
+    object: {
+      type: objectType.OVERVIEW,
+      id: objectType.OBJECT_TYPE_GROUP
+    },
+    canHaveChildren: true,
+    childrenLoadLimit: LOAD_LIMIT
+  }
+}
+
+function objectTypeGroupNode(typeCode) {
+  return {
+    text: typeCode,
+    object: {
+      type: objectType.OBJECT_TYPE_GROUP,
+      id: typeCode
+    }
+  }
+}
+
 function collectionTypesFolderNode() {
   return {
     text: messages.get(messages.COLLECTION_TYPES),
@@ -129,6 +151,8 @@ export default {
   LOAD_LIMIT,
   objectTypesFolderNode,
   objectTypeNode,
+  objectTypeGroupsFolderNode,
+  objectTypeGroupNode,
   collectionTypesFolderNode,
   collectionTypeNode,
   dataSetTypesFolderNode,
