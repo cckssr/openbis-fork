@@ -308,7 +308,7 @@ public class RdfToModel
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
         Map<String, IMetadataEntry> idToEntities =
-                entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x));
+                entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
         for (IMetadataEntry entry : entries)
         {
             AbstractEntityPropertyHolder entity;
