@@ -110,7 +110,7 @@ public class RoCrateService {
     }
 
     @POST
-    @Produces(APPLICATION_LD_JSON)
+    @Produces({ APPLICATION_LD_JSON, "application/zip" })
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("export")
     public Response export(
@@ -131,7 +131,7 @@ public class RoCrateService {
             baos.writeTo(outputStream);
 
             return Response.ok(baos.toByteArray())
-                    .type(APPLICATION_LD_JSON).build();
+                    .type("application/zip").build();
         } catch (WebApplicationException e)
         {
             throw e;

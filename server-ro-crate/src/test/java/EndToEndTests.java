@@ -118,7 +118,7 @@ public class EndToEndTests extends AbstractTest
         given()
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
-                .header("Accept", "application/json")
+                .header("Accept", "application/zip")
                 .body(Files.readAllBytes(Path.of(file.getPath())))
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
