@@ -198,7 +198,7 @@ public class AfsClientUploadHelper
         String absoluteServerPath;
         Path relativeSourcePath = sourcePath.toAbsolutePath().relativize(nextFile.toAbsolutePath());
         //Deal with case: sourcePath regular file, destinationPath directory
-        if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && destinationInfo != null && destinationInfo.getDirectory())
+        if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && (destinationInfo == null || destinationInfo.getDirectory()))
         {
             absoluteServerPath = destinationPath.resolve(nextFile.getFileName()).toString();
         } else

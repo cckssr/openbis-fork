@@ -763,6 +763,28 @@ public abstract class AbstractIntegrationTest
         return sample;
     }
 
+    public static Sample createSample(OpenBIS openBIS, IProjectId projectId, String sampleCode)
+    {
+        ProjectFetchOptions projectFetchOptions = new ProjectFetchOptions();
+        projectFetchOptions.withSpace();
+
+        Project project = openBIS.getProjects(List.of(projectId), projectFetchOptions).get(projectId);
+        if (project == null)
+        {
+            throw new RuntimeException("Project with id " + projectId + " hasn't been found.");
+        }
+
+        SampleCreation sampleCreation = new SampleCreation();
+        sampleCreation.setTypeId(new EntityTypePermId("UNKNOWN"));
+        sampleCreation.setSpaceId(project.getSpace().getPermId());
+        sampleCreation.setProjectId(project.getPermId());
+        sampleCreation.setCode(sampleCode);
+        List<SamplePermId> sampleIds = openBIS.createSamples(List.of(sampleCreation));
+        Sample sample = getSample(openBIS, sampleIds.get(0));
+        log("Created sample " + sample.getIdentifier() + " (" + sample.getPermId().getPermId() + ")");
+        return sample;
+    }
+
     public static Sample createSample(OpenBIS openBIS, IExperimentId experimentId, String sampleCode)
     {
         ExperimentFetchOptions experimentFetchOptions = new ExperimentFetchOptions();

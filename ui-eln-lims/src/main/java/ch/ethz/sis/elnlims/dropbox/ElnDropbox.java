@@ -318,10 +318,17 @@ public class ElnDropbox implements IFolderListener
             {
                 openBIS.getAfsServerFacade().upload(incoming, ownerId.getPermId(), Path.of("/default"), ClientAPI.overrideCollisionListener,
                         new ClientAPI.DefaultTransferMonitorLister());
-            } else
+            } else if (datasetItem != null)
             {
-                openBIS.getAfsServerFacade().upload(datasetItem, ownerId.getPermId(), Path.of("/"), ClientAPI.overrideCollisionListener,
-                        new ClientAPI.DefaultTransferMonitorLister());
+                if (Files.isDirectory(datasetItem))
+                {
+                    openBIS.getAfsServerFacade().upload(datasetItem, ownerId.getPermId(), Path.of("/" + datasetItem.getFileName().toString()),
+                            ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+                } else
+                {
+                    openBIS.getAfsServerFacade().upload(datasetItem, ownerId.getPermId(), Path.of("/"), ClientAPI.overrideCollisionListener,
+                            new ClientAPI.DefaultTransferMonitorLister());
+                }
             }
 
             openBIS.commitTransaction();
@@ -521,18 +528,6 @@ public class ElnDropbox implements IFolderListener
         });
 
         return readOnlyFiles;
-    }
-
-    public static void main(String[] args)
-    {
-        OpenBIS openBIS = new OpenBIS("http://localhost:8888/openbis/openbis", "http://localhost:8889/datastore_server", "http://localhost:8085/");
-        openBIS.login("admin", "password");
-        openBIS.setInteractiveSessionKey("test-interactive-session-key");
-
-        IFolderListener elnDropbox = new ElnDropbox();
-        elnDropbox.configure(new Properties());
-        elnDropbox.process(openBIS,
-                Paths.get("/home/pkupczyk/git/openbis/ui-eln-lims/temp/S+DEFAULT+FOLDER5019"));
     }
 
 }
