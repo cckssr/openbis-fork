@@ -90,6 +90,19 @@ const routes = {
     type: objectTypes.OVERVIEW,
     id: objectTypes.OBJECT_TYPE
   }),
+  NEW_OBJECT_TYPE_GROUP: new Route('/new-object-type-group/:id', {
+    page: pages.TYPES,
+    type: objectTypes.NEW_OBJECT_TYPE_GROUP
+  }),
+  OBJECT_TYPE_GROUP: new Route('/object-type-group/:id', {
+    page: pages.TYPES,
+    type: objectTypes.OBJECT_TYPE_GROUP
+  }),
+  OBJECT_TYPE_GROUP_OVERVIEW: new Route('/object-type-group-overview', {
+    page: pages.TYPES,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.OBJECT_TYPE_GROUP
+  }),
   NEW_COLLECTION_TYPE: new Route('/new-collection-type/:id', {
     page: pages.TYPES,
     type: objectTypes.NEW_COLLECTION_TYPE

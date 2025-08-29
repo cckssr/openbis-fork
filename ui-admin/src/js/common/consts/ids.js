@@ -6,6 +6,8 @@ const CHATBOT_SERVICE = 'chat-bot-api'
 
 // grids
 const OBJECT_TYPES_GRID_ID = 'object_types_grid'
+const OBJECT_TYPE_GROUPS_GRID_ID = 'object_type_groups_grid'
+const TYPE_GROUP_OBJECT_TYPES_GRID_ID = 'type_group_object_types_grid'
 const COLLECTION_TYPES_GRID_ID = 'collection_types_grid'
 const DATA_SET_TYPES_GRID_ID = 'data_set_types_grid'
 const MATERIAL_TYPES_GRID_ID = 'material_types_grid'
@@ -54,6 +56,8 @@ export default {
   CHATBOT_SERVICE,
   // grids
   OBJECT_TYPES_GRID_ID,
+  OBJECT_TYPE_GROUPS_GRID_ID,
+  TYPE_GROUP_OBJECT_TYPES_GRID_ID,
   COLLECTION_TYPES_GRID_ID,
   DATA_SET_TYPES_GRID_ID,
   MATERIAL_TYPES_GRID_ID,

@@ -1514,6 +1514,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+        this.getTypeGroups = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+				url : openbisUrl,
+				data : {
+					"method" : "getTypeGroups",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "ITypeGroupId", "TypeGroup" ]
+				}
+			});
+		}
+
 		this.getDataSets = function(ids, fetchOptions) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -1855,6 +1870,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
+
+		this.searchTypeGroups = function(criteria, fetchOptions) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "searchTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+                },
+                returnType : "SearchResult"
+            });
+        }
 
 		this.searchDataSets = function(criteria, fetchOptions) {
 			var thisFacade = this;

@@ -191,6 +191,10 @@ class Facade {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
 
+  getTypeGroups(ids, fo) {
+    return this.promise(this.v3.getTypeGroups(ids, fo))
+  }
+
   getExperimentTypes(ids, fo) {
     return this.promise(this.v3.getExperimentTypes(ids, fo))
   }
@@ -235,6 +239,10 @@ class Facade {
     return this.promise(this.v3.searchSampleTypes(criteria, fo))
   }
 
+  searchTypeGroups(criteria, fo) {
+    return this.promise(this.v3.searchTypeGroups(criteria, fo))
+  }
+  
   searchExperimentTypes(criteria, fo) {
     return this.promise(this.v3.searchExperimentTypes(criteria, fo))
   }
