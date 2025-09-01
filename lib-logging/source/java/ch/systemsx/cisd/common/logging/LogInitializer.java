@@ -1,9 +1,6 @@
 package ch.systemsx.cisd.common.logging;
 
-import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
-import ch.systemsx.cisd.common.logging.ext.LoggingUtils;
-import ch.systemsx.cisd.common.logging.ext.NullHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import ch.systemsx.cisd.common.logging.ext.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,6 +64,7 @@ public class LogInitializer
     }
 
     private static boolean initialized = false;
+    private static boolean reInitCalled = false;
 
     private static URL createURL(final String configurationOrNull)
     {
@@ -141,6 +139,7 @@ public class LogInitializer
                 LoggerDiagnostics.info("Found log file: " + logFile.getAbsolutePath());
                 configureFromFile(logFile);
                 initialized = true;
+                reInitCalled = false;
                 LoggerDiagnostics.info("Initialized from file.");
                 return;
             }
@@ -153,11 +152,13 @@ public class LogInitializer
         {
             configureFromURL(url);
             initialized = true;
+            reInitCalled = false;
             LoggerDiagnostics.info("Initialized from URL.");
             return;
         }
 
         initialized = true;
+        reInitCalled = false;
         LoggerDiagnostics.info("No external config found. Initialization complete with defaults.");
     }
 
@@ -467,6 +468,13 @@ public class LogInitializer
             handler = (Handler) hc.getConstructor(String.class, int.class, boolean.class, int.class)
                     .newInstance(pattern, maxLogFileSize, append, maxLogRotations);
 
+        } else if (SingleFileHandler.class.isAssignableFrom(hc)) {
+            String append = props.getProperty(alias + APPEND, "false");
+            String file = props.getProperty(alias + LOG_FILE_NAME);
+            int maxLogFileSize = Integer.parseInt(props.getProperty(alias + MAX_LOG_FILE_SIZE,
+                    String.valueOf(DailyRollingFileHandler.DEFAULT_MAX_LOG_FILE_SIZE)));
+            handler = (Handler) hc.getConstructor(String.class, int.class, boolean.class, boolean.class)
+                    .newInstance(file, maxLogFileSize, Boolean.parseBoolean(append), reInitCalled);
         } else if (ConsoleHandler.class.isAssignableFrom(hc)
                     || NullHandler.class.isAssignableFrom(hc)
                     || Handler.class.isAssignableFrom(hc))
@@ -506,6 +514,13 @@ public class LogInitializer
         String encoding = props.getProperty(alias + ENCODING);
         if (encoding != null) {
             handler.setEncoding(encoding);
+        }
+
+        // Set logging level.
+        String filterStr = props.getProperty(alias + ".filter");
+        if (filterStr != null) {
+
+            handler.setFilter(x -> filterStr.equals(x.getLoggerName()));
         }
     }
 
@@ -596,6 +611,7 @@ public class LogInitializer
      */
     public static void forceReinit() {
         initialized = false;
+        reInitCalled = true;
         LoggerDiagnostics.info("forceReinit() called.");
         init();
     }

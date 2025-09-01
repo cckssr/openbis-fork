@@ -512,7 +512,17 @@ public class SchemaFacade implements ISchemaFacade
                         entryProperties.put(a.getKey(), a.getValue());
                     } else if (property.getRange().stream().anyMatch(x -> x.startsWith("xsd:")))
                     {
-                        entryProperties.put(a.getKey(), a.getValue().toString());
+                        if (a.getValue() instanceof HashMap<?, ?>)
+                        {
+                            HashMap<?, ?> hashMap = (HashMap<?, ?>) a.getValue();
+                            List<String> refs = parseMultiValued(entity, a.getKey());
+                            references.put(a.getKey(), refs);
+                        } else
+                        {
+
+                            entryProperties.put(a.getKey(), a.getValue().toString());
+
+                        }
                     } else
                     {
                         List<String> refs = parseMultiValued(entity, a.getKey());

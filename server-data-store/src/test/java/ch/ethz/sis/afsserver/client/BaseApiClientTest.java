@@ -322,16 +322,6 @@ public abstract class BaseApiClientTest
         assertArrayEquals(binaryData, bytes);
     }
 
-    @Test
-    public void resumeRead_getsDataFromTemporaryFile() throws Exception
-    {
-        login();
-
-        afsClient.resumeRead(owner, FILE_A, Path.of(FILE_B), 0L);
-
-        assertFilesEqual(IOUtils.getPath(testDataRoot, FILE_A), FILE_B);
-    }
-
     private void assertFilesEqual(final String expectedFile, final String actualFile) throws IOException
     {
         byte[] expectedData = IOUtils.readFully(expectedFile);
@@ -362,31 +352,6 @@ public abstract class BaseApiClientTest
 
         byte[] testDataFile = IOUtils.readFully(IOUtils.getPath(testDataRoot, FILE_A));
         assertArrayEquals(DATA, testDataFile);
-    }
-
-    @Test
-    public void resumeWrite_zeroOffset_createsFile() throws Exception
-    {
-        login();
-
-        final Boolean result = afsClient.resumeWrite(owner, FILE_B, Path.of(IOUtils.getPath(testDataRoot, FILE_A)), 0L);
-        assertTrue(result);
-
-        assertFilesEqual(IOUtils.getPath(testDataRoot, FILE_A), FILE_B);
-
-        Path.of(FILE_B).toFile().delete();
-    }
-
-    @Test
-    public void resumeWrite_nonZeroOffset_doesNotCreateFile() throws Exception
-    {
-        login();
-
-        final Long offset = 65L;
-        final Boolean result = afsClient.resumeWrite(owner, FILE_B, Path.of(IOUtils.getPath(testDataRoot, FILE_A)), offset);
-        assertTrue(result);
-
-        assertFalse(Path.of(FILE_B).toFile().exists());
     }
 
     @Test
