@@ -161,6 +161,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/typegroup/create/TypeGroupCreation',
   'as/dto/typegroup/create/CreateTypeGroupsOperation',
   'as/dto/typegroup/delete/TypeGroupDeletionOptions',
+  'as/dto/typegroup/delete/DeleteTypeGroupsOperation',
   'as/dto/typegroup/fetchoptions/TypeGroupFetchOptions',
   'as/dto/typegroup/TypeGroup',
   'as/dto/typegroup/id/TypeGroupId',
