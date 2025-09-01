@@ -13,10 +13,10 @@ To run ELN tests with the following command:
 This will start up openBIS AS and only one DSS. 
 
 When the console output is no longer busy Firefox should be started.
-Enter the following URL: http://localhost:20000/openbis/
-You should be able to log in as user 'admin' with any password.
+Enter the following URLs:
 
-Next choose a test suite in menu 'Utilities'. A tab will be opened which shows all tests.
+http://localhost:20000/openbis/webapp/openbis-v3-api-test/?webapp-code=openbis-v3-api-test
+http://localhost:20000/openbis/webapp/openbis-test/?webapp-code=openbis-test
 
 If a test fails you can click on the test and only the failed test will be shown.
 
