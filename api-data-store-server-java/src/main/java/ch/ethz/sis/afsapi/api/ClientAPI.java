@@ -21,11 +21,6 @@ public interface ClientAPI
     Boolean write(@NonNull String owner, @NonNull String source, @NonNull Long offset,
                   @NonNull byte[] data) throws Exception;
 
-    void resumeRead(@NonNull String owner, @NonNull String source, @NonNull Path destination, @NonNull Long offset) throws Exception;
-
-    @NonNull
-    Boolean resumeWrite(@NonNull String owner, @NonNull String destination, @NonNull Path source, @NonNull Long offset) throws Exception;
-
     @NonNull
     Boolean upload(@NonNull Path sourcePath, @NonNull String destinationOwner, @NonNull Path destinationPath, @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception;
 
