@@ -17,6 +17,8 @@ Enter the following URLs:
 
 http://localhost:20000/openbis/webapp/openbis-v3-api-test/?webapp-code=openbis-v3-api-test
 http://localhost:20000/openbis/webapp/openbis-test/?webapp-code=openbis-test
+http://localhost:20000/openbis/webapp/eln-test/?webapp-code=eln-test
+
 
 If a test fails you can click on the test and only the failed test will be shown.
 
