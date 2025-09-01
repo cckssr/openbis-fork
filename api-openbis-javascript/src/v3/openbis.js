@@ -1062,6 +1062,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.createTypeGroups = function(creations) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "createTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, creations ]
+                },
+                returnType : {
+                    name : "List",
+                    arguments : [ "ITypeGroupId" ]
+                }
+            });
+        }
+
 		this.createTags = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -1331,6 +1346,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
+
+        this.updateTypeGroups = function(updates) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "updateTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, updates ]
+                }
+            });
+        }
 
 		this.updateTags = function(updates) {
 			var thisFacade = this;
@@ -2342,6 +2368,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
+
+		this.deleteTypeGroups = function(ids, deletionOptions) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "deleteTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+                }
+            });
+        }
 
 		this.deleteExperimentTypes = function(ids, deletionOptions) {
 			var thisFacade = this;
