@@ -38,6 +38,7 @@ const TOOL_BROWSER_ID = 'tool_browser'
 
 // form
 const ENTITY_TYPE_FORM_ID = 'entity_type_form'
+const OBJECT_TYPE_GROUP_FORM_ID = 'object_type_group_form'
 const VOCABULARY_TYPE_FORM_ID = 'vocabulary_type_form'
 const USER_FORM_ID = 'user_form'
 const USER_GROUP_FORM_ID = 'user_group_form'
@@ -88,6 +89,7 @@ export default {
 
   // forms
   ENTITY_TYPE_FORM_ID,
+  OBJECT_TYPE_GROUP_FORM_ID,
   VOCABULARY_TYPE_FORM_ID,
   USER_FORM_ID,
   USER_GROUP_FORM_ID,
