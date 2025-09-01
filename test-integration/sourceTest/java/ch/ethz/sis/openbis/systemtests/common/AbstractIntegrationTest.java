@@ -91,6 +91,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.RelativeLocationLocat
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.id.DataStorePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.deletion.id.IDeletionId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.IEntityTypeId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.create.ExperimentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.delete.ExperimentDeletionOptions;
@@ -107,12 +108,21 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.create.ProjectCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.IProjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyAssignmentCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.create.PropertyTypeCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.IPropertyTypeId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.id.PropertyTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleTypeCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
@@ -696,6 +706,37 @@ public abstract class AbstractIntegrationTest
                 TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
     }
 
+    public static SampleType createSampleType(OpenBIS openBIS, String sampleTypeCode, List<IPropertyTypeId> propertyTypeIds)
+    {
+        SampleTypeCreation sampleTypeCreation = new SampleTypeCreation();
+        sampleTypeCreation.setCode(sampleTypeCode);
+        if (propertyTypeIds != null)
+        {
+            List<PropertyAssignmentCreation> assignmentCreations = new ArrayList<>();
+            for (IPropertyTypeId propertyTypeId : propertyTypeIds)
+            {
+                PropertyAssignmentCreation assignmentCreation = new PropertyAssignmentCreation();
+                assignmentCreation.setPropertyTypeId(propertyTypeId);
+                assignmentCreations.add(assignmentCreation);
+            }
+            sampleTypeCreation.setPropertyAssignments(assignmentCreations);
+        }
+        List<EntityTypePermId> sampleTypeIds = openBIS.createSampleTypes(List.of(sampleTypeCreation));
+        SampleType sampleType = getSampleType(openBIS, sampleTypeIds.get(0));
+        log("Created sample type " + sampleType.getCode());
+        return sampleType;
+    }
+
+    public static PropertyType createPropertyType(OpenBIS openBIS, String propertyTypeCode)
+    {
+        PropertyTypeCreation propertyTypeCreation = new PropertyTypeCreation();
+        propertyTypeCreation.setCode(propertyTypeCode);
+        List<PropertyTypePermId> propertyTypeIds = openBIS.createPropertyTypes(List.of(propertyTypeCreation));
+        PropertyType propertyType = getPropertyType(openBIS, propertyTypeIds.get(0));
+        log("Created property type " + propertyType.getCode());
+        return propertyType;
+    }
+
     public static Space createSpace(OpenBIS openBIS, String spaceCode)
     {
         SpaceCreation spaceCreation = new SpaceCreation();
@@ -704,6 +745,16 @@ public abstract class AbstractIntegrationTest
         Space space = getSpace(openBIS, spaceIds.get(0));
         log("Created space " + space.getCode());
         return space;
+    }
+
+    public static SampleType getSampleType(OpenBIS openBIS, IEntityTypeId sampleTypeId)
+    {
+        return openBIS.getSampleTypes(List.of(sampleTypeId), new SampleTypeFetchOptions()).get(sampleTypeId);
+    }
+
+    public static PropertyType getPropertyType(OpenBIS openBIS, IPropertyTypeId propertyTypeId)
+    {
+        return openBIS.getPropertyTypes(List.of(propertyTypeId), new PropertyTypeFetchOptions()).get(propertyTypeId);
     }
 
     public static Space getSpace(OpenBIS openBIS, ISpaceId spaceId)
