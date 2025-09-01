@@ -16,11 +16,7 @@ export default class TypeGroupFormControllerAdd {
       id: 'objectType-' + objectTypesCounter++,
       selectObjectType: FormUtil.createField({}),
       code: FormUtil.createField({}),
-      label: FormUtil.createField({}),
       description: FormUtil.createField({}),
-      official: FormUtil.createField({
-        value: true
-      }),
       registrator: FormUtil.createField({
         value: AppController.getInstance().getUser(),
         visible: false,

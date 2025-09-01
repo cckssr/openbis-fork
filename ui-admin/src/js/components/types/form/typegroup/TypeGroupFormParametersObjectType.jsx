@@ -10,6 +10,7 @@ import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
 import MultipleSelectCheckmarks from '@src/js/components/types/form/typegroup/MultipleSelectCheckmarks.tsx'
+import SelectField from '@src/js/components/common/form/SelectField.jsx'
 
 const styles = theme => ({
   field: {
@@ -23,7 +24,6 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
     this.state = {}
     this.references = {
       code: React.createRef(),
-      description: React.createRef()
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -88,13 +88,8 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
     return (
       <Container>
         <Header>{messages.get(messages.OBJECT_TYPE)}</Header>
-        {this.renderSelectObjectType(objectType)}
         {this.renderMessageVisible(objectType)}
-        {this.renderMessageInternal(objectType)}
         {this.renderCode(objectType)}
-        {this.renderLabel(objectType)}
-        {this.renderDescription(objectType)}
-        {this.renderOfficial(objectType)}
       </Container>
     )
   }
@@ -117,59 +112,6 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
     }
   }
 
-  renderMessageInternal(term) {
-    const { classes, typeGroup } = this.props
-
-    if (typeGroup.internal.value && term.internal.value) {
-      if (AppController.getInstance().isSystemUser()) {
-        return (
-          <div className={classes.field}>
-            <Message type='lock'>
-              {messages.get(messages.OBJECT_TYPE_IS_INTERNAL)}
-            </Message>
-          </div>
-        )
-      } else {
-        return (
-          <div className={classes.field}>
-            <Message type='lock'>
-              {messages.get(messages.OBJECT_TYPE_IS_INTERNAL)}{' '}
-              {messages.get(messages.OBJECT_TYPE_CANNOT_BE_CHANGED_OR_REMOVED)}
-            </Message>
-          </div>
-        )
-      }
-    } else {
-      return null
-    }
-  }
-
- renderSelectObjectType(objectType) {
-     const { visible, enabled, error, value } = { ...objectType.selectObjectType }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <MultipleSelectCheckmarks
-          reference={this.references.selectObjectType}
-          label={messages.get(messages.SELECT_OBJECT_TYPE)}
-          name='selectObjectType'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
   renderCode(objectType) {
     const { visible, enabled, error, value } = { ...objectType.code }
 
@@ -177,96 +119,30 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
       return null
     }
 
-    const { mode, classes } = this.props
+    const { mode, classes, controller } = this.props
+    const objectTypesOptions = controller.getObjectTypesOptions()
+
+    let options = []
+    if (objectTypesOptions) {
+      options = objectTypesOptions.map(objectType => {
+        return {
+          label: objectType.text,
+          value: objectType.id
+        }
+      })
+    }
+
     return (
       <div className={classes.field}>
-        <TextField
+        <SelectField
           reference={this.references.code}
           label={messages.get(messages.CODE)}
           name='code'
+          error={error}
+          disabled={!enabled}
           mandatory={true}
-          error={error}
-          disabled={!enabled}
           value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderLabel(objectType) {
-    const { visible, enabled, error, value } = { ...objectType.label }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.label}
-          label={messages.get(messages.LABEL)}
-          name='label'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderDescription(objectType) {
-    const { visible, enabled, error, value } = { ...objectType.description }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.description}
-          label={messages.get(messages.DESCRIPTION)}
-          name='description'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  renderOfficial(objectType) {
-    const { visible, enabled, error, value } = { ...objectType.official }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <CheckboxField
-          reference={this.references.official}
-          label={messages.get(messages.OFFICIAL)}
-          name='official'
-          description={messages.get(messages.OFFICIAL_OBJECT_TYPE_HINT)}
-          error={error}
-          disabled={!enabled}
-          value={value}
+          options={options}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

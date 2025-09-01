@@ -36,19 +36,9 @@ const columns = [
     }
   },
   {
-    name: 'label',
-    label: messages.get(messages.LABEL),
-    getValue: ({ row }) => row.label.value
-  },
-  {
     name: 'description',
     label: messages.get(messages.DESCRIPTION),
     getValue: ({ row }) => row.description.value
-  },
-  {
-    name: 'official',
-    label: messages.get(messages.OFFICIAL),
-    getValue: ({ row }) => row.official.value
   },
   GridUtil.registratorColumn({ path: 'registrator.value' }),
   GridUtil.registrationDateColumn({ path: 'registrationDate.value' })
@@ -117,7 +107,7 @@ class TypeGroupForm extends React.PureComponent {
 
   renderMainPanel() {
     const { objectTypes, selection } = this.state
-
+    console.log('TypeGroupForm.renderMainPanel', {selection}, {objectTypes})
     const id = ids.TYPE_GROUP_OBJECT_TYPES_GRID_ID
 
     return (

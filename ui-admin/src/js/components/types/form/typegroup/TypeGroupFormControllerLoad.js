@@ -14,12 +14,14 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         return
       }
     }
+    await this._loadOptionObjectTypes()
 
     const typeGroup = this._createTypeGroup(loadedTypeGroup)
 
     let objectTypesCounter = 0
     let objectTypes = []
 
+    console.log('TypeGroupFormControllerLoad.load', loadedTypeGroup)
     if (loadedTypeGroup && loadedTypeGroup.typeGroupAssignments) {
       objectTypes = loadedTypeGroup.typeGroupAssignments.map(typeGroupAssignment =>
         this._createObjectType('objectType-' + objectTypesCounter++, loadedTypeGroup, typeGroupAssignment)
@@ -40,7 +42,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         objectTypes: objectTypes.map(objectType => objectType.original)
       }
     })
-  } 
+  }
 
   _createTypeGroup(loadedTypeGroup) {
     const registrator = _.get(loadedTypeGroup, 'registrator.userId', null)
@@ -72,15 +74,6 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createObjectType(id, loadedTypeGroup, loadedTypeGroupAssignment) {
-    const official = _.get(loadedTypeGroupAssignment, 'official', false)
-    const registrator = _.get(loadedTypeGroupAssignment, 'registrator.userId', null)
-    const internalTypeGroup = _.get(
-      loadedTypeGroup,
-      'managedInternally',
-      false
-    )
-    const managedInternally = _.get(loadedTypeGroupAssignment, 'managedInternally', false)
-    const internalTypeGroupAssignment = internalTypeGroup && managedInternally
 
     const sampleType = _.get(loadedTypeGroupAssignment, 'sampleType', null)
 
@@ -90,22 +83,12 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         value: _.get(sampleType, 'code', null),
         enabled: false
       }),
-      label: FormUtil.createField({
-        value: _.get(sampleType, 'label', null),
-        enabled: !internalTypeGroupAssignment || AppController.getInstance().isSystemUser()
-      }),
       description: FormUtil.createField({
         value: _.get(sampleType, 'description', null),
-        enabled: !internalTypeGroupAssignment || AppController.getInstance().isSystemUser()
-      }),
-      official: FormUtil.createField({
-        value: official,
-        enabled:
-          !official &&
-          (!internalTypeGroupAssignment || AppController.getInstance().isSystemUser())
+        enabled: false
       }),
       registrator: FormUtil.createField({
-        value: registrator,
+        value:  _.get(loadedTypeGroupAssignment, 'registrator.userId', null),
         visible: false,
         enabled: false
       }),
@@ -115,7 +98,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         enabled: false
       }),
       internal: FormUtil.createField({
-        value: managedInternally,
+        value: _.get(sampleType, 'managedInternally', false),
         visible: false,
         enabled: false
       })
@@ -155,5 +138,12 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
     } else {
       return null
     }
+  }
+
+  async _loadOptionObjectTypes() {
+    const objectTypesOptions = await this.facade.loadObjectTypesOptions()
+    await this.context.setState(() => ({
+      objectTypesOptions: objectTypesOptions
+    }))
   }
 }

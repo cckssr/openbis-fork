@@ -56,4 +56,9 @@ export default class TypeGroupFormController extends PageController {
 	handleSave() {
 		return new TypeGroupFormControllerSave(this).execute()
 	}
+
+	getObjectTypesOptions() {
+		const { objectTypesOptions } = this.context.getState()
+		return objectTypesOptions || {}
+	  }
 }
