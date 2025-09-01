@@ -1,5 +1,6 @@
 import PageControllerValidate from '@src/js/components/common/page/PageConrollerValidate.js'
 import messages from '@src/js/common/messages.js'
+import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/TypeGroupFormSelectionType.js'
 
 export default class TypeGroupFormControllerValidate extends PageControllerValidate {
   validate(validator) {

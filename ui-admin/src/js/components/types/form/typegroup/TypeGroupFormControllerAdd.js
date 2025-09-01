@@ -1,6 +1,6 @@
 import AppController from '@src/js/components/AppController.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
-import VocabularyTypeFormSelectionType from '@src/js/components/types/form/vocabularytype/VocabularyTypeFormSelectionType.js'
+import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/TypeGroupFormSelectionType.js'
 
 export default class TypeGroupFormControllerAdd {
   constructor(controller) {
@@ -10,10 +10,11 @@ export default class TypeGroupFormControllerAdd {
   }
 
   async execute() {
-    let { terms, termsCounter } = this.context.getState()
+    let { objectTypes, objectTypesCounter } = this.context.getState()
 
-    const newTerm = {
-      id: 'term-' + termsCounter++,
+    const newObjectType = {
+      id: 'objectType-' + objectTypesCounter++,
+      selectObjectType: FormUtil.createField({}),
       code: FormUtil.createField({}),
       label: FormUtil.createField({}),
       description: FormUtil.createField({}),
@@ -37,17 +38,17 @@ export default class TypeGroupFormControllerAdd {
         })
     }
 
-    const newTerms = Array.from(terms)
-    newTerms.push(newTerm)
+    const newObjectTypes = Array.from(objectTypes)
+    newObjectTypes.push(newObjectType)
 
     await this.context.setState(state => ({
       ...state,
-      terms: newTerms,
-      termsCounter,
+      objectTypes: newObjectTypes,
+      objectTypesCounter,
       selection: {
-        type: VocabularyTypeFormSelectionType.TERM,
+        type: TypeGroupFormSelectionType.OBJECT_TYPE,
         params: {
-          id: newTerm.id,
+          id: newObjectType.id,
           part: 'code'
         }
       }
@@ -55,8 +56,8 @@ export default class TypeGroupFormControllerAdd {
 
     if (this.gridController) {
       await this.gridController.load()
-      await this.gridController.selectRow(newTerm.id)
-      await this.gridController.showRow(newTerm.id)
+      await this.gridController.selectRow(newObjectType.id)
+      await this.gridController.showRow(newObjectType.id)
     }
 
     await this.controller.changed(true)

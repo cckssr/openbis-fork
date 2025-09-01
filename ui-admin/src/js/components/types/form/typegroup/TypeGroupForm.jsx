@@ -103,7 +103,7 @@ class TypeGroupForm extends React.PureComponent {
 
     return (
       <PageWithTwoPanels
-        id={ids.TYPE_GROUP_FORM_ID}
+        id={ids.OBJECT_TYPE_GROUP_FORM_ID}
         key={loadId}
         loading={loading}
         loaded={loaded}
@@ -148,12 +148,13 @@ class TypeGroupForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     const { controller } = this
-    const { typeGroup, selection, selectedRow, mode } = this.state
+    const { typeGroup, objectTypes, selection, selectedRow, mode } = this.state
 
     return (
       <TypeGroupFormParameters
         controller={controller}
         typeGroup={typeGroup}
+        objectTypes={objectTypes}
         selection={selection}
         selectedRow={selectedRow}
         mode={mode}
@@ -166,7 +167,7 @@ class TypeGroupForm extends React.PureComponent {
 
   renderButtons() {
     const { controller } = this
-    const { typeGroup, selection, changed, mode } = this.state
+    const { typeGroup, objectTypes, selection, changed, mode } = this.state
 
     return (
       <TypeGroupFormButtons
@@ -176,6 +177,7 @@ class TypeGroupForm extends React.PureComponent {
         onAdd={controller.handleAdd}
         onRemove={controller.handleRemove}
         typeGroup={typeGroup}
+        objectTypes={objectTypes}
         selection={selection}
         changed={changed}
         mode={mode}

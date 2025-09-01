@@ -37,13 +37,13 @@ class TypeGroupFormButtons extends React.PureComponent {
         <React.Fragment>
           <Button
             name='addObjectType'
-            label='Add Object Type'
+            label={messages.get(messages.ADD_OBJECT_TYPE)}
             styles={{ root: classes.button }}
             onClick={onAdd}
           />
           <Button
             name='removeObjectType'
-            label='Remove Object Type'
+            label={messages.get(messages.REMOVE_OBJECT_TYPE)}
             styles={{ root: classes.button }}
             disabled={
               !(

@@ -2,6 +2,7 @@ import _ from 'lodash'
 import AppController from '@src/js/components/AppController.js'
 import PageControllerLoad from '@src/js/components/common/page/PageControllerLoad.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/TypeGroupFormSelectionType.js'
 
 export default class TypeGroupFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {

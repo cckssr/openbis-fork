@@ -44,13 +44,14 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     const creation = new openbis.TypeGroupCreation()
     creation.setCode(typeGroup.code.value)
     creation.setManagedInternally(typeGroup.internal.value)
-    creation.setChosenFromList(true)
+    //creation.setMetaData(typeGroup.metaData.value)
     return new openbis.CreateTypeGroupsOperation([creation])
   }
 
   _updateTypeGroupOperation(typeGroup) {
     const update = new openbis.TypeGroupUpdate()
-    update.setTypeGroupId(new openbis.TypeGroupPermId(typeGroup.code.value))
+    update.setTypeGroupId(new openbis.TypeGroupId(typeGroup.code.value))
+    //update.setMetaData(typeGroup.metaData.value)
     return new openbis.UpdateTypeGroupsOperation([update])
   }
 

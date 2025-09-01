@@ -1,195 +1,55 @@
 import React from 'react'
 import withStyles from '@mui/styles/withStyles';
-import AppController from '@src/js/components/AppController.js'
-import Container from '@src/js/components/common/form/Container.jsx'
-import Header from '@src/js/components/common/form/Header.jsx'
-import TextField from '@src/js/components/common/form/TextField.jsx'
-import CheckboxField from '@src/js/components/common/form/CheckboxField.jsx'
-import Message from '@src/js/components/common/form/Message.jsx'
-import messages from '@src/js/common/messages.js'
+import TypeGroupFormParametersTypeGroup from '@src/js/components/types/form/typegroup/TypeGroupFormParametersTypeGroup.jsx'
+import TypeGroupFormParametersObjectType from '@src/js/components/types/form/typegroup/TypeGroupFormParametersObjectType.jsx'
 import logger from '@src/js/common/logger.js'
-import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/TypeGroupFormSelectionType.js'
 
-const styles = theme => ({
-  field: {
-    paddingBottom: theme.spacing(1)
-  }
-})
+const styles = () => ({})
 
 class TypeGroupFormParameters extends React.PureComponent {
   constructor(props) {
     super(props)
-    this.state = {}
-    this.references = {
-      code: React.createRef(),
-      internal: React.createRef(),
-    }
-    this.handleChange = this.handleChange.bind(this)
-    this.handleFocus = this.handleFocus.bind(this)
-    this.handleBlur = this.handleBlur.bind(this)
-  }
-
-  componentDidMount() {
-    this.focus()
-  }
-
-  componentDidUpdate(prevProps) {
-    const prevSelection = prevProps.selection
-    const selection = this.props.selection
-
-    if (prevSelection !== selection) {
-      this.focus()
-    }
-  }
-
-  focus() {
-    const typeGroup = this.getTypeGroup(this.props)
-    if (typeGroup && this.props.selection) {
-      const { part } = this.props.selection.params
-      if (part) {
-        const reference = this.references[part]
-        if (reference && reference.current) {
-          reference.current.focus()
-        }
-      }
-    }
-  }
-
-  handleChange(event) {
-    this.props.onChange(TypeGroupFormSelectionType.TYPE_GROUP, {
-      field: event.target.name,
-      value: event.target.value
-    })
-  }
-
-  handleFocus(event) {
-    this.props.onSelectionChange(TypeGroupFormSelectionType.TYPE_GROUP, {
-      part: event.target.name
-    })
-  }
-
-  handleBlur() {
-    this.props.onBlur()
   }
 
   render() {
     logger.log(logger.DEBUG, 'TypeGroupFormParameters.render')
-    console.log()
-    const typeGroup = this.getTypeGroup(this.props)
-    if (!typeGroup) {
-      return null
-    }
+
+    const {
+      controller,
+      typeGroup,
+      objectTypes,
+      selection,
+      selectedRow,
+      mode,
+      onChange,
+      onSelectionChange,
+      onBlur
+    } = this.props
 
     return (
-      <Container>
-        {this.renderHeader(typeGroup)}
-        {this.renderMessageInternal(typeGroup)}
-        {this.renderCode(typeGroup)}
-        {this.renderInternal(typeGroup)}
-      </Container>
-    )
-  }
-
-  renderHeader(typeGroup) {
-    const message = typeGroup.original
-      ? messages.OBJECT_TYPE_GROUP
-      : messages.NEW_OBJECT_TYPE_GROUP
-    return <Header>{messages.get(message)}</Header>
-  }
-
-  renderMessageInternal(typeGroup) {
-    const { classes } = this.props
-
-    if (typeGroup.internal.value) {
-      if (AppController.getInstance().isSystemUser()) {
-        return (
-          <div className={classes.field}>
-            <Message type='lock'>
-              {messages.get(messages.VOCABULARY_TYPE_IS_INTERNAL)}
-            </Message>
-          </div>
-        )
-      } else {
-        return (
-          <div className={classes.field}>
-            <Message type='lock'>
-              {messages.get(messages.VOCABULARY_TYPE_IS_INTERNAL)}{' '}
-              {messages.get(
-                messages.VOCABULARY_TYPE_CANNOT_BE_CHANGED_OR_REMOVED
-              )}
-            </Message>
-          </div>
-        )
-      }
-    } else {
-      return null
-    }
-  }
-
-  renderCode(typeGroup) {
-    const { visible, enabled, error, value } = { ...typeGroup.code }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <TextField
-          reference={this.references.code}
-          label={messages.get(messages.CODE)}
-          name='code'
-          mandatory={true}
-          error={error}
-          disabled={!enabled}
-          value={value}
+      <div>
+        <TypeGroupFormParametersTypeGroup
+          controller={controller}
+          typeGroup={typeGroup}
+          selection={selection}
           mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+        <TypeGroupFormParametersObjectType
+          controller={controller}
+          typeGroup={typeGroup}
+          objectTypes={objectTypes}
+          selection={selection}
+          selectedRow={selectedRow}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
         />
       </div>
     )
-  }
-
-  renderInternal(typeGroup) {
-    const { visible, enabled, error, value } = { ...typeGroup.internal }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <CheckboxField
-          reference={this.references.internal}
-          label={messages.get(messages.INTERNAL)}
-          name='internal'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
-  getTypeGroup(props) {
-    let { typeGroup, selection } = props
-
-    if (
-      !selection ||
-      selection.type === TypeGroupFormSelectionType.TYPE_GROUP
-    ) {
-      return typeGroup
-    } else {
-      return null
-    }
   }
 }
 
