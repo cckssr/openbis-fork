@@ -31,7 +31,7 @@ class TypeGroupFormButtons extends React.PureComponent {
 
   renderAdditionalButtons({ mode, classes }) {
     if (mode === PageMode.EDIT) {
-      const { onAdd, onRemove } = this.props
+      const { onAdd, onRemove, selection } = this.props
 
       return (
         <React.Fragment>
@@ -48,7 +48,7 @@ class TypeGroupFormButtons extends React.PureComponent {
             disabled={
               !(
                 this.isNonSystemInternalObjectTypeSelected() ||
-                AppController.getInstance().isSystemUser()
+                (selection && AppController.getInstance().isSystemUser())
               )
             }
             onClick={onRemove}
@@ -68,7 +68,7 @@ class TypeGroupFormButtons extends React.PureComponent {
       return !(
         typeGroup.internal.value && objectType.internal.value
       )
-    } else {  
+    } else {
       return false
     }
   }
