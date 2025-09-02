@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +37,10 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 
 public class ElnDropbox implements IFolderListener
 {
+
+    public static final String DISCARD_FILES_PATTERNS = "discard-files-patterns";
+
+    public static final String ILLEGAL_FILES_PATTERNS = "illegal-files-patterns";
 
     private static final String INVALID_FORMAT_ERROR_MESSAGE =
             "Invalid format for the folder name, should follow the pattern <ENTITY_KIND>+<SPACE_CODE>+<PROJECT_CODE>+[<EXPERIMENT_CODE>|<SAMPLE_CODE>]+<OPTIONAL_DATASET_TYPE>+<OPTIONAL_NAME>";
@@ -71,10 +76,10 @@ public class ElnDropbox implements IFolderListener
 
     @Override public void configure(final Properties properties)
     {
-        List<String> discardFilesStringPatterns = PropertyUtils.getList(properties, "discard-files-patterns");
+        List<String> discardFilesStringPatterns = PropertyUtils.getList(properties, DISCARD_FILES_PATTERNS);
         discardFilesPatterns = compilePatterns(discardFilesStringPatterns);
 
-        List<String> illegalFilesStringPatterns = PropertyUtils.getList(properties, "illegal-files-patterns");
+        List<String> illegalFilesStringPatterns = PropertyUtils.getList(properties, ILLEGAL_FILES_PATTERNS);
         illegalFilesPatterns = compilePatterns(illegalFilesStringPatterns);
 
         jsonObjectMapper = new ObjectMapper();
@@ -86,7 +91,13 @@ public class ElnDropbox implements IFolderListener
 
         for (String stringPattern : stringPatterns)
         {
-            patterns.add(Pattern.compile(stringPattern));
+            try
+            {
+                patterns.add(Pattern.compile(stringPattern));
+            } catch (PatternSyntaxException e)
+            {
+                throw new UserFailureException(INVALID_PATTERN_ERROR_MESSAGE, e);
+            }
         }
 
         return patterns;

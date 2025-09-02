@@ -1,10 +1,13 @@
 package ch.ethz.sis.openbis.systemtests;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -354,6 +357,80 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         } catch (Exception e)
         {
             Assert.assertEquals(e.getMessage(), "NAME property specified twice, it should just be in either folder name or metadata.json");
+        }
+
+        List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(after.size(), 0);
+    }
+
+    @Test
+    public void testRegisterWithDiscardedFiles() throws IOException
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DISCARDED_FILES");
+
+        List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(before.size(), 0);
+
+        Path folder = Path.of("sourceTest/resource/" + getClass().getSimpleName()
+                + "/testRegisterWithDiscardedFiles/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_DISCARDED_FILES");
+        Files.createFile(folder.resolve("discard-me-1"));
+        Files.createFile(folder.resolve("discard-me-2"));
+        Files.createFile(folder.resolve("test-folder/discard-me-3"));
+        Files.createFile(folder.resolve("to-be-discarded-1"));
+        Files.createFile(folder.resolve("to-be-discarded-2"));
+        Files.createFile(folder.resolve("test-folder/to-be-discarded-3"));
+
+        try (Stream<Path> files = Files.list(folder))
+        {
+            Assert.assertEquals(files.count(), 6);
+        }
+
+        Properties properties = new Properties();
+        properties.setProperty(ElnDropbox.DISCARD_FILES_PATTERNS, "discard-me-.*, to-be-discarded-.*");
+
+        executeDropbox(properties, folder);
+
+        List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(after.size(), 1);
+
+        Sample owner = after.get(0);
+
+        File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        Assert.assertEquals(files.length, 4);
+
+        assertDirectory(files[0], "default", "/default");
+        assertFile(openBIS, files[1], "test-file.txt", "/default/test-file.txt", "test-content");
+        assertDirectory(files[2], "test-folder", "/default/test-folder");
+        assertFile(openBIS, files[3], "test-file-in-folder.txt", "/default/test-folder/test-file-in-folder.txt", "test-content-in-folder");
+    }
+
+    @Test
+    public void testRegisterWithIllegalFiles() throws IOException
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_ILLEGAL_FILES");
+
+        List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(before.size(), 0);
+
+        Properties properties = new Properties();
+        properties.setProperty(ElnDropbox.ILLEGAL_FILES_PATTERNS, "this-is-illegal-.*, illegal-.*");
+
+        try
+        {
+            executeDropbox(properties, Path.of("sourceTest/resource/" + getClass().getSimpleName()
+                    + "/testRegisterWithIllegalFiles/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_ILLEGAL_FILES"));
+            Assert.fail();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Directory contains illegal files:\n"
+                    + "sourceTest/resource/IntegrationElnDropboxTest/testRegisterWithIllegalFiles/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_ILLEGAL_FILES/test-folder/illegal-file\n");
         }
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
