@@ -9,7 +9,6 @@ import Message from '@src/js/components/common/form/Message.jsx'
 import TypeGroupFormSelectionType from '@src/js/components/types/form/typegroup/TypeGroupFormSelectionType.js'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
-import MultipleSelectCheckmarks from '@src/js/components/types/form/typegroup/MultipleSelectCheckmarks.tsx'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 
 const styles = theme => ({
@@ -24,6 +23,7 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
     this.state = {}
     this.references = {
       code: React.createRef(),
+      internal: React.createRef(),
     }
     this.handleChange = this.handleChange.bind(this)
     this.handleFocus = this.handleFocus.bind(this)
@@ -89,7 +89,9 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
       <Container>
         <Header>{messages.get(messages.OBJECT_TYPE)}</Header>
         {this.renderMessageVisible(objectType)}
+        {this.renderMessageInternal(objectType)}
         {this.renderCode(objectType)}
+        {this.renderInternal(objectType)}
       </Container>
     )
   }
@@ -107,6 +109,34 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
           </Message>
         </div>
       )
+    } else {
+      return null
+    }
+  }
+
+  renderMessageInternal(objectType) {
+    console.log('TypeGroupFormParametersObjectType.renderMessageInternal', objectType)
+    const { classes } = this.props
+
+    if (objectType.internal.value) {
+      if (AppController.getInstance().isSystemUser()) {
+        return (
+          <div className={classes.field}>
+            <Message type='lock'>
+              {messages.get(messages.OBJECT_TYPE_GROUP_ASSIGNMENT_IS_INTERNAL)}
+            </Message>
+          </div>
+        )
+      } else {
+        return (
+          <div className={classes.field}>
+            <Message type='lock'>
+              {messages.get(messages.OBJECT_TYPE_GROUP_ASSIGNMENT_IS_INTERNAL)}{' '}
+              {messages.get(messages.OBJECT_TYPE_GROUP_ASSIGNMENT_CANNOT_BE_CHANGED_OR_REMOVED)}
+            </Message>
+          </div>
+        )
+      }
     } else {
       return null
     }
@@ -143,6 +173,32 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
           mandatory={true}
           value={value}
           options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
+  renderInternal(objectType) {
+    const { visible, enabled, error, value } = { ...objectType.internal }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.internal}
+          label={messages.get(messages.INTERNAL)}
+          name='internal'
+          error={error}
+          disabled={!enabled}
+          value={value}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

@@ -37,14 +37,15 @@ class TypeGroupsGrid extends React.PureComponent {
               return row.internal;
             },
             renderValue: ({ value }) => {
-              if(value) {
-                  return <LockLabel fontSize='small' color='disabled' />
+              if (value) {
+                return <LockLabel fontSize='small' color='disabled' />
               }
               return null;
             }
           },
           GridUtil.registratorColumn({ path: 'registrator' }),
           GridUtil.registrationDateColumn({ path: 'registrationDate' }),
+          GridUtil.modifierColumn({ path: 'modifier' }),
           GridUtil.modificationDateColumn({ path: 'modificationDate' })
         ]}
         rows={rows}

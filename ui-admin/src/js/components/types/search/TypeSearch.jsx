@@ -100,9 +100,13 @@ class TypeSearch extends React.Component {
       return
     }
 
+    const fetchOptions = new openbis.TypeGroupFetchOptions()
+    fetchOptions.withRegistrator()
+    fetchOptions.withModifier()
+
     const result = await openbis.searchTypeGroups(
       new openbis.TypeGroupSearchCriteria(),
-      new openbis.TypeGroupFetchOptions()
+      fetchOptions
     )
     const types = util
       .filter(result.objects, this.props.searchText, ['code'])

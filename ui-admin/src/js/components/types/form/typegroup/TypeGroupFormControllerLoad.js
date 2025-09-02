@@ -14,8 +14,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         return
       }
     }
-    await this._loadOptionObjectTypes()
-
+    
     const typeGroup = this._createTypeGroup(loadedTypeGroup)
 
     let objectTypesCounter = 0
@@ -27,12 +26,16 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         this._createObjectType('objectType-' + objectTypesCounter++, loadedTypeGroup, typeGroupAssignment)
       )
     }
+    
     const selection = this._createSelection(objectTypes)
 
     console.log('TypeGroupFormControllerLoad.load', typeGroup)
     console.log('TypeGroupFormControllerLoad.load', objectTypes)
 
+    const objectTypesOptions = await this.facade.loadObjectTypesOptions(objectTypes)
+
     return this.context.setState({
+      objectTypesOptions,
       typeGroup,
       objectTypes,
       objectTypesCounter,
@@ -45,14 +48,14 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createTypeGroup(loadedTypeGroup) {
-    const registrator = _.get(loadedTypeGroup, 'registrator.userId', null)
+    const code = _.get(loadedTypeGroup, 'code', null)
     const internal = _.get(loadedTypeGroup, 'managedInternally', false)
-
+    const registrator = _.get(loadedTypeGroup, 'registrator.userId', null)
     const typeGroup = {
-      id: _.get(loadedTypeGroup, 'code', null),
+      id: code,
       code: FormUtil.createField({
-        value: _.get(loadedTypeGroup, 'code', null),
-        enabled: loadedTypeGroup === null
+        value: code,
+        enabled: true
       }),
       internal: FormUtil.createField({
         value: internal,
@@ -74,7 +77,6 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createObjectType(id, loadedTypeGroup, loadedTypeGroupAssignment) {
-
     const sampleType = _.get(loadedTypeGroupAssignment, 'sampleType', null)
 
     const objectType = {
@@ -98,10 +100,12 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         enabled: false
       }),
       internal: FormUtil.createField({
-        value: _.get(sampleType, 'managedInternally', false),
-        visible: false,
-        enabled: false
-      })
+        value: _.get(loadedTypeGroupAssignment, 'managedInternally', false),
+        visible: AppController.getInstance().isSystemUser(),
+        enabled:
+          loadedTypeGroupAssignment === null &&
+          AppController.getInstance().isSystemUser()
+      }),
     }
     objectType.original = _.cloneDeep(objectType)
     return objectType
@@ -138,12 +142,5 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
     } else {
       return null
     }
-  }
-
-  async _loadOptionObjectTypes() {
-    const objectTypesOptions = await this.facade.loadObjectTypesOptions()
-    await this.context.setState(() => ({
-      objectTypesOptions: objectTypesOptions
-    }))
   }
 }

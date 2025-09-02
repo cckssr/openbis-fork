@@ -9,24 +9,25 @@ export default class TypeGroupFormFacade {
     fo.withTypeGroupAssignments()
     fo.withTypeGroupAssignments().withRegistrator()
     fo.withTypeGroupAssignments().withSampleType()
-	  fo.withRegistrator()
+
     const typeGroup = await openbis.getTypeGroups([id], fo)
     console.log('TypeGroupFormFacade.loadTypeGroup', typeGroup)
     return typeGroup[code]
   }
 
-  async loadObjectTypesOptions() {
+  async loadObjectTypesOptions(selectedObjectTypes) {
 
     const fetchOptions = new openbis.SampleTypeFetchOptions()
     fetchOptions.withValidationPlugin()
     
     const result = await openbis.searchSampleTypes(new openbis.SampleTypeSearchCriteria(), fetchOptions)
 
-    let objects = result.objects.map(o => ({
+    let objects = result.objects
+    .filter(o => !selectedObjectTypes.some(selectedObjectType => selectedObjectType.code.value === o.getCode()))
+    .map(o => ({
       id: o.getCode(),
       code: o.getCode(),
       description: _.get(o, 'description'),
-      internal: _.get(o, 'managedInternally'),
       text: o.getCode()
     }))
 

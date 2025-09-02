@@ -14,7 +14,6 @@ export default class TypeGroupFormControllerAdd {
 
     const newObjectType = {
       id: 'objectType-' + objectTypesCounter++,
-      selectObjectType: FormUtil.createField({}),
       code: FormUtil.createField({}),
       description: FormUtil.createField({}),
       registrator: FormUtil.createField({
@@ -28,9 +27,8 @@ export default class TypeGroupFormControllerAdd {
       }),
       original: null,
       internal: FormUtil.createField({
-          value: false,
-          visible: false,
-          enabled: false
+          visible: AppController.getInstance().isSystemUser(),
+          enabled: AppController.getInstance().isSystemUser()
         })
     }
 
