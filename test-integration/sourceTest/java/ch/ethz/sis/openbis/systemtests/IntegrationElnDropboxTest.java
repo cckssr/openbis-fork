@@ -65,6 +65,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(after.size(), 1);
 
         Sample owner = after.get(0);
+        Assert.assertEquals(owner.getProperties().size(), 0);
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
         Arrays.sort(files, Comparator.comparing(File::getPath));
@@ -91,6 +92,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(after.size(), 1);
 
         Sample owner = after.get(0);
+        Assert.assertEquals(owner.getProperties().size(), 0);
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
         Arrays.sort(files, Comparator.comparing(File::getPath));
@@ -120,6 +122,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(after.size(), 1);
 
         Sample owner = after.get(0);
+        Assert.assertEquals(owner.getProperties().size(), 0);
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
         Arrays.sort(files, Comparator.comparing(File::getPath));
@@ -151,6 +154,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(owner.getSpace().getCode(), "ELN_DROPBOX_SPACE");
         Assert.assertNull(owner.getProject());
         Assert.assertNull(owner.getExperiment());
+        Assert.assertEquals(owner.getProperties().size(), 1);
         Assert.assertEquals(owner.getProperties().get("NAME"), "ELN_DROPBOX_SAMPLE_NAME");
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
@@ -200,6 +204,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(owner.getSpace().getCode(), "ELN_DROPBOX_SPACE");
         Assert.assertEquals(owner.getProject().getCode(), "ELN_DROPBOX_PROJECT");
         Assert.assertNull(owner.getExperiment());
+        Assert.assertEquals(owner.getProperties().size(), 1);
         Assert.assertEquals(owner.getProperties().get("NAME"), "ELN_DROPBOX_SAMPLE_NAME");
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
@@ -249,6 +254,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         Assert.assertEquals(owner.getSpace().getCode(), "ELN_DROPBOX_SPACE");
         Assert.assertEquals(owner.getProject().getCode(), "ELN_DROPBOX_PROJECT");
         Assert.assertEquals(owner.getExperiment().getCode(), "TEST_REGISTER_IN_EXPERIMENT");
+        Assert.assertEquals(owner.getProperties().size(), 1);
         Assert.assertEquals(owner.getProperties().get("NAME"), "ELN_DROPBOX_SAMPLE_NAME");
 
         File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
@@ -274,6 +280,84 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
             Assert.assertEquals(e.getMessage(),
                     "Invalid format for the folder name, should follow the pattern <ENTITY_KIND>+<SPACE_CODE>+<PROJECT_CODE>+[<EXPERIMENT_CODE>|<SAMPLE_CODE>]+<OPTIONAL_DATASET_TYPE>+<OPTIONAL_NAME>:Experiment not found");
         }
+    }
+
+    @Test
+    public void testRegisterWithMetadata()
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_METADATA");
+
+        List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(before.size(), 0);
+
+        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+                + "/testRegisterWithMetadata/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_METADATA+ELN_DROPBOX_SAMPLE_TYPE"));
+
+        List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(after.size(), 1);
+
+        Sample owner = after.get(0);
+        Assert.assertEquals(owner.getProperties().size(), 1);
+        Assert.assertEquals(owner.getProperties().get("NAME"), "test-name-set-in-metadata-file");
+
+        File[] files = openBIS.getAfsServerFacade().list(owner.getPermId().getPermId(), "", true);
+        Arrays.sort(files, Comparator.comparing(File::getPath));
+        Assert.assertEquals(files.length, 1);
+
+        assertFile(openBIS, files[0], "test-file.txt", "/test-file.txt", "test-content");
+    }
+
+    @Test
+    public void testRegisterWithIncorrectMetadata()
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_INCORRECT_METADATA");
+
+        List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(before.size(), 0);
+
+        try
+        {
+            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+                    + "/testRegisterWithIncorrectMetadata/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_INCORRECT_METADATA"));
+            Assert.fail();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Failed to parse JSON metadata file");
+        }
+
+        List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(after.size(), 0);
+    }
+
+    @Test
+    public void testRegisterWithDuplicatedName()
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DUPLICATED_NAME");
+
+        List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(before.size(), 0);
+
+        try
+        {
+            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+                    + "/testRegisterWithDuplicatedName/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_DUPLICATED_NAME+ELN_DROPBOX_SAMPLE_TYPE+ELN_DROPBOX_SAMPLE_NAME"));
+            Assert.fail();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "NAME property specified twice, it should just be in either folder name or metadata.json");
+        }
+
+        List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
+        Assert.assertEquals(after.size(), 0);
     }
 
     private static void executeDropbox(Properties properties, Path incoming)

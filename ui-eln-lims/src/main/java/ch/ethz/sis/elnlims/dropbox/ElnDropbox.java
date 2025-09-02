@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -17,9 +16,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import ch.ethz.sis.afsapi.api.ClientAPI;
-import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -47,6 +46,8 @@ public class ElnDropbox implements IFolderListener
 
     private static final String FAILED_TO_PARSE_EXPERIMENT_ERROR_MESSAGE = "Failed to parse experiment";
 
+    private static final String FAILED_TO_PARSE_JSON_METADATA_FILE_ERROR_MESSAGE = "Failed to parse JSON metadata file";
+
     private static final String FOLDER_CONTAINS_NON_DELETABLE_FILES_ERROR_MESSAGE = "Folder contains non-deletable files";
 
     private static final String SAMPLE_MISSING_ERROR_MESSAGE = "Sample not found";
@@ -66,7 +67,7 @@ public class ElnDropbox implements IFolderListener
 
     private List<Pattern> illegalFilesPatterns;
 
-    private JsonObjectMapper jsonObjectMapper;
+    private ObjectMapper jsonObjectMapper;
 
     @Override public void configure(final Properties properties)
     {
@@ -76,7 +77,7 @@ public class ElnDropbox implements IFolderListener
         List<String> illegalFilesStringPatterns = PropertyUtils.getList(properties, "illegal-files-patterns");
         illegalFilesPatterns = compilePatterns(illegalFilesStringPatterns);
 
-        jsonObjectMapper = new JacksonObjectMapper();
+        jsonObjectMapper = new ObjectMapper();
     }
 
     private List<Pattern> compilePatterns(List<String> stringPatterns)
@@ -286,7 +287,14 @@ public class ElnDropbox implements IFolderListener
                     if (fileName.equals("metadata.json"))
                     {
                         InputStream metadataStream = new BufferedInputStream(Files.newInputStream(item));
-                        Map metadata = jsonObjectMapper.readValue(metadataStream, Map.class);
+                        Map metadata;
+                        try
+                        {
+                            metadata = jsonObjectMapper.readValue(metadataStream, Map.class);
+                        } catch (Exception e)
+                        {
+                            throw new UserFailureException(FAILED_TO_PARSE_JSON_METADATA_FILE_ERROR_MESSAGE, e);
+                        }
                         Map<String, String> properties = (Map<String, String>) metadata.get("properties");
 
                         for (String propertyKey : properties.keySet())
@@ -332,7 +340,10 @@ public class ElnDropbox implements IFolderListener
             }
 
             openBIS.commitTransaction();
-        } catch (Exception exception)
+        } catch (
+
+                Exception exception)
+
         {
             try
             {
