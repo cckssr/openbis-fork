@@ -95,26 +95,7 @@ public class ImportDelegate
             throws IOException
     {
 
-        RoCrate crate = null;
-        if (headers.getContentType().equals("application/ld+json"))
-        {
-            // Unpack ro-crate
-            java.nio.file.Path roCrateMetadata = java.nio.file.Path.of("ro-crate-metadata.json");
-            SessionWorkSpaceManager.write(headers.getApiKey(), roCrateMetadata, body);
-
-            // Reading ro-crate model
-            RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
-            crate = roCrateFolderReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
-        } else if (headers.getContentType().equals("application/zip"))
-        {
-
-            Path path = Path.of(UUID.randomUUID() + ".zip");
-            SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
-            RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
-            crate = roCrateReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path).toString());
-        }
+        RoCrate crate = getRoCrate(headers, body);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
         List<IType> types = schemaFacade.getTypes();
         List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
@@ -153,6 +134,31 @@ public class ImportDelegate
         return new OpenBisImportResult(
                 apiResult.getObjectIds().stream().map(id -> id.toString()).toList(),
                 conversion.getExternalToOpenBisIdentifiers(), validationResult);
+    }
+
+    private static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
+    {
+        RoCrate crate = null;
+        if (headers.getContentType().equals("application/ld+json"))
+        {
+            // Unpack ro-crate
+            Path roCrateMetadata = Path.of("ro-crate-metadata.json");
+            SessionWorkSpaceManager.write(headers.getApiKey(), roCrateMetadata, body);
+
+            // Reading ro-crate model
+            RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+            crate = roCrateFolderReader.readCrate(
+                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
+        } else if (headers.getContentType().equals("application/zip"))
+        {
+
+            Path path = Path.of(UUID.randomUUID() + ".zip");
+            SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
+            RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
+            crate = roCrateReader.readCrate(
+                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path).toString());
+        }
+        return crate;
     }
 
     private static ImportOptions getImportOptions(ImportParams importParams)
