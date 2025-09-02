@@ -15,7 +15,6 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     console.log('TypeGroupFormControllerSave.save', {objectTypes})
     const operations = []
 
-
     if (typeGroup.original) {
       if (this._isTypeGroupUpdateNeeded(typeGroup)) {
         operations.push(this._updateTypeGroupOperation(typeGroup))
@@ -28,21 +27,14 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
       const objectType = _.find(objectTypes, ['id', originalObjectType.id])
       if (!objectType) {
         operations.push(
-          this._deleteObjectTypeOperation(typeGroup, originalObjectType)
+          this._deleteTypeGroupAssignmentOperation(typeGroup, originalObjectType)
         )
       }
     })
 
     objectTypes.forEach(objectType => {
-      if (objectType.original) {
-        if (this._isGroupAssignmentUpdateNeeded(group)) {
-          operations.push(
-            this._deleteGroupAssignmentOperation(user, group.original)
-          )
-          operations.push(this._createGroupAssignmentOperation(user, group))
-        }
-      } else {
-        operations.push(this._createGroupAssignmentOperation(user, group))
+      if (!objectType.original) {
+        operations.push(this._createTypeGroupAssignmentOperation(typeGroup, objectType))
       }
     })
 
@@ -51,13 +43,6 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     await this.facade.executeOperations(operations, options)
 
     return typeGroup.code.value
-  }
-
-
-  _isTypeGroupAssignmentUpdateNeeded(objectType) {
-    return FormUtil.haveFieldsChanged(objectType, objectType.original, [
-      'code',
-    ])
   }
 
   _prepareTypeGroup(typeGroup) {
@@ -86,15 +71,27 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
 
   _updateTypeGroupOperation(typeGroup) {
     const update = new openbis.TypeGroupUpdate()
-    update.setTypeGroupId(new openbis.TypeGroupId(typeGroup.code.value))
+    update.setTypeGroupId(new openbis.TypeGroupId(typeGroup.original.code.value))
+    update.setCode(typeGroup.code.value)
     //update.setMetaData(typeGroup.metaData.value)
     return new openbis.UpdateTypeGroupsOperation([update])
   }
 
-  _deleteObjectTypeOperation(typeGroup, objectType) {
-    const objectTypeId = new openbis.ObjectTypePermId(objectType.code.value)
-    const options = new openbis.ObjectTypeDeletionOptions()
+  _createTypeGroupAssignmentOperation(typeGroup, objectType) {
+    const assignment = new openbis.TypeGroupAssignmentCreation()
+    assignment.setTypeGroupId(new openbis.TypeGroupId(typeGroup.code.value))
+    assignment.setSampleTypeId(new openbis.EntityTypePermId(objectType.code.value, openbis.EntityKind.SAMPLE))
+    assignment.setManagedInternally(objectType.internal.value)
+    return new openbis.CreateTypeGroupAssignmentsOperation([assignment])
+  }
+
+  _deleteTypeGroupAssignmentOperation(typeGroup, objectType) {
+    const typeGroupAssignmentId = new openbis.TypeGroupAssignmentId( 
+      new openbis.EntityTypePermId(objectType.code.value, openbis.EntityKind.SAMPLE),
+      new openbis.TypeGroupId(typeGroup.code.value)
+    )
+    const options = new openbis.TypeGroupAssignmentDeletionOptions()
     options.setReason('deleted via ng_ui')
-    return new openbis.DeleteObjectTypesOperation([objectTypeId], options)
+    return new openbis.DeleteTypeGroupAssignmentOperation([typeGroupAssignmentId], options)
   }
 }
