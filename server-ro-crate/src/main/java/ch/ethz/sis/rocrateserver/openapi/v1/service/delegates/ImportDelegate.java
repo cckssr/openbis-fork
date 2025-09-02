@@ -139,7 +139,7 @@ public class ImportDelegate
     private static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
     {
         RoCrate crate = null;
-        if (headers.getContentType().equals("application/ld+json"))
+        if (headers.getContentType().contains("application/ld+json"))
         {
             // Unpack ro-crate
             Path roCrateMetadata = Path.of("ro-crate-metadata.json");
@@ -149,7 +149,7 @@ public class ImportDelegate
             RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
             crate = roCrateFolderReader.readCrate(
                     SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
-        } else if (headers.getContentType().equals("application/zip"))
+        } else if (headers.getContentType().contains("application/zip"))
         {
 
             Path path = Path.of(UUID.randomUUID() + ".zip");

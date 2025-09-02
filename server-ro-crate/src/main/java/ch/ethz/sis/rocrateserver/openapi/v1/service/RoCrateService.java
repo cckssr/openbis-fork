@@ -134,7 +134,7 @@ public class RoCrateService {
         try {
             InputStream inputStream = exportDelegate.export(openBIS, headers, body);
             return Response.ok(inputStream.readAllBytes())
-                    .type("application/zip").build();
+                    .type(headers.getAccept()).build();
         } catch (WebApplicationException e)
         {
 

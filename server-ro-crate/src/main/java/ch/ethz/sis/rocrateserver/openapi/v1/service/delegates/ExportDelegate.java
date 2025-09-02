@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @ApplicationScoped
 public class ExportDelegate
@@ -112,6 +114,17 @@ public class ExportDelegate
         java.nio.file.Path realTempRoCratePath =
                 SessionWorkSpaceManager.getRealPath(headers.getApiKey(), tempRoCratePath);
         writer.write(openBisModel, realTempRoCratePath);
+
+        if (headers.getAccept().equals("application/ld+json"))
+        {
+            ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
+            ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
+            InputStream inputStream = zipFile.getInputStream(zipEntry);
+            return inputStream;
+
+        }
+
+
         return SessionWorkSpaceManager.read(headers.getApiKey(), tempRoCratePath);
     }
 
