@@ -53,12 +53,22 @@ export default class PageControllerSave {
             newObject.id
           )
         } else if (oldObject.type === this.controller.getExistingObjectType()) {
-          AppController.getInstance().objectUpdate(
-            this.controller.getPage(),
-            oldObject.type,
-            oldObject.id
-          )
-        }
+          if (oldObject.id === newObject.id) {
+            AppController.getInstance().objectUpdate(
+              this.controller.getPage(),
+              oldObject.type,
+              oldObject.id
+            )
+          } else { 
+            AppController.getInstance().objectCreate(
+              this.controller.getPage(),
+              oldObject.type,
+              oldObject.id,
+              newObject.type,
+              newObject.id
+            )
+          }
+        } 
       }
     } catch (error) {
       AppController.getInstance().errorChange(error)
