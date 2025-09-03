@@ -306,7 +306,7 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
         try {
             if (sessionTokenFound) {
                 if (isValidInteractiveSession) {
-                    if (isValidInteractiveSessionFinished || errorFound) {
+                    if (isValidInteractiveSessionFinished) {
                         workersInUse.remove(sessionToken);
                         workersLastAccessed.remove(worker);
                     }
@@ -329,9 +329,8 @@ public class APIServer<CONNECTION, INPUT extends Request, OUTPUT extends Respons
             logger.catching(ex);
         }
 
-        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished ||
-                isValidNonInteractiveSession ||
-                errorFound;
+        boolean doCleanAndReturnWorker = isValidInteractiveSessionFinished || isValidNonInteractiveSession;
+
         if (doCleanAndReturnWorker) {
             CONNECTION connection = null;
 

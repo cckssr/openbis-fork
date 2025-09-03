@@ -50,19 +50,20 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
-public class IOUtils {
-
+public class IOUtils
+{
 
     /**
      * Regular expression pattern to validate filenames.
      * - Allows digits (0-9)
      * - Supports Unicode letters (\p{L}) for international filenames
      * - Permits common special characters:
-     *   - Space, dollar sign ($), exclamation mark (!), hash (#), percent (%),
-     *     single quote ('), parentheses (()), plus (+), comma (,), hyphen (-),
-     *     period (.), semicolon (;), equal sign (=), at (@), square brackets ([]),
-     *     caret (^), underscore (_), curly braces ({}), tilde (~), and slash (/).
+     * - Space, dollar sign ($), exclamation mark (!), hash (#), percent (%),
+     * single quote ('), parentheses (()), plus (+), comma (,), hyphen (-),
+     * period (.), semicolon (;), equal sign (=), at (@), square brackets ([]),
+     * caret (^), underscore (_), curly braces ({}), tilde (~), and slash (/).
      * - Ensures that filenames only contain allowed characters and avoid illegal ones.
      */
     private static final Pattern VALID_FILENAME_PATTERN =
@@ -72,7 +73,9 @@ public class IOUtils {
     //
 
     public static final Set<FilePermission> readPermissions = EnumSet.of(FilePermission.Read);
+
     public static final Set<FilePermission> writePermissions = EnumSet.of(FilePermission.Write);
+
     public static final Set<FilePermission> readWritePermissions = EnumSet.of(FilePermission.Read, FilePermission.Write);
 
     public static final Set<FilePermission> noPermissions = EnumSet.noneOf(FilePermission.class);
@@ -88,7 +91,8 @@ public class IOUtils {
 
     private static final FileAttribute<List<AclEntry>> defaultAclPermissions;
 
-    static {
+    static
+    {
         List<AclEntryPermission> aclEntryPermissions = List.of(
                 AclEntryPermission.READ_DATA,
                 AclEntryPermission.READ_ATTRIBUTES,
@@ -113,14 +117,17 @@ public class IOUtils {
 
         List<AclEntry> aclFilePermissions = List.of(aclEntry);
 
-        defaultAclPermissions = new FileAttribute<List<AclEntry>>() {
+        defaultAclPermissions = new FileAttribute<List<AclEntry>>()
+        {
             @Override
-            public String name() {
+            public String name()
+            {
                 return "acl:acl";
             }
 
             @Override
-            public List<AclEntry> value() {
+            public List<AclEntry> value()
+            {
                 return aclFilePermissions;
             }
         };
@@ -130,25 +137,31 @@ public class IOUtils {
     // String -> Java NIO2 Path
     //
 
-    public static String getParentPath(String source) {
+    public static String getParentPath(String source)
+    {
         Path sourcePath = getPathObject(source);
         Path sourcePathParent = sourcePath.getParent();
-        if (sourcePathParent != null) {
+        if (sourcePathParent != null)
+        {
             return sourcePathParent.toString().replace(WINDOWS_PATH_SEPARATOR, PATH_SEPARATOR);
-        } else {
+        } else
+        {
             return null;
         }
     }
 
-    public static String getPath(String source, String... more) {
+    public static String getPath(String source, String... more)
+    {
         StringBuilder buffer = new StringBuilder(source);
-        for (String morePart : more) {
+        for (String morePart : more)
+        {
             buffer.append('/').append(morePart);
         }
         return buffer.toString();
     }
 
-    private static Path getPathObject(String source, String... more) {
+    private static Path getPathObject(String source, String... more)
+    {
         return Paths.get(source, more);
     }
 
@@ -157,26 +170,35 @@ public class IOUtils {
     //
 
     public static final long NEW_FILE_SIZE = 0;
+
     private static final char WINDOWS_PATH_SEPARATOR = '\\';
+
     public static final char PATH_SEPARATOR = '/';
+
     public static final String PATH_SEPARATOR_AS_STRING = String.valueOf(IOUtils.PATH_SEPARATOR);
+
     public static final String RELATIVE_PATH_ROOT = "./";
+
     public static final String ABSOLUTE_PATH_ROOT = PATH_SEPARATOR_AS_STRING;
 
-    public static File getFile(String path) throws IOException {
+    public static File getFile(String path) throws IOException
+    {
         return getFile(getPathObject(path));
     }
 
-    private static File getFile(Path path) throws IOException {
+    private static File getFile(Path path) throws IOException
+    {
         String absolutePath = path.toString().replace(WINDOWS_PATH_SEPARATOR, PATH_SEPARATOR);
         String name = path.getFileName().toString();
 
         Long size;
         boolean isDirectory = isDirectory(path);
 
-        if (isDirectory) {
+        if (isDirectory)
+        {
             size = null;
-        } else {
+        } else
+        {
             size = size(path);
         }
 
@@ -213,40 +235,52 @@ public class IOUtils {
     // List
     //
 
-    public static List<File> list(String dir, boolean recursively) throws IOException {
+    public static List<File> list(String dir, boolean recursively) throws IOException
+    {
         Path dirAsPath = getPathObject(dir);
-        if (!isDirectory(dirAsPath)) {
+        if (!isDirectory(dirAsPath))
+        {
             throw new IOException("Only directories can be listed, '" + dir + "' is not a directory.");
         }
-        if (recursively) {
+        if (recursively)
+        {
             return listRecursively(dirAsPath);
-        } else {
+        } else
+        {
             return list(dirAsPath);
         }
     }
 
-    private static List<File> list(Path dir) throws IOException {
+    private static List<File> list(Path dir) throws IOException
+    {
         List<File> files = new ArrayList<>();
-        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir)) {
-            for (Path path : directoryStream) {
+        try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(dir))
+        {
+            for (Path path : directoryStream)
+            {
                 files.add(getFile(path));
             }
         }
         return files;
     }
 
-    private static List<File> listRecursively(Path sourceDir) throws IOException {
+    private static List<File> listRecursively(Path sourceDir) throws IOException
+    {
         List<File> contents = new ArrayList<>();
-        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>()
+        {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 contents.add(getFile(file));
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                if (!sourceDir.equals(dir)) {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
+                if (!sourceDir.equals(dir))
+                {
                     contents.add(getFile(dir));
                 }
                 return FileVisitResult.CONTINUE;
@@ -259,44 +293,58 @@ public class IOUtils {
     // Create
     //
 
-    private static FileAttribute<?> getDefaultPermissions() {
-        if (isPosix()) {
+    private static FileAttribute<?> getDefaultPermissions()
+    {
+        if (isPosix())
+        {
             return defaultPosixPermissions;
-        } else if (isAcl()) {
+        } else if (isAcl())
+        {
             return defaultAclPermissions;
-        } else {
+        } else
+        {
             return null;
         }
     }
 
-    public static void createDirectory(String source) throws IOException {
+    public static void createDirectory(String source) throws IOException
+    {
         FileAttribute<?> defaultPermissions = getDefaultPermissions();
-        if (defaultPermissions != null) {
+        if (defaultPermissions != null)
+        {
             Files.createDirectory(getPathObject(source), defaultPermissions);
-        } else {
+        } else
+        {
             Files.createDirectory(getPathObject(source));
         }
 
     }
 
-    public static void createDirectories(String source) throws IOException {
+    public static void createDirectories(String source) throws IOException
+    {
         FileAttribute<?> defaultPermissions = getDefaultPermissions();
-        if (defaultPermissions != null) {
+        if (defaultPermissions != null)
+        {
             Files.createDirectories(getPathObject(source), defaultPermissions);
-        } else {
+        } else
+        {
             Files.createDirectories(getPathObject(source));
         }
     }
 
-    public static void createFile(String source) throws IOException {
+    public static void createFile(String source) throws IOException
+    {
         createFile(getPathObject(source));
     }
 
-    private static void createFile(Path source) throws IOException {
+    private static void createFile(Path source) throws IOException
+    {
         FileAttribute<?> defaultPermissions = getDefaultPermissions();
-        if (defaultPermissions != null) {
+        if (defaultPermissions != null)
+        {
             Files.createFile(source, defaultPermissions);
-        } else {
+        } else
+        {
             Files.createFile(source);
         }
     }
@@ -305,7 +353,8 @@ public class IOUtils {
     // Write
     //
 
-    public static void write(String source, long offset, byte[] data) throws IOException {
+    public static void write(String source, long offset, byte[] data) throws IOException
+    {
         Path sourceAsPath = getPathObject(source);
         doWrite(source, offset, data, sourceAsPath);
     }
@@ -320,11 +369,13 @@ public class IOUtils {
     private static void doWrite(final String source, final long offset, final byte[] data, final Path sourceAsPath) throws IOException
     {
         boolean canModify = hasPermissions(sourceAsPath, writePermissions);
-        if (!canModify) {
+        if (!canModify)
+        {
             throw new IOException("Can't be written: '" + source + "'.");
         }
         ByteBuffer dataBuffer = ByteBuffer.wrap(data);
-        try (FileChannel fileChannel = (FileChannel.open(sourceAsPath, StandardOpenOption.WRITE))) {
+        try (FileChannel fileChannel = (FileChannel.open(sourceAsPath, StandardOpenOption.WRITE)))
+        {
             fileChannel.position(offset);
             fileChannel.write(dataBuffer);
         }
@@ -334,16 +385,20 @@ public class IOUtils {
     // Read
     //
 
-    public static byte[] readFully(String source) throws IOException {
+    public static byte[] readFully(String source) throws IOException
+    {
         return Files.readAllBytes(getPathObject(source));
     }
 
-    public static byte[] read(String source, long offset, int length) throws IOException {
+    public static byte[] read(String source, long offset, int length) throws IOException
+    {
         ByteBuffer dataBuffer = ByteBuffer.allocate(length);
-        try (FileChannel fileChannel = (FileChannel.open(getPathObject(source), StandardOpenOption.READ))) {
+        try (FileChannel fileChannel = (FileChannel.open(getPathObject(source), StandardOpenOption.READ)))
+        {
             fileChannel.position(offset);
             int read = fileChannel.read(dataBuffer);
-            if (read < length) {
+            if (read < length)
+            {
                 throw new IOException("Expected to read " + length + " bytes but was only " + read + ".");
             }
         }
@@ -354,21 +409,26 @@ public class IOUtils {
     // Delete
     //
 
-    public static void delete(String source) throws IOException {
+    public static void delete(String source) throws IOException
+    {
         Path sourceAsPath = getPathObject(source);
         boolean canModify = hasPermissions(sourceAsPath, writePermissions);
-        if (!canModify) {
+        if (!canModify)
+        {
             throw new IOException("Can't be modified: '" + source + "'.");
         }
-        Files.walkFileTree(sourceAsPath, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(sourceAsPath, new SimpleFileVisitor<Path>()
+        {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 Files.delete(file);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
                 Files.delete(dir);
                 return FileVisitResult.CONTINUE;
             }
@@ -379,37 +439,46 @@ public class IOUtils {
     // Move / Copy
     //
 
-    public static void move(String source, String target) throws IOException {
-        try {
+    public static void move(String source, String target) throws IOException
+    {
+        try
+        {
             Files.move(getPathObject(source), getPathObject(target), StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (AtomicMoveNotSupportedException ex) {
+        } catch (AtomicMoveNotSupportedException ex)
+        {
             Files.move(getPathObject(source), getPathObject(target), StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
-    public static void copy(String source, String target) throws IOException {
+    public static void copy(String source, String target) throws IOException
+    {
         Path sourceP = getPathObject(source);
         Path targetP = getPathObject(target);
 
-        Files.walkFileTree(sourceP, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(sourceP, new SimpleFileVisitor<Path>()
+        {
             @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException
+            {
                 Path targetPath = targetP.resolve(sourceP.relativize(dir));
-                if (!Files.exists(targetPath)) {
+                if (!Files.exists(targetPath))
+                {
                     Files.createDirectory(targetPath);
                 }
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 Files.copy(file, targetP.resolve(sourceP.relativize(file)), StandardCopyOption.REPLACE_EXISTING);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
-    public static void copyFile(String source, long offset, int length, String target, long targetOffset) throws IOException {
+    public static void copyFile(String source, long offset, int length, String target, long targetOffset) throws IOException
+    {
         byte[] toCopy = read(source, offset, length);
         createFile(target);
         write(target, targetOffset, toCopy);
@@ -420,90 +489,121 @@ public class IOUtils {
     //
 
     private static final String POSIX = "posix";
+
     private static final boolean isPosix = FileSystems.getDefault().supportedFileAttributeViews().contains(POSIX);
+
     private static final String ACL = "acl";
+
     private static final boolean isAcl = FileSystems.getDefault().supportedFileAttributeViews().contains(ACL);
+
     private static final String DOS = "dos";
+
     private static final boolean isDos = FileSystems.getDefault().supportedFileAttributeViews().contains(DOS);
 
-    public static boolean isFileSystemSupported() {
+    public static boolean isFileSystemSupported()
+    {
         return isPosix() || isAcl();
     }
 
-    private static boolean isPosix() {
+    private static boolean isPosix()
+    {
         return isPosix;
     }
 
-    private static boolean isAcl() {
+    private static boolean isAcl()
+    {
         return isAcl;
     }
 
-    private static boolean isDos() {
+    private static boolean isDos()
+    {
         return isDos;
     }
 
-    public static Set<FilePermission> getFilePermissions(String source) throws IOException {
+    public static Set<FilePermission> getFilePermissions(String source) throws IOException
+    {
         return getFilePermissions(getPathObject(source));
     }
 
-    private static Set<FilePermission> getFilePermissions(Path source) throws IOException {
-        if (isPosix()) {
+    private static Set<FilePermission> getFilePermissions(Path source) throws IOException
+    {
+        if (isPosix())
+        {
             return getPosixFilePermissions(source);
-        } else if (isAcl()) {
+        } else if (isAcl())
+        {
             return getAclFilePermissions(source);
-        } else if (isDos()) {
+        } else if (isDos())
+        {
             return getDosFilePermissions(source);
-        } else {
+        } else
+        {
             throw new IOException("Can't get file permissions: '" + source.toString() + "'.");
         }
     }
 
-    public static void setFilePermissions(String source, Set<FilePermission> filePermissions) throws IOException {
+    public static void setFilePermissions(String source, Set<FilePermission> filePermissions) throws IOException
+    {
         setFilePermissions(getPathObject(source), filePermissions);
     }
 
-    private static void setFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException {
-        if (isPosix()) {
+    private static void setFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException
+    {
+        if (isPosix())
+        {
             setPosixFilePermissions(source, filePermissions);
-        } else if (isAcl()) {
+        } else if (isAcl())
+        {
             setAclFilePermissions(source, filePermissions);
-        } else if (isDos()) {
+        } else if (isDos())
+        {
             setDosFilePermissions(source, filePermissions);
-        } else {
+        } else
+        {
             throw new IOException("Can't set file permissions: '" + source.toString() + "'.");
         }
     }
 
-    private static String getCurrentUser() {
+    private static String getCurrentUser()
+    {
         return System.getProperty("user.name"); //platform independent
     }
 
     private static UserPrincipal currentUserPrincipal = null;
 
-    private static UserPrincipal getUserPrincipal() {
-        if (currentUserPrincipal == null) {
-            try {
+    private static UserPrincipal getUserPrincipal()
+    {
+        if (currentUserPrincipal == null)
+        {
+            try
+            {
                 currentUserPrincipal = getPathObject("/").getFileSystem().getUserPrincipalLookupService().lookupPrincipalByName(getCurrentUser());
-            } catch (Exception ex) {
+            } catch (Exception ex)
+            {
                 throw new RuntimeException(ex);
             }
         }
         return currentUserPrincipal;
     }
 
-    private static Set<FilePermission> getAclFilePermissions(Path source) throws IOException {
+    private static Set<FilePermission> getAclFilePermissions(Path source) throws IOException
+    {
         Set<FilePermission> filePermissions = new HashSet<>();
         UserPrincipal currentUser = getUserPrincipal();
 
         AclFileAttributeView view = Files.getFileAttributeView(source, AclFileAttributeView.class);
         List<AclEntry> acls = view.getAcl();
-        for (AclEntry acl : acls) {
-            if (acl.principal().equals(currentUser)) {
-                if (acl.type() == AclEntryType.ALLOW && acl.permissions().contains(AclEntryPermission.READ_DATA)) {
+        for (AclEntry acl : acls)
+        {
+            if (acl.principal().equals(currentUser))
+            {
+                if (acl.type() == AclEntryType.ALLOW && acl.permissions().contains(AclEntryPermission.READ_DATA))
+                {
                     filePermissions.add(FilePermission.Read);
                 }
 
-                if (acl.type() == AclEntryType.ALLOW && acl.permissions().contains(AclEntryPermission.WRITE_DATA)) {
+                if (acl.type() == AclEntryType.ALLOW && acl.permissions().contains(AclEntryPermission.WRITE_DATA))
+                {
                     filePermissions.add(FilePermission.Write);
                 }
             }
@@ -511,10 +611,12 @@ public class IOUtils {
         return filePermissions;
     }
 
-    private static void setAclFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException {
+    private static void setAclFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException
+    {
         UserPrincipal userPrincipal = getUserPrincipal();
         List<AclEntryPermission> aclEntryPermissions = new ArrayList<>();
-        if (filePermissions.contains(FilePermission.Read)) {
+        if (filePermissions.contains(FilePermission.Read))
+        {
             aclEntryPermissions.add(AclEntryPermission.READ_DATA);
             aclEntryPermissions.add(AclEntryPermission.READ_ATTRIBUTES);
             aclEntryPermissions.add(AclEntryPermission.READ_NAMED_ATTRS);
@@ -523,7 +625,8 @@ public class IOUtils {
             aclEntryPermissions.add(AclEntryPermission.EXECUTE);
         }
 
-        if (filePermissions.contains(FilePermission.Write)) {
+        if (filePermissions.contains(FilePermission.Write))
+        {
             aclEntryPermissions.add(AclEntryPermission.WRITE_DATA);
             aclEntryPermissions.add(AclEntryPermission.APPEND_DATA);
             aclEntryPermissions.add(AclEntryPermission.WRITE_ATTRIBUTES);
@@ -541,94 +644,117 @@ public class IOUtils {
                 .build();
         List<AclEntry> aclFilePermissions = new ArrayList<>();
 
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-            private void setAcl(Path source) throws IOException {
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>()
+        {
+            private void setAcl(Path source) throws IOException
+            {
                 AclFileAttributeView view = Files.getFileAttributeView(source, AclFileAttributeView.class);
                 view.setAcl(aclFilePermissions);
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 setAcl(file);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
                 setAcl(dir);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
-    private static Set<FilePermission> getDosFilePermissions(Path source) throws IOException {
+    private static Set<FilePermission> getDosFilePermissions(Path source) throws IOException
+    {
         DosFileAttributes dosFilePermissions = Files.readAttributes(source, DosFileAttributes.class);
         Set<FilePermission> filePermissions;
-        if (dosFilePermissions.isReadOnly()) {
+        if (dosFilePermissions.isReadOnly())
+        {
             filePermissions = readPermissions;
-        } else {
+        } else
+        {
             filePermissions = readWritePermissions;
         }
         return filePermissions;
     }
 
-    private static void setDosFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException {
+    private static void setDosFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException
+    {
         boolean isReadOnly = !filePermissions.contains(FilePermission.Write);
 
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
-            private void setReadOnly(Path path) throws IOException {
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>()
+        {
+            private void setReadOnly(Path path) throws IOException
+            {
                 DosFileAttributeView dosFileAttributeView = Files.getFileAttributeView(path, DosFileAttributeView.class);
                 dosFileAttributeView.setReadOnly(isReadOnly);
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 setReadOnly(file);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
                 setReadOnly(dir);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
-    private static Set<FilePermission> getPosixFilePermissions(Path source) throws IOException {
+    private static Set<FilePermission> getPosixFilePermissions(Path source) throws IOException
+    {
         Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(source);
         Set<FilePermission> filePermissions;
-        if (posixFilePermissions.contains(PosixFilePermission.OWNER_READ) && posixFilePermissions.contains(PosixFilePermission.OWNER_WRITE)) {
+        if (posixFilePermissions.contains(PosixFilePermission.OWNER_READ) && posixFilePermissions.contains(PosixFilePermission.OWNER_WRITE))
+        {
             filePermissions = readWritePermissions;
-        } else if (posixFilePermissions.contains(PosixFilePermission.OWNER_READ)) {
+        } else if (posixFilePermissions.contains(PosixFilePermission.OWNER_READ))
+        {
             filePermissions = readPermissions;
-        } else if (posixFilePermissions.contains(PosixFilePermission.OWNER_WRITE)) {
+        } else if (posixFilePermissions.contains(PosixFilePermission.OWNER_WRITE))
+        {
             filePermissions = writePermissions;
-        } else {
+        } else
+        {
             filePermissions = noPermissions;
         }
         return filePermissions;
     }
 
-    private static void setPosixFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException {
+    private static void setPosixFilePermissions(Path source, Set<FilePermission> filePermissions) throws IOException
+    {
         Set<PosixFilePermission> posixFilePermissions = new HashSet<>();
-        if (filePermissions.contains(FilePermission.Read)) {
+        if (filePermissions.contains(FilePermission.Read))
+        {
             posixFilePermissions.add(PosixFilePermission.OWNER_READ);
             posixFilePermissions.add(PosixFilePermission.OWNER_EXECUTE);
         }
-        if (filePermissions.contains(FilePermission.Write)) {
+        if (filePermissions.contains(FilePermission.Write))
+        {
             posixFilePermissions.add(PosixFilePermission.OWNER_WRITE);
         }
 
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>()
+        {
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 Files.setPosixFilePermissions(file, posixFilePermissions);
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
                 Files.setPosixFilePermissions(dir, posixFilePermissions);
                 return FileVisitResult.CONTINUE;
             }
@@ -639,7 +765,8 @@ public class IOUtils {
     // Helpers
     //
 
-    public static boolean isSameVolume(String pathA, String pathB) throws IOException {
+    public static boolean isSameVolume(String pathA, String pathB) throws IOException
+    {
         Path pathAo = getPathObject(pathA);
         FileStore pathAStore = Files.getFileStore(pathAo);
         Path pathBo = getPathObject(pathB);
@@ -649,18 +776,22 @@ public class IOUtils {
 
     private static final String MD5 = "MD5";
 
-    public static byte[] getMD5(byte[] data) {
-        try {
+    public static byte[] getMD5(byte[] data)
+    {
+        try
+        {
             return MessageDigest.getInstance(MD5).digest(data);
-        } catch (Exception exception) {
+        } catch (Exception exception)
+        {
             throw new RuntimeException(exception);
         }
     }
 
-    public static Integer[] getShares(String folder){
-        try
+    public static Integer[] getShares(String folder)
+    {
+        try (Stream<Path> files = Files.list(Paths.get(folder)))
         {
-            return Files.list(Paths.get(folder)).filter(file ->
+            return files.filter(file ->
             {
                 if (!Files.isDirectory(file))
                 {
@@ -681,25 +812,28 @@ public class IOUtils {
         }
     }
 
-    public static String[] getShards(String str) {
+    public static String[] getShards(String str)
+    {
         byte[] md5 = getMD5(str.getBytes(StandardCharsets.UTF_8));
         String hex = asHex(md5);
-        return new String[]{
-            hex.substring(0, 2),
-            hex.substring(2,4),
-            hex.substring(4,6)
+        return new String[] {
+                hex.substring(0, 2),
+                hex.substring(2, 4),
+                hex.substring(4, 6)
         };
     }
 
     private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 
-    public static String asHex(byte[] bytes) {
+    public static String asHex(byte[] bytes)
+    {
         char[] hex = new char[bytes.length * 2];
 
         int bytesIndex = 0;
         int hexIndex = 0;
 
-        while(bytesIndex < bytes.length) {
+        while (bytesIndex < bytes.length)
+        {
             hex[hexIndex++] = HEX_ARRAY[bytes[bytesIndex] >>> 4 & 0x0F];
             hex[hexIndex++] = HEX_ARRAY[bytes[bytesIndex] & 0x0F];
             bytesIndex++;
@@ -708,91 +842,113 @@ public class IOUtils {
         return new String(hex);
     }
 
-    public static String encodeBase64(byte[] input) {
+    public static String encodeBase64(byte[] input)
+    {
         return Base64.getEncoder().encodeToString(input);
     }
 
-    public static String urlEncodeBase64(byte[] input) {
+    public static String urlEncodeBase64(byte[] input)
+    {
         return Base64.getUrlEncoder().encodeToString(input);
     }
 
-    public static byte[] decodeBase64(String input) {
+    public static byte[] decodeBase64(String input)
+    {
         return Base64.getDecoder().decode(input);
     }
 
-    public static boolean exists(String source) {
+    public static boolean exists(String source)
+    {
         Path sourcePath = getPathObject(source);
         return Files.exists(sourcePath);
     }
 
-    public static boolean isRegularFile(String source) {
+    public static boolean isRegularFile(String source)
+    {
         Path sourcePath = getPathObject(source);
         return Files.isRegularFile(sourcePath);
     }
 
-    public static boolean isDirectory(String source) {
+    public static boolean isDirectory(String source)
+    {
         Path sourcePath = getPathObject(source);
         return isDirectory(sourcePath);
     }
 
-    private static boolean isDirectory(Path source) {
+    private static boolean isDirectory(Path source)
+    {
         return Files.isDirectory(source);
     }
 
-    private static long size(Path source) throws IOException {
+    private static long size(Path source) throws IOException
+    {
         return Files.size(source);
     }
 
-    public static boolean hasReadWritePermissions(String source) throws IOException {
+    public static boolean hasReadWritePermissions(String source) throws IOException
+    {
         return hasPermissions(getPathObject(source), readWritePermissions);
     }
 
-    public static boolean hasReadPermissions(String source) throws IOException {
+    public static boolean hasReadPermissions(String source) throws IOException
+    {
         return hasPermissions(getPathObject(source), readPermissions);
     }
 
-    public static boolean hasWritePermissions(String source) throws IOException {
+    public static boolean hasWritePermissions(String source) throws IOException
+    {
         return hasPermissions(getPathObject(source), writePermissions);
     }
 
-    private static boolean hasPermissions(String source, Set<FilePermission> permissions) throws IOException {
+    private static boolean hasPermissions(String source, Set<FilePermission> permissions) throws IOException
+    {
         return hasPermissions(getPathObject(source), permissions);
     }
 
-    private static boolean hasPermissions(Path source, Set<FilePermission> permissions) throws IOException {
-        boolean[] havePermissionsResult = {true};
-        Files.walkFileTree(source, new SimpleFileVisitor<Path>() {
+    private static boolean hasPermissions(Path source, Set<FilePermission> permissions) throws IOException
+    {
+        boolean[] havePermissionsResult = { true };
+        Files.walkFileTree(source, new SimpleFileVisitor<Path>()
+        {
 
-            private FileVisitResult havePermissions(Path path) throws IOException {
+            private FileVisitResult havePermissions(Path path) throws IOException
+            {
                 boolean havePermissions = getFilePermissions(path).containsAll(permissions);
-                if (havePermissions) {
+                if (havePermissions)
+                {
                     return FileVisitResult.CONTINUE;
-                } else {
+                } else
+                {
                     havePermissionsResult[0] = false;
                     return FileVisitResult.TERMINATE;
                 }
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
+            {
                 return havePermissions(file);
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException
+            {
                 return havePermissions(dir);
             }
         });
         return havePermissionsResult[0];
     }
 
-    public static boolean isValidFilename(String path) {
-        if (path == null || path.isEmpty()) {
+    public static boolean isValidFilename(String path)
+    {
+        if (path == null || path.isEmpty())
+        {
             return false;
         }
 
         String filename = Paths.get(path).getFileName().toString();
-        if (filename.startsWith(" ") || filename.endsWith(" ") || filename.startsWith(".") || filename.endsWith(".")) {
+        if (filename.startsWith(" ") || filename.endsWith(" ") || filename.startsWith(".") || filename.endsWith("."))
+        {
             return false;
         }
         return VALID_FILENAME_PATTERN.matcher(filename).matches();
