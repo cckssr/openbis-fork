@@ -208,6 +208,119 @@ public class CreateTypeGroupTest extends AbstractTest
         v3api.logout(sessionToken);
     }
 
+    @Test
+    public void testTryCreateInternalTypeGroupAssignment()
+    {
+        // Given
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setMetaData(Map.of("key", "value"));
+        newGroup.setManagedInternally(false);
+
+        List<TypeGroupId> groups = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup));
+
+        // Then
+        assertEquals(groups.get(0).getPermId(), newGroup.getCode());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        List<EntityTypePermId> typePermIds = v3api.createSampleTypes(sessionToken, Arrays.asList(newType));
+
+        assertEquals(typePermIds.size(), 1);
+
+        assertUserFailureException(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
+            {
+                TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+                creation.setTypeGroupId(groups.get(0));
+                creation.setSampleTypeId(typePermIds.get(0));
+                creation.setManagedInternally(true);
+                v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+            }
+        }, "Internal type group assignment can be performed only on internal type groups!");
+
+        v3api.logout(sessionToken);
+    }
+
+    @Test
+    public void testCreateInternalTypeGroupAssignment()
+    {
+        // Given
+        String sessionToken = v3api.loginAsSystem();
+
+        TypeGroupCreation newGroup = new TypeGroupCreation();
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setMetaData(Map.of("key", "value"));
+        newGroup.setManagedInternally(true);
+
+        List<TypeGroupId> groups = v3api.createTypeGroups(sessionToken, Arrays.asList(newGroup));
+
+        // Then
+        assertEquals(groups.get(0).getPermId(), newGroup.getCode());
+
+        SampleTypeCreation newType = new SampleTypeCreation();
+        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
+        newType.setDescription("test");
+        newType.setGeneratedCodePrefix("TEST-");
+        newType.setManagedInternally(true);
+        List<EntityTypePermId> typePermIds = v3api.createSampleTypes(sessionToken, Arrays.asList(newType));
+
+        assertEquals(typePermIds.size(), 1);
+
+        TypeGroupAssignmentCreation creation = new TypeGroupAssignmentCreation();
+        creation.setTypeGroupId(groups.get(0));
+        creation.setSampleTypeId(typePermIds.get(0));
+        creation.setManagedInternally(true);
+
+        List<TypeGroupAssignmentId> ids = v3api.createTypeGroupAssignments(sessionToken, Arrays.asList(creation));
+
+        //Check if type group assignment is fetched from type group
+        TypeGroupFetchOptions fetchOptions = new TypeGroupFetchOptions();
+        TypeGroupAssignmentFetchOptions options = fetchOptions.withTypeGroupAssignments();
+        options.withSampleType();
+        options.withTypeGroup();
+
+
+        TypeGroup group = v3api.getTypeGroups(sessionToken, groups, fetchOptions).get(groups.get(0));
+        assertEquals(group.getCode(), newGroup.getCode());
+        assertEquals(group.isManagedInternally(), Boolean.TRUE);
+        assertEquals(group.getTypeGroupAssignments().size(), 1);
+        TypeGroupAssignment assignment = group.getTypeGroupAssignments().get(0);
+
+        assertEquals(assignment.getSampleType().getCode(), newType.getCode());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
+        assertEquals(assignment.isManagedInternally(), true);
+
+        //Check if type group assignment is fetched from sample type
+        SampleTypeFetchOptions sampleTypeFetchOptions = new SampleTypeFetchOptions();
+        sampleTypeFetchOptions.withTypeGroupAssignmentsUsing(options);
+        SampleType sampleType = v3api.getSampleTypes(sessionToken, typePermIds, sampleTypeFetchOptions).get(typePermIds.get(0));
+        assertEquals(sampleType.getCode(), newType.getCode());
+        assertEquals(sampleType.isManagedInternally(), Boolean.TRUE);
+        assertEquals(sampleType.getTypeGroupAssignments().size(), 1);
+        assignment = sampleType.getTypeGroupAssignments().get(0);
+        assertEquals(assignment.getSampleType().getCode(), newType.getCode());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
+        assertEquals(assignment.isManagedInternally(), true);
+
+        //Check if type group assignment is fetched from dedicated method
+        Map<ITypeGroupAssignmentId, TypeGroupAssignment> assignmentMap = v3api.getTypeGroupAssignments(sessionToken, ids, options);
+        assignment = assignmentMap.get(ids.get(0));
+        assertEquals(assignment.getSampleType().getCode(), newType.getCode());
+        assertEquals(assignment.getTypeGroup().getCode(), newGroup.getCode());
+        assertEquals(assignment.isManagedInternally(), true);
+
+
+        v3api.logout(sessionToken);
+    }
+
 
 
 

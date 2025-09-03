@@ -32,6 +32,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.Collectio
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.CollectionBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CreateProgress;
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.shared.dto.*;
@@ -85,6 +86,15 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     protected void checkAccess(IOperationContext context, SampleTypeTypeGroupsPE entity)
     {
         authorizationExecutor.canCreate(context, entity);
+        if (!isSystemUser(context.getSession()))
+        {
+            boolean internalTypeGroup = entity.getTypeGroup().isManagedInternally();
+            boolean internalSampleType = entity.getSampleType().isManagedInternally();
+            if(!(internalTypeGroup && internalSampleType)) {
+                throw new AuthorizationFailureException(
+                        "Internal type group assignments can be managed only by the system user.");
+            }
+        }
     }
 
     @Override
@@ -98,6 +108,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
             {
                 SampleTypeTypeGroupsPE typeGroupAssignment = new SampleTypeTypeGroupsPE();
                 typeGroupAssignment.setRegistrator(context.getSession().tryGetCreatorPerson());
+                typeGroupAssignment.setManagedInternally(creation.isManagedInternally());
                 typeGroupAssignments.add(typeGroupAssignment);
             }
 
@@ -160,5 +171,19 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
     protected void handleException(DataAccessException e)
     {
         DataAccessExceptionTranslator.throwException(e, "type group assignment", null);
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException(
+                    "Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 }

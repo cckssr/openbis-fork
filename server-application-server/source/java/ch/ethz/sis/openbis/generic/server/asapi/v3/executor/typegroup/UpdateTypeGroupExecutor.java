@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractUpdateEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.metadata.IUpdateMetaDataForEntityExecutor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -36,7 +37,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-//public class UpdateTypeGroupExecutor extends AbstractUpdateEntityWithCustomIdExecutor<TypeGroupUpdate, TypeGroupPE, ITypeGroupId, TypeGroupId, String>
 public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGroupUpdate, TypeGroupPE, ITypeGroupId, TypeGroupId>
         implements IUpdateTypeGroupExecutor
 {
@@ -88,6 +88,15 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
             TypeGroupUpdate update)
     {
         authorizationExecutor.canUpdate(context, update, entity);
+        if(entity.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            if(update.getCode().isModified())
+            {
+                throw new AuthorizationFailureException(
+                        "Internal type group code can be managed only by the system user.");
+            }
+
+        }
     }
 
     @Override
@@ -149,5 +158,19 @@ public class UpdateTypeGroupExecutor extends AbstractUpdateEntityExecutor<TypeGr
     protected void handleException(DataAccessException e)
     {
         DataAccessExceptionTranslator.throwException(e, "space", null);
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException(
+                    "Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 }
