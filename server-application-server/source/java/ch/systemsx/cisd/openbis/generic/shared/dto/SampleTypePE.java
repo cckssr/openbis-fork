@@ -20,21 +20,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+import ch.rinn.restrictions.Friend;
+import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdentityHolder;
 import ch.systemsx.cisd.openbis.generic.shared.dto.hibernate.JsonMapUserType;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -55,6 +47,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 @Entity
 @Table(name = TableNames.SAMPLE_TYPES_TABLE, uniqueConstraints = {
         @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
+@Friend(toClasses = SampleTypeTypeGroupsPE.class)
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class SampleTypePE extends EntityTypePE implements IMetaDataHolder, IIdentityHolder
 {
@@ -82,6 +75,28 @@ public final class SampleTypePE extends EntityTypePE implements IMetaDataHolder,
     private String generatedCodePrefix;
 
     private Map<String, String> metaData;
+
+    private Set<SampleTypeTypeGroupsPE> sampleTypeTypeGroups = new HashSet<>();
+
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "sampleType", orphanRemoval = true)
+    Set<SampleTypeTypeGroupsPE> getSampleTypeTypeGroupsInternal()
+    {
+        return sampleTypeTypeGroups;
+    }
+
+    @Transient
+    public final Set<SampleTypeTypeGroupsPE> getSampleTypeTypeGroups()
+    {
+        return new UnmodifiableSetDecorator<>(getSampleTypeTypeGroupsInternal());
+    }
+
+    // Required by Hibernate.
+    @SuppressWarnings("unused")
+    private void setSampleTypeTypeGroupsInternal(final Set<SampleTypeTypeGroupsPE> assignments)
+    {
+        this.sampleTypeTypeGroups = assignments;
+    }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "entityTypeInternal", orphanRemoval = true)
     private Set<SampleTypePropertyTypePE> getSampleTypePropertyTypesInternal()

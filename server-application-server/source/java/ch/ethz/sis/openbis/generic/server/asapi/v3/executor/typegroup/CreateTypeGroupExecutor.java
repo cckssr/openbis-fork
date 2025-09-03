@@ -27,6 +27,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.Collectio
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.CollectionBatchProcessor;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.common.batch.MapBatch;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.helper.entity.progress.CreateProgress;
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.DataAccessExceptionTranslator;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
@@ -77,6 +78,11 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
     protected void checkAccess(IOperationContext context, TypeGroupPE entity)
     {
         authorizationExecutor.canCreate(context, entity);
+        if(entity.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            throw new AuthorizationFailureException(
+                    "Internal type groups can be managed only by the system user.");
+        }
     }
 
     @Override
@@ -147,5 +153,19 @@ public class CreateTypeGroupExecutor extends AbstractCreateEntityExecutor<TypeGr
     protected void handleException(DataAccessException e)
     {
         DataAccessExceptionTranslator.throwException(e, "type group", null);
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException(
+                    "Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 }

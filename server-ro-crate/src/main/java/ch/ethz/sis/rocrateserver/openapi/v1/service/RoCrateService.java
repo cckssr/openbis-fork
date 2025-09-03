@@ -18,10 +18,8 @@ import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
 
 
@@ -134,11 +132,8 @@ public class RoCrateService {
         }
 
         try {
-            OutputStream outputStream = exportDelegate.export(openBIS, headers, body);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.writeTo(outputStream);
-
-            return Response.ok(baos.toByteArray())
+            InputStream inputStream = exportDelegate.export(openBIS, headers, body);
+            return Response.ok(inputStream.readAllBytes())
                     .type("application/zip").build();
         } catch (WebApplicationException e)
         {

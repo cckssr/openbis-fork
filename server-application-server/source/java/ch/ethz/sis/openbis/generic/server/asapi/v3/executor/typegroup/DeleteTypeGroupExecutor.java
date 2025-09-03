@@ -21,8 +21,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.delete.TypeGroupDeleti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.id.ITypeGroupId;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.entity.AbstractDeleteEntityExecutor;
+import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.openbis.generic.server.business.bo.ITypeGroupBO;
 import ch.systemsx.cisd.openbis.generic.shared.basic.TechId;
+import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
+import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
 import ch.systemsx.cisd.openbis.generic.shared.dto.TypeGroupPE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,6 +55,10 @@ public class DeleteTypeGroupExecutor extends AbstractDeleteEntityExecutor<Void, 
     protected void checkAccess(IOperationContext context, ITypeGroupId entityId, TypeGroupPE entity)
     {
         authorizationExecutor.canDelete(context, entityId, entity);
+        if(entity.isManagedInternally() && isSystemUser(context.getSession()) == false)
+        {
+            throw new AuthorizationFailureException("Internal type groups can be managed only by the system user.");
+        }
     }
 
     @Override
@@ -69,5 +76,19 @@ public class DeleteTypeGroupExecutor extends AbstractDeleteEntityExecutor<Void, 
             typeGroupBO.deleteByTechId(new TechId(typeGroup.getId()));
         }
         return null;
+    }
+
+    private boolean isSystemUser(Session session)
+    {
+        PersonPE user = session.tryGetPerson();
+
+        if (user == null)
+        {
+            throw new AuthorizationFailureException(
+                    "Could not check access because the current session does not have any user assigned.");
+        } else
+        {
+            return user.isSystemUser();
+        }
     }
 }

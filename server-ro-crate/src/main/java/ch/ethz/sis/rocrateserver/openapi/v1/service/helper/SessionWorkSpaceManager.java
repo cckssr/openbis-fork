@@ -3,7 +3,9 @@ package ch.ethz.sis.rocrateserver.openapi.v1.service.helper;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
@@ -20,14 +22,10 @@ public class SessionWorkSpaceManager
         Files.copy(inputStream, realPath, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    public static OutputStream read(String sessionToken, Path path) throws IOException
+    public static InputStream read(String sessionToken, Path path) throws IOException
     {
         Path realPath = getRealPath(sessionToken, path);
-        BufferedInputStream bufferedInputStream =
-                new BufferedInputStream(Files.newInputStream(realPath));
-        OutputStream outputStream = new ByteArrayOutputStream();
-        bufferedInputStream.transferTo(outputStream);
-        return new BufferedOutputStream(outputStream);
+        return new BufferedInputStream(Files.newInputStream(realPath));
 
     }
 

@@ -27,6 +27,7 @@ dependencies {
             project(':lib-dbmigration'),
             project(':lib-messages-db'),
             project(':lib-two-phase-transaction'),
+            project(':api-data-store-server-java'),
             project(':api-data-store-server-javascript'),
             'sencha:gxt:2.2.5',
             'jboss:javassist:3.28.0.GA',

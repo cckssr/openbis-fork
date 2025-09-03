@@ -17,6 +17,8 @@
 
 package ch.systemsx.cisd.openbis.generic.shared.dto;
 
+import ch.rinn.restrictions.Friend;
+import ch.systemsx.cisd.common.collection.UnmodifiableSetDecorator;
 import ch.systemsx.cisd.common.reflection.ModifiedShortPrefixToStringStyle;
 import ch.systemsx.cisd.openbis.generic.shared.IServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.ICodeHolder;
@@ -35,11 +37,14 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Entity
 @Table(name = TableNames.TYPE_GROUPS_TABLE, uniqueConstraints = {
         @UniqueConstraint(columnNames = { ColumnNames.CODE_COLUMN }) })
+@Friend(toClasses = SampleTypeTypeGroupsPE.class)
 @TypeDefs({ @TypeDef(name = "JsonMap", typeClass = JsonMapUserType.class) })
 public final class TypeGroupPE implements Serializable,
         IIdHolder, ICodeHolder,
@@ -52,9 +57,7 @@ public final class TypeGroupPE implements Serializable,
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SequenceNames.TYPE_GROUPS_SEQUENCE)
     private Long id;
 
-//    @Id
     @Column(name = ColumnNames.CODE_COLUMN, unique = true)
-//    @NaturalId(mutable=true)
     @NotBlank
     private String code;
 
@@ -74,6 +77,36 @@ public final class TypeGroupPE implements Serializable,
     @Column(name = "meta_data")
     @Type(type = "JsonMap")
     private Map<String, String> metaData;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = ColumnNames.PERSON_REGISTERER_COLUMN, updatable = false)
+    private PersonPE registrator;
+
+    @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
+    @Generated(GenerationTime.INSERT)
+    private Date registrationDate;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "typeGroup")
+    private Set<SampleTypeTypeGroupsPE> typeGroupAssignmentsInternal = new HashSet<>();
+
+    Set<SampleTypeTypeGroupsPE> getTypeGroupAssignmentsInternal()
+    {
+        return typeGroupAssignmentsInternal;
+    }
+
+    @Transient
+    public final Set<SampleTypeTypeGroupsPE> getTypeGroupAssignments()
+    {
+        return new UnmodifiableSetDecorator<>(getTypeGroupAssignmentsInternal());
+    }
+
+    // Required by Hibernate.
+    @SuppressWarnings("unused")
+    private void setTypeGroupAssignmentInternal(final Set<SampleTypeTypeGroupsPE> assignments)
+    {
+        this.typeGroupAssignmentsInternal = assignments;
+    }
+
 
     @Override
     public String getCode()
@@ -95,14 +128,6 @@ public final class TypeGroupPE implements Serializable,
     {
         this.id = id;
     }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = ColumnNames.PERSON_REGISTERER_COLUMN, updatable = false)
-    private PersonPE registrator;
-
-    @Column(name = ColumnNames.REGISTRATION_TIMESTAMP_COLUMN, nullable = false, insertable = false, updatable = false)
-    @Generated(GenerationTime.INSERT)
-    private Date registrationDate;
 
     /**
      * Ensures that given <var>date</var> is a real one (<code>java.util.Date</code>) and not a <i>SQL</i> one.

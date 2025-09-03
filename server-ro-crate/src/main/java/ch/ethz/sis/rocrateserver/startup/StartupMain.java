@@ -38,9 +38,6 @@ public class StartupMain implements QuarkusApplication
         System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
         System.setProperty("quarkus.http.idle-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
         System.setProperty("quarkus.http.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
-        System.setProperty("quarkus.class-loading.parent-first-artifacts", "stax:stax-api");
-        System.setProperty("quarkus.log.file.enable", "true");
-        System.setProperty("quarkus.log.file.path", "logs/app.log");
 
 
         if (LaunchMode.current().isDevOrTest())

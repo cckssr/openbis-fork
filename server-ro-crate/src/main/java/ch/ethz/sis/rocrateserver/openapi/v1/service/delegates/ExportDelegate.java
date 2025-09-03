@@ -33,7 +33,6 @@ import org.eclipse.jetty.io.ClientConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,7 @@ import java.util.UUID;
 public class ExportDelegate
 {
 
-    public OutputStream export(
+    public InputStream export(
             OpenBIS openBIS,
             ExportParams headers,
             InputStream body) throws Exception
