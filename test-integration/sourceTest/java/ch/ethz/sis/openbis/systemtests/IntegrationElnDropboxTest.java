@@ -409,6 +409,26 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     }
 
     @Test
+    public void testRegisterWithDiscardedFilesMisconfigured() throws IOException
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Properties properties = new Properties();
+        properties.setProperty(ElnDropbox.DISCARD_FILES_PATTERNS, "(incorrect");
+
+        try
+        {
+            ElnDropbox elnDropbox = new ElnDropbox();
+            elnDropbox.configure(properties);
+            Assert.fail();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Provided pattern could not be compiled");
+        }
+    }
+
+    @Test
     public void testRegisterWithIllegalFiles() throws IOException
     {
         OpenBIS openBIS = createOpenBIS();
@@ -435,6 +455,26 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(after.size(), 0);
+    }
+
+    @Test
+    public void testRegisterWithIllegalFilesMisconfigured() throws IOException
+    {
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        Properties properties = new Properties();
+        properties.setProperty(ElnDropbox.ILLEGAL_FILES_PATTERNS, "(incorrect");
+
+        try
+        {
+            ElnDropbox elnDropbox = new ElnDropbox();
+            elnDropbox.configure(properties);
+            Assert.fail();
+        } catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "Provided pattern could not be compiled");
+        }
     }
 
     private static void executeDropbox(Properties properties, Path incoming)

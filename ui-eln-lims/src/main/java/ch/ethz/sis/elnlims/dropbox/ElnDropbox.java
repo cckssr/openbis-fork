@@ -351,10 +351,7 @@ public class ElnDropbox implements IFolderListener
             }
 
             openBIS.commitTransaction();
-        } catch (
-
-                Exception exception)
-
+        } catch (Exception exception)
         {
             try
             {
