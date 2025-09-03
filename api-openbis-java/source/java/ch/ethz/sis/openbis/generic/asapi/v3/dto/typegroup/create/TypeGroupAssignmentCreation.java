@@ -38,7 +38,7 @@ public class TypeGroupAssignmentCreation implements ICreation, IObjectCreation
     private ITypeGroupId typeGroupId;
 
     @JsonProperty
-    private Boolean managedInternally;
+    private boolean managedInternally = false;
 
     @JsonIgnore
     public IEntityTypeId getSampleTypeId()
@@ -64,12 +64,12 @@ public class TypeGroupAssignmentCreation implements ICreation, IObjectCreation
     }
 
     @JsonIgnore
-    public Boolean isManagedInternally()
+    public boolean isManagedInternally()
     {
         return managedInternally;
     }
 
-    public void setManagedInternally(Boolean managedInternally)
+    public void setManagedInternally(boolean managedInternally)
     {
         this.managedInternally = managedInternally;
     }
