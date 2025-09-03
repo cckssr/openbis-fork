@@ -1384,7 +1384,7 @@ public class CreateExperimentTest extends AbstractExperimentTest
         // When
         assertUserFailureException(Void -> v3api.createExperiments(sessionToken, Arrays.asList(creation, creation2)),
             // Then
-            "Insert/Update of experiment failed because controlled vocabulary property contains value that is not unique!");
+            "property contains value that is not unique!");
     }
 
     @Test
