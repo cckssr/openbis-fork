@@ -150,7 +150,7 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT1");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
@@ -160,7 +160,7 @@ public class CreateTypeGroupTest extends AbstractTest
         assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         SampleTypeCreation newType = new SampleTypeCreation();
-        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
+        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP1");
         newType.setDescription("test");
         newType.setGeneratedCodePrefix("TEST-");
         List<EntityTypePermId> typePermIds = v3api.createSampleTypes(sessionToken, Arrays.asList(newType));
@@ -215,7 +215,7 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT2");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(false);
 
@@ -225,7 +225,7 @@ public class CreateTypeGroupTest extends AbstractTest
         assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         SampleTypeCreation newType = new SampleTypeCreation();
-        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
+        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP2");
         newType.setDescription("test");
         newType.setGeneratedCodePrefix("TEST-");
         List<EntityTypePermId> typePermIds = v3api.createSampleTypes(sessionToken, Arrays.asList(newType));
@@ -256,7 +256,7 @@ public class CreateTypeGroupTest extends AbstractTest
         String sessionToken = v3api.loginAsSystem();
 
         TypeGroupCreation newGroup = new TypeGroupCreation();
-        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT");
+        newGroup.setCode("MY_TYPE_GROUP_WITH_ASSIGNMENT3");
         newGroup.setMetaData(Map.of("key", "value"));
         newGroup.setManagedInternally(true);
 
@@ -266,7 +266,7 @@ public class CreateTypeGroupTest extends AbstractTest
         assertEquals(groups.get(0).getPermId(), newGroup.getCode());
 
         SampleTypeCreation newType = new SampleTypeCreation();
-        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP");
+        newType.setCode("SAMPLE_TYPE_WITH_TYPEGROUP3");
         newType.setDescription("test");
         newType.setGeneratedCodePrefix("TEST-");
         newType.setManagedInternally(true);

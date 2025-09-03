@@ -90,7 +90,7 @@ public class CreateTypeGroupAssignmentExecutor extends AbstractCreateEntityWithC
         {
             boolean internalTypeGroup = entity.getTypeGroup().isManagedInternally();
             boolean internalSampleType = entity.getSampleType().isManagedInternally();
-            if(!(internalTypeGroup && internalSampleType)) {
+            if(entity.isManagedInternally() && !(internalTypeGroup && internalSampleType) ) {
                 throw new AuthorizationFailureException(
                         "Internal type group assignments can be managed only by the system user.");
             }
