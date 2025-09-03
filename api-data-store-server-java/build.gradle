@@ -25,6 +25,7 @@ dependencies {
     compileOnly 'lombok:lombok:1.18.38'
     annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-json'),
+            project(':lib-two-phase-transaction'),
             'lombok:lombok:1.18.38'
     testImplementation 'junit:junit:4.10',
             'hamcrest:hamcrest-core:1.3'
