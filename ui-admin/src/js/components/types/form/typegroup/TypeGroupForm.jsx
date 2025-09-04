@@ -116,7 +116,7 @@ class TypeGroupForm extends React.PureComponent {
           id={id}
           settingsId={id}
           controllerRef={this.handleGridControllerRef}
-          header={messages.get(messages.OBJECT_TYPES)}
+          header={messages.get(messages.OBJECT_TYPE_GROUP_ASSIGNMENTS)}
           columns={columns}
           rows={objectTypes}
           sort='code'

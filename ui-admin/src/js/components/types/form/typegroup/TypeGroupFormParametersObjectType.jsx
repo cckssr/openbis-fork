@@ -87,7 +87,7 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
 
     return (
       <Container>
-        <Header>{messages.get(messages.OBJECT_TYPE)}</Header>
+        <Header>{messages.get(messages.OBJECT_TYPE_ASSIGNMENT)}</Header>
         {this.renderMessageVisible(objectType)}
         {this.renderMessageInternal(objectType)}
         {this.renderCode(objectType)}
@@ -115,7 +115,6 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
   }
 
   renderMessageInternal(objectType) {
-    console.log('TypeGroupFormParametersObjectType.renderMessageInternal', objectType)
     const { classes } = this.props
 
     if (objectType.internal.value) {
