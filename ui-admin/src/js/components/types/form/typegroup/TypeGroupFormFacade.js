@@ -23,13 +23,16 @@ export default class TypeGroupFormFacade {
     const result = await openbis.searchSampleTypes(new openbis.SampleTypeSearchCriteria(), fetchOptions)
 
     let objects = result.objects
-    .filter(o => !selectedObjectTypes.some(selectedObjectType => selectedObjectType.code.value === o.getCode()))
-    .map(o => ({
-      id: o.getCode(),
-      code: o.getCode(),
-      description: _.get(o, 'description'),
-      text: o.getCode()
-    }))
+    .map(o => {
+      const isSelected = selectedObjectTypes.some(selectedObjectType => selectedObjectType.code.value === o.getCode())
+      return {
+        id: o.getCode(),
+        code: o.getCode(),
+        description: _.get(o, 'description'),
+        text: o.getCode(),
+        disabled: isSelected
+      }
+    })
 
     objects.sort((o1, o2) => compare(o1.text, o2.text))
     console.log('TypeGroupFormFacade.loadObjectTypesOptions', objects)

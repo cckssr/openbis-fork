@@ -156,7 +156,8 @@ class TypeGroupFormParametersObjectType extends React.PureComponent {
       options = objectTypesOptions.map(objectType => {
         return {
           label: objectType.text,
-          value: objectType.id
+          value: objectType.id,
+          disabled: objectType.disabled
         }
       })
     }

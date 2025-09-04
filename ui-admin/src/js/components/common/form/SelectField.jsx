@@ -190,6 +190,7 @@ class SelectFormField extends React.PureComponent {
         key={util.empty(option.value) ? '' : option.value}
         value={util.empty(option.value) ? '' : option.value}
         classes={{ root: classes.option }}
+        disabled={option.disabled}
       >
         {this.getOptionText(option)}
       </MenuItem>
