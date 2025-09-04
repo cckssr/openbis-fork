@@ -140,7 +140,9 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         enabled: !internal
       }),
       internal: FormUtil.createField({
-        value: internal
+        value: internal,
+        visible: AppController.getInstance().isSystemUser(),
+        enabled: loadedType === null && AppController.getInstance().isSystemUser(),
       }),
       semanticAnnotations: FormUtil.createField({
         value: _.get(loadedType, 'semanticAnnotations', []),
@@ -196,7 +198,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       assignmentInternal: FormUtil.createField({
         value: assignmentInternal,
-        visible: false,
+        visible: loadedAssignment && AppController.getInstance().isSystemUser(),
         enabled: false
       }),
       label: FormUtil.createField({
@@ -398,7 +400,7 @@ class ObjectTypeStrategy {
       }),
       generatedCodePrefix: FormUtil.createField({
         value: _.get(loadedType, 'generatedCodePrefix', null),
-        enabled: !internal
+        enabled: loadedType === null || !internal
       }),
       subcodeUnique: FormUtil.createField({
         value: _.get(loadedType, 'subcodeUnique', false),

@@ -365,6 +365,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         ? new openbis.PluginPermId(type.validationPlugin.value)
         : null
     )
+    creation.setManagedInternally(type.internal.value)
     creation.setPropertyAssignments(assignments.reverse())
     strategy.setTypeAttributes(creation, type)
     return strategy.createTypeCreateOperation([creation])

@@ -1,5 +1,6 @@
 import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
+import AppController from '@src/js/components/AppController.js'
 
 export default class EntityTypeFormControllerAddProperty {
   constructor(controller) {
@@ -40,10 +41,14 @@ export default class EntityTypeFormControllerAddProperty {
       code: FormUtil.createField(),
       internal: FormUtil.createField({
         value: false,
-        visible: false,
-        enabled: false
+        visible: AppController.getInstance().isSystemUser(),
+        enabled: AppController.getInstance().isSystemUser()
       }),
-      assignmentInternal: FormUtil.createField(),
+      assignmentInternal: FormUtil.createField({
+        value: false,
+        visible: AppController.getInstance().isSystemUser(),
+        enabled: AppController.getInstance().isSystemUser()
+      }),
       label: FormUtil.createField(),
       description: FormUtil.createField(),
       dataType: FormUtil.createField(),
