@@ -77,6 +77,28 @@ public class EndToEndTests extends AbstractTest
     }
 
     @Test
+    public void testImportZip()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/OkayExample.zip";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/zip")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/import")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
     public void testValidate()
             throws Exception
     {
@@ -93,6 +115,32 @@ public class EndToEndTests extends AbstractTest
         given()
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .body(allOf(containsString("\"validationErrors\":[]"),
+                        containsString("\"isValid\":true")))
+                .statusCode(200);
+    }
+
+    @Test
+    public void testValidateZip()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/OkayExample.zip";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        String expected = "{\"isValid\":true}";
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/zip")
                 .header("Accept", "application/json")
                 .body(Files.readAllBytes(Path.of(file.getPath())))
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
@@ -173,8 +221,33 @@ public class EndToEndTests extends AbstractTest
                 .body("[\"https://doi.org/10.1038/s41586-020-3010-5\"]")
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
                 .then()
+                .header("Content-Type", "application/ld+json")
+
+                .body(containsString("@context"))
                 .statusCode(200);
     }
+
+    @Test
+    public void testExportDOIZip()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("openbis.with-Levels-below", "true")
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/zip")
+                .body("[\"https://doi.org/10.1038/s41586-020-3010-5\"]")
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/export")
+                .then()
+                .header("Content-Type", "application/zip")
+                .statusCode(200);
+    }
+
 
     @Test
     public void testExportIdentifier()
