@@ -152,8 +152,8 @@ public class PropertyHelper extends BasicImportHelper
 
          */
 
-        creation.setManagedInternally(false);
-        creation.setMultiValue(false);
+        creation.setManagedInternally("TRUE".equals(internal));
+        creation.setMultiValue("TRUE".equals(multiValued));
 
         if (dataType == DataType.CONTROLLEDVOCABULARY && vocabularyCode != null && !vocabularyCode.isEmpty())
         {
