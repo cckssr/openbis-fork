@@ -8,6 +8,7 @@ import EntityTypeFormParametersSection from '@src/js/components/types/form/entit
 import logger from '@src/js/common/logger.js'
 import { Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import EntityTypeFormParametersMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersMetadata.jsx';
 
 const styles = theme => ({
   tabsRoot: {
@@ -54,26 +55,35 @@ class EntityTypeFormParameters extends React.PureComponent {
 
     const PROPERTIES_TAB_INDEX = 0;
     const SEMANTIC_ANNOTATIONS_TAB_INDEX = 1;
+    const METADATA_TAB_INDEX = 2;
 
     return (
       <TabContext value={tabSelected} >
-        <TabList variant="fullWidth"
+        <TabList
+          variant='fullWidth'
           onChange={this.handleTabChange}
           classes={{ root: classes.tabsRoot }}
           textColor='inherit'
           indicatorColor='secondary'
-          TabIndicatorProps={{
-            style: {
-              transition: 'none',
+          slotProps={{
+            indicator: {
+              style: {
+                transition: 'none',
+              }
             }
-          }}>
+          }}
+        >
           <Tab key='property-tab-id'
             value={PROPERTIES_TAB_INDEX}
-            label="Parameters"
+            label='Parameters'
           />
           <Tab key='property-semantic-ann-tab-id'
             value={SEMANTIC_ANNOTATIONS_TAB_INDEX}
-            label="Semantic Annotations"
+            label='Semantic Annotations'
+          />
+          <Tab key='property-metadata-tab-id'
+            value={METADATA_TAB_INDEX}
+            label='Metadata'
           />
         </TabList>
         <TabPanel classes={{ root: classes.tabPanelRoot }} value={PROPERTIES_TAB_INDEX}>
@@ -117,6 +127,17 @@ class EntityTypeFormParameters extends React.PureComponent {
             onBlur={onBlur}
           />
           <EntityTypeFormParametersTypeSemanticAnnotation
+            controller={controller}
+            type={type}
+            selection={selection}
+            mode={mode}
+            onChange={onChange}
+            onSelectionChange={onSelectionChange}
+            onBlur={onBlur}
+          />
+        </TabPanel>
+        <TabPanel classes={{ root: classes.tabPanelRoot }} value={METADATA_TAB_INDEX}>
+          <EntityTypeFormParametersMetadata
             controller={controller}
             type={type}
             selection={selection}

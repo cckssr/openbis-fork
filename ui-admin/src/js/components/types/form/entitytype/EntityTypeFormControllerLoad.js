@@ -52,7 +52,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         return
       }
     }
-
+    console.log('EntityTypeFormControllerLoad._loadType', {isNew}, {loadedType})
     const loadedAssignments = await this.facade.loadAssignments(object)
 
     const sections = []
@@ -122,6 +122,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
   _createType(loadedType) {
     const strategy = this._getStrategy()
     const internal = _.get(loadedType, 'managedInternally', false)
+    const metadata = Object.entries(_.get(loadedType, 'metaData', [])).map(([key, value]) => ({
+			key: key,
+			value: value,
+		}))
     const type = {
       code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),
@@ -147,6 +151,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       semanticAnnotations: FormUtil.createField({
         value: _.get(loadedType, 'semanticAnnotations', []),
         enabled: !internal
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       }),
       errors: 0
     }
