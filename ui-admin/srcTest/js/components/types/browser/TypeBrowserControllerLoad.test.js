@@ -22,6 +22,11 @@ async function testLoad() {
         selected: false
       },
       {
+        text: 'Object Type Groups',
+        expanded: false,
+        selected: false
+      },
+      {
         text: 'Collection Types',
         expanded: false,
         selected: false
