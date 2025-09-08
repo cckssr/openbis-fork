@@ -84,11 +84,6 @@ public final class DummyHttpServer
         setNextResponses(new byte[][] {response}, new String[] {"application/octet-stream"});
     }
 
-    public void setNextPlainTextResponse(String response)
-    {
-        setNextResponses(new byte[][] {response.getBytes()}, new String[] {"text/plain"});
-    }
-
     public void setNextResponses(byte[][] responses, String[] responseTypes)
     {
         this.nextResponses = new LinkedList<>(List.of(responses));

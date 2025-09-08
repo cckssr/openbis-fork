@@ -58,7 +58,6 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     public boolean commit(Transaction transaction, DeleteOperation operation) throws Exception {
         if (IOUtils.exists(operation.getSource())) {
             IOUtils.delete(operation.getSource());
-            OperationExecutor.clearCaches(operation.getSource());
         }
         return true;
     }

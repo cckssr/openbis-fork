@@ -82,8 +82,6 @@ public class ServerClientEnvironmentFS
         configuration.put(AtomicFileSystemServerParameter.storageRoot, "./targets/tests/storage");
         configuration.put(AtomicFileSystemServerParameter.storageUuid, "test-storage-uuid");
 
-        configuration.put(AtomicFileSystemServerParameter.enablePreview, "png,jpeg,jpg,gif,bmp,tiff");
-        configuration.put(AtomicFileSystemServerParameter.enablePreviewSizeInBytes, "100000000");
         configuration.put(AtomicFileSystemServerParameter.httpServerClass, NettyHttpServer.class.getName());
         configuration.put(AtomicFileSystemServerParameter.httpServerUri, "/fileserver");
         configuration.put(AtomicFileSystemServerParameter.httpServerPort, "1010");

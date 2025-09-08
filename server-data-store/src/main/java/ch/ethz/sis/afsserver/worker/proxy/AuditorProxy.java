@@ -132,19 +132,6 @@ public class AuditorProxy extends AbstractProxy {
         return auditAfter(nextProxy.free(owner, source));
     }
 
-    @Override
-    public @NonNull String hash(@NonNull final String owner, @NonNull final String source) throws Exception {
-        auditBefore();
-        return auditAfter(nextProxy.hash(owner, source));
-    }
-
-    @Override
-    public @NonNull byte[] preview(@NonNull final String owner, @NonNull final String source) throws Exception {
-        auditBefore();
-        return auditAfter(nextProxy.preview(owner, source));
-    }
-
-
     private void auditBefore() {
         Class clazz = nextProxy.getClass();
         Event event = null;

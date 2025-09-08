@@ -32,8 +32,6 @@ public enum AtomicFileSystemServerParameter
     storageRoot,
     storageUuid,
     storageIncomingShareId,
-    enablePreview,
-    enablePreviewSizeInBytes,
     //
     // Parameters for the HTTP server
     //

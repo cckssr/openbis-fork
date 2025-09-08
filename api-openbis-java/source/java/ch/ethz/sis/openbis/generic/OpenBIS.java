@@ -1720,33 +1720,6 @@ public class OpenBIS
             }
         }
 
-        @Override
-        public String hash(String owner, String source) throws Exception {
-            try
-            {
-                return afsClientWithTransactions.hash(owner, source);
-            } catch (RuntimeException e)
-            {
-                throw e;
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-
-        @Override
-        public byte[] preview(String owner, String source) throws Exception {
-            try
-            {
-                return afsClientWithTransactions.preview(owner, source);
-            } catch (RuntimeException e)
-            {
-                throw e;
-            } catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
     }
 
     //

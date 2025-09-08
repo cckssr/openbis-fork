@@ -62,18 +62,6 @@ public class OpenBISJavaScriptAFSFacade
         return null;
     }
 
-    @TypeScriptMethod(sessionToken = false)
-    public String hash(final String owner, final String source)
-    {
-        return null;
-    }
-
-    @TypeScriptMethod(sessionToken = false)
-    public Blob preview(final String owner, final String source)
-    {
-        return null;
-    }
-
     @TypeScriptObject
     public static class File
     {

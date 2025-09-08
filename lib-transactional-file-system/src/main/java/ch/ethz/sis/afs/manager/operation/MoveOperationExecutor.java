@@ -62,8 +62,6 @@ public class MoveOperationExecutor implements OperationExecutor<MoveOperation> {
                 IOUtils.createDirectories(IOUtils.getParentPath(operation.getTarget()));
             }
             IOUtils.move(operation.getSource(), operation.getTarget());
-            OperationExecutor.clearCaches(operation.getSource());
-            OperationExecutor.clearCaches(operation.getTarget());
         }
         return false;
     }

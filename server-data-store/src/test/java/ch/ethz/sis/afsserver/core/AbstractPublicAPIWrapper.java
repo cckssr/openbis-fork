@@ -116,24 +116,6 @@ public abstract class AbstractPublicAPIWrapper implements PublicAPI
     }
 
     @Override
-    public String hash(@NonNull String owner, @NonNull String source) throws Exception
-    {
-        Map<String, Object> args = Map.of(
-                "owner", owner,
-                "source", source);
-        return process(String.class, "hash", args);
-    }
-
-    @Override
-    public byte[] preview(@NonNull String owner, @NonNull String source) throws Exception
-    {
-        Map<String, Object> args = Map.of(
-                "owner", owner,
-                "source", source);
-        return process(byte[].class, "preview", args);
-    }
-
-    @Override
     public void begin(UUID transactionId) throws Exception
     {
         Map<String, Object> args = Map.of(
