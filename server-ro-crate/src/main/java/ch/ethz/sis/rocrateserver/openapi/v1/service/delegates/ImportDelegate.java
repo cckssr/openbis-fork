@@ -23,6 +23,7 @@ import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import edu.kit.datamanager.ro_crate.reader.ZipReader;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.jboss.logging.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -36,6 +37,8 @@ import java.util.UUID;
 @ApplicationScoped
 public class ImportDelegate
 {
+    private static final Logger LOG = Logger.getLogger(ImportDelegate.class);
+
 
     public class OpenBisImportResult
     {
@@ -95,11 +98,30 @@ public class ImportDelegate
             throws IOException
     {
 
-        RoCrate crate = getRoCrate(headers, body);
-        SchemaFacade schemaFacade = SchemaFacade.of(crate);
-        List<IType> types = schemaFacade.getTypes();
-        List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
+        RoCrate crate = null;
+        SchemaFacade schemaFacade = null;
+        List<IType> types = null;
+        List<IPropertyType> propertyTypes = null;
         List<IMetadataEntry> entryList = new ArrayList<>();
+
+        try
+        {
+            crate = getRoCrate(headers, body);
+            schemaFacade = SchemaFacade.of(crate);
+            types = schemaFacade.getTypes();
+            propertyTypes = schemaFacade.getPropertyTypes();
+            if (types == null || propertyTypes == null)
+            {
+                throw new IllegalArgumentException(
+                        "Types and/or property types missing from crates");
+            }
+
+        } catch (Exception e)
+        {
+            LOG.error("Could not open RO-Crate", e);
+            RoCrateExceptions.throwInstance(RoCrateExceptions.MALFORMED_INPUT);
+
+        }
         for (var type : types)
         {
             entryList.addAll(schemaFacade.getEntries(type.getId()));

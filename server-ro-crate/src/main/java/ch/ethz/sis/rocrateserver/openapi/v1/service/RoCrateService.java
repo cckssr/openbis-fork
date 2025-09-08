@@ -107,10 +107,17 @@ public class RoCrateService {
             return ValidationReport.serialize(
                     new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
                     ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
-        } catch (Exception ex) {
+        } catch (WebApplicationException ex)
+        {
+            LOG.error("There was an error", ex);
+            throw ex;
+        } catch (Exception ex)
+        {
             LOG.error("There was an error", ex);
             throw new RuntimeException(ex);
-        } finally {
+
+        } finally
+        {
             //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
