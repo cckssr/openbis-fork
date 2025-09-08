@@ -44,6 +44,7 @@ const styles = theme => {
 		semanticAnnotationTripletContainerEdit: {
 			...baseSemanticAnnotationTripletContainer,
 			borderRight: 'unset',
+			backgroundColor: theme.palette.grey[50],
 		},
 	};
 };

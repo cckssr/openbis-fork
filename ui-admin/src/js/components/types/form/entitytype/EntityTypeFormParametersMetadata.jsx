@@ -11,41 +11,45 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { Typography } from '@mui/material';
 import objectTypes from '@src/js/common/consts/objectType.js'
-import MetadataGrid from '@src/js/components/types/common/MetadataGrid.jsx';
-import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.js'
 
 const styles = theme => {
-	const baseSemanticAnnotationTripletContainer = {
-		border: '2px solid #ebebeb', // Consider theme.palette.divider
-		padding: theme.spacing(1),
+	const baseMetadataItem = {
 		display: 'flex',
-		flexDirection: 'row',
 		alignItems: 'center',
+		gap: theme.spacing(1),
+		border: '2px solid #ebebeb',
+		padding: theme.spacing(1),
 		marginBottom: theme.spacing(1),
-	};
-
+	}
 	return {
-		field: {
-			paddingBottom: theme.spacing(1)
-		},
 		headerContainer: {
 			display: 'flex',
 			flexDirection: 'row',
 			alignItems: 'center',
 			justifyContent: 'space-between'
 		},
-		semanticAnnotationFieldsWrapper: {
-			flexGrow: 1,
-			marginRight: theme.spacing(1),
-		},
 		removeButton: {
-			minWidth: 'auto', // Ensure button doesn't take too much space
-			padding: theme.spacing(0.5),
+			minWidth: '40px',
+			height: '40px',
 		},
-		semanticAnnotationTripletContainer: baseSemanticAnnotationTripletContainer,
-		semanticAnnotationTripletContainerEdit: {
-			...baseSemanticAnnotationTripletContainer,
+		metadataContainer: {
+			display: 'flex',
+			flexDirection: 'column',
+			gap: theme.spacing(1),
+		},
+		metadataItem: baseMetadataItem,
+		metadataItemEdit: {
+			...baseMetadataItem,
 			borderRight: 'unset',
+			backgroundColor: theme.palette.grey[50],
+		},
+		metadataField: {
+			flex: 1,
+		},
+		textField: {
+			'& .MuiOutlinedInput-root': {
+				height: '40px'
+			}
 		},
 	};
 };
@@ -99,73 +103,71 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 		})
 	}
 
-	handleAddMetadata = () => {
-		const type = this.getType(this.props);
+	// Helper method to get metadata array from type
+	getMetadataArray(type) {
 		const { metadata } = type;
-		
-		// Convert object to array of key-value pairs if needed
-		let metadataArray = [];
-		if (metadata && metadata.value) {
-			if (Array.isArray(metadata.value)) {
-				metadataArray = [...metadata.value];
-			} else if (typeof metadata.value === 'object') {
-				metadataArray = Object.entries(metadata.value).map(([key, value]) => ({ key, value }));
-			}
+		if (!metadata || !metadata.value) {
+			return [];
 		}
-		
-		// Add new empty key-value pair
-		metadataArray.push({ key: '', value: '' });
-		
-		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
-			field: 'metadata',
-			value: metadataArray
-		});
-	};
 
-	handleRemoveMetadata = (index) => {
-		const type = this.getType(this.props);
-		const { metadata } = type;
-		
-		let metadataArray = [];
-		if (metadata && metadata.value) {
-			if (Array.isArray(metadata.value)) {
-				metadataArray = [...metadata.value];
-			} else if (typeof metadata.value === 'object') {
-				metadataArray = Object.entries(metadata.value).map(([key, value]) => ({ key, value }));
-			}
+		if (Array.isArray(metadata.value)) {
+			return metadata.value.map(item => ({
+				...item,
+				action: item.action || 'UPDATE'
+			}));
+		} else if (typeof metadata.value === 'object') {
+			return Object.entries(metadata.value).map(([key, value]) => ({ 
+				key, 
+				value, 
+				action: 'UPDATE' 
+			}));
 		}
-		
-		// Remove item at index
-		metadataArray.splice(index, 1);
-		
+
+		return [];
+	}
+
+	// Helper method to update metadata
+	updateMetadata(metadataArray) {
 		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
 			field: 'metadata',
 			value: metadataArray
 		});
 	}
 
+	handleAddMetadata = () => {
+		const type = this.getType(this.props);
+		const metadataArray = this.getMetadataArray(type);
+		
+		// Add new empty key-value pair
+		metadataArray.push({ key: '', value: '', action: 'CREATE' });
+		
+		this.updateMetadata(metadataArray);
+	};
+
+	handleRemoveMetadata = (index) => {
+		const type = this.getType(this.props);
+		const metadataArray = this.getMetadataArray(type);
+		
+		// Remove item at index
+		metadataArray.splice(index, 1);
+		
+		this.updateMetadata(metadataArray);
+	}
+
 	handleMetadataFieldChange = (index, field, value) => {
 		const type = this.getType(this.props);
-		const { metadata } = type;
-		
-		let metadataArray = [];
-		if (metadata && metadata.value) {
-			if (Array.isArray(metadata.value)) {
-				metadataArray = [...metadata.value];
-			} else if (typeof metadata.value === 'object') {
-				metadataArray = Object.entries(metadata.value).map(([key, value]) => ({ key, value }));
-			}
-		}
+		const metadataArray = this.getMetadataArray(type);
 		
 		// Update the specific field
 		if (metadataArray[index]) {
 			metadataArray[index][field] = value;
+			// Only set action to UPDATE if it's not already CREATE
+			if (metadataArray[index].action !== 'CREATE') {
+				metadataArray[index].action = 'UPDATE';
+			}
 		}
 		
-		this.props.onChange(EntityTypeFormSelectionType.TYPE, {
-			field: 'metadata',
-			value: metadataArray
-		});
+		this.updateMetadata(metadataArray);
 	}
 
 	render() {
@@ -173,7 +175,6 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 
 		const type = this.getType(this.props)
 		if (!type) return null
-		console.log('EntityTypeFormParametersMetadata.render', type)
 
 		return (
 			<Container>
@@ -198,7 +199,7 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 		return (
 			<div className={classes.headerContainer}>
 				<Header>{messages.get(map[type.objectType.value])} {type.code?.value} {title}</Header>
-				{mode === 'edit' && type.objectType?.value === objectTypes.OBJECT_TYPE &&
+				{mode === 'edit' && (type.objectType?.value === objectTypes.OBJECT_TYPE || type.objectType?.value === objectTypes.NEW_OBJECT_TYPE) &&
 					<Button variant='contained'
 						color='white'
 						onClick={this.handleAddMetadata}
@@ -209,61 +210,48 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 	}
 
 	renderMetadata(type) {
-		const { visible, value } = { ...type.metadata }
+		const { classes } = this.props;
+		const { visible } = { ...type.metadata }
 
 		if (!visible) {
 			return null
 		}
 
-		// Convert metadata to array format
-		let metadataArray = [];
-		if (value) {
-			if (Array.isArray(value)) {
-				metadataArray = value;
-			} else if (typeof value === 'object') {
-				metadataArray = Object.entries(value).map(([key, val]) => ({ key, value: val }));
-			}
-		}
+		const metadataArray = this.getMetadataArray(type);
 
 		if (metadataArray.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_METADATA_DEFINED)}</Typography>
 		}
 
 		return (
-			<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+			<div className={classes.metadataContainer}>
 				{metadataArray.map((metadata, index) => this.renderMetadataItem(metadata, index))}
 			</div>
 		)
 	}
 
 	renderMetadataItem(metadata, index) {
-		const { key, value } = metadata;
+		const { key, value, action } = metadata;
 		const { mode, classes } = this.props;
 		
+		const isKeyEditable = action === 'CREATE';
+		
 		return (
-			<div key={`metadata-${index}`} style={{ 
-				display: 'flex', 
-				alignItems: 'center', 
-				gap: '8px', 
-				width: '100%',
-				padding: '8px',
-				border: '1px solid #e0e0e0',
-				borderRadius: '4px',
-				backgroundColor: '#fafafa'
-			}}>
-				<div style={{ flex: 1 }}>
+			<div key={`metadata-${index}`} className={mode === 'edit' ? classes.metadataItemEdit : classes.metadataItem}>
+				<div className={classes.metadataField}>
 					<TextField
 						label='Key'
 						name={`metadata-key-${index}`}
 						value={key || ''}
 						mode={mode}
+						disabled={!isKeyEditable}
 						onChange={(event) => this.handleMetadataFieldChange(index, 'key', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
-						sx={{ '& .MuiOutlinedInput-root': { height: '40px' } }}
+						sx={classes.textField}
 					/>
 				</div>
-				<div style={{ flex: 1 }}>
+				<div className={classes.metadataField}>
 					<TextField
 						label='Value'
 						name={`metadata-value-${index}`}
@@ -272,7 +260,7 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 						onChange={(event) => this.handleMetadataFieldChange(index, 'value', event.target.value)}
 						onFocus={(event) => this.handleFocus(event)}
 						onBlur={(event) => this.handleBlur()}
-						sx={{ '& .MuiOutlinedInput-root': { height: '40px' } }}
+						sx={classes.textField}
 					/>
 				</div>
 				{mode === 'edit' && (
@@ -283,7 +271,7 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 						label={<RemoveIcon />}
 						aria-label={`Remove metadata item ${index + 1}`}
 						tooltip={messages.get(messages.REMOVE)}
-						sx={{ minWidth: '40px', height: '40px' }}
+						sx={classes.removeButton}
 					/>
 				)}
 			</div>
