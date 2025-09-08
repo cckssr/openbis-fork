@@ -52,7 +52,9 @@ def getOpenBISVersion(context):
     global openbisVersion
     if openbisVersion == None:
         sessionToken = context.getApplicationService().loginAsSystem()
-        openbisVersion = context.getApplicationService().getServerInformation(sessionToken)['openbis-version']
+        openbisVersion = context.getApplicationService().getServerInformation(sessionToken)[
+            'openbis-version']
+
 
 def getInternalNamespacePropertyCode(propertyCode):
     if openbisVersion.startswith("20.10."):
@@ -60,34 +62,35 @@ def getInternalNamespacePropertyCode(propertyCode):
     else:
         return propertyCode
 
+
 def process(context, parameters):
     openbisVersion = getOpenBISVersion(context)
-	method = parameters.get("method");
-	result = None;
-	
-	try:
-		if method == "freezelist":
-			# 1. Get entity by type to verify existence and obtain its space code
-			sessionToken = parameters.get("sessionToken");
-			type = parameters.get("entityType");
-			permId = parameters.get("permId");
-			entity = getEntity(context.applicationService, sessionToken, type, permId);
-			spaceCode = getSpace(entity);
-			
-			# 2. Verify that the user is an admin in such space
-			userId = "-".join(sessionToken.split("-")[:-1])
-			isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
-			if not isAdminOfSpace:
-				raise  AuthorizationFailureException("The user is not enough rights to freeze.")
-			
-			# 3. Create Freeze List
-			defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
-			
-			result = {
+    method = parameters.get("method");
+    result = None;
+
+    try:
+        if method == "freezelist":
+            # 1. Get entity by type to verify existence and obtain its space code
+            sessionToken = parameters.get("sessionToken");
+            type = parameters.get("entityType");
+            permId = parameters.get("permId");
+            entity = getEntity(context.applicationService, sessionToken, type, permId);
+            spaceCode = getSpace(entity);
+
+            # 2. Verify that the user is an admin in such space
+            userId = "-".join(sessionToken.split("-")[:-1])
+            isAdminOfSpace = isUserAdminOnSpace(context.applicationService, sessionToken, userId, spaceCode);
+            if not isAdminOfSpace:
+                raise  AuthorizationFailureException("The user is not enough rights to freeze.")
+
+            # 3. Create Freeze List
+            defaultFreezeList = getFreezeList(context.applicationService, sessionToken, entity, spaceCode);
+
+            result = {
 				"status" : "OK",
 				"result" : defaultFreezeList
 			}
-		if method == "freeze":
+        if method == "freeze":
 			# 4. Freeze
 			sessionToken = parameters.get("sessionToken");
 			freezeList = parameters.get("freezeList");
@@ -113,259 +116,278 @@ def process(context, parameters):
 			result = {
 				"status" : "OK"
 			}
-	except Exception, value:
-		result = str(value)
-	return result;
+    except Exception, value:
+        result = str(value)
+    return result;
+
 
 def getFreezeOperations(toFreezeMap):
-	spaceUpdates = [];
-	projectUpdates = [];
-	experimentUpdates = [];
-	sampleUpdates = [];
-	dataSetUpdates = [];
-	for toFreezeKey in toFreezeMap:
-		toFreeze = toFreezeMap[toFreezeKey];
-		if toFreeze["type"] == "Space":
-			spaceUpdate = SpaceUpdate();
-			spaceUpdate.setSpaceId(SpacePermId(toFreeze["permId"]));
-			spaceUpdate.freeze();
-			spaceUpdate.freezeForProjects();
-			spaceUpdate.freezeForSamples();
-			spaceUpdates.append(spaceUpdate);
-		if toFreeze["type"] == "Project":
-			projectUpdate = ProjectUpdate();
-			projectUpdate.setProjectId(ProjectPermId(toFreeze["permId"]));
-			projectUpdate.freeze();
-			projectUpdate.freezeForExperiments();
-			projectUpdate.freezeForSamples();
-			projectUpdates.append(projectUpdate);
-		if toFreeze["type"] == "Experiment":
-			experimentUpdate = ExperimentUpdate();
-			experimentUpdate.setExperimentId(ExperimentPermId(toFreeze["permId"]));
-			experimentUpdate.freeze();
-			experimentUpdate.freezeForSamples();
-			experimentUpdate.freezeForDataSets();
-			experimentUpdates.append(experimentUpdate);
-		if toFreeze["type"] == "Sample":
-			sampleUpdate = SampleUpdate();
-			sampleUpdate.setSampleId(SamplePermId(toFreeze["permId"]));
-			sampleUpdate.freeze();
-			sampleUpdate.freezeForComponents();
-			sampleUpdate.freezeForDataSets();
-			sampleUpdate.freezeForParents();
-			# sampleUpdate.freezeForChildren();
-			sampleUpdates.append(sampleUpdate);
-		if toFreeze["type"] == "DataSet":
-			dataSetUpdate = DataSetUpdate();
-			dataSetUpdate.setDataSetId(DataSetPermId(toFreeze["permId"]));
-			dataSetUpdate.freeze();
-			dataSetUpdate.freezeForComponents();
-			dataSetUpdate.freezeForContainers();
-			dataSetUpdate.freezeForParents();
-			# dataSetUpdate.freezeForChildren();
-			dataSetUpdates.append(dataSetUpdate);
-	operations = [];
-	if dataSetUpdates:
-		operations.append(UpdateDataSetsOperation(dataSetUpdates));
-	if sampleUpdates:
-		operations.append(UpdateSamplesOperation(sampleUpdates));
-	if experimentUpdates:
-		operations.append(UpdateExperimentsOperation(experimentUpdates));
-	if projectUpdates:
-		operations.append(UpdateProjectsOperation(projectUpdates));
-	if spaceUpdates:
-		operations.append(UpdateSpacesOperation(spaceUpdates));
-	return operations;
+    spaceUpdates = [];
+    projectUpdates = [];
+    experimentUpdates = [];
+    sampleUpdates = [];
+    dataSetUpdates = [];
+    for toFreezeKey in toFreezeMap:
+        toFreeze = toFreezeMap[toFreezeKey];
+        if toFreeze["type"] == "Space":
+            spaceUpdate = SpaceUpdate();
+            spaceUpdate.setSpaceId(SpacePermId(toFreeze["permId"]));
+            spaceUpdate.freeze();
+            spaceUpdate.freezeForProjects();
+            spaceUpdate.freezeForSamples();
+            spaceUpdates.append(spaceUpdate);
+        if toFreeze["type"] == "Project":
+            projectUpdate = ProjectUpdate();
+            projectUpdate.setProjectId(ProjectPermId(toFreeze["permId"]));
+            projectUpdate.freeze();
+            projectUpdate.freezeForExperiments();
+            projectUpdate.freezeForSamples();
+            projectUpdates.append(projectUpdate);
+        if toFreeze["type"] == "Experiment":
+            experimentUpdate = ExperimentUpdate();
+            experimentUpdate.setExperimentId(ExperimentPermId(toFreeze["permId"]));
+            experimentUpdate.freeze();
+            experimentUpdate.freezeForSamples();
+            experimentUpdate.freezeForDataSets();
+            experimentUpdates.append(experimentUpdate);
+        if toFreeze["type"] == "Sample":
+            sampleUpdate = SampleUpdate();
+            sampleUpdate.setSampleId(SamplePermId(toFreeze["permId"]));
+            sampleUpdate.freeze();
+            sampleUpdate.freezeForComponents();
+            sampleUpdate.freezeForDataSets();
+            sampleUpdate.freezeForParents();
+            # sampleUpdate.freezeForChildren();
+            sampleUpdates.append(sampleUpdate);
+        if toFreeze["type"] == "DataSet":
+            dataSetUpdate = DataSetUpdate();
+            dataSetUpdate.setDataSetId(DataSetPermId(toFreeze["permId"]));
+            dataSetUpdate.freeze();
+            dataSetUpdate.freezeForComponents();
+            dataSetUpdate.freezeForContainers();
+            dataSetUpdate.freezeForParents();
+            # dataSetUpdate.freezeForChildren();
+            dataSetUpdates.append(dataSetUpdate);
+    operations = [];
+    if dataSetUpdates:
+        operations.append(UpdateDataSetsOperation(dataSetUpdates));
+    if sampleUpdates:
+        operations.append(UpdateSamplesOperation(sampleUpdates));
+    if experimentUpdates:
+        operations.append(UpdateExperimentsOperation(experimentUpdates));
+    if projectUpdates:
+        operations.append(UpdateProjectsOperation(projectUpdates));
+    if spaceUpdates:
+        operations.append(UpdateSpacesOperation(spaceUpdates));
+    return operations;
+
 
 def isUserAdminOnSpace(service, sessionToken, userId, spaceCode):
-	id = PersonPermId(userId);
-	personfetchOptions = PersonFetchOptions();
-	personfetchOptions.withRoleAssignments().withSpace();
-	persons = service.getPersons(sessionToken, [id], personfetchOptions);
-	person = persons[id];
-	for roleAssignment in person.getRoleAssignments():
-		if roleAssignment.getRole() == Role.ADMIN and roleAssignment.getRoleLevel() == RoleLevel.INSTANCE:
-			return True
-		if roleAssignment.getRole() == Role.ADMIN and roleAssignment.getRoleLevel() == RoleLevel.SPACE and roleAssignment.getSpace().getCode() == spaceCode:
-			return True
-	return False
+    id = PersonPermId(userId);
+    personfetchOptions = PersonFetchOptions();
+    personfetchOptions.withRoleAssignments().withSpace();
+    persons = service.getPersons(sessionToken, [id], personfetchOptions);
+    person = persons[id];
+    for roleAssignment in person.getRoleAssignments():
+        if roleAssignment.getRole() == Role.ADMIN and roleAssignment.getRoleLevel() == RoleLevel.INSTANCE:
+            return True
+        if roleAssignment.getRole() == Role.ADMIN and roleAssignment.getRoleLevel() == RoleLevel.SPACE and roleAssignment.getSpace().getCode() == spaceCode:
+            return True
+    return False
+
 
 # Same Space and child policy
 def getFreezeList(service, sessionToken, entity, spaceCode):
-	entitiesToFreeze = {};
-	entitiesToExpand = {};
-	entitiesToExpand[entity.__class__.__name__ +"+"+ entity.getPermId().getPermId()] = entity;
+    entitiesToFreeze = {};
+    entitiesToExpand = {};
+    entitiesToExpand[entity.__class__.__name__ + "+" + entity.getPermId().getPermId()] = entity;
 
-	while entitiesToExpand:
-		id = next(iter(entitiesToExpand));
-		entityToExpand = entitiesToExpand[id];
-		del entitiesToExpand[id];
-		id = id.split("+")[1];
-		entityToExpandSpaceCode = getSpace(entityToExpand);
-		if entityToExpandSpaceCode == spaceCode:
-			# Add entity without repetitions
-			entitiesToFreeze[entityToExpand.__class__.__name__ +"+"+ entityToExpand.getPermId().getPermId()] = {
-				"type" : entityToExpand.__class__.__name__,
-				"permId" : entityToExpand.getPermId().getPermId(),
-				"displayName" : getDisplayName(entityToExpand)
-			};
-			
-			searchResults = None
-			if isinstance(entityToExpand, Space):
-				projectSearchCriteria = ProjectSearchCriteria();
-				projectSearchCriteria.withSpace().withCode().thatEquals(id);
-				projectFetchOptions = ProjectFetchOptions();
-				projectFetchOptions.withSpace();
-				searchResults = service.searchProjects(sessionToken, projectSearchCriteria, projectFetchOptions).getObjects();
+    while entitiesToExpand:
+        id = next(iter(entitiesToExpand));
+        entityToExpand = entitiesToExpand[id];
+        del entitiesToExpand[id];
+        id = id.split("+")[1];
+        entityToExpandSpaceCode = getSpace(entityToExpand);
+        if entityToExpandSpaceCode == spaceCode:
+            # Add entity without repetitions
+            entitiesToFreeze[
+                entityToExpand.__class__.__name__ + "+" + entityToExpand.getPermId().getPermId()] = {
+                "type": entityToExpand.__class__.__name__,
+                "permId": entityToExpand.getPermId().getPermId(),
+                "displayName": getDisplayName(entityToExpand)
+            };
 
-				sampleSearchCriteria = SampleSearchCriteria();
-				sampleSearchCriteria.withSpace().withCode().thatEquals(id);
-				sampleSearchCriteria.withoutExperiment();
-				sampleSearchCriteria.withoutProject();
+            searchResults = None
+            if isinstance(entityToExpand, Space):
+                projectSearchCriteria = ProjectSearchCriteria();
+                projectSearchCriteria.withSpace().withCode().thatEquals(id);
+                projectFetchOptions = ProjectFetchOptions();
+                projectFetchOptions.withSpace();
+                searchResults = service.searchProjects(sessionToken, projectSearchCriteria,
+                                                       projectFetchOptions).getObjects();
 
-				sampleFetchOptions = SampleFetchOptions();
-				sampleFetchOptions.withSpace();
-				sampleFetchOptions.withProperties();
-				searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+                sampleSearchCriteria = SampleSearchCriteria();
+                sampleSearchCriteria.withSpace().withCode().thatEquals(id);
+                sampleSearchCriteria.withoutExperiment();
+                sampleSearchCriteria.withoutProject();
 
-				searchResults3 = ArrayList(searchResults)
-				searchResults3.addAll(searchResults2)
-				searchResults = searchResults3;
-			if isinstance(entityToExpand, Project):
-				experimentSearchCriteria = ExperimentSearchCriteria();
-				experimentSearchCriteria.withProject().withPermId().thatEquals(id);
-				experimentFetchOptions = ExperimentFetchOptions();
-				experimentFetchOptions.withProject().withSpace();
-				experimentFetchOptions.withProperties();
-				searchResults = service.searchExperiments(sessionToken, experimentSearchCriteria, experimentFetchOptions).getObjects();
+                sampleFetchOptions = SampleFetchOptions();
+                sampleFetchOptions.withSpace();
+                sampleFetchOptions.withProperties();
+                searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria,
+                                                       sampleFetchOptions).getObjects();
 
-				sampleSearchCriteria = SampleSearchCriteria();
-				sampleSearchCriteria.withProject().withPermId().thatEquals(id);
-				sampleSearchCriteria.withoutExperiment();
+                searchResults3 = ArrayList(searchResults)
+                searchResults3.addAll(searchResults2)
+                searchResults = searchResults3;
+            if isinstance(entityToExpand, Project):
+                experimentSearchCriteria = ExperimentSearchCriteria();
+                experimentSearchCriteria.withProject().withPermId().thatEquals(id);
+                experimentFetchOptions = ExperimentFetchOptions();
+                experimentFetchOptions.withProject().withSpace();
+                experimentFetchOptions.withProperties();
+                searchResults = service.searchExperiments(sessionToken, experimentSearchCriteria,
+                                                          experimentFetchOptions).getObjects();
 
-				sampleFetchOptions = SampleFetchOptions();
-				sampleFetchOptions.withSpace();
-				sampleFetchOptions.withProperties();
-				searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
+                sampleSearchCriteria = SampleSearchCriteria();
+                sampleSearchCriteria.withProject().withPermId().thatEquals(id);
+                sampleSearchCriteria.withoutExperiment();
 
-				searchResults3 = ArrayList(searchResults)
-				searchResults3.addAll(searchResults2)
-				searchResults = searchResults3;
+                sampleFetchOptions = SampleFetchOptions();
+                sampleFetchOptions.withSpace();
+                sampleFetchOptions.withProperties();
+                searchResults2 = service.searchSamples(sessionToken, sampleSearchCriteria,
+                                                       sampleFetchOptions).getObjects();
 
-			if isinstance(entityToExpand, Experiment):
-				sampleSearchCriteria = SampleSearchCriteria();
-				sampleSearchCriteria.withExperiment().withPermId().thatEquals(id);
-				sampleFetchOptions = SampleFetchOptions();
-				sampleFetchOptions.withSpace();
-				sampleFetchOptions.withProperties();
-				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
-				
-				dataSetSearchCriteria = DataSetSearchCriteria();
-				dataSetSearchCriteria.withExperiment().withPermId().thatEquals(id);
-				dataSetFetchOptions = DataSetFetchOptions();
-				dataSetFetchOptions.withExperiment().withProject().withSpace();
-				dataSetFetchOptions.withSample().withSpace();
-				dataSetFetchOptions.withProperties();
-				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
-				
-				searchResults3 = ArrayList(searchResults)
-				searchResults3.addAll(searchResults2)
-				searchResults = searchResults3;
-			if isinstance(entityToExpand, Sample):
-				sampleSearchCriteria = SampleSearchCriteria();
-				sampleSearchCriteria.withSpace().withCode().thatEquals(spaceCode);
-				sampleSearchCriteria.withParents().withPermId().thatEquals(id);
-				sampleFetchOptions = SampleFetchOptions();
-				sampleFetchOptions.withSpace();
-				sampleFetchOptions.withProperties();
-				searchResults = service.searchSamples(sessionToken, sampleSearchCriteria, sampleFetchOptions).getObjects();
-				
-				dataSetSearchCriteria = DataSetSearchCriteria();
-				dataSetSearchCriteria.withSample().withPermId().thatEquals(id);
-				dataSetFetchOptions = DataSetFetchOptions();
-				dataSetFetchOptions.withExperiment().withProject().withSpace();
-				dataSetFetchOptions.withSample().withSpace();
-				dataSetFetchOptions.withProperties();
-				searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
-				
-				searchResults3 = ArrayList(searchResults)
-				searchResults3.addAll(searchResults2)
-				searchResults = searchResults3;
-			if isinstance(entityToExpand, DataSet):
-				dataSetSearchCriteria = DataSetSearchCriteria();
-				dataSetSearchCriteria.withParents().withPermId().thatEquals(id);
-				dataSetFetchOptions = DataSetFetchOptions();
-				dataSetFetchOptions.withExperiment().withProject().withSpace();
-				dataSetFetchOptions.withSample().withSpace();
-				dataSetFetchOptions.withProperties();
-				searchResults = service.searchDataSets(sessionToken, dataSetSearchCriteria, dataSetFetchOptions).getObjects();
-			
-			# Add results without repetitions
-			for objectResult in searchResults:
-				entitiesToExpand[objectResult.__class__.__name__ +"+"+ objectResult.getPermId().getPermId()] = objectResult;
+                searchResults3 = ArrayList(searchResults)
+                searchResults3.addAll(searchResults2)
+                searchResults = searchResults3;
 
-	return entitiesToFreeze
+            if isinstance(entityToExpand, Experiment):
+                sampleSearchCriteria = SampleSearchCriteria();
+                sampleSearchCriteria.withExperiment().withPermId().thatEquals(id);
+                sampleFetchOptions = SampleFetchOptions();
+                sampleFetchOptions.withSpace();
+                sampleFetchOptions.withProperties();
+                searchResults = service.searchSamples(sessionToken, sampleSearchCriteria,
+                                                      sampleFetchOptions).getObjects();
+
+                dataSetSearchCriteria = DataSetSearchCriteria();
+                dataSetSearchCriteria.withExperiment().withPermId().thatEquals(id);
+                dataSetFetchOptions = DataSetFetchOptions();
+                dataSetFetchOptions.withExperiment().withProject().withSpace();
+                dataSetFetchOptions.withSample().withSpace();
+                dataSetFetchOptions.withProperties();
+                searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria,
+                                                        dataSetFetchOptions).getObjects();
+
+                searchResults3 = ArrayList(searchResults)
+                searchResults3.addAll(searchResults2)
+                searchResults = searchResults3;
+            if isinstance(entityToExpand, Sample):
+                sampleSearchCriteria = SampleSearchCriteria();
+                sampleSearchCriteria.withSpace().withCode().thatEquals(spaceCode);
+                sampleSearchCriteria.withParents().withPermId().thatEquals(id);
+                sampleFetchOptions = SampleFetchOptions();
+                sampleFetchOptions.withSpace();
+                sampleFetchOptions.withProperties();
+                searchResults = service.searchSamples(sessionToken, sampleSearchCriteria,
+                                                      sampleFetchOptions).getObjects();
+
+                dataSetSearchCriteria = DataSetSearchCriteria();
+                dataSetSearchCriteria.withSample().withPermId().thatEquals(id);
+                dataSetFetchOptions = DataSetFetchOptions();
+                dataSetFetchOptions.withExperiment().withProject().withSpace();
+                dataSetFetchOptions.withSample().withSpace();
+                dataSetFetchOptions.withProperties();
+                searchResults2 = service.searchDataSets(sessionToken, dataSetSearchCriteria,
+                                                        dataSetFetchOptions).getObjects();
+
+                searchResults3 = ArrayList(searchResults)
+                searchResults3.addAll(searchResults2)
+                searchResults = searchResults3;
+            if isinstance(entityToExpand, DataSet):
+                dataSetSearchCriteria = DataSetSearchCriteria();
+                dataSetSearchCriteria.withParents().withPermId().thatEquals(id);
+                dataSetFetchOptions = DataSetFetchOptions();
+                dataSetFetchOptions.withExperiment().withProject().withSpace();
+                dataSetFetchOptions.withSample().withSpace();
+                dataSetFetchOptions.withProperties();
+                searchResults = service.searchDataSets(sessionToken, dataSetSearchCriteria,
+                                                       dataSetFetchOptions).getObjects();
+
+            # Add results without repetitions
+            for objectResult in searchResults:
+                entitiesToExpand[
+                    objectResult.__class__.__name__ + "+" + objectResult.getPermId().getPermId()] = objectResult;
+
+    return entitiesToFreeze
+
 
 def getEntity(service, sessionToken, type, permId):
-	entity = None;
-	if type == "SPACE":
-		spaceFetchOptions = SpaceFetchOptions();
-		id = SpacePermId(permId);
-		entities = service.getSpaces(sessionToken, [id], spaceFetchOptions);
-		entity = entities[id];
-	if type == "PROJECT":
-		projectFetchOptions = ProjectFetchOptions();
-		projectFetchOptions.withSpace();
-		id = ProjectPermId(permId)
-		entities = service.getProjects(sessionToken, [id], projectFetchOptions);
-		entity = entities[id];
-	if type == "EXPERIMENT":
-		experimentFetchOptions = ExperimentFetchOptions();
-		experimentFetchOptions.withProject().withSpace();
-		experimentFetchOptions.withProperties();
-		id = ExperimentPermId(permId);
-		entities = service.getExperiments(sessionToken, [id], experimentFetchOptions);
-		entity = entities[id];
-	if type == "SAMPLE":
-		sampleFetchOptions = SampleFetchOptions();
-		sampleFetchOptions.withSpace();
-		sampleFetchOptions.withProperties();
-		id = SamplePermId(permId);
-		entities = service.getSamples(sessionToken, [id], sampleFetchOptions);
-		entity = entities[id];
-	if type == "DATASET":
-		dataSetFetchOptions = DataSetFetchOptions();
-		dataSetFetchOptions.withExperiment().withProject().withSpace();
-		dataSetFetchOptions.withSample().withSpace();
-		dataSetFetchOptions.withProperties();
-		id = DataSetPermId(permId);
-		entities = service.getDataSets(sessionToken, [id], dataSetFetchOptions);
-		entity = entities[id];
-	return entity
+    entity = None;
+    if type == "SPACE":
+        spaceFetchOptions = SpaceFetchOptions();
+        id = SpacePermId(permId);
+        entities = service.getSpaces(sessionToken, [id], spaceFetchOptions);
+        entity = entities[id];
+    if type == "PROJECT":
+        projectFetchOptions = ProjectFetchOptions();
+        projectFetchOptions.withSpace();
+        id = ProjectPermId(permId)
+        entities = service.getProjects(sessionToken, [id], projectFetchOptions);
+        entity = entities[id];
+    if type == "EXPERIMENT":
+        experimentFetchOptions = ExperimentFetchOptions();
+        experimentFetchOptions.withProject().withSpace();
+        experimentFetchOptions.withProperties();
+        id = ExperimentPermId(permId);
+        entities = service.getExperiments(sessionToken, [id], experimentFetchOptions);
+        entity = entities[id];
+    if type == "SAMPLE":
+        sampleFetchOptions = SampleFetchOptions();
+        sampleFetchOptions.withSpace();
+        sampleFetchOptions.withProperties();
+        id = SamplePermId(permId);
+        entities = service.getSamples(sessionToken, [id], sampleFetchOptions);
+        entity = entities[id];
+    if type == "DATASET":
+        dataSetFetchOptions = DataSetFetchOptions();
+        dataSetFetchOptions.withExperiment().withProject().withSpace();
+        dataSetFetchOptions.withSample().withSpace();
+        dataSetFetchOptions.withProperties();
+        id = DataSetPermId(permId);
+        entities = service.getDataSets(sessionToken, [id], dataSetFetchOptions);
+        entity = entities[id];
+    return entity
+
 
 def getDisplayName(entity):
-	displayName = None;
-	if hasattr(entity, 'properties') and getInternalNamespacePropertyCode("NAME") in entity.properties and entity.properties[getInternalNamespacePropertyCode("NAME")]:
-		displayName = entity.properties[getInternalNamespacePropertyCode("NAME")];
-	elif hasattr(entity, 'code') and entity.getCode():
-		displayName = entity.getCode();
-	elif hasattr(permId, 'permId'):
-		displayName = entity.getPermId().getPermId();
-	return displayName
+    displayName = None;
+    if hasattr(entity, 'properties') and getInternalNamespacePropertyCode(
+            "NAME") in entity.properties and entity.properties[
+        getInternalNamespacePropertyCode("NAME")]:
+        displayName = entity.properties[getInternalNamespacePropertyCode("NAME")];
+    elif hasattr(entity, 'code') and entity.getCode():
+        displayName = entity.getCode();
+    elif hasattr(permId, 'permId'):
+        displayName = entity.getPermId().getPermId();
+    return displayName
+
 
 def getSpace(entity):
-	spaceCode = None;
-	if isinstance(entity, Space):
-		spaceCode = entity.getCode();
-	if isinstance(entity, Project):
-		spaceCode = entity.getSpace().getCode();
-	if isinstance(entity, Experiment):
-		spaceCode = entity.getProject().getSpace().getCode();
-	if isinstance(entity, Sample):
-		spaceCode = entity.getSpace().getCode();
-	if isinstance(entity, DataSet):
-		if entity.getSample() is not None:
-			spaceCode = entity.getSample().getSpace().getCode();
-		if entity.getExperiment() is not None:
-			spaceCode = entity.getExperiment().getProject().getSpace().getCode();
-	return spaceCode
+    spaceCode = None;
+    if isinstance(entity, Space):
+        spaceCode = entity.getCode();
+    if isinstance(entity, Project):
+        spaceCode = entity.getSpace().getCode();
+    if isinstance(entity, Experiment):
+        spaceCode = entity.getProject().getSpace().getCode();
+    if isinstance(entity, Sample):
+        spaceCode = entity.getSpace().getCode();
+    if isinstance(entity, DataSet):
+        if entity.getSample() is not None:
+            spaceCode = entity.getSample().getSpace().getCode();
+        if entity.getExperiment() is not None:
+            spaceCode = entity.getExperiment().getProject().getSpace().getCode();
+    return spaceCode
