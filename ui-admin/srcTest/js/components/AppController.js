@@ -6,5 +6,7 @@ export default class AppController {
     this.objectChange = jest.fn()
     this.objectUpdate = jest.fn()
     this.objectDelete = jest.fn()
+    this.objectCreate = jest.fn()
+    this.errorChange = jest.fn()
   }
 }

@@ -31,25 +31,9 @@ import ch.ethz.sis.afs.api.TransactionalFileSystem;
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
 import ch.ethz.sis.afs.dto.Transaction;
-import ch.ethz.sis.afs.dto.operation.CopyOperation;
-import ch.ethz.sis.afs.dto.operation.CreateOperation;
-import ch.ethz.sis.afs.dto.operation.DeleteOperation;
-import ch.ethz.sis.afs.dto.operation.ListOperation;
-import ch.ethz.sis.afs.dto.operation.MoveOperation;
-import ch.ethz.sis.afs.dto.operation.Operation;
-import ch.ethz.sis.afs.dto.operation.OperationName;
-import ch.ethz.sis.afs.dto.operation.ReadOperation;
-import ch.ethz.sis.afs.dto.operation.WriteOperation;
+import ch.ethz.sis.afs.dto.operation.*;
 import ch.ethz.sis.afs.exception.AFSExceptions;
-import ch.ethz.sis.afs.manager.operation.CopyOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.CreateOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.DeleteOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.ListOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.MoveOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.NonModifyingOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.OperationExecutor;
-import ch.ethz.sis.afs.manager.operation.ReadOperationExecutor;
-import ch.ethz.sis.afs.manager.operation.WriteOperationExecutor;
+import ch.ethz.sis.afs.manager.operation.*;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
@@ -66,7 +50,9 @@ public class TransactionConnection implements TransactionalFileSystem {
 
     static {
         nonModifyingOperationExecutor = Map.of(OperationName.Read, ReadOperationExecutor.getInstance(),
-                OperationName.List, ListOperationExecutor.getInstance());
+                OperationName.List, ListOperationExecutor.getInstance(),
+                OperationName.Hash, HashOperationExecutor.getInstance(),
+                OperationName.Preview, PreviewOperationExecutor.getInstance());
 
         operationExecutors = Map.of(OperationName.Copy, CopyOperationExecutor.getInstance(),
                 OperationName.Delete, DeleteOperationExecutor.getInstance(),
@@ -81,6 +67,8 @@ public class TransactionConnection implements TransactionalFileSystem {
     private State state;
     private String writeAheadLogRoot;
     private String storageRoot;
+    private Set<String> enabledPreviewFileTypes;
+    private long enablePreviewSizeInBytes;
     private RecoveredTransactions recoveredTransactions;
 
     /*
@@ -90,8 +78,10 @@ public class TransactionConnection implements TransactionalFileSystem {
                           JsonObjectMapper jsonObjectMapper,
                           String writeAheadLogRoot,
                           String storageRoot,
-                          RecoveredTransactions recoveredTransactions) {
-        this(lockManager, jsonObjectMapper, null);
+                          RecoveredTransactions recoveredTransactions,
+                          Set<String> enabledPreviewFileTypes,
+                          long enablePreviewSizeInBytes) {
+        this(lockManager, jsonObjectMapper, null, enabledPreviewFileTypes, enablePreviewSizeInBytes);
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;
         this.recoveredTransactions = recoveredTransactions;
@@ -102,7 +92,9 @@ public class TransactionConnection implements TransactionalFileSystem {
      */
     TransactionConnection(LockManager<UUID, String> lockManager,
                           JsonObjectMapper jsonObjectMapper,
-                          Transaction transaction) {
+                          Transaction transaction,
+                          Set<String> enabledPreviewFileTypes,
+                          long enablePreviewSizeInBytes) {
         this.lockManager = lockManager;
         this.jsonObjectMapper = jsonObjectMapper;
         this.transaction = transaction;
@@ -118,6 +110,9 @@ public class TransactionConnection implements TransactionalFileSystem {
         } else {
             state = State.New;
         }
+
+        this.enabledPreviewFileTypes = enabledPreviewFileTypes;
+        this.enablePreviewSizeInBytes = enablePreviewSizeInBytes;
     }
 
     //
@@ -381,6 +376,20 @@ public class TransactionConnection implements TransactionalFileSystem {
             safeExistingSource = IOUtils.getParentPath(safeExistingSource);
         }
         return IOUtils.getSpace(safeExistingSource);
+    }
+
+    @Override
+    public @NonNull String hash(@NonNull String source) throws Exception {
+        source = getSafePath(OperationName.Hash, source);
+        HashOperation operation = new HashOperation(transaction.getUuid(), source);
+        return executeNonModifyingOperation(operation, source);
+    }
+
+    @Override
+    public @NonNull byte[] preview(@NonNull String source) throws Exception {
+        source = getSafePath(OperationName.Preview, source);
+        PreviewOperation operation = new PreviewOperation(transaction.getUuid(), source, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+        return executeNonModifyingOperation(operation, source);
     }
 
     private boolean prepare(Operation operation, String source, String target) throws Exception {

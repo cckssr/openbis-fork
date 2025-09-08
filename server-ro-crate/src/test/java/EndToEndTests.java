@@ -166,15 +166,15 @@ public class EndToEndTests extends AbstractTest
         given()
                 .header("api-key", openBIS.getSessionToken())
                 .header("Content-Type", "application/ld+json")
-                .header("Accept", "application/zip")
+                .header("Accept", "application/json")
                 .body(Files.readAllBytes(Path.of(file.getPath())))
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
+                .statusCode(200)
                 .body(allOf(containsString("\"validationErrors\":[{"),
                         containsString("\"isValid\":false"),
                         containsString("\"property\":\"wrong\""),
-                        containsString("\"message\":\"Property not in schema\"")))
-                .statusCode(200);
+                        containsString("\"message\":\"Property not in schema\"")));
     }
 
     @Test
@@ -309,4 +309,54 @@ public class EndToEndTests extends AbstractTest
                 .then()
                 .statusCode(404);
     }
+
+    @Test
+    public void testValidateMalformedCrate()
+            throws Exception
+    {
+
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/Malformed.json";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/ld+json")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    public void testValidateMalformedCrateZipped()
+            throws Exception
+    {
+
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/Malformed.zip";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/zip")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(400);
+    }
+
+
 }

@@ -85,6 +85,7 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation>
 
             IOUtils.write(operation.getSource(), operation.getOffset(), data);
             IOUtils.delete(operation.getTempSource());
+            OperationExecutor.clearCaches(operation.getSource());
         }
         return true;
     }

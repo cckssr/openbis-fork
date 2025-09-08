@@ -180,6 +180,18 @@ public class AuthenticationProxy extends AbstractProxy {
         return nextProxy.free(owner, source);
     }
 
+    @Override
+    public String hash(@NonNull String owner, @NonNull String source) throws Exception {
+        validateSessionAvailable();
+        return nextProxy.hash(owner, source);
+    }
+
+    @Override
+    public byte[] preview(@NonNull String owner, @NonNull String source) throws Exception {
+        validateSessionAvailable();
+        return nextProxy.preview(owner, source);
+    }
+
     //
     //
     //
