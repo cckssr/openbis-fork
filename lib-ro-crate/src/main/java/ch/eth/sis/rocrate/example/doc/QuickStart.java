@@ -1,12 +1,11 @@
 package ch.eth.sis.rocrate.example.doc;
 
 import ch.eth.sis.rocrate.SchemaFacade;
-import ch.eth.sis.rocrate.facade.ISchemaFacade;
-import ch.eth.sis.rocrate.facade.LiteralType;
-import ch.eth.sis.rocrate.facade.PropertyType;
-import ch.eth.sis.rocrate.facade.Type;
+import ch.eth.sis.rocrate.facade.*;
 import edu.kit.datamanager.ro_crate.writer.FolderWriter;
 
+import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,6 +92,36 @@ public class QuickStart
                 experimentType.addProperty(date);
             }
             schemaFacade.addType(experimentType);
+
+        }
+
+        {
+            MetadataEntry personAndreas = new MetadataEntry();
+            personAndreas.setId("PERSON1");
+            Map<String, Serializable> properties = new LinkedHashMap<>();
+            properties.put("givenname", "Andreas");
+            properties.put("lastname", "Meier");
+            properties.put("identifier", "https://orcid.org/0009-0002-6541-4637");
+            personAndreas.setProps(properties);
+            schemaFacade.addEntry(personAndreas);
+
+            MetadataEntry personJuan = new MetadataEntry();
+            personAndreas.setId("PERSON2");
+            Map<String, Serializable> properties2 = new LinkedHashMap<>();
+            properties2.put("givenname", "Andreas");
+            properties2.put("lastname", "Meier");
+            properties2.put("identifier", "https://orcid.org/0009-0002-6541-4637");
+            personAndreas.setProps(properties2);
+            schemaFacade.addEntry(personJuan);
+
+            MetadataEntry experiment1 = new MetadataEntry();
+            experiment1.setId("EXPERIMENT1");
+            experiment1.setReferences(Map.of("creator", List.of(personAndreas.getId())));
+            Map<String, Serializable> propertiesExperiment = new LinkedHashMap<>();
+            propertiesExperiment.put("name", "Example Experiment");
+            propertiesExperiment.put("date", "2025-09-08 08:41:50.000");
+            experiment1.setProps(propertiesExperiment);
+            schemaFacade.addEntry(experiment1);
 
         }
 
