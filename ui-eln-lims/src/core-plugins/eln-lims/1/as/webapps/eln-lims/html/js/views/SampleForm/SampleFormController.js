@@ -966,7 +966,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                                 _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
                             });
                         }
-                        mainController.changeView('showViewSamplePageFromPermId',data[0].permId);
+                        var args = {
+                                permIdOrIdentifier : data[0].permId,
+                                paginationInfo : _this._sampleFormModel.paginationInfo
+                        };
+                        mainController.changeView('showViewSamplePageFromPermId', args);
                         Util.unblockUI();
                     } else { // Recursive call, only if not found yet due to reindexing
                         setTimeout(searchUntilFound, 100);

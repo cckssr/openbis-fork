@@ -310,7 +310,11 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 				//Edit Button
 				var $editBtn = FormUtil.getToolbarButton("EDIT", function () {
 				    Util.blockUI();
-					mainController.changeView('showEditDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
+				    var arg = {
+                            permIdOrIdentifier : _this._dataSetFormModel.dataSetV3.code,
+                            paginationInfo : _this._dataSetFormModel.paginationInfo
+                    }
+					mainController.changeView('showEditDataSetPageFromPermId', arg);
 				}, "Edit", "Edit data", "dataset-edit-btn-"+_this._viewId, 'btn btn-primary btn-secondary');
 				if(toolbarConfig.EDIT) {
 					toolbarModel.push({ component : $editBtn });
@@ -492,7 +496,7 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 			$header.append(FormUtil.getToolbar(toolbarModel));
 		}
 
-		if(this._dataSetFormModel.mode !== FormMode.CREATE && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
+		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
             var moveToIndex = function(index) {
                 if(index < 0 || _this._dataSetFormModel.paginationInfo.totalCount == index) {
                     return;
