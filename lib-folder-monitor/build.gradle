@@ -1,0 +1,6 @@
+apply from: '../build/javalibrary.gradle'
+
+dependencies {
+    annotationProcessor 'lombok:lombok:1.18.38'
+    implementation project(':lib-commonbase'), 'lombok:lombok:1.18.38'
+}
