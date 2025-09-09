@@ -205,7 +205,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       'label',
       'description',
       'schema',
-      'transformation'
+      'transformation',
+      'metadata'
     ])
   }
 
@@ -237,6 +238,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     creation.setTransformation(property.transformation.value)
     creation.setMultiValue(property.isMultiValue.value)
 
+    const metadataObject = this._transformMetadataToObject(property.metadata.value)
+    creation.setMetaData(metadataObject)
 
     if (
       property.dataType.value === openbis.DataType.CONTROLLEDVOCABULARY &&
@@ -281,6 +284,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
     update.convertToDataType(property.dataType.value)
+    const metadataObject = this._transformMetadataToObject(property.metadata.value)
+    update.getMetaData().set(metadataObject)
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 

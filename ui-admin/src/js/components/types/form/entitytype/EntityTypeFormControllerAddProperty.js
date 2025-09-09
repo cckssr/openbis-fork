@@ -73,6 +73,11 @@ export default class EntityTypeFormControllerAddProperty {
       mandatory: FormUtil.createField({
         value: false
       }),
+      metadata: FormUtil.createField({
+        visible: true,
+        value: [],
+        enabled: true
+      }),
       showInEditView: FormUtil.createField({
         value: true
       }),

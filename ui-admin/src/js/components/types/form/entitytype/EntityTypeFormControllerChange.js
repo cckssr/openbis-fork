@@ -136,6 +136,10 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
           unique: {
             value: _.get(newExisting, 'unique', false),
             enabled: true
+          },
+          metadata: {
+            value: _.get(newExisting, 'metaData', []),
+            enabled: true
           }
         }
 
@@ -375,6 +379,12 @@ export default class EntityTypeFormControllerChange extends PageControllerChange
       mandatory: {
         ...dest.mandatory,
         value: _.get(src, 'mandatory.value', false)
+      },
+      metadata: {
+        ...dest.metadata,
+        visible: _.get(src, 'metadata.visible', true),
+        value: _.get(src, 'metadata.value', []),
+        enabled: _.get(src, 'metadata.enabled', true)
       },
       isMultiValue: {
         ...dest.isMultiValue,

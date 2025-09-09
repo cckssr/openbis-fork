@@ -172,9 +172,14 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     }
   }
 
-  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {
+  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {    
     const propertyType = loadedAssignment.propertyType
 
+    const metadata = Object.entries(_.get(propertyType, 'metaData', [])).map(([key, value]) => ({
+			key: key,
+			value: value,
+		}))
+    
     const code = _.get(propertyType, 'code', null)
     const dataType = _.get(propertyType, 'dataType', null)
     const plugin = _.get(loadedAssignment, 'plugin.name', null)
@@ -271,6 +276,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         value: _.get(loadedAssignment, 'mandatory', false),
         enabled:
           !assignmentInternal || AppController.getInstance().isSystemUser()
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       }),
       isMultiValue: FormUtil.createField({
         value: _.get(propertyType, 'multiValue', false),

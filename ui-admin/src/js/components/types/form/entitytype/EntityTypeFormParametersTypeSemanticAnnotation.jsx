@@ -14,7 +14,7 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 
 const styles = theme => {
 	const baseSemanticAnnotationTripletContainer = {
-		border: '2px solid #ebebeb', // Consider theme.palette.divider
+		border: '2px solid #ebebeb',
 		padding: theme.spacing(1),
 		display: 'flex',
 		flexDirection: 'row',
@@ -37,7 +37,7 @@ const styles = theme => {
 			marginRight: theme.spacing(1),
 		},
 		removeButton: {
-			minWidth: 'auto', // Ensure button doesn't take too much space
+			minWidth: 'auto',
 			padding: theme.spacing(0.5),
 		},
 		semanticAnnotationTripletContainer: baseSemanticAnnotationTripletContainer,
@@ -262,7 +262,7 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		return (
 			<Container>
 				{this.renderHeader(messages.get(messages.SEMANTIC_ANNOTATIONS), type)}
-				{type.objectType?.value != objectTypes.OBJECT_TYPE ? 
+				{(type.objectType?.value != objectTypes.OBJECT_TYPE && type.objectType?.value != objectTypes.NEW_OBJECT_TYPE) ? 
 					(<Typography variant="body2" color="textSecondary">Semantic Annotations are not yet supported for object type: [{type.objectType.value}] !</Typography>)
 					: this.renderSemanticAnnotations(type)}
 			</Container>
@@ -284,7 +284,7 @@ class EntityTypeFormParametersTypeSemanticAnnotation extends React.PureComponent
 		return (
 			<div className={classes.headerContainer}>
 				<Header>{messages.get(map[type.objectType.value])} {title}</Header>
-				{mode === 'edit' && type.objectType?.value === objectTypes.OBJECT_TYPE &&
+				{mode === 'edit' && (type.objectType?.value === objectTypes.OBJECT_TYPE || type.objectType?.value === objectTypes.NEW_OBJECT_TYPE) &&
 					<Button variant='contained'
 						color='white'
 						onClick={() => this.handleAddSemanticAnnotation(type)}

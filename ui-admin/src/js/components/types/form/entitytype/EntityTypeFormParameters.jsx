@@ -8,7 +8,8 @@ import EntityTypeFormParametersSection from '@src/js/components/types/form/entit
 import logger from '@src/js/common/logger.js'
 import { Tab } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import EntityTypeFormParametersMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersMetadata.jsx';
+import EntityTypeFormParametersTypeMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersTypeMetadata.jsx';
+import EntityTypeFormParametersPropertyMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersPropertyMetadata.jsx';
 
 const styles = theme => ({
   tabsRoot: {
@@ -76,14 +77,17 @@ class EntityTypeFormParameters extends React.PureComponent {
           <Tab key='property-tab-id'
             value={PROPERTIES_TAB_INDEX}
             label='Parameters'
+            sx={{textTransform :'none', padding: 'unset'}}
           />
-          <Tab key='property-semantic-ann-tab-id'
+          <Tab key='semantic-annotation-tab-id'
             value={SEMANTIC_ANNOTATIONS_TAB_INDEX}
             label='Semantic Annotations'
+            sx={{textTransform :'none', padding: 'unset'}}
           />
-          <Tab key='property-metadata-tab-id'
+          <Tab key='metadata-tab-id'
             value={METADATA_TAB_INDEX}
             label='Metadata'
+            sx={{textTransform :'none', padding: 'unset'}}
           />
         </TabList>
         <TabPanel classes={{ root: classes.tabPanelRoot }} value={PROPERTIES_TAB_INDEX}>
@@ -137,9 +141,19 @@ class EntityTypeFormParameters extends React.PureComponent {
           />
         </TabPanel>
         <TabPanel classes={{ root: classes.tabPanelRoot }} value={METADATA_TAB_INDEX}>
-          <EntityTypeFormParametersMetadata
+          <EntityTypeFormParametersTypeMetadata
             controller={controller}
             type={type}
+            selection={selection}
+            mode={mode}
+            onChange={onChange}
+            onSelectionChange={onSelectionChange}
+            onBlur={onBlur}
+          />
+          <EntityTypeFormParametersPropertyMetadata
+            controller={controller}
+            type={type}
+            properties={properties}
             selection={selection}
             mode={mode}
             onChange={onChange}
