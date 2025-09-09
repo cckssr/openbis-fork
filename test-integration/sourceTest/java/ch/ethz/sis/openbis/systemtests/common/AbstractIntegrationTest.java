@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -1043,6 +1044,30 @@ public abstract class AbstractIntegrationTest
                 assertEquals(locationInDB, String.join(File.separator, dataSetFolderLocation));
             }
         }
+    }
+
+    public static void waitUntilCondition(Supplier<Boolean> condition, long timeout)
+    {
+        long startTime = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() < startTime + timeout)
+        {
+            if (condition.get())
+            {
+                return;
+            } else
+            {
+                try
+                {
+                    Thread.sleep(timeout / 10);
+                } catch (Exception e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        throw new RuntimeException("Timed out waiting for " + timeout + " ms.");
     }
 
 }

@@ -143,7 +143,14 @@ public class FolderMonitor
                 }
 
                 task.configure(configuration.getTaskProperties());
-                task.process(incoming.toPath());
+                try
+                {
+                    task.process(incoming.toPath());
+                } catch (RuntimeException e)
+                {
+                    logger.info("Processing: " + incoming + " has failed", e);
+                    throw e;
+                }
 
                 logger.info("After processing: " + incoming);
 
