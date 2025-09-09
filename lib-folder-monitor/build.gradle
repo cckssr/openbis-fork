@@ -5,3 +5,24 @@ dependencies {
     implementation project(':lib-commonbase'), 'lombok:lombok:1.18.38'
     testImplementation 'testng:testng:6.8-CISD'
 }
+
+task FolderMonitorZip(type: Zip, dependsOn: compileJava) {
+    archiveBaseName = 'folder-monitor'
+    from(jar) {
+        into('folder-monitor/lib/')
+    }
+    from(configurations.runtimeClasspath) {
+        into('folder-monitor/lib/')
+    }
+    from('dist/etc') {
+        into 'folder-monitor/etc'
+    }
+    from('dist/bin') {
+        filePermissions {
+            user {
+                execute = true
+            }
+        }
+        into 'folder-monitor/bin'
+    }
+}

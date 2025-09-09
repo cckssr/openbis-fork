@@ -69,6 +69,8 @@ public class FolderMonitor
 
         timer = new Timer();
         timer.schedule(task, 0L, configuration.getCheckingInterval());
+
+        logger.info("=== STARTED ===");
     }
 
     public void stop()
