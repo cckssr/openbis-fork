@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriter
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 {
@@ -61,7 +62,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterFile/S+ELN_DROPBOX_SPACE+TEST_REGISTER_FILE"));
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
@@ -88,7 +89,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterFileAndFolder/S+ELN_DROPBOX_SPACE+TEST_REGISTER_FILE_AND_FOLDER"));
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
@@ -118,7 +119,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterFolder/S+ELN_DROPBOX_SPACE+TEST_REGISTER_FOLDER"));
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
@@ -146,7 +147,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, spaceSample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterInSpaceSample/S+ELN_DROPBOX_SPACE+TEST_REGISTER_IN_SPACE_SAMPLE+ELN_DROPBOX_SAMPLE_TYPE+ELN_DROPBOX_SAMPLE_NAME"));
 
         List<Sample> after = searchSampleChildren(openBIS, spaceSample.getPermId());
@@ -175,7 +176,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         try
         {
-            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+            executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                     + "/testRegisterInNonExistentSpaceSample/S+ELN_DROPBOX_SPACE+TEST_REGISTER_IN_NON_EXISTENT_SPACE_SAMPLE"));
             Assert.fail();
         } catch (UserFailureException e)
@@ -196,7 +197,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, projectSample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterInProjectSample/O+ELN_DROPBOX_SPACE+ELN_DROPBOX_PROJECT+TEST_REGISTER_IN_PROJECT_SAMPLE+ELN_DROPBOX_SAMPLE_TYPE+ELN_DROPBOX_SAMPLE_NAME"));
 
         List<Sample> after = searchSampleChildren(openBIS, projectSample.getPermId());
@@ -225,7 +226,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         try
         {
-            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+            executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                     + "/testRegisterInNonExistentProjectSample/O+ELN_DROPBOX_SPACE+ELN_DROPBOX_PROJECT+TEST_REGISTER_IN_NON_EXISTENT_PROJECT_SAMPLE"));
             Assert.fail();
         } catch (UserFailureException e)
@@ -246,7 +247,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchExperimentSamples(openBIS, experiment.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterInExperiment/E+ELN_DROPBOX_SPACE+ELN_DROPBOX_PROJECT+TEST_REGISTER_IN_EXPERIMENT+ELN_DROPBOX_SAMPLE_TYPE+ELN_DROPBOX_SAMPLE_NAME"));
 
         List<Sample> after = searchExperimentSamples(openBIS, experiment.getPermId());
@@ -275,7 +276,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         try
         {
-            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+            executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                     + "/testRegisterInNonExistentExperiment/E+ELN_DROPBOX_SPACE+ELN_DROPBOX_PROJECT+TEST_REGISTER_IN_NON_EXISTENT_EXPERIMENT"));
             Assert.fail();
         } catch (UserFailureException e)
@@ -296,7 +297,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+        executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterWithMetadata/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_METADATA+ELN_DROPBOX_SAMPLE_TYPE"));
 
         List<Sample> after = searchSampleChildren(openBIS, sample.getPermId());
@@ -326,7 +327,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         try
         {
-            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+            executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                     + "/testRegisterWithIncorrectMetadata/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_INCORRECT_METADATA"));
             Assert.fail();
         } catch (Exception e)
@@ -351,7 +352,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
         try
         {
-            executeDropbox(new Properties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
+            executeDropbox(createDropboxProperties(), Path.of("sourceTest/resource/" + getClass().getSimpleName()
                     + "/testRegisterWithDuplicatedName/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_DUPLICATED_NAME+ELN_DROPBOX_SAMPLE_TYPE+ELN_DROPBOX_SAMPLE_NAME"));
             Assert.fail();
         } catch (Exception e)
@@ -388,8 +389,8 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
             Assert.assertEquals(files.count(), 6);
         }
 
-        Properties properties = new Properties();
-        properties.setProperty(ElnDropbox.DISCARD_FILES_PATTERNS, "discard-me-.*, to-be-discarded-.*");
+        Properties properties = createDropboxProperties();
+        properties.setProperty(ElnDropbox.PROPERTY_DISCARD_FILES_PATTERNS, "discard-me-.*, to-be-discarded-.*");
 
         executeDropbox(properties, folder);
 
@@ -414,8 +415,8 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Properties properties = new Properties();
-        properties.setProperty(ElnDropbox.DISCARD_FILES_PATTERNS, "(incorrect");
+        Properties properties = createDropboxProperties();
+        properties.setProperty(ElnDropbox.PROPERTY_DISCARD_FILES_PATTERNS, "(incorrect");
 
         try
         {
@@ -439,8 +440,8 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
 
-        Properties properties = new Properties();
-        properties.setProperty(ElnDropbox.ILLEGAL_FILES_PATTERNS, "this-is-illegal-.*, illegal-.*");
+        Properties properties = createDropboxProperties();
+        properties.setProperty(ElnDropbox.PROPERTY_ILLEGAL_FILES_PATTERNS, "this-is-illegal-.*, illegal-.*");
 
         try
         {
@@ -463,8 +464,8 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Properties properties = new Properties();
-        properties.setProperty(ElnDropbox.ILLEGAL_FILES_PATTERNS, "(incorrect");
+        Properties properties = createDropboxProperties();
+        properties.setProperty(ElnDropbox.PROPERTY_ILLEGAL_FILES_PATTERNS, "(incorrect");
 
         try
         {
@@ -477,15 +478,25 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         }
     }
 
+    private static Properties createDropboxProperties()
+    {
+        String sessionToken = createOpenBIS().login(INSTANCE_ADMIN, PASSWORD);
+
+        Properties properties = new Properties();
+        properties.setProperty(ElnDropbox.PROPERTY_APPLICATION_SERVER_URL,
+                TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath());
+        properties.setProperty(ElnDropbox.PROPERTY_AFS_SERVER_URL, TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
+        properties.setProperty(ElnDropbox.PROPERTY_INTERACTIVE_SESSION_KEY, TEST_INTERACTIVE_SESSION_KEY);
+        properties.setProperty(ElnDropbox.PROPERTY_PERSONAL_ACCESS_TOKEN, sessionToken);
+
+        return properties;
+    }
+
     private static void executeDropbox(Properties properties, Path incoming)
     {
-        OpenBIS openBIS = createOpenBIS();
-        openBIS.login(INSTANCE_ADMIN, PASSWORD);
-        openBIS.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
-
         ElnDropbox elnDropbox = new ElnDropbox();
         elnDropbox.configure(properties);
-        elnDropbox.process(openBIS, incoming);
+        elnDropbox.process(incoming);
     }
 
     private static List<Sample> searchExperimentSamples(OpenBIS openBIS, IExperimentId experimentId)
