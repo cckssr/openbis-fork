@@ -19,7 +19,11 @@ export default class UserFormControllerAddGroup {
       registrator: FormUtil.createField({}),
       registrationDate: FormUtil.createField({}),
       modificationDate: FormUtil.createField({}),
-      original: null
+      original: null,
+      metadata: FormUtil.createField({
+        value: [],
+        enabled: true
+      })
     }
 
     const newGroups = Array.from(groups)

@@ -10,15 +10,26 @@ import UserFormSelectionType from '@src/js/components/users/form/user/UserFormSe
 import UserFormParametersUser from '@src/js/components/users/form/user/UserFormParametersUser.jsx'
 import UserFormParametersGroup from '@src/js/components/users/form/user/UserFormParametersGroup.jsx'
 import UserFormParametersRole from '@src/js/components/users/form/user/UserFormParametersRole.jsx'
+import UserFormParametersMetadata from '@src/js/components/users/form/user/UserFormParametersMetadata.jsx'
 import UserFormGridGroups from '@src/js/components/users/form/user/UserFormGridGroups.jsx'
 import UserFormGridRoles from '@src/js/components/users/form/user/UserFormGridRoles.jsx'
 import UserFormButtons from '@src/js/components/users/form/user/UserFormButtons.jsx'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
+import { Tab } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 const styles = theme => ({
   grid: {
     marginBottom: theme.spacing(2)
+  },
+  tabsRoot: {
+    borderBottomStyle: 'solid',
+    borderBottomWidth: '1px',
+    borderBottomColor: theme.palette.border.primary,
+  },
+  tabPanelRoot: {
+    padding: 0,
   }
 })
 
@@ -27,7 +38,9 @@ class UserForm extends React.PureComponent {
     super(props)
     autoBind(this)
 
-    this.state = {}
+    this.state = {
+      tabSelected: 0
+    }
 
     if (this.props.controller) {
       this.controller = this.props.controller
@@ -40,6 +53,12 @@ class UserForm extends React.PureComponent {
 
   componentDidMount() {
     this.controller.load()
+  }
+
+  handleTabChange = (event, newValue) => {
+    this.setState({
+      tabSelected: newValue,
+    })
   }
 
   handleClickContainer() {
@@ -134,41 +153,86 @@ class UserForm extends React.PureComponent {
       selection,
       selectedGroupRow,
       selectedRoleRow,
-      mode
+      mode,
+      tabSelected
     } = this.state
+    const { classes } = this.props
 
+    const PROPERTIES_TAB_INDEX = 0;
+    const METADATA_TAB_INDEX = 1;
+    console.log('UserForm.renderAdditionalPanel', { user }, { groups }, { roles }, { selection }, { selectedGroupRow }, { selectedRoleRow }, { mode }, { tabSelected })
     return (
-      <div>
-        <UserFormParametersUser
-          controller={controller}
-          user={user}
-          selection={selection}
-          mode={mode}
-          onChange={controller.handleChange}
-          onSelectionChange={controller.handleSelectionChange}
-          onBlur={controller.handleBlur}
-        />
-        <UserFormParametersGroup
-          controller={controller}
-          groups={groups}
-          selection={selection}
-          selectedRow={selectedGroupRow}
-          mode={mode}
-          onChange={controller.handleChange}
-          onSelectionChange={controller.handleSelectionChange}
-          onBlur={controller.handleBlur}
-        />
-        <UserFormParametersRole
-          controller={controller}
-          roles={roles}
-          selection={selection}
-          selectedRow={selectedRoleRow}
-          mode={mode}
-          onChange={controller.handleChange}
-          onSelectionChange={controller.handleSelectionChange}
-          onBlur={controller.handleBlur}
-        />
-      </div>
+      <TabContext value={tabSelected} >
+        <TabList
+          variant='fullWidth'
+          onChange={this.handleTabChange}
+          classes={{ root: classes.tabsRoot }}
+          textColor='inherit'
+          indicatorColor='secondary'
+          slotProps={{
+            indicator: {
+              style: {
+                transition: 'none',
+              }
+            }
+          }}
+        >
+          <Tab key='user-tab-id'
+            value={PROPERTIES_TAB_INDEX}
+            label='Parameters'
+            sx={{ textTransform: 'none', padding: 'unset' }}
+          />
+          <Tab key='metadata-tab-id'
+            value={METADATA_TAB_INDEX}
+            label='Metadata'
+            sx={{ textTransform: 'none', padding: 'unset' }}
+          />
+        </TabList>
+        <TabPanel classes={{ root: classes.tabPanelRoot }} value={PROPERTIES_TAB_INDEX}>
+          <UserFormParametersUser
+            controller={controller}
+            user={user}
+            selection={selection}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+          <UserFormParametersGroup
+            controller={controller}
+            groups={groups}
+            selection={selection}
+            selectedRow={selectedGroupRow}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+          <UserFormParametersRole
+            controller={controller}
+            roles={roles}
+            selection={selection}
+            selectedRow={selectedRoleRow}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+        </TabPanel>
+        <TabPanel classes={{ root: classes.tabPanelRoot }} value={METADATA_TAB_INDEX}>
+          <UserFormParametersMetadata
+            controller={controller}
+            user={user}
+            groups={groups}
+            roles={roles}
+            selection={selection}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+        </TabPanel>
+      </TabContext>
     )
   }
 

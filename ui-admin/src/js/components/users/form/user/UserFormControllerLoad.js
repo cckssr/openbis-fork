@@ -34,7 +34,7 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     let loadedGroups = null
 
     if (!isNew) {
-      ;[loadedUser, loadedGroups] = await Promise.all([
+      [loadedUser, loadedGroups] = await Promise.all([
         this.facade.loadUser(object.id),
         this.facade.loadUserGroups(object.id)
       ])
@@ -91,6 +91,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
     const roles = _.get(loadedUser, 'roleAssignments', null);
     const hasRoles = roles && roles.length > 0;
     const userStatus = active ? (expiryDate ? messages.ACTIVE_UNTIL_EXPIRY_DATE : messages.ACTIVE) : messages.INACTIVE
+    const metadata = Object.entries(_.get(loadedUser, 'metaData', [])).map(([key, value]) => ({
+      key: key,
+      value: value,
+    }))
     const user = {
       id: _.get(loadedUser, 'userId', null),
       userId: FormUtil.createField({
@@ -126,6 +130,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
         value: hasRoles,
         visible: false
       }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
+      })
     }
     if (loadedUser) {
       user.original = _.cloneDeep(user)
@@ -134,6 +142,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
   }
 
   _createGroup(loadedGroup) {
+    const metadata = Object.entries(_.get(loadedGroup, 'metaData', [])).map(([key, value]) => ({
+      key: key,
+      value: value,
+    }))
     const group = {
       id: _.uniqueId('group-'),
       code: FormUtil.createField({
@@ -150,6 +162,10 @@ export default class UserFormControllerLoad extends PageControllerLoad {
       }),
       modificationDate: FormUtil.createField({
         value: _.get(loadedGroup, 'modificationDate', null)
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       })
     }
     group.original = _.cloneDeep(group)
