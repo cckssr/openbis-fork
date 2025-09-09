@@ -58,14 +58,30 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
   _isTypeGroupUpdateNeeded(typeGroup) {
     return FormUtil.haveFieldsChanged(typeGroup, typeGroup.original, [
       'code',
+      'metadata'
     ])
+  }
+
+  _transformMetadataToObject(metadataValue) {
+    let metadataObject = {}
+    if (metadataValue && Array.isArray(metadataValue)) {
+      metadataValue.forEach(item => {
+        if (item.key && item.value !== undefined) {
+          metadataObject[item.key] = item.value
+        }
+      })
+    } else if (metadataValue && typeof metadataValue === 'object') {
+      metadataObject = metadataValue
+    }
+    return metadataObject
   }
 
   _createTypeGroupOperation(typeGroup) {
     const creation = new openbis.TypeGroupCreation()
     creation.setCode(typeGroup.code.value)
     creation.setManagedInternally(typeGroup.internal.value)
-    //creation.setMetaData(typeGroup.metaData.value)
+    const metadataObject = this._transformMetadataToObject(typeGroup.metadata.value)
+    creation.setMetaData(metadataObject)
     return new openbis.CreateTypeGroupsOperation([creation])
   }
 
@@ -73,7 +89,8 @@ export default class TypeGroupFormControllerSave extends PageControllerSave {
     const update = new openbis.TypeGroupUpdate()
     update.setTypeGroupId(new openbis.TypeGroupId(typeGroup.original.code.value))
     update.setCode(typeGroup.code.value)
-    //update.setMetaData(typeGroup.metaData.value)
+    const metadataObject = this._transformMetadataToObject(typeGroup.metadata.value)
+    update.getMetaData().set(metadataObject)
     return new openbis.UpdateTypeGroupsOperation([update])
   }
 

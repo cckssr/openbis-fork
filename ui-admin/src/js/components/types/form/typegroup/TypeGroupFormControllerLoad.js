@@ -51,10 +51,18 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
     const code = _.get(loadedTypeGroup, 'code', null)
     const internal = _.get(loadedTypeGroup, 'managedInternally', false)
     const registrator = _.get(loadedTypeGroup, 'registrator.userId', null)
+    const metadata = Object.entries(_.get(loadedTypeGroup, 'metaData', [])).map(([key, value]) => ({
+			key: key,
+			value: value,
+		}))
     const typeGroup = {
       id: code,
       code: FormUtil.createField({
         value: code,
+        enabled: true
+      }),
+      objectType: FormUtil.createField({
+        value: this.object.type,
         enabled: true
       }),
       internal: FormUtil.createField({
@@ -68,6 +76,10 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
         value: registrator,
         visible: false,
         enabled: false
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       })
     }
     if (loadedTypeGroup) {
