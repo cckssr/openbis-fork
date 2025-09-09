@@ -175,42 +175,6 @@ public class InterceptorProxy extends AbstractProxy
         }
     }
 
-    @Override public @NonNull String hash(@NonNull final String owner, @NonNull final String source) throws Exception
-    {
-        if (apiServerObserver != null)
-        {
-            return (String) apiServerObserver.duringAPICall(nextProxy,
-                    new APICallImpl("hash", Map.of("owner", owner, "source", source))
-                    {
-                        @Override public Object executeDefault() throws Exception
-                        {
-                            return nextProxy.hash(owner, source);
-                        }
-                    });
-        } else
-        {
-            return nextProxy.hash(owner, source);
-        }
-    }
-
-    @Override public @NonNull byte[] preview(@NonNull final String owner, @NonNull final String source) throws Exception
-    {
-        if (apiServerObserver != null)
-        {
-            return (byte[]) apiServerObserver.duringAPICall(nextProxy,
-                    new APICallImpl("preview", Map.of("owner", owner, "source", source))
-                    {
-                        @Override public Object executeDefault() throws Exception
-                        {
-                            return nextProxy.preview(owner, source);
-                        }
-                    });
-        } else
-        {
-            return nextProxy.preview(owner, source);
-        }
-    }
-
     private static abstract class APICallImpl implements APICall
     {
 

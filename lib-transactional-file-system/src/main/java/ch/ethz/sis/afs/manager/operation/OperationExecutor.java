@@ -21,13 +21,7 @@ import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 public interface OperationExecutor<E extends Operation> {
-    String HIDDEN_AFS_DIRECTORY = ".afs";
-    String CACHED_MD5_SUFFIX = "-hash.md5";
-    String CACHED_PREVIEW_SUFFIX = "-preview.jpg";
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction) {
@@ -70,18 +64,6 @@ public interface OperationExecutor<E extends Operation> {
     String getTempPath(@NonNull Transaction transaction, @NonNull String source) {
         String transDir = getTransactionLogDir(transaction);
         return IOUtils.getPath(transDir, source);
-    }
-
-    static void clearCaches(@NonNull String safeSourcePath) throws IOException {
-        Path sourcePath = Path.of(safeSourcePath);
-        Path hiddenFolderPath = sourcePath.getParent().resolve(HIDDEN_AFS_DIRECTORY).toAbsolutePath();
-        if ( IOUtils.isDirectory(hiddenFolderPath.toString()) ) {
-            Path sourceName = sourcePath.getFileName();
-            String md5CachePath = hiddenFolderPath.resolve( sourceName + CACHED_MD5_SUFFIX).toAbsolutePath().toString();
-            String previewCachePath = hiddenFolderPath.resolve( sourceName + CACHED_PREVIEW_SUFFIX).toAbsolutePath().toString();
-            if(IOUtils.exists(md5CachePath)) { IOUtils.delete(md5CachePath); }
-            if(IOUtils.exists(previewCachePath)) { IOUtils.delete(previewCachePath); }
-        }
     }
 
     /*

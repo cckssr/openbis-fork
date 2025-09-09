@@ -23,7 +23,6 @@ import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ListOperationExecutor implements NonModifyingOperationExecutor<ListOperation> {
     //
@@ -45,9 +44,7 @@ public class ListOperationExecutor implements NonModifyingOperationExecutor<List
 
     @Override
     public File[] executeOperation(@NonNull Transaction transaction, @NonNull ListOperation operation) throws Exception {
-        List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively())
-                .stream().filter( file -> !IOUtils.isAfsHiddenFile(file.getPath()) ).collect(Collectors.toList());
-
+        List<File> files = IOUtils.list(operation.getSource(), operation.isRecursively());
         File[] filesFromRoot = new File[files.size()];
         int index = 0;
         for (File file : files) {

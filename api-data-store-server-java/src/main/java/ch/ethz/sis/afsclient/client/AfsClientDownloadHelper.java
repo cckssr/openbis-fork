@@ -359,7 +359,6 @@ public class AfsClientDownloadHelper {
                     if (head.getDirectory()) {
                         File[] dirPaths = client.list(head.getOwner(), head.getPath(), false);
                         todo.addAll(Arrays.stream(dirPaths)
-                                .filter(entry -> !entry.getName().startsWith("."))
                                 .filter(entry -> !TemporaryPathUtil.isTwinTemporaryPath(Path.of(entry.getPath())))
                                 .collect(Collectors.toList()));
                     }

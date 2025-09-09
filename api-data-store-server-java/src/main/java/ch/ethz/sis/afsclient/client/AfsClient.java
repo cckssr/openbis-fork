@@ -331,20 +331,6 @@ public final class AfsClient implements PublicAPI, ClientAPI
     }
 
     @Override
-    public @NonNull String hash(@NonNull String owner, @NonNull String source) throws Exception {
-        validateSessionToken();
-        return request("GET", "hash", String.class,
-                Map.of("owner", owner, "source", source));
-    }
-
-    @Override
-    public @NonNull byte[] preview(@NonNull String owner, @NonNull String source) throws Exception {
-        validateSessionToken();
-        return request("GET", "preview", byte[].class,
-                Map.of("owner", owner, "source", source));
-    }
-
-    @Override
     public void begin(final UUID transactionId) throws Exception
     {
         validateSessionToken();
@@ -599,8 +585,6 @@ public final class AfsClient implements PublicAPI, ClientAPI
         } else if (File[].class.equals(responseType))
         {
             return responseType.cast(FileEncoderDecoder.decodeFiles(responseBody));
-        } else if (byte[].class.equals(responseType)) {
-            return responseType.cast(responseBody);
         }
         throw new IllegalArgumentException("Client error HTTP response. Unsupported content-type received for expected responseType");
     }

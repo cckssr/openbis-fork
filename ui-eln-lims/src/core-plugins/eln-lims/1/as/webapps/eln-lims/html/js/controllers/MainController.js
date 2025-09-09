@@ -1016,7 +1016,7 @@ function MainController(profile) {
 								datasetParentCodes.push(dataset.parents[pIdx].code);
 							}
 						}
-						_this.serverFacade.searchDataSetWithUniqueId(arg, function(dataSetData) {
+						_this.serverFacade.searchDataSetWithUniqueId(permId, function(dataSetData) {
 							if(!dataSetData.result || !dataSetData.result[0]) {
 								window.alert(refreshPageMessage);
 							} else {
@@ -1046,10 +1046,19 @@ function MainController(profile) {
 					break;
 				case "showEditDataSetPageFromPermId":
 					var _this = this;
+					var permId = null;
+                    var paginationInfo = null;
+                    if((typeof arg) !== "string") {
+                        permId = arg.permIdOrIdentifier;
+                        paginationInfo = arg.paginationInfo;
+                        arg = permId;
+                    } else {
+                        permId = arg;
+                    }
 					var dsCriteria = { 	
 							entityKind : "DATASET", 
 							logicalOperator : "AND", 
-							rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : arg } }
+							rules : { "UUIDv4" : { type : "Attribute", name : "PERM_ID", value : permId } }
 					};
 					
 					this.serverFacade.searchForDataSetsAdvanced(dsCriteria, null, function(results) {
@@ -1060,7 +1069,7 @@ function MainController(profile) {
 								datasetParentCodes.push(dataset.parents[pIdx].code);
 							}
 						}
-						_this.serverFacade.searchDataSetWithUniqueId(arg, function(dataSetData) {
+						_this.serverFacade.searchDataSetWithUniqueId(permId, function(dataSetData) {
 							if(!dataSetData.result || !dataSetData.result[0]) {
 								window.alert(refreshPageMessage);
 							} else {
@@ -1068,7 +1077,7 @@ function MainController(profile) {
 								if(dataSetData.result[0].sampleIdentifierOrNull) {
 									_this.serverFacade.searchWithIdentifiers([dataSetData.result[0].sampleIdentifierOrNull], function(sampleData) {
 										document.title = "Data Set " + dataSetData.result[0].code;
-										_this._showEditDataSetPage(sampleData[0], dataSetData.result[0], dataset);
+										_this._showEditDataSetPage(sampleData[0], dataSetData.result[0], dataset, paginationInfo);
 										//window.scrollTo(0,0);
 									});
 								} else if(dataSetData.result[0].experimentIdentifier) {
@@ -1077,7 +1086,7 @@ function MainController(profile) {
 										var experimentCriteria = { entityKind : "EXPERIMENT", logicalOperator : "AND", rules : experimentRules };
 										_this.serverFacade.searchForExperimentsAdvanced(experimentCriteria, null, function(experimentData) {
 											document.title = "Data Set " + dataSetData.result[0].code;
-											_this._showEditDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset);
+											_this._showEditDataSetPage(experimentData.objects[0], dataSetData.result[0], dataset, paginationInfo);
 											//window.scrollTo(0,0);
 										});
 									});
@@ -1837,9 +1846,9 @@ function MainController(profile) {
 		this.currentView = newView;
 	}
 	
-	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3) {
+	this._showEditDataSetPage = function(sampleOrExperiment, dataset, datasetV3, paginationInfo) {
 		//Show Form
-		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3);
+		var newView = new DataSetFormController(this, FormMode.EDIT, sampleOrExperiment, dataset, null, datasetV3, paginationInfo);
 		var tabInfo = TabContentUtil.getDataSetTabInfo(dataset, FormMode.EDIT);
 		var views = this._getNewViewModel(true, true, false, tabInfo);
 		newView.init(views);

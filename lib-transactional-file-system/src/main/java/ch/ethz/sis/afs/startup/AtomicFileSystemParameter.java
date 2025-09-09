@@ -21,7 +21,5 @@ public enum AtomicFileSystemParameter {
     lockMapperClass,
     jsonObjectMapperClass,
     writeAheadLogRoot,
-    storageRoot,
-    enablePreview,
-    enablePreviewSizeInBytes,
+    storageRoot
 }

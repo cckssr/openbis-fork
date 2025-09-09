@@ -186,14 +186,4 @@ public abstract class AbstractProxy implements Worker<TransactionalFileSystem> {
     {
         return nextProxy.free(owner, source);
     }
-
-    @Override
-    public String hash(@NonNull String sourceOwner, @NonNull String source) throws Exception {
-        return nextProxy.hash(sourceOwner, source);
-    }
-
-    @Override
-    public byte[] preview(@NonNull String sourceOwner, @NonNull String source) throws Exception {
-        return nextProxy.preview(sourceOwner, source);
-    }
 }

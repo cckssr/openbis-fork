@@ -74,8 +74,6 @@ public class ApiServerAdapter<CONNECTION, API> extends AbstractAdapter<CONNECTIO
             case "list":
             case "free":
             case "isSessionValid":
-            case "hash":
-            case "preview":
                 return GET; // all parameters from GET methods come on the query string
             case "create":
             case "read":

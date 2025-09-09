@@ -21,7 +21,12 @@ import static ch.ethz.sis.afs.exception.AFSExceptions.throwInstance;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.dto.Lock;
@@ -31,7 +36,6 @@ import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.ethz.sis.shared.log.LogManager;
 import ch.ethz.sis.shared.log.Logger;
-import lombok.NonNull;
 
 public class TransactionManager
 {
@@ -46,23 +50,16 @@ public class TransactionManager
 
     private String storageRoot;
 
-    private final Set<String> enabledPreviewFileTypes;
-    private final long enablePreviewSizeInBytes;
-
     private RecoveredTransactions recoveredTransactions;
 
     public TransactionManager(LockMapper<UUID, String> lockMapper, JsonObjectMapper jsonObjectMapper,
-                              String writeAheadLogRoot,
-                              String storageRoot,
-                              @NonNull Collection<String> enabledPreviewFileTypes,
-                              long enablePreviewSizeInBytes) throws IOException
+            String writeAheadLogRoot,
+            String storageRoot) throws IOException
     {
         this.lockManager = new LockManager<>(lockMapper, new PathLockFinder());
         this.jsonObjectMapper = jsonObjectMapper;
         this.writeAheadLogRoot = writeAheadLogRoot;
         this.storageRoot = storageRoot;
-        this.enabledPreviewFileTypes = Collections.unmodifiableSet(new HashSet<>(enabledPreviewFileTypes));
-        this.enablePreviewSizeInBytes = enablePreviewSizeInBytes;
         this.recoveredTransactions = new RecoveredTransactions();
 
         boolean isFileSystemSupported = IOUtils.isFileSystemSupported();
@@ -139,7 +136,7 @@ public class TransactionManager
                     byte[] transactionLogBytes = IOUtils.readFully(transactionLogCommitted);
                     Transaction transaction = jsonObjectMapper.readValue(new ByteArrayInputStream(transactionLogBytes), Transaction.class);
                     logger.info(String.format("Transaction loaded %s", transactionLogCommitted));
-                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, transaction, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, transaction);
                     logger.info(String.format("Transaction %s to be committed from recovery", transaction.getUuid().toString()));
                     transactionConnection.commit();
                     logger.info(String.format("Transaction %s committed", transaction.getUuid().toString()));
@@ -150,7 +147,7 @@ public class TransactionManager
                     Transaction transaction = jsonObjectMapper.readValue(new ByteArrayInputStream(transactionLogBytes), Transaction.class);
                     logger.info(String.format("Transaction loaded %s", transactionLogPrepared));
                     // The connection is created just to hold the locks again, can be discarded afterwards and the transaction will wait to be recovered
-                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, transaction, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+                    TransactionConnection transactionConnection = new TransactionConnection(lockManager, jsonObjectMapper, transaction);
                     recoveredTransactions.addRecovered(transaction);
                     logger.info(String.format("Transaction %s waiting to be committed/rollback holding locks", transaction.getUuid().toString()));
                 } else
@@ -170,7 +167,7 @@ public class TransactionManager
 
     public TransactionConnection getTransactionConnection()
     {
-        return new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, recoveredTransactions, enabledPreviewFileTypes, enablePreviewSizeInBytes);
+        return new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, recoveredTransactions);
     }
 
 }

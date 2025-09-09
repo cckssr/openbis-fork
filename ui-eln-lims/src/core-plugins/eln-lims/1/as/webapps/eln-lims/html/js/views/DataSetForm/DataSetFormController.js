@@ -256,7 +256,11 @@ function DataSetFormController(parentController, mode, entity, dataSet, isMini, 
 								mainController.changeView('showViewSamplePageFromPermId', _this._dataSetFormModel.entity.permId);
 							}
 						} else if(_this._dataSetFormModel.mode === FormMode.EDIT) {
-							mainController.changeView('showViewDataSetPageFromPermId', _this._dataSetFormModel.dataSetV3.code);
+						    var arg = {
+                                    permIdOrIdentifier : _this._dataSetFormModel.dataSetV3.code,
+                                    paginationInfo : _this._dataSetFormModel.paginationInfo
+                            }
+							mainController.changeView('showViewDataSetPageFromPermId', arg);
 						}
 					}
 

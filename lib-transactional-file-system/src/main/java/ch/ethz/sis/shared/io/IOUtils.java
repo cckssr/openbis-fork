@@ -17,8 +17,6 @@ package ch.ethz.sis.shared.io;
 
 import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.afs.api.dto.FreeSpace;
-import ch.ethz.sis.afs.manager.operation.OperationExecutor;
-import lombok.NonNull;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,7 +50,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.StreamSupport;
 import java.util.stream.Stream;
 
 public class IOUtils
@@ -954,17 +951,6 @@ public class IOUtils
         {
             return false;
         }
-
-        if(isAfsHiddenFile(path)) {
-            return false;
-        }
-
         return VALID_FILENAME_PATTERN.matcher(filename).matches();
-    }
-
-    public static boolean isAfsHiddenFile(@NonNull String path) {
-        return StreamSupport.stream(Path.of(path).toAbsolutePath().spliterator(), false).anyMatch(
-                pathSegment -> pathSegment.toString().equals(OperationExecutor.HIDDEN_AFS_DIRECTORY)
-        );
     }
 }

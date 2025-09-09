@@ -468,75 +468,6 @@ exports.default = new Promise((resolve) => {
                 }
             }
 
-            var testHash = async function (assert, useTransaction) {
-                const testFile = "test-file"
-                const testContent = new TextEncoder().encode("test-content")
-
-                try {
-                    var c = new common(assert, dtos)
-                    c.start()
-
-                    await c.login(facade)
-
-                    var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
-
-                    await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
-
-                    if (useTransaction) {
-                        facade.setInteractiveSessionKey(testInteractiveSessionKey)
-                        await facade.beginTransaction()
-                    }
-
-                    var md5Checksum = await facade.getAfsServerFacade().hash(ownerPermId, testFile)
-                    c.assertEqual("9749fad13d6e7092a6337c4af9d83764", md5Checksum)
-
-                    if (useTransaction) {
-                        await facade.commitTransaction()
-                    }
-
-                    c.finish()
-                } catch (error) {
-                    c.fail(error)
-                    c.finish()
-                }
-            }
-
-            var testPreview = async function (assert, useTransaction) {
-                var testFile = "minimal-image.png";
-                var minimalImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQAAAAA3bvkkAAAACklEQVR4AWNgAAAAAgABc3UBGAAAAABJRU5ErkJggg==";
-                var testContent = await fetch(minimalImage).then(res => res.blob()).then(blob => blob.bytes());
-
-                try {
-                    var c = new common(assert, dtos)
-                    c.start()
-
-                    await c.login(facade)
-
-                    var ownerPermId = (await c.createSample(facade)).getPermId()
-                    await c.deleteFile(facade, ownerPermId, "")
-
-                    await facade.getAfsServerFacade().write(ownerPermId, testFile, 0, testContent)
-
-                    if (useTransaction) {
-                        facade.setInteractiveSessionKey(testInteractiveSessionKey)
-                        await facade.beginTransaction()
-                    }
-
-                    var previewImage = await facade.getAfsServerFacade().preview(ownerPermId, testFile).then( blob => blob.bytes() );
-                    c.assertTrue(previewImage.length > 0)
-
-                    if (useTransaction) {
-                        await facade.commitTransaction()
-                    }
-
-                    c.finish()
-                } catch (error) {
-                    c.fail(error)
-                    c.finish()
-                }
-            }
-
             QUnit.test("list() without transaction", async function (assert) {
                 await testList(assert, false)
             })
@@ -644,22 +575,6 @@ exports.default = new Promise((resolve) => {
 
             QUnit.test("free() with transaction", async function (assert) {
                 await testFree(assert, true)
-            })
-
-            QUnit.test("hash() without transaction", async function (assert) {
-                await testHash(assert, false)
-            })
-
-            QUnit.test("hash() with transaction", async function (assert) {
-                await testHash(assert, true)
-            })
-
-            QUnit.test("preview() without transaction", async function (assert) {
-                await testPreview(assert, false)
-            })
-
-            QUnit.test("preview() with transaction", async function (assert) {
-                await testPreview(assert, true)
             })
         }
 

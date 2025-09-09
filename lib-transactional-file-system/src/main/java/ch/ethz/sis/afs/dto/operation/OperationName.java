@@ -16,5 +16,5 @@
 package ch.ethz.sis.afs.dto.operation;
 
 public enum OperationName {
-    List, Read, Write, Append, Delete, Copy, Move, Create, Free, Hash, Preview
+    List, Read, Write, Append, Delete, Copy, Move, Create, Free
 }
