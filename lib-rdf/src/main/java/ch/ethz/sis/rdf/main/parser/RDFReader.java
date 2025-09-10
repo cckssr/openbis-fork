@@ -649,6 +649,11 @@ public class RDFReader
                                         vals.stream().map(this::getResourceValue).collect(
                                                 Collectors.toSet()));
                         tooManyValues.add(reference);
+                        if (Config.getINSTANCE().isEnforceSingleValues())
+                        {
+                            enforceSingleValue(sampleObject, samplePropertyType.propertyLabel);
+                        }
+
                     }
                     if (mandatory && vals.isEmpty())
                     {
@@ -675,6 +680,30 @@ public class RDFReader
         }
         return new CardinalityCheckResult(tooManyValues, tooFewValues);
 
+    }
+
+    private void enforceSingleValue(SampleObject sampleObject,
+            String label)
+    {
+        List<SampleObjectProperty> temp = new ArrayList<>();
+        int count = 0;
+
+        for (SampleObjectProperty sampleObjectProperty1 : sampleObject.getProperties())
+        {
+            if (Objects.equals(sampleObjectProperty1.getLabel(), label))
+            {
+                count++;
+                if (count == 1)
+                {
+                    temp.add(sampleObjectProperty1);
+                }
+            } else
+            {
+                temp.add(sampleObjectProperty1);
+            }
+
+        }
+        sampleObject.properties = temp;
     }
 
     private void reportCardinalities(CardinalityCheckResult cardinalityCheckResult)

@@ -56,6 +56,7 @@ java -jar rdf-lib-tool.jar [options]
 -h, --help: displays the help message.
 -a, --additionalfiles: specifies additional file paths for resolving ontologies and terminology.  
 -dangling, --remove-dangling-references: removes references that can't be resolved. Use with caution. 
+-singlevalue, --enforce-single-values: only uses the first value encountered when converting single-valued properties. This makes no guaranatees about the value chosen, the other values are still logged. 
 ```
 
 Other mandatory parameters must be provided based on what output format has been chosen:
