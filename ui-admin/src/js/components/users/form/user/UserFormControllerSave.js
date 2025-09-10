@@ -94,20 +94,6 @@ export default class UserFormControllerSave extends PageControllerSave {
     ])
   }
 
-  _transformMetadataToObject(metadataValue) {
-    let metadataObject = {}
-    if (metadataValue && Array.isArray(metadataValue)) {
-      metadataValue.forEach(item => {
-        if (item.key && item.value !== undefined) {
-          metadataObject[item.key] = item.value
-        }
-      })
-    } else if (metadataValue && typeof metadataValue === 'object') {
-      metadataObject = metadataValue
-    }
-    return metadataObject
-  }
-
   _createUserOperation(user) {
     const creation = new openbis.PersonCreation()
     creation.setUserId(user.userId.value)
@@ -118,7 +104,7 @@ export default class UserFormControllerSave extends PageControllerSave {
     {
       creation.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
     }
-    const metadataObject = this._transformMetadataToObject(user.metadata.value)
+    const metadataObject = FormUtil.transformMetadataToObject(user.metadata.value)
     creation.setMetaData(metadataObject)
     return new openbis.CreatePersonsOperation([creation])
   }
@@ -150,7 +136,7 @@ export default class UserFormControllerSave extends PageControllerSave {
             }
         }
     }
-    const metadataObject = this._transformMetadataToObject(user.metadata.value)
+    const metadataObject = FormUtil.transformMetadataToObject(user.metadata.value)
     update.getMetaData().set(metadataObject)
     return new openbis.UpdatePersonsOperation([update])
   }
@@ -161,7 +147,7 @@ export default class UserFormControllerSave extends PageControllerSave {
       new openbis.AuthorizationGroupPermId(group.code.value)
     )
     update.getUserIds().add(new openbis.PersonPermId(user.userId.value))
-    const metadataObject = this._transformMetadataToObject(group.metadata.value)
+    const metadataObject = FormUtil.transformMetadataToObject(group.metadata.value)
     update.getMetaData().set(metadataObject)
     return new openbis.UpdateAuthorizationGroupsOperation([update])
   }

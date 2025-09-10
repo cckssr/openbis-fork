@@ -23,7 +23,11 @@ export default class UserGroupFormControllerAddUser {
       registrator: FormUtil.createField({}),
       registrationDate: FormUtil.createField({}),
       expiryDate: FormUtil.createField({}),
-      original: null
+      original: null,
+      metadata: FormUtil.createField({
+        value: [],
+        enabled: true
+      })
     }
 
     const newUsers = Array.from(users)

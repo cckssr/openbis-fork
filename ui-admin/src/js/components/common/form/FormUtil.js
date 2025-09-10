@@ -101,6 +101,20 @@ class FormUtil {
       trimField
     )
   }
+
+  transformMetadataToObject(metadataValue) {
+    let metadataObject = {}
+    if (metadataValue && Array.isArray(metadataValue)) {
+      metadataValue.forEach(item => {
+        if (item.key && item.value !== undefined) {
+          metadataObject[item.key] = item.value
+        }
+      })
+    } else if (metadataValue && typeof metadataValue === 'object') {
+      metadataObject = metadataValue
+    }
+    return metadataObject
+  }
 }
 
 export default new FormUtil()
