@@ -230,28 +230,31 @@ public class RDFReader
                                 Collectors.toList()))
                 {
 
-                    Optional<SampleObjectProperty> valProperty =
+                    List<SampleObjectProperty> valProperties =
                             sampleObject.getProperties().stream()
                                     .filter(x -> x.getLabel().equals(property.propertyLabel))
-                                    .findFirst();
-                    if (valProperty.isEmpty())
+                                    .collect(Collectors.toList());
+                    for (SampleObjectProperty valProperty : valProperties)
                     {
-                        continue;
-                    }
-
-                    if (!objectCodes.contains(valProperty.get().getValue()))
-                    {
-                        editedStuff.add(new ImmutableTriple<>(sampleObject, property,
-                                valProperty.get().getValue()));
-                        if (Config.getINSTANCE().removeDanglingReferences())
+                        if (valProperty.getValue() == null && valProperty.valueURI == null)
                         {
-                            valProperty.get().value = null;
-                            valProperty.get().valueURI = null;
+                            continue;
+                        }
 
+                        if (!objectCodes.contains(valProperty.getValue()))
+                        {
+                            editedStuff.add(new ImmutableTriple<>(sampleObject, property,
+                                    valProperty.getValue()));
+                            if (Config.getINSTANCE().removeDanglingReferences())
+                            {
+                                valProperty.value = null;
+                                valProperty.valueURI = null;
+
+                            }
                         }
                     }
-
                 }
+
             }
 
         }
