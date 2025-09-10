@@ -5,36 +5,15 @@ import EntityTypeFormParametersTypeSemanticAnnotation from '@src/js/components/t
 import EntityTypeFormParametersProperty from '@src/js/components/types/form/entitytype/EntityTypeFormParametersProperty.jsx'
 import EntityTypeFormParametersPropertySemanticAnnotation from '@src/js/components/types/form/entitytype/EntityTypeFormParametersPropertySemanticAnnotation.jsx';
 import EntityTypeFormParametersSection from '@src/js/components/types/form/entitytype/EntityTypeFormParametersSection.jsx'
+import EntityTypeFormParametersMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersMetadata.jsx'
+import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import logger from '@src/js/common/logger.js'
-import { Tab } from '@mui/material';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import EntityTypeFormParametersTypeMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersTypeMetadata.jsx';
-import EntityTypeFormParametersPropertyMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersPropertyMetadata.jsx';
 
 const styles = theme => ({
-  tabsRoot: {
-    borderBottomStyle: 'solid',
-    borderBottomWidth: '1px',
-    borderBottomColor: theme.palette.border.primary,
-  },
-  tabPanelRoot: {
-    padding: 0,
-  }
+  // Empty styles object since TabViewer handles its own styling
 })
 
 class EntityTypeFormParameters extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      tabSelected: 0
-    }
-  }
-
-  handleTabChange = (event, newValue) => {
-    this.setState({
-      tabSelected: newValue,
-    })
-  }
 
   render() {
     logger.log(logger.DEBUG, 'EntityTypeFormParameters.render')
@@ -48,120 +27,94 @@ class EntityTypeFormParameters extends React.PureComponent {
       mode,
       onChange,
       onSelectionChange,
-      onBlur,
-      classes
+      onBlur
     } = this.props
 
-    const { tabSelected } = this.state;
+    const tabs = [
+      { key: 'property-tab-id', label: 'Parameters' },
+      { key: 'semantic-annotation-tab-id', label: 'Semantic Annotations' },
+      { key: 'metadata-tab-id', label: 'Metadata' }
+    ]
 
-    const PROPERTIES_TAB_INDEX = 0;
-    const SEMANTIC_ANNOTATIONS_TAB_INDEX = 1;
-    const METADATA_TAB_INDEX = 2;
+    const children = [
+      // Parameters tab content
+      <div key="parameters-content">
+        <EntityTypeFormParametersType
+          controller={controller}
+          type={type}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+        <EntityTypeFormParametersSection
+          sections={sections}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+        <EntityTypeFormParametersProperty
+          controller={controller}
+          type={type}
+          properties={properties}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+      </div>,
+      // Semantic Annotations tab content
+      <div key="semantic-annotations-content">
+        <EntityTypeFormParametersPropertySemanticAnnotation
+          controller={controller}
+          type={type}
+          properties={properties}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+        <EntityTypeFormParametersTypeSemanticAnnotation
+          controller={controller}
+          type={type}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+      </div>,
+      // Metadata tab content
+      <div key="metadata-content">
+        <EntityTypeFormParametersMetadata
+          type={type}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+        <EntityTypeFormParametersMetadata
+          properties={properties}
+          selection={selection}
+          mode={mode}
+          onChange={onChange}
+          onSelectionChange={onSelectionChange}
+          onBlur={onBlur}
+        />
+      </div>
+    ]
 
     return (
-      <TabContext value={tabSelected} >
-        <TabList
-          variant='fullWidth'
-          onChange={this.handleTabChange}
-          classes={{ root: classes.tabsRoot }}
-          textColor='inherit'
-          indicatorColor='secondary'
-          slotProps={{
-            indicator: {
-              style: {
-                transition: 'none',
-              }
-            }
-          }}
-        >
-          <Tab key='property-tab-id'
-            value={PROPERTIES_TAB_INDEX}
-            label='Parameters'
-            sx={{textTransform :'none', padding: 'unset'}}
-          />
-          <Tab key='semantic-annotation-tab-id'
-            value={SEMANTIC_ANNOTATIONS_TAB_INDEX}
-            label='Semantic Annotations'
-            sx={{textTransform :'none', padding: 'unset'}}
-          />
-          <Tab key='metadata-tab-id'
-            value={METADATA_TAB_INDEX}
-            label='Metadata'
-            sx={{textTransform :'none', padding: 'unset'}}
-          />
-        </TabList>
-        <TabPanel classes={{ root: classes.tabPanelRoot }} value={PROPERTIES_TAB_INDEX}>
-          <EntityTypeFormParametersType
-            controller={controller}
-            type={type}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-          <EntityTypeFormParametersSection
-            sections={sections}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-          <EntityTypeFormParametersProperty
-            controller={controller}
-            type={type}
-            properties={properties}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-        </TabPanel>
-        <TabPanel classes={{ root: classes.tabPanelRoot }} value={SEMANTIC_ANNOTATIONS_TAB_INDEX}>
-          <EntityTypeFormParametersPropertySemanticAnnotation
-            controller={controller}
-            type={type}
-            properties={properties}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-          <EntityTypeFormParametersTypeSemanticAnnotation
-            controller={controller}
-            type={type}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-        </TabPanel>
-        <TabPanel classes={{ root: classes.tabPanelRoot }} value={METADATA_TAB_INDEX}>
-          <EntityTypeFormParametersTypeMetadata
-            controller={controller}
-            type={type}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-          <EntityTypeFormParametersPropertyMetadata
-            controller={controller}
-            type={type}
-            properties={properties}
-            selection={selection}
-            mode={mode}
-            onChange={onChange}
-            onSelectionChange={onSelectionChange}
-            onBlur={onBlur}
-          />
-        </TabPanel>
-      </TabContext>
+      <TabViewer
+        tabs={tabs}
+        children={children}
+      />
     )
   }
 }

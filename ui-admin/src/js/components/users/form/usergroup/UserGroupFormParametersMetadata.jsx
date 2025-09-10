@@ -288,7 +288,6 @@ class UserGroupFormParametersMetadata extends React.PureComponent {
 							onChange={(event) => this.handleMetadataFieldChange(index, 'key', event.target.value)}
 							onFocus={(event) => this.handleFocus(event)}
 							onBlur={(event) => this.handleBlur()}
-							sx={classes.textField}
 						/>
 					</div>
 					<div className={classes.metadataField}>
@@ -300,7 +299,6 @@ class UserGroupFormParametersMetadata extends React.PureComponent {
 							onChange={(event) => this.handleMetadataFieldChange(index, 'value', event.target.value)}
 							onFocus={(event) => this.handleFocus(event)}
 							onBlur={(event) => this.handleBlur()}
-							sx={classes.textField}
 						/>
 					</div>
 				</div>
@@ -312,7 +310,10 @@ class UserGroupFormParametersMetadata extends React.PureComponent {
 						label={<RemoveIcon />}
 						aria-label={`Remove metadata item ${index + 1}`}
 						tooltip={messages.get(messages.REMOVE)}
-						sx={classes.removeButton}
+						sx={{
+							minWidth: 'auto',
+							padding: '4px',
+						}}
 					/>
 				)}
 			</div>

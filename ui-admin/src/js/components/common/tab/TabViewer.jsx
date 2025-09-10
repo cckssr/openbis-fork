@@ -19,7 +19,7 @@ class TabViewer extends React.PureComponent {
     super(props)
     
     this.state = {
-      tabSelected: props.defaultTab || 0
+      tabSelected: (props.defaultTab || 0).toString()
     }
   }
 
@@ -56,7 +56,7 @@ class TabViewer extends React.PureComponent {
           {tabs.map((tab, index) => (
             <Tab
               key={tab.key || `tab-${index}`}
-              value={index}
+              value={index.toString()}
               label={tab.label}
               sx={{ textTransform: 'none', padding: 'unset' }}
             />
@@ -66,7 +66,7 @@ class TabViewer extends React.PureComponent {
           <TabPanel 
             key={index}
             classes={{ root: classes.tabPanelRoot }} 
-            value={index}
+            value={index.toString()}
           >
             {child}
           </TabPanel>

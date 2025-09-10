@@ -49,7 +49,7 @@ const styles = theme => {
 	};
 };
 
-class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
+class EntityTypeFormParametersMetadata extends React.PureComponent {
 	constructor(props) {
 		super(props);
 		this.references = {};
@@ -69,8 +69,8 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 	}
 
 	focus() {
-		const property = this.getProperty(this.props)
-		if (property && this.props.selection) {
+		const entity = this.getEntity(this.props)
+		if (entity && this.props.selection) {
 			const { part } = this.props.selection.params
 			if (part) {
 				const reference = this.references[part]
@@ -82,11 +82,19 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 	}
 
 	handleFocus(event) {
-		const property = this.getProperty(this.props)
-		this.props.onSelectionChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			part: event.target.name
-		})
+		const entity = this.getEntity(this.props)
+		const selectionType = this.getSelectionType()
+		
+		if (this.isPropertyMode()) {
+			this.props.onSelectionChange(EntityTypeFormSelectionType.PROPERTY, {
+				id: entity.id,
+				part: event.target.name
+			})
+		} else {
+			this.props.onSelectionChange(EntityTypeFormSelectionType.TYPE, {
+				part: event.target.name
+			})
+		}
 	}
 
 	handleBlur() {
@@ -94,18 +102,33 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 	}
 
 	handleChange(event) {
-		const property = this.getProperty(this.props)
-		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			field: event.target.name,
-			value: event.target.value
-		})
+		const entity = this.getEntity(this.props)
+		const selectionType = this.getSelectionType()
+		
+		if (this.isPropertyMode()) {
+			this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
+				id: entity.id,
+				field: event.target.name,
+				value: event.target.value
+			})
+		} else {
+			this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+				field: event.target.name,
+				value: event.target.value
+			})
+		}
 	}
 
-	// Helper method to get metadata array from type
-	getMetadataArray(property) {
-		console.log('getMetadataArray', property)
-		const { metadata } = property;
+	isPropertyMode() {
+		return this.props.properties !== undefined;
+	}
+
+	getSelectionType() {
+		return this.isPropertyMode() ? EntityTypeFormSelectionType.PROPERTY : EntityTypeFormSelectionType.TYPE;
+	}
+
+	getMetadataArray(entity) {
+		const { metadata } = entity;
 		if (!metadata || !metadata.value) {
 			return [];
 		}
@@ -126,103 +149,131 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 		return [];
 	}
 
-	// Helper method to update metadata
-	updateMetadata(property, metadataArray) {
-		this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
-			id: property.id,
-			field: 'metadata',
-			value: metadataArray
-		});
+	updateMetadata(entity, metadataArray) {
+		const selectionType = this.getSelectionType();
+		
+		if (this.isPropertyMode()) {
+			this.props.onChange(EntityTypeFormSelectionType.PROPERTY, {
+				id: entity.id,
+				field: 'metadata',
+				value: metadataArray
+			});
+		} else {
+			this.props.onChange(EntityTypeFormSelectionType.TYPE, {
+				field: 'metadata',
+				value: metadataArray
+			});
+		}
 	}
 
 	handleAddMetadata = () => {
-		const property = this.getProperty(this.props);
-		const metadataArray = this.getMetadataArray(property);
+		const entity = this.getEntity(this.props);
+		const metadataArray = this.getMetadataArray(entity);
 
-		// Add new empty key-value pair
 		metadataArray.push({ key: '', value: '', action: 'CREATE' });
 
-		this.updateMetadata(property, metadataArray);
+		this.updateMetadata(entity, metadataArray);
 	};
 
 	handleRemoveMetadata = (index) => {
-		const property = this.getProperty(this.props);
-		const metadataArray = this.getMetadataArray(property);
+		const entity = this.getEntity(this.props);
+		const metadataArray = this.getMetadataArray(entity);
 
-		// Remove item at index
 		metadataArray.splice(index, 1);
 
-		this.updateMetadata(property, metadataArray);
+		this.updateMetadata(entity, metadataArray);
 	}
 
 	handleMetadataFieldChange = (index, field, value) => {
-		const property = this.getProperty(this.props);
-		const metadataArray = this.getMetadataArray(property);
+		const entity = this.getEntity(this.props);
+		const metadataArray = this.getMetadataArray(entity);
 
-		// Update the specific field
 		if (metadataArray[index]) {
 			metadataArray[index][field] = value;
-			// Only set action to UPDATE if it's not already CREATE
 			if (metadataArray[index].action !== 'CREATE') {
 				metadataArray[index].action = 'UPDATE';
 			}
 		}
 
-		this.updateMetadata(property, metadataArray);
+		this.updateMetadata(entity, metadataArray);
 	}
 
 	render() {
 		logger.log(logger.DEBUG, 'EntityTypeFormParametersMetadata.render');
 
-		const property = this.getProperty(this.props)
-		if (!property) return null
+		const entity = this.getEntity(this.props)
+		if (!entity) return null
 
 		return (
 			<Container>
-				{this.renderHeader('Property Metadata')}
-				{this.renderMetadata(property)}
+				{this.renderHeader(entity)}
+				{this.renderMetadata(entity)}
 			</Container>
 		)
 	}
 
-	renderHeader(title) {
+	renderHeader(entity) {
 		const { mode, classes } = this.props
+		
+		if (this.isPropertyMode()) {
+			return (
+				<div className={classes.headerContainer}>
+					<Header>Property Metadata</Header>
+					{mode === 'edit' &&
+						<Button variant='contained'
+							color='white'
+							onClick={this.handleAddMetadata}
+							label={<AddIcon />}
+							sx={{ marginRight: '8px' }} />}
+				</div>
+			)
+		}
+		
+		const objectTypeValue = entity.objectType?.value
+		const map = {
+			[objectTypes.OBJECT_TYPE]: messages.OBJECT_TYPE,
+			[objectTypes.COLLECTION_TYPE]: messages.COLLECTION_TYPE,
+			[objectTypes.DATA_SET_TYPE]: messages.DATA_SET_TYPE,
+			[objectTypes.MATERIAL_TYPE]: messages.MATERIAL_TYPE,
+			[objectTypes.NEW_OBJECT_TYPE]: messages.NEW_OBJECT_TYPE,
+			[objectTypes.NEW_COLLECTION_TYPE]: messages.NEW_COLLECTION_TYPE,
+			[objectTypes.NEW_DATA_SET_TYPE]: messages.NEW_DATA_SET_TYPE,
+			[objectTypes.NEW_MATERIAL_TYPE]: messages.NEW_MATERIAL_TYPE
+		}
 
 		return (
 			<div className={classes.headerContainer}>
-				<Header>{title}</Header>
-				{mode === 'edit' &&
+				<Header>{messages.get(map[objectTypeValue])} Metadata</Header>
+				{mode === 'edit' && (objectTypeValue in map) &&
 					<Button variant='contained'
 						color='white'
-						onClick={() => this.handleAddMetadata()}
+						onClick={this.handleAddMetadata}
 						label={<AddIcon />}
 						sx={{ marginRight: '8px' }} />}
 			</div>
 		)
 	}
 
-	renderMetadata(property) {
+	renderMetadata(entity) {
 		const { classes } = this.props;
-		const { visible } = { ...property.metadata }
+		const { visible } = { ...entity.metadata }
 
 		if (!visible) {
 			return null
 		}
 
-		const metadataArray = this.getMetadataArray(property);
+		const metadataArray = this.getMetadataArray(entity);
 
 		if (metadataArray.length === 0) {
 			return <Typography variant="body2" color="textSecondary">{messages.get(messages.NO_METADATA_DEFINED)}</Typography>
 		}
 
 		return (
-
-			metadataArray.map((metadata, index) => this.renderMetadataItem(property, metadata, index))
-
+			metadataArray.map((metadata, index) => this.renderMetadataItem(entity, metadata, index))
 		)
 	}
 
-	renderMetadataItem(property, metadata, index) {
+	renderMetadataItem(entity, metadata, index) {
 		const { key, value, action } = metadata;
 		const { mode, classes } = this.props;
 
@@ -241,7 +292,6 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 							onChange={(event) => this.handleMetadataFieldChange(index, 'key', event.target.value)}
 							onFocus={(event) => this.handleFocus(event)}
 							onBlur={(event) => this.handleBlur()}
-							sx={classes.textField}
 						/>
 					</div>
 					<div className={classes.metadataField}>
@@ -253,7 +303,6 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 							onChange={(event) => this.handleMetadataFieldChange(index, 'value', event.target.value)}
 							onFocus={(event) => this.handleFocus(event)}
 							onBlur={(event) => this.handleBlur()}
-							sx={classes.textField}
 						/>
 					</div>
 				</div>
@@ -265,26 +314,38 @@ class EntityTypeFormParametersPropertyMetadata extends React.PureComponent {
 						label={<RemoveIcon />}
 						aria-label={`Remove metadata item ${index + 1}`}
 						tooltip={messages.get(messages.REMOVE)}
-						sx={classes.removeButton}
+						sx={{
+							minWidth: 'auto',
+							padding: '4px',
+						}}
 					/>
 				)}
-
 			</div>
 		);
 	}
 
-	getProperty(props) {
-		let { properties, selection } = props
+	getEntity(props) {
+		if (this.isPropertyMode()) {
+			let { properties, selection } = props
 
-		if (selection && selection.type === EntityTypeFormSelectionType.PROPERTY) {
-			let [property] = properties.filter(
-				property => property.id === selection.params.id
-			)
-			return property
+			if (selection && selection.type === EntityTypeFormSelectionType.PROPERTY) {
+				let [property] = properties.filter(
+					property => property.id === selection.params.id
+				)
+				return property
+			} else {
+				return null
+			}
 		} else {
-			return null
+			let { type, selection } = props
+
+			if (!selection || selection.type === EntityTypeFormSelectionType.TYPE) {
+				return type
+			} else {
+				return null
+			}
 		}
 	}
 }
 
-export default withStyles(styles)(EntityTypeFormParametersPropertyMetadata)
+export default withStyles(styles)(EntityTypeFormParametersMetadata)
