@@ -22,4 +22,6 @@ public interface IPersonalAccessTokenInvocation
 
     <T> T proceedWithNewFirstArgument(Object argument);
 
+    <T> T proceedWithNewNthArgument(int index, Object argument);
+
 }

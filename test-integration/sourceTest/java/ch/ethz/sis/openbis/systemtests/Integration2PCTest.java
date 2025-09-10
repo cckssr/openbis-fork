@@ -3,6 +3,7 @@ package ch.ethz.sis.openbis.systemtests;
 import static ch.ethz.sis.transaction.TransactionTestUtil.TestTransaction;
 import static ch.ethz.sis.transaction.TransactionTestUtil.assertTransactions;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
@@ -14,6 +15,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,14 +25,20 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.ITransactionCoordinatorApi;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.create.PersonalAccessTokenCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.fetchoptions.PersonalAccessTokenFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.id.PersonalAccessTokenPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.search.SpaceSearchCriteria;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
+import ch.ethz.sis.openbis.generic.server.asapi.v3.ITransactionCoordinatorInternalApi;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionCoordinatorApi;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
 import ch.ethz.sis.transaction.TransactionStatus;
 
@@ -218,6 +226,34 @@ public class Integration2PCTest extends AbstractIntegrationTest
             assertEquals(trBytesRead2, writeData2.bytes);
             assertEquals(noTrBytesRead2, writeData2.bytes);
         }
+    }
+
+    @Test
+    public void testPersonalAccessToken()
+    {
+        // create PAT
+        PersonalAccessTokenCreation patCreation = new PersonalAccessTokenCreation();
+        patCreation.setSessionName("test-2PC");
+        patCreation.setValidFromDate(new Date());
+        patCreation.setValidToDate(new Date(System.currentTimeMillis() + 3600 * 1000));
+        patCreation.setOwnerId(new PersonPermId(INSTANCE_ADMIN));
+
+        OpenBIS openBIS = createOpenBIS();
+        openBIS.login(INSTANCE_ADMIN, PASSWORD);
+
+        PersonalAccessTokenPermId patId = openBIS.createPersonalAccessTokens(List.of(patCreation)).get(0);
+        PersonalAccessToken pat = openBIS.getPersonalAccessTokens(List.of(patId), new PersonalAccessTokenFetchOptions()).get(patId);
+
+        openBIS.logout();
+
+        // use PAT for a transaction
+        openBIS.setSessionToken(pat.getHash());
+        openBIS.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+
+        openBIS.beginTransaction();
+        List<Space> space = openBIS.searchSpaces(new SpaceSearchCriteria(), new SpaceFetchOptions()).getObjects();
+        assertFalse(space.isEmpty());
+        openBIS.commitTransaction();
     }
 
     @Test
@@ -1144,9 +1180,9 @@ public class Integration2PCTest extends AbstractIntegrationTest
         }
     }
 
-    private TransactionCoordinatorApi getTransactionCoordinator()
+    private ITransactionCoordinatorInternalApi getTransactionCoordinator()
     {
-        return (TransactionCoordinatorApi) applicationServerSpringContext.getBean(ITransactionCoordinatorApi.class);
+        return applicationServerSpringContext.getBean(ITransactionCoordinatorInternalApi.class);
     }
 
     private void rollbackPreparedDatabaseTransactions() throws Exception
