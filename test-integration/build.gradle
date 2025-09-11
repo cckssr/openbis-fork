@@ -24,6 +24,7 @@ dependencies {
             project(':server-original-data-store'),
             project(':server-data-store'),
             project(path: ':server-data-store', configuration: 'tests'),
+            project(':ui-eln-lims'),
             'eclipse:jetty-proxy:10.0.25'
             'slf4j:slf4j-api:1.7.24'
 

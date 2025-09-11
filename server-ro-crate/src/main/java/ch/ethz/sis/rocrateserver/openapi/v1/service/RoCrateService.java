@@ -10,18 +10,26 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.Validation
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
+import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
+import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Map;
+
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService {
+
+    private static final Logger LOG = Logger.getLogger(RoCrateService.class);
+
+
+    public static final String APPLICATION_LD_JSON = "application/ld+json";
 
     @Inject
     ImportDelegate importDelegate;
@@ -49,8 +57,8 @@ public class RoCrateService {
     }
 
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes({"application/ld+json", "application/zip"})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({ APPLICATION_LD_JSON, "application/zip" })
     @Path("import")
     @SneakyThrows
     public Map<String, String> import_(
@@ -69,6 +77,7 @@ public class RoCrateService {
             return importDelegate.import_(openBIS, headers, body, false)
                     .getExternalToOpenBisIdentifiers();
         } catch (Exception ex) {
+            LOG.error("There was an error", ex);
             throw new RuntimeException(ex);
         } finally {
             //SessionWorkSpaceManager.clear(headers.getApiKey());
@@ -76,8 +85,8 @@ public class RoCrateService {
     }
 
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes({"application/ld+json", "application/zip"})
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes({ APPLICATION_LD_JSON, "application/zip" })
     @Path("validate")
     public String validate(
             @BeanParam ImportParams headers,
@@ -98,18 +107,26 @@ public class RoCrateService {
             return ValidationReport.serialize(
                     new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
                     ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
-        } catch (Exception ex) {
+        } catch (WebApplicationException ex)
+        {
+            LOG.error("There was an error", ex);
+            throw ex;
+        } catch (Exception ex)
+        {
+            LOG.error("There was an error", ex);
             throw new RuntimeException(ex);
-        } finally {
+
+        } finally
+        {
             //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
 
     @POST
-    @Produces(MediaType.TEXT_PLAIN)
-    @Consumes("application/json")
+    @Produces({ APPLICATION_LD_JSON, "application/zip" })
+    @Consumes(MediaType.APPLICATION_JSON)
     @Path("export")
-    public OutputStream export(
+    public Response export(
             @BeanParam ExportParams headers,
             InputStream body) throws Exception
     {
@@ -122,14 +139,17 @@ public class RoCrateService {
         }
 
         try {
-            return exportDelegate.export(openBIS, headers, body);
+            InputStream inputStream = exportDelegate.export(openBIS, headers, body);
+            return Response.ok(inputStream.readAllBytes())
+                    .type(headers.getAccept()).build();
         } catch (WebApplicationException e)
         {
+
+            Log.error(e);
             throw e;
         } catch (Exception ex)
         {
-
-
+            Log.error(ex);
             throw new RuntimeException(ex);
         } finally {
             //SessionWorkSpaceManager.clear(headers.getApiKey());

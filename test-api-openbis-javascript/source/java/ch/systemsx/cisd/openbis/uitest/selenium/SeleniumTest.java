@@ -169,19 +169,14 @@ public abstract class SeleniumTest
         {
             FirefoxOptions opts = new FirefoxOptions();
             // If you use headless option selenium will work fine but Firefox won't be visible on the screen.
-            opts.addArguments("--headless");
+            //opts.addArguments("--headless");
+            opts.addArguments("--headless", "--window-size=1920,1080");
             LoggingPreferences logPrefs = new LoggingPreferences();
             logPrefs.enable(LogType.BROWSER, java.util.logging.Level.ALL);
             opts.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
             driver = new FirefoxDriver(opts);
             setImplicitWaitToDefault();
             driver.manage().deleteAllCookies();
-
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Dimension screenResolution =
-                    new Dimension((int) toolkit.getScreenSize().getWidth(), 2 * (int) toolkit
-                            .getScreenSize().getHeight());
-            driver.manage().window().setSize(screenResolution);
         }
         driver.get(startPage);
     }

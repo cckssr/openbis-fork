@@ -85,7 +85,7 @@ public class IntegrationSessionWorkspaceTest extends AbstractIntegrationTest
     {
         final OpenBIS openBIS = createOpenBIS();
         final String fileName = "import-test.zip";
-        final Path originalFilePath = Path.of("sourceTest/java/ch/ethz/sis/openbis/systemtests/" + fileName);
+        final Path originalFilePath = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + fileName);
 
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
         openBIS.uploadToSessionWorkspace(originalFilePath);

@@ -181,7 +181,7 @@ public class RdfToOpenBisMapper
         spaces.put(new SpacePermId(space.getCode()), space);
 
         Project project = new Project();
-        project.setCode(projectIdentifier);
+        project.setCode(projectIdentifier.split("/")[2]);
         project.setIdentifier(new ProjectIdentifier(projectIdentifier));
         project.setSpace(space);
         {

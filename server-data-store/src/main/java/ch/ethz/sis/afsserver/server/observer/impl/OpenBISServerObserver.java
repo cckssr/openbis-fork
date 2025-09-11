@@ -13,7 +13,6 @@ import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.afsserver.server.APIServer;
 import ch.ethz.sis.afsserver.server.APIServerException;
-import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.common.IOpenBISFacade;
 import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
@@ -146,7 +145,13 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
                     {
                         for (Event event : newEvents)
                         {
-                            processDataSetDeletionEvent(openBISFacade.getSessionToken(), event);
+                            if (isAfsDataSetDeletionEvent(event))
+                            {
+                                processAfsDataSetDeletionEvent(openBISFacade.getSessionToken(), event);
+                            } else
+                            {
+                                logger.info("Deletion of non-AFS data set " + event.getIdentifier() + " found. Skipping.");
+                            }
                             lastEvent = event;
                         }
                     } finally
@@ -184,7 +189,13 @@ public class OpenBISServerObserver implements ServerObserver<TransactionConnecti
         }
     }
 
-    private void processDataSetDeletionEvent(String sessionToken, Event event) throws APIServerException
+    private boolean isAfsDataSetDeletionEvent(Event event)
+    {
+        return EventType.DELETION.equals(event.getEventType()) && EntityType.DATA_SET.equals(event.getEntityType()) && event.getDescription() != null
+                && event.getDescription().startsWith("/" + OpenBISUtils.AFS_DATA_STORE_CODE);
+    }
+
+    private void processAfsDataSetDeletionEvent(String sessionToken, Event event) throws APIServerException
     {
         try
         {

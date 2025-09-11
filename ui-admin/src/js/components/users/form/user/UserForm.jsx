@@ -4,12 +4,14 @@ import withStyles from '@mui/styles/withStyles';
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import UserFormController from '@src/js/components/users/form/user/UserFormController.js'
 import UserFormFacade from '@src/js/components/users/form/user/UserFormFacade.js'
 import UserFormSelectionType from '@src/js/components/users/form/user/UserFormSelectionType.js'
 import UserFormParametersUser from '@src/js/components/users/form/user/UserFormParametersUser.jsx'
 import UserFormParametersGroup from '@src/js/components/users/form/user/UserFormParametersGroup.jsx'
 import UserFormParametersRole from '@src/js/components/users/form/user/UserFormParametersRole.jsx'
+import UserFormParametersMetadata from '@src/js/components/users/form/user/UserFormParametersMetadata.jsx'
 import UserFormGridGroups from '@src/js/components/users/form/user/UserFormGridGroups.jsx'
 import UserFormGridRoles from '@src/js/components/users/form/user/UserFormGridRoles.jsx'
 import UserFormButtons from '@src/js/components/users/form/user/UserFormButtons.jsx'
@@ -41,6 +43,7 @@ class UserForm extends React.PureComponent {
   componentDidMount() {
     this.controller.load()
   }
+
 
   handleClickContainer() {
     this.controller.handleSelectionChange()
@@ -137,8 +140,14 @@ class UserForm extends React.PureComponent {
       mode
     } = this.state
 
-    return (
-      <div>
+    const tabs = [
+      { key: 'user-tab-id', label: 'Parameters' },
+      { key: 'metadata-tab-id', label: 'Metadata' }
+    ]
+
+    const tabContent = [
+      // Parameters tab content
+      <div key="parameters">
         <UserFormParametersUser
           controller={controller}
           user={user}
@@ -168,7 +177,28 @@ class UserForm extends React.PureComponent {
           onSelectionChange={controller.handleSelectionChange}
           onBlur={controller.handleBlur}
         />
-      </div>
+      </div>,
+      
+      <UserFormParametersMetadata
+            controller={controller}
+            user={user}
+            groups={groups}
+            roles={roles}
+            selection={selection}
+            mode={mode}
+            onChange={controller.handleChange}
+            onSelectionChange={controller.handleSelectionChange}
+            onBlur={controller.handleBlur}
+          />
+    ]
+
+    return (
+      <TabViewer
+        tabs={tabs}
+        defaultTab={0}
+      >
+        {tabContent}
+      </TabViewer>
     )
   }
 

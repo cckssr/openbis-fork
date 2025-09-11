@@ -28,6 +28,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
+import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -149,83 +150,99 @@ public class RdfToModel
                 typesToProperties.put(domain, typeToDomain);
             }
         }
+        Map<Pair<String, DataType>, PropertyTypeMapping> propertyTypeMappings =
+                new LinkedHashMap<>();
+        Map<String, Set<DataType>> baseCodeToPossibleDataTypes = new LinkedHashMap<>();
 
         for (IPropertyType a : typeProperties)
         {
-            PropertyType propertyType = new PropertyType();
+            Set<DataType> dataTypes = matchDataTypes(a);
+            boolean addSuffixes = dataTypes.size() > 1;
+            String baseCode = openBisifyCode(deRdfIdentifier(a.getId()));
+            baseCodeToPossibleDataTypes.put(baseCode, dataTypes);
+
+            for (DataType dataType : dataTypes)
             {
-                PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
-                fetchOptions.withSemanticAnnotations();
-                fetchOptions.withVocabulary();
-                fetchOptions.withSampleType();
-
-                propertyType.setFetchOptions(fetchOptions);
-            }
-            propertyType.setSemanticAnnotations(new ArrayList<>());
-            propertyType.setMultiValue(false);
-            propertyType.setCode(openBisifyCode(deRdfIdentifier(a.getId())));
-            propertyType.setDescription(propertyType.getCode());
-            propertyType.setLabel(propertyType.getCode());
-
-
-            String code = deRdfIdentifier(a.getId());
-            propertyType.setPermId(new PropertyTypePermId(code));
-            propertyType.setCode(openBisifyCode(code));
-            DataType dataType = matchDataType(a);
-            propertyType.setDataType(dataType);
-
-            for (IType domain : a.getDomain())
-            {
-                if (requiresSpecialHandling(a))
+                String code = baseCode;
+                PropertyType propertyType = new PropertyType();
                 {
-                    continue;
+                    PropertyTypeFetchOptions fetchOptions = new PropertyTypeFetchOptions();
+                    fetchOptions.withSemanticAnnotations();
+                    fetchOptions.withVocabulary();
+                    fetchOptions.withSampleType();
+
+                    propertyType.setFetchOptions(fetchOptions);
+                }
+                propertyType.setSemanticAnnotations(new ArrayList<>());
+                propertyType.setMultiValue(false);
+                if (addSuffixes)
+                {
+                    String newCode = suffixCodeType(baseCode, dataType);
+                    propertyTypeMappings.put(new ImmutablePair<>(baseCode, dataType),
+                            new PropertyTypeMapping(baseCode, newCode, dataType));
+                    code = newCode;
                 }
 
-                SampleType sampleType = codeToSampleType.get(openBisifyCode(domain.getId()));
-                if (sampleType != null)
-                {
-                    List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
-                    List<PropertyAssignment> newAssignments = new ArrayList<>();
-                    Optional<IRestriction> maybeRestriction = domain.getResstrictions().stream()
-                            .filter(x -> x.getPropertyType().equals(a))
-                            .findFirst();
-                    PropertyAssignment curProperty =
-                            getPropertyAssignment(propertyType, sampleType,
-                                    maybeRestriction.filter(x -> x.getMinCardinality() == 1)
-                                            .isPresent(),
-                                    maybeRestriction.filter(x -> x.getMaxCardinality() == 0)
-                                            .isPresent());
+                propertyType.setCode(code);
+                propertyType.setDescription(propertyType.getCode());
+                propertyType.setLabel(propertyType.getCode());
 
-                    newAssignments.add(curProperty);
-                    if (assignments != null)
+                propertyType.setPermId(new PropertyTypePermId(baseCode));
+                propertyType.setDataType(dataType);
+
+                for (IType domain : a.getDomain())
+                {
+                    if (requiresSpecialHandling(a))
                     {
-                        newAssignments.addAll(assignments);
+                        continue;
                     }
-                    sampleType.setPropertyAssignments(newAssignments);
-                    a.getOntologicalAnnotations().forEach(x -> {
-                        SemanticAnnotation annotation = new SemanticAnnotation();
-                        annotation.setPredicateAccessionId(x);
-                        annotation.setEntityType(sampleType);
-                        annotation.setPropertyType(propertyType);
-                        annotation.setPredicateAccessionId(x);
-                        annotation.setPredicateOntologyId(x);
-                        annotation.setPredicateOntologyVersion(x);
 
-                        List<SemanticAnnotation> existingAnnotations =
-                                propertyType.getSemanticAnnotations();
-                        List<SemanticAnnotation> annotations = new ArrayList<>();
-                        if (existingAnnotations != null)
+                    SampleType sampleType = codeToSampleType.get(openBisifyCode(domain.getId()));
+                    if (sampleType != null)
+                    {
+                        List<PropertyAssignment> assignments = sampleType.getPropertyAssignments();
+                        List<PropertyAssignment> newAssignments = new ArrayList<>();
+                        Optional<IRestriction> maybeRestriction = domain.getResstrictions().stream()
+                                .filter(x -> x.getPropertyType().equals(a))
+                                .findFirst();
+                        PropertyAssignment curProperty =
+                                getPropertyAssignment(propertyType, sampleType,
+                                        maybeRestriction.filter(x -> x.getMinCardinality() == 1)
+                                                .isPresent(),
+                                        maybeRestriction.filter(x -> x.getMaxCardinality() == 0)
+                                                .isPresent());
+
+                        newAssignments.add(curProperty);
+                        if (assignments != null)
                         {
-                            annotations.addAll(existingAnnotations);
+                            newAssignments.addAll(assignments);
                         }
-                        annotations.add(annotation);
-                        propertyType.setSemanticAnnotations(annotations);
-                        curProperty.setSemanticAnnotations(annotations);
-                    });
+                        sampleType.setPropertyAssignments(newAssignments);
+                        a.getOntologicalAnnotations().forEach(x -> {
+                            SemanticAnnotation annotation = new SemanticAnnotation();
+                            annotation.setPredicateAccessionId(x);
+                            annotation.setEntityType(sampleType);
+                            annotation.setPropertyType(propertyType);
+                            annotation.setPredicateAccessionId(x);
+                            annotation.setPredicateOntologyId(x);
+                            annotation.setPredicateOntologyVersion(x);
+
+                            List<SemanticAnnotation> existingAnnotations =
+                                    propertyType.getSemanticAnnotations();
+                            List<SemanticAnnotation> annotations = new ArrayList<>();
+                            if (existingAnnotations != null)
+                            {
+                                annotations.addAll(existingAnnotations);
+                            }
+                            annotations.add(annotation);
+                            propertyType.setSemanticAnnotations(annotations);
+                            curProperty.setSemanticAnnotations(annotations);
+                        });
+                    }
+
                 }
 
             }
-
         }
         {
             Set<Set<String>> intersectionTypes = new LinkedHashSet<>();
@@ -290,6 +307,8 @@ public class RdfToModel
 
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
+        Map<String, IMetadataEntry> idToEntities =
+                entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
         for (IMetadataEntry entry : entries)
         {
             AbstractEntityPropertyHolder entity;
@@ -325,10 +344,25 @@ public class RdfToModel
                 Map<String, Serializable> properties = new LinkedHashMap<>();
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
                 {
-                    String key = openBisifyCode(deRdfIdentifier(property.getKey()));
-                    properties.put(key,
-                            property.getValue());
 
+                    String key = openBisifyCode(deRdfIdentifier(property.getKey()));
+                    if (baseCodeToPossibleDataTypes.containsKey(
+                            key) && baseCodeToPossibleDataTypes.get(key).size() > 1)
+                    {
+                        Set<DataType> dataTypes = baseCodeToPossibleDataTypes.get(key);
+                        DataType dataType =
+                                DataTypeMatcher.findDataType(property.getValue(), dataTypes,
+                                        idToEntities);
+                        String newIdentifier = propertyTypeMappings.get(
+                                new ImmutablePair<>(key, dataType)).newIdentifier;
+                        properties.put(key, property.getValue());
+
+                    } else
+                    {
+
+                        properties.put(key,
+                                property.getValue());
+                    }
                 }
 
                 roCrateIdsToObjects.put(entry.getId(), sample);
@@ -402,7 +436,8 @@ public class RdfToModel
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
                                         .filter(Objects::nonNull)
-                                        .map(x -> "/" + fallbackSpaceCode + "/" + fallbackProjectCode + "/" + x.getCode())
+                                        .map(x -> mapIdentifier(fallbackSpaceCode,
+                                                fallbackProjectCode, spaces, projects, x.getCode()))
                                         .collect(
                                                 Collectors.toList())));
             }
@@ -570,35 +605,41 @@ public class RdfToModel
 
     }
 
-    private static DataType matchDataType(IPropertyType propertyType)
+    private static Set<DataType> matchDataTypes(IPropertyType propertyType)
+    {
+        return propertyType.getRange().stream().map(RdfToModel::matchDataType)
+                .collect(Collectors.toSet());
+
+    }
+
+    private static DataType matchDataType(String rangeId)
     {
 
-        if (propertyType.getRange().stream()
-                .anyMatch(x -> x.equals(LiteralType.STRING.getTypeName())))
+        if (rangeId.equals(LiteralType.STRING.getTypeName()))
         {
             return DataType.VARCHAR;
         }
-        if (propertyType.getRange().stream()
-                .anyMatch(x -> x.equals(LiteralType.BOOLEAN.getTypeName())))
+        if (rangeId.equals(LiteralType.BOOLEAN.getTypeName()))
         {
             return DataType.BOOLEAN;
         }
-        if (propertyType.getRange().stream()
-                .anyMatch(x -> x.equals(LiteralType.DECIMAL.getTypeName())))
+        if (rangeId.equals(LiteralType.DECIMAL.getTypeName()))
         {
             return DataType.REAL;
         }
-        if (propertyType.getRange().stream()
-                .anyMatch(x -> x.equals(LiteralType.INTEGER.getTypeName())))
+        if (rangeId.equals(LiteralType.INTEGER.getTypeName()))
         {
             return DataType.INTEGER;
         }
-        if (propertyType.getRange().stream()
-                .anyMatch(x -> x.equals(LiteralType.DATETIME.getTypeName())))
+        if (rangeId.equals(LiteralType.DATETIME.getTypeName()))
         {
             return DataType.DATE;
         }
-        if (propertyType.getRange().stream().anyMatch(x -> x.equals(LiteralType.XML_LITERAL)))
+        if (rangeId.equals(LiteralType.ANY_URI.getTypeName()))
+        {
+            return DataType.HYPERLINK;
+        }
+        if (rangeId.equals(LiteralType.XML_LITERAL))
         {
             return DataType.XML;
         }
@@ -709,6 +750,22 @@ public class RdfToModel
         return a.replaceFirst("^:", "").replaceFirst("^_:", "");
     }
 
+    private static class PropertyTypeMapping
+    {
+        String oldIdentifier;
+
+        String newIdentifier;
+
+        DataType dataType;
+
+        public PropertyTypeMapping(String oldIdentifier, String newIdentifier, DataType dataType)
+        {
+            this.oldIdentifier = oldIdentifier;
+            this.newIdentifier = newIdentifier;
+            this.dataType = dataType;
+        }
+    }
+
     private static class ReferencesToResolve
     {
         String spaceCode;
@@ -742,6 +799,11 @@ public class RdfToModel
 
     }
 
+    private static String suffixCodeType(String code, DataType dataType)
+    {
+        return code + dataType.name().toUpperCase();
+    }
+
     private static String openBisifyCode(String code)
     {
         return code.replaceAll(":", "_");
@@ -765,6 +827,34 @@ public class RdfToModel
                     sampleType.getCode() + "_" + parts[parts.length - 1]);
         }
         return OpenBisModel.makeOpenBisCodeCompliant(identifier);
+
+    }
+
+    private static String mapIdentifier(String fallbackSpace, String fallBackProject,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, String code)
+    {
+
+        String[] parts = code.split("/");
+        if (parts.length != 3)
+        {
+            return code;
+
+        }
+        Space space = spaces.get(new SpacePermId(parts[0]));
+        if (space == null)
+        {
+            return List.of(fallbackSpace, fallBackProject, code).stream()
+                    .collect(Collectors.joining("/"));
+        }
+
+        Project project = projects.get(new ProjectIdentifier(space.getCode(), parts[1]));
+
+        if (project == null)
+        {
+            return List.of(fallbackSpace, fallBackProject, code).stream()
+                    .collect(Collectors.joining("/"));
+        }
+        return code;
 
     }
 

@@ -50,6 +50,9 @@ test {
     if (System.getProperty("openbis.proxyPort") != null) {
         systemProperty "openbis.proxyPort", System.getProperty("openbis.proxyPort")
     }
+
+    // remove DISPLAY completely
+    environment.remove("DISPLAY")
 }
 
 testJar {

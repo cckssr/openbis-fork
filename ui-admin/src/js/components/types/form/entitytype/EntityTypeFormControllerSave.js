@@ -205,7 +205,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       'label',
       'description',
       'schema',
-      'transformation'
+      'transformation',
+      'metadata'
     ])
   }
 
@@ -237,6 +238,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     creation.setTransformation(property.transformation.value)
     creation.setMultiValue(property.isMultiValue.value)
 
+    const metadataObject = this._transformMetadataToObject(property.metadata.value)
+    creation.setMetaData(metadataObject)
 
     if (
       property.dataType.value === openbis.DataType.CONTROLLEDVOCABULARY &&
@@ -281,6 +284,8 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
     update.convertToDataType(property.dataType.value)
+    const metadataObject = this._transformMetadataToObject(property.metadata.value)
+    update.getMetaData().set(metadataObject)
     return new openbis.UpdatePropertyTypesOperation([update])
   }
 
@@ -355,6 +360,20 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     return creation
   }
 
+  _transformMetadataToObject(metadataValue) {
+    let metadataObject = {}
+    if (metadataValue && Array.isArray(metadataValue)) {
+      metadataValue.forEach(item => {
+        if (item.key && item.value !== undefined) {
+          metadataObject[item.key] = item.value
+        }
+      })
+    } else if (metadataValue && typeof metadataValue === 'object') {
+      metadataObject = metadataValue
+    }
+    return metadataObject
+  }
+
   _createTypeOperation(type, assignments) {
     const strategy = this._getStrategy()
     const creation = strategy.createTypeCreation()
@@ -365,7 +384,12 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         ? new openbis.PluginPermId(type.validationPlugin.value)
         : null
     )
+    creation.setManagedInternally(type.internal.value)
     creation.setPropertyAssignments(assignments.reverse())
+
+    const metadataObject = this._transformMetadataToObject(type.metadata.value)
+    creation.setMetaData(metadataObject)
+    
     strategy.setTypeAttributes(creation, type)
     return strategy.createTypeCreateOperation([creation])
   }
@@ -383,6 +407,10 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         : null
     )
     update.getPropertyAssignments().set(assignments.reverse())
+    
+    const metadataObject = this._transformMetadataToObject(type.metadata.value)
+    update.getMetaData().set(metadataObject)
+
     strategy.setTypeAttributes(update, type)
     return strategy.createTypeUpdateOperation([update])
   }

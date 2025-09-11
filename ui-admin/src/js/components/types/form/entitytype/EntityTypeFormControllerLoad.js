@@ -52,7 +52,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         return
       }
     }
-
+    console.log('EntityTypeFormControllerLoad._loadType', {isNew}, {loadedType})
     const loadedAssignments = await this.facade.loadAssignments(object)
 
     const sections = []
@@ -122,6 +122,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
   _createType(loadedType) {
     const strategy = this._getStrategy()
     const internal = _.get(loadedType, 'managedInternally', false)
+    const metadata = Object.entries(_.get(loadedType, 'metaData', [])).map(([key, value]) => ({
+			key: key,
+			value: value,
+		}))
     const type = {
       code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),
@@ -140,11 +144,17 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         enabled: !internal
       }),
       internal: FormUtil.createField({
-        value: internal
+        value: internal,
+        visible: AppController.getInstance().isSystemUser(),
+        enabled: loadedType === null && AppController.getInstance().isSystemUser(),
       }),
       semanticAnnotations: FormUtil.createField({
         value: _.get(loadedType, 'semanticAnnotations', []),
         enabled: !internal
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       }),
       errors: 0
     }
@@ -162,9 +172,14 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     }
   }
 
-  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {
+  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {    
     const propertyType = loadedAssignment.propertyType
 
+    const metadata = Object.entries(_.get(propertyType, 'metaData', [])).map(([key, value]) => ({
+			key: key,
+			value: value,
+		}))
+    
     const code = _.get(propertyType, 'code', null)
     const dataType = _.get(propertyType, 'dataType', null)
     const plugin = _.get(loadedAssignment, 'plugin.name', null)
@@ -196,7 +211,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       assignmentInternal: FormUtil.createField({
         value: assignmentInternal,
-        visible: false,
+        visible: loadedAssignment && AppController.getInstance().isSystemUser(),
         enabled: false
       }),
       label: FormUtil.createField({
@@ -261,6 +276,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         value: _.get(loadedAssignment, 'mandatory', false),
         enabled:
           !assignmentInternal || AppController.getInstance().isSystemUser()
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       }),
       isMultiValue: FormUtil.createField({
         value: _.get(propertyType, 'multiValue', false),
@@ -398,7 +417,7 @@ class ObjectTypeStrategy {
       }),
       generatedCodePrefix: FormUtil.createField({
         value: _.get(loadedType, 'generatedCodePrefix', null),
-        enabled: !internal
+        enabled: loadedType === null || !internal
       }),
       subcodeUnique: FormUtil.createField({
         value: _.get(loadedType, 'subcodeUnique', false),

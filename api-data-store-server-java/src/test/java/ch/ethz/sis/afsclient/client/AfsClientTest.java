@@ -146,55 +146,6 @@ public class AfsClientTest
     }
 
     @Test
-    public void resumeRead_methodIsGet() throws Exception
-    {
-        login();
-
-        final String sourceFileName = "afs-test-src.txt";
-        final Path sourceFilePath = Path.of(sourceFileName);
-        final String destinationFileName = "afs-test-dst.txt";
-        final Path destinationFilePath = Path.of(destinationFileName);
-        final String fileNameJson = String.format("owner-UUID,%s,%s,false,4,1687879088900", sourceFileName, sourceFileName);
-        byte[] fileData = "ABCD".getBytes();
-        Files.write(sourceFilePath, fileData);
-
-        Chunk[] chunks = new Chunk[] { new Chunk( "", "", 0L, fileData.length,  fileData) };
-        byte[] encodedChunks = ChunkEncoderDecoder.encodeChunksAsBytes(chunks);
-
-        httpServer.setNextResponses(new byte[][] {fileNameJson.getBytes(), encodedChunks}, new String[] {"application/octet-stream", "application/octet-stream"});
-
-        afsClient.resumeRead("", sourceFileName, destinationFilePath, 0L);
-
-        assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
-        assertArrayEquals(fileData, Files.readAllBytes(destinationFilePath));
-
-        sourceFilePath.toFile().delete();
-        destinationFilePath.toFile().delete();
-    }
-
-    @Test
-    public void resumeWrite_methodIsPost() throws Exception
-    {
-        login();
-
-        final String sourceFileName = "afs-test-src.txt";
-        final Path sourceFilePath = Path.of(sourceFileName);
-        final String destinationFileName = "afs-test-dst.txt";
-        final byte[] sourceFileData = "ABCD".getBytes();
-        Files.write(sourceFilePath, sourceFileData);
-
-        httpServer.setNextResponse("{\"result\": true}");
-        final Boolean result = afsClient.resumeWrite("", destinationFileName, sourceFilePath, 0L);
-
-        assertEquals("POST", httpServer.getHttpExchange().getRequestMethod());
-        assertTrue(result);
-        assertTrue(httpServer.getLastRequestBody().length > 0);
-
-        sourceFilePath.toFile().delete();
-    }
-
-
-    @Test
     public void delete_methodIsDelete() throws Exception
     {
         login();

@@ -28,6 +28,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       code: React.createRef(),
       label: React.createRef(),
       description: React.createRef(),
+      internal: React.createRef(),
       dataType: React.createRef(),
       vocabulary: React.createRef(),
       materialType: React.createRef(),
@@ -38,7 +39,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       pattern: React.createRef(),
       patternType: React.createRef(),
       mandatory: React.createRef(),
-      internal: React.createRef(),
+      assignmentInternal: React.createRef(),
       plugin: React.createRef(),
       showInEditView: React.createRef(),
       isMultiValue: React.createRef(),
@@ -118,12 +119,14 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         {this.renderTransformation(property)}
         {this.renderLabel(property)}
         {this.renderDescription(property)}
+        {this.renderInternal(property)}
         <Header>{messages.get(messages.PROPERTY_ASSIGNMENT)}</Header>
+        {this.renderMessageSystemAssignmentInternal(property)}
         {this.renderDynamicPlugin(property)}
         {this.renderPatternType(property)}
         {this.renderPattern(property)}
         {this.renderPatternInfoBox(property)}
-        {this.renderInternal(property)}
+        {this.renderAssignmentInternal(property)}
         {this.renderVisible(property)}
         {this.renderMandatory(property)}
         {this.renderInitialValue(property)}
@@ -153,7 +156,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
   }
 
   renderMessageSystemInternal(property) {
-    if (property.internal.value || property.assignmentInternal.value) {
+    if (property.internal.value) {
       const { classes } = this.props
 
       if (AppController.getInstance().isSystemUser()) {
@@ -169,16 +172,8 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
           <div className={classes.field}>
             <Message type='lock'>
               {messages.get(messages.PROPERTY_IS_INTERNAL)}
-              {property.internal.value
-                ? ' ' +
-                  messages.get(messages.PROPERTY_PARAMETERS_CANNOT_BE_CHANGED)
-                : ''}
+              {' ' + messages.get(messages.PROPERTY_PARAMETERS_CANNOT_BE_CHANGED)}
             </Message>
-            {property.assignmentInternal.value ?
-             <Message type='lock_dark'>
-              {messages.get(messages.PROPERTY_ASSIGNMENT_CANNOT_BE_REMOVED)}
-            </Message>
-             : ''}
           </div>
         )
       }
@@ -276,6 +271,32 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     )
   }
 
+  renderInternal(property) {
+    const { visible, enabled, error, value } = { ...property.internal }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.internal}
+          label={messages.get(messages.INTERNAL_PROPERTY)}
+          name='internal'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
   renderDataType(property) {
     const { visible, enabled, error, value } = {
       ...property.dataType
@@ -324,12 +345,12 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       }
     } else {
       const objectType = this.getType().objectType.value;
-      if(objectType == 'materialType' || objectType == 'newMaterialType') {
+      if (objectType == 'materialType' || objectType == 'newMaterialType') {
         //Filter out new data types for materials
         const filtered = [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-            openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP, openbis.DataType.JSON];
+        openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP, openbis.DataType.JSON];
         openbis.DataType.values.map(dataType => {
-          if(!filtered.includes(dataType)) {
+          if (!filtered.includes(dataType)) {
             options.push({
               label: new DataType(dataType).getLabel(),
               value: dataType
@@ -338,11 +359,11 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         })
       } else {
         openbis.DataType.values.map(dataType => {
-              options.push({
-                label: new DataType(dataType).getLabel(),
-                value: dataType
-              })
+          options.push({
+            label: new DataType(dataType).getLabel(),
+            value: dataType
           })
+        })
       }
     }
 
@@ -552,6 +573,48 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     )
   }
 
+  renderMessageSystemAssignmentInternal(property) {
+    if (property.assignmentInternal.value) {
+      const { classes } = this.props
+
+      return (
+        <div className={classes.field}>
+          <Message type='lock_dark'>
+            {messages.get(messages.PROPERTY_ASSIGNMENT_CANNOT_BE_REMOVED)}
+          </Message>
+        </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  renderAssignmentInternal(property) {
+    const { visible, enabled, error, value } = { ...property.assignmentInternal }
+
+    if (!visible) {
+      return null
+    }
+
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.assignmentInternal}
+          label={messages.get(messages.INTERNAL_ASSIGNMENT)}
+          name='assignmentInternal'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
+
   renderDynamicPlugin(property) {
     const { visible, enabled, error, value } = { ...property.plugin }
 
@@ -595,32 +658,6 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     )
   }
 
-  renderInternal(property) {
-    const { visible, enabled, error, value } = { ...property.internal }
-
-    if (!visible) {
-      return null
-    }
-
-    const { mode, classes } = this.props
-    return (
-      <div className={classes.field}>
-        <CheckboxField
-          reference={this.references.internal}
-          label={messages.get(messages.INTERNAL)}
-          name='internal'
-          error={error}
-          disabled={!enabled}
-          value={value}
-          mode={mode}
-          onChange={this.handleChange}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        />
-      </div>
-    )
-  }
-
   renderMandatory(property) {
     const { visible, enabled, error, value } = { ...property.mandatory }
 
@@ -648,57 +685,57 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
   }
 
   renderUniqueValue(property) {
-   const { visible, enabled, error, value } = { ...property.unique }
+    const { visible, enabled, error, value } = { ...property.unique }
 
-   if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-                      openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
-                      openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-                      openbis.DataType.MULTILINE_VARCHAR, null].includes(property.dataType.value)) {
-       return null
-   }
+    if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
+    openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
+    openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
+    openbis.DataType.MULTILINE_VARCHAR, null].includes(property.dataType.value)) {
+      return null
+    }
 
-   const { mode, classes } = this.props
-   return (
-   <div className={classes.field}>
-     <CheckboxField
-       reference={this.references.unique}
-       label={messages.get(messages.IS_UNIQUE_VALUE)}
-       name='unique'
-       error={error}
-       disabled={!enabled}
-       value={value}
-       mode={mode}
-       onChange={this.handleChange}
-       onFocus={this.handleFocus}
-       onBlur={this.handleBlur}
-     />
-   </div>
-   )
- }
+    const { mode, classes } = this.props
+    return (
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.unique}
+          label={messages.get(messages.IS_UNIQUE_VALUE)}
+          name='unique'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
+    )
+  }
 
   renderIsMultiValue(property) {
     const { visible, enabled, error, value } = { ...property.isMultiValue }
 
     if (!visible) {
-        return null
+      return null
     }
 
     const { mode, classes } = this.props
     return (
-    <div className={classes.field}>
-      <CheckboxField
-        reference={this.references.isMultiValue}
-        label={messages.get(messages.IS_MULTI_VALUE)}
-        name='isMultiValue'
-        error={error}
-        disabled={!enabled}
-        value={value}
-        mode={mode}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-      />
-    </div>
+      <div className={classes.field}>
+        <CheckboxField
+          reference={this.references.isMultiValue}
+          label={messages.get(messages.IS_MULTI_VALUE)}
+          name='isMultiValue'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
     )
   }
 
@@ -761,66 +798,66 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     const { visible, enabled, error, value } = { ...property.pattern }
 
     if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-                      openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
-                      openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-                      openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
-                      openbis.DataType.SAMPLE, null].includes(property.dataType.value)) {
-        return null
+    openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
+    openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
+    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.SAMPLE, null].includes(property.dataType.value)) {
+      return null
     }
 
     const { mode, classes } = this.props
     return (
-    <div className={classes.field}>
-      <TextField
-        reference={this.references.pattern}
-        label={messages.get(messages.PATTERN)}
-        name='pattern'
-        error={error}
-        disabled={!enabled}
-        value={value}
-        mode={mode}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-      />
-    </div>
+      <div className={classes.field}>
+        <TextField
+          reference={this.references.pattern}
+          label={messages.get(messages.PATTERN)}
+          name='pattern'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
     )
   }
 
   renderPatternInfoBox(property) {
-      const { visible, enabled, error, value } = { ...property.patternType }
+    const { visible, enabled, error, value } = { ...property.patternType }
 
-      if(!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-                           openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
-                           openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-                           openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
-                           openbis.DataType.SAMPLE,
-                           null].includes(property.dataType.value)) {
-        return null;
-      }
+    if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
+    openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
+    openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
+    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.SAMPLE,
+      null].includes(property.dataType.value)) {
+      return null;
+    }
 
-      const { mode, classes } = this.props
-      if(mode != 'edit') {
-        return null;
-      }
-      console.log(this.props);
-      let message = "";
-      if(value == 'PATTERN') {
-          message = messages.get(messages.PROPERTY_TYPE_VALIDATION_PATTERN)
-      } else if(value == 'VALUES') {
-        message = messages.get(messages.PROPERTY_TYPE_VALIDATION_VALUES)
-      } else if(value == 'RANGES') {
-        message = messages.get(messages.PROPERTY_TYPE_VALIDATION_RANGES)
-      } else {
-         return null;
-      }
-      return (
-              <div className={classes.field}>
-                <Message type='info'>
-                  {message}
-                </Message>
-              </div>
-      )
+    const { mode, classes } = this.props
+    if (mode != 'edit') {
+      return null;
+    }
+    console.log(this.props);
+    let message = "";
+    if (value == 'PATTERN') {
+      message = messages.get(messages.PROPERTY_TYPE_VALIDATION_PATTERN)
+    } else if (value == 'VALUES') {
+      message = messages.get(messages.PROPERTY_TYPE_VALIDATION_VALUES)
+    } else if (value == 'RANGES') {
+      message = messages.get(messages.PROPERTY_TYPE_VALIDATION_RANGES)
+    } else {
+      return null;
+    }
+    return (
+      <div className={classes.field}>
+        <Message type='info'>
+          {message}
+        </Message>
+      </div>
+    )
 
   }
 
@@ -828,16 +865,16 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     const { visible, enabled, error, value } = { ...property.patternType }
 
     if (!visible || [openbis.DataType.ARRAY_STRING, openbis.DataType.ARRAY_INTEGER,
-                          openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
-                          openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
-                          openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
-                          openbis.DataType.SAMPLE,
-                          null].includes(property.dataType.value)) {
-        return null
+    openbis.DataType.ARRAY_REAL, openbis.DataType.ARRAY_TIMESTAMP,
+    openbis.DataType.JSON, openbis.DataType.XML, openbis.DataType.BOOLEAN,
+    openbis.DataType.CONTROLLEDVOCABULARY, openbis.DataType.MATERIAL,
+    openbis.DataType.SAMPLE,
+      null].includes(property.dataType.value)) {
+      return null
     }
 
     const { mode, classes, controller } = this.props
-    let patternOptions = ['NONE', 'PATTERN', 'VALUES', 'RANGES' ]
+    let patternOptions = ['NONE', 'PATTERN', 'VALUES', 'RANGES']
 
     let options = []
 
@@ -846,24 +883,24 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
         label: option,
         value: option
       }
-      })
+    })
 
     return (
-    <div className={classes.field}>
-      <SelectField
-        reference={this.references.patternType}
-        label={messages.get(messages.PATTERN_TYPE)}
-        name='patternType'
-        error={error}
-        disabled={!enabled}
-        value={value}
-        options={options}
-        mode={mode}
-        onChange={this.handleChange}
-        onFocus={this.handleFocus}
-        onBlur={this.handleBlur}
-      />
-    </div>
+      <div className={classes.field}>
+        <SelectField
+          reference={this.references.patternType}
+          label={messages.get(messages.PATTERN_TYPE)}
+          name='patternType'
+          error={error}
+          disabled={!enabled}
+          value={value}
+          options={options}
+          mode={mode}
+          onChange={this.handleChange}
+          onFocus={this.handleFocus}
+          onBlur={this.handleBlur}
+        />
+      </div>
     )
   }
 

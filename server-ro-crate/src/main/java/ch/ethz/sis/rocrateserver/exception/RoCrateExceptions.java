@@ -27,7 +27,10 @@ public enum RoCrateExceptions {
     UNAVAILABLE_API_KEY(List.of(UserUsageError), 90001, 401, "Unavailable api-key"),
     SCHEMA_VALIDATION_FAILED(List.of(UserUsageError), 90002, 400, "Schema validation failed"),
 
-    NO_RESULTS_FOUND(List.of(UserUsageError), 90003, 404, "No results found");
+    NO_RESULTS_FOUND(List.of(UserUsageError), 90003, 404, "No results found"),
+
+    MALFORMED_INPUT(List.of(UserUsageError), 90004, 400, "Schema validation failed");
+
 
 
     private List<ExceptionType> types;

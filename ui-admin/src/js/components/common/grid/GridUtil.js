@@ -98,6 +98,17 @@ function registrationDateColumn(params) {
   })
 }
 
+function modifierColumn(params) {
+  return userColumn({
+    ...params,
+    name: 'modifier',
+    label: messages.get(messages.MODIFIER),
+    exportableField: GridExportOptions.EXPORTABLE_FIELD.MODIFIER,
+    path: params.path
+  })
+}
+
+
 function modificationDateColumn(params) {
   return dateColumn({
     ...params,
@@ -112,6 +123,7 @@ export default {
   registratorColumn,
   dateColumn,
   registrationDateColumn,
+  modifierColumn,
   modificationDateColumn,
   dateObjectColumn
 }

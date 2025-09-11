@@ -11,8 +11,8 @@ compileTestJava {
     options.compilerArgs << '-parameters'
 }
 
-sourceCompatibility='11'
-targetCompatibility='11'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 repositories {
     ivy {
@@ -25,6 +25,7 @@ dependencies {
     compileOnly 'lombok:lombok:1.18.38'
     annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-json'),
+            project(':lib-two-phase-transaction'),
             'lombok:lombok:1.18.38'
     testImplementation 'junit:junit:4.10',
             'hamcrest:hamcrest-core:1.3'

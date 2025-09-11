@@ -15,6 +15,9 @@ public class ExportParams {
     @HeaderParam("api-key")
     private String apiKey;
 
+    @HeaderParam("Accept")
+    private String accept;
+
     @HeaderParam("openbis.identifier-annotations")
     private String identifierAnnotations;
 
@@ -85,5 +88,25 @@ public class ExportParams {
 
     private String[] getDefaultIdentifierAnnotations() {
         return new String[] { "https://schema.org/identifier", "http://datacite.org/schema/kernel-4#doi" };
+    }
+
+    public String getAccept()
+    {
+        return accept;
+    }
+
+    public String getWithLevelsBelow()
+    {
+        return withLevelsBelow;
+    }
+
+    public String getWithObjectsAndDataSetsParents()
+    {
+        return withObjectsAndDataSetsParents;
+    }
+
+    public String getWithObjectsAndDataSetsOtherSpaces()
+    {
+        return withObjectsAndDataSetsOtherSpaces;
     }
 }

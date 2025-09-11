@@ -9,6 +9,8 @@ export default class TypeBrowserControllerLoadNodePath {
     if (object.type === objectType.OVERVIEW) {
       if (object.id === objectType.OBJECT_TYPE) {
         return [TypeBrowserCommon.objectTypesFolderNode()]
+      } else if (object.id === objectType.OBJECT_TYPE_GROUP) {
+        return [TypeBrowserCommon.objectTypeGroupsFolderNode()]
       } else if (object.id === objectType.COLLECTION_TYPE) {
         return [TypeBrowserCommon.collectionTypesFolderNode()]
       } else if (object.id === objectType.DATA_SET_TYPE) {
@@ -25,6 +27,13 @@ export default class TypeBrowserControllerLoadNodePath {
       if (type) {
         const folderNode = TypeBrowserCommon.objectTypesFolderNode()
         const typeNode = TypeBrowserCommon.objectTypeNode(object.id)
+        return [folderNode, typeNode]
+      }
+    } else if (object.type === objectType.OBJECT_TYPE_GROUP) {
+      const type = await this.searchObjectTypeGroup(object.id)
+      if (type) {
+        const folderNode = TypeBrowserCommon.objectTypeGroupsFolderNode()
+        const typeNode = TypeBrowserCommon.objectTypeGroupNode(object.id)
         return [folderNode, typeNode]
       }
     } else if (object.type === objectType.COLLECTION_TYPE) {
@@ -64,6 +73,13 @@ export default class TypeBrowserControllerLoadNodePath {
     const id = new openbis.EntityTypePermId(typeCode)
     const fetchOptions = new openbis.SampleTypeFetchOptions()
     const types = await openbis.getSampleTypes([id], fetchOptions)
+    return types[typeCode]
+  }
+
+  async searchObjectTypeGroup(typeCode) {
+    const id = new openbis.TypeGroupId(typeCode)
+    const fetchOptions = new openbis.TypeGroupFetchOptions()
+    const types = await openbis.getTypeGroups([id], fetchOptions)
     return types[typeCode]
   }
 

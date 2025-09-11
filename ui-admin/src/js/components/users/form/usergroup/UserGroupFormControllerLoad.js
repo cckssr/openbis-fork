@@ -73,6 +73,10 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createGroup(loadedGroup) {
+    const metadata = Object.entries(_.get(loadedGroup, 'metaData', [])).map(([key, value]) => ({
+      key: key,
+      value: value,
+    }))
     const group = {
       id: _.get(loadedGroup, 'code', null),
       code: FormUtil.createField({
@@ -81,6 +85,10 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
       }),
       description: FormUtil.createField({
         value: _.get(loadedGroup, 'description', null)
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       })
     }
     if (loadedGroup) {
@@ -90,7 +98,11 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createUser(loadedUser) {
-
+    console.log('loadedUser', loadedUser)
+    const metadata = Object.entries(_.get(loadedUser, 'metaData', [])).map(([key, value]) => ({
+      key: key,
+      value: value,
+    }))
     const expiryDate =  _.get(loadedUser, 'expiryDate', null);
 
     const user = {
@@ -121,6 +133,10 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
       }),
       expiryDate: FormUtil.createField({
         value: expiryDate ? { dateObject: new Date(expiryDate) } : null
+      }),
+      metadata: FormUtil.createField({
+        value: metadata,
+        enabled: true
       })
     }
     user.original = _.cloneDeep(user)

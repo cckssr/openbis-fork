@@ -1062,6 +1062,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+		this.createTypeGroups = function(creations) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "createTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, creations ]
+                },
+                returnType : {
+                    name : "List",
+                    arguments : [ "ITypeGroupId" ]
+                }
+            });
+        }
+
 		this.createTags = function(creations) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -1332,6 +1347,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 			});
 		}
 
+        this.updateTypeGroups = function(updates) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "updateTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, updates ]
+                }
+            });
+        }
+
 		this.updateTags = function(updates) {
 			var thisFacade = this;
 			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
@@ -1510,6 +1536,21 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : {
 					name : "Map",
 					arguments : [ "IEntityTypeId", "SampleType" ]
+				}
+			});
+		}
+
+        this.getTypeGroups = function(ids, fetchOptions) {
+			var thisFacade = this;
+			return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+				url : openbisUrl,
+				data : {
+					"method" : "getTypeGroups",
+					"params" : [ thisFacade._private.sessionToken, ids, fetchOptions ]
+				},
+				returnType : {
+					name : "Map",
+					arguments : [ "ITypeGroupId", "TypeGroup" ]
 				}
 			});
 		}
@@ -1855,6 +1896,18 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				returnType : "SearchResult"
 			});
 		}
+
+		this.searchTypeGroups = function(criteria, fetchOptions) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "searchTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, criteria, fetchOptions ]
+                },
+                returnType : "SearchResult"
+            });
+        }
 
 		this.searchDataSets = function(criteria, fetchOptions) {
 			var thisFacade = this;
@@ -2315,6 +2368,17 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 				}
 			});
 		}
+
+		this.deleteTypeGroups = function(ids, deletionOptions) {
+            var thisFacade = this;
+            return thisFacade._private.ajaxRequestTransactional(transactionParticipantId, {
+                url : openbisUrl,
+                data : {
+                    "method" : "deleteTypeGroups",
+                    "params" : [ thisFacade._private.sessionToken, ids, deletionOptions ]
+                }
+            });
+        }
 
 		this.deleteExperimentTypes = function(ids, deletionOptions) {
 			var thisFacade = this;

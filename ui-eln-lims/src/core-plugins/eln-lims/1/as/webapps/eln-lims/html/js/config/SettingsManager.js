@@ -438,16 +438,18 @@ function SettingsManager(serverFacade) {
 
     this._validateSpaces = function(settings, errors) {
         if(settings.inventorySpaces) {
+            var prefix = "Inventory Spaces: ";
             for(var idx = 0; idx < settings.inventorySpaces.length; idx++) {
                 if(!settings.inventorySpaces[idx]) {
-                    errors.push("Empty value found instead of a space, please delete it before save.");
+                    errors.push(prefix + "Empty value found instead of a space, please delete it before save.");
                 }
             }
         }
         if(settings.inventorySpacesReadOnly) {
+            var prefix = "Inventory Spaces Read only: ";
             for(var idx = 0; idx < settings.inventorySpaces.length; idx++) {
                 if(!settings.inventorySpaces[idx]) {
-                    errors.push("Empty value found instead of a space, please delete it before save.");
+                    errors.push(prefix + "Empty value found instead of a space, please delete it before save.");
                 }
             }
         }
@@ -511,7 +513,12 @@ function SettingsManager(serverFacade) {
 		if (settings.forcedDisableRTF) {
 			for (var item of settings.forcedDisableRTF) {
 				if (this.getForcedDisableRTFOptions().indexOf(item) === -1) {
-					errors.push(item + " is not a property type.");
+				    if(item) {
+				        errors.push("Forced Disable RTF: " + item + " is not a property type.");
+				    } else {
+				        errors.push("Forced Disable RTF: empty property field");
+				    }
+
 				}
 			}
 		}
@@ -521,7 +528,11 @@ function SettingsManager(serverFacade) {
 		if (settings.forceMonospaceFont) {
 			for (var item of settings.forceMonospaceFont) {
 				if (this.getForcedMonospaceFontOptions().indexOf(item) === -1) {
-					errors.push(item + " is not a property type.");
+				    if(item) {
+                        errors.push("Forced Monospace Font: " + item + " is not a property type.");
+                    } else {
+                        errors.push("Forced Monospace Font: empty property field");
+                    }
 				}
 			}
 		}
@@ -529,20 +540,21 @@ function SettingsManager(serverFacade) {
 
 	this._validateDataSetTypeForFileNameMap = function(settings, errors) {
 		if (settings.dataSetTypeForFileNameMap) {
+		    var prefix = "Dataset types for filenames: ";
 			for (var dataSetTypeForFileName of settings.dataSetTypeForFileNameMap) {
 				if (dataSetTypeForFileName.dataSetType == null) {
-					errors.push("dataSetTypeForFileNameMap must contain a field named dataSetType.");
+					errors.push(prefix + "dataSetTypeForFileNameMap must contain a field named dataSetType.");
 				} else if (this.getAllDatasetTypeCodeOptions().indexOf(dataSetTypeForFileName.dataSetType) === -1) {
-					errors.push("Dataset type " + 
+					errors.push(prefix + "Dataset type " +
 								dataSetTypeForFileName.dataSetType + 
 								" is not allowed. Available types: " +
 								this.getAllDatasetTypeCodeOptions().join(", ") +
 								".");
 				}
 				if (dataSetTypeForFileName.fileNameExtension == null) {
-					errors.push("dataSetTypeForFileNameMap must contain a field named fileNameExtension.");
+					errors.push(prefix + "dataSetTypeForFileNameMap must contain a field named fileNameExtension.");
 				} else if (dataSetTypeForFileName.fileNameExtension.length == 0) {
-					errors.push("Filename extension can't be empty.");
+					errors.push(prefix + "Filename extension can't be empty.");
 				}
 			}
 		}

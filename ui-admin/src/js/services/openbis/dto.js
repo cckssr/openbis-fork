@@ -153,7 +153,6 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/delete/SampleTypeDeletionOptions',
   'as/dto/sample/fetchoptions/SampleFetchOptions',
   'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
-  'as/dto/sample/fetchoptions/SampleTypeFetchOptions',
   'as/dto/sample/id/SampleIdentifier',
   'as/dto/sample/id/SamplePermId',
   'as/dto/sample/search/SampleSearchCriteria',
@@ -161,6 +160,20 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/search/SearchSamplesOperation',
   'as/dto/sample/update/SampleTypeUpdate',
   'as/dto/sample/update/UpdateSampleTypesOperation',
+  'as/dto/typegroup/id/TypeGroupAssignmentId',
+  'as/dto/typegroup/id/TypeGroupId',
+  'as/dto/typegroup/search/TypeGroupSearchCriteria',
+  'as/dto/typegroup/delete/DeleteTypeGroupsOperation',
+  'as/dto/typegroup/delete/TypeGroupAssignmentDeletionOptions',
+  'as/dto/typegroup/delete/TypeGroupDeletionOptions',
+  'as/dto/typegroup/delete/DeleteTypeGroupAssignmentOperation',
+  'as/dto/typegroup/create/TypeGroupAssignmentCreation',
+  'as/dto/typegroup/create/TypeGroupCreation',
+  'as/dto/typegroup/create/CreateTypeGroupsOperation',
+  'as/dto/typegroup/create/CreateTypeGroupAssignmentsOperation',
+  'as/dto/typegroup/fetchoptions/TypeGroupFetchOptions',
+  'as/dto/typegroup/update/TypeGroupUpdate',
+  'as/dto/typegroup/update/UpdateTypeGroupsOperation',
   'as/dto/service/CustomASServiceExecutionOptions',
   'as/dto/service/execute/ExecuteCustomASServiceOperation',
   'as/dto/service/id/CustomASServiceCode',
@@ -192,7 +205,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/webapp/create/WebAppSettingCreation',
   'dss/dto/service/id/CustomDssServiceCode',
   'dss/dto/service/CustomDSSServiceExecutionOptions',
-  'dss/dto/datasetfile/search/DataSetFileSearchCriteria', 
+  'dss/dto/datasetfile/search/DataSetFileSearchCriteria',
   'dss/dto/datasetfile/fetchoptions/DataSetFileFetchOptions',
   'imaging/dto/ImagingDataSetConfig',
   'imaging/dto/ImagingDataSetControl',
@@ -247,7 +260,7 @@ const dto = new Dto()
 
 CLASS_FULL_NAMES.forEach(classFullName => {
   let className = classFullName.substring(classFullName.lastIndexOf('/') + 1)
-  dto[className] = function () {}
+  dto[className] = function () { }
 })
 
 export default dto

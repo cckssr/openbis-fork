@@ -9,10 +9,24 @@ public class Config
 
     private final boolean writeSchema;
 
-    public Config(boolean removeDanglingReferences, boolean writeSchema)
+    private final boolean enforceSingleValues;
+
+    public Config(boolean removeDanglingReferences, boolean writeSchema,
+            boolean enforceSingleValues)
     {
         this.removeDanglingReferences = removeDanglingReferences;
         this.writeSchema = writeSchema;
+        this.enforceSingleValues = enforceSingleValues;
+    }
+
+    public boolean isRemoveDanglingReferences()
+    {
+        return removeDanglingReferences;
+    }
+
+    public boolean isEnforceSingleValues()
+    {
+        return enforceSingleValues;
     }
 
     public boolean isWriteSchema()
@@ -20,9 +34,10 @@ public class Config
         return writeSchema;
     }
 
-    public static void setConfig(boolean removeDanglingReferences, boolean writeSchema)
+    public static void setConfig(boolean removeDanglingReferences, boolean writeSchema,
+            boolean enforceSingleValues)
     {
-        INSTANCE = new Config(removeDanglingReferences, writeSchema);
+        INSTANCE = new Config(removeDanglingReferences, writeSchema, enforceSingleValues);
 
     }
 

@@ -36,7 +36,7 @@ task copyV3Api(type: Copy, dependsOn: [copyPublicToTemp, ':api-openbis-javascrip
 
 task openBISDevelopmentEnvironmentASPrepare(type: Copy, dependsOn: [copyV3Api]) {
     from "${elnTempPath}/ch.systemsx.cisd.openbis.OpenBIS"
-    into "targets/www/openbis"
+    into "targets/www/openbis-test"
     doLast {
         def Files = java.nio.file.Files
         def Paths = java.nio.file.Paths

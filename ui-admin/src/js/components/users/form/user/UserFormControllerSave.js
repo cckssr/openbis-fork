@@ -78,11 +78,11 @@ export default class UserFormControllerSave extends PageControllerSave {
   }
 
   _isUserUpdateNeeded(user) {
-    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'userStatus', 'userStatusExpiryDate'])
+    return FormUtil.haveFieldsChanged(user, user.original, ['space', 'userStatus', 'userStatusExpiryDate', 'metadata'])
   }
 
   _isGroupAssignmentUpdateNeeded(group) {
-    return FormUtil.haveFieldsChanged(group, group.original, ['code'])
+    return FormUtil.haveFieldsChanged(group, group.original, ['code', 'metadata'])
   }
 
   _isRoleAssignmentUpdateNeeded(role) {
@@ -104,6 +104,8 @@ export default class UserFormControllerSave extends PageControllerSave {
     {
       creation.setExpiryDate(user.userStatusExpiryDate.value.dateObject.getTime());
     }
+    const metadataObject = FormUtil.transformMetadataToObject(user.metadata.value)
+    creation.setMetaData(metadataObject)
     return new openbis.CreatePersonsOperation([creation])
   }
 
@@ -134,6 +136,8 @@ export default class UserFormControllerSave extends PageControllerSave {
             }
         }
     }
+    const metadataObject = FormUtil.transformMetadataToObject(user.metadata.value)
+    update.getMetaData().set(metadataObject)
     return new openbis.UpdatePersonsOperation([update])
   }
 
@@ -143,6 +147,8 @@ export default class UserFormControllerSave extends PageControllerSave {
       new openbis.AuthorizationGroupPermId(group.code.value)
     )
     update.getUserIds().add(new openbis.PersonPermId(user.userId.value))
+    const metadataObject = FormUtil.transformMetadataToObject(group.metadata.value)
+    update.getMetaData().set(metadataObject)
     return new openbis.UpdateAuthorizationGroupsOperation([update])
   }
 

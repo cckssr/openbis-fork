@@ -1,13 +1,13 @@
 package ch.ethz.sis.rocrateserver.startup;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 @QuarkusMain
 public class StartupMain implements QuarkusApplication
@@ -38,7 +38,7 @@ public class StartupMain implements QuarkusApplication
         System.setProperty("quarkus.http.port", configuration.getStringProperty(RoCrateServerParameter.httpServerPort));
         System.setProperty("quarkus.http.idle-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
         System.setProperty("quarkus.http.read-timeout", configuration.getStringProperty(RoCrateServerParameter.httpServerTimeout));
-        System.setProperty("quarkus.class-loading.parent-first-artifacts", "stax:stax-api");
+
 
         if (LaunchMode.current().isDevOrTest())
         {

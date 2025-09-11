@@ -2,16 +2,54 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<meta http-equiv="refresh" content="5;url=/openbis/webapp/eln-lims/" />
-	<title>Redirecting...</title>
-	<script>
-		// Redirect after 2 seconds using JavaScript
-        setTimeout(function () {
-          window.location.href = "/openbis/webapp/eln-lims/";
-        }, 2000);
-	</script>
+	<style>
+		.openbis-logo {
+			width: 100%;
+			max-width: 615px;  /* never exceed original size */
+			height: auto;
+		}
+
+		.header {
+			font-family: Roboto, Helvetica, Arial, sans-serif;
+			font-weight: 400;
+			font-size: 34px;
+			margin: 2em;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.secondary {
+			font-size: 24px;
+			opacity:0.7;
+		}
+
+		.clear-link {
+			text-decoration: none;
+			color:inherit;
+		}
+
+		.clear-link:hover {
+			opacity:0.5;
+		}
+	</style>
+	<title>openBIS</title>
 </head>
 <body>
-<p>If you are not redirected automatically, <a href="/openbis/webapp/eln-lims/">click here</a>.</p>
+	<div class="header">
+		<img class="openbis-logo" src="images/openBIS_Logo.png" alt="openBIS Logo">
+	</div>
+	<div class="header secondary">
+		Please use one of the available user interfaces
+	</div>
+	<div class="header">
+		<a class="clear-link" href="/openbis/webapp/admin/"><span>Admin Dashboard</span></a>
+	</div>
+	<div class="header secondary">
+		Or
+	</div>
+	<div class="header">
+		<a class="clear-link" href="/openbis/webapp/eln-lims/"><span>Lab Notebook & Inventory Manager</span></a>
+	</div>
 </body>
 </html>

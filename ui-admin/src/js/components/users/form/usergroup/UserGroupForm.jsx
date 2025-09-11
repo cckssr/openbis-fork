@@ -4,12 +4,14 @@ import withStyles from '@mui/styles/withStyles';
 import ComponentContext from '@src/js/components/common/ComponentContext.js'
 import PageWithTwoPanels from '@src/js/components/common/page/PageWithTwoPanels.jsx'
 import GridContainer from '@src/js/components/common/grid/GridContainer.jsx'
+import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import UserGroupFormController from '@src/js/components/users/form/usergroup/UserGroupFormController.js'
 import UserGroupFormFacade from '@src/js/components/users/form/usergroup/UserGroupFormFacade.js'
 import UserGroupFormSelectionType from '@src/js/components/users/form/usergroup/UserGroupFormSelectionType.js'
 import UserGroupFormParametersGroup from '@src/js/components/users/form/usergroup/UserGroupFormParametersGroup.jsx'
 import UserGroupFormParametersUser from '@src/js/components/users/form/usergroup/UserGroupFormParametersUser.jsx'
 import UserGroupFormParametersRole from '@src/js/components/users/form/usergroup/UserGroupFormParametersRole.jsx'
+import UserGroupFormParametersMetadata from '@src/js/components/users/form/usergroup/UserGroupFormParametersMetadata.jsx'
 import UserGroupFormGridUsers from '@src/js/components/users/form/usergroup/UserGroupFormGridUsers.jsx'
 import UserGroupFormGridRoles from '@src/js/components/users/form/usergroup/UserGroupFormGridRoles.jsx'
 import UserGroupFormButtons from '@src/js/components/users/form/usergroup/UserGroupFormButtons.jsx'
@@ -137,8 +139,14 @@ class UserGroupForm extends React.PureComponent {
       mode
     } = this.state
 
-    return (
-      <div>
+    const tabs = [
+      { key: 'group-tab-id', label: 'Parameters' },
+      { key: 'metadata-tab-id', label: 'Metadata' }
+    ]
+
+    const tabContent = [
+      // Parameters tab content
+      <div key="parameters">
         <UserGroupFormParametersGroup
           controller={controller}
           group={group}
@@ -168,7 +176,28 @@ class UserGroupForm extends React.PureComponent {
           onSelectionChange={controller.handleSelectionChange}
           onBlur={controller.handleBlur}
         />
-      </div>
+      </div>,
+
+      <UserGroupFormParametersMetadata  
+        controller={controller}
+        group={group}
+        users={users}
+        roles={roles}
+        selection={selection}
+        mode={mode}
+        onChange={controller.handleChange}
+        onSelectionChange={controller.handleSelectionChange}
+        onBlur={controller.handleBlur}
+      />
+    ]
+
+    return (
+      <TabViewer
+        tabs={tabs}
+        defaultTab={0}
+      >
+        {tabContent}
+      </TabViewer>
     )
   }
 

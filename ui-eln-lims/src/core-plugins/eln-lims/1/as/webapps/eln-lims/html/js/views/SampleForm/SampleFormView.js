@@ -805,95 +805,95 @@
             //
             // Pagination info
             //
-            if(this._sampleFormModel.mode !== FormMode.CREATE && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
-            var moveToIndex = function(index) {
-                if(index < 0 || _this._sampleFormModel.paginationInfo.totalCount == index) {
-                    return;
-                }
-                var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
-                pagOptionsToSend.pageIndex = index;
-                pagOptionsToSend.pageSize = 1;
-                _this._sampleFormModel.paginationInfo.pagFunction(function(result) {
-                    if(result && result.objects && result.objects[0] && result.objects[0].permId) {
-                        var paginationInfo = $.extend(true, {}, _this._sampleFormModel.paginationInfo);
-                        paginationInfo.previousIndex = _this._sampleFormModel.paginationInfo.currentIndex;
-                        paginationInfo.currentIndex = index;
-                        var arg = {
-                                permIdOrIdentifier : result.objects[0].permId,
-								activeTab: _this._sampleFormModel.activeTab,
-                                paginationInfo : paginationInfo,								
-                        }
-                        mainController.changeView('showViewSamplePageFromPermId', arg, true);
-                        mainController.tabContent.replaceTabs(_this._sampleFormModel.sample.permId, result.objects[0].permId)
-                        var objectId = { type: "SAMPLE", id: result.objects[0].permId };
-                        if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
-                            mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
-                        }
-                    } else {
-                        window.alert("The item to go to is no longer available.");
+            if(this._sampleFormModel.mode === FormMode.VIEW && this._sampleFormModel.paginationInfo && this._sampleFormModel.paginationInfo.pagFunction) {
+                var moveToIndex = function(index) {
+                    if(index < 0 || _this._sampleFormModel.paginationInfo.totalCount == index) {
+                        return;
                     }
-                }, pagOptionsToSend);
-            }
-
-            var arrowKeyEventListener = function(paginationInfo) {
-                return function(event) {
-                        if(event.key === "ArrowRight") {
-                            if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
-                                moveToIndex(paginationInfo.currentIndex+1);
+                    var pagOptionsToSend = $.extend(true, {}, _this._sampleFormModel.paginationInfo.pagOptions);
+                    pagOptionsToSend.pageIndex = index;
+                    pagOptionsToSend.pageSize = 1;
+                    _this._sampleFormModel.paginationInfo.pagFunction(function(result) {
+                        if(result && result.objects && result.objects[0] && result.objects[0].permId) {
+                            var paginationInfo = $.extend(true, {}, _this._sampleFormModel.paginationInfo);
+                            paginationInfo.previousIndex = _this._sampleFormModel.paginationInfo.currentIndex;
+                            paginationInfo.currentIndex = index;
+                            var arg = {
+                                    permIdOrIdentifier : result.objects[0].permId,
+                                    activeTab: _this._sampleFormModel.activeTab,
+                                    paginationInfo : paginationInfo,
                             }
-                        } else if(event.key === "ArrowLeft") {
-                            if(paginationInfo.currentIndex-1 >= 0) {
-                               moveToIndex(paginationInfo.currentIndex-1);
+                            mainController.changeView('showViewSamplePageFromPermId', arg, true);
+                            mainController.tabContent.replaceTabs(_this._sampleFormModel.sample.permId, result.objects[0].permId)
+                            var objectId = { type: "SAMPLE", id: result.objects[0].permId };
+                            if(mainController.sideMenu.hasNodeWithObjectId(objectId)) {
+                                mainController.sideMenu.moveToNodeIdAfterLoad(objectId);
                             }
                         } else {
-                            // Ignore others
+                            window.alert("The item to go to is no longer available.");
                         }
-                };
-            }
+                    }, pagOptionsToSend);
+                }
 
-            if(_this._sampleFormModel.paginationInfo) {
+                var arrowKeyEventListener = function(paginationInfo) {
+                    return function(event) {
+                            if(event.key === "ArrowRight") {
+                                if(paginationInfo.currentIndex+1 < paginationInfo.totalCount) {
+                                    moveToIndex(paginationInfo.currentIndex+1);
+                                }
+                            } else if(event.key === "ArrowLeft") {
+                                if(paginationInfo.currentIndex-1 >= 0) {
+                                   moveToIndex(paginationInfo.currentIndex-1);
+                                }
+                            } else {
+                                // Ignore others
+                            }
+                    };
+                }
 
-                mainController.currentView.finalize = function(backButtonLogic) {
-                    if(!backButtonLogic) {
-                         _this._previousGlobalEventListener =  _this._sampleFormViewGlobalEventListener;
+                if(_this._sampleFormModel.paginationInfo) {
+
+                    mainController.currentView.finalize = function(backButtonLogic) {
+                        if(!backButtonLogic) {
+                             _this._previousGlobalEventListener =  _this._sampleFormViewGlobalEventListener;
+                        }
+                        document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
                     }
-                    document.removeEventListener('keyup', _this._sampleFormViewGlobalEventListener);
+
+                    this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
+                    document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
+
+                    var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
+                                        moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
+                    }, null, null, "back-btn-sample-"+ mainController.getNextId());
+
+                    if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
+                        $backBtn.attr("disabled", true);
+                        $backBtn.off('click');
+                    }
+
+                    var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
+                        $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
+
+                    var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
+                                            moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
+                    }, null, null, "next-btn-sample-"+ mainController.getNextId());
+
+                    if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
+                        $nextBtn.attr("disabled", true);
+                        $nextBtn.off('click');
+                    }
+
+                    rightToolbarModel.push({ component : $backBtn, tooltip: null });
+                    rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
+                    rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+
+                    altRightToolbarModel.push({ component : $backBtn.clone(true), tooltip: null });
+                    altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
+                    altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
+
                 }
-
-                this._sampleFormViewGlobalEventListener = arrowKeyEventListener(_this._sampleFormModel.paginationInfo);
-                document.addEventListener('keyup',  this._sampleFormViewGlobalEventListener);
-
-                var $backBtn = FormUtil.getToolbarButton("PAGINATION_LEFT", function () {
-                                    moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex-1);
-                }, null, null, "back-btn-sample-"+ mainController.getNextId());
-
-                if(_this._sampleFormModel.paginationInfo.currentIndex <= 0) {
-                    $backBtn.attr("disabled", true);
-                    $backBtn.off('click');
-                }
-
-                var $paginationInfoLabel = _this._sampleFormModel.paginationInfo.currentIndex+1 + " of " + this._sampleFormModel.paginationInfo.totalCount;
-                    $paginationInfoLabel = $("<span>").text($paginationInfoLabel).css('margin-right', '8px');
-
-                var $nextBtn = FormUtil.getToolbarButton("PAGINATION_RIGHT", function () {
-                                        moveToIndex(_this._sampleFormModel.paginationInfo.currentIndex+1);
-                }, null, null, "next-btn-sample-"+ mainController.getNextId());
-
-                if(this._sampleFormModel.paginationInfo.currentIndex+1 >= this._sampleFormModel.paginationInfo.totalCount) {
-                    $nextBtn.attr("disabled", true);
-                    $nextBtn.off('click');
-                }
-
-                rightToolbarModel.push({ component : $backBtn, tooltip: null });
-                rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
-                rightToolbarModel.push({ component : $nextBtn, tooltip: null });
-
-				altRightToolbarModel.push({ component : $backBtn.clone(true), tooltip: null });
-                altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
-                altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
-
             }
-        }
 
 			if(toolbarModel.length>0) {
             	toolbarModel.push({ component : FormUtil.getToolbarSeparator() })

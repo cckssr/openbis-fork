@@ -29,8 +29,8 @@ configurations.all {
 //    gradleVersion = '4.10.3'
 //    distributionUrl = "https://services.gradle.org/distributions/gradle-4.10.3-bin.zip"
 //}
-sourceCompatibility='11'
-targetCompatibility='11'
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 sourceSets { 
     main {
@@ -246,9 +246,11 @@ task deleteSymLinks {
 clean.dependsOn deleteSymLinks
 
 test {
+    environment.remove("DISPLAY")
     useTestNG {
         suites 'sourceTest/java/tests.xml'
     }
+    // remove DISPLAY completely
 
     systemProperty "ant.project.name", project.name
 

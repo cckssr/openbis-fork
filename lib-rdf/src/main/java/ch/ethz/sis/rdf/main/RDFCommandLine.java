@@ -50,6 +50,11 @@ public class RDFCommandLine {
 
     public static final String ARG_LONG_WRITE_SCHEMA = "omit-schema";
 
+    public static final String ARG_LONG_ENFORCE_SINGLE_VALUES = "enforce-single-values";
+
+    public static final String OPTION_SINGLE_VALUE = "singlevalue";
+
+
     public static final String OPTION_SCHEMA = "noschema";
 
     public static void main(String[] args) {
@@ -192,6 +197,11 @@ public class RDFCommandLine {
                 "Omit Schema.");
         options.addOption(writeSchema);
 
+        Option enforceSingleValues =
+                new Option(OPTION_SINGLE_VALUE, ARG_LONG_ENFORCE_SINGLE_VALUES, false,
+                        "Omit Schema.");
+        options.addOption(enforceSingleValues);
+
 
 
 
@@ -272,8 +282,9 @@ public class RDFCommandLine {
         boolean verbose = cmd.hasOption("verbose");
         boolean removeDanglingReferences = cmd.hasOption(ARG_LONG_REMOVE_DANGLING_REFERENCES);
         boolean writeSchema = !cmd.hasOption(ARG_LONG_WRITE_SCHEMA);
+        boolean enforceSingleValues = cmd.hasOption(ARG_LONG_ENFORCE_SINGLE_VALUES);
 
-        Config.setConfig(removeDanglingReferences, writeSchema);
+        Config.setConfig(removeDanglingReferences, writeSchema, removeDanglingReferences);
 
 
         String[] additionalFileOption = cmd.getOptionValues(ADDITIONALFILES);

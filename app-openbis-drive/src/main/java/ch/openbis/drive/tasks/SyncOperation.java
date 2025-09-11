@@ -619,7 +619,7 @@ public class SyncOperation {
         }
 
         @NonNull public Boolean upload(@NonNull Path sourcePath, @NonNull String destinationOwner, @NonNull Path destinationPath, @NonNull ClientAPI.FileCollisionListener fileCollisionListener, @NonNull ClientAPI.TransferMonitorListener transferMonitorListener) throws Exception {
-            return AfsClientUploadHelper.upload(afsClient, sourcePath, destinationOwner, destinationPath, fileCollisionListener, transferMonitorListener);
+            return AfsClientUploadHelper.upload(afsClient, sourcePath, destinationOwner, destinationPath, fileCollisionListener, transferMonitorListener, false);
         }
 
         @NonNull public Boolean download(@NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath, @NonNull ClientAPI.FileCollisionListener fileCollisionListener, @NonNull ClientAPI.TransferMonitorListener transferMonitorListener) throws Exception{

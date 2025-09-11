@@ -7,13 +7,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.openbis.rocrate.app.reader.helper.DataTypeMatcher;
 
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This checks a schema for _internal_ consistency. This is meant as a quick feedback mechanism for
@@ -117,82 +115,7 @@ public class RoCrateSchemaValidation
 
     private static boolean validateDataType(DataType dataType, Serializable value)
     {
-        switch (dataType)
-        {
-            case INTEGER:
-                try
-                {
-                    Long.parseLong(value.toString());
-                    return true;
-
-                } catch (NumberFormatException e)
-                {
-                    return false;
-                }
-            case DATE:
-                try
-                {
-                    SimpleDateFormat ISO8601DATEFORMAT =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
-                    ISO8601DATEFORMAT.parse(value.toString());
-                    return true;
-                } catch (ParseException e)
-                {
-                    return false;
-                }
-
-            case VARCHAR:
-                return true;
-            case REAL:
-                try
-                {
-                    Double.parseDouble(value.toString());
-                    return true;
-
-                } catch (NumberFormatException e)
-                {
-                    return false;
-                }
-            case SAMPLE:
-                String[] identifiers = value.toString().split(",");
-                for (String identifier : identifiers)
-                {
-
-                    String[] parts = identifier.toString().split("/");
-                    if (parts.length != 4)
-                    {
-                        return false;
-                    }
-                    String space = parts[1];
-                    String project = parts[2];
-                    String code = parts[3];
-                }
-                return true;
-            case BOOLEAN:
-                try
-                {
-
-                    return Stream.of("true", "false", "0", "1")
-                            .anyMatch(x -> x.equals(value.toString()));
-                } catch (RuntimeException e)
-                {
-                    return false;
-                }
-
-            case TIMESTAMP:
-                try
-                {
-                    SimpleDateFormat ISO8601DATEFORMAT =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
-                    ISO8601DATEFORMAT.parse(value.toString());
-                    return true;
-                } catch (ParseException e)
-                {
-                    return false;
-                }
-        }
-        return false;
-
+        return DataTypeMatcher.matches(value, dataType);
     }
 
 }

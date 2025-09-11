@@ -16,6 +16,7 @@ public enum LiteralType implements IDataType
     FLOAT("xsd:float"),
     DATETIME("xsd:dateTime"),
     STRING("xsd:string"),
+
     XML_LITERAL("rdf:XMLLiteral");
 
     final String typeName;

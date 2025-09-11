@@ -8,7 +8,8 @@ const REMOVABLE_OBJECT_TYPES = [
   objectType.COLLECTION_TYPE,
   objectType.DATA_SET_TYPE,
   objectType.MATERIAL_TYPE,
-  objectType.VOCABULARY_TYPE
+  objectType.VOCABULARY_TYPE,
+  objectType.OBJECT_TYPE_GROUP
 ]
 
 export default class TypeBrowserControllerRemoveNode {
@@ -47,6 +48,8 @@ export default class TypeBrowserControllerRemoveNode {
       return await this._prepareRemoveEntityTypeOperations(type, id, reason)
     } else if (type === objectType.VOCABULARY_TYPE) {
       return await this._prepareRemoveVocabularyTypeOperations(type, id, reason)
+    } else if (type === objectType.OBJECT_TYPE_GROUP) {
+      return await this._prepareRemoveObjectTypeGroupOperations(type, id, reason)
     }
   }
 
@@ -161,6 +164,15 @@ export default class TypeBrowserControllerRemoveNode {
     options.setReason(reason)
     return new openbis.DeleteVocabulariesOperation(
       [new openbis.VocabularyPermId(id)],
+      options
+    )
+  }
+
+  async _prepareRemoveObjectTypeGroupOperations(type, id, reason) {
+    const options = new openbis.TypeGroupDeletionOptions()
+    options.setReason(reason)
+    return new openbis.DeleteTypeGroupsOperation(
+      [new openbis.TypeGroupId(id)],
       options
     )
   }

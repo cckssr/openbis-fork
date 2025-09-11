@@ -264,7 +264,7 @@ public class UserManager
             PersonFetchOptions personFetchOptions = new PersonFetchOptions();
             personFetchOptions.withSpace();
             Map<IPersonId, Person> persons = service.getPersons(sessionToken,
-                    knownUsers.stream().map(PersonPermId::new).collect(Collectors.toList()), null);
+                    knownUsers.stream().map(PersonPermId::new).collect(Collectors.toList()), personFetchOptions);
             //
 
             List<AuthorizationGroup> groupsToBeRemoved = getGroupsToBeRemoved(sessionToken);
