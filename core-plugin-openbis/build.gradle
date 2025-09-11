@@ -553,6 +553,7 @@ build.dependsOn zipDss
 build.dependsOn zipRoCrateServer
 build.dependsOn zipBdlServer
 build.dependsOn clientsAndApis
+build.dependsOn folderMonitorZipWithV3Batteries
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar
 build.dependsOn generateJavadoc
