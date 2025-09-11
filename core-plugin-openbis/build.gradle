@@ -486,7 +486,7 @@ task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':lib-folder
 
 task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, screeningApiZip, pybisZip, obisZip,
                                            dropboxJavaDocZip, dynamicApiJavadocZip, libOpenbisCommonJavadocZip,
-                                           serverOriginalDataStoreJavadocZip, serverApplicationServerJavadocZip, dropboxApiZip, commonbaseZip]) {
+                                           serverOriginalDataStoreJavadocZip, serverApplicationServerJavadocZip, dropboxApiZip, commonbaseZip, folderMonitorZipWithV3Batteries]) {
     archiveBaseName = 'openBIS-clients-and-APIs'
     from dssClientZip.archiveFile
     from queryApiZip.archiveFile
@@ -501,6 +501,7 @@ task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, 
     from serverOriginalDataStoreJavadocZip.archiveFile
     from serverApplicationServerJavadocZip.archiveFile
     from commonbaseZip.archiveFile
+    from folderMonitorZipWithV3Batteries.archiveFile
     from('dist/client/readme.txt')
     rename { filename ->
         if (filename.startsWith('pybis-')) {
@@ -553,7 +554,6 @@ build.dependsOn zipDss
 build.dependsOn zipRoCrateServer
 build.dependsOn zipBdlServer
 build.dependsOn clientsAndApis
-build.dependsOn folderMonitorZipWithV3Batteries
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar
 build.dependsOn generateJavadoc
