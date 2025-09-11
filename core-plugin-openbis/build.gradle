@@ -35,6 +35,7 @@ evaluationDependsOn(':lib-openbis-common')
 evaluationDependsOn(':lib-authentication')
 evaluationDependsOn(':lib-dbmigration')
 evaluationDependsOn(':lib-two-phase-transaction')
+evaluationDependsOn(':lib-folder-monitor')
 evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
@@ -469,6 +470,18 @@ task serverApplicationServerJavadoc(type: Javadoc) {
 task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
     archiveFileName = 'javadoc-server-application-server.zip'
     from serverApplicationServerJavadoc.destinationDir
+}
+
+
+task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':lib-folder-monitor').tasks.folderMonitorZip]){
+    archiveBaseName ='folder-monitor'
+
+    from(zipTree(project(':lib-folder-monitor').tasks.folderMonitorZip.archiveFile)) {
+    }
+
+    from(apiV3JarBatteriesIncluded.archiveFile){
+        into "folder-monitor/lib"
+    }
 }
 
 task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, screeningApiZip, pybisZip, obisZip,

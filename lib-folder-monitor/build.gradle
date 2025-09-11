@@ -6,7 +6,7 @@ dependencies {
     testImplementation 'testng:testng:6.8-CISD'
 }
 
-task FolderMonitorZip(type: Zip, dependsOn: compileJava) {
+task folderMonitorZip(type: Zip, dependsOn: compileJava) {
     archiveBaseName = 'folder-monitor'
     from(jar) {
         into('folder-monitor/lib/')
