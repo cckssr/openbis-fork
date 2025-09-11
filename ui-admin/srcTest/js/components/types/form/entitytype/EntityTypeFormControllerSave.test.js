@@ -75,9 +75,14 @@ async function testSaveAddProperty() {
     createPropertyTypeOperation({
       code: 'NEW_CODE',
       dataType: openbis.DataType.VARCHAR,
-      label: 'NEW_LABEL'
+      label: 'NEW_LABEL',
+      description: 'NEW_DESCRIPTION'
     }),
-    setPropertyAssignmentOperation(SAMPLE_TYPE.getCode(), 'NEW_CODE', false, true)
+    setPropertyAssignmentOperation(SAMPLE_TYPE.getCode(), 'NEW_CODE', false, true, {
+      showInEditView: true,
+      showRawValueInForms: false,
+      managedInternally: false
+    })
   ])
 }
 
@@ -99,6 +104,7 @@ async function testSaveUpdatePropertyAssignment() {
   await common.controller.handleSave()
 
   expectExecuteOperations([
+    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), TEST_PROPERTY_TYPE.getLabel()),
     setPropertyAssignmentOperation(
       SAMPLE_TYPE_WITH_TEST_PROPERTY.getCode(),
       TEST_PROPERTY_TYPE.getCode(),
@@ -204,7 +210,8 @@ function createPropertyTypeOperation({
   code: propertyTypeCode,
   dataType: propertyDataType,
   vocabulary: propertyTypeVocabulary,
-  label: propertyTypeLabel
+  label: propertyTypeLabel,
+  description: propertyTypeDescription
 }) {
   const creation = new openbis.PropertyTypeCreation()
   creation.setCode(propertyTypeCode)
@@ -215,6 +222,7 @@ function createPropertyTypeOperation({
     )
   }
   creation.setLabel(propertyTypeLabel)
+  creation.setMetaData({})
   return new openbis.CreatePropertyTypesOperation([creation])
 }
 
@@ -222,6 +230,7 @@ function updatePropertyTypeOperation(propertyTypeCode, propertyTypeLabel) {
   const update = new openbis.PropertyTypeUpdate()
   update.setTypeId(new openbis.PropertyTypePermId(propertyTypeCode))
   update.setLabel(propertyTypeLabel)
+  update.getMetaData().set({})
   return new openbis.UpdatePropertyTypesOperation([update])
 }
 
@@ -229,7 +238,8 @@ function setPropertyAssignmentOperation(
   typeCode,
   propertyCode,
   propertyMandatory,
-  unique
+  unique,
+  options = {}
 ) {
   const assignments = []
   if (propertyCode) {
@@ -247,6 +257,7 @@ function setPropertyAssignmentOperation(
   update.setTypeId(
     new openbis.EntityTypePermId(typeCode, openbis.EntityKind.SAMPLE)
   )
+  update.getMetaData().set({})
   update.getPropertyAssignments().set(assignments)
 
   return new openbis.UpdateSampleTypesOperation([update])
@@ -285,6 +296,7 @@ function expectExecuteOperations(expectedOperations) {
     expect(actualOperation).toMatchObject(expectedOperations[index])
   })
 }
+
 
 const TEST_PROPERTY_TYPE = new openbis.PropertyType()
 TEST_PROPERTY_TYPE.setCode('TEST_PROPERTY_TYPE')
