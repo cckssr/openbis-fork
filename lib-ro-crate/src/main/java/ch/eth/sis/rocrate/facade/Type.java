@@ -141,4 +141,19 @@ public class Type implements IType
     {
         return Objects.hash(id);
     }
+
+    @Override
+    public String toString()
+    {
+        return "Type{" +
+                "id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", subClassOf=" + subClassOf +
+                ", ontologicalAnnotations=" + ontologicalAnnotations +
+                ", rdfsProperties=" + rdfsProperties +
+                ", comment='" + comment + '\'' +
+                ", label='" + label + '\'' +
+                ", restrictions=" + restrictions +
+                '}';
+    }
 }
