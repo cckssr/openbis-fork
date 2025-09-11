@@ -39,7 +39,7 @@ public class RDFCommandLineTest
 
     @Before
     public void setup() {
-        Config.setConfig(false, true);
+        Config.setConfig(false, true, false);
         RDFReader rdfReader = new RDFReader();
         OntModel ontModel = ModelFactory.createOntologyModel();
         modelRDF =

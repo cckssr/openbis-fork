@@ -27,7 +27,7 @@ public class CardinalityTest
     @Test
     public void testTooManyCardinalities()
     {
-        Config.setConfig(false, false);
+        Config.setConfig(false, false, false);
         RDFReader rdfReader = new RDFReader();
         OntModel ontModel = ModelFactory.createOntologyModel();
 
@@ -42,7 +42,7 @@ public class CardinalityTest
     @Test
     public void testOkay()
     {
-        Config.setConfig(false, false);
+        Config.setConfig(false, false, false);
         RDFReader rdfReader = new RDFReader();
         OntModel ontModel = ModelFactory.createOntologyModel();
         ModelRDF modelRDF = rdfReader.read(new String[] { input_schema, input_file_okay },
