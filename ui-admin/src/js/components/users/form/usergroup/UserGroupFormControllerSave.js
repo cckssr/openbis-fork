@@ -125,7 +125,7 @@ export default class UserGroupFormControllerSave extends PageControllerSave {
       new openbis.AuthorizationGroupPermId(group.code.value)
     )
     update.getUserIds().add(new openbis.PersonPermId(user.userId.value))
-    const metadataObject = FormUtil.transformMetadataToObject(user.metadata.value)
+    const metadataObject = FormUtil.transformMetadataToObject(group.metadata.value)
     update.getMetaData().set(metadataObject)
     return new openbis.UpdateAuthorizationGroupsOperation([update])
   }

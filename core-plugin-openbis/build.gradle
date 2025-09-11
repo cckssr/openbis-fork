@@ -35,6 +35,7 @@ evaluationDependsOn(':lib-openbis-common')
 evaluationDependsOn(':lib-authentication')
 evaluationDependsOn(':lib-dbmigration')
 evaluationDependsOn(':lib-two-phase-transaction')
+evaluationDependsOn(':lib-folder-monitor')
 evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
@@ -471,6 +472,18 @@ task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationSe
     from serverApplicationServerJavadoc.destinationDir
 }
 
+
+task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':lib-folder-monitor').tasks.folderMonitorZip]){
+    archiveBaseName ='folder-monitor'
+
+    from(zipTree(project(':lib-folder-monitor').tasks.folderMonitorZip.archiveFile)) {
+    }
+
+    from(apiV3JarBatteriesIncluded.archiveFile){
+        into "folder-monitor/lib"
+    }
+}
+
 task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, screeningApiZip, pybisZip, obisZip,
                                            dropboxJavaDocZip, dynamicApiJavadocZip, libOpenbisCommonJavadocZip,
                                            serverOriginalDataStoreJavadocZip, serverApplicationServerJavadocZip, dropboxApiZip, commonbaseZip]) {
@@ -540,6 +553,7 @@ build.dependsOn zipDss
 build.dependsOn zipRoCrateServer
 build.dependsOn zipBdlServer
 build.dependsOn clientsAndApis
+build.dependsOn folderMonitorZipWithV3Batteries
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar
 build.dependsOn generateJavadoc

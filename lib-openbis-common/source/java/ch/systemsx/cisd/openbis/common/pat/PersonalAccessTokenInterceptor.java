@@ -73,10 +73,15 @@ public final class PersonalAccessTokenInterceptor implements MethodInterceptor, 
 
         @Override public <T> T proceedWithNewFirstArgument(final Object argument)
         {
+            return proceedWithNewNthArgument(0, argument);
+        }
+
+        @Override public <T> T proceedWithNewNthArgument(final int index, final Object argument)
+        {
             try
             {
                 Object[] arguments = originalInvocation.getArguments();
-                arguments[0] = argument;
+                arguments[index] = argument;
                 originalInvocation.setArguments(arguments);
                 return (T) originalInvocation.proceed();
             } catch (Throwable e)

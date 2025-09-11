@@ -9,7 +9,7 @@ import util from '@src/js/common/util.js'
 
 export default class EntityTypeFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
-    return Promise.all([
+    await Promise.all([
       this._loadDictionaries(object),
       this._loadType(object, isNew)
     ])
@@ -49,11 +49,26 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     if (!isNew) {
       loadedType = await this.facade.loadType(object)
       if (!loadedType) {
+        // Still need to set state even if no type is loaded
+        await this.context.setState({
+          type: this._createType(null),
+          properties: [],
+          propertiesCounter: 0,
+          sections: [],
+          sectionsCounter: 0,
+          preview: {},
+          selection: null,
+          assignments: {},
+          removeSectionDialogOpen: false,
+          removePropertyDialogOpen: false
+        })
         return
       }
     }
-    console.log('EntityTypeFormControllerLoad._loadType', {isNew}, {loadedType})
     const loadedAssignments = await this.facade.loadAssignments(object)
+
+    // Ensure loadedAssignments is an object, not undefined
+    const assignments = loadedAssignments || {}
 
     const sections = []
     const properties = []
@@ -68,10 +83,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         const assignmentSemanticAnnotations = await this.facade.loadPropertyAssignmentsSemanticAnnotations(loadedAssignment.permId);
         const propertySemanticAnnotations = await this.facade.loadPropertyTypeSemanticAnnotations(loadedAssignment.propertyType.permId);
 
-        let property = this._createProperty(
+        property = this._createProperty(
           'property-' + propertiesCounter++,
           loadedAssignment,
-          loadedAssignments,
+          assignments,
           loadedType,
           propertySemanticAnnotations,
           assignmentSemanticAnnotations
@@ -95,7 +110,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }
     }
 
-    const type = this._createType(loadedType)    
+    const type = this._createType(loadedType)
     if (loadedType) {
       type.original = _.cloneDeep({
         ...type,
@@ -105,7 +120,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
 
     const selection = this._createSelection(sections)
 
-    return this.context.setState(() => ({
+    await this.context.setState({
       type,
       properties,
       propertiesCounter,
@@ -113,19 +128,23 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       sectionsCounter,
       preview: {},
       selection: selection,
-      assignments: loadedAssignments,
+      assignments: assignments,
       removeSectionDialogOpen: false,
       removePropertyDialogOpen: false
-    }))
+    })
   }
 
   _createType(loadedType) {
     const strategy = this._getStrategy()
     const internal = _.get(loadedType, 'managedInternally', false)
-    const metadata = Object.entries(_.get(loadedType, 'metaData', [])).map(([key, value]) => ({
-			key: key,
-			value: value,
-		}))
+    const metaData = _.get(loadedType, 'metaData', {})
+    let metadata = []
+    if (metaData) {
+      metadata = Object.entries(metaData).map(([key, value]) => ({
+        key: key,
+        value: value,
+      }))
+    }
     const type = {
       code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),
@@ -172,14 +191,17 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
     }
   }
 
-  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {    
+  _createProperty(id, loadedAssignment, loadedAssignments, entityType, propertySemanticAnnotations, assignmentSemanticAnnotations) {
     const propertyType = loadedAssignment.propertyType
+    const metaData = _.get(propertyType, 'metaData', {})
+    let metadata = []
+    if (metaData) {
+      metadata = Object.entries(metaData).map(([key, value]) => ({
+        key: key,
+        value: value,
+      }))
+    }
 
-    const metadata = Object.entries(_.get(propertyType, 'metaData', [])).map(([key, value]) => ({
-			key: key,
-			value: value,
-		}))
-    
     const code = _.get(propertyType, 'code', null)
     const dataType = _.get(propertyType, 'dataType', null)
     const plugin = _.get(loadedAssignment, 'plugin.name', null)
@@ -428,7 +450,7 @@ class ObjectTypeStrategy {
 }
 
 class CollectionTypeStrategy {
-  setTypeAttributes() {}
+  setTypeAttributes() { }
 }
 
 class DataSetTypeStrategy {
@@ -452,5 +474,5 @@ class DataSetTypeStrategy {
 }
 
 class MaterialTypeStrategy {
-  setTypeAttributes() {}
+  setTypeAttributes() { }
 }

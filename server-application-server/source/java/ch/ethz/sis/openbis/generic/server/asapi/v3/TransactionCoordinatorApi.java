@@ -27,10 +27,13 @@ import ch.ethz.sis.transaction.TransactionLog;
 import ch.ethz.sis.transaction.api.ITransactionParticipant;
 import ch.ethz.sis.transaction.api.TransactionOperationException;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
+import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenAware;
+import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenInvocation;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 
 @Component
-public class TransactionCoordinatorApi extends AbstractTransactionNodeApi implements ITransactionCoordinatorApi
+public class TransactionCoordinatorApi extends AbstractTransactionNodeApi
+        implements ITransactionCoordinatorApi, ITransactionCoordinatorInternalApi, IPersonalAccessTokenAware
 {
 
     private static final String TRANSACTION_LOG_FOLDER_NAME = "coordinator";
@@ -144,6 +147,11 @@ public class TransactionCoordinatorApi extends AbstractTransactionNodeApi implem
     {
         checkTransactionsEnabled();
         return transactionCoordinator.getTransactionMap();
+    }
+
+    @Override public Object createPersonalAccessTokenInvocationHandler(final IPersonalAccessTokenInvocation invocation)
+    {
+        return new TransactionCoordinatorApiPersonalAccessTokenInvocationHandler(invocation);
     }
 
     @Override public int getMajorVersion()

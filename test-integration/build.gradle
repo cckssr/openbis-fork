@@ -18,6 +18,7 @@ dependencies {
             project(':lib-data-store-commonbase'),
             project(':lib-transactional-file-system'),
             project(':lib-maintenance'),
+            project(':lib-folder-monitor'),
             project(':lib-pathinfo'),
             project(':server-application-server'),
             project(path: ':server-application-server', configuration: 'tests'),

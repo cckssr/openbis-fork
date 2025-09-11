@@ -526,28 +526,4 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         }
     }
 
-    public static void waitUntilCondition(Supplier<Boolean> condition, long timeout)
-    {
-        long startTime = System.currentTimeMillis();
-
-        while (System.currentTimeMillis() < startTime + timeout)
-        {
-            if (condition.get())
-            {
-                return;
-            } else
-            {
-                try
-                {
-                    Thread.sleep(timeout / 10);
-                } catch (Exception e)
-                {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        throw new RuntimeException("Timed out waiting for " + timeout + " ms.");
-    }
-
 }

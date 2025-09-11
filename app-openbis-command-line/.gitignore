@@ -7,3 +7,5 @@ src/vagrant/initialize/openBIS-installation-standard-technologies-*
 /.idea/
 *.iml
 *.eml
+/obis_test/openbis/
+/obis_test/test_data/

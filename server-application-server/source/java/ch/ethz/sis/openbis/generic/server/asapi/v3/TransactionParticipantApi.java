@@ -32,11 +32,13 @@ import ch.ethz.sis.transaction.TransactionParticipant;
 import ch.systemsx.cisd.common.logging.LogCategory;
 import ch.systemsx.cisd.common.logging.LogFactory;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
+import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenAware;
+import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenInvocation;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
 import ch.systemsx.cisd.openbis.generic.shared.IOpenBisSessionManager;
 
 @Component
-public class TransactionParticipantApi extends AbstractTransactionNodeApi implements ITransactionParticipantApi
+public class TransactionParticipantApi extends AbstractTransactionNodeApi implements ITransactionParticipantApi, IPersonalAccessTokenAware
 {
 
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, TransactionParticipant.class);
@@ -62,7 +64,7 @@ public class TransactionParticipantApi extends AbstractTransactionNodeApi implem
     @Autowired
     public TransactionParticipantApi(final TransactionConfiguration transactionConfiguration, final PlatformTransactionManager transactionManager,
             final IDAOFactory daoFactory, final DatabaseConfigurationContext databaseContext, final IApplicationServerApi applicationServerApi, final
-    IOpenBisSessionManager sessionManager)
+            IOpenBisSessionManager sessionManager)
     {
         this(transactionConfiguration, transactionManager, daoFactory, databaseContext, applicationServerApi, sessionManager,
                 ITransactionCoordinatorApi.APPLICATION_SERVER_PARTICIPANT_ID, TRANSACTION_LOG_FOLDER_NAME);
@@ -70,7 +72,7 @@ public class TransactionParticipantApi extends AbstractTransactionNodeApi implem
 
     public TransactionParticipantApi(final TransactionConfiguration transactionConfiguration, final PlatformTransactionManager transactionManager,
             final IDAOFactory daoFactory, final DatabaseConfigurationContext databaseContext, final IApplicationServerApi applicationServerApi, final
-    IOpenBisSessionManager sessionManager, final String participantId, final String logFolderName)
+            IOpenBisSessionManager sessionManager, final String participantId, final String logFolderName)
     {
         super(transactionConfiguration);
         this.transactionManager = transactionManager;
@@ -198,6 +200,11 @@ public class TransactionParticipantApi extends AbstractTransactionNodeApi implem
     {
         checkTransactionsEnabled();
         return transactionParticipant.getTransactionMap();
+    }
+
+    @Override public Object createPersonalAccessTokenInvocationHandler(final IPersonalAccessTokenInvocation invocation)
+    {
+        return new TransactionParticipantApiPersonalAccessTokenInvocationHandler(invocation);
     }
 
     @Override public int getMajorVersion()

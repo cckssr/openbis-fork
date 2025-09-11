@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
+import ch.ethz.sis.foldermonitor.FolderMonitorTask;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
@@ -35,12 +36,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 
-public class ElnDropbox implements IFolderListener
+public class ElnDropbox implements FolderMonitorTask
 {
 
-    public static final String DISCARD_FILES_PATTERNS = "discard-files-patterns";
+    public static final String PROPERTY_APPLICATION_SERVER_URL = "application-server-url";
 
-    public static final String ILLEGAL_FILES_PATTERNS = "illegal-files-patterns";
+    public static final String PROPERTY_AFS_SERVER_URL = "afs-server-url";
+
+    public static final String PROPERTY_PERSONAL_ACCESS_TOKEN = "personal-access-token";
+
+    public static final String PROPERTY_INTERACTIVE_SESSION_KEY = "interactive-session-key";
+
+    public static final String PROPERTY_DISCARD_FILES_PATTERNS = "discard-files-patterns";
+
+    public static final String PROPERTY_ILLEGAL_FILES_PATTERNS = "illegal-files-patterns";
 
     private static final String INVALID_FORMAT_ERROR_MESSAGE =
             "Invalid format for the folder name, should follow the pattern <ENTITY_KIND>+<SPACE_CODE>+<PROJECT_CODE>+[<EXPERIMENT_CODE>|<SAMPLE_CODE>]+<OPTIONAL_DATASET_TYPE>+<OPTIONAL_NAME>";
@@ -74,12 +83,23 @@ public class ElnDropbox implements IFolderListener
 
     private ObjectMapper jsonObjectMapper;
 
+    private OpenBIS openBIS;
+
     @Override public void configure(final Properties properties)
     {
-        List<String> discardFilesStringPatterns = PropertyUtils.getList(properties, DISCARD_FILES_PATTERNS);
+        String applicationServerUrl = PropertyUtils.getMandatoryProperty(properties, PROPERTY_APPLICATION_SERVER_URL);
+        String afsServerUrl = PropertyUtils.getMandatoryProperty(properties, PROPERTY_AFS_SERVER_URL);
+        String personalAccessToken = PropertyUtils.getMandatoryProperty(properties, PROPERTY_PERSONAL_ACCESS_TOKEN);
+        String interactiveSessionKey = PropertyUtils.getMandatoryProperty(properties, PROPERTY_INTERACTIVE_SESSION_KEY);
+
+        openBIS = new OpenBIS(applicationServerUrl, null, afsServerUrl);
+        openBIS.setSessionToken(personalAccessToken);
+        openBIS.setInteractiveSessionKey(interactiveSessionKey);
+
+        List<String> discardFilesStringPatterns = PropertyUtils.getList(properties, PROPERTY_DISCARD_FILES_PATTERNS);
         discardFilesPatterns = compilePatterns(discardFilesStringPatterns);
 
-        List<String> illegalFilesStringPatterns = PropertyUtils.getList(properties, ILLEGAL_FILES_PATTERNS);
+        List<String> illegalFilesStringPatterns = PropertyUtils.getList(properties, PROPERTY_ILLEGAL_FILES_PATTERNS);
         illegalFilesPatterns = compilePatterns(illegalFilesStringPatterns);
 
         jsonObjectMapper = new ObjectMapper();
@@ -104,7 +124,7 @@ public class ElnDropbox implements IFolderListener
     }
 
     @Override
-    public void process(OpenBIS openBIS, Path incoming)
+    public void process(Path incoming)
     {
         try
         {

@@ -1,12 +1,13 @@
 def includes11 = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-java', 'lib-openbis-commonbase', 'lib-openbis-common', 'lib-openbis-messages', 'lib-authentication',
-                'lib-db', 'lib-dbmigration', 'lib-messages-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-mail', 'lib-maintenance', 'lib-compress', 'lib-shuffling',
+                'lib-db', 'lib-dbmigration', 'lib-messages-db', 'lib-pathinfo-db', 'lib-pathinfo', 'lib-mail', 'lib-maintenance', 'lib-compress', 'lib-shuffling', 'lib-folder-monitor',
                 'lib-data-store-commonbase', 'lib-data-store-common', 'lib-hdf5', 'lib-hierarchical-content', 'lib-archiver-db', 'lib-archiver', 'lib-two-phase-transaction',
                 'server-application-server', 'server-original-data-store', 'server-screening',
                 'core-plugin-openbis', 'app-openbis-installer', 'lib-image-readers',
                 'test-api-openbis-javascript', 'server-external-data-store', 'ui-admin', 'lib-microservice-server',
                 'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
                 'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
-                'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration', 'app-openbis-drive'
+                'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration',
+                  'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis'
 ]
 
 def includes17 = ['server-ro-crate'

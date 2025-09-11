@@ -199,7 +199,7 @@ public class RDFCommandLine {
 
         Option enforceSingleValues =
                 new Option(OPTION_SINGLE_VALUE, ARG_LONG_ENFORCE_SINGLE_VALUES, false,
-                        "Omit Schema.");
+                        "Enforce single values.");
         options.addOption(enforceSingleValues);
 
 
