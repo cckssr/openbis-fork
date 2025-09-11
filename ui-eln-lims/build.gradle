@@ -22,6 +22,7 @@ dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
     implementation project(':lib-logging'),
             project(':lib-json'),
+            project(':lib-folder-monitor'),
             project(':api-openbis-java'),
             'slf4j:slf4j-api:1.7.24',
             'slf4j:slf4j-jdk14:1.7.24'
