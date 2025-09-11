@@ -1,0 +1,14 @@
+{
+    "allow_only_https": false,
+    "fileservice_url": "https://localhost:8443",
+    "git_annex_backend": null,
+    "git_annex_hash_as_checksum": true,
+    "hostname": null,
+    "is_physical": true,
+    "obis_metadata_folder": null,    
+    "openbis_url": "https://localhost:8443",
+    "session_name": null,
+    "user": "admin",    
+    "verify_certificates": false,
+    "allow_http_but_do_not_use_this_in_production_and_only_within_safe_networks": true
+}

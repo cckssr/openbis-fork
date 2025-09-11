@@ -8,3 +8,5 @@ etc/service.properties
 *.eml
 .shredder
 .dynamic_property_evaluator_queue
+/obis_test/test_data/
+/obis_test/openbis/

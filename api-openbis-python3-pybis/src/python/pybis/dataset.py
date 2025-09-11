@@ -21,7 +21,8 @@ import uuid
 import zipfile
 from functools import partialmethod
 from pathlib import Path
-from queue import Queue
+from queue import Queue, Empty 
+import threading
 from threading import Thread
 from typing import Set, Optional, List
 from urllib.parse import urljoin, quote
@@ -1230,8 +1231,10 @@ class DataSet(
                                   f'&emptyFolder={True}'
                                   f'&sessionID={self.openbis.token}')
                     queue.put([upload_url, filename, self.openbis.verify_certificates, True, False,
-                               []])
+                               [], None])
                 else:
+                    expected_stat = _stat_snapshot(filename[1])
+
                     file_size = os.path.getsize(filename[1])
                     count = 1
                     size = 1024 * 1024 * 10  # 10MB
@@ -1248,7 +1251,8 @@ class DataSet(
                             queue.put(
                                 [upload_url, filename, self.openbis.verify_certificates, False,
                                  True,
-                                 [start_byte, end_byte]])
+                                 [start_byte, end_byte],
+                                  expected_stat])
                             count += 1
                     else:
                         upload_url = (
@@ -1265,7 +1269,7 @@ class DataSet(
                         )
                         queue.put(
                             [upload_url, filename, self.openbis.verify_certificates, False, False,
-                             []])
+                             [],  expected_stat])
 
             # wait until all files have uploaded
             if wait_until_finished:
@@ -1291,6 +1295,19 @@ class PropagatingThread(Thread):
         if self.exc:
             raise self.exc
         return self.ret
+    
+
+def _stat_snapshot(path: str):
+    st = os.stat(path)
+    return (st.st_size, getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9)))
+
+def _assert_unchanged(path: str, expected):
+    size0, mtime0 = expected
+    st = os.stat(path)
+    size = st.st_size
+    mtime = getattr(st, "st_mtime_ns", int(st.st_mtime * 1e9))
+    if size != size0 or mtime != mtime0:
+        raise ValueError(f"File changed during upload: {path}")
 
 
 class DataSetUploadQueueNew:
@@ -1312,6 +1329,9 @@ class DataSetUploadQueueNew:
         self.workers = workers
         self.session = self.create_session(url_base)
         self.threads = []
+        self.exceptions = Queue()
+        self.cancelled = threading.Event()
+        self._drain_lock = threading.Lock()
         # define number of threads and start them
         for t in range(workers):
             t = PropagatingThread(target=self.upload_file)
@@ -1326,57 +1346,103 @@ class DataSetUploadQueueNew:
         # stop the workers
         for i in range(self.workers):
             self.upload_queue.put(None)
+        # ensure clean shutdown
+        for t in self.threads:
+            t.join()
 
     def put(self, things):
         """expects a list [url, filename] which is put into the upload queue"""
         self.upload_queue.put(things)
 
     def join(self):
-        """needs to be called if you want to wait for all uploads to be finished"""
-        # block until all tasks are done
+        # wait for all tasks (including those we mark done in the drainer) 
         self.upload_queue.join()
+        if not self.exceptions.empty():
+            raise self.exceptions.get()
         for t in self.threads:
-            if t.exc is not None:
+            if getattr(t, "exc", None):
                 raise t.exc
 
     def upload_file(self):
         while True:
             # get the next item in the queue
-            queue_item = self.upload_queue.get()
-            if queue_item is None:
-                # when we call the .join() method of the DataSetUploadQueue and empty the queue
+            item = self.upload_queue.get()
+            if item is None:
+                # sentinel from __exit__
+                self.upload_queue.task_done()
                 break
-            upload_url, filename, verify_certificates, is_empty_folder, partial, bytes_range = queue_item
+
+            # if another worker already failed, drop this task quickly
+            if self.cancelled.is_set():
+                self.upload_queue.task_done()
+                continue
+
+            (upload_url, filename, verify_certificates,
+             is_empty_folder, partial, bytes_range, expected_stat) = item
 
             try:
-                # upload the file to our DSS session workspace
                 if is_empty_folder:
                     resp = self.session.post(upload_url, verify=verify_certificates)
                     resp.raise_for_status()
                 else:
+                    path = filename[1]
+
+                    # PRE-CHECK: before reading anything
+                    if expected_stat is not None:
+                        _assert_unchanged(path, expected_stat)
+
                     if partial:
-                        with open(filename[1], "rb") as f:
+                        with open(path, "rb") as f:
                             f.seek(bytes_range[0])
                             data = f.read(bytes_range[1] - bytes_range[0] + 1)
                             resp = self.session.post(upload_url, data=data,
                                                      verify=verify_certificates)
                             resp.raise_for_status()
+
+                        # POST-CHECK: after sending this chunk
+                        if expected_stat is not None:
+                            _assert_unchanged(path, expected_stat)
                     else:
-                        file_size = os.path.getsize(filename[1])
-                        with open(filename[1], "rb") as f:
-                            resp = self.session.post(upload_url, data=f, verify=verify_certificates)
+                        file_size = os.path.getsize(path)
+                        with open(path, "rb") as f:
+                            resp = self.session.post(upload_url, data=f,
+                                                     verify=verify_certificates)
                             resp.raise_for_status()
                             data = resp.json()
                             if file_size != int(data["size"]):
                                 raise ValueError(
-                                    f'size of file uploaded: {file_size} != data received: {int(data["size"])}'
+                                    f"size of file uploaded: {file_size} != data received: {int(data['size'])}"
                                 )
-            except ValueError as e:
-                with self.upload_queue.mutex:
-                    self.upload_queue.all_tasks_done.notify_all()
-                raise e
-            finally:
-                # Tell the queue that we are done
+                        if expected_stat is not None:
+                            _assert_unchanged(path, expected_stat)
+
+            except BaseException as e:
+                # make sure only the *first* failing worker drains the queue
+                first = False
+                with self._drain_lock:
+                    if not self.cancelled.is_set():
+                        self.cancelled.set()
+                        first = True
+                        if self.exceptions.empty():
+                            self.exceptions.put(e)
+
+                if first:
+                    # drain remaining tasks so queue.join() can finish
+                    while True:
+                        try:
+                            leftover = self.upload_queue.get_nowait()
+                        except Empty:
+                            break
+                        else:
+                            # mark each drained item done (we didn't process them)
+                            self.upload_queue.task_done()
+
+                # mark the *current* item done exactly once and exit this worker
+                self.upload_queue.task_done()
+                return
+
+            else:
+                # normal success path
                 self.upload_queue.task_done()
         return True
 
