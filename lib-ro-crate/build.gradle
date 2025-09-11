@@ -8,6 +8,26 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+
+tasks.register('buildDistribution', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-ro-crate-distribution')
+    includeEmptyDirs = false
+
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs << '-parameters'
 }
@@ -19,6 +39,7 @@ repositories {
     }
     mavenCentral()
 }
+
 
 dependencies {
                     // Ro-crate library
