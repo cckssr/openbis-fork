@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.h2.tools.DeleteDbFiles;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -32,8 +32,8 @@ import ch.systemsx.cisd.common.db.ISqlScriptExecutor;
 import ch.systemsx.cisd.common.db.Script;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.dbmigration.AbstractDatabaseAdminDAO;
 import ch.systemsx.cisd.dbmigration.DatabaseVersionLogDAO;
 import ch.systemsx.cisd.dbmigration.IDatabaseAdminDAO;

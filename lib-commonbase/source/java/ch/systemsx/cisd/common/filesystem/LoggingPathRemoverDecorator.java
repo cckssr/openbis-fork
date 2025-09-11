@@ -17,8 +17,8 @@ package ch.systemsx.cisd.common.filesystem;
 
 import java.io.File;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 
 /**
  * An {@link IFileRemover} decorator that logs path removals.

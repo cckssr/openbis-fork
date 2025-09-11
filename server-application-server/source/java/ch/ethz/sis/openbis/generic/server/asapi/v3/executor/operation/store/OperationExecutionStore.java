@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -65,8 +65,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.config.IOp
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.notification.IOperationExecutionNotifier;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.ObjectMapperResource;
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionState;
 

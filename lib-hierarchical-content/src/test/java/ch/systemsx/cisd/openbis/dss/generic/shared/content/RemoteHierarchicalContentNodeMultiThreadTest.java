@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.concurrent.MessageChannelBuilder;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.ConsoleLogger;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
 import ch.systemsx.cisd.common.test.ProxyAction;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetPathInfo;

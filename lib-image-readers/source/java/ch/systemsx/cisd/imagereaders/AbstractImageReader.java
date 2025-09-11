@@ -23,14 +23,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.base.io.ByteBufferRandomAccessFile;
 import ch.systemsx.cisd.base.io.IRandomAccessFile;
 import ch.systemsx.cisd.base.io.RandomAccessFileImpl;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * Abstract class that facilitates the implementations of {@link IImageReader}.

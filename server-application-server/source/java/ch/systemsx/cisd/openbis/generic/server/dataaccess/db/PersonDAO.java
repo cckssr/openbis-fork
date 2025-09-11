@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Criteria;
-import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.criterion.Restrictions;
@@ -33,8 +31,8 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.support.JdbcAccessor;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.reflection.MethodUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IPersonDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;

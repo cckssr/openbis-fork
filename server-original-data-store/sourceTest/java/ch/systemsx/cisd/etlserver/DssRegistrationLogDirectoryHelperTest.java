@@ -23,10 +23,10 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileOperations;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * @author Chandrasekhar Ramakrishnan

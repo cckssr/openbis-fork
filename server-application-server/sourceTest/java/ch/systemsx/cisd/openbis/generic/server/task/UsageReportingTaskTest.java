@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.hamcrest.core.IsNull;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -43,14 +43,14 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.test.RecordingMatcher;
 import ch.systemsx.cisd.openbis.generic.server.util.PluginUtils;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

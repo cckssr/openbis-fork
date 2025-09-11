@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
@@ -63,15 +63,15 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.IOperation
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.config.IOperationExecutionConfig;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.notification.OperationExecutionNotifier;
 import ch.systemsx.cisd.authentication.Principal;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionAvailability;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OperationExecutionState;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.Session;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 public class OperationExecutionStoreTest
 {

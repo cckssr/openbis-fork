@@ -15,10 +15,10 @@
  */
 package ch.systemsx.cisd.openbis.common.spring;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * Abstract super class of services which provide their own logger.

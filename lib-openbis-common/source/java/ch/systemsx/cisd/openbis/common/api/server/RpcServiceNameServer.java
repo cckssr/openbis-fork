@@ -18,13 +18,13 @@ package ch.systemsx.cisd.openbis.common.api.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.api.IRpcServiceNameServer;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceDTO;
 import ch.systemsx.cisd.common.api.RpcServiceInterfaceVersionDTO;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * Implementation of the {@link IRpcServiceNameServer} interface which registry for accessing the RPC services supported by a server.

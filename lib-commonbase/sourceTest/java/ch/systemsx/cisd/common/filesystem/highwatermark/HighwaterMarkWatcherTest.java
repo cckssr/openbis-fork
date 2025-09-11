@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.api.Invocation;
@@ -35,7 +35,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher.HighwaterMarkState;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 
 /**
  * Test cases for the {@link HighwaterMarkWatcher}.

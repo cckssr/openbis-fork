@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.action.AbstractDelegatedActionWithResult;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;

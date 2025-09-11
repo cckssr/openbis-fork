@@ -30,7 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -41,15 +41,15 @@ import ch.systemsx.cisd.authentication.ldap.LDAPDirectoryConfiguration;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.shared.basic.string.CommaSeparatedListBuilder;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * @author Franz-Josef Elmer

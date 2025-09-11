@@ -19,8 +19,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.config.IOp
 import ch.ethz.sis.openbis.generic.server.asapi.v3.task.OperationExecutionMarkFailedAfterServerRestartMaintenanceTask;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.task.OperationExecutionMarkTimeOutPendingMaintenanceTask;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.task.OperationExecutionMarkTimedOutOrDeletedMaintenanceTask;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.maintenance.MaintenancePlugin;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskUtils;
@@ -31,7 +31,7 @@ import ch.systemsx.cisd.openbis.generic.server.task.SessionCleanUpMaintenanceTas
 import ch.systemsx.cisd.openbis.generic.server.task.SessionWorkspaceCleanUpMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.task.StatisticsCollectionMaintenanceTask;
 import ch.systemsx.cisd.openbis.generic.server.task.events_search.EventsSearchMaintenanceTask;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;

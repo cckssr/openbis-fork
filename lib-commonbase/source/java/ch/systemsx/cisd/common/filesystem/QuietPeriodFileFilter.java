@@ -21,14 +21,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.exceptions.StatusWithResult;
-import ch.systemsx.cisd.common.logging.ConditionalNotificationLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.impl.ConditionalNotificationLogger;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 

@@ -34,7 +34,7 @@ import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.concurrent.MessageChannelBuilder;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.ConsoleLogger;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.test.ProxyAction;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.ContentCache.DataSetInfo;

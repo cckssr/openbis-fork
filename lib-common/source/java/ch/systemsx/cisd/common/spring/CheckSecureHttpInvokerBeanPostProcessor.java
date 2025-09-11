@@ -15,19 +15,17 @@
  */
 package ch.systemsx.cisd.common.spring;
 
-import java.util.Properties;
-
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.remoting.httpinvoker.HttpInvokerServiceExporter;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * Post processor checking if there are no insecure instances of HttpInvokerServiceExporter registered as beans

@@ -36,7 +36,7 @@ import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.etlserver.DynamicTransactionQueryFactory;
@@ -69,7 +69,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationDetails;
 import ch.systemsx.cisd.openbis.generic.shared.dto.AtomicEntityOperationResult;
 import ch.systemsx.cisd.openbis.generic.shared.dto.StorageFormat;
 import ch.systemsx.cisd.openbis.generic.shared.dto.identifier.ExperimentIdentifierFactory;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * @author Chandrasekhar Ramakrishnan

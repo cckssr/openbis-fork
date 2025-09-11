@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;
@@ -45,7 +45,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.TestResources;
@@ -56,7 +56,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonalAccessToken;
 import ch.systemsx.cisd.openbis.generic.shared.dto.PersonalAccessTokenSession;
 import ch.systemsx.cisd.openbis.generic.shared.pat.IPersonalAccessTokenConfig;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 public class PersonalAccessTokenDAOTest
 {

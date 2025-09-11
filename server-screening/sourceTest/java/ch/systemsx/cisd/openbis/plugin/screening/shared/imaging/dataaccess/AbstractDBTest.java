@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 
 import org.testng.annotations.BeforeClass;
 
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 
 /**

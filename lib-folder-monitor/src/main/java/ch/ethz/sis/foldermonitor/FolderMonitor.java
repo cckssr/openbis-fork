@@ -9,8 +9,8 @@ import java.util.Properties;
 import java.util.Timer;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.LogManager;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.filesystem.DirectoryScanningTimerTask;
 import ch.systemsx.cisd.common.filesystem.FaultyPathDirectoryScanningHandler;

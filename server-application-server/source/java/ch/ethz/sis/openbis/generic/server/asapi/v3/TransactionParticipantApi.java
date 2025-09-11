@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,8 +29,8 @@ import ch.ethz.sis.transaction.ITransactionLog;
 import ch.ethz.sis.transaction.ITransactionOperationExecutor;
 import ch.ethz.sis.transaction.TransactionLog;
 import ch.ethz.sis.transaction.TransactionParticipant;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenAware;
 import ch.systemsx.cisd.openbis.common.pat.IPersonalAccessTokenInvocation;

@@ -44,7 +44,7 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.authentication.ISessionManager;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.servlet.SpringRequestContextProvider;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;

@@ -28,7 +28,7 @@ import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.tar.Untar;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.H5FolderFlags;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.TarBasedHierarchicalContent;

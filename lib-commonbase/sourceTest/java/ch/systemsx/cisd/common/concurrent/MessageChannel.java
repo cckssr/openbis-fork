@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.time.DateUtils;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 
 /**
  * Message channel for controlling multiple threads in unit testing. The channel is a {@link BlockingQueue}.

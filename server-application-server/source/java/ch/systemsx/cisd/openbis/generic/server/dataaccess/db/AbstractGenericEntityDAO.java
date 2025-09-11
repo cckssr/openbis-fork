@@ -15,23 +15,11 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataRetrievalFailureException;
-import org.springframework.orm.hibernate5.HibernateTemplate;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.reflection.MethodUtils;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IGenericDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.IIdHolder;

@@ -17,7 +17,7 @@ package ch.systemsx.cisd.common.utilities;
 
 import java.io.File;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 
 /**
  * @author Franz-Josef Elmer

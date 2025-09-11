@@ -22,12 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.web.multipart.MultipartFile;
 
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.common.spring.IUncheckedMultipartFile;
 import ch.systemsx.cisd.openbis.common.spring.MultipartFileAdapter;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;

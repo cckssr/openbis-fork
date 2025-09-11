@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
@@ -31,10 +31,10 @@ import ch.systemsx.cisd.common.collection.IExtendedBlockingQueue;
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueDecorator;
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueFactory;
 import ch.systemsx.cisd.common.io.QueuePersister;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.time.TimingParameters;
 
 /**

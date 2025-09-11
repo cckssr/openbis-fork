@@ -28,15 +28,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 
 import ch.systemsx.cisd.authentication.IAuthenticationService;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;

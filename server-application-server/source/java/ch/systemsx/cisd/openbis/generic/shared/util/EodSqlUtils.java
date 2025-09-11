@@ -18,14 +18,14 @@ package ch.systemsx.cisd.openbis.generic.shared.util;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Transaction;
 import org.hibernate.engine.transaction.internal.TransactionImpl;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.transaction.spi.TransactionCoordinator.TransactionDriver;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import net.lemnik.eodsql.QueryTool;
 
 /**

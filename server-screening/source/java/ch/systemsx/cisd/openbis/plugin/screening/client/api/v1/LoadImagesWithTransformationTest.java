@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.plugin.screening.client.api.v1;
 
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
 import ch.systemsx.cisd.openbis.dss.screening.shared.api.v1.LoadImageConfiguration;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetMetadata;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ImageDatasetReference;
@@ -24,8 +24,8 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.Plate;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.PlateImageReference;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.WellPosition;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

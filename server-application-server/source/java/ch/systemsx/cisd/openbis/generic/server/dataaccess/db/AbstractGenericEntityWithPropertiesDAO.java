@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SQLQuery;
 import org.hibernate.StatelessSession;
 import org.springframework.dao.DataAccessException;

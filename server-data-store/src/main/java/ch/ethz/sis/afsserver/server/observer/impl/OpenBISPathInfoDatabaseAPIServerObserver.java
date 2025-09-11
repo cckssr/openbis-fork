@@ -1,20 +1,17 @@
 package ch.ethz.sis.afsserver.server.observer.impl;
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Worker;
-import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.afsserver.server.observer.APICall;
 import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.pathinfo.DataSetFileRecord;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.db.DBUtils;
 import net.lemnik.eodsql.QueryTool;

@@ -21,11 +21,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PhysicalDataSet;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.AfterMethod;

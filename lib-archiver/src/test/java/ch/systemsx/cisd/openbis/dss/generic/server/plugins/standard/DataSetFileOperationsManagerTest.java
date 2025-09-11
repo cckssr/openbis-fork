@@ -41,7 +41,7 @@ import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncArchiveCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutor;
 import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.process.ProcessResult;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.RSyncConfig;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DatasetLocation;

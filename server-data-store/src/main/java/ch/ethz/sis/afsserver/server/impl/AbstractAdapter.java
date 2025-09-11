@@ -43,8 +43,8 @@ import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.performance.Event;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
 
 /*

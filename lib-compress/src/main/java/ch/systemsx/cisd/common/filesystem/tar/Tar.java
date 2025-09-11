@@ -34,7 +34,7 @@ import ch.systemsx.cisd.base.unix.FileLinkType;
 import ch.systemsx.cisd.base.unix.Unix;
 import ch.systemsx.cisd.base.unix.Unix.Stat;
 import ch.systemsx.cisd.common.io.MonitoredIOStreamCopier;
-import ch.systemsx.cisd.common.logging.ConsoleLogger;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
 
 /**
  * Simple interface to the Apache commons tar classes for archiving directories, files and memory objects into tar files.

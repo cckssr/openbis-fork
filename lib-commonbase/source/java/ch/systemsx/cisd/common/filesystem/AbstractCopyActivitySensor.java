@@ -16,7 +16,7 @@
 package ch.systemsx.cisd.common.filesystem;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.concurrent.InactivityMonitor.IDescribingActivitySensor;
 import ch.systemsx.cisd.common.exceptions.StatusFlag;

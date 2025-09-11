@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -32,8 +32,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCrit
 import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;

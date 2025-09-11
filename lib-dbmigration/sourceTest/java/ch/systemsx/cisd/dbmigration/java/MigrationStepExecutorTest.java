@@ -22,16 +22,16 @@ import static org.testng.AssertJUnit.assertSame;
 import static org.testng.AssertJUnit.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.db.Script;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 

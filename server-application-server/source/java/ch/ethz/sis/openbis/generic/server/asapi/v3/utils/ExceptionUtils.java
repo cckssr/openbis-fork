@@ -17,11 +17,6 @@ package ch.ethz.sis.openbis.generic.server.asapi.v3.utils;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.IOperationContext;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import org.apache.log4j.Logger;
-
-import java.util.Arrays;
 
 public class ExceptionUtils
 {

@@ -31,7 +31,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;
 import ch.systemsx.cisd.etlserver.PathInfoServiceProviderAdapter;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTaskExecutor;

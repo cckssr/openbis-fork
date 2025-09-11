@@ -24,8 +24,8 @@ import ch.ethz.sis.afsserver.core.AbstractPublicAPIWrapper;
 import ch.ethz.sis.afsserver.http.HttpResponse;
 import ch.ethz.sis.afsserver.server.impl.ApiServerAdapter;
 import ch.ethz.sis.shared.io.IOUtils;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import io.netty.handler.codec.http.HttpMethod;
 
 public class APIServerAdapterWrapper extends AbstractPublicAPIWrapper

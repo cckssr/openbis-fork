@@ -22,14 +22,14 @@ import java.util.List;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.web.context.ContextLoaderListener;
 //import org.springframework.web.util.Log4jConfigListener;
 
 import ch.systemsx.cisd.base.utilities.AbstractBuildAndEnvironmentInfo;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * Extension of Spring's <code>ContextLoaderListener</code> which initializes logging via {@link LogInitializer#init()} and registers an default

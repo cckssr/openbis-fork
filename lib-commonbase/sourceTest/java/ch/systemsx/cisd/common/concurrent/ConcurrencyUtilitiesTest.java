@@ -37,9 +37,9 @@ import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
 import ch.systemsx.cisd.base.namedthread.NamingThreadPoolExecutor;
 import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities.ILogSettings;
-import ch.systemsx.cisd.common.logging.AssertingLogger;
-import ch.systemsx.cisd.common.logging.LogInitializer;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.AssertingLogger;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.test.RetryTen;
 import ch.systemsx.cisd.common.test.TestReportCleaner;
 

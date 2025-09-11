@@ -31,7 +31,7 @@ import java.util.zip.ZipInputStream;
 
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.*;
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.semanticannotation.SemanticAnnotationHelper;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
@@ -44,8 +44,8 @@ import ch.ethz.sis.openbis.generic.server.xls.importer.handler.VersionInfoHandle
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.DatabaseConsistencyChecker;
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.FileServerUtils;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
 

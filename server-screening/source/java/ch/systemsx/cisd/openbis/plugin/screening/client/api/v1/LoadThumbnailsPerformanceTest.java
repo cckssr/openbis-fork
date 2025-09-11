@@ -20,12 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.util.StopWatch;
 
 import ch.systemsx.cisd.openbis.dss.screening.shared.api.v1.LoadImageConfiguration;

@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.concurrent.InactivityMonitor.IDescribingActivitySensor;
 import ch.systemsx.cisd.common.concurrent.InactivityMonitor.IInactivityObserver;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.test.RetryTen;
 import ch.systemsx.cisd.common.test.StoringUncaughtExceptionHandler;
 import ch.systemsx.cisd.common.test.TestReportCleaner;

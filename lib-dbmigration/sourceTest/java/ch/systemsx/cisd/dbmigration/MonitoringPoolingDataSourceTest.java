@@ -24,9 +24,9 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * @author Bernd Rinn

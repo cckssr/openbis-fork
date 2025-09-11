@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
 import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.common.db.ISqlScriptExecutionLogger;
 import ch.systemsx.cisd.common.db.Script;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * Test cases for the {@link SqlScriptExecutor}.

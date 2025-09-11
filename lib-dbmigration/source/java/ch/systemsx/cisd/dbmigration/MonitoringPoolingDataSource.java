@@ -38,13 +38,13 @@ import org.apache.commons.dbcp.DelegatingPreparedStatement;
 import org.apache.commons.dbcp.DelegatingStatement;
 import org.apache.commons.dbcp.PoolingDataSource;
 import org.apache.commons.pool.ObjectPool;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.event.BooleanEvent;
-import ch.systemsx.cisd.common.logging.event.LongEvent;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.event.BooleanEvent;
+import ch.ethz.sis.shared.log.classic.event.LongEvent;
 import ch.systemsx.cisd.dbmigration.logging.DbConnectionLogConfiguration;
 
 /**

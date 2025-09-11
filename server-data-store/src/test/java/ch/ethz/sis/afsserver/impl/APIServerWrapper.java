@@ -23,13 +23,12 @@ import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.impl.ApiRequest;
 import ch.ethz.sis.afsserver.server.impl.ApiResponseBuilder;
 import ch.ethz.sis.afsserver.server.performance.PerformanceAuditor;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class APIServerWrapper extends AbstractPublicAPIWrapper
 {

@@ -72,7 +72,7 @@ import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.common.servlet.RequestContextProviderAdapter;

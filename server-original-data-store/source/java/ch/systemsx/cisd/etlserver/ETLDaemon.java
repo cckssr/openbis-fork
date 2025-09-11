@@ -31,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.server.dss.plugins.DataSetRegistrationCleanUpTask;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.SessionWorkspaceCleanUpMaintenanceTask;
@@ -60,9 +60,9 @@ import ch.systemsx.cisd.common.filesystem.StoreItem;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkDirectoryScanningHandler;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HostAwareFileWithHighwaterMark;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.mail.IMailClient;
 import ch.systemsx.cisd.common.mail.MailClient;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;

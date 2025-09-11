@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.openbis.generic.server.CommonServer;
 import ch.systemsx.cisd.openbis.generic.server.ServiceForDataStoreServer;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.Person;
@@ -38,7 +38,7 @@ import ch.systemsx.cisd.openbis.generic.shared.basic.dto.RoleWithHierarchy;
 import ch.systemsx.cisd.openbis.plugin.generic.server.GenericServer;
 import ch.systemsx.cisd.openbis.plugin.query.server.QueryServer;
 import ch.systemsx.cisd.openbis.systemtest.base.BaseTest;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * This test tests registering and deactivating a person. It also tests authorization of {@link CommonServer}, {@link ServiceForDataStoreServer},

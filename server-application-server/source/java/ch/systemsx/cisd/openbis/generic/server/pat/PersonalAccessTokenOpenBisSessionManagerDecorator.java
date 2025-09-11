@@ -24,7 +24,7 @@ import java.util.TreeMap;
 
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +35,8 @@ import ch.systemsx.cisd.authentication.ISessionFactory;
 import ch.systemsx.cisd.authentication.Principal;
 import ch.systemsx.cisd.authentication.SessionManagerLock;
 import ch.systemsx.cisd.common.exceptions.InvalidSessionException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.ComponentNames;
 import ch.systemsx.cisd.openbis.generic.server.OpenBisSessionManager;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;

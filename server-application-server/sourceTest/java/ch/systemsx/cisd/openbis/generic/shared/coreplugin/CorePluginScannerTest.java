@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import ch.systemsx.cisd.common.logging.MockLogger;
+import ch.ethz.sis.shared.log.classic.MockLogger;
 import ch.systemsx.cisd.openbis.generic.server.coreplugin.AsCorePluginPaths;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.CorePlugin;
 import ch.systemsx.cisd.openbis.generic.shared.coreplugin.CorePluginScanner.ScannerType;

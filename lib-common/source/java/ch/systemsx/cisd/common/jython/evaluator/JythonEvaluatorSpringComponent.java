@@ -17,14 +17,14 @@ package ch.systemsx.cisd.common.jython.evaluator;
 
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.BeanInitializationException;
 
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.common.jython.v25.Jython25EvaluatorFactory;
 import ch.systemsx.cisd.common.jython.v27.Jython27EvaluatorFactory;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
 
 /**

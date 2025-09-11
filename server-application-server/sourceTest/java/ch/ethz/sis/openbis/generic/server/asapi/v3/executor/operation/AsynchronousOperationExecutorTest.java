@@ -40,7 +40,7 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.config.IOp
 import ch.ethz.sis.openbis.generic.server.asapi.v3.executor.operation.store.IOperationExecutionStore;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.concurrent.MessageChannelBuilder;
-import ch.systemsx.cisd.common.logging.ConsoleLogger;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
 
 public class AsynchronousOperationExecutorTest
 {

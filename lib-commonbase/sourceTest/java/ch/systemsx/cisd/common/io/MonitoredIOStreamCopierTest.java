@@ -25,7 +25,7 @@ import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
-import ch.systemsx.cisd.common.logging.MockLogger;
+import ch.ethz.sis.shared.log.classic.MockLogger;
 import ch.systemsx.cisd.common.utilities.ITimeAndWaitingProvider;
 import ch.systemsx.cisd.common.utilities.ITimeProvider;
 import ch.systemsx.cisd.common.utilities.MockTimeProvider;

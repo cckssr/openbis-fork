@@ -19,14 +19,14 @@ import java.lang.reflect.Method;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.aop.ClassFilter;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.RootClassFilter;
 import org.springframework.aop.support.StaticMethodMatcherPointcut;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.string.ReflectingStringEscaper;
 import ch.systemsx.cisd.openbis.generic.client.web.client.IClientService;
 import ch.systemsx.cisd.openbis.generic.shared.basic.annotation.DoNotEscape;

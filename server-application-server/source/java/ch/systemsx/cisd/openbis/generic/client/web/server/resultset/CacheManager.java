@@ -18,10 +18,10 @@ package ch.systemsx.cisd.openbis.generic.client.web.server.resultset;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.security.TokenGenerator;
 
 /**

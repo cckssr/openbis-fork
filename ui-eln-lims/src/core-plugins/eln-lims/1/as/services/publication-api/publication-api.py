@@ -12,7 +12,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id import EntityTypePer
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id import ExperimentIdentifier
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create import SampleCreation
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id import SpacePermId
-from ch.systemsx.cisd.common.logging import LogCategory
+from ch.ethz.sis.shared.log.classic.core import LogCategory
 from ch.systemsx.cisd.openbis.generic.client.web.client.exception import UserFailureException
 from java.lang import String
 from java.util import ArrayList

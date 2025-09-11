@@ -16,6 +16,7 @@
 package ch.ethz.sis.afsserver.startup;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import ch.ethz.sis.afsserver.server.Server;
@@ -26,12 +27,21 @@ public class Main
 
     public static void main(String[] args) throws Exception
     {
-        System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
-        System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
+        try
+        {
+            System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
+            System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
 
-        Configuration configuration = new Configuration(List.of(AtomicFileSystemServerParameter.class), args[0]);
+            Configuration configuration =
+                    new Configuration(List.of(AtomicFileSystemServerParameter.class), args[0]);
 
-        Server server = new Server(configuration);
-        Thread.currentThread().join();
+            Server server = new Server(configuration);
+            Thread.currentThread().join();
+        } catch (Exception e)
+        {
+            System.out.println(e);
+            Arrays.stream(e.getStackTrace()).forEach(System.out::println);
+            throw e;
+        }
     }
 }

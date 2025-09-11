@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;

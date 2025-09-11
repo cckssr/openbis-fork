@@ -17,7 +17,7 @@ package ch.systemsx.cisd.common.fileconverter;
 
 import java.util.Collections;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;

@@ -45,7 +45,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageInputStreamImpl;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ar.com.hjg.pngj.ImageInfo;
 import ar.com.hjg.pngj.ImageLine;
@@ -61,8 +61,8 @@ import ch.systemsx.cisd.common.image.IntensityRescaling.Channel;
 import ch.systemsx.cisd.common.image.IntensityRescaling.IImageToPixelsConverter;
 import ch.systemsx.cisd.common.image.IntensityRescaling.Levels;
 import ch.systemsx.cisd.common.image.IntensityRescaling.Pixels;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.imagereaders.IImageReader;
 import ch.systemsx.cisd.imagereaders.IReadParams;
 import ch.systemsx.cisd.imagereaders.ImageID;

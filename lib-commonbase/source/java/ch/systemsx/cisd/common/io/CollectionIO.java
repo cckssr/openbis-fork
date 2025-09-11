@@ -33,14 +33,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.collection.FromStringIdentityConverter;
 import ch.systemsx.cisd.common.collection.IFromStringConverter;
 import ch.systemsx.cisd.common.collection.IToStringConverter;
 import ch.systemsx.cisd.common.collection.ToStringDefaultConverter;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * I/O operations for collections. Allows to read and write collections of {@link String}s and other objects from and to streams and files.

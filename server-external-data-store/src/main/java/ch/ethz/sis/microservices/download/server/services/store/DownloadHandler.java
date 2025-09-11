@@ -15,6 +15,9 @@
  */
 package ch.ethz.sis.microservices.download.server.services.store;
 
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,8 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
 
 public class DownloadHandler extends AbstractFileServiceHandler
 {

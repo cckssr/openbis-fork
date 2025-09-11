@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
 import ch.systemsx.cisd.base.exceptions.TimeoutExceptionUnchecked;
 import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.serviceconversation.client.IRemoteServiceConversationServer;
 import ch.systemsx.cisd.common.serviceconversation.client.IServiceConversation;
 import ch.systemsx.cisd.common.serviceconversation.client.ServiceConversationClient;

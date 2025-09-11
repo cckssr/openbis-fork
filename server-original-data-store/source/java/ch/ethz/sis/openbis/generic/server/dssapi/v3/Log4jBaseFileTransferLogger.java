@@ -15,13 +15,13 @@
  */
 package ch.ethz.sis.openbis.generic.server.dssapi.v3;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.filetransfer.ILogger;
 import ch.ethz.sis.filetransfer.LogLevel;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * @author Franz-Josef Elmer
@@ -34,15 +34,15 @@ public class Log4jBaseFileTransferLogger implements ILogger
         switch (level)
         {
             case TRACE:
-                return org.apache.log4j.Level.TRACE;
+                return Level.TRACE;
             case DEBUG:
-                return org.apache.log4j.Level.DEBUG;
+                return Level.DEBUG;
             case INFO:
-                return org.apache.log4j.Level.INFO;
+                return Level.INFO;
             case WARN:
-                return org.apache.log4j.Level.WARN;
+                return Level.WARN;
             case ERROR:
-                return org.apache.log4j.Level.ERROR;
+                return Level.ERROR;
             default:
                 throw new IllegalArgumentException("Illegal log level " + level);
         }

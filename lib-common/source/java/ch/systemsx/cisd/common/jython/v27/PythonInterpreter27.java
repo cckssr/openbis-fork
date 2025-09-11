@@ -17,7 +17,7 @@ package ch.systemsx.cisd.common.jython.v27;
 
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.python27.core.CompileMode;
 import org.python27.core.Py;
 import org.python27.core.PyList;
@@ -25,8 +25,8 @@ import org.python27.core.PyObject;
 import org.python27.core.PyString;
 import org.python27.core.PySystemState;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.resource.Resources;
 
 /**

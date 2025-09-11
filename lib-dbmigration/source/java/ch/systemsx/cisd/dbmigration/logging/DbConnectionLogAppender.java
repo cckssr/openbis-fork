@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.dbmigration.logging;
 
-import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
-import ch.systemsx.cisd.common.logging.ext.ExtendedLogRecord;
+import ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler;
+import ch.ethz.sis.shared.log.standard.handlers.ext.ExtendedLogRecord;
 
 import java.io.IOException;
 import java.util.logging.LogRecord;

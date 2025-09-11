@@ -20,7 +20,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
@@ -29,8 +29,8 @@ import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
 import ch.systemsx.cisd.common.concurrent.ITerminableFuture;
 import ch.systemsx.cisd.common.concurrent.TerminableCallable.INamedCallable;
 import ch.systemsx.cisd.common.concurrent.TerminableCallable.IStoppableExecutor;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.serviceconversation.IServiceMessageTransport;
 import ch.systemsx.cisd.common.serviceconversation.ServiceConversationDTO;
 import ch.systemsx.cisd.common.serviceconversation.ServiceMessage;

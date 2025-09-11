@@ -25,7 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.global.fetchoptions.GlobalSearch
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.tag.search.TagSearchCriteria;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.springframework.dao.DataAccessException;
@@ -52,8 +52,8 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.IGlobalSearchM
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.ILocalSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.MaterialSearchManager;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.planner.SampleSearchManager;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IHibernateSearchDAO;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.AuthorizationConfig;

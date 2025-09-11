@@ -32,7 +32,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExec
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
 
 #Logging
-from ch.systemsx.cisd.common.logging import LogCategory
+from ch.ethz.sis.shared.log.classic.core import LogCategory
 from org.apache.log4j import Logger
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".exportsApi.py")
 

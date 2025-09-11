@@ -16,13 +16,12 @@
  */
 package ch.systemsx.cisd.openbis.uitest.selenium;
 
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import ch.systemsx.cisd.common.logging.ext.CustomWriterHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler;
+import ch.ethz.sis.shared.log.standard.handlers.CustomWriterHandler;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -39,7 +38,6 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;

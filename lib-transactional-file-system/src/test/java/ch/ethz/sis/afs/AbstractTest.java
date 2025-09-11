@@ -15,10 +15,9 @@
  */
 package ch.ethz.sis.afs;
 
-import ch.ethz.sis.shared.log.LogFactory;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.log4j2.Log4J2LogFactory;
-
+import ch.ethz.sis.shared.log.standard.LogFactory;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.impl.StandardLogFactory;
 
 public class AbstractTest {
 
@@ -32,7 +31,7 @@ public class AbstractTest {
 
     static private void init() throws Exception {
         // Initializing LogManager
-        LogFactory logFactory = new Log4J2LogFactory();
+        LogFactory logFactory = new StandardLogFactory();
         LogManager.setLogFactory(logFactory);
     }
 

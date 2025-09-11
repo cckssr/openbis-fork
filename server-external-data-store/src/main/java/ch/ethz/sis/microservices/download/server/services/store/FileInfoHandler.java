@@ -25,8 +25,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
-import ch.ethz.sis.microservices.download.server.logging.LogManager;
-import ch.ethz.sis.microservices.download.server.logging.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 
 public class FileInfoHandler extends AbstractFileServiceHandler
 {

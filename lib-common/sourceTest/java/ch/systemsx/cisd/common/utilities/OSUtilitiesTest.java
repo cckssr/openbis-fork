@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * Test cases for {@link OSUtilities}.

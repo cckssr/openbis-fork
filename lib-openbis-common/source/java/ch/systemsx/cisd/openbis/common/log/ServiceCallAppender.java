@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.common.log;
 
-import ch.systemsx.cisd.common.logging.ext.DailyRollingFileHandler;
+import ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler;
 
 import java.io.IOException;
 import java.util.logging.LogRecord;

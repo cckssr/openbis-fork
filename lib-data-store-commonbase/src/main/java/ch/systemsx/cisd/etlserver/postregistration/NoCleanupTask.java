@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.etlserver.postregistration;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 
 /**
  * An implementation of {@link ICleanupTask} which does nothing.

@@ -17,7 +17,6 @@
 package ch.systemsx.cisd.common.logging;
 
 import org.apache.log4j.Logger;
-
 /**
  * This class is used to create loggers (using <code>java.util.logging</code>).
  *

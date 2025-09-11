@@ -40,7 +40,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.w3c.dom.Document;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
@@ -100,7 +100,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;

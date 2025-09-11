@@ -20,13 +20,13 @@ import static org.testng.AssertJUnit.assertEquals;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.concurrent.MessageChannelBuilder;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.common.conversation.context.ServiceConversationsThreadContext;
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
 import ch.systemsx.cisd.openbis.generic.server.util.TimeIntervalChecker;

@@ -31,7 +31,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.test.RetryTen;
 import ch.systemsx.cisd.common.test.TestReportCleaner;
 
