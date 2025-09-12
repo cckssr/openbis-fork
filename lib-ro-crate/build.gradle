@@ -8,6 +8,26 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+
+tasks.register('buildDistribution', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-ro-crate-distribution')
+    includeEmptyDirs = false
+
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs << '-parameters'
 }
@@ -20,6 +40,7 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
                     // Ro-crate library
     implementation 'edu.kit.datamanager:ro-crate-java:2.0.1',
@@ -27,7 +48,8 @@ dependencies {
                     'com.fasterxml.jackson.core:jackson-databind:2.18.1',
                     'com.networknt:json-schema-validator:1.5.7',
                     'net.lingala.zip4j:zip4j:2.11.5',
-                    // Apache Jena
+            'org.apache.httpcomponents:httpclient:4.5.14',
+            // Apache Jena
                     'org.apache.jena:apache-jena-libs:5.0.0'
 
     testImplementation 'junit:junit:4.10'

@@ -129,4 +129,18 @@ public class PropertyType implements IPropertyType
     {
         this.comment = comment;
     }
+
+    @Override
+    public String toString()
+    {
+        return "PropertyType{" +
+                "domainIncludes=" + domainIncludes +
+                ", rangeIncludes=" + rangeIncludes +
+                ", rangeeIndlucesDataType=" + rangeeIndlucesDataType +
+                ", id='" + id + '\'' +
+                ", ontologicalAnnotations=" + ontologicalAnnotations +
+                ", label='" + label + '\'' +
+                ", comment='" + comment + '\'' +
+                '}';
+    }
 }
