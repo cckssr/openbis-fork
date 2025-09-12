@@ -66,6 +66,7 @@ public class BasicImport
             ongoingOperationsFechOptions.withNotification();
             ongoingOperationsFechOptions.withOwner();
             ongoingOperationsFechOptions.withSummary();
+            ongoingOperationsFechOptions.withSummary().withError();
 
             while (isOperationFinished == false)
             {
