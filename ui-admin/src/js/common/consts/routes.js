@@ -279,7 +279,6 @@ const routes = {
 }
 
 function format(params) {
-  console.log('Routes.format', {params});
   let keys = Object.keys(routes)
   let best = { specificity: 0, path: null }
 
@@ -292,10 +291,8 @@ function format(params) {
       }
     } catch (err) {
       // ignore problems with incorrect params
-      console.log('Routes.format', {err});
     }
   }
-  console.log('Routes.format', {best});
   return best.path
 }
 

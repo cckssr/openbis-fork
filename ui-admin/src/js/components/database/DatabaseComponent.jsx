@@ -239,6 +239,11 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
+  objectCreate(page, oldType, oldId, newType, newId) {
+    console.log('DatabaseComponent.objectCreate', page, oldType, oldId, newType, newId);
+    AppController.getInstance().objectCreate(page, oldType, oldId, newType, newId)
+  }
+
   createNewObject(newObjectType, fromObjectType, fromId) {
     console.log('DatabaseComponent.createNewObject', newObjectType, fromObjectType, fromId);
     AppController.getInstance().objectNew( 
@@ -268,6 +273,7 @@ class DatabaseComponent extends React.PureComponent {
       initialMode={String(object.type).includes('new') ? 'create' : 'view'}
       onEntityChange={this.spaceChange}
       onNewObject={(newObjectType, fromId) => this.createNewObject(newObjectType, object.type, fromId)}
+      onObjectCreate={(page, oldType, oldId, newType, newId) => this.objectCreate(page, oldType, oldId, newType, newId)}
       onCloseForm={(spacePermId) => this.closeForm(spacePermId)}
     />)
   }

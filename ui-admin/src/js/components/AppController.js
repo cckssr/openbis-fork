@@ -23,10 +23,7 @@ export class AppController {
 
     const history = createHashHistory()
     history.listen(location => {
-      if (showDebug) console.log('AppController.init.history.listen', {location});
       const route = routes.parse(location.location.pathname)
-      if (showDebug) console.log('AppController.init.history.listen', {route});
-      if (showDebug) console.log('AppController.init.history.listen invoke routeChanged');
       this.routeChanged(route.path)
     })
 
@@ -54,7 +51,6 @@ export class AppController {
     if (!loaded) {
       try {
         await this.context.setState({ loading: true })
-        if (showDebug) console.log('AppController.load: invoke openbis.init');
         await openbis.init()
 
         const sessionToken = cookie.read(cookie.OPENBIS_COOKIE)
@@ -80,8 +76,6 @@ export class AppController {
                 serverInformation
               })
               const routeObject = routes.parse(this.getRoute())
-              if (showDebug) console.log('AppController.load', {routeObject});
-              if (showDebug) console.log('AppController.load: invoke routeChanged');
               await this.routeChanged(routeObject.path)
             } else {
               openbis.useSession(null)
@@ -164,14 +158,11 @@ export class AppController {
   }
 
   async pageChange(page) {
-    if (showDebug) console.log('AppController.pageChange', {page});
     const pageRoute = this.getCurrentRoute(page)
     if (pageRoute) {
-      if (showDebug) console.log('AppController.pageChange: using existing route', {pageRoute});
       await this.routeChange(pageRoute)
     } else {
       const route = routes.format({ page })
-      if (showDebug) console.log('AppController.pageChange: creating new route', {route});
       await this.routeChange(route)
     }
   }
@@ -185,13 +176,10 @@ export class AppController {
   }
 
   async routeChanged(path) {
-    if (showDebug) console.log('Invoked AppController.routeChanged', {path});
     const newRoute = routes.parse(path)
-    if (showDebug) console.log('AppController.routeChanged', {newRoute, path});
     if (newRoute.type && newRoute.id) {
       const object = { type: newRoute.type, id: newRoute.id, params: newRoute }
       const openTabs = this.getOpenTabs(newRoute.page)
-      if (showDebug) console.log('AppController.routeChanged', {openTabs});
       if (openTabs) {
         let found = false
         let id = 1
@@ -204,37 +192,28 @@ export class AppController {
             id = openTab.id + 1
           }
         })
-        if (showDebug) console.log('AppController.routeChanged', {found});
         if (!found) {
-          if (showDebug) console.log('AppController.routeChanged: invoke addOpenTab');
           await this.addOpenTab(newRoute.page, id, { id, object })
-          if (showDebug) console.log('AppController.routeChanged: added open tab', {id});
         }
       }
     }
-    if (showDebug)  console.log('AppController.routeChanged before setCurrentRoute', {newRoute});
     await this.setCurrentRoute(newRoute.page, newRoute.path)
     const newState = this.context.getState()
-    if (showDebug) console.log('AppController.routeChanged: setCurrentRoute DONE', {newState});
   }
 
   async routeChange(path) {
-    if (showDebug) console.log('Invoked AppController.routeChange', {path});
     if (path !== this.history.location.pathname) {
       this.history.push(path)
     }
   }
 
   async routeReplace(route) {
-    if (showDebug) console.log('Invoked AppController.routeReplace', {route});
     this.history.replace(route)
   }
 
   async objectNew(page, type, params) {
-    if (showDebug) console.log('Invoked AppController.objectNew', {page}, {type}, {params});
     let id = 1
     const openObjects = this.getOpenObjects(page)
-    if (showDebug) console.log('AppController.objectNew', {openObjects});
     openObjects.forEach(openObject => {
       if (openObject.type === type) {
         id++
@@ -242,13 +221,10 @@ export class AppController {
     })
 
     const route = routes.format({ page, type, id, ...params })
-    if (showDebug) console.log('AppController.objectNew', {route});
-    if (showDebug) console.log('AppController.objectNew: invoke routeChange');
     await this.routeChange(route)
   }
 
   async objectCreate(page, oldType, oldId, newType, newId) {
-    if (showDebug) console.log('Invoked AppController.objectCreate', {page}, {oldType}, {oldId}, {newType}, {newId});
     const openTabs = this.getOpenTabs(page)
     const oldTab = _.find(openTabs, { object: { type: oldType, id: oldId } })
 
@@ -272,13 +248,11 @@ export class AppController {
   }
 
   async objectOpen(page, type, id, params={}) {
-    if (showDebug) console.log('Invoked AppController.objectOpen', {page}, {type}, {id}, {params});
     const route = routes.format({ page, type, id, ...params })
     await this.routeChange(route)
   }
 
   async objectUpdate(type) {
-    if (showDebug) console.log('Invoked AppController.objectUpdate', {type});
     await this.setLastObjectModification(
       type,
       objectOperation.UPDATE,
@@ -296,12 +270,8 @@ export class AppController {
   }
 
   async objectChange(page, type, id, changed) {
-    if (showDebug) console.log('Invoked AppController.objectChange', {page}, {type}, {id}, {changed});
-    if (showDebug) console.log(this.context.getState())
     const openTabs = this.getOpenTabs(page)
-    if (showDebug) console.log('objectChange', {openTabs});
     const oldTab = _.find(openTabs, { object: { type, id } })
-    if (showDebug) console.log('objectChange', {page}, {type}, {id}, {changed}, {oldTab});
     if (oldTab) {
       const newTab = { ...oldTab, changed }
       await this.replaceOpenTab(page, oldTab.id, newTab)
@@ -398,7 +368,6 @@ export class AppController {
   }
 
   async setCurrentRoute(page, route) {
-    if (showDebug) console.log('Invoked AppController.setCurrentRoute', {page, route});
     await this.context.setState(state => ({
       pages: {
         ...state.pages,
@@ -411,7 +380,6 @@ export class AppController {
   }
 
   getSelectedObject(page) {
-    if (showDebug) console.log('Invoked AppController.getSelectedObject', {page});
     const path = this.getCurrentRoute(page)
     if (path) {
       const route = routes.parse(path)
@@ -423,7 +391,6 @@ export class AppController {
   }
 
   getSelectedTab(page) {
-    if (showDebug)  console.log('Invoked AppController.getSelectedTab', {page});
     const selectedObject = this.getSelectedObject(page)
     if (selectedObject) {
       const openTabs = this.getOpenTabs(page)
@@ -446,7 +413,6 @@ export class AppController {
   }
 
   async setOpenTabs(page, newOpenTabs) {
-    if (showDebug) console.log('Invoked AppController.setOpenTabs', {page}, {newOpenTabs});
     await this.context.setState(state => ({
       pages: {
         ...state.pages,
@@ -459,21 +425,16 @@ export class AppController {
   }
 
   async addOpenTab(page, id, tab) {
-    if (showDebug) console.log('Invoked AppController.addOpenTab', {page}, {id}, {tab});
     const openTabs = this.getOpenTabs(page)
-    if (showDebug) console.log('AppController.addOpenTab', {openTabs});
     const index = _.findIndex(openTabs, { id: id }, _.isMatch)
-    if (showDebug) console.log('AppController.addOpenTab', {index});
     if (index === -1) {
       const newOpenTabs = Array.from(openTabs)
       newOpenTabs.push(tab)
-      if (showDebug) console.log('AppController.addOpenTab', {newOpenTabs});
       await this.setOpenTabs(page, newOpenTabs)
     }
   }
 
   async removeOpenTab(page, id) {
-    if (showDebug) console.log('Invoked AppController.removeOpenTab', {page}, {id});
     const openTabs = this.getOpenTabs(page)
     const index = _.findIndex(openTabs, { id: id }, _.isMatch)
     if (index !== -1) {
@@ -484,9 +445,7 @@ export class AppController {
   }
 
   async replaceOpenTab(page, id, tab) {
-    if (showDebug) console.log('Invoked AppController.replaceOpenTab', {page}, {id}, {tab});
     const openTabs = this.getOpenTabs(page)
-    if (showDebug) console.log('replaceOpenTab', {openTabs}, {id}, {tab});
     const index = _.findIndex(openTabs, { id: id }, _.isMatch)
     if (index !== -1) {
       const newOpenTabs = Array.from(openTabs)
@@ -496,12 +455,10 @@ export class AppController {
   }
 
   getLastObjectModifications() {
-    if (showDebug) console.log('Invoked AppController.getLastObjectModifications');
     return this.context.getState().lastObjectModifications
   }
 
   async setLastObjectModification(type, operation, timestamp) {
-    if (showDebug) console.log('Invoked AppController.setLastObjectModification', {type}, {operation}, {timestamp});
     const { lastObjectModifications } = this.context.getState()
 
     if (

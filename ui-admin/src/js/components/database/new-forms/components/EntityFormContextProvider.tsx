@@ -14,12 +14,13 @@ import { objectTypeToEntityKindMap } from '@src/js/components/database/new-forms
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
 
-export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, permId, initialMode, params, onEntityChange, onNewObject, onCloseForm }:
+export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, permId, initialMode, params, onEntityChange, onNewObject, onCloseForm, onObjectCreate }:
 	{
 		openbisFacade: any, entityKind: string, user: string, permId: string, initialMode: FormMode, params: any,
 		onEntityChange: (permId: string, isNew: boolean) => void,
 		onNewObject: (newObjectType: string, fromId: string) => void,
-		onCloseForm: () => void
+		onCloseForm: () => void,
+		onObjectCreate: (page: string, oldType: string, oldId: string, newType: string, newId: string) => void
 	}) => {
 	const [form, setForm] = useState<Form | null>(null);
 	const [initialForm, setInitialForm] = useState<Form | null>(null); // For 'cancel'
@@ -114,10 +115,13 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 				mode,
 				setMode,
 				permissions,
-				onAfterSave: () => {
+				onAfterSave: (params?: any) => {
 					console.log('onAfterSave');
 					// Reload or update state after save
 					setMode(FormMode.VIEW);
+					if (params) {
+						onObjectCreate(params.page, params.oldType, params.oldId, params.newType, params.newId);
+					}
 					reloadForm();
 				},
 				openbisFacade,

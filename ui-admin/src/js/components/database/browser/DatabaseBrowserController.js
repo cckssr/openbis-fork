@@ -3,6 +3,9 @@ import BrowserController from '@src/js/components/common/browser/BrowserControll
 import DatabaseBrowserControllerLoadNodePath from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodePath.js'
 import DatabaseBrowserControllerLoadNodesFiltered from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodesFiltered.js'
 import DatabaseBrowserControllerLoadNodesUnfiltered from '@src/js/components/database/browser/DatabaseBrowserControllerLoadNodesUnfiltered.js'
+import DatabaseBrowserControllerAddNode from '@src/js/components/database/browser/DatabaseBrowserControllerAddNode.js'
+import DatabaseBrowserControllerRemoveNode from '@src/js/components/database/browser/DatabaseBrowserControllerRemoveNode.js'
+import DatabaseBrowserControllerReload from '@src/js/components/database/browser/DatabaseBrowserControllerReload.js'
 import pages from '@src/js/common/consts/pages.js'
 import ids from '@src/js/common/consts/ids.js'
 
@@ -31,6 +34,10 @@ export default class DatabaseBrowserController extends BrowserController {
     }
   }
 
+  async reload(objectModifications) {
+    new DatabaseBrowserControllerReload(this).reload(objectModifications)
+  }
+
   onSelectedChange({ object }) {
     if (object) {
       AppController.getInstance().objectOpen(
@@ -40,5 +47,27 @@ export default class DatabaseBrowserController extends BrowserController {
         object.params
       )
     }
+  }
+
+  canAddNode() {
+    return new DatabaseBrowserControllerAddNode().canAddNode(
+      this.getSelectedObject()
+    )
+  }
+
+  async addNode() {
+    await new DatabaseBrowserControllerAddNode().doAddNode(this.getSelectedObject())
+  }
+
+  canRemoveNode() {
+    return new DatabaseBrowserControllerRemoveNode().canRemoveNode(
+      this.getSelectedObject()
+    )
+  }
+
+  async removeNode() {
+    await new DatabaseBrowserControllerRemoveNode().doRemoveNode(
+      this.getSelectedObject()
+    )
   }
 }

@@ -18,7 +18,7 @@ export interface FormController {
    * @param form The current form state.
    * @returns A promise that resolves with the new version of the entity.
    */
-  save(form: Form, mode: FormMode): Promise<number>;
+  save(form: Form, mode: FormMode): Promise<any>;
 
   /**
    * Checks the current user's permissions for various actions on the form's entity.

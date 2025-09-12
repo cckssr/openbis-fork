@@ -125,7 +125,7 @@ export interface ActionContext {
   mode: FormMode;
   setMode: React.Dispatch<React.SetStateAction<FormMode>>;
   permissions: any;
-  onAfterSave: () => void;
+  onAfterSave: (params: any) => void;
   openbisFacade: any; // Provide external dependencies
   onNewObject: (newObjectType: string, fromId: string) => void;
   onEntityChange: (permId: string, isNew: boolean) => void;
