@@ -46,4 +46,22 @@ public class ValueMapperTest
 
     }
 
+    @Test
+    public void testSampleConversion()
+    {
+        List<String> vocabs = new ArrayList<>();
+        SampleObjectProperty sampleObjectProperty =
+                new SampleObjectProperty(XSDDatatype.XSDdateTime.getURI(), "Datetime",
+                        "",
+                        "https://example.ch/rdf/example-resource/CHE-123.123.123-example-SampleResource-123");
+        PropertyType propertyType = new PropertyType();
+        propertyType.setDataType(DataType.SAMPLE);
+
+        String res = ValueMapper.mapValue(vocabs, sampleObjectProperty, propertyType, "SPACE",
+                "PROJECT_DATA");
+        assertEquals("/SPACE/PROJECT_DATA/CHE-123.123.123-EXAMPLE-SAMPLERESOURCE-123", res);
+
+    }
+
+
 }

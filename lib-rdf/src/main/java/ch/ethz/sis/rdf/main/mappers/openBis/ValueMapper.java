@@ -38,7 +38,7 @@ public class ValueMapper
             }
 
             String referenceValue = SplitIRI.localname(sampleObjectProperty.valueURI);
-            return String.join("/", space, project,
+            return "/" + String.join("/", space, project,
                             OpenBisModel.makeOpenBisCodeCompliant(referenceValue))
                     .toUpperCase(
                             Locale.ROOT);
