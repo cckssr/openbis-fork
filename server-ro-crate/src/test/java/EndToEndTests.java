@@ -460,6 +460,30 @@ public class EndToEndTests extends AbstractTest
                 .body(Files.readAllBytes(Path.of(file.getPath())))
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
+                .statusCode(406);
+    }
+
+    @Test
+    public void testInvalidContentType()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/OkayExample.json";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        String expected = "{\"isValid\":true}";
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/xml")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
                 .statusCode(415);
     }
 
