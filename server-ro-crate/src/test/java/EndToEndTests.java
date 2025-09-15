@@ -310,6 +310,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(404);
     }
 
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/40
     @Test
     public void testValidateMalformedCrate()
             throws Exception
@@ -334,6 +335,7 @@ public class EndToEndTests extends AbstractTest
                 .statusCode(400);
     }
 
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/39
     @Test
     public void testValidateMalformedCrateZipped()
             throws Exception
@@ -356,6 +358,109 @@ public class EndToEndTests extends AbstractTest
                 .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
                 .then()
                 .statusCode(400);
+    }
+
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/35
+    @Test
+    public void testValidateMalformedCrateZippedMissingManifest()
+            throws Exception
+    {
+
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/MissingManifest.zip";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/zip")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(400);
+    }
+
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/41
+
+    @Test
+    public void testEmptyPayloadZip()
+            throws Exception
+    {
+
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/empty.zip";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/zip")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(400);
+    }
+
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/42
+
+    @Test
+    public void testEmptyPayload()
+            throws Exception
+    {
+
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/empty.json";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/ld+json")
+                .header("Accept", "application/json")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(400);
+    }
+
+    // https://github.com/paulscherrerinstitute/rocrate-api/issues/54
+
+    @Test
+    public void testInvalidAcceptHeader()
+            throws Exception
+    {
+        getConfiguration();
+
+        OpenBIS openBIS = new OpenBIS("http://localhost:8888", Integer.MAX_VALUE);
+        openBIS.login(username, password);
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        String resourceName = "endtoend/OkayExample.json";
+        File file = new File(classLoader.getResource(resourceName).getFile());
+
+        String expected = "{\"isValid\":true}";
+        given()
+                .header("api-key", openBIS.getSessionToken())
+                .header("Content-Type", "application/ld+json")
+                .header("Accept", "application/xml")
+                .body(Files.readAllBytes(Path.of(file.getPath())))
+                .when().post("http://localhost:8086/openbis/open-api/ro-crate/validate")
+                .then()
+                .statusCode(415);
     }
 
 
