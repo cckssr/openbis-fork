@@ -336,11 +336,11 @@ public class ImportSampleTypesTest extends AbstractImportTest
         List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
 
         // THEN
-        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyId()
+        assertTrue(semanticAnnotations.get(0).getPredicateOntologyId()
                 .equals("https://en.wikipedia.org/"));
-        assertTrue(semanticAnnotations.get(0).getDescriptorOntologyVersion()
+        assertTrue(semanticAnnotations.get(0).getPredicateOntologyVersion()
                 .equals("https://en.wikipedia.org/wiki/Wikipedia:About"));
-        assertTrue(semanticAnnotations.get(0).getDescriptorAccessionId()
+        assertTrue(semanticAnnotations.get(0).getPredicateAccessionId()
                 .equals("https://en.wikipedia.org/wiki/Antibody"));
 
     }
@@ -376,19 +376,19 @@ public class ImportSampleTypesTest extends AbstractImportTest
         List<SemanticAnnotation> semanticAnnotations = antibody.getSemanticAnnotations();
 
         // THEN
-        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyId(),
+        assertEquals(semanticAnnotations.get(0).getPredicateOntologyId(),
                 "https://en.wikipedia.org/");
-        assertEquals(semanticAnnotations.get(0).getDescriptorOntologyVersion(),
+        assertEquals(semanticAnnotations.get(0).getPredicateOntologyVersion(),
                 "https://en.wikipedia.org/wiki/Wikipedia:About");
         assertTrue(semanticAnnotations.stream().anyMatch(
-                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody"))
+                x -> x.getPredicateAccessionId().equals("https://en.wikipedia.org/wiki/Antibody"))
         );
-        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyId(),
+        assertEquals(semanticAnnotations.get(1).getPredicateOntologyId(),
                 "https://en.wikipedia.org/");
-        assertEquals(semanticAnnotations.get(1).getDescriptorOntologyVersion(),
+        assertEquals(semanticAnnotations.get(1).getPredicateOntologyVersion(),
                 "https://en.wikipedia.org/wiki/Wikipedia:About");
         assertTrue(semanticAnnotations.stream().anyMatch(
-                x -> x.getDescriptorAccessionId().equals("https://en.wikipedia.org/wiki/Antibody2"))
+                x -> x.getPredicateAccessionId().equals("https://en.wikipedia.org/wiki/Antibody2"))
         );
 
     }
