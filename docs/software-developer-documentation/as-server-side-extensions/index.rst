@@ -1,4 +1,4 @@
-Server-Side Extensions
+Application Server Extensions
 ======================
 
 .. toctree::
