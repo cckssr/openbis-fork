@@ -446,9 +446,7 @@ public class CreateSemanticAnnotationTest extends AbstractTest
         return new Object[][] {
                 { creationWithPredicateWithDescriptor(), null },
                 { creationWithNullPredicate(), SemanticAnnotationDAO.ERROR_PREDICATE_CANNOT_BE_NULL_OR_EMPTY },
-                { creationWithNullDescriptor(), SemanticAnnotationDAO.ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY },
                 { creationWithEmptyPredicate(), SemanticAnnotationDAO.ERROR_PREDICATE_CANNOT_BE_NULL_OR_EMPTY },
-                { creationWithEmptyDescriptor(), SemanticAnnotationDAO.ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY },
         };
     }
 

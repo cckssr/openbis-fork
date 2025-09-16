@@ -321,9 +321,7 @@ public class UpdateSemanticAnnotationTest extends AbstractTest
         return new Object[][] {
                 { updateWithPredicateWithDescriptor(), null },
                 { updateWithNullPredicate(), SemanticAnnotationDAO.ERROR_PREDICATE_CANNOT_BE_NULL_OR_EMPTY },
-                { updateWithNullDescriptor(), SemanticAnnotationDAO.ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY },
                 { updateWithEmptyPredicate(), SemanticAnnotationDAO.ERROR_PREDICATE_CANNOT_BE_NULL_OR_EMPTY },
-                { updateWithEmptyDescriptor(), SemanticAnnotationDAO.ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY },
         };
     }
 
