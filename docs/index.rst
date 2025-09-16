@@ -22,6 +22,7 @@ The complete solution for managing your research data.
 
    Development Environment </software-developer-documentation/development-environment/index>
    APIS </software-developer-documentation/apis/index>
+   Application Server Extensions </software-developer-documentation/as-server-side-extensions/index>
    Server-Side Extensions </software-developer-documentation/server-side-extensions/index>
    Client-Side Extensions </software-developer-documentation/client-side-extensions/index>
    Legacy Server-Side Extensions </software-developer-documentation/legacy-server-side-extensions/index>
@@ -47,6 +48,7 @@ Software Developer Documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    - :doc:`Development Environment </software-developer-documentation/development-environment/index>`
    - :doc:`APIS </software-developer-documentation/apis/index>`
+   - :doc:`Application Server Extensions </software-developer-documentation/as-server-side-extensions/index>`
    - :doc:`Server-Side Extensions </software-developer-documentation/server-side-extensions/index>`
    - :doc:`Client-Side Extensions </software-developer-documentation/client-side-extensions/index>`
    - :doc:`Legacy Server-Side Extensions </software-developer-documentation/legacy-server-side-extensions/index>`
