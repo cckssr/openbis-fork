@@ -104,7 +104,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-marker-file/test_marker_file_configuration.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-marker-file/test_marker_file_configuration'.*"));
                 },
                 5000);
 
@@ -144,7 +144,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-quiet-period/test_quiet_period_configuration.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-quiet-period/test_quiet_period_configuration'.*"));
                 },
                 5000);
 
@@ -178,7 +178,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - Processing: targets/folder-monitor/incoming-with-failing-task/test_failing has failed.*"));
+                            ".*FolderMonitor - Processing of path 'targets/folder-monitor/incoming-with-failing-task/test_failing' has failed.*"));
                 },
                 5000);
 
@@ -192,7 +192,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-failing-task/test_success.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-failing-task/test_success'.*"));
                 },
                 5000);
 

@@ -118,6 +118,30 @@ public class FolderMonitor
 
     private IPathHandler createPathHandler(FolderMonitorConfiguration configuration)
     {
+        final FolderMonitorTask task;
+
+        try
+        {
+            task = ClassUtils.create(FolderMonitorTask.class, configuration.getTaskClass());
+            logger.info("Task '" + task.getClass().getName() + "' has been created.");
+        } catch (Exception e)
+        {
+            final String msg = "Could not create an instance of task '" + configuration.getTaskClass().getName() + "'";
+            logger.error(msg);
+            throw new RuntimeException(msg);
+        }
+
+        try
+        {
+            task.configure(configuration.getTaskProperties());
+            logger.info("Task '" + task.getClass().getName() + "' has been configured.");
+        } catch (Exception e)
+        {
+            final String msg = "Configuration of task '" + task.getClass().getName() + "' has failed";
+            logger.error(msg);
+            throw new RuntimeException(msg, e);
+        }
+
         return new IPathHandler()
         {
             @Override public void handle(final File incomingOrMarkerFile)
@@ -132,39 +156,27 @@ public class FolderMonitor
                     incoming = incomingOrMarkerFile;
                 }
 
-                logger.info("Before processing: " + incoming);
-
-                FolderMonitorTask task;
-
                 try
                 {
-                    task = ClassUtils.create(FolderMonitorTask.class, configuration.getTaskClass());
+                    logger.info("Before processing of path '" + incoming + "'");
+                    task.process(incoming.toPath());
+                    logger.info("After processing of path '" + incoming + "'");
                 } catch (Exception e)
                 {
-                    throw new RuntimeException("Could not create an instance of task '" + configuration.getTaskClass().getName() + "'");
+                    final String msg = "Processing of path '" + incoming + "' has failed";
+                    logger.error(msg);
+                    throw new RuntimeException(msg, e);
                 }
-
-                task.configure(configuration.getTaskProperties());
-                try
-                {
-                    task.process(incoming.toPath());
-                } catch (RuntimeException e)
-                {
-                    logger.info("Processing: " + incoming + " has failed", e);
-                    throw e;
-                }
-
-                logger.info("After processing: " + incoming);
 
                 if (incoming.exists())
                 {
-                    logger.info("Deleting incoming: " + incoming);
+                    logger.info("Deleting path '" + incoming + "' after successful processing");
                     FileUtilities.deleteRecursively(incoming);
                 }
 
                 if (FolderMonitorMode.MARKER_FILE.equals(configuration.getMode()) && incomingOrMarkerFile.exists())
                 {
-                    logger.info("Deleting marker file: " + incomingOrMarkerFile);
+                    logger.info("Deleting marker file '" + incomingOrMarkerFile + "' after successful processing");
                     FileUtilities.delete(incomingOrMarkerFile);
                 }
             }
