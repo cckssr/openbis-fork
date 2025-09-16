@@ -127,7 +127,7 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
                                 dataSetType.getCode(), null);
 
                 return searchResult.stream().map(
-                                SemanticAnnotation::getDescriptorOntologyId)
+                                SemanticAnnotation::getPredicateOntologyId)
                         .collect(Collectors.joining("\n"));
 
             }
@@ -139,7 +139,7 @@ public class XLSDataSetTypeExportHelper extends AbstractXLSEntityTypeExportHelpe
                                 dataSetType.getCode(), null);
 
                 return searchResult.stream().map(
-                                SemanticAnnotation::getDescriptorOntologyVersion)
+                                SemanticAnnotation::getPredicateOntologyVersion)
                         .collect(Collectors.joining("\n"));
 
             }
