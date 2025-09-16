@@ -16,30 +16,38 @@ The folder structure is organized as follows:
     - `disabled-core-plugins`: comma-separated list of disabled plugins. All plugins are disabled for which the beginning of full plugin ID matches one of the terms of this list. To disable initialization of master data of a module - disable it's core plugin "initialize-master-data"
 - The children of `core-plugins` are folders denoting modules like the standard technologies, `proteomics` and `screening`. For customization, any module can be added.
 - Each module folder has children which are numbered folders. The number denotes the version of the plugins of that module. The version with the largest number will be used. Different modules can have different largest version numbers.
-- Every version folder has the subfolder `as` and/or` dss `which have subfolders for the various types of plugins. The types are different for AS and DSS:  
-    - AS:  
-        - `maintenance-tasks`: Maintenance tasks triggered by some time schedule. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.common.maintenance.IMaintenanceTask`. For more details see [Maintenance Tasks](../../system-documentation/configuration/maintenance-tasks.md).
-        - `dss-data-sources`: Definition of data sources with corresponding data source definitions for DSS. For more details see [Installation and Administrator Guide of the openBIS Server](../../system-documentation/standalone/installation-and-configuration-guide.md).
-        - `query-databases`: Databases for SQL queries. For more details see [Custom Database Queries](../../user-documentation/general-admin-users/custom-database-queries.md).
-        - `custom-imports`: Custom file imports to DSS via Web interface. For more details see [Custom Import](../legacy-server-side-extensions/custom-import.md).
-        - `services`: Custom services. For more details see [Custom Application Server Services](./as-services.md).
-        - `webapps`: HTML5 applications that use the openBIS API. For more details see [openBIS webapps](../client-side-extensions/openbis-webapps.md).
-        - `miscellaneous`: Any additional properties.
-    - `DSS:`
-        - `drop-boxes`: ETL server threads for registration of data sets.                            `
-        - `reporting-plugins`: Reports visible in openBIS. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IReportingPluginTask`. For more details see [Reporting Plugins](../legacy-server-side-extensions/reporting-plugins.md).
-        - `processing-plugins`: Processing tasks triggered by users. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IProcessingPluginTask`. For more details see [Processing Plugins](../legacy-server-side-extensions/processing-plugins.md).`                            `
-        - `maintenance-tasks`: Maintenance tasks triggered by some time schedule. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.common.maintenance.IMaintenanceTask`. For more details see [Maintenance Tasks](../../system-documentation/configuration/maintenance-tasks.md).
-        - `search-domain-services`: Services for variaous search domains (e.g. search on sequence databases using BLAST). Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchDomainService`.
-        - `data-sources`: Internal or external database sources.
-        - `services`: Custom services. For more details see [Custom Datastore Server Services](./dss-services.md).
-        - `servlet-services`: Services based on servlets. Property `class` denotes fully-qualified class name of a class implementing `javax.servlet.Servlet`.
-        - `imaging-overview-plugins`: Data set type specific provider of the overview image of a data set. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.IDatasetImageOverviewPlugin`.
-        - `file-system-plugins`: Provider of a custom DSS file system (FTP/SFTP) view hierarchy. Property `class` denotes fully-qualified class name of a class
-            implementing `ch.systemsx.cisd.openbis.dss.generic.server.fs.IResolverPlugin`  
-            Property code denotes the name of the top-level directory
-            under which the custom hierarchy will be visible
-        - `miscellaneous`: Any additional properties.`                            `
+- Every version folder has the subfolder `as` and/or` dss `which have subfolders for the various types of plugins. The types are different for AS and DSS:
+
+## Recommended Core Plugins
+We currently recommend the use of these core plugins.
+
+- Application Server (AS):  
+    - `maintenance-tasks`: Maintenance tasks triggered by some time schedule. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.common.maintenance.IMaintenanceTask`. For more details see [Maintenance Tasks](../../system-documentation/configuration/maintenance-tasks.md).
+    - `services`: Custom services. For more details see [Custom Application Server Services](./as-services.md).
+    - `webapps`: HTML5 applications that use the openBIS API. For more details see [openBIS webapps](../client-side-extensions/openbis-webapps.md).
+    - `miscellaneous`: Any additional properties.
+
+## Legacy Core Plugins
+These core plugins will be eventually deprecated since they have dependencies with the DSS.
+
+- Application Server (AS):
+    - `dss-data-sources`: Definition of data sources with corresponding data source definitions for DSS. For more details see [Installation and Administrator Guide of the openBIS Server](../../system-documentation/standalone/installation-and-configuration-guide.md).
+    - `query-databases`: Databases for SQL queries. For more details see [Custom Database Queries](../../user-documentation/general-admin-users/custom-database-queries.md).
+    - `custom-imports`: Custom file imports to DSS via Web interface. For more details see [Custom Import](../legacy-server-side-extensions/custom-import.md).
+- Data Store (DSS):
+    - `drop-boxes`: ETL server threads for registration of data sets.                            `
+    - `reporting-plugins`: Reports visible in openBIS. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IReportingPluginTask`. For more details see [Reporting Plugins](../legacy-server-side-extensions/reporting-plugins.md).
+    - `processing-plugins`: Processing tasks triggered by users. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.plugins.tasks.IProcessingPluginTask`. For more details see [Processing Plugins](../legacy-server-side-extensions/processing-plugins.md).`                            `
+    - `maintenance-tasks`: Maintenance tasks triggered by some time schedule. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.common.maintenance.IMaintenanceTask`. For more details see [Maintenance Tasks](../../system-documentation/configuration/maintenance-tasks.md).
+    - `search-domain-services`: Services for variaous search domains (e.g. search on sequence databases using BLAST). Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.v2.ISearchDomainService`.
+    - `data-sources`: Internal or external database sources.
+    - `services`: Custom services. For more details see [Custom Datastore Server Services](./dss-services.md).
+    - `servlet-services`: Services based on servlets. Property `class` denotes fully-qualified class name of a class implementing `javax.servlet.Servlet`.
+    - `imaging-overview-plugins`: Data set type specific provider of the overview image of a data set. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.IDatasetImageOverviewPlugin`.
+    - `file-system-plugins`: Provider of a custom DSS file system (FTP/SFTP) view hierarchy. Property `class` denotes fully-qualified class name of a class implementing `ch.systemsx.cisd.openbis.dss.generic.server.fs.IResolverPlugin` Property code denotes the name of the top-level directory under which the custom hierarchy will be visible
+    - `miscellaneous`: Any additional properties.
+
+## Example
 - Folders of each of these types can have an arbitrary number of subfolders. But if the type folder is present it should have at least one subfolder. Each defining one plugin. The name of these subfolders define the plugin ID. It has to be unique over all plugins independent of module and plugin type. It should not contain the characters space ' ', comma '`,`', and equal sign '`=`'.
 - Each plugin folder should contain at least the file `plugin.properties`. There could be additional files (referred in `plugin.properties`) but no subfolders.
 

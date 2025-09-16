@@ -21,19 +21,6 @@ cd app-openbis-installer/
 They increase the time to obtain a build plus some tests could have additional environment
 requirements.
 
-## Why the core UI made using GWT is not build anymore?
-
-The core UI is deprecated for removal on next mayor release and requires JDK8.
-
-For now it can be build following the next commands and only with JDK8:
-
-```
-git clone https://sissource.ethz.ch/sispub/openbis.git
-cd core-plugin-openbis/
-./gradlew clean
-./gradlew buildCoreUIPackageUsingJDK8 -x test
-```
-
 ## How to compile the V3 JS bundle used by the new Admin UI in production?
 
 ```
@@ -136,12 +123,12 @@ They need to be set to run using IntelliJ.
 The project does not uses modules yet. Add '--add-opens' statements manually when launching the tests as shown below.
 !["IntelliJ Configuration 3"](../../readme/intellij-config-3.png "IntelliJ Configuration 3")
 
-## Development of NG UI
+## Development of Admin UI
 
 1. Generate openBIS JS bundle by running in command line
     1. cd /<OPENBIS_PROJECT_ROOT>/api-openbis-javascript
     2. ./gradlew :bundleOpenbisStaticResources
-2. Start openBIS in your chosen IDE (NG UI assumes it will run
+2. Start openBIS in your chosen IDE (Admin UI assumes it will run
    at: http://localhost:8888/openbis-test/):
     1. run openBISDevelopementEnvironmentASPrepare gradle task
     2. run openBISDevelopementEnvironmentASStart gradle task
