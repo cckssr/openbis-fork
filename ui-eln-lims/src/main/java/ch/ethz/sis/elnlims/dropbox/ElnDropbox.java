@@ -166,8 +166,6 @@ public class ElnDropbox implements FolderMonitorTask
                     String sampleSpace = datasetInfo[1];
                     String sampleCode = datasetInfo[2];
 
-                    String emailAddress = getSampleRegistratorsEmail(openBIS, sampleSpace, null, sampleCode);
-
                     sample = getSample(openBIS, new SampleIdentifier("/" + sampleSpace + "/" + sampleCode));
 
                     if (sample == null)
@@ -197,8 +195,6 @@ public class ElnDropbox implements FolderMonitorTask
                     String sampleSpace = datasetInfo[1];
                     String projectCode = datasetInfo[2];
                     String sampleCode = datasetInfo[3];
-
-                    String emailAddress = getSampleRegistratorsEmail(openBIS, sampleSpace, projectCode, sampleCode);
 
                     sample = getSample(openBIS, new SampleIdentifier("/" + sampleSpace + "/" + projectCode + "/" + sampleCode));
 
@@ -237,8 +233,6 @@ public class ElnDropbox implements FolderMonitorTask
                     String experimentSpace = datasetInfo[1];
                     String projectCode = datasetInfo[2];
                     String experimentCode = datasetInfo[3];
-
-                    String emailAddress = getExperimentRegistratorsEmail(openBIS, experimentSpace, projectCode, experimentCode);
 
                     experiment = getExperiment(openBIS, new ExperimentIdentifier("/" + experimentSpace + "/" + projectCode + "/" + experimentCode));
 
@@ -414,24 +408,6 @@ public class ElnDropbox implements FolderMonitorTask
         ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withProject().withSpace();
         return openBIS.getExperiments(List.of(experimentId), fetchOptions).get(experimentId);
-    }
-
-    private String getSampleRegistratorsEmail(OpenBIS openBIS, String spaceCode, String projectCode, String sampleCode)
-    {
-        SampleIdentifier sampleIdentifier = new SampleIdentifier(spaceCode, projectCode, null, sampleCode);
-        SampleFetchOptions fetchOptions = new SampleFetchOptions();
-        fetchOptions.withRegistrator();
-        Sample foundSample = openBIS.getSamples(List.of(sampleIdentifier), fetchOptions).get(sampleIdentifier);
-        return foundSample != null ? foundSample.getRegistrator().getEmail() : null;
-    }
-
-    private String getExperimentRegistratorsEmail(OpenBIS openBIS, String spaceCode, String projectCode, String experimentCode)
-    {
-        ExperimentIdentifier experimentIdentifier = new ExperimentIdentifier(spaceCode, projectCode, experimentCode);
-        ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
-        fetchOptions.withRegistrator();
-        Experiment foundExperiment = openBIS.getExperiments(List.of(experimentIdentifier), fetchOptions).get(experimentIdentifier);
-        return foundExperiment != null ? foundExperiment.getRegistrator().getEmail() : null;
     }
 
     private void deleteFilesMatchingPatterns(Path file, List<Pattern> patterns) throws IOException
