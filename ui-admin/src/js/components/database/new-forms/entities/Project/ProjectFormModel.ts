@@ -83,6 +83,17 @@ export class ProjectFormModel {
 						},
 					],
 				},
+				{
+					name: 'delete',
+					label: 'Delete',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				}
 			],
 		};
 	}
@@ -138,7 +149,7 @@ export class ProjectFormModel {
 							mode: FormMode.CREATE,
 						},
 					],
-				},
+				}
 			],
 		}
 	}
@@ -147,8 +158,7 @@ export class ProjectFormModel {
 		console.log("Invoking saveProjectAction", context);
 		const { form, controller, onAfterSave, mode } = context;
 		await new Promise(resolve => setTimeout(resolve, 1000)); // to display the loading spinner
-		const newVersion = await controller.save(form, mode);
-		console.log("Project saved successfully! New version:", newVersion);
-		onAfterSave();
+		const newPermId = await controller.save(form, mode);
+		onAfterSave({page: 'database', oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId});
 	};
 }

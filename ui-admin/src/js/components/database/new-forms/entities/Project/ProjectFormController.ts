@@ -41,7 +41,7 @@ export class ProjectFormController implements FormController {
     return ProjectFormModel.adaptProjectDtoToForm(projectDto);
   }
 
-  async save(form: Form, mode: FormMode): Promise<number> {
+  async save(form: Form, mode: FormMode): Promise<any> {
     if (mode === FormMode.CREATE) {
       console.log('ProjectFormController.save: CREATE');
       const { ProjectIdentifier, ProjectCreation, SpacePermId } = this.openbisFacade;
@@ -51,7 +51,7 @@ export class ProjectFormController implements FormController {
       creation.setDescription(form.fields.find(field => field.label === 'Description')?.value as string);
       const result = await this.openbisFacade.createProjects([creation]);
       console.log('ProjectFormController.create', result);
-      //return result.length;
+      return result[0].getPermId();
       return Promise.resolve(form.version + 1);
     } else if (mode === FormMode.EDIT) {
       console.log('ProjectFormController.save: EDIT');
@@ -76,9 +76,61 @@ export class ProjectFormController implements FormController {
   }
 
 
-  delete(form: Form): void {
-    // Implement delete logic as needed
+  async delete(form: Form): Promise<void> {
+    console.log('ProjectFormController.delete', form);
+    const { ProjectIdentifier, ProjectDeletionOptions, DeletionSearchCriteria, DeletionFetchOptions } = this.openbisFacade;
+    const projectIdentifier = new ProjectIdentifier(form.fields.find(field => field.id === form.entityPermId + '-identifier')?.value);
+
+    const criteria = new DeletionSearchCriteria();
+    const fetchOptions = new DeletionFetchOptions();
+    fetchOptions.withDeletedObjects();
+    const deletions = await this.openbisFacade.searchDeletions(criteria, fetchOptions);
+
+    console.log({deletions});
+    const deletionOptions = new ProjectDeletionOptions();
+    deletionOptions.setReason('delete via ng-ui');
+    const result = await this.openbisFacade.deleteProjects([projectIdentifier], deletionOptions);
+    console.log({result});  
   }
+
+/*   this.deleteProject = function(reason) {
+    var _this = this;
+    var projectIdentifier = this._projectFormModel.v3_project.identifier.identifier;
+    mainController.serverFacade.listDeletions(function(deletions) {
+        var dependentDeletions = [];
+        deletions.forEach(function(deletion) {
+            var deletedObjects = deletion.getDeletedObjects();
+            for (var idx = 0; idx < deletedObjects.length; idx++) {
+                var deletedObject = deletedObjects[idx];
+                var kind = deletedObject.entityKind;
+                if (kind == "EXPERIMENT" || kind == "SAMPLE") {
+                    var splitted = deletedObject.identifier.split("/");
+                    if (splitted.length > 3 && ("/" + splitted[1] + "/" + splitted[2]) == projectIdentifier) {
+                        dependentDeletions.push(deletion);
+                        break;
+                    }
+                }
+            };
+        });
+        if (dependentDeletions.length > 0) {
+            var text = "This project can only be deleted if the following deletions sets in Trashcan are deleted permanently:<br>";
+            dependentDeletions.forEach(function(deletion) {
+                text += Util.getFormatedDate(new Date(deletion.deletionDate)) + " (reason: " + deletion.reason + ")<br>";
+            });
+            Util.showInfo(text);
+        } else {
+            mainController.serverFacade.deleteProjects([_this._projectFormModel.project.id], reason, function(data) {
+                Util.unblockUI()
+                if(data.error) {
+                    Util.showError(data.error.message);
+                } else {
+                    Util.showSuccess("Project Deleted");
+                    mainController.sideMenu.deleteNodeByEntityPermId("PROJECT", _this._projectFormModel.project.permId, true);
+                }
+            });
+        }
+    });
+} */
 
   move(form: Form): void {
     // Implement move logic as needed

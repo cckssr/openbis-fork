@@ -190,8 +190,10 @@ export const EntityFormContextProvider = ({ openbisFacade, entityKind, user, per
 			} else if (actionName === 'cancel') {
 				registeredActionHandler(context);
 				setForm(initialForm); // Reset to original state
-			}
-			else {
+			} else if (actionName === 'delete') {
+				await registeredActionHandler(context);
+				onCloseForm();
+			} else {
 				registeredActionHandler(context);
 			}
 		} else {

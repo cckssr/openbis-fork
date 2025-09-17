@@ -187,6 +187,10 @@ class Facade {
     return this.promise(this.v3.searchEvents(criteria, fo))
   }
 
+  searchDeletions(criteria, fo) {
+    return this.promise(this.v3.searchDeletions(criteria, fo))
+  }
+
   getSampleTypes(ids, fo) {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
@@ -277,6 +281,10 @@ class Facade {
 
   deleteMaterialTypes(ids, options) {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
+  }
+
+  deleteProjects(ids, options) {
+    return this.promise(this.v3.deleteProjects(ids, options))
   }
 
   evaluatePlugin(options) {

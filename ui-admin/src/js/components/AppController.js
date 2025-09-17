@@ -29,7 +29,7 @@ export class AppController {
 
     this.context = context
     this.history = history
-    this.registerPlugins();
+    //this.registerPlugins();
   }
 
   initialState() {

@@ -6,4 +6,5 @@ export function registerCoreActionsPlugin() {
     FormEngineRegistry.registerAction('edit', CoreFormModel.editAction);
     FormEngineRegistry.registerAction('cancel', CoreFormModel.cancelEditAction);
     FormEngineRegistry.registerAction('new-form:cancel', CoreFormModel.cancelNewFormAction);
+    FormEngineRegistry.registerAction('delete', CoreFormModel.deleteAction);
 }

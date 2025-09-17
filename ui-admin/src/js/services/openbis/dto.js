@@ -96,6 +96,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/project/id/ProjectIdentifier',
   'as/dto/project/id/ProjectPermId',
   'as/dto/project/search/ProjectSearchCriteria',
+  'as/dto/project/delete/ProjectDeletionOptions',
   'as/dto/property/DataType',
   'as/dto/property/PropertyType',
   'as/dto/property/create/CreatePropertyTypesOperation',
@@ -221,7 +222,9 @@ const CLASS_FULL_NAMES = [
   'imaging/dto/ImagingMultiExportContainer',
   'imaging/dto/ImagingDataSetExportConfig',
   'imaging/dto/ImagingExportIncludeOptions',
-  'imaging/dto/ImagingSemanticAnnotation'
+  'imaging/dto/ImagingSemanticAnnotation',
+  'as/dto/deletion/search/DeletionSearchCriteria',
+  'as/dto/deletion/fetchoptions/DeletionFetchOptions'
 ]
 
 class Dto {

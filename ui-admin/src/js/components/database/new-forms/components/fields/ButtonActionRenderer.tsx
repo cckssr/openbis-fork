@@ -9,7 +9,7 @@ export const ButtonActionRenderer: React.FC<ActionRendererProps> = ({ action, on
         <Button key={action.name}
                 id={action.name}
                 label={action.label}
-                type={action.name.includes('save') ? 'final' : 'neutral'}
+                type={action.name.includes('save') || action.name.includes('delete') ? 'final' : 'neutral'}
                 onClick={() => onAction(action.name)}
               />
     );

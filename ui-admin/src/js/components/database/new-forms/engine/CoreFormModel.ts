@@ -18,4 +18,8 @@ export class CoreFormModel {
 	static autoSaveAction = (context: ActionContext) => {
 		context.setAutoSaveEnabled(!context.isAutoSaveEnabled);
 	};
+
+	static deleteAction = (context: ActionContext) => {
+		context.controller.delete(context.form);
+	};
 }
