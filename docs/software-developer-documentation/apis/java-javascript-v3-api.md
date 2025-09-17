@@ -14,7 +14,7 @@ Some readers may ask: why are there two components managing the same file storag
 
 - AFS can perform all the functions of DSS while also offering new features unavailable in DSS.  
 - However, AFS uses a new API for reading and writing files, meaning applications must be migrated to this new API to use it.  
-- During the transition period, both components will be available. In the next OpenBIS version, DSS will be removed.  
+- During the transition period (openBIS 7), both components will be available with DSS deprecated. In the next OpenBIS version (openBIS 8), DSS MIGHT be removed.
 - Additionally, AFS is independent of OpenBIS, so it can potentially be used with other systems.
 
 ### The Java API
