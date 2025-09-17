@@ -157,9 +157,9 @@ class SampleSemanticAnnotationsExpectations extends Expectations
         semanticAnnotation.setFetchOptions(semanticAnnotationFetchOptions);
         semanticAnnotation.setPropertyAssignment(getNamePropertyAssignment());
         semanticAnnotation.setDescriptorOntologyId("ontologyid");
-        semanticAnnotation.setDescriptorAccessionId("accessiond");
+        semanticAnnotation.setDescriptorAccessionId("accessionid");
         semanticAnnotation.setDescriptorOntologyVersion("ontologyversion");
-        semanticAnnotation.setPredicateAccessionId("accesionid");
+        semanticAnnotation.setPredicateAccessionId("accessionid");
         semanticAnnotation.setPredicateOntologyVersion("ontologyversion");
         semanticAnnotation.setPredicateOntologyId("ontologyid");
 
