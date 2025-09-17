@@ -127,9 +127,6 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         )
       } else if (typeCode != null && propertyCode == null) {
         semanticAnnotationCreation.setEntityTypeId(new openbis.EntityTypePermId(typeCode, strategy.getEntityKind()))
-        semanticAnnotationCreation.setDescriptorOntologyId(semanticAnnotation.predicateOntologyId)
-        semanticAnnotationCreation.setDescriptorOntologyVersion(semanticAnnotation.predicateOntologyVersion)
-        semanticAnnotationCreation.setDescriptorAccessionId(semanticAnnotation.predicateAccessionId)
       } else if (propertyCode != null && typeCode == null) {
         semanticAnnotationCreation.setPropertyTypeId(new openbis.PropertyTypePermId(propertyCode))
       }
