@@ -20,6 +20,7 @@ import java.util.Map;
 
 import ch.ethz.sis.afs.manager.NopLockMapper;
 import ch.ethz.sis.afsapi.api.PublicAPI;
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.afsserver.http.impl.NettyHttpServer;
 import ch.ethz.sis.afsserver.server.Server;
@@ -85,9 +86,8 @@ public class ServerClientEnvironmentFS
         configuration.put(AtomicFileSystemServerParameter.httpServerClass, NettyHttpServer.class.getName());
         configuration.put(AtomicFileSystemServerParameter.httpServerUri, "/fileserver");
         configuration.put(AtomicFileSystemServerParameter.httpServerPort, "1010");
-        configuration.put(AtomicFileSystemServerParameter.httpMaxContentLength, "1024");
-
-        configuration.put(AtomicFileSystemServerParameter.maxReadSizeInBytes, "1024");
+        configuration.put(AtomicFileSystemServerParameter.httpMaxContentLength, Integer.toString((int) (AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES  * 1.5)));
+        configuration.put(AtomicFileSystemServerParameter.maxReadSizeInBytes, Integer.toString(AfsClient.DEFAULT_PACKAGE_SIZE_IN_BYTES));
         configuration.put(AtomicFileSystemServerParameter.authenticationInfoProviderClass, DummyAuthenticationInfoProvider.class.getName());
         configuration.put(AtomicFileSystemServerParameter.authorizationInfoProviderClass, DummyAuthorizationInfoProvider.class.getName());
         configuration.put(AtomicFileSystemServerParameter.poolSize, "50");
