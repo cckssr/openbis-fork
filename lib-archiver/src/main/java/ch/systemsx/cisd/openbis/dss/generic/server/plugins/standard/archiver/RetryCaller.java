@@ -15,8 +15,8 @@
  */
 package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
 
 /**

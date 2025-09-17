@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.systemtest.optimistic_locking;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.openbis.common.conversation.progress.IServiceConversationProgressListener;
 

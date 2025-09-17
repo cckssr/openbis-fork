@@ -16,8 +16,8 @@
 package ch.ethz.sis.afsserver.http.impl;
 
 import ch.ethz.sis.afsserver.http.HttpServerHandler;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.afsserver.http.HttpServer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;

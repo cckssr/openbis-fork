@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.*;
 
 import ch.ethz.sis.openbis.generic.server.asapi.v3.search.PSQLTypes;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 public abstract class AbstractSQLExecutor implements ISQLExecutor
 {

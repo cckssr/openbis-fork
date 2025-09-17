@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.datastoreserver.systemtests.authorization;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.Assert;
 import org.testng.annotations.AfterGroups;
 import org.testng.annotations.AfterMethod;
@@ -28,7 +28,7 @@ import org.testng.annotations.DataProvider;
 
 import ch.systemsx.cisd.common.exceptions.AuthorizationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.systemsx.cisd.openbis.datastoreserver.systemtests.SystemTestCase;
 import ch.systemsx.cisd.openbis.generic.server.authorization.project.TestAuthSessionProvider;
 import ch.systemsx.cisd.openbis.generic.shared.authorization.IAuthorizationConfig;
@@ -52,7 +52,7 @@ import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyTermPE;
 import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import ch.systemsx.cisd.openbis.systemtest.authorization.CommonAuthorizationSystemTestService;
-import ch.systemsx.cisd.common.logging.LogRecordingUtils;
+import ch.ethz.sis.shared.log.classic.utils.LogRecordingUtils;
 
 /**
  * @author pkupczyk

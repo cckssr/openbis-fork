@@ -34,8 +34,8 @@ import ch.ethz.sis.afs.dto.Transaction;
 import ch.ethz.sis.afs.manager.operation.OperationExecutor;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.shared.io.IOUtils;
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 
 public class TransactionManager
 {

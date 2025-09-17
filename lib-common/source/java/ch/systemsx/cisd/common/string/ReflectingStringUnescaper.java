@@ -18,11 +18,11 @@ package ch.systemsx.cisd.common.string;
 import java.lang.reflect.Field;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogUtils;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.utils.LogUtils;
 
 /**
  * Performs HTML unescaping the string fields of an object. Its implementation is based on {@link ReflectingStringEscaper} but there is no support to

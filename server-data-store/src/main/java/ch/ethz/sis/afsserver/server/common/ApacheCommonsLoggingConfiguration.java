@@ -2,8 +2,8 @@ package ch.ethz.sis.afsserver.server.common;
 
 import org.apache.commons.logging.Log;
 
-import ch.ethz.sis.shared.log.LogManager;
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.LogManager;
+import ch.ethz.sis.shared.log.standard.Logger;
 
 public class ApacheCommonsLoggingConfiguration implements Log
 {

@@ -2,9 +2,8 @@ package ch.ethz.sis.afsserver.server.common;
 
 
 
-import org.apache.log4j.LogManager;
+import ch.ethz.sis.shared.log.classic.impl.LogManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Handler;
@@ -58,7 +57,8 @@ public class ApacheLog4j1Configuration
 
             loggingRecursionGuard.set(true);
 
-            ch.ethz.sis.shared.log.Logger afsLogger = ch.ethz.sis.shared.log.LogManager.getLogger(record.getLoggerName());
+            ch.ethz.sis.shared.log.standard.Logger
+                    afsLogger = ch.ethz.sis.shared.log.standard.LogManager.getLogger(record.getLoggerName());
 
 
             String message = record.getMessage(); // Consider using a Formatter if needed, but raw message is often fine

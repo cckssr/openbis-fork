@@ -45,7 +45,8 @@ public enum AFSExceptions implements ExceptionTemplateHolder {
     DeadlockDetected(               RuntimeException.class,         List.of(UserUsageError),            10020,"Deadlock detected, %s is already waiting for %s from %s"),
     TransactionReuse(               RuntimeException.class,         List.of(CoreDeveloperCodingError),  10021,"Transaction with uuid: %s and state: %s was going to be reused"),
     NoSharesFound(                  RuntimeException.class,         List.of(AdminConfigError),          10022,"No shares found"),
-    PathInvalid(                  RuntimeException.class,         List.of(ClientDeveloperCodingError),          10023,"Path %s contains invalid characters");
+    PathInvalid(                    RuntimeException.class,         List.of(ClientDeveloperCodingError),10023,"Path %s contains invalid characters"),
+    PathLocksCannotBeObtained(      RuntimeException.class,         List.of(RecoverableSystemStateError), 10024,"Path can't be operated by: %s - %s locks cannot be obtained");
 
     private RuntimeExceptionTemplate template;
 

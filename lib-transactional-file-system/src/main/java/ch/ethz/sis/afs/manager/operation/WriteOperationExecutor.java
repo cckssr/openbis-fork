@@ -24,7 +24,7 @@ import ch.ethz.sis.afs.dto.operation.WriteOperation;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
 
-public class WriteOperationExecutor implements OperationExecutor<WriteOperation> {
+public class WriteOperationExecutor implements OperationExecutor<WriteOperation, Void> {
 
     //
     // Singleton
@@ -49,7 +49,7 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation>
 
 
     @Override
-    public boolean prepare(Transaction transaction, WriteOperation operation) throws Exception {
+    public Void prepare(Transaction transaction, WriteOperation operation) throws Exception {
         // 1. Check that if the file exists, is not a directory
         boolean sourceExists = IOUtils.exists(operation.getSource());
         if (sourceExists) {
@@ -69,7 +69,7 @@ public class WriteOperationExecutor implements OperationExecutor<WriteOperation>
 
         // 2. Flush bytes
         IOUtils.write(operation.getTempSource(), 0, operation.getData());
-        return true;
+        return null;
     }
 
     @Override

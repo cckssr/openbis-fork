@@ -17,7 +17,7 @@ package ch.systemsx.cisd.etlserver.registrator.api.v1.impl;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 /**
  * Reference to {@link ch.systemsx.cisd.etlserver.registrator.api.impl.RollbackStack} kept for backwards compatibility

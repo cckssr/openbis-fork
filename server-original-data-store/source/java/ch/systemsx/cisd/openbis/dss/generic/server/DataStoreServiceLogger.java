@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.resource.IInitializable;

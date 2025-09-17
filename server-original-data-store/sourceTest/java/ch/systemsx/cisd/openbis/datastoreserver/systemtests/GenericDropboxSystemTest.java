@@ -19,7 +19,7 @@ import java.io.File;
 import java.io.FileFilter;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Level;
+import ch.ethz.sis.shared.log.standard.core.Level;
 
 /**
  * @author pkupczyk

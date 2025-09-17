@@ -1,8 +1,8 @@
 package ch.ethz.sis.afsserver.server.common;
 
-import ch.systemsx.cisd.common.logging.LogInitializer;
-import ch.systemsx.cisd.common.logging.ext.LoggingUtils;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LoggingUtils;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,11 +31,11 @@ public class TestLogger {
         // Optionally, you could reconfigure or remove existing handlers here.
     }
 
-    public static void startLogRecording(org.apache.log4j.Level level) {
+    public static void startLogRecording(ch.ethz.sis.shared.log.standard.core.Level level) {
         startLogRecording(level, DEFAULT_LOG_LAYOUT_PATTERN, DEFAULT_LOGGER_NAME_REGEX);
     }
 
-    public static void startLogRecording(org.apache.log4j.Level level, String logLayoutPattern, String loggerNameRegex) {
+    public static void startLogRecording(ch.ethz.sis.shared.log.standard.core.Level level, String logLayoutPattern, String loggerNameRegex) {
         if (recordingHandler != null) {
             throw new RuntimeException("Test log recording has already been started.");
         }
@@ -140,7 +140,7 @@ public class TestLogger {
     public static void main(String[] args) {
         // Example usage:
         configure();
-        startLogRecording(org.apache.log4j.Level.INFO);
+        startLogRecording(ch.ethz.sis.shared.log.standard.core.Level.INFO);
 
         Logger logger = Logger.getLogger(TestLogger.class.getName());
         logger.info("This is a test log message.");

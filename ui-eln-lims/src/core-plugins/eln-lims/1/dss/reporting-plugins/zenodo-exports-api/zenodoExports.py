@@ -20,7 +20,7 @@ import traceback
 from ch.ethz.sis import JobScheduler
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service import CustomASServiceExecutionOptions
 from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceCode
-from ch.systemsx.cisd.common.logging import LogCategory
+from ch.ethz.sis.shared.log.classic.core import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.nio.file import Paths
 from org.apache.log4j import Logger

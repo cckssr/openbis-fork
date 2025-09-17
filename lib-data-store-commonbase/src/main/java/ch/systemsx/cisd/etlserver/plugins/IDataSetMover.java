@@ -18,7 +18,7 @@ package ch.systemsx.cisd.etlserver.plugins;
 import java.io.File;
 import java.util.Properties;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IChecksumProvider;
 
 /**

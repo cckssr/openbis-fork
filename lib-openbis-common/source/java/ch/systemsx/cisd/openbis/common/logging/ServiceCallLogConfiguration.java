@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.common.logging;
 
-import ch.systemsx.cisd.common.logging.ControlFileBasedLogConfiguration;
+import ch.ethz.sis.shared.log.classic.ControlFileBasedLogConfiguration;
 
 /**
  * @author pkupczyk

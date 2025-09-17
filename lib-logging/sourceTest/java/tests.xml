@@ -7,8 +7,9 @@
             </run>
         </groups>
         <packages>
-            <package name="ch.systemsx.cisd.common.logging.*"/>
-            <package name="ch.systemsx.cisd.common.logging.test.*"/>
+            <package name="ch.ethz.sis.shared.log.*"/>
+            <package name="ch.ethz.sis.shared.log.standard.test.*"/>
+            <package name="ch.ethz.sis.shared.log.classic.test.*"/>
         </packages>
     </test>
 </suite>

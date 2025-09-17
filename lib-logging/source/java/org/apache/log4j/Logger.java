@@ -17,12 +17,15 @@
 
 package org.apache.log4j;
 
+
+import ch.systemsx.cisd.common.logging.LoggingUtils;
+
 import java.util.Arrays;
 import java.util.logging.Handler;
 
-import static ch.systemsx.cisd.common.logging.ext.LoggingUtils.mapFromJUL;
-import static ch.systemsx.cisd.common.logging.ext.LoggingUtils.mapToJUL;
-import static ch.systemsx.cisd.common.logging.ext.LoggingUtils.mapToJULLevel;
+import static ch.ethz.sis.shared.log.standard.utils.LoggingUtils.mapToJULLevel;
+import static ch.systemsx.cisd.common.logging.LoggingUtils.mapFromJUL;
+import static ch.systemsx.cisd.common.logging.LoggingUtils.mapToJUL;
 
 /**
  * A drop‐in replacement for log4j's Logger that delegates to java.util.logging.
@@ -30,136 +33,101 @@ import static ch.systemsx.cisd.common.logging.ext.LoggingUtils.mapToJULLevel;
 public class Logger {
     private final java.util.logging.Logger julLogger;
 
-    protected Logger(String name)
-    {
+
+    private static final String LOG4J_TAG = "[Log4j log]";
+
+    private String decorate(Object message) {
+        return LOG4J_TAG + "[" + getName() + "] " + String.valueOf(message);
+    }
+
+    protected Logger(String name) {
         this.julLogger = java.util.logging.Logger.getLogger(name);
     }
 
-    /**
-     * Returns a Logger for the given name.
-     */
-    public static Logger getLogger(String name) {
-        return new Logger(name);
-    }
+    public static Logger getLogger(String name) { return new Logger(name); }
+    public static Logger getLogger(Class<?> clazz) { return getLogger(clazz.getName()); }
+    public static Logger getRootLogger() { return getLogger(""); }
 
-    public static Logger getLogger(Class<?> clazz) {
-        return getLogger(clazz.getName());
-    }
-
-    public static Logger getRootLogger() {
-        return getLogger("");
-    }
-
-
-    public String getName()
-    {
-        return julLogger.getName();
-    }
+    public String getName() { return julLogger.getName(); }
 
     public void debug(Object message) {
-        julLogger.log(java.util.logging.Level.FINE, String.valueOf(message));
+        julLogger.log(java.util.logging.Level.FINE, decorate(message));
     }
-
     public void debug(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.FINE, String.valueOf(message), t);
+        julLogger.log(java.util.logging.Level.FINE, decorate(message), t);
     }
 
     public void info(Object message) {
-        julLogger.log(java.util.logging.Level.INFO, String.valueOf(message));
+        julLogger.log(java.util.logging.Level.INFO, decorate(message));
     }
-
     public void info(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.INFO, String.valueOf(message), t);
+        julLogger.log(java.util.logging.Level.INFO, decorate(message), t);
     }
 
     public void warn(Object message) {
-        julLogger.log(java.util.logging.Level.WARNING, String.valueOf(message));
+        julLogger.log(java.util.logging.Level.WARNING, decorate(message));
     }
-
     public void warn(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.WARNING, String.valueOf(message), t);
+        julLogger.log(java.util.logging.Level.WARNING, decorate(message), t);
     }
 
     public void error(Object message) {
-        julLogger.log(java.util.logging.Level.SEVERE, String.valueOf(message));
+        julLogger.log(java.util.logging.Level.SEVERE, decorate(message));
     }
-
     public void error(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.SEVERE, String.valueOf(message), t);
+        julLogger.log(java.util.logging.Level.SEVERE, decorate(message), t);
     }
 
     public void fatal(Object message) {
-        // no direct "fatal" level in JUL, so map it to SEVERE with a "FATAL:" prefix
-        julLogger.log(java.util.logging.Level.SEVERE, "FATAL: " + String.valueOf(message));
+        julLogger.log(java.util.logging.Level.SEVERE, decorate("FATAL: " + String.valueOf(message)));
     }
-
     public void fatal(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.SEVERE, "FATAL: " + String.valueOf(message), t);
+        julLogger.log(java.util.logging.Level.SEVERE, decorate("FATAL: " + String.valueOf(message)), t);
     }
 
-    public boolean isDebugEnabled() {
-        return julLogger.isLoggable(java.util.logging.Level.FINE);
-    }
-
-    public boolean isInfoEnabled() {
-        return julLogger.isLoggable(java.util.logging.Level.INFO);
-    }
-
-    public boolean isErrorEnabled() {
-        return julLogger.isLoggable(java.util.logging.Level.SEVERE);
-    }
+    public boolean isDebugEnabled() { return julLogger.isLoggable(java.util.logging.Level.FINE); }
+    public boolean isInfoEnabled()  { return julLogger.isLoggable(java.util.logging.Level.INFO); }
+    public boolean isErrorEnabled() { return julLogger.isLoggable(java.util.logging.Level.SEVERE); }
 
     public void log(Priority priority, Object message, Throwable t) {
         java.util.logging.Level julLevel = mapToJULLevel(priority.toInt());
-        julLogger.log(julLevel, String.valueOf(message), t);
+        julLogger.log(julLevel, decorate(message), t);
     }
-
     public void log(Priority priority, Object message) {
         log(priority, message, null);
     }
 
-    /**
-     * Sets the logging level for this logger.
-     *
-     * @param level the log4j Level to set.
-     */
-    public void setLevel(Level level) {
-        julLogger.setLevel(mapToJUL(level));
-    }
-    /**
-     * Returns the current log level as a log4j Level.
-     */
-    public Level getLevel() {
-        return mapFromJUL(julLogger.getLevel());
-    }
+    public void setLevel(Level level) { julLogger.setLevel(mapToJUL(level)); }
+    public Level getLevel() { return mapFromJUL(julLogger.getLevel()); }
 
+    public Level getEffectiveLevel() {
+        java.util.logging.Logger p = this.julLogger;
 
-    public Level getEffectiveLevel(){
-        java.util.logging.Level effectiveLevel = julLogger.getLevel();
-        while (effectiveLevel == null) {
-            java.util.logging.Logger parent = this.julLogger.getParent();
-            if (parent != null) {
-                effectiveLevel = parent.getLevel();
+        // Guard against cycles / self-parent and extreme depth
+        java.util.Set<java.util.logging.Logger> seen =
+                java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        int hops = 0, MAX_HOPS = 64;
+
+        while (p != null && seen.add(p) && hops++ < MAX_HOPS) {
+            java.util.logging.Level lvl = p.getLevel();
+            if (lvl != null) {
+                return mapFromJUL(lvl);
             }
+            java.util.logging.Logger next = p.getParent();
+            if (next == p) break;
+            p = next;
         }
-        return mapFromJUL(effectiveLevel);
+
+        // Fallback: use root logger’s level if set, else INFO
+        java.util.logging.Level root = java.util.logging.Logger.getLogger("").getLevel();
+        return mapFromJUL(root != null ? root : java.util.logging.Level.INFO);
     }
 
-    /**
-     * Checks whether logging is enabled for the given log4j Priority.
-     */
-    public boolean isEnabledFor(Priority priority) {
-        return julLogger.isLoggable(mapToJULLevel(priority.toInt()));
-    }
+    public boolean isEnabledFor(Priority priority) { return julLogger.isLoggable(mapToJULLevel(priority.toInt())); }
+    public boolean isTraceEnabled() { return julLogger.isLoggable(java.util.logging.Level.FINEST); }
 
-    public boolean isTraceEnabled() {
-        return julLogger.isLoggable(java.util.logging.Level.FINEST);
-    }
+    public void trace(String message) { julLogger.log(java.util.logging.Level.FINEST, decorate(message)); }
 
-    public void trace(String message)
-    {
-        julLogger.log(java.util.logging.Level.FINEST, String.valueOf(message));
-    }
 
     public void addHandler(Handler handler)
     {

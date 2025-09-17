@@ -18,15 +18,15 @@ package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.reflection.MethodUtils;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISemanticAnnotationDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
@@ -49,12 +49,6 @@ public final class SemanticAnnotationDAO extends AbstractGenericEntityDAO<Semant
             + "- ontology id cannot be null or empty\n"
             + "- ontology version cannot be null\n"
             + "- accession id cannot be null or empty\n";
-
-    public static final String ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY =
-            "Descriptor of an entity type semantic annotation has to be defined, i.e. descriptor:\n"
-                    + "- ontology id cannot be null or empty\n"
-                    + "- ontology version cannot be null\n"
-                    + "- accession id cannot be null or empty\n";
 
     public static final String ERROR_DESCRIPTOR_CAN_BE_NULL_OR_NON_EMPTY =
             "Descriptor of a property type or property assignment semantic annotation has to be either defined, i.e descriptor:\n"
@@ -146,24 +140,14 @@ public final class SemanticAnnotationDAO extends AbstractGenericEntityDAO<Semant
             throw new UserFailureException(ERROR_PREDICATE_CANNOT_BE_NULL_OR_EMPTY);
         }
 
-        if (annotation.getSampleType() != null)
+        if (isNull(annotation.getDescriptorOntologyId()) && isNull(annotation.getDescriptorAccessionId())
+                && isNull(annotation.getDescriptorOntologyVersion()))
         {
-            if (isNullOrEmpty(annotation.getDescriptorOntologyId()) || isNullOrEmpty(annotation.getDescriptorAccessionId())
-                    || isNull(annotation.getDescriptorOntologyVersion()))
-            {
-                throw new UserFailureException(ERROR_DESCRIPTOR_CANNOT_BE_NULL_OR_EMPTY);
-            }
-        } else
+            return;
+        } else if (isNullOrEmpty(annotation.getDescriptorOntologyId()) || isNullOrEmpty(annotation.getDescriptorAccessionId())
+                || isNull(annotation.getDescriptorOntologyVersion()))
         {
-            if (isNull(annotation.getDescriptorOntologyId()) && isNull(annotation.getDescriptorAccessionId())
-                    && isNull(annotation.getDescriptorOntologyVersion()))
-            {
-                return;
-            } else if (isNullOrEmpty(annotation.getDescriptorOntologyId()) || isNullOrEmpty(annotation.getDescriptorAccessionId())
-                    || isNull(annotation.getDescriptorOntologyVersion()))
-            {
-                throw new UserFailureException(ERROR_DESCRIPTOR_CAN_BE_NULL_OR_NON_EMPTY);
-            }
+            throw new UserFailureException(ERROR_DESCRIPTOR_CAN_BE_NULL_OR_NON_EMPTY);
         }
     }
 

@@ -24,9 +24,9 @@ import org.springframework.remoting.RemoteConnectFailureException;
 
 import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
 import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
-import ch.systemsx.cisd.common.logging.ConsoleLogger;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.impl.ConsoleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 
 /**
  * @author pkupczyk

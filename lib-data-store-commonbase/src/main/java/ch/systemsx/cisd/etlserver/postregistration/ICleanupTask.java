@@ -17,7 +17,7 @@ package ch.systemsx.cisd.etlserver.postregistration;
 
 import java.io.Serializable;
 
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
 
 /**
  * Interface for cleanup tasks. Clean up tasks have to be {@link Serializable} because they are made persistent.

@@ -19,8 +19,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * A class that performs tiff file compression using TibTiff's <code>tiffcp</code> utility.

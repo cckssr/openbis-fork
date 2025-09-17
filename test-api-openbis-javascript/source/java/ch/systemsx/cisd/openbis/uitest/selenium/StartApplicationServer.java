@@ -16,17 +16,9 @@
  */
 package ch.systemsx.cisd.openbis.uitest.selenium;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintStream;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
 
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
 import org.eclipse.jetty.util.component.LifeCycle;

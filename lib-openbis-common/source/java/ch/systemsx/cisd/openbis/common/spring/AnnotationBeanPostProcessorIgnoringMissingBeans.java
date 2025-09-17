@@ -15,13 +15,13 @@
  */
 package ch.systemsx.cisd.openbis.common.spring;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * Extensions of {@link CommonAnnotationBeanPostProcessor} which ignores missing beans.

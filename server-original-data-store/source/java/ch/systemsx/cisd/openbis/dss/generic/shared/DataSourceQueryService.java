@@ -23,10 +23,10 @@ import net.lemnik.eodsql.DataSet;
 import net.lemnik.eodsql.InvalidQueryException;
 import net.lemnik.eodsql.QueryTool;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.resource.IReleasable;
 import ch.systemsx.cisd.common.resource.Resources;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.IDataSourceQueryService;

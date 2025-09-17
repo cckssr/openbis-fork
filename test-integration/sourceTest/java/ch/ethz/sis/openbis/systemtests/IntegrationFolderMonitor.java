@@ -8,9 +8,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.LogManager;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -104,7 +104,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-marker-file/test_marker_file_configuration.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-marker-file/test_marker_file_configuration'.*"));
                 },
                 5000);
 
@@ -144,7 +144,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-quiet-period/test_quiet_period_configuration.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-quiet-period/test_quiet_period_configuration'.*"));
                 },
                 5000);
 
@@ -178,7 +178,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - Processing: targets/folder-monitor/incoming-with-failing-task/test_failing has failed.*"));
+                            ".*FolderMonitor - Processing of path 'targets/folder-monitor/incoming-with-failing-task/test_failing' has failed.*"));
                 },
                 5000);
 
@@ -192,7 +192,7 @@ public class IntegrationFolderMonitor extends AbstractIntegrationTest
                 {
                     String[] recordedLines = TestLogger.getRecordedLog().split("\n");
                     return Arrays.stream(recordedLines).anyMatch(line -> line.matches(
-                            ".*FolderMonitor - After processing: targets/folder-monitor/incoming-with-failing-task/test_success.*"));
+                            ".*FolderMonitor - After processing of path 'targets/folder-monitor/incoming-with-failing-task/test_success'.*"));
                 },
                 5000);
 

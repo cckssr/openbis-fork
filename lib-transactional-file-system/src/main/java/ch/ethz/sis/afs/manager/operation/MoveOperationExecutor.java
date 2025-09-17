@@ -21,7 +21,7 @@ import ch.ethz.sis.afs.dto.operation.OperationName;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
 
-public class MoveOperationExecutor implements OperationExecutor<MoveOperation> {
+public class MoveOperationExecutor implements OperationExecutor<MoveOperation, Void> {
 
     //
     // Singleton
@@ -45,14 +45,14 @@ public class MoveOperationExecutor implements OperationExecutor<MoveOperation> {
     //
 
     @Override
-    public boolean prepare(Transaction transaction, MoveOperation operation) throws Exception {
+    public Void prepare(Transaction transaction, MoveOperation operation) throws Exception {
         if (!IOUtils.exists(operation.getSource())) {
             AFSExceptions.throwInstance(AFSExceptions.PathNotInStore, OperationName.Move.name(), operation.getSource());
         }
         if (IOUtils.exists(operation.getTarget())) {
             AFSExceptions.throwInstance(AFSExceptions.PathInStore, OperationName.Move.name(), operation.getTarget());
         }
-        return true;
+        return null;
     }
 
     @Override

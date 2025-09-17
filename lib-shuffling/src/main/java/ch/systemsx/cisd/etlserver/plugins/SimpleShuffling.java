@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.etlserver.plugins;
 
-import static ch.systemsx.cisd.common.logging.LogLevel.INFO;
+import static ch.ethz.sis.shared.log.classic.core.LogLevel.INFO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,10 +26,10 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 
 import ch.rinn.restrictions.Private;
-import ch.systemsx.cisd.common.logging.ISimpleLogger;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.ISimpleLogger;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.etlserver.postregistration.EagerShufflingTask;
 import ch.systemsx.cisd.etlserver.postregistration.IPostRegistrationTask;

@@ -11,11 +11,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -43,8 +42,8 @@ import ch.ethz.sis.openbis.systemtests.common.TestMessagesConsumerMaintenanceTas
 import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.shared.io.IOUtils;
 import ch.systemsx.cisd.base.utilities.OSUtilities;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.common.process.ProcessResult;
 import ch.systemsx.cisd.common.test.AssertionUtil;

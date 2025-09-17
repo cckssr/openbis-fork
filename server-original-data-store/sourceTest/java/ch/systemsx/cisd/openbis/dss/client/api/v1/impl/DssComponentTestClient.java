@@ -15,17 +15,15 @@
  */
 package ch.systemsx.cisd.openbis.dss.client.api.v1.impl;
 
-import java.util.Properties;
-
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.DssComponentFactory;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.IDataSetDss;
 import ch.systemsx.cisd.openbis.dss.client.api.v1.IDssComponent;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.FileInfoDssDTO;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 /**
  * @author Chandrasekhar Ramakrishnan

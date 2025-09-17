@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.business;
 
-import ch.systemsx.cisd.common.logging.LogLevel;
+import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.openbis.generic.shared.IDataStoreService;
 
 /**

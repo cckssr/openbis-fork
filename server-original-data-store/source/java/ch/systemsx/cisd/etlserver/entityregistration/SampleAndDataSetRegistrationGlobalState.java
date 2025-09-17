@@ -18,7 +18,7 @@ package ch.systemsx.cisd.etlserver.entityregistration;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.mail.EMailAddress;
 import ch.systemsx.cisd.common.mail.IMailClient;

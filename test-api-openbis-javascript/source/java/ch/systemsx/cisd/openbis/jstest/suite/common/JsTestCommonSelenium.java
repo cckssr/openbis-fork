@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.jstest.suite.common;
 import java.io.File;
 import java.util.List;
 
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.openbis.uitest.selenium.Location;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;

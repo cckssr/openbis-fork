@@ -16,11 +16,11 @@
 package ch.systemsx.cisd.openbis.generic.server.util;
 
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * @author Franz-Josef Elmer

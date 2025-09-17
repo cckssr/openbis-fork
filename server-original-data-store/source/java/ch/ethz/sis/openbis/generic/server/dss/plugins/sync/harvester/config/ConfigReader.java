@@ -32,13 +32,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.HarvesterMaintenanceTask;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
-import org.apache.log4j.Logger;
 
 public class ConfigReader
 {

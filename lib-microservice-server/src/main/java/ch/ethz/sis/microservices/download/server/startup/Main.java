@@ -17,8 +17,8 @@ package ch.ethz.sis.microservices.download.server.startup;
 
 import ch.ethz.sis.microservices.download.api.configuration.Config;
 import ch.ethz.sis.microservices.download.server.json.jackson.JacksonObjectMapper;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.LogManager;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;

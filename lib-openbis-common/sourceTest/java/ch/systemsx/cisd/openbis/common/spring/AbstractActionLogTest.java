@@ -25,7 +25,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.systemsx.cisd.common.servlet.AbstractActionLog;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.common.test.LogMonitoringAppender;

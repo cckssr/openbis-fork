@@ -3,8 +3,8 @@ package ch.ethz.sis.foldermonitor;
 import java.nio.file.Path;
 import java.util.Properties;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.LogManager;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 public class NopFolderMonitorTask implements FolderMonitorTask
 {

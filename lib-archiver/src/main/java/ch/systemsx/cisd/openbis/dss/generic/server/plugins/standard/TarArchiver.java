@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 import java.io.File;
 import java.util.Properties;
 
-import ch.systemsx.cisd.common.logging.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 
 /**
  * Archiver which distributes and tars data sets to be archived on archive destinations specified by the space to which the data set belongs. In

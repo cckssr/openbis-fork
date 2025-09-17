@@ -19,13 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
-import java.util.logging.Handler;
 
-import ch.systemsx.cisd.common.logging.ext.ConsoleHandler;
-import ch.systemsx.cisd.common.logging.ext.PatternFormatter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.standard.handlers.ConsoleHandler;
+import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.ExperimentIdentifier;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.dto.FeatureVectorDatasetReference;

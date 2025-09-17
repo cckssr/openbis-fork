@@ -23,6 +23,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.plugin.Plugin;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAssignmentFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -82,21 +83,21 @@ public class XLSExperimentTypeExportHelper extends AbstractXLSEntityTypeExportHe
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken,
                         EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
-                        .map(x -> x.getDescriptorOntologyId()).collect(
+                        .map(SemanticAnnotation::getPredicateOntologyId).collect(
                                 Collectors.joining("\n"));
             }
             case ONTOLOGY_VERSION:
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken,
                         EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
-                        .map(x -> x.getDescriptorOntologyVersion()).collect(
+                        .map(SemanticAnnotation::getPredicateOntologyVersion).collect(
                                 Collectors.joining("\n"));
             }
             case ONTOLOGY_ANNOTATION_ID:
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken,
                         EntityKind.EXPERIMENT, experimentType.getCode(), null).stream()
-                        .map(x -> x.getPredicateAccessionId()).collect(
+                        .map(SemanticAnnotation::getPredicateAccessionId).collect(
                                 Collectors.joining("\n"));
             }
 

@@ -18,10 +18,10 @@ package ch.systemsx.cisd.common.concurrent;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 
 /**
  * An <code>InactivityMonitor</code> monitors some form of activity of a write activity on a <var>destinationStore</var> and triggers an alarm if

@@ -17,14 +17,12 @@
 
 package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
 
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ICustomIdDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IGenericDAO;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.IStringIdDAO;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.deletion.EntityHistoryCreator;
 import ch.systemsx.cisd.openbis.generic.shared.basic.*;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.hibernate.SessionFactory;
 
 public abstract class AbstractGenericEntityWithStringIdDAO <T extends IStringIdHolder> extends AbstractGenericEntityWithCustomIdDAO<T, StringId> implements

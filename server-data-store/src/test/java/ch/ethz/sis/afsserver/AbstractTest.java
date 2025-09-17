@@ -16,9 +16,9 @@
 package ch.ethz.sis.afsserver;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.shared.log.LogFactory;
-import ch.ethz.sis.shared.log.LogFactoryFactory;
-import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.standard.LogFactory;
+import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
+import ch.ethz.sis.shared.log.standard.LogManager;
 
 import java.io.File;
 

@@ -24,7 +24,7 @@ import org.jmock.api.Action;
 import org.jmock.api.Invocation;
 import org.testng.AssertJUnit;
 
-import ch.systemsx.cisd.common.logging.BufferedAppender;
+import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 
 /**
  * @author Franz-Josef Elmer

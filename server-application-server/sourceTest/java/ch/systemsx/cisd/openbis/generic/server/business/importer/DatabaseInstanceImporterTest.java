@@ -37,7 +37,7 @@ import ch.rinn.restrictions.Friend;
 import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.utilities.IExitHandler;
 import ch.systemsx.cisd.dbmigration.DatabaseDefinition;
 import ch.systemsx.cisd.dbmigration.IDatabaseAdminDAO;

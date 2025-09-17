@@ -6,8 +6,8 @@ import json
 import re
 import ch.ethz.sis.openbis.generic.server.xls.importer.utils.AttributeValidator as AttributeValidator
 import ch.ethz.sis.openbis.generic.server.xls.importer.helper.SampleImportHelper as SampleImportHelper
-import ch.systemsx.cisd.common.logging.LogCategory as LogCategory
-import ch.systemsx.cisd.common.logging.LogFactory as LogFactory
+import ch.ethz.sis.shared.log.classic.core.LogCategory as LogCategory
+import ch.ethz.sis.shared.log.classic.impl.LogFactory as LogFactory
 
 isOpenBIS2020 = True
 enableNewSearchEngine = isOpenBIS2020

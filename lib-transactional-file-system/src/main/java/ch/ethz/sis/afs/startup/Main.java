@@ -18,9 +18,9 @@ package ch.ethz.sis.afs.startup;
 import ch.ethz.sis.afs.manager.LockMapper;
 import ch.ethz.sis.afs.manager.TransactionManager;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.shared.log.LogFactory;
-import ch.ethz.sis.shared.log.LogFactoryFactory;
-import ch.ethz.sis.shared.log.LogManager;
+import ch.ethz.sis.shared.log.standard.LogFactory;
+import ch.ethz.sis.shared.log.standard.LogFactoryFactory;
+import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.startup.Configuration;
 
 import java.io.File;

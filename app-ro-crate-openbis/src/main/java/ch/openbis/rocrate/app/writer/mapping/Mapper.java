@@ -261,7 +261,7 @@ public class Mapper
                         props.put(propName, a.getValue());
                     } else
                     {
-                        references.put(propName, List.of(a.getValue().toString()));
+                        references.put(propName, extractSerializableList(a.getValue()));
 
                     }
 
@@ -335,6 +335,16 @@ public class Mapper
         return new MapResult(
                 new RdfsSchema(classes.values().stream().collect(Collectors.toList()), properties),
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries);
+    }
+
+    private List<String> extractSerializableList(Serializable a)
+    {
+        if (a instanceof Serializable[])
+        {
+            return Arrays.stream(((Serializable[]) a)).map(x -> x.toString()).toList();
+        }
+        return List.of(a.toString());
+
     }
 
     IType mapOpenBisToRdfType()

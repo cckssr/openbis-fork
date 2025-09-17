@@ -16,7 +16,9 @@
  */
 
 package org.apache.log4j;
-public class Level extends Priority {
+
+public class Level extends Priority
+{
     public static final int OFF_INT   = Integer.MAX_VALUE;
     public static final int FATAL_INT = 50000;
     public static final int ERROR_INT = 40000;

@@ -18,15 +18,15 @@ package ch.systemsx.cisd.openbis.generic.server;
 import java.io.File;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.transaction.annotation.Transactional;
 
 import ch.ethz.cisd.hotdeploy.PluginContainer;
 import ch.ethz.cisd.hotdeploy.PluginDescriptor;
 import ch.ethz.cisd.hotdeploy.PluginEvent;
 import ch.ethz.cisd.hotdeploy.PluginMapHolder;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.dynamic_property.IDynamicPropertyCalculatorFactory;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.entity_validation.IEntityValidatorFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;

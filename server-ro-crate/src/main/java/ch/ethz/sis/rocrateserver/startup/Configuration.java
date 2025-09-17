@@ -15,7 +15,7 @@
  */
 package ch.ethz.sis.rocrateserver.startup;
 
-import ch.ethz.sis.shared.log.Logger;
+import ch.ethz.sis.shared.log.standard.Logger;
 
 import java.io.FileInputStream;
 import java.io.InputStream;

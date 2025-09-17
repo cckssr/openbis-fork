@@ -15,9 +15,9 @@
  */
 package ch.systemsx.cisd.dbmigration.logging;
 
-import ch.systemsx.cisd.common.logging.ControlFileBasedLogConfiguration;
-import ch.systemsx.cisd.common.logging.event.BooleanEvent;
-import ch.systemsx.cisd.common.logging.event.LongEvent;
+import ch.ethz.sis.shared.log.classic.ControlFileBasedLogConfiguration;
+import ch.ethz.sis.shared.log.classic.event.BooleanEvent;
+import ch.ethz.sis.shared.log.classic.event.LongEvent;
 
 /**
  * @author pkupczyk

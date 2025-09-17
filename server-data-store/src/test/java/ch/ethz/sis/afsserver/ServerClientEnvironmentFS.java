@@ -30,7 +30,7 @@ import ch.ethz.sis.afsserver.worker.ConnectionFactory;
 import ch.ethz.sis.afsserver.worker.WorkerFactory;
 import ch.ethz.sis.afsserver.worker.providers.impl.DummyAuthenticationInfoProvider;
 import ch.ethz.sis.afsserver.worker.providers.impl.DummyAuthorizationInfoProvider;
-import ch.ethz.sis.shared.log.log4j2.Log4J2LogFactory;
+import ch.ethz.sis.shared.log.standard.impl.StandardLogFactory;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class ServerClientEnvironmentFS
@@ -73,7 +73,7 @@ public class ServerClientEnvironmentFS
     public static Configuration getDefaultServerConfiguration()
     {
         Map<Enum, String> configuration = new HashMap<>();
-        configuration.put(AtomicFileSystemServerParameter.logFactoryClass, Log4J2LogFactory.class.getName());
+        configuration.put(AtomicFileSystemServerParameter.logFactoryClass, StandardLogFactory.class.getName());
         //        configuration.put(AtomicFileSystemServerParameter.logConfigFile,  "objectfs-afs-config-logging.properties");
 
         configuration.put(AtomicFileSystemServerParameter.lockMapperClass, NopLockMapper.class.getName());

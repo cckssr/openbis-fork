@@ -1852,13 +1852,10 @@ public class OpenBIS
         semanticAnnotationCreation.setEntityTypeId(new EntityTypePermId(subjectClass, subjectEntityKind));
         // Ontology URL
         semanticAnnotationCreation.setPredicateOntologyId(subjectClassOntologyId);
-        semanticAnnotationCreation.setDescriptorOntologyId(subjectClassOntologyId);
         // Ontology Version URL
         semanticAnnotationCreation.setPredicateOntologyVersion(subjectClassOntologyVersion);
-        semanticAnnotationCreation.setDescriptorOntologyVersion(subjectClassOntologyVersion);
         // Ontology Class URL
         semanticAnnotationCreation.setPredicateAccessionId(subjectClassId);
-        semanticAnnotationCreation.setDescriptorAccessionId(subjectClassId);
         return semanticAnnotationCreation;
     }
 

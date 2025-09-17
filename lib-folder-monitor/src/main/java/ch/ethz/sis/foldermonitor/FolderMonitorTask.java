@@ -6,8 +6,8 @@ import java.util.Properties;
 public interface FolderMonitorTask
 {
 
-    void configure(Properties properties);
+    void configure(Properties properties) throws Exception;
 
-    void process(Path incoming);
+    void process(Path incoming) throws Exception;
 
 }

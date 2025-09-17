@@ -21,7 +21,7 @@ import java.util.List;
 
 import ch.systemsx.cisd.dbmigration.DatabaseEngine;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.common.process.ProcessResult;

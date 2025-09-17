@@ -15,7 +15,7 @@
  */
 package ch.systemsx.cisd.common.fileconverter;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 /**
  * An abstract file converter base class that uses the LibTiff tool <code>tiffcp</code>.

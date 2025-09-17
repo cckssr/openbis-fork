@@ -19,7 +19,7 @@
 package ch.ethz.sis.openbis.generic.server;
 
 import ch.ethz.sis.openbis.generic.server.config.ServicePropertiesReader;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

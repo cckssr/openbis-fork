@@ -20,8 +20,8 @@ import java.io.IOException;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.action.IDelegatedActionWithResult;
-import ch.systemsx.cisd.common.logging.ControlFileBasedLogConfiguration;
-import ch.systemsx.cisd.common.logging.ControlFileBasedTest;
+import ch.ethz.sis.shared.log.classic.ControlFileBasedLogConfiguration;
+import ch.ethz.sis.shared.log.classic.ControlFileBasedTest;
 
 /**
  * @author pkupczyk

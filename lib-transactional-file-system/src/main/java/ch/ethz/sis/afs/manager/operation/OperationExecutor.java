@@ -21,7 +21,7 @@ import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-public interface OperationExecutor<E extends Operation> {
+public interface OperationExecutor<OPERATION extends Operation, RESULT> {
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction) {
@@ -72,13 +72,13 @@ public interface OperationExecutor<E extends Operation> {
     *
     * The idea is to reduce the commit operation to an atomic move or delete
     */
-    boolean prepare(@NonNull Transaction transaction, @NonNull E operation) throws Exception;
+    RESULT prepare(@NonNull Transaction transaction, @NonNull OPERATION operation) throws Exception;
 
     /*
      * Commit operation should be reduced to atomic move and delete operation to avoid
      * file system corruption, this requires sometimes duplication of files,
      * exchanging performance and space for transaction safeness
      */
-    boolean commit(@NonNull Transaction transaction, @NonNull E operation) throws Exception;
+    boolean commit(@NonNull Transaction transaction, @NonNull OPERATION operation) throws Exception;
 
 }

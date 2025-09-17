@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.logging.LogInitializer;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.common.parser.MandatoryPropertyMissingException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.dto.DataSetInformation;
 

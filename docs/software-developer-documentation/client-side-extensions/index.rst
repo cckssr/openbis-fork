@@ -5,4 +5,3 @@ Client-Side Extensions
    :maxdepth: 4
 
    eln-lims-web-ui-extensions
-   openbis-webapps

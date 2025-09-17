@@ -20,7 +20,7 @@ from urlparse import urlsplit
 
 import datetime
 import time
-from ch.systemsx.cisd.common.logging import LogCategory
+from ch.ethz.sis.shared.log.classic.core import LogCategory
 from java.io import File
 from java.io import FileOutputStream
 from java.net import URI

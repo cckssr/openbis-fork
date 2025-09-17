@@ -24,6 +24,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyAs
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.fetchoptions.PropertyTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.SampleType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.SemanticAnnotation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
@@ -124,21 +125,21 @@ public class XLSSampleTypeExportHelper extends AbstractXLSEntityTypeExportHelper
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.SAMPLE,
                         sampleType.getCode(), null).stream()
-                        .map(x -> x.getDescriptorOntologyId()).collect(
+                        .map(SemanticAnnotation::getPredicateOntologyId).collect(
                                 Collectors.joining("\n"));
             }
             case ONTOLOGY_VERSION:
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.SAMPLE,
                         sampleType.getCode(), null).stream()
-                        .map(x -> x.getDescriptorOntologyVersion()).collect(
+                        .map(SemanticAnnotation::getPredicateOntologyVersion).collect(
                                 Collectors.joining("\n"));
             }
             case ONTOLOGY_ANNOTATION_ID:
             {
                 return getSemanticAnnotationSearchResult(api, sessionToken, EntityKind.SAMPLE,
                         sampleType.getCode(), null).stream()
-                        .map(x -> x.getDescriptorAccessionId()).collect(
+                        .map(SemanticAnnotation::getPredicateAccessionId).collect(
                                 Collectors.joining("\n"));
             }
             case TYPE_GROUP:

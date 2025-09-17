@@ -30,7 +30,7 @@ import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
-public class CreateOperationExecutor implements OperationExecutor<CreateOperation> {
+public class CreateOperationExecutor implements OperationExecutor<CreateOperation, Void> {
 
     //
     // Singleton
@@ -56,13 +56,13 @@ public class CreateOperationExecutor implements OperationExecutor<CreateOperatio
     //
 
     @Override
-    public boolean prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception {
+    public Void prepare(final @NonNull Transaction transaction, final CreateOperation operation) throws Exception {
         // Check that file/directory does not exist
         if (IOUtils.exists(operation.getSource()))
         {
             AFSExceptions.throwInstance(PathInStore, OperationName.Create.name(), operation.getSource());
         }
-        return true;
+        return null;
     }
 
     @Override

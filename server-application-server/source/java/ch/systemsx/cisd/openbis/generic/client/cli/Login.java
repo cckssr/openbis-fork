@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import ch.systemsx.cisd.common.logging.ext.ConfigureNullHandler;
+import ch.ethz.sis.shared.log.standard.handlers.ConfigureNullHandler;
 import jline.ConsoleReader;
 
 import ch.systemsx.cisd.args4j.Argument;

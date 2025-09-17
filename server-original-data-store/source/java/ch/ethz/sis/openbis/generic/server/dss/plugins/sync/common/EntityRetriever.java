@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.ICodeHolder;
@@ -57,8 +57,8 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.IE
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.INode;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.Node;
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.common.entitygraph.NodeIdentifier;
-import ch.systemsx.cisd.common.logging.LogCategory;
-import ch.systemsx.cisd.common.logging.LogFactory;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.Edge;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.EntityGraph;
 //import ch.ethz.sis.openbis.generic.shared.entitygraph.Node;
