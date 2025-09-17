@@ -413,9 +413,9 @@
 | dss-based-data-source-provider.dss-screening.database-driver | org.postgresql.Driver | |
 | dss-based-data-source-provider.dss-screening.database-url | jdbc:postgresql://{{ openbis_local_hostname }}/imaging_productive | |
 
-## PLUGIN MODULES
+## Core Plugins Modules
 
-Plugin modules, with few exceptions, follow the naming schema in lower-case characters:
+Core Plugins modules, with few exceptions, follow the naming schema in lower-case characters:
 `<core-plugin>.<server-type>.<plugin-type>.<plugin-name>.<plugin-property-name>`
 
 e.g
