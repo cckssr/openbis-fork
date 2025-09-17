@@ -17,6 +17,7 @@ package ch.ethz.sis.afs.manager;
 
 import static ch.ethz.sis.shared.collection.List.safe;
 
+import java.io.Serializable;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -214,6 +215,15 @@ public class TransactionConnection implements TransactionalFileSystem {
             for (Operation operation : transaction.getOperations()) {
                 operationExecutors.get(operation.getName()).commit(transaction, operation);
             }
+
+            // Additionally to the write operations, there is read operations that generate metadata like the md5 and the preview
+            // These operations all stored on the .afs folders and all these files should override whatever is on the destination
+            {
+                // ./transaction-log/.afs
+                // ./transaction-log/folderA/.afs
+            }
+            //
+
             cleanTransaction();
             state = State.Executed;
         }
@@ -304,11 +314,9 @@ public class TransactionConnection implements TransactionalFileSystem {
         String tempSource = OperationExecutor.getTempPath(transaction, source) + "." + UUID.randomUUID();
         source = getSafePath(OperationName.Write, source);
         WriteOperation operation = new WriteOperation(transaction.getUuid(), source, tempSource, offset, data);
-        boolean prepared = prepare(operation, source, null);
-        if (prepared) {
-            written.add(source);
-        }
-        return prepared;
+        prepare(operation, source, null);
+        written.add(source);
+        return Boolean.TRUE;
     }
 
     private final Set<String> deleted = new HashSet<>();
@@ -317,11 +325,9 @@ public class TransactionConnection implements TransactionalFileSystem {
     public boolean delete(String source) throws Exception {
         source = getSafePath(OperationName.Delete, source);
         DeleteOperation operation = new DeleteOperation(transaction.getUuid(), source);
-        boolean prepared = prepare(operation, source, null);
-        if (prepared) {
-            deleted.add(source);
-        }
-        return prepared;
+        prepare(operation, source, null);
+        deleted.add(source);
+        return Boolean.TRUE;
     }
 
     private final Map<String, String> copiedSourceToTarget = new HashMap<>();
@@ -332,12 +338,10 @@ public class TransactionConnection implements TransactionalFileSystem {
         source = getSafePath(OperationName.Copy, source);
         target = getSafePath(OperationName.Copy, target);
         CopyOperation operation = new CopyOperation(transaction.getUuid(), source, target);
-        boolean prepared = prepare(operation, source, target);
-        if (prepared) {
-            copiedSourceToTarget.put(source, target);
-            copiedTargetToSource.put(target, source);
-        }
-        return prepared;
+        prepare(operation, source, target);
+        copiedSourceToTarget.put(source, target);
+        copiedTargetToSource.put(target, source);
+        return Boolean.TRUE;
     }
 
     private final Map<String, String> movedSourceToTarget = new HashMap<>();
@@ -348,12 +352,10 @@ public class TransactionConnection implements TransactionalFileSystem {
         source = getSafePath(OperationName.Move, source);
         target = getSafePath(OperationName.Move, target);
         MoveOperation operation = new MoveOperation(transaction.getUuid(), source, target);
-        boolean prepared = prepare(operation, source, target);
-        if (prepared) {
-            movedSourceToTarget.put(source, target);
-            movedTargetToSource.put(target, source);
-        }
-        return prepared;
+        prepare(operation, source, target);
+        movedSourceToTarget.put(source, target);
+        movedTargetToSource.put(target, source);
+        return Boolean.TRUE;
     }
 
     @Override
@@ -361,11 +363,9 @@ public class TransactionConnection implements TransactionalFileSystem {
     {
         source = getSafePath(OperationName.Create, source);
         final CreateOperation operation = new CreateOperation(transaction.getUuid(), source, directory);
-        boolean prepared = prepare(operation, source, null);
-        if (prepared) {
-            written.add(source);
-        }
-        return prepared;
+        prepare(operation, source, null);
+        written.add(source);
+        return Boolean.TRUE;
     }
 
     @Override
@@ -383,19 +383,23 @@ public class TransactionConnection implements TransactionalFileSystem {
         return IOUtils.getSpace(safeExistingSource);
     }
 
-    private boolean prepare(Operation operation, String source, String target) throws Exception {
+    /*
+     * Prepare prepares the operation to not fail con COMMIT
+     * AS FAR AS an exception is not thrown is supposed to be PREPARED
+     */
+    @SuppressWarnings("unchecked")
+    private <RESULT extends Serializable> RESULT prepare(Operation operation, String source, String target) throws Exception {
         validateOperationAndPaths(operation.getName(), source, target);
         boolean locksObtained = false;
-        boolean prepared = false;
+        RESULT result = null;
         try {
             locksObtained = lockManager.add(operation.getLocks());
             final OperationName operationName = operation.getName();
             if (locksObtained) {
-                prepared = operationExecutors.get(operationName).prepare(transaction, operation);
-            }
-            if (prepared) {
+                result = (RESULT) operationExecutors.get(operationName).prepare(transaction, operation);
                 transaction.getOperations().add(operation);
-
+            } else {
+                AFSExceptions.throwInstance(AFSExceptions.PathLocksCannotBeObtained, operationName.name(), source);
             }
         } catch (Exception ex) {
             if (locksObtained) {
@@ -403,7 +407,7 @@ public class TransactionConnection implements TransactionalFileSystem {
                 throw ex;
             }
         }
-        return prepared;
+        return result;
     }
 
     private String getSafePath(OperationName operationName, String source) {

@@ -24,7 +24,7 @@ import ch.ethz.sis.afs.exception.AFSExceptions;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathInStore;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 
-public class CopyOperationExecutor implements OperationExecutor<CopyOperation> {
+public class CopyOperationExecutor implements OperationExecutor<CopyOperation, Void> {
 
     //
     // Singleton
@@ -48,7 +48,7 @@ public class CopyOperationExecutor implements OperationExecutor<CopyOperation> {
     //
 
     @Override
-    public boolean prepare(Transaction transaction, CopyOperation operation) throws Exception {
+    public Void prepare(Transaction transaction, CopyOperation operation) throws Exception {
         if (!IOUtils.exists(operation.getSource())) {
             AFSExceptions.throwInstance(PathNotInStore, OperationName.Copy.name(), operation.getSource());
         }
@@ -60,7 +60,7 @@ public class CopyOperationExecutor implements OperationExecutor<CopyOperation> {
             IOUtils.createDirectories(tempFileParent);
         }
         IOUtils.copy(operation.getSource(), OperationExecutor.getTempPath(transaction, operation.getTarget()));
-        return true;
+        return null;
     }
 
     @Override

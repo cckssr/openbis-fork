@@ -23,7 +23,7 @@ import ch.ethz.sis.afs.exception.AFSExceptions;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 
-public class DeleteOperationExecutor implements OperationExecutor<DeleteOperation> {
+public class DeleteOperationExecutor implements OperationExecutor<DeleteOperation, Void> {
 
     //
     // Singleton
@@ -47,11 +47,11 @@ public class DeleteOperationExecutor implements OperationExecutor<DeleteOperatio
     //
 
     @Override
-    public boolean prepare(Transaction transaction, DeleteOperation operation) throws Exception {
+    public Void prepare(Transaction transaction, DeleteOperation operation) throws Exception {
         if (!IOUtils.exists(operation.getSource())) {
             AFSExceptions.throwInstance(PathNotInStore, OperationName.Move.name(), operation.getSource());
         }
-        return true;
+        return null;
     }
 
     @Override
