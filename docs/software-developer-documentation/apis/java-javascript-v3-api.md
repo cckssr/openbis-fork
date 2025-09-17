@@ -1,4 +1,4 @@
-# Java / Javascript (V3 API) - openBIS V3 API
+# Java / Javascript
 
 ## I. Architecture
 
