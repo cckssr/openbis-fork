@@ -2,20 +2,15 @@ AFS Server Configuration
 ========================
 
 ### Folder Structure
-bin
-lib
-log
-etc
 
-### bin
-Contains one file, `afs_server.sh` that can be used for start, stop, restart or get status of the server.
+| File  | Description                                                                                               |
+|-------|-----------------------------------------------------------------------------------------------------------|
+| `bin` | Contains one file, `afs_server.sh` that can be used for start, stop, restart or get status of the server. |
+| `lib` | Compiled server libraries                                                                                 |
+| `log` | Contains log, by default one log file `afs_server.log`.                                                   |
+| `etc` | config files                                                                                              |
 
-### lib : compiled server libraries
-
-### log : server logs
-Contains one log file `afs_server.log`, this file contains all relevant log information.
-
-### etc : config files
+### etc config files
 
 | File                 | Description                                                                     |
 |----------------------|---------------------------------------------------------------------------------|
@@ -23,7 +18,7 @@ Contains one log file `afs_server.log`, this file contains all relevant log info
 | `logging.properties` | Logging configuration, the possible switches are documented on the file         |
 | `service.properties` | General configuration                                                           |
 
-### afs_server.conf
+#### afs_server.conf
 
 By default, the RAM usage is 512MB, makes assumptions for a small instance using only the web UI.
 
@@ -31,7 +26,7 @@ A good number is: httpMaxContentLength * 3 * Web UI uploads + ttpMaxContentLengt
 
 For 10 concurrent users doing uploads using the defaults that means: 15728640 * 3 * 10 = 470~ MB If only using the web UI
 
-### logging.properties
+#### logging.properties
 
 ```properties
 #############################################################
@@ -72,7 +67,7 @@ resolvedPropertiesHandler.logFileName = log/startup_properties.log
 resolvedPropertiesHandler.messagePattern = %d %-5p [%t] %c - %m%n
 ```
 
-### service.properties (Mandatory)
+#### service.properties (Mandatory)
 
 The service.properties contains around two dozen properties that SHOULD NOT be modified on standard production environments.
 
@@ -94,7 +89,7 @@ Here are ONLY discussed the ones that SHOULD BE manually configured.
 | `openBISLastSeenDeletionBatchSize`         | Defaults to 1000                                                                                                                                                                       |
 | `openBISLastSeenDeletionIntervalInSeconds` | Defaults to 900 seconds, 15 minutes                                                                                                                                                    |
 
-### service.properties (Optional)
+#### service.properties (Optional)
 
 Additionally, these are MANDATORY for ```Archiving``` but RECOMMENDED for EVERYONE, provides a cache for the immutable dataset metadata.
 
