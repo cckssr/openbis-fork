@@ -478,6 +478,9 @@ public class LogInitializer
             String file = props.getProperty(alias + LOG_FILE_NAME);
             int maxLogFileSize = Integer.parseInt(props.getProperty(alias + MAX_LOG_FILE_SIZE,
                     String.valueOf(DailyRollingFileHandler.DEFAULT_MAX_LOG_FILE_SIZE)));
+            LoggerDiagnostics.info("Using single-file-handler constructor: file=" + file
+                    + ", maxLogFileSize=" + maxLogFileSize
+                    + ", reInitCalled=" + reInitCalled + ", append=" + append);
             handler = (Handler) hc.getConstructor(String.class, int.class, boolean.class, boolean.class)
                     .newInstance(file, maxLogFileSize, Boolean.parseBoolean(append), reInitCalled);
         } else if (ConsoleHandler.class.isAssignableFrom(hc)
