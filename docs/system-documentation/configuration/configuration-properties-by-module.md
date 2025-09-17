@@ -1,8 +1,6 @@
 # Configuration properties by module
 
-# CORE MODULES
-
-## AS  MODULES
+## AS  Modules
 
 ### Database Configuration (Required)
 
@@ -212,7 +210,7 @@
 | api.v3.transaction.transaction-log-folder-path                                         |               |                   |
 | api.v3.transaction.transaction-timeout                                                 |               |                   |
 
-## DSS MODULES
+## DSS Modules
 
 ### Core Configuration (Required)
 

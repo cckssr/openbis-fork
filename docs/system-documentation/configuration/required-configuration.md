@@ -1,4 +1,4 @@
-openBIS Server Configuration
+openBIS Platform Configuration
 ============================
 
 After successful installation, the openBIS configuration files (which are extended Java property files) of the Application Server (AS) and data store server (DSS) should be checked. All necessary adjustments to those files should be made prior to running the system in production.
