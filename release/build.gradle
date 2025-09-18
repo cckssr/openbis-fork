@@ -17,18 +17,7 @@
 
 apply from: '../build/javaproject.gradle'
 apply from: 'openbis-java-api.gradle'
-
-
-task openbisJsApiResources(type: Zip, dependsOn: [':api-openbis-typescript:generateTypeScript', ':api-openbis-javascript:copyJsResources'])
-{
-    duplicatesStrategy 'include'
-    archiveFileName ='openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
-    destinationDirectory = layout.buildDirectory.dir(".")
-    from project(':api-openbis-typescript').file('targets/openbis-typescript-api')
-    from("${project(':api-openbis-javascript').projectDir}/targets/openbis-javascript-api")
-    into 'openbis-javascript-api'
-}
-
+apply from: 'openbis-javascript-api.gradle'
 
 
 task javadocs(type: Zip, dependsOn: [ ':server-application-server:serverApplicationServerJavadocZip',
@@ -64,5 +53,4 @@ task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-
     from project(':app-openbis-installer').tasks.openbisDriveTar.archiveFile
     from project(':app-openbis-command-line').tasks.openbisCommandLineToolZip.archiveFile
     from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
-
 }
