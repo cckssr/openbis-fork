@@ -115,9 +115,6 @@ dependencies {
             'springframework:spring-test:5.3.39'
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
-    libOpenbisCommonJavadoc project(':lib-openbis-common')
-    serverOriginalDataStoreJavadoc project(':server-original-data-store')
-    serverApplicationServerJavadoc project(':server-application-server')
 }
 
 sourceSets {
