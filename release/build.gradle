@@ -1,7 +1,3 @@
-
-apply from: '../build/javaproject.gradle'
-
-
 /*
  *  Copyright ETH 2025 Zürich, Scientific IT Services
  *
@@ -19,7 +15,7 @@ apply from: '../build/javaproject.gradle'
  *
  */
 
-
+apply from: '../build/javaproject.gradle'
 apply from: 'openbis-java-api.gradle'
 
 
