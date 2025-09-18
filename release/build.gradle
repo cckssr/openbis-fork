@@ -53,9 +53,9 @@ task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-
            ':app-openbis-command-line:openbisCommandLineToolZip',
            openbisJavaApiTar, openbisJavaApiDependenciesIncludedTar,
            ':app-openbis-drive:openbisDriveTar',
-//           ':app-openbis-installer:createInstallerZip'
-           ':server-original-data-store:dropboxApiZip'
-//                                           , ':core-plugin-openbis:queryApiZip'
+           ':app-openbis-installer:createInstallerZip',
+           ':server-original-data-store:dropboxApiZip',
+            ':core-plugin-openbis:queryApiZip'
 ]) {
     archiveBaseName = 'openbis-artifacts'
 
@@ -64,9 +64,8 @@ task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-
     from openbisJavaApiTar.archiveFile
     from(openbisJavaApiDependenciesIncludedTar.archiveFile)
     from(project(':server-original-data-store').tasks.dropboxApiZip.archiveFile)
-//    from(project(':core-plugin-openbis').tasks.queryApiZip.archiveFile)
-
-
+    from(project(':core-plugin-openbis').tasks.queryApiZip.archiveFile)
+    from project(':app-openbis-installer').tasks.openbisDriveTar.archiveFile
     from project(':app-openbis-command-line').tasks.openbisCommandLineToolZip.archiveFile
     from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
 
