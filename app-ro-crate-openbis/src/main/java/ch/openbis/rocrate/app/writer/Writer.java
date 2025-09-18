@@ -52,7 +52,7 @@ public class Writer
         addMetaData(schemaFacade, rdfsRepresentation);
         RoCrate roCrate = schemaFacade.getCrate();
 
-        if (outPath.toString().endsWith(".zip"))
+        if (outPath.toString().toLowerCase().endsWith(".zip"))
         {
             ZipWriter zipWriter = new ZipWriter();
             zipWriter.save(roCrate, outPath.toString());

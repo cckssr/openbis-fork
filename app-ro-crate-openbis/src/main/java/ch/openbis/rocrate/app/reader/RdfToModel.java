@@ -432,7 +432,7 @@ public class RdfToModel
             // resolving object references needs another pass after creating all objects
             for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
             {
-                sample.getProperties().put(deRdfIdentifier(reference.getKey()),
+                sample.getProperties().put(openBisifyCode(deRdfIdentifier(reference.getKey())),
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
                                         .filter(Objects::nonNull)
