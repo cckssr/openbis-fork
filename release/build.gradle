@@ -51,10 +51,10 @@ tasks.register('app', Copy) {
 
 tasks.register('javadoc', Copy) {
     dependsOn( ':server-application-server:serverApplicationServerJavadocZip',
-        ':server-application-server:dynamicApiJavadocZip',
-        ':server-original-data-store:serverOriginalDataStoreJavadocZip',
-        ':server-original-data-store:dropboxJavaDocZip'
-                                           )
+            ':server-application-server:dynamicApiJavadocZip',
+            ':server-original-data-store:serverOriginalDataStoreJavadocZip',
+            ':server-original-data-store:dropboxJavaDocZip'
+    )
     from project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile
     from project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile
     from project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile
@@ -98,9 +98,9 @@ tasks.register('buildRelease', Tar) {
     ])
     //JAVADOC
     dependsOn([':server-application-server:serverApplicationServerJavadocZip',
-            ':server-application-server:dynamicApiJavadocZip',
-            ':server-original-data-store:serverOriginalDataStoreJavadocZip',
-            ':server-original-data-store:dropboxJavaDocZip'
+               ':server-application-server:dynamicApiJavadocZip',
+               ':server-original-data-store:serverOriginalDataStoreJavadocZip',
+               ':server-original-data-store:dropboxJavaDocZip'
     ])
 
     def version = project(":build").project.ext.versionNumber
