@@ -15,9 +15,11 @@
  *
  */
 
+def excludeProjects = ['release', 'lib-file-download']
+
 def file = new File("..");
 file.eachDir {
-    if(new File(it.getPath() + "/build.gradle").exists() && it.name != 'release')
+    if(new File(it.getPath() + "/build.gradle").exists() && excludeProjects.contains(it.name) == false)
     {
         includeFlat(it.name)
     }
