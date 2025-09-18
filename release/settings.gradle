@@ -17,7 +17,7 @@
 
 def file = new File("..");
 file.eachDir {
-    if(new File(it.getPath() + "/build.gradle").exists())
+    if(new File(it.getPath() + "/build.gradle").exists() && it.name != 'release')
     {
         includeFlat(it.name)
     }
