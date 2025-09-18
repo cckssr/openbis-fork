@@ -9,3 +9,4 @@ src/vagrant/initialize/openBIS-installation-standard-technologies-*
 *.eml
 /obis_test/openbis/
 /obis_test/test_data/
+build

@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
 evaluationDependsOn(':api-openbis-java')
@@ -143,4 +145,52 @@ task openBISDevelopmentEnvironmentDSSStart(type: JavaExec) {
     classpath = sourceSets.datastoreExec.runtimeClasspath
     jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])
+}
+
+task serverOriginalDataStoreJavadoc(type: Javadoc) {
+    source project(':server-original-data-store').files('source/java').getAsFileTree().matching {
+        include "**/ch/systemsx/cisd/openbis/dss/generic/server/plugins/jython/api/**/*.java"
+        include "**/ch/systemsx/cisd/openbis/dss/generic/shared/api/internal/**/*.java"
+    }
+    classpath = sourceSets.datastoreExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-server-original-dataStore")
+}
+
+task serverOriginalDataStoreJavadocZip(type: Zip, dependsOn: serverOriginalDataStoreJavadoc) {
+    archiveBaseName = 'openbis-original-data-store-javadoc'
+    from serverOriginalDataStoreJavadoc.destinationDir
+}
+
+/////////// DROPBOX API V2 ////////////////////
+
+task dropboxApiJar(type: Jar) {
+    archiveBaseName =  'openbis-dropbox-api'
+    includeEmptyDirs false
+    from compileJava.outputs.getFiles().getAsFileTree().matching {
+        include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.class"
+        include "ch/systemsx/cisd/etlserver/registrator/api/v2/impl/*.class"
+        include "ch/systemsx/cisd/openbis/dss/generic/shared/api/**/*.class"
+    }
+}
+
+task dropboxApiZip(type: Zip, dependsOn: [dropboxApiJar]) {
+    archiveBaseName = 'openbis-dropbox-api'
+    from dropboxApiJar.archiveFile
+    into 'openbis-dropbox-api'
+}
+
+
+task dropboxApiJavadoc(type: Javadoc) {
+    source project(':server-original-data-store').files('source/java').getAsFileTree().matching {
+        include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.java"
+        include "ch/systemsx/cisd/etlserver/registrator/api/v2/impl/*.java"
+        include "ch/systemsx/cisd/openbis/dss/generic/shared/api/**/*.class"
+    }
+    classpath = sourceSets.datastoreExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-dropbox")
+}
+
+task dropboxJavaDocZip(type: Zip, dependsOn: dropboxApiJavadoc) {
+    archiveBaseName = 'openbis-dropbox-javadoc'
+    from dropboxApiJavadoc.destinationDir
 }

@@ -17,3 +17,5 @@ src/python/PyBis/dist/
 /.idea/
 *.iml
 *.eml
+*.obis
+build

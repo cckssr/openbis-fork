@@ -1,9 +1,15 @@
+import org.gradle.api.tasks.bundling.Jar
+
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
+evaluationDependsOn(':lib-openbis-common')
+evaluationDependsOn(':lib-two-phase-transaction')
+evaluationDependsOn(':lib-json')
 evaluationDependsOn(':api-data-store-server-java')
 
 apply from: '../build/javaproject.gradle'
 
+// Project Dependencies
 dependencies {
     api project(':lib-common'), project(':lib-two-phase-transaction'), project(':api-data-store-server-java'),
             'sis:sis-file-transfer:19.03.1',
@@ -22,3 +28,156 @@ dependencies {
             'slf4j:slf4j-api:1.7.24',
             'eclipse:jetty-proxy:10.0.25'
 }
+
+// Dependencies for Jar with batteries included
+configurations.create('apiDependenciesIncluded')
+dependencies {
+    apiDependenciesIncluded 'sis:sis-base:23.06.0',
+            'sis:sis-file-transfer:19.03.1',
+            'apache:httpclient:4.3.6',
+            'apache:commons-lang3:3.14',
+            'eclipse:jetty-client:10.0.25',
+            'springframework:spring-aop:5.3.39',
+            'springframework:spring-web:5.3.39',
+            'springframework:spring-context:5.3.39',
+            'marathon:marathon-spring-util:1.2.5',
+            'fasterxml:jackson-annotations:2.9.10',
+            'fasterxml:jackson-core:2.9.10',
+            'fasterxml:jackson-databind:2.9.10.8',
+            'fasterxml:jackson-datatype-jsr310:2.9.10',
+            'slf4j:slf4j-api:1.7.24'
+}
+
+// Dependencies for JavaDoc
+configurations.create('apiJavaDoc')
+dependencies {
+    apiJavaDoc project(':api-openbis-java')
+}
+
+// Base name for artifacts
+def baseName =  'openbis-java-api'
+
+
+// openbis-java-api.jar
+task openbisJavaApiJar(type: Jar) {
+//jar {
+    dependsOn compileJava
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+    archiveBaseName = baseName
+    includeEmptyDirs false
+    from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
+            project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
+                project(':lib-openbis-common').compileJava.outputs.getFiles().getAsFileTree().plus(
+                    project(':api-openbis-java').compileJava.outputs.getFiles().getAsFileTree().plus(
+                        project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
+                            project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
+                                project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()))))
+    )
+            .matching {
+            include "ch/systemsx/cisd/common/exceptions/**/*.class"
+            include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.class"
+            include "ch/systemsx/cisd/common/spring/IRemoteSpringBeanProvider.class"
+            include "ch/systemsx/cisd/common/spring/Jetty*.class"
+            include "ch/systemsx/cisd/common/http/*.class"
+            include "ch/systemsx/cisd/common/api/**/*.class"
+            exclude "ch/systemsx/cisd/common/api/server/**/*.class"
+            include "ch/systemsx/cisd/common/reflection/*.class"
+            include "ch/systemsx/cisd/common/shared/basic/**/*.class"
+            include "ch/systemsx/cisd/openbis/common/api/**/*.class"
+            exclude "ch/systemsx/cisd/openbis/common/api/server/**/*.class"
+            include "ch/ethz/sis/openbis/generic/*.class"
+            include "ch/ethz/sis/openbis/generic/asapi/v3/**/*.class"
+            include "ch/ethz/sis/openbis/generic/dssapi/v3/**/*.class"
+            include "ch/ethz/sis/openbis/generic/imagingapi/v3/**/*.class"
+            include "ch/ethz/sis/afsapi/**/*.class"
+            include "ch/ethz/sis/afsclient/**/*.class"
+            include "ch/ethz/sis/afsjson/**/*.class"
+            include "ch/ethz/sis/transaction/api/**/*.class"
+            include "*.INFO"
+        }
+    }
+
+
+// openbis-java-api-sources-VERSION.zip
+task openbisJavaApiSources(type: Jar) {
+    archiveFileName = baseName + "-sources-" + project.ext.versionNumber + ".zip"
+    from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
+            project(':lib-common').files('source/java').getAsFileTree().plus(
+                project(':lib-openbis-common').files('source/java').getAsFileTree().plus(
+                    project(':lib-two-phase-transaction').files('src/main/java').getAsFileTree().plus(
+                        project(':api-openbis-java').files('source/java').getAsFileTree())))).matching {
+        include "ch/systemsx/cisd/common/exceptions/**/*.java"
+        include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.java"
+        include "ch/systemsx/cisd/common/spring/IRemoteSpringBeanProvider.java"
+        include "ch/systemsx/cisd/common/api/**/*.java"
+        exclude "ch/systemsx/cisd/common/api/server/**/*.java"
+        include "ch/systemsx/cisd/common/reflection/*.java"
+        include "ch/systemsx/cisd/common/shared/basic/**/*.java"
+        include "ch/systemsx/cisd/openbis/common/api/**/*.java"
+        exclude "ch/systemsx/cisd/openbis/common/api/server/**/*.java"
+        include "ch/ethz/sis/openbis/generic/asapi/v3/**/*.java"
+        include "ch/ethz/sis/openbis/generic/dssapi/v3/**/*.java"
+        include "ch/ethz/sis/openbis/generic/imagingapi/v3/**/*.class"
+        include "ch/ethz/sis/transaction/api/**/*.java"
+    }
+}
+
+// openbis-java-api-javadoc
+task openbisJavaApiJavaDoc(type: Javadoc) {
+    source openbisJavaApiSources.inputs.getFiles().getAsFileTree().matching {
+        include "**/*.java"
+    }
+    classpath = configurations.apiJavaDoc
+    destinationDir = file("$buildDir/docs/"+baseName+"-javadoc")
+}
+
+// openbis-java-api-javadoc-VERSION.zip
+task openbisJavaApiJavaDocZip(type: Zip, dependsOn: 'openbisJavaApiJavaDoc') {
+    archiveFileName = baseName + '-javadoc-'+ project.ext.versionNumber +'.zip'
+    from openbisJavaApiJavaDoc.destinationDir
+}
+
+// openbis-java-api-dependencies-included-VERSION.jar
+task openbisJavaApiDependenciesIncludedJar(type: Jar, dependsOn: [openbisJavaApiJar]) {
+    duplicatesStrategy 'include'
+    archiveBaseName = baseName + '-dependencies-included'
+    includeEmptyDirs false
+    from(zipTree(openbisJavaApiJar.archivePath)) {
+        include '**/*'
+    }
+    from(configurations.apiDependenciesIncluded.collect { zipTree(it) }) {
+        include '**/*'
+    }
+}
+
+// openbis-java-api.zip
+task openbisJavaApiZip(type: Zip, dependsOn: [openbisJavaApiDependenciesIncludedJar, openbisJavaApiSources, openbisJavaApiJavaDocZip]) {
+    archiveBaseName = baseName
+    from openbisJavaApiJar.archiveFile
+    from openbisJavaApiDependenciesIncludedJar.archiveFile
+    from openbisJavaApiSources.archiveFile
+    from openbisJavaApiJavaDocZip.archiveFile
+    from configurations.apiDependenciesIncluded
+    into baseName
+}
+
+// openbis-java-api-VERSION.tar.gz
+task openbisJavaApiTar(type: Tar, dependsOn: [openbisJavaApiJar]) {
+    archiveFileName = baseName + '-' + project.ext.versionNumber + ".tar.gz"
+    from openbisJavaApiJar.archiveFile
+    from openbisJavaApiSources.archiveFile
+    from openbisJavaApiJavaDocZip.archiveFile
+    from configurations.apiDependenciesIncluded
+    into baseName
+}
+
+// openbis-java-api-VERSION-dependencies-included.tar.gz
+task openbisJavaApiDependenciesIncludedTar(type: Tar, dependsOn: [openbisJavaApiDependenciesIncludedJar]) {
+    archiveFileName = baseName + '-' + project.ext.versionNumber + "-dependencies-included.tar.gz"
+    from openbisJavaApiDependenciesIncludedJar.archiveFile
+    from openbisJavaApiSources.archiveFile
+    from openbisJavaApiJavaDocZip.archiveFile
+    from configurations.apiDependenciesIncluded
+    into baseName + '-dependencies-included'
+}
+

@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
 evaluationDependsOn(':api-openbis-java')
@@ -185,6 +187,41 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
           '--classes', 'targets/gradle/classes/java/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
 }
 
+
+/////////// AS JAVADOC ////////////////////
+
+task serverApplicationServerJavadoc(type: Javadoc) {
+    source project(':server-application-server').files('source/java').getAsFileTree().matching {
+        include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
+        include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-server-application-server")
+}
+
+task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
+    archiveBaseName = 'openbis-application-server-javadoc'
+    from serverApplicationServerJavadoc.destinationDir
+}
+
+
+
+/////////// DYNAMIC PROPERTIES API ////////////////////
+
+
+task dynamicApiJavadoc(type: Javadoc) {
+    source project(':server-application-server').files('source/java').getAsFileTree().matching {
+        include "ch/systemsx/cisd/openbis/generic/shared/hotdeploy_plugins/api/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-dynamic-api")
+}
+
+task dynamicApiJavadocZip(type: Zip, dependsOn: dynamicApiJavadoc) {
+    archiveBaseName = 'dynamic-api-javadoc'
+    from dynamicApiJavadoc.destinationDir
+}
+
 testProjectSamplesEnabled.dependsOn(copyTestData)
 cleanDbSuiteProjectSamplesEnabled.dependsOn(testProjectSamplesEnabled)
 test.maxHeapSize = "10240m"
@@ -192,6 +229,5 @@ test.jvmArgs += [
         '-Duser.timezone=Europe/Zurich',
         '-Djava.util.logging.config.file=etc/jullogging.properties']
 test.dependsOn(copyTestData)
-test.dependsOn(cleanDbSuite)
 
 apply from: 'elndev.gradle'

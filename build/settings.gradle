@@ -7,7 +7,7 @@ def includes11 = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-ja
                 'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
                 'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
                 'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration',
-                  'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis'
+                  'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis', 'release'
 ]
 
 def includes17 = ['server-ro-crate'

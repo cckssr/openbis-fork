@@ -46,6 +46,9 @@ tasks.withType(JavaCompile) {
 //    dependsOn("compileAvroSchemas")
 //}
 
+apply from: '../build/javaproject.gradle'
+layout.buildDirectory = "targets"
+
 repositories {
     ivy {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
@@ -78,6 +81,7 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.mockito:mockito-core:4.4.0")
 }
+
 
 tasks.named('jar', Jar) {
     manifest {
@@ -138,3 +142,10 @@ tasks.register('app-openbis-drive-cmd-line-jar', Jar) {
         }
     }
 }
+// openbis-drive-VERSION.tar.gz
+task openbisDriveTar(type: Tar, dependsOn: [jar]) {
+    archiveFileName =  'openbis-drive-' + project.ext.versionNumber + ".tar.gz"
+    from jar.archiveFile
+    into 'openbis-drive'
+}
+
