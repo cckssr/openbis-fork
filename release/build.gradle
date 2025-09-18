@@ -19,16 +19,9 @@ apply from: '../build/javaproject.gradle'
  *
  */
 
-//// openbis-java-api.zip
-//task openbisJavaApiZip(type: Zip, dependsOn: [openbisJavaApiDependenciesIncludedJar, openbisJavaApiSources, openbisJavaApiJavaDocZip]) {
-//    archiveBaseName = baseName
-//    from openbisJavaApiJar.archiveFile
-//    from openbisJavaApiDependenciesIncludedJar.archiveFile
-//    from openbisJavaApiSources.archiveFile
-//    from openbisJavaApiJavaDocZip.archiveFile
-//    from configurations.apiDependenciesIncluded
-//    into baseName
-//}
+
+apply from: 'openbis-java-api.gradle'
+
 
 task openbisJsApiResources(type: Zip, dependsOn: [':api-openbis-typescript:generateTypeScript', ':api-openbis-javascript:copyJsResources'])
 {
@@ -36,10 +29,7 @@ task openbisJsApiResources(type: Zip, dependsOn: [':api-openbis-typescript:gener
     archiveFileName ='openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
     destinationDirectory = layout.buildDirectory.dir(".")
     from project(':api-openbis-typescript').file('targets/openbis-typescript-api')
-//    from task(':api-openbis-javascript:jsApiResources').archiveFile
-//    from project(':api-openbis-javascript').tasks.jsApiResources.archiveFile
     from("${project(':api-openbis-javascript').projectDir}/targets/openbis-javascript-api")
-//    from project(':api-openbis-javascript').file('/targets/openbis-javascript-api')
     into 'openbis-javascript-api'
 }
 
@@ -60,41 +50,24 @@ task javadocs(type: Zip, dependsOn: [ ':server-application-server:serverApplicat
 }
 
 task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-python3-pybis:openbisPython3ApiZip',
-           ':app-openbis-command-line:openbisCommandLineToolZip', ':api-openbis-java:openbisJavaApiTar',
-           ':api-openbis-java:openbisJavaApiDependenciesIncludedTar', ':app-openbis-drive:openbisDriveTar',
+           ':app-openbis-command-line:openbisCommandLineToolZip',
+           openbisJavaApiTar, openbisJavaApiDependenciesIncludedTar,
+           ':app-openbis-drive:openbisDriveTar',
 //           ':app-openbis-installer:createInstallerZip'
-           ':server-original-data-store:dropboxApiZip', ':core-plugin-openbis:queryApiZip'
+           ':server-original-data-store:dropboxApiZip'
+//                                           , ':core-plugin-openbis:queryApiZip'
 ]) {
     archiveBaseName = 'openbis-artifacts'
 
     from openbisJsApiResources.archiveFile
-//    from("${project(':api-openbis-python3-pybis').projectDir}/build")
-//    from project(':api-openbis-python3-pybis').file('build')
     from project(':api-openbis-python3-pybis').tasks.openbisPython3ApiZip.archiveFile
-    from project(':api-openbis-java').tasks.openbisJavaApiTar.archiveFile
-    from(project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar.archiveFile)
+    from openbisJavaApiTar.archiveFile
+    from(openbisJavaApiDependenciesIncludedTar.archiveFile)
     from(project(':server-original-data-store').tasks.dropboxApiZip.archiveFile)
-    from(project(':core-plugin-openbis').tasks.queryApiZip.archiveFile)
+//    from(project(':core-plugin-openbis').tasks.queryApiZip.archiveFile)
 
 
     from project(':app-openbis-command-line').tasks.openbisCommandLineToolZip.archiveFile
     from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
 
-//    from project(':app-openbis-installer').tasks.openbisDriveTar.archiveFile
-
-//    into 'client'
-//    from dssClientZip.archiveFile
-//    from queryApiZip.archiveFile
-//    from screeningApiZip.archiveFile
-//    from commonbaseZip.archiveFile
-//    from('dist/client/readme.txt')
-//    rename { filename ->
-//        if (filename.startsWith('pybis-')) {
-//            def contentOfSetUpFile = zipTree(pybisZip.archiveFile).getFiles().findAll { it.path.endsWith('src/python/setup.cfg') }.iterator().next().text
-//            def pybisVersion = (contentOfSetUpFile =~ /version.*=.*(.*)/)[0][1]
-//            'pybis-' + pybisVersion + '.zip'
-//        } else {
-//            filename
-//        }
-//    }
 }
