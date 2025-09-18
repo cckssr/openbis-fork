@@ -227,5 +227,6 @@ test.jvmArgs += [
         '-Duser.timezone=Europe/Zurich',
         '-Djava.util.logging.config.file=etc/jullogging.properties']
 test.dependsOn(copyTestData)
+test.dependsOn(cleanDbSuite)
 
 apply from: 'elndev.gradle'
