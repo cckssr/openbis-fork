@@ -87,7 +87,7 @@ public class Mapper
                 SampleType sampleType = (SampleType) value;
                 List<String> ontologicalAnnotations =
                         ((SampleType) value).getSemanticAnnotations().stream()
-                                .map(x -> x.getDescriptorAccessionId()).collect(
+                                .map(x -> x.getPredicateAccessionId()).collect(
                                         Collectors.toList());
                 myClass.setOntologicalAnnotations(ontologicalAnnotations);
 

@@ -104,9 +104,9 @@ public class RdfToModel
                 }
                 type.getOntologicalAnnotations().forEach(x -> {
                     SemanticAnnotation semanticAnnotation = new SemanticAnnotation();
-                    semanticAnnotation.setDescriptorAccessionId(x);
-                    semanticAnnotation.setDescriptorOntologyId(x);
-                    semanticAnnotation.setDescriptorOntologyVersion(x);
+                    semanticAnnotation.setPredicateAccessionId(x);
+                    semanticAnnotation.setPredicateAccessionId(x);
+                    semanticAnnotation.setPredicateOntologyVersion(x);
 
                     List<SemanticAnnotation> existingAnnotations =
                             sampleType.getSemanticAnnotations();

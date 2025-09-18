@@ -93,9 +93,9 @@ public class RdfToOpenBisMapper
             List<SemanticAnnotation> semanticAnnotations = new ArrayList<>();
             var semanticAnnotation = new SemanticAnnotation();
             semanticAnnotation.setEntityType(v3SampleType);
-            semanticAnnotation.setDescriptorOntologyId(modelRDF.ontNamespace);
-            semanticAnnotation.setDescriptorOntologyVersion(modelRDF.ontVersion);
-            semanticAnnotation.setDescriptorAccessionId(rdfSampleType.ontologyAnnotationId);
+            semanticAnnotation.setPredicateOntologyId(modelRDF.ontNamespace);
+            semanticAnnotation.setPredicateOntologyVersion(modelRDF.ontVersion);
+            semanticAnnotation.setPredicateAccessionId(rdfSampleType.ontologyAnnotationId);
             semanticAnnotations.add(semanticAnnotation);
             v3SampleType.setSemanticAnnotations(semanticAnnotations);
 
