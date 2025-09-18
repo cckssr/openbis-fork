@@ -35,12 +35,9 @@ import lombok.NonNull;
 
 public final class AfsClient implements PublicAPI, ClientAPI
 {
+    public static final int DEFAULT_PACKAGE_SIZE_IN_BYTES = 10485760; // 10 Megabytes;
 
-    private static final int DEFAULT_PACKAGE_SIZE_IN_BYTES = 1024;
-
-    private static final int DEFAULT_TIMEOUT_IN_MILLIS = 30000;
-
-    private static final String MD5 = "MD5";
+    private static final int DEFAULT_TIMEOUT_IN_MILLIS = 30000; // 30 seconds
 
     private int maxReadSizeInBytes;
 

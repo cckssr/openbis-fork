@@ -5,6 +5,7 @@ Advanced Configuration
    :maxdepth: 4
 
    required-configuration
+   afs-configuration
    configuration-properties-by-module
    optional-application-server-configuration
    optional-datastore-server-configuration
@@ -12,7 +13,7 @@ Advanced Configuration
    authorization
    maintenance-tasks
    user-group-management-for-multi-groups-openbis-instances
-   archiving-datasets
+   archiving-dss-datasets
    archiving-afs-datasets
    multi-data-set-archiving
    master-data

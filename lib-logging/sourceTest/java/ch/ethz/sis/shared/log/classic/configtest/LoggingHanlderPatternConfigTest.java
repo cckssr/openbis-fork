@@ -17,9 +17,9 @@
 
 package ch.ethz.sis.shared.log.classic.configtest;
 
-import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.ethz.sis.shared.log.standard.handlers.DailyRollingFileHandler;
 import ch.ethz.sis.shared.log.standard.handlers.PatternFormatter;
+import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -38,7 +38,7 @@ import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-public class LoggingHanldersConfigTest
+public class LoggingHanlderPatternConfigTest
 {
 
     @BeforeMethod
@@ -52,44 +52,33 @@ public class LoggingHanldersConfigTest
 
     }
 
+
+    /**
+     * All handlers that have a messagePattern property configured
+     * should be using PatternFormatter underneath.
+     */
     @Test
-    public void testHandlersAreAttached() {
-        // root
-        Handler[] rootHandlers = Logger.getLogger("").getHandlers();
-        boolean hasDefault = Arrays.stream(rootHandlers)
-                .anyMatch(h -> h instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis.log"));
-        boolean hasConsole = Arrays.stream(rootHandlers)
-                .anyMatch(h -> h instanceof ConsoleHandler);
-        Assert.assertTrue(hasDefault, "DefaultFileHandler should be on root logger");
-        Assert.assertTrue(hasConsole, "ConsoleHandler should be on root logger");
+    public void testAllHandlersUsePatternFormatter() {
+        // logger names to check: root ("") plus the named ones
+        String[] loggers = { "", "AUTH", "TRACKING", "ACCESS" };
 
-        // AUTH
-        Handler[] authHandlers = Logger.getLogger("AUTH").getHandlers();
-        Assert.assertEquals(authHandlers.length, 2, "AUTH should have 2 handlers");
-        Assert.assertTrue(Arrays.stream(authHandlers)
-                        .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_auth.log")),
-                "AuthFileHandler missing on AUTH logger");
-        Assert.assertTrue(Arrays.stream(authHandlers)
-                        .anyMatch(h -> h instanceof DailyRollingFileHandler
-                                && ((DailyRollingFileHandler)h).getLogFileName().contains("openbis_usage.log")),
-                "UsageFileHandler missing on AUTH logger");
 
-        // TRACKING
-        Handler[] trackHandlers = Logger.getLogger("TRACKING").getHandlers();
-        Assert.assertEquals(trackHandlers.length, 1, "TRACKING should have exactly 1 handler");
-        Assert.assertTrue(trackHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)trackHandlers[0]).getLogFileName().contains("openbis_usage.log"),
-                "UsageFileHandler missing on TRACKING logger");
+        for (String loggerName : loggers) {
+            Handler[] handlers = Logger.getLogger(loggerName).getHandlers();
 
-        // ACCESS
-        Handler[] accessHandlers = Logger.getLogger("ACCESS").getHandlers();
-        Assert.assertEquals(accessHandlers.length, 1, "ACCESS should have exactly 1 handler");
-        Assert.assertTrue(accessHandlers[0] instanceof DailyRollingFileHandler
-                        && ((DailyRollingFileHandler)accessHandlers[0]).getLogFileName().contains("openbis_usage.log"),
-                "UsageFileHandler missing on ACCESS logger");
+            Assert.assertTrue(handlers.length > 0,
+                    "Expected at least one handler on logger '" + loggerName + "'");
+            for (Handler h : handlers) {
+                Formatter fmt = h.getFormatter();
+                Assert.assertNotNull(fmt,
+                        "Formatter must not be null on handler " + h + " of logger " + loggerName);
+                Assert.assertEquals(fmt.getClass(), PatternFormatter.class,
+                        "Handler " + h + " on logger '" + loggerName +
+                                "' should use PatternFormatter, but was " + fmt.getClass().getSimpleName());
+            }
+        }
     }
+
 
     @AfterMethod
     public void tearDown() throws IOException {

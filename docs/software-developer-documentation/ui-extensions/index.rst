@@ -1,4 +1,4 @@
-Client-Side Extensions
+UI Extensions
 ======================
 
 .. toctree::

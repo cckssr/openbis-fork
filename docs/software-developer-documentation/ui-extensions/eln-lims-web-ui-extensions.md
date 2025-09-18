@@ -1,4 +1,4 @@
-ELN-LIMS WEB UI extensions
+ELN-LIMS Extensions
 ==========================
 
 ## Introduction
