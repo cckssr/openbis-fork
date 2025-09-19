@@ -20,39 +20,36 @@ apply from: 'openbis-java-api.gradle'
 apply from: 'openbis-javascript-api.gradle'
 
 
-task javadocs(type: Zip, dependsOn: [ ':server-application-server:serverApplicationServerJavadocZip',
-        ':server-application-server:dynamicApiJavadocZip',
-        ':server-original-data-store:serverOriginalDataStoreJavadocZip', ':server-original-data-store:dropboxJavaDocZip',
-        ':core-plugin-openbis:queryApiJavaDocZip'
-                                           ]) {
-    archiveBaseName = 'openbis-javadocs'
-
-    from project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile
-    from project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile
-    from project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile
-    from project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
-    from project(':core-plugin-openbis').tasks.queryApiJavaDocZip.archiveFile
-
-
-}
-
-task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-python3-pybis:openbisPython3ApiZip',
-           ':app-openbis-command-line:openbisCommandLineToolZip',
-           openbisJavaApiTar, openbisJavaApiDependenciesIncludedTar,
-           ':app-openbis-drive:openbisDriveTar',
-           ':app-openbis-installer:createInstallerZip',
-           ':server-original-data-store:dropboxApiZip',
-//           ':core-plugin-openbis:queryApiZip'
-]) {
-    archiveBaseName = 'openbis-artifacts'
-
-    from openbisJsApiResources.archiveFile
-    from project(':api-openbis-python3-pybis').tasks.openbisPython3ApiZip.archiveFile
-    from openbisJavaApiTar.archiveFile
-    from openbisJavaApiDependenciesIncludedTar.archiveFile
-    from project(':server-original-data-store').tasks.dropboxApiZip.archiveFile
-//    from project(':core-plugin-openbis').tasks.queryApiZip.archiveFile
-    from project(':app-openbis-installer').tasks.createInstallerZip.archiveFile
-    from project(':app-openbis-command-line').tasks.openbisCommandLineToolZip.archiveFile
-    from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
-}
+//task javadocs(type: Zip, dependsOn: [ ':server-application-server:serverApplicationServerJavadocZip',
+//        ':server-application-server:dynamicApiJavadocZip',
+//        ':server-original-data-store:serverOriginalDataStoreJavadocZip', ':server-original-data-store:dropboxJavaDocZip',
+//        ':core-plugin-openbis:queryApiJavaDocZip'
+//                                           ]) {
+//    archiveBaseName = 'openbis-javadocs'
+//
+//    from project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile
+//    from project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile
+//    from project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile
+//    from project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
+//
+//
+//}
+//
+//task clientsAndApis(type: Zip, dependsOn: [openbisJsApiResources, ':api-openbis-python3-pybis:openbisPython3ApiZip',
+//           ':app-openbis-command-line:openbisCommandLineToolZip',
+//           openbisJavaApiTar, openbisJavaApiDependenciesIncludedTar,
+//           ':app-openbis-drive:openbisDriveTar',
+//           ':app-openbis-installer:createInstallerZip',
+//           ':server-original-data-store:dropboxApiZip',
+//]) {
+//    archiveBaseName = 'openbis-artifacts'
+//
+//    from openbisJsApiResources.archiveFile
+//    from project(':api-openbis-python3-pybis').tasks.openbisPython3ApiZip.archiveFile
+//    from openbisJavaApiTar.archiveFile
+//    from openbisJavaApiDependenciesIncludedTar.archiveFile
+//    from project(':server-original-data-store').tasks.dropboxApiZip.archiveFile
+//    from project(':app-openbis-installer').tasks.createInstallerZip.archiveFile
+//    from project(':app-openbis-command-line').tasks.openbisCommandLineToolZip.archiveFile
+//    from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
+//}
