@@ -30,7 +30,7 @@ public interface ISingleDataSetPathInfoProvider
     DataSetPathInfo getRootPathInfo();
 
     /**
-     * @return information about path of data set file with given <var>relativePath</var>, or </code>null<code> if such a path doesn't exist
+     * @return information about path of data set file with given <var>relativePath</var>, or <code>null</code> if such a path doesn't exist
      */
     DataSetPathInfo tryGetPathInfoByRelativePath(String relativePath);
 

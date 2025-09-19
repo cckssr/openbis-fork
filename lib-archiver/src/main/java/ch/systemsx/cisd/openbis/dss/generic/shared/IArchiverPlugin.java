@@ -38,7 +38,7 @@ public interface IArchiverPlugin extends Serializable
     /**
      * Asynchronously processes archiving of the specified datasets.
      * 
-     * @returns {@link ProcessingStatus} of the finished processing with statuses of processing for all scheduled data sets or null if processing
+     * @return {@link ProcessingStatus} of the finished processing with statuses of processing for all scheduled data sets or null if processing
      *          succeeded for all datasets and no additional information is provided.
      */
     ProcessingStatus archive(List<DatasetDescription> datasets, ArchiverTaskContext context,
@@ -47,7 +47,7 @@ public interface IArchiverPlugin extends Serializable
     /**
      * Asynchronously processes unarchiving of the specified datasets.
      * 
-     * @returns {@link ProcessingStatus} of the finished processing with statuses of processing for all scheduled data sets or null if processing
+     * @return {@link ProcessingStatus} of the finished processing with statuses of processing for all scheduled data sets or null if processing
      *          succeeded for all datasets and no additional information is provided.
      */
     ProcessingStatus unarchive(List<DatasetDescription> datasets, ArchiverTaskContext context);
@@ -55,14 +55,14 @@ public interface IArchiverPlugin extends Serializable
     /**
      * Enhances the list of data set codes, so that it contains all datasets that should be unarchived together in one batch.
      * 
-     * @returns the list that should be a superset {@code dataSetCodes}
+     * @return the list that should be a superset {@code dataSetCodes}
      */
     List<String> getDataSetCodesForUnarchiving(List<String> dataSetCodes);
 
     /**
      * Delete data sets from the archive.
      * 
-     * @returns {@link ProcessingStatus} containing the deletion statuses for all data sets or null if processing succeeded for all datasets and no
+     * @return {@link ProcessingStatus} containing the deletion statuses for all data sets or null if processing succeeded for all datasets and no
      *          additional information is provided.
      */
     ProcessingStatus deleteFromArchive(List<DatasetLocation> datasets);
