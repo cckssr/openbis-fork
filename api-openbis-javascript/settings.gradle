@@ -1,1 +1,5 @@
 includeFlat 'api-data-store-server-javascript'
+
+//api-openbis-typescript and its dependencies
+includeFlat 'api-openbis-typescript', 'lib-commonbase', 'lib-common', 'lib-logging', 'lib-json',
+        'lib-two-phase-transaction', 'api-openbis-java', 'api-data-store-server-java'

@@ -13,49 +13,26 @@ node {
     //nodeModulesDir = file("${projectDir}")
 }
 
-task copyAfsApi(type: Copy) {
+tasks.register('copyAfsApi', Copy) {
     from("${project(':api-data-store-server-javascript').projectDir}/src/js/api")
     into file('src/v3/afs')
 }
 
-task bundleOpenbisStaticResources(type: Exec, dependsOn: copyAfsApi) {
+tasks.register('bundleOpenbisStaticResources', Exec) {
+    dependsOn copyAfsApi
     dependsOn 'npmInstall'
     commandLine 'bash', '-c', "${projectDir}/bin/build.sh"
 }
 
 //openbis-javascript-api-VERSION-esm.tar.gz
-task jsApiResources(type: Tar, dependsOn: [bundleOpenbisStaticResources]) {
-//task jsApiResources(type: Tar, dependsOn: [bundleOpenbisStaticResources, project(':api-openbis-typescript').tasks.copyToTypeScriptToJS]) {
-    archiveFileName ='openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
-//    from("${project(':api-openbis-javascript').projectDir}/src/v3")
+tasks.register('resources', Tar) {
+    dependsOn([bundleOpenbisStaticResources, project(':api-openbis-typescript').generateTypeScript])
+    duplicatesStrategy 'include'
+    archiveFileName = 'openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
     from("src/v3")
     from("${project(':api-data-store-server-javascript').projectDir}/src/js")
+    from("${project(':api-openbis-typescript').projectDir}/targets/openbis-typescript-api")
     into 'openbis-javascript-api'
 }
 
-task copyJsResources(type: Copy, dependsOn: [bundleOpenbisStaticResources]) {
-//task copyJsResources(type: Copy) {
-    duplicatesStrategy 'include'
-    from("${project(':api-openbis-javascript').projectDir}/src/v3")
-    from("${project(':api-data-store-server-javascript').projectDir}/src/js")
-    into 'targets/openbis-javascript-api'
-//    from "${project.projectDir}/../core-plugin-openbis/dist/tarball/installer"
-//    from zipTree(project(':core-plugin-openbis').zipDss.archivePath)
-//    into installerDistDir
-//    from zipTree(project(':core-plugin-openbis').zipRoCrateServer.archivePath)
-//    into installerDistDir
-//    from zipTree(project(':core-plugin-openbis').zipBdlServer.archivePath)
-//    into installerDistDir
-//    from zipTree(project(':core-plugin-openbis').zipAfsServer.archivePath)
-//    into installerDistDir
-//    from("${installerDistDir}/../BUILD-app-openbis-installer.INFO") {
-//        into 'bin'
-//    }
-//    from("${buildDir}/classes/java/main/InstallerVariableAccess.class") {
-//        into 'bin'
-//    }
-//    from(zipTree(project(':core-plugin-openbis').zip.archivePath)) {
-//        into "openBIS-server"
-//    }
-}
 
