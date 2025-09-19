@@ -44,7 +44,7 @@ import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
 
 /**
  * By-product of BIS-35. Can be used as a basis for testing JSON calls.
- * 
+ *
  * @author anttil
  */
 public class JsonBaseTest
@@ -94,33 +94,33 @@ public class JsonBaseTest
         server.addConnector(clientConnector);
 
         DispatcherServlet clientDispatcherServlet = new DispatcherServlet()
+        {
+
+            private static final long serialVersionUID = -4168976089074757513L;
+
+            @Override
+            protected WebApplicationContext findWebApplicationContext()
             {
 
-                private static final long serialVersionUID = -4168976089074757513L;
+                GenericWebApplicationContext ctx = new GenericWebApplicationContext();
+                AnnotationConfigUtils.registerAnnotationConfigProcessors(ctx);
 
-                @Override
-                protected WebApplicationContext findWebApplicationContext()
-                {
+                GenericBeanDefinition echoService = new GenericBeanDefinition();
+                echoService.setBeanClass(EchoServiceBean.class);
+                ctx.registerBeanDefinition("echoService", echoService);
 
-                    GenericWebApplicationContext ctx = new GenericWebApplicationContext();
-                    AnnotationConfigUtils.registerAnnotationConfigProcessors(ctx);
+                GenericBeanDefinition jsonExporter = new GenericBeanDefinition();
+                jsonExporter.setBeanClass(MappedJsonServiceExporter.class);
+                MutablePropertyValues values = new MutablePropertyValues();
+                values.addPropertyValue("service", ctx.getBean("echoService"));
+                values.addPropertyValue("serviceInterface", EchoService.class);
+                jsonExporter.setPropertyValues(values);
+                ctx.registerBeanDefinition("jsonExporter", jsonExporter);
 
-                    GenericBeanDefinition echoService = new GenericBeanDefinition();
-                    echoService.setBeanClass(EchoServiceBean.class);
-                    ctx.registerBeanDefinition("echoService", echoService);
-
-                    GenericBeanDefinition jsonExporter = new GenericBeanDefinition();
-                    jsonExporter.setBeanClass(MappedJsonServiceExporter.class);
-                    MutablePropertyValues values = new MutablePropertyValues();
-                    values.addPropertyValue("service", ctx.getBean("echoService"));
-                    values.addPropertyValue("serviceInterface", EchoService.class);
-                    jsonExporter.setPropertyValues(values);
-                    ctx.registerBeanDefinition("jsonExporter", jsonExporter);
-
-                    ctx.refresh();
-                    return ctx;
-                }
-            };
+                ctx.refresh();
+                return ctx;
+            }
+        };
 
         ServletContextHandler clientSch =
                 new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
