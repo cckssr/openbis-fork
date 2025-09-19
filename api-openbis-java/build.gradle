@@ -41,14 +41,14 @@ jar {
     project(':lib-two-phase-transaction').getAllTasks(true); // because IntelliJ is dumb
     from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
-               project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
-                    project.compileJava.outputs.getFiles().getAsFileTree().plus(
-                        project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
-                            project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()
+                    project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
+                            project.compileJava.outputs.getFiles().getAsFileTree().plus(
+                                    project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
+                                    project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()
+                            )
                     )
-                )
             )
-        )
+    )
             .matching {
                 include "ch/systemsx/cisd/common/exceptions/**/*.class"
                 include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.class"
@@ -76,9 +76,9 @@ jar {
 sourcesJar {
     archiveFileName = baseName + "-sources-" + project.ext.versionNumber + ".zip"
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
-        project(':lib-common').files('source/java').getAsFileTree().plus(
-            project(':lib-two-phase-transaction').files('src/main/java').getAsFileTree().plus(
-                project.files('source/java').getAsFileTree()))
+            project(':lib-common').files('source/java').getAsFileTree().plus(
+                    project(':lib-two-phase-transaction').files('src/main/java').getAsFileTree().plus(
+                            project.files('source/java').getAsFileTree()))
     ).matching {
         include "ch/systemsx/cisd/common/exceptions/**/*.java"
         include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.java"
@@ -179,14 +179,14 @@ jar {
     project(':lib-two-phase-transaction').getAllTasks(true); // because IntelliJ is dumb
     from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
             project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
-               project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
-                    project.compileJava.outputs.getFiles().getAsFileTree().plus(
-                        project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
-                            project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()
+                    project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
+                            project.compileJava.outputs.getFiles().getAsFileTree().plus(
+                                    project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
+                                    project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()
+                            )
                     )
-                )
             )
-        )
+    )
             .matching {
                 include "ch/systemsx/cisd/common/exceptions/**/*.class"
                 include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.class"
@@ -214,9 +214,9 @@ jar {
 sourcesJar {
     archiveFileName = baseName + "-sources-" + project.ext.versionNumber + ".zip"
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
-        project(':lib-common').files('source/java').getAsFileTree().plus(
-            project(':lib-two-phase-transaction').files('src/main/java').getAsFileTree().plus(
-                project.files('source/java').getAsFileTree()))
+            project(':lib-common').files('source/java').getAsFileTree().plus(
+                    project(':lib-two-phase-transaction').files('src/main/java').getAsFileTree().plus(
+                            project.files('source/java').getAsFileTree()))
     ).matching {
         include "ch/systemsx/cisd/common/exceptions/**/*.java"
         include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.java"
