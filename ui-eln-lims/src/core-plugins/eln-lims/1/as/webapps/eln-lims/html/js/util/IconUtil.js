@@ -216,6 +216,9 @@ var IconUtil = new function() {
         } else if(type === "LOCKED_DATA") {
             icon.class = "material-icons";
             icon.text = "lock_outline";
+        } else if(type === "CLOSE") {
+             icon.class = "material-icons";
+             icon.text = "close";
         }
         return icon;
     }
@@ -374,6 +377,9 @@ var IconUtil = new function() {
         } else if(type === "CUSTOM") {
             icon.type = "font"
             icon.class = optionalParameters
+        } else if(type === "CLOSE") {
+            icon.class = "material-icons";
+            icon.text = "close";
         }
 
         return icon;
