@@ -23,7 +23,9 @@ dependencies {
             'testng:testng:6.8-CISD',
             'reflections:reflections:0.9.10',
             'slf4j:slf4j-api:1.7.24',
-            'eclipse:jetty-proxy:10.0.25'
+            'eclipse:jetty-proxy:10.0.25',
+            'hamcrest:hamcrest-integration:1.3',
+            'hamcrest:hamcrest-library:1.3'
 }
 
 // Base name for artifacts
