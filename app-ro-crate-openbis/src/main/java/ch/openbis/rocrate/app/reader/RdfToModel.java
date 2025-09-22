@@ -104,9 +104,9 @@ public class RdfToModel
                 }
                 type.getOntologicalAnnotations().forEach(x -> {
                     SemanticAnnotation semanticAnnotation = new SemanticAnnotation();
-                    semanticAnnotation.setDescriptorAccessionId(x);
-                    semanticAnnotation.setDescriptorOntologyId(x);
-                    semanticAnnotation.setDescriptorOntologyVersion(x);
+                    semanticAnnotation.setPredicateAccessionId(x);
+                    semanticAnnotation.setPredicateAccessionId(x);
+                    semanticAnnotation.setPredicateOntologyVersion(x);
 
                     List<SemanticAnnotation> existingAnnotations =
                             sampleType.getSemanticAnnotations();
@@ -432,7 +432,7 @@ public class RdfToModel
             // resolving object references needs another pass after creating all objects
             for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
             {
-                sample.getProperties().put(deRdfIdentifier(reference.getKey()),
+                sample.getProperties().put(openBisifyCode(deRdfIdentifier(reference.getKey())),
                         String.join(",",
                                 reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
                                         .filter(Objects::nonNull)

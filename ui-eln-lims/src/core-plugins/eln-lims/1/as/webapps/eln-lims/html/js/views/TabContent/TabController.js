@@ -115,6 +115,7 @@ class TabController extends window.NgComponents.default.ContentController {
                     tab.tree = mainController.sideMenu.getCurrentTree();
                     tab.view = mainController.currentView;
                     tab.finalize = tabInfo.finalize;
+                    tab.wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
                     newTabFlag = false;
                     newTab = tab;
                     break;
@@ -129,6 +130,7 @@ class TabController extends window.NgComponents.default.ContentController {
                      node: mainController.sideMenu.getCurrentNodeId(),
                      tree: mainController.sideMenu.getCurrentTree(),
                      finalize: tabInfo.finalize,
+                     wasSideMenuCollapsed: mainController.sideMenu.isCollapsed,
                      url: window.location.search,
                  }
                 openTabs.push(newTab);

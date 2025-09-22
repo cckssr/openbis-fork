@@ -3,6 +3,7 @@ package ch.eth.sis.rocrate.schemaorg;
 import ch.eth.sis.rocrate.facade.*;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
@@ -136,14 +137,6 @@ public class SchemaOrgReader
                     Collectors.toList()));
 
         }
-
-        Map<IType, List<IType>> subClasses = new LinkedHashMap<>();
-        for (IType iType : idsToTypes.values())
-        {
-        }
-
-
-
 
         Map<IType, List<IPropertyType>> typeToProperties = new LinkedHashMap<>();
         Map<IPropertyType, Set<IType>> propertyToSublcasses = new LinkedHashMap<>();
@@ -297,13 +290,17 @@ public class SchemaOrgReader
 
                 SELECT ?x
                 WHERE {
-                  ?x rdfs:subClassOf+ 
-                                """ + type.getId() + """
-                .
-                }
+                  ?x rdfs:subClassOf+ $typeId .
+                  }
                 """;
+        ParameterizedSparqlString parameterizedSparqlString = new ParameterizedSparqlString(query);
+        parameterizedSparqlString.setIri("typeId",
+                type.getId().replace("schema:", "https://schema.org/"));
+
+
         ResultSet resultSet =
-                QueryExecutionFactory.create(query, ontModel.getBaseModel()).execSelect();
+                QueryExecutionFactory.create(parameterizedSparqlString.asQuery(),
+                        ontModel.getBaseModel()).execSelect();
         Set<String> solutions = new LinkedHashSet<>();
         while (resultSet.hasNext())
         {

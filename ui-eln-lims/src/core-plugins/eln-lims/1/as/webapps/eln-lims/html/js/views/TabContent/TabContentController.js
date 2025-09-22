@@ -80,6 +80,7 @@ function TabContentController(controller) {
         tab.node = mainController.sideMenu.getCurrentNodeId();
         tab.tree = mainController.sideMenu.getCurrentTree();
         tab.view = mainController.currentView;
+        tab.wasSideMenuCollapsed = mainController.sideMenu.isCollapsed;
         tab.finalize = tabInfo.finalize;
         this._tabController.openTab(tab, (currentTab) => {
             _this._model.currentTab = currentTab
@@ -114,13 +115,7 @@ function TabContentController(controller) {
 
     this.handleTabSelect = function(tab) {
         _this._updateView(tab);
-
-        if(mainController.sideMenu.getCurrentTree() !== tab.tree) {
-//            mainController.mainHeader.navigateToTab(tab.tree.toUpperCase());
-//            mainController.sideMenu.changeCurrentTree(tab.tree, JSON.parse(tab.node));
-        } else {
-            mainController.sideMenu.moveToNodeId(tab.node);
-        }
+        mainController.sideMenu.moveToNodeId(tab.node);
         _this._model.currentTab = tab;
     }
 
@@ -143,6 +138,10 @@ function TabContentController(controller) {
 
         if(tab.finalize) {
             tab.finalize();
+        }
+
+        if(!tab.wasSideMenuCollapsed) {
+            mainController.sideMenu.expandSideMenu();
         }
 
     }

@@ -3507,20 +3507,41 @@ var FormUtil = new function() {
                 if(valueLowerCase.includes("<img") || valueLowerCase.includes("<table")){
                     $value = $("<img>", { src : "./img/file-richtext.svg", "width": "24px", "height": "24px"})
                     renderTooltip = function(){
+                        var output = $("<div>");
+                        var $btn = null;
+                        $btn = $("<a>", { 'class' : 'btn btn-showhide' });
+                        $btn.css("padding", "0px");
+                        var iconType = IconUtil.getToolbarIconType("CLOSE");
+                        var icon = IconUtil.getIcon(iconType);
+                        $btn.append(icon);
+                        $btn.attr('id', 'tooltip-close');
+
                         var valueSanitized = FormUtil.sanitizeRichHTMLText(value);
                         $tooltip = FormUtil.getFieldForPropertyType(propertyType, valueSanitized);
                         $tooltip = FormUtil.activateRichTextProperties($tooltip, undefined, propertyType, valueSanitized, true);
-                        return $tooltip
+                        output.append($btn).append($tooltip);
+                        return output;
                     }
-                }else{
+                } else{
                     return $("<div>").html(FormUtil.sanitizeRichHTMLText(value))
                 }
             }else if(customWidget === 'Spreadsheet'){
                 $value = $("<img>", { src : "./img/table.svg", "width": "16px", "height": "16px"})
                 renderTooltip = function(){
+                    var output = $("<div>");
+                    var $btn = null;
+                    $btn = $("<a>", { 'class' : 'btn btn-showhide' });
+                    $btn.css("padding", "0px");
+                    var iconType = IconUtil.getToolbarIconType("CLOSE");
+                    var icon = IconUtil.getIcon(iconType);
+                    $btn.append(icon);
+                    $btn.attr('id', 'tooltip-close');
+
                     $tooltip = $("<div>")
                     JExcelEditorManager.createField($tooltip, FormMode.VIEW, propertyType.code, { properties: row });
-                    return $tooltip
+
+                    output.append($btn).append($tooltip);
+                    return output;
                 }
             }else{
                 $value = $("<div>")
@@ -3540,6 +3561,11 @@ var FormUtil = new function() {
                     var $content = $("<div>").css({ "max-width" : "50vw", "max-height" : "50vh"}).append(renderTooltip())
                     $(helper.origin).tooltipster('content', $content)
                     return true
+                },
+                functionReady: function(origin, tooltip) {
+                    $("#" + tooltip.tooltip.id +' #tooltip-close').click(function(){
+                        origin.hide();
+                    });
                 }
             })
 
