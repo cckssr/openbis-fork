@@ -24,7 +24,7 @@ import java.util.logging.LogRecord;
 /**
  * @author pkupczyk
  */
-public class DbConnectionLogAppender extends DailyRollingFileHandler
+public class DbConnectionLogHandler extends DailyRollingFileHandler
 {
     /**
      * Constructs the DailyRollingFileHandler.
@@ -32,35 +32,28 @@ public class DbConnectionLogAppender extends DailyRollingFileHandler
      * @param baseFileName The base name (including path) for the log files.
      * @throws IOException If an I/O error occurs while opening the log file.
      */
-    public DbConnectionLogAppender(String baseFileName) throws IOException
+    public DbConnectionLogHandler(String baseFileName) throws IOException
     {
         super(baseFileName);
+    }
+
+    public DbConnectionLogHandler(String logFileName,
+            int maxLogFileSize,
+            boolean append,
+            int maxLogRotations) throws IOException {
+        super(logFileName, maxLogFileSize, append, maxLogRotations);
     }
 
     @Override
     public synchronized void publish(LogRecord record)
     {
-        ExtendedLogRecord extendedLogRecord = new ExtendedLogRecord(record,
-                Thread.currentThread().getName().replaceAll("\\s", "_"));
+        if (DbConnectionLogConfiguration.getInstance().isDbConnectionsSeparateLogFileEnabled())
+        {
+            ExtendedLogRecord extendedLogRecord = new ExtendedLogRecord(record,
+                    Thread.currentThread().getName().replaceAll("\\s", "_"));
 
-        super.publish(extendedLogRecord);
+            super.publish(extendedLogRecord);
+        }
     }
 
-    //    @Override
-//    public void append(LoggingEvent event)
-//    {
-//        if (DbConnectionLogConfiguration.getInstance().isDbConnectionsSeparateLogFileEnabled())
-//        {
-//            super.publish(new LoggingEvent(event.getFQNOfLoggerClass(),
-//                    event.getLogger(),
-//                    event.getTimeStamp(),
-//                    event.getLevel(),
-//                    event.getMessage(),
-//                    Thread.currentThread().getName().replaceAll("\\s", "_"),
-//                    event.getThrowableInformation(),
-//                    event.getNDC(),
-//                    event.getLocationInformation(),
-//                    event.getProperties()));
-//        }
-//    }
 }

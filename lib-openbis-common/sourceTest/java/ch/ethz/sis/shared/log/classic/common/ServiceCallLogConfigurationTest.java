@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.systemsx.cisd.openbis.common.logging;
+package ch.ethz.sis.shared.log.classic.common;
 
 import java.io.IOException;
 
+import ch.ethz.sis.shared.log.classic.common.ServiceCallLogConfiguration;
 import org.testng.annotations.Test;
 
 import ch.systemsx.cisd.common.action.IDelegatedActionWithResult;
