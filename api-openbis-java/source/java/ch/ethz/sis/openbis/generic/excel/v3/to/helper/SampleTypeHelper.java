@@ -58,15 +58,15 @@ public class SampleTypeHelper
 
         String
                 accessionId = Optional.ofNullable(sampleType.getSemanticAnnotations())
-                .map(x -> x.stream().map(y -> y.getDescriptorAccessionId()).collect(
+                .map(x -> x.stream().map(y -> y.getPredicateAccessionId()).collect(
                         Collectors.joining("\n"))).orElse(null);
         String
                 ontologyVersions = Optional.ofNullable(sampleType.getSemanticAnnotations())
-                .map(x -> x.stream().map(y -> y.getDescriptorOntologyVersion()).collect(
+                .map(x -> x.stream().map(y -> y.getPredicateOntologyVersion()).collect(
                         Collectors.joining("\n"))).orElse(null);
         String
                 ontologies = Optional.ofNullable(sampleType.getSemanticAnnotations())
-                .map(x -> x.stream().map(y -> y.getDescriptorOntologyId()).collect(
+                .map(x -> x.stream().map(y -> y.getPredicateOntologyId()).collect(
                         Collectors.joining("\n"))).orElse(null);
 
 
