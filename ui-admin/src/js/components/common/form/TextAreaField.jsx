@@ -15,7 +15,7 @@ const styles = theme => ({
     borderColor: theme.palette.border.primary,
     resize: 'vertical',
     fontFamily: theme.typography.fontFamily,
-	backgroundColor: theme.palette.background.field,
+    backgroundColor: theme.palette.background.field,
   },
   label: {
     fontSize: theme.typography.label.fontSize,
@@ -68,6 +68,7 @@ class TextAreaField extends React.PureComponent {
       onClick,
       onFocus,
       onBlur,
+      disableUnderline,
       ...rest
     } = this.props;
     return (
@@ -77,18 +78,18 @@ class TextAreaField extends React.PureComponent {
         styles={styles}
         onClick={onClick}
       >
-		<Typography
-            component='label'
-            className={classes.label}
-          >
-            <FormFieldLabel
-              label={label}
-              mandatory={mandatory}
-              styles={styles}
-              onClick={onClick}
-            />
+        <Typography
+          component='label'
+          className={classes.label}
+        >
+          <FormFieldLabel
+            label={label}
+            mandatory={mandatory}
+            styles={styles}
+            onClick={onClick}
+          />
         </Typography>
-        
+
         <TextareaAutosize
           id={id}
           name={name}
@@ -98,7 +99,7 @@ class TextAreaField extends React.PureComponent {
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
-		  minRows={2}
+          minRows={2}
           {...rest}
         />
       </FormFieldContainer>

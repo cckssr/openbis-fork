@@ -1,4 +1,5 @@
-import { ActionContext, Form, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionContext, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 
 export class ProjectFormModel {
@@ -156,9 +157,14 @@ export class ProjectFormModel {
 
 	static saveProjectAction = async (context: ActionContext) => {
 		console.log("Invoking saveProjectAction", context);
-		const { form, controller, onAfterSave, mode } = context;
+		const { form, controller, onAfterSave, mode, externalAppController } = context;
+		console.log("saveProjectAction", form,  mode);
 		await new Promise(resolve => setTimeout(resolve, 1000)); // to display the loading spinner
 		const newPermId = await controller.save(form, mode);
-		onAfterSave({page: 'database', oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId});
+		if (mode === FormMode.CREATE) {
+			onAfterSave({oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId});
+		} else {
+			onAfterSave();
+		}
 	};
 }

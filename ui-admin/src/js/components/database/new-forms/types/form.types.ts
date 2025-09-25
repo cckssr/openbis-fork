@@ -1,51 +1,5 @@
-import { FormController } from '@src/js/components/database/new-forms/types/FormController';
-
-export enum FormMode {
-  VIEW = 'view',
-  CREATE = 'create',
-  EDIT = 'edit',
-}
-
-export enum EntityKind {
-  SPACE = 'SPACE',
-  PROJECT = 'PROJECT',
-  EXPERIMENT = 'EXPERIMENT',
-  NEW_PROJECT = 'NEWPROJECT',
-  OBJECT = 'OBJECT',
-  SAMPLE = 'SAMPLE',
-  COLLECTION = 'COLLECTION',
-  DATASET = 'DATASET',
-}
-
-/**
- * Defines the data type for a form field, mapping to openBIS property types and custom UI widget types.
- */
-export enum FormFieldDataType {
-  // openBIS Data Types
-  VARCHAR = 'VARCHAR',
-  MULTILINE_VARCHAR = 'MULTILINE_VARCHAR',
-  INTEGER = 'INTEGER',
-  REAL = 'REAL',
-  TIMESTAMP = 'TIMESTAMP',
-  BOOLEAN = 'BOOLEAN',
-  CONTROLLED_VOCABULARY = 'CONTROLLED_VOCABULARY',
-  HYPERLINK = 'HYPERLINK',
-  SAMPLE = 'SAMPLE',
-  // Custom UI-specific Types
-  WORD_PROCESSOR = 'WORD_PROCESSOR',
-  SPREADSHEET = 'SPREADSHEET',
-}
-
-export enum Widget {
-  RICH_TEXT = 'RichText',
-  SPREADSHEET = 'Spreadsheet'
-}
-
-export enum FormSection {
-  IDENTIFICATION_INFO = 'Identification Info',
-  GENERAL = 'General',
-  OVERVIEW = 'Overview'
-}
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
+import { FormFieldDataType, FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
 
 export interface FormFieldMeta {
   isFrozen?: boolean;
@@ -119,19 +73,19 @@ export interface SectionGroup {
 
 // Context object for actions
 export interface ActionContext {
-  controller: FormController;
+  controller: IFormController;
   form: Form;
   setForm: React.Dispatch<React.SetStateAction<Form | null>>;
   mode: FormMode;
   setMode: React.Dispatch<React.SetStateAction<FormMode>>;
   permissions: any;
-  onAfterSave: (params: any) => void;
+  onAfterSave: (params?: any) => void;
   openbisFacade: any; // Provide external dependencies
-  onNewObject: (newObjectType: string, fromId: string) => void;
-  onEntityChange: (permId: string, isNew: boolean) => void;
-  closeForm: () => void;
+  externalAppController: any;
   isAutoSaveEnabled: boolean;
   setAutoSaveEnabled: (isAutoSaveEnabled: boolean) => void;
+  deleteReason?: string; // Optional reason for delete operations
+  dependentEntities?: any; // Optional dependent entities info for delete operations
 }
 
 // NEW: Props for field renderers

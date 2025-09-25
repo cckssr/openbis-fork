@@ -1,11 +1,11 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
 
-export class SpaceFormController implements FormController {
+export class SpaceFormController implements IFormController {
   private openbisFacade: any;
 
   constructor(openbisFacade: any) {
@@ -54,12 +54,25 @@ export class SpaceFormController implements FormController {
     return { canEdit: true, canDelete: true, canMove: true };
   }
 
-  edit(form: Form): void {
-    // Implement edit logic as needed
+  async delete(form: Form, context?: any): Promise<void> {
+    // Implement delete logic as needed
+    console.log('SpaceFormController.delete', form, context);
   }
 
-  delete(form: Form): void {
-    // Implement delete logic as needed
+  async getDependentEntities(form: Form): Promise<any> {
+    // For spaces, check for projects and samples
+    const { SpacePermId, SpaceFetchOptions } = this.openbisFacade;
+    const id = new SpacePermId(form.entityPermId);
+    const fetchOptions = new SpaceFetchOptions();
+    fetchOptions.withProjects && fetchOptions.withProjects();
+    fetchOptions.withSamples && fetchOptions.withSamples();
+    const result = await this.openbisFacade.getSpaces([id], fetchOptions);
+    const space = result[form.entityPermId];
+    
+    return { 
+      projects: space.getProjects ? space.getProjects() : [], 
+      samples: space.getSamples ? space.getSamples() : [] 
+    };
   }
 
   move(form: Form): void {

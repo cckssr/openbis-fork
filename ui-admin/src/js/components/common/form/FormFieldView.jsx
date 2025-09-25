@@ -42,7 +42,7 @@ class FormFieldView extends React.PureComponent {
           <Typography variant='body2' component='div' className={classes.label}>
             {label}
           </Typography>
-          <Typography variant='body2' component='div' className={!disableUnderline && classes.value} color={color}>
+          <Typography variant='body2' component='div' className={!disableUnderline ? classes.value : ''} color={color}>
             {value ? value : <span>&nbsp;</span>}
           </Typography>
         </div>

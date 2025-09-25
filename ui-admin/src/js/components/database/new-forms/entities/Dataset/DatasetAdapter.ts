@@ -1,4 +1,5 @@
-import { Form, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import {
   getCodeField,
   getDescriptionField,
@@ -10,7 +11,7 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField
-} from '@src/js/components/database/new-forms/entities/formField.utils';
+} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 
 
 export function adaptDatasetDtoToForm(dto: any): Form {

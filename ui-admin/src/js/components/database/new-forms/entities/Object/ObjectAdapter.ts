@@ -1,4 +1,5 @@
-import { Form, FormField, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormField, } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import {
   getCodeField,
   getDescriptionField,
@@ -11,7 +12,7 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField
-} from '@src/js/components/database/new-forms/entities/formField.utils';
+} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 
 export function adaptSampleDtoToForm(dto: any): Form {
   const permId = dto.permId.permId;

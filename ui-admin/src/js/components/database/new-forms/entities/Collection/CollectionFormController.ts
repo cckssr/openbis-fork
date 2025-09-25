@@ -1,11 +1,11 @@
 import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
-export class CollectionFormController implements FormController {
+export class CollectionFormController implements IFormController {
 	private openbisFacade: any;
 
 	constructor(openbisFacade: any) {
@@ -46,7 +46,7 @@ export class CollectionFormController implements FormController {
 		const objId = form.entityPermId;
 		const { ExperimentPermId, SampleIdentifier, DataSetPermId } = this.openbisFacade;
 		const experimentId = new ExperimentPermId(objId);
-		const collectionIdentifier = findFormFieldById(form.fields, 'identifier')?.value;
+		const collectionIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
 		console.log({collectionIdentifier})
 		const dummyId = new DataSetPermId(createDummyDataSetIdentifierFromExperimentIdentifier(collectionIdentifier));
         const dummyId2 = new SampleIdentifier(createDummySampleIdentifierFromSampleIdentifier(collectionIdentifier));
@@ -57,12 +57,24 @@ export class CollectionFormController implements FormController {
 		//return { canEdit: true, canDelete: true, canMove: true };
 	}
 
-	edit(form: Form): void {
-		console.log(`CONTROLLER: Switching to Edit Mode for ${form.entityPermId}`);
+	async delete(form: Form, context?: any): Promise<void> {
+		console.log(`CONTROLLER: Deleting ${form.entityPermId}`, context);
 	}
 
-	delete(form: Form): void {
-		console.log(`CONTROLLER: Deleting ${form.entityPermId}`);
+	async getDependentEntities(form: Form): Promise<any> {
+		// For experiments, check for samples and datasets
+		const { ExperimentPermId, ExperimentFetchOptions } = this.openbisFacade;
+		const id = new ExperimentPermId(form.entityPermId);
+		const fetchOptions = new ExperimentFetchOptions();
+		fetchOptions.withSamples && fetchOptions.withSamples();
+		fetchOptions.withDataSets && fetchOptions.withDataSets();
+		const result = await this.openbisFacade.getExperiments([id], fetchOptions);
+		const experiment = result[form.entityPermId];
+		
+		return { 
+			samples: experiment.getSamples ? experiment.getSamples() : [], 
+			datasets: experiment.getDataSets ? experiment.getDataSets() : [] 
+		};
 	}
 
 	move(form: Form): void {

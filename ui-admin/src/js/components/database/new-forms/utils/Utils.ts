@@ -1,8 +1,19 @@
 import objectType from "@src/js/common/consts/objectType";
-import { EntityKind, FormField } from "@src/js/components/database/new-forms/types/form.types.ts";
+import { EntityKind } from "@src/js/components/database/new-forms/types/form.enums.ts";
+import { FormField } from "@src/js/components/database/new-forms/types/form.types.ts";
 
-export function findFormFieldById(fields: FormField[], fieldId: string): FormField | undefined {
-	return fields.find(field => field.id === fieldId);
+export function findFormFieldById(fields: FormField[], permId: string, label: string, onlyValue: boolean = false): FormField | string | null {
+	const field = fields.find(field => field.id === permId + '-' + label);
+	if (!field) return null;
+	if (onlyValue) return field.value;
+	return field;
+}
+
+export function findFormFieldByLabel(fields: FormField[], label: string, onlyValue: boolean = false): FormField | string | null {
+	const field = fields.find(field => field.label === label);
+	if (!field) return null;
+	if (onlyValue) return field.value;
+	return field;
 }
 
 export const getFormatedDate = (date: Date): string => {

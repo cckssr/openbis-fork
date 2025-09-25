@@ -1,9 +1,9 @@
 import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/entities/Dataset/DatasetAdapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 
-export class DatasetFormController implements FormController {
+export class DatasetFormController implements IFormController {
 	private openbisFacade: any;
 
 	constructor(openbisFacade: any) {
@@ -51,12 +51,16 @@ export class DatasetFormController implements FormController {
 		return { canEdit: true, canDelete: true, canMove: true };
 	}
 
-	edit(form: Form): void {
-		console.log(`CONTROLLER: Switching to Edit Mode for ${form.entityPermId}`);
+	async delete(form: Form, context?: any): Promise<void> {
+		console.log(`CONTROLLER: Deleting ${form.entityPermId}`, context);
 	}
 
-	delete(form: Form): void {
-		console.log(`CONTROLLER: Deleting ${form.entityPermId}`);
+	async getDependentEntities(form: Form): Promise<any> {
+		// Datasets typically don't have dependent entities
+		return { 
+			datasets: [], 
+			samples: [] 
+		};
 	}
 
 	move(form: Form): void {

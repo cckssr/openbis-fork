@@ -223,6 +223,10 @@ class Facade {
     return this.promise(this.v3.updateSpaces(updates));
   }
 
+  updateProjects(updates) {
+    return this.promise(this.v3.updateProjects(updates))
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }
@@ -285,6 +289,14 @@ class Facade {
 
   deleteProjects(ids, options) {
     return this.promise(this.v3.deleteProjects(ids, options))
+  }
+
+  deleteSamples(ids, options) {
+    return this.promise(this.v3.deleteSamples(ids, options))
+  }
+
+  deleteExperiments(ids, options) {
+    return this.promise(this.v3.deleteExperiments(ids, options))
   }
 
   evaluatePlugin(options) {

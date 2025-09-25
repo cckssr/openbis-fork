@@ -1,6 +1,7 @@
-import { ActionContext, Form, FormSection } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionContext, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
@@ -107,10 +108,12 @@ export class SpaceFormModel {
 	};
 
 	static newProjectAction = (context: ActionContext) => {
-		const { onNewObject, form } = context;
-		if (onNewObject) {
+		const { form, externalAppController } = context;
+		console.log("SpaceFormModel.newProjectAction", context);
+		if (externalAppController) {
 			console.log("Invoking onNewObject callback...");
-			onNewObject(objectType.NEW_PROJECT, form.entityPermId);
+			externalAppController.createNewObject({newObjectType: objectType.NEW_PROJECT, fromObjectType: 'space', fromId: form.entityPermId});
+			//onNewObject(objectType.NEW_PROJECT, form.entityPermId);
 		} else {
 			console.warn("onNewObject callback not provided to context.");
 		}

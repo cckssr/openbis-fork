@@ -55,8 +55,10 @@ export const useConflictResolution = () => {
 
     // New function to check modificationDate conflict
     const checkModificationDateConflict = (localForm: Form, serverForm: Form): boolean => {
-        const localDate = findFormFieldById(localForm.fields, localForm.entityPermId + '-modificationDate')?.value;
-        const serverDate = findFormFieldById(serverForm.fields, serverForm.entityPermId + '-modificationDate')?.value;
+        const localDate = findFormFieldById(localForm.fields, localForm.entityPermId, 'modificationDate', true);
+        const serverDate = findFormFieldById(serverForm.fields, serverForm.entityPermId, 'modificationDate', true);
+        if (!localDate || !serverDate) return false;
+        if (typeof localDate !== 'string' || typeof serverDate !== 'string') return false;
         return new Date(serverDate) > new Date(localDate);
     };
 

@@ -18,9 +18,6 @@ import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 
 import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
-import { SpaceFormExample } from '@src/js/components/database/new-forms-v2/examples/SpaceFormExample.tsx';
-import { FormDispatcher } from '@src/js/components/database/new-forms-v2/core/FormDispatcher.tsx';
-import { FormMode } from '@src/js/components/database/new-forms-v2/core/types/index.ts';
 
 const styles = theme => ({
   tabsPanel: {
@@ -115,7 +112,6 @@ class DatabaseComponent extends React.PureComponent {
   }
 
   imagingDatasetChange(id, changed) {
-    console.log('imagingDatasetChange', { id }, { changed });
     AppController.getInstance().objectChange(
       pages.DATABASE,
       objectType.DATA_SET,
@@ -232,37 +228,24 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
-  spaceChange(id, changed) {
-    console.log('DatabaseComponent.spaceChange', id, changed);
+  objectChange(id, objectTypeChanging, changed) {
+    console.log('DatabaseComponent.objectChange', id, objectTypeChanging, changed);
     AppController.getInstance().objectChange(
       pages.DATABASE,
-      objectType.SPACE,
+      objectTypeChanging,
       id,
       changed
     )
   }
 
-  handleEntityChange(id, changed) {
-    console.log('DatabaseComponent.handleEntityChange.new-forms-v2', id, changed);
-    const { object } = this.props;
-
-    // Use the existing spaceChange method for spaces, or create a generic handler
-    if (object.type === objectType.SPACE) {
-      this.spaceChange(id, changed);
-    } else {
-      // Generic entity change handler
-      AppController.getInstance().objectChange(
-        pages.DATABASE,
-        object.type,
-        id,
-        changed
-      );
-    }
-  }
-
-  objectCreate(page, oldType, oldId, newType, newId) {
-    console.log('DatabaseComponent.objectCreate', page, oldType, oldId, newType, newId);
-    AppController.getInstance().objectCreate(page, oldType, oldId, newType, newId)
+  objectCreate(oldType, oldId, newType, newId) {
+    console.log('DatabaseComponent.objectCreate', oldType, oldId, newType, newId);
+    AppController.getInstance().objectCreate(
+      pages.DATABASE, 
+      oldType, 
+      oldId, 
+      newType, 
+      newId)
   }
 
   createNewObject(newObjectType, fromObjectType, fromId) {
@@ -274,72 +257,24 @@ class DatabaseComponent extends React.PureComponent {
     )
   }
 
-  closeForm(spacePermId) {
-    console.log('closeForm for space: ', spacePermId);
+  closeForm(type, id) {
+    console.log(`closeForm for ${type}: ${id}`);
     AppController.getInstance().objectClose(
       pages.DATABASE,
-      objectType.NEW_PROJECT,
-      spacePermId
+      type,
+      id
     )
   }
 
-  // Helper method to map object type to entity type for FormDispatcher
-  getEntityTypeFromObjectType(objectType) {
-    switch (objectType) {
-      case objectType.SPACE:
-        return 'SPACE';
-      case objectType.PROJECT:
-      case objectType.NEW_PROJECT:
-        return 'PROJECT';
-      case objectType.COLLECTION:
-        return 'COLLECTION';
-      case objectType.OBJECT:
-        return 'SAMPLE';
-      case objectType.DATA_SET:
-        return 'DATASET';
-      default:
-        return objectType;
-    }
+  externalAppController = {
+    createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId),
+    objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
+    objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
+    closeForm: (params) => this.closeForm(params.type, params.id)
   }
 
-  // Helper method to determine form mode
-  getFormMode(object) {
-    if (object.type.includes('NEW') || object.type === objectType.NEW_PROJECT) {
-      return FormMode.CREATE;
-    }
-    return FormMode.VIEW;
-  }
 
-  // Handle form save
-  handleFormSave = (result) => {
-    console.log('Form saved:', result);
-    // The form data is already handled by the entity-specific controllers
-    // This callback can be used for additional post-save logic
-  }
-
-  // Handle form cancel
-  handleFormCancel = () => {
-    console.log('Form cancelled');
-    // Navigate back or close the form
-    AppController.getInstance().objectClose(
-      pages.DATABASE,
-      this.props.object.type,
-      this.props.object.id
-    );
-  }
-
-  // Handle form delete
-  handleFormDelete = (entityId) => {
-    console.log('Form delete requested for entity:', entityId);
-    // Handle entity deletion
-    AppController.getInstance().objectDelete(
-      pages.DATABASE,
-      this.props.object.type,
-      entityId
-    );
-  }
-
-  /* renderJson() {
+  renderJson() {
     const { object } = this.props
     console.log('DatabaseComponent.renderJson', { object });
     return (<EntityFormContextProvider openbisFacade={openbis}
@@ -348,34 +283,8 @@ class DatabaseComponent extends React.PureComponent {
       permId={object.id}
       user={AppController.getInstance().getUser()}
       initialMode={String(object.type).includes('new') ? 'create' : 'view'}
-      onEntityChange={this.spaceChange}
-      onNewObject={(newObjectType, fromId) => this.createNewObject(newObjectType, object.type, fromId)}
-      onObjectCreate={(page, oldType, oldId, newType, newId) => this.objectCreate(page, oldType, oldId, newType, newId)}
-      onCloseForm={(spacePermId) => this.closeForm(spacePermId)}
+      externalAppController={this.externalAppController}
     />)
-  } */
-
-  renderJson() {
-    const { object } = this.props
-    console.log('DatabaseComponent.renderJson.new-forms-v2', { object });
-    
-    // Map object properties to FormDispatcher props
-    const entityType = this.getEntityTypeFromObjectType(object.type);
-    const formMode = this.getFormMode(object);
-    const user = AppController.getInstance().getUser();
-    
-    return (
-      <FormDispatcher
-        entityType={entityType}
-        entityId={object.id}
-        mode={formMode}
-        user={user}
-        openbisFacade={openbis}
-        onSave={this.handleFormSave}
-        onCancel={this.handleFormCancel}
-        onDelete={this.handleFormDelete}
-      />
-    );
   }
 
   render() {

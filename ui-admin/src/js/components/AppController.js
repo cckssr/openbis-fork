@@ -8,11 +8,6 @@ import routes from '@src/js/common/consts/routes.js'
 import users from '@src/js/common/consts/users.js'
 import cookie from '@src/js/common/cookie.js'
 import ids from '@src/js/common/consts/ids.js'
-import { registerProjectPlugin } from '@src/js/components/database/new-forms/entities/Project/ProjectPluginRegister.ts';
-import { registerSpacePlugin } from '@src/js/components/database/new-forms/entities/Space/SpacePluginRegister.ts';
-import { registerCoreFieldsPlugin } from '@src/js/components/database/new-forms/engine/CoreFieldsPlugin.ts';
-import { registerCoreActionsPlugin } from '@src/js/components/database/new-forms/engine/CoreActionPlugin.ts';
-import { registerCollectionPlugin } from '@src/js/components/database/new-forms/entities/Collection/CollectionPluginRegister.ts';
 
 const AppContext = React.createContext()
 const showDebug = false;
@@ -29,7 +24,6 @@ export class AppController {
 
     this.context = context
     this.history = history
-    //this.registerPlugins();
   }
 
   initialState() {
@@ -549,14 +543,6 @@ export class AppController {
     }
     WithContext.displayName = 'WithContext'
     return WithContext
-  }
-
-  registerPlugins() {
-    registerCoreActionsPlugin();
-    registerCoreFieldsPlugin();
-    registerProjectPlugin(openbis);
-    registerSpacePlugin(openbis);
-    registerCollectionPlugin(openbis);
   }
 }
 

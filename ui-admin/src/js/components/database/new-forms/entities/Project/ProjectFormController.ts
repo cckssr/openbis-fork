@@ -1,12 +1,13 @@
 import openbis from '@srcV3/openbis.esm';
-import { EntityKind, Form, FormMode } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormController } from '@src/js/components/database/new-forms/types/FormController';
+import { Form, } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { findFormFieldById, findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { ProjectFormModel } from '@src/js/components/database/new-forms/entities/Project/ProjectFormModel.ts';
 
-export class ProjectFormController implements FormController {
+export class ProjectFormController implements IFormController {
   private openbisFacade: openbis.openbis;
   private spacePermId: string = '';
 
@@ -42,19 +43,24 @@ export class ProjectFormController implements FormController {
   }
 
   async save(form: Form, mode: FormMode): Promise<any> {
+    console.log('ProjectFormController.save:', form, mode);
     if (mode === FormMode.CREATE) {
-      console.log('ProjectFormController.save: CREATE');
-      const { ProjectIdentifier, ProjectCreation, SpacePermId } = this.openbisFacade;
+      const { ProjectCreation, SpacePermId } = this.openbisFacade;
       const creation = new ProjectCreation();
-      creation.setCode(form.fields.find(field => field.label === 'Code')?.value as string);
+      creation.setCode(findFormFieldByLabel(form.fields, 'Code', true));
       creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
-      creation.setDescription(form.fields.find(field => field.label === 'Description')?.value as string);
+      creation.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
       const result = await this.openbisFacade.createProjects([creation]);
       console.log('ProjectFormController.create', result);
       return result[0].getPermId();
-      return Promise.resolve(form.version + 1);
     } else if (mode === FormMode.EDIT) {
-      console.log('ProjectFormController.save: EDIT');
+      const { ProjectPermId, ProjectUpdate } = this.openbisFacade;
+      const projectUpdate = new ProjectUpdate();
+      projectUpdate.setProjectId(new ProjectPermId(form.entityPermId));
+      projectUpdate.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
+      const result = await this.openbisFacade.updateProjects([projectUpdate]);
+      console.log('ProjectFormController.update', result);
+      return Promise.resolve(form.version ? form.version + 1 : 1);
     } else {
       throw new Error(`Invalid form mode: ${mode}`);
     }
@@ -65,7 +71,9 @@ export class ProjectFormController implements FormController {
     const { ProjectPermId, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
     const projectCode = form.entityPermId;
     const projectPermId = new ProjectPermId(projectCode);
-    const projectIdentifier = findFormFieldById(form.fields, 'identifier')?.value;
+    const projectIdentifierField = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+    if (!projectIdentifierField || typeof projectIdentifierField !== 'string') throw new Error('Project identifier not found');
+    const projectIdentifier = projectIdentifierField;
     console.log({projectIdentifier})
     const dummyExperimentId = new ExperimentIdentifier(createDummyExperimentIdentifierFromProjectIdentifier(projectIdentifier));
     const dummySampleId = new SampleIdentifier(createDummySampleIdentifierFromProjectIdentifier(projectIdentifier));
@@ -76,61 +84,150 @@ export class ProjectFormController implements FormController {
   }
 
 
-  async delete(form: Form): Promise<void> {
-    console.log('ProjectFormController.delete', form);
+  async delete(form: Form, context?: any): Promise<void> {
+    console.log('ProjectFormController.delete', form, context);
+    
+    // Check for existing deletions in trashcan before proceeding
+    const projectIdentifier = findFormFieldById(form.fields, form.entityPermId, 'identifier', true);
+
+    if (!projectIdentifier || typeof projectIdentifier !== 'string') throw new Error('Project identifier not found');
+    
+    const dependentDeletions = await this.checkExistingDeletions(projectIdentifier);
+    if (dependentDeletions.length > 0) {
+      const errorMessage = this.formatDeletionError(dependentDeletions);
+      throw new Error(errorMessage);
+    }
+    
+    // If this is just a check, return early
+    if (context?.checkOnly) {
+      return;
+    }
+    
+    // Get dependent entities if not provided in context
+    let dependentEntities = context?.dependentEntities;
+    if (!dependentEntities) {
+      dependentEntities = await this.getDependentEntities(form);
+    }
+    
+    console.log('ProjectFormController.dependentEntities:', dependentEntities);
+    
+    // Get delete reason from context or use default
+    const deleteReason = context?.deleteReason || 'delete via ng-ui';
+    
+    // Delete dependent entities first if they exist
+    if (dependentEntities.experiments.length > 0 || dependentEntities.samples.length > 0) {
+      await this.deleteDependentEntities(deleteReason, dependentEntities);
+    }
+    
+    // Then delete the main project
     const { ProjectIdentifier, ProjectDeletionOptions, DeletionSearchCriteria, DeletionFetchOptions } = this.openbisFacade;
-    const projectIdentifier = new ProjectIdentifier(form.fields.find(field => field.id === form.entityPermId + '-identifier')?.value);
+    const projectId = new ProjectIdentifier(projectIdentifier);
 
     const criteria = new DeletionSearchCriteria();
     const fetchOptions = new DeletionFetchOptions();
     fetchOptions.withDeletedObjects();
     const deletions = await this.openbisFacade.searchDeletions(criteria, fetchOptions);
 
-    console.log({deletions});
+    console.log('ProjectFormController.deletions:', deletions);
     const deletionOptions = new ProjectDeletionOptions();
-    deletionOptions.setReason('delete via ng-ui');
-    const result = await this.openbisFacade.deleteProjects([projectIdentifier], deletionOptions);
-    console.log({result});  
+    deletionOptions.setReason(deleteReason);
+    const result = await this.openbisFacade.deleteProjects([projectId], deletionOptions);
+    console.log('ProjectFormController.delete result:', result);
+    return
+  }
+  
+
+  async getDependentEntities(form: Form): Promise<any> {
+    const { ProjectPermId, ProjectFetchOptions } = this.openbisFacade;
+    const id = new ProjectPermId(form.entityPermId);
+    const fetchOptions = new ProjectFetchOptions();
+    fetchOptions.withExperiments();
+    fetchOptions.withSamples().withExperiment();
+    const result = await this.openbisFacade.getProjects([id], fetchOptions);
+    const project = result[id];
+    console.log('ProjectFormController.dependentEntities:', result);
+    return { experiments: project.getExperiments(), samples: project.getSamples() };
   }
 
-/*   this.deleteProject = function(reason) {
-    var _this = this;
-    var projectIdentifier = this._projectFormModel.v3_project.identifier.identifier;
-    mainController.serverFacade.listDeletions(function(deletions) {
-        var dependentDeletions = [];
-        deletions.forEach(function(deletion) {
-            var deletedObjects = deletion.getDeletedObjects();
-            for (var idx = 0; idx < deletedObjects.length; idx++) {
-                var deletedObject = deletedObjects[idx];
-                var kind = deletedObject.entityKind;
-                if (kind == "EXPERIMENT" || kind == "SAMPLE") {
-                    var splitted = deletedObject.identifier.split("/");
-                    if (splitted.length > 3 && ("/" + splitted[1] + "/" + splitted[2]) == projectIdentifier) {
-                        dependentDeletions.push(deletion);
-                        break;
-                    }
-                }
-            };
-        });
-        if (dependentDeletions.length > 0) {
-            var text = "This project can only be deleted if the following deletions sets in Trashcan are deleted permanently:<br>";
-            dependentDeletions.forEach(function(deletion) {
-                text += Util.getFormatedDate(new Date(deletion.deletionDate)) + " (reason: " + deletion.reason + ")<br>";
-            });
-            Util.showInfo(text);
-        } else {
-            mainController.serverFacade.deleteProjects([_this._projectFormModel.project.id], reason, function(data) {
-                Util.unblockUI()
-                if(data.error) {
-                    Util.showError(data.error.message);
-                } else {
-                    Util.showSuccess("Project Deleted");
-                    mainController.sideMenu.deleteNodeByEntityPermId("PROJECT", _this._projectFormModel.project.permId, true);
-                }
-            });
+  async checkExistingDeletions(projectIdentifier: string): Promise<any[]> {
+    console.log('ProjectFormController.checkExistingDeletions', projectIdentifier);
+    
+    const { DeletionSearchCriteria, DeletionFetchOptions } = this.openbisFacade;
+    const criteria = new DeletionSearchCriteria();
+    const fetchOptions = new DeletionFetchOptions();
+    fetchOptions.withDeletedObjects();
+    
+    const deletions = await this.openbisFacade.searchDeletions(criteria, fetchOptions);
+    console.log('ProjectFormController.allDeletions:', deletions);
+    
+    const dependentDeletions: any[] = [];
+    
+    // Check each deletion for dependent entities
+    // The searchDeletions method returns an array or object with objects property
+    const deletionList = deletions.getObjects() || deletions;
+    if (Array.isArray(deletionList)) {
+      deletionList.forEach((deletion: any) => {
+        const deletedObjects = deletion.getDeletedObjects();
+        for (let idx = 0; idx < deletedObjects.length; idx++) {
+          const deletedObject = deletedObjects[idx];
+          const kind = deletedObject.entityKind;
+          if (kind === "EXPERIMENT" || kind === "SAMPLE") {
+            const splitted = deletedObject.identifier.split("/");
+            if (splitted.length > 3 && ("/" + splitted[1] + "/" + splitted[2]) === projectIdentifier) {
+              dependentDeletions.push(deletion);
+              break;
+            }
+          }
         }
+      });
+    }
+    
+    console.log('ProjectFormController.dependentDeletions:', dependentDeletions);
+    return dependentDeletions;
+  }
+
+  formatDeletionError(dependentDeletions: any[]): string {
+    let text = "This project can only be deleted if the following deletion sets in Trashcan are deleted permanently:\n";
+    dependentDeletions.forEach((deletion: any) => {
+      const deletionDate = new Date(deletion.deletionDate);
+      const formattedDate = deletionDate.toLocaleDateString() + " " + deletionDate.toLocaleTimeString();
+      text += `\\n${formattedDate} (reason: ${deletion.reason})`;
     });
-} */
+    return text;
+  }
+
+  async deleteDependentEntities(reason: string, dependentEntities: any): Promise<void> {
+    console.log('ProjectFormController.deleteDependentEntities', reason, dependentEntities);
+    
+    const { ExperimentIdentifier, SampleIdentifier, ExperimentDeletionOptions, SampleDeletionOptions } = this.openbisFacade;
+    
+    // Delete experiments first
+    if (dependentEntities.experiments.length > 0) {
+      const experimentIds = dependentEntities.experiments.map((exp: any) => new ExperimentIdentifier(exp.getIdentifier().getIdentifier()));
+      const experimentDeletionOptions = new ExperimentDeletionOptions();
+      experimentDeletionOptions.setReason(reason);
+      await this.openbisFacade.deleteExperiments(experimentIds, experimentDeletionOptions);
+      console.log('ProjectFormController.deleted experiments:', experimentIds.length);
+    }
+    
+    // Then delete independent samples (samples not associated with experiments we just deleted)
+    if (dependentEntities.samples.length > 0) {
+      const experimentIds = new Set(dependentEntities.experiments.map((exp: any) => exp.getPermId()));
+      const independentSamples = dependentEntities.samples
+        .filter((sample: any) => {
+          const experiment = sample.getExperiment();
+          return !experiment || !experimentIds.has(experiment.getPermId());
+        })
+        .map((sample: any) => new SampleIdentifier(sample.getIdentifier().getIdentifier()));
+      
+      if (independentSamples.length > 0) {
+        const sampleDeletionOptions = new SampleDeletionOptions();
+        sampleDeletionOptions.setReason(reason);
+        await this.openbisFacade.deleteSamples(independentSamples, sampleDeletionOptions);
+        console.log('ProjectFormController.deleted independent samples:', independentSamples.length);
+      }
+    }
+  }
 
   move(form: Form): void {
     // Implement move logic as needed
@@ -138,13 +235,7 @@ export class ProjectFormController implements FormController {
 
   create(form: Form): void {
     console.log('ProjectFormController.create', form);
-    const { ProjectIdentifier, ProjectCreation } = this.openbisFacade;
-    const creation = new ProjectCreation();
-    creation.setCode(form.code);
-    creation.setSpaceId(form.space);
-    creation.setDescription(form.description);
-    this.openbisFacade.createProjects([creation]).then(map => {
-      console.log('ProjectFormController.create', map);
-    });
+    // This method is not used in the current implementation
+    // The create logic is handled in the save method with FormMode.CREATE
   }
 }
