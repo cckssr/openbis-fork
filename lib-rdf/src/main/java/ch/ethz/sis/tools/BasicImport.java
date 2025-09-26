@@ -1,3 +1,5 @@
+package ch.ethz.sis.tools;
+
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
