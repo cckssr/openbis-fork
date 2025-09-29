@@ -166,7 +166,7 @@ class DeleteConfirmationDialog extends Component<DeleteConfirmationDialogProps, 
       );
     } else {
       // Generate warning text based on dependencies
-      const totalDependentEntities = numberOfEntities - 1; // Subtract 1 for the main entity
+      const totalDependentEntities = numberOfEntities; // Subtract 1 for the main entity
       let generatedWarningText = '';
       
       if (totalDependentEntities > 0) {
@@ -175,7 +175,7 @@ class DeleteConfirmationDialog extends Component<DeleteConfirmationDialogProps, 
       
       return (
         <Message type="warning">
-          {generatedWarningText}
+          <span style={{ color: 'orange' }}>{generatedWarningText}</span>
         </Message>
       );
     }
@@ -196,9 +196,9 @@ class DeleteConfirmationDialog extends Component<DeleteConfirmationDialogProps, 
     }
 
     return (
-      <DialogContentText>
+      <>
         {infoText}
-      </DialogContentText>
+      </>
     );
   }
 
@@ -227,9 +227,9 @@ class DeleteConfirmationDialog extends Component<DeleteConfirmationDialogProps, 
       }
       
       return (
-        <DialogContentText>
+        <>
           {generatedAdditionalText}
-        </DialogContentText>
+        </>
       );
     }
     return null;

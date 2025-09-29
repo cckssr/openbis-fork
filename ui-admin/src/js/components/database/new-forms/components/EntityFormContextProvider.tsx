@@ -15,6 +15,7 @@ import { Form, ActionContext } from '@src/js/components/database/new-forms/types
 import { objectTypeToEntityKindMap } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, permId, initialMode, externalAppController }:
 	{
@@ -265,7 +266,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		if (!form || !controller) return;
 		
 		try {
-			setLoading(true);
+			//setLoading(true);
 			setError(null);
 			
 			// First check for existing deletions in trashcan
@@ -284,11 +285,21 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 			// Simplified configuration - let the dialog handle text generation
 			setDeleteDialogConfig({
 				includeReason: true,
-				numberOfEntities: totalDependentEntities + 1, // +1 for the main entity
+				numberOfEntities: totalDependentEntities, // +1 for the main entity
 				bypassesTrashcan: false,
 				dependentEntities: dependentEntities,
 				entityKind: entityKind
 			});
+
+			/* warningText={deleteDialogConfig.warningText}
+			includeReason={deleteDialogConfig.includeReason}
+			numberOfEntities={deleteDialogConfig.numberOfEntities}
+			bypassesTrashcan={deleteDialogConfig.bypassesTrashcan}
+			additionalText={deleteDialogConfig.additionalText}
+			customPlugin={deleteDialogConfig.customPlugin}
+			dependentEntities={deleteDialogConfig.dependentEntities}
+			entityKind={deleteDialogConfig.entityKind} */
+
 			setShowDeleteDialog(true);
 		} catch (error: any) {
 			console.error('Error checking dependencies:', error);

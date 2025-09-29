@@ -17,6 +17,7 @@ import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDia
 import Dialog from '@src/js/components/common/dialog/Dialog.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
 import Message from '@src/js/components/common/form/Message.jsx';
+import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx';
 
 
 interface EntityFormProps {
@@ -82,9 +83,9 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
 
     return form.sections.map(({ section, fields }: SectionGroup) => {
       // Group fields by column within each section
-      const leftFields = fields.map((fieldId: string)=> fieldsById.get(fieldId)).filter((field : FormField | undefined) => field?.column === 'left');
-      const rightFields = fields.map((fieldId: string)=> fieldsById.get(fieldId)).filter((field : FormField | undefined) => field?.column === 'right');
-      const centerFields = fields.map((fieldId: string)=> fieldsById.get(fieldId)).filter((field : FormField | undefined) => field?.column === 'center');
+      const leftFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'left');
+      const rightFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'right');
+      const centerFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'center');
 
       return (
         <CollapsableSection isCollapsed={false} title={section} renderWarnings={null} key={section}>
@@ -110,8 +111,8 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
             {centerFields.length > 0 && (
               <div>
                 {centerFields.map((field: FormField | undefined) => {
-                    return renderField(field);
-                  })}
+                  return renderField(field);
+                })}
               </div>
             )}
           </div>
@@ -137,38 +138,20 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
     );
   };
 
-  const getErrorType = (errorMessage: string): 'warning' | 'info' => {
-    // Check if this is a deletion error (contains "deletion sets in Trashcan")
-    if (errorMessage.includes('deletion sets in Trashcan')) {
-      return 'warning';
-    }
-    // Default to info for other errors
-    return 'info';
-  };
-
-  const renderButtons = () => {
-    return (
-        <Button
-          name='dismiss'
-          label='DISMISS'
-          onClick={onErrorClose}
-        />
-    )
-  }
-
   return (
     <>
-      {renderToolbar()}
       {isSaving && <LoadingDialog loading={isSaving} />}
+      {error && <ErrorDialog key='entity-form-error-dialog' open={!!error} error={error} onClose={onErrorClose} />}
+      {renderToolbar()}
       {renderSections()}
       {showConflictDialog && (
-          <ConflictResolutionDialog
-            open={showConflictDialog}
-            conflicts={conflictFields}
-            onResolve={handleResolveConflicts}
-            onCancel={() => setShowConflictDialog(false)}
-          />
-        )}
+        <ConflictResolutionDialog
+          open={showConflictDialog}
+          conflicts={conflictFields}
+          onResolve={handleResolveConflicts}
+          onCancel={() => setShowConflictDialog(false)}
+        />
+      )}
       {showDeleteDialog && deleteDialogConfig && (
         <DeleteConfirmationDialog
           open={showDeleteDialog}
@@ -184,19 +167,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
           entityKind={deleteDialogConfig.entityKind}
         />
       )}
-      {error && (
-        <Dialog
-          open={!!error}
-          onClose={onErrorClose}
-          title={'Information'}
-          content={<Message type='info'>{error}</Message>}
-          actions={<Button
-            name='dismiss'
-            label='DISMISS'
-            onClick={onErrorClose}
-          />}
-        />
-      )}
+
     </>
   );
 };

@@ -191,7 +191,7 @@ export class ProjectFormController implements IFormController {
     dependentDeletions.forEach((deletion: any) => {
       const deletionDate = new Date(deletion.deletionDate);
       const formattedDate = deletionDate.toLocaleDateString() + " " + deletionDate.toLocaleTimeString();
-      text += `\\n${formattedDate} (reason: ${deletion.reason})`;
+      text += `${formattedDate} (reason: ${deletion.reason}) \n`;
     });
     return text;
   }
