@@ -1,16 +1,22 @@
-package ch.ethz.sis.tools;
+package ch.ethz.sis.tools.importcheck;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rdf.main.mappers.openBis.RdfToOpenBisMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.parser.RDFReader;
+import ch.ethz.sis.tools.importcheck.helper.Connection;
 import org.apache.commons.cli.*;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.ModelFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 import static ch.ethz.sis.rdf.main.RDFCommandLine.INPUT_PATHS;
 
@@ -18,7 +24,7 @@ public class ImportCheck
 {
 
     private static final String helperCommand =
-            "java -jar import-check.java -f <file1> -f <file2> -u <url> -t <token> -s <space> -p <project>";
+            "java -jar import-check.java -f <file1> -f <file2> -u <url> -t <token> -s <space> -p <project> -n <num_samples>";
 
     public static void main(String[] args)
     {
@@ -58,11 +64,35 @@ public class ImportCheck
         String project = cmd.getOptionValue('p');
         String projectIdentifier = "/" + space + "/" + project;
 
+        int numSamples = Integer.parseInt(cmd.getOptionValue('n'));
+
         RDFReader rdfReader = new RDFReader();
         ModelRDF modelRDF =
                 rdfReader.read(inputFilePaths, inputFormatValue, verbose, additionalModel);
         OpenBisModel openBisModel = RdfToOpenBisMapper.convert(modelRDF,
                 projectIdentifier);
+
+        List<Sample> samples =
+                openBisModel.getEntities().values().stream().filter(x -> x instanceof Sample)
+                        .map(Sample.class::cast)
+                        .collect(Collectors.toList());
+
+        Random random = new Random();
+
+        List<Sample> toCheck = new ArrayList<>();
+        for (int i = 0; i < numSamples; i++)
+        {
+            int randomIndex = random.nextInt(samples.size());
+            toCheck.add(samples.get(randomIndex));
+
+        }
+        Connection.CheckResult checkResult = Connection.check(openBIS, toCheck);
+
+        for (Sample missingSample : checkResult.getMissing())
+        {
+            System.out.println(String.format("Missing resource \"{}\"", missingSample));
+        }
+
 
     }
 
@@ -86,6 +116,17 @@ public class ImportCheck
         space.setRequired(true);
         options.addOption(space);
 
+        Option numSamples =
+                new Option("n", "num-samples", true, "Number of random Samples to check");
+        numSamples.setRequired(true);
+        options.addOption(numSamples);
+
+        Option regression = new Option("r", "regression", true,
+                "Look for specific samples to deal with regression stuff");
+        regression.setRequired(false);
+        options.addOption(regression);
+
+
         Option help = new Option("h", "help", false, "Display this help message");
         options.addOption(help);
 
@@ -96,10 +137,6 @@ public class ImportCheck
         options.addOption(filePaths);
 
         return options;
-    }
-
-    String getOpenBisIdentifier(String spaceCode, String,)
-    {
     }
 
 }
