@@ -33,11 +33,16 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 
 public class ElnDropbox implements FolderMonitorTask
 {
+
+    private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION, ElnDropbox.class);
 
     public static final String PROPERTY_APPLICATION_SERVER_URL = "application-server-url";
 
@@ -70,8 +75,6 @@ public class ElnDropbox implements FolderMonitorTask
 
     private static final String NAME_PROPERTY_SET_IN_TWO_PLACES_ERROR_MESSAGE =
             "NAME property specified twice, it should just be in either folder name or metadata.json";
-
-    private static final String EMAIL_SUBJECT = "ELN LIMS Dropbox Error";
 
     private static final String ILLEGAL_FILES_ERROR_MESSAGE = "Directory contains illegal files";
 
@@ -372,7 +375,7 @@ public class ElnDropbox implements FolderMonitorTask
                 openBIS.rollbackTransaction();
             } catch (Exception rollbackException)
             {
-                // TODO log
+                operationLog.warn("Couldn't rollback transaction", rollbackException);
             }
             throw new UserFailureException(exception.getMessage(), exception);
         }

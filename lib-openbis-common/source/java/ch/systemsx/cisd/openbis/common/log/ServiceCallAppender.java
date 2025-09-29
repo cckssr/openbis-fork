@@ -28,6 +28,13 @@ public class ServiceCallAppender extends DailyRollingFileHandler
 
     int count = 0;
 
+    public ServiceCallAppender(String logFileName,
+            int maxLogFileSize,
+            boolean append,
+            int maxLogRotations) throws IOException {
+        super(logFileName, maxLogFileSize, append, maxLogRotations);
+    }
+
     public ServiceCallAppender(String baseFileName) throws IOException
     {
         super(baseFileName);

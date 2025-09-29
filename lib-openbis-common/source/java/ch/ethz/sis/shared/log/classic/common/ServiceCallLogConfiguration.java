@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ch.systemsx.cisd.openbis.common.logging;
+package ch.ethz.sis.shared.log.classic.common;
 
 import ch.ethz.sis.shared.log.classic.ControlFileBasedLogConfiguration;
 

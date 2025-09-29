@@ -91,6 +91,7 @@ public class PluginAuthorizationExecutor implements IPluginAuthorizationExecutor
     public void canEvaluate(IOperationContext context)
     {
         checkEnabled(context);
+        checkAllowedUser(context);
     }
 
     private void checkEnabled(IOperationContext context)

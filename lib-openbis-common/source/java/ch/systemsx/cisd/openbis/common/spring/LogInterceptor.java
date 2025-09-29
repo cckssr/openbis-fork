@@ -26,7 +26,7 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.reflection.MethodUtils;
-import ch.systemsx.cisd.openbis.common.logging.ServiceCallLogConfiguration;
+import ch.ethz.sis.shared.log.classic.common.ServiceCallLogConfiguration;
 
 /**
  * Interceptor for objects which provide their own logger.
