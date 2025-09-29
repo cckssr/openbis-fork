@@ -1,5 +1,5 @@
-AFS Server Configuration
-========================
+Server Configuration
+====================
 
 ### Folder Structure
 

@@ -1,5 +1,5 @@
-Archiving DSS Datasets
-==================
+Archiving
+=========
 
 ## Manual archiving
 

@@ -1,5 +1,5 @@
-Archiving AFS Datasets
-======================
+Archiving
+=========
 
 **IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa).
 

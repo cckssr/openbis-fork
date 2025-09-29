@@ -1,5 +1,5 @@
-openBIS Logging
-===============
+Logging
+=======
 
 ## Runtime changes to logging
 
