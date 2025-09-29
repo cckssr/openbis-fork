@@ -15,9 +15,7 @@ import edu.kit.datamanager.ro_crate.entities.data.DataEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -40,7 +38,6 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String TYPE_RESTRICTION = "owl:restriction";
 
-
     String rangeIdentifier = "schema:rangeIncludes";
 
     String domainIdentifier = "schema:domainIncludes";
@@ -53,12 +50,9 @@ public class SchemaFacade implements ISchemaFacade
 
     public static final String ON_PROPERTY = "owl:onProperty";
 
-
     public static final String RDFS_LABEL = "rdfs:label";
 
     public static final String RDFS_COMMENT = "rdfs:comment";
-
-
 
     Pattern p;
 
@@ -144,7 +138,6 @@ public class SchemaFacade implements ISchemaFacade
             builder.addIdProperty(OWL_RESTRICTION, restriction.getId());
             crate.addDataEntity(restrictionBuilder.build());
         }
-
 
         rdfsClass.getSubClassOf().forEach(x -> builder.addIdProperty("rdfs:subClassOf", x));
         this.types.put(rdfsClass.getId(), rdfsClass);
@@ -288,20 +281,15 @@ public class SchemaFacade implements ISchemaFacade
     {
         ClassLoader classLoader = getClass().getClassLoader();
         classLoader.getName();
-        File file = new File(classLoader.getResource(
-                "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl").getFile());
-        FileInputStream fileInputStream = null;
-        try
-        {
-            fileInputStream = new FileInputStream(file);
-        } catch (FileNotFoundException e)
-        {
-            throw new RuntimeException(e);
-        }
+
+        InputStream inputStream = classLoader.getResourceAsStream(
+                "ch/eth/sis/rocrate/schemaorg/schemaorg-all-https-v29.0.ttl");
+
         if (schema_org_information == null)
         {
-            schema_org_information = SchemaOrgReader.read(fileInputStream);
+            schema_org_information = SchemaOrgReader.read(inputStream);
         }
+
         localPrefix = getLocalPrefix(crate.getJsonMetadata());
 
         Map<String, String> keyValuePairs = getKeyValPairsFromMetadata(crate.getJsonMetadata());
@@ -314,18 +302,11 @@ public class SchemaFacade implements ISchemaFacade
                         .contains("http://schema.org"))
                 .collect(Collectors.toMap(x -> "schema:" + x.getKey(), x -> x.getKey()));
 
-
-
-
-
-
         Map<String, IPropertyType> properties = new LinkedHashMap<>();
         Map<String, IType> idsToTypes = new LinkedHashMap<>();
         Map<String, IMetadataEntry> entries = new LinkedHashMap<>();
 
         Map<String, Type> restrictionToTypeId = new LinkedHashMap<>();
-
-
 
         for (DataEntity entity : crate.getAllDataEntities())
         {
@@ -349,7 +330,6 @@ public class SchemaFacade implements ISchemaFacade
                             x -> restrictionToTypeId.put(x, myType));
 
                 }
-
 
             }
 
@@ -377,7 +357,6 @@ public class SchemaFacade implements ISchemaFacade
                             Stream.concat(parseMultiValued(entity, rangeIdentifier).stream(),
                                     parseMultiValued(entity, "rangeIncludes").stream()).collect(
                                     Collectors.toList());
-
 
                     List<IDataType> dataTypes = rawRange.stream()
                             .filter(LiteralType::isLiteralType)
@@ -446,7 +425,6 @@ public class SchemaFacade implements ISchemaFacade
                     type1.addProperty((PropertyType) propertyType);
                 }
                 properties.putIfAbsent(propertyType.getId(), propertyType);
-
 
             }
 
@@ -568,7 +546,6 @@ public class SchemaFacade implements ISchemaFacade
         {
             return shorten.get(type);
         }
-
 
         Pattern placeholderPattern = Pattern.compile("^_:");
 
