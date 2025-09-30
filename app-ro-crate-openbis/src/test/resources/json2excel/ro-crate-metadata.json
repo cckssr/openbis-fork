@@ -2,9 +2,9 @@
   "@context": [
     "https://w3id.org/ro/crate/1.1/context",
     {
-      "schema": "https://www.w3.org/TR/rdf-schema",
-      "owl": "https://www.w3.org/TR/owl-ref",
-      "openBIS": "_:"
+      "schema": "https://schema.org",
+      "owl": "http://www.w3.org/2002/07/owl#",
+      "openBIS": "www.openbis.ch"
     }
   ],
   "@graph": [
@@ -19,31 +19,25 @@
       "datePublished": "2024-12-04T07:53:11Z",
       "hasPart": [
         {
-          "@id": "fdf9de4a-9233-4f9a-beee-b16c85ac7899"
-        },
-        {
-          "@id": "7c6a44df-1a55-4476-b853-198d12402059"
-        },
-        {
           "@id": "COLLECTION"
         },
         {
           "@id": "PUBLICATION_CREATOR"
         },
         {
-          "@id": "77d6d4d6-b90c-4545-952f-8b42426dc04b"
+          "@id": "14d56b04-2b08-4e0b-a5aa-6a00ecede709"
         },
         {
           "@id": "PUBLICATION"
         },
         {
-          "@id": "79b88764-999f-47b8-9989-b88f82cc2e9b"
+          "@id": "8b107a0e-116b-4ee5-a761-c9c1f1f37131"
         },
         {
           "@id": "openBIS:hasPUBLICATION.STATUS"
         },
         {
-          "@id": "788899b6-1365-46eb-9539-3c084011fa1b"
+          "@id": "4730dab1-ff0e-4680-b6c8-5a55eab1a63f"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27"
@@ -55,16 +49,19 @@
           "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME"
         },
         {
-          "@id": "9a9c4a68-31ae-4e4b-bb5c-9743e40d0fa8"
-        },
-        {
           "@id": "PUBLICATIONS"
         },
         {
-          "@id": "7b5e347f-e111-44aa-a9ce-9fc2faa567d9"
+          "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7"
+        },
+        {
+          "@id": "6f446021-bb2f-40c7-a610-b174ba28019e"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29"
+        },
+        {
+          "@id": "9e471192-4447-4bf9-9de9-9ccf9fe942ba"
         },
         {
           "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
@@ -73,43 +70,61 @@
           "@id": "openBIS:hasCOLLECTION"
         },
         {
-          "@id": ":Object"
+          "@id": "90b0a506-d4b5-4640-8df1-0ea3152952b7"
         },
         {
-          "@id": ":Vocabulary"
-        },
-        {
-          "@id": "af9516ee-5a24-42de-acfc-19513b12930a"
+          "@id": "a04bbb06-65a5-4990-80b9-e357c424eb78"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
         },
         {
-          "@id": ":Dataset"
+          "@id": "52a8af1f-32c7-409e-b915-f037363e9536"
+        },
+        {
+          "@id": "77a56e0c-ba8a-491f-97ad-3cc65b6ff63d"
+        },
+        {
+          "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB25"
         },
         {
-          "@id": ":Collection"
+          "@id": "f34f64d6-df55-4b9e-bec7-a8b4c6dbb783"
         },
         {
           "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
         },
         {
+          "@id": "d27f2c13-653c-48ba-935d-69b229668cfb"
+        },
+        {
+          "@id": "6e9cc4a2-b791-4510-b9cf-58b78081bac7"
+        },
+        {
+          "@id": "691a4e5a-7138-44b1-be58-ceabf988d8eb"
+        },
+        {
           "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER"
         },
         {
-          "@id": "c163d26d-9c5f-4afe-944b-361f27bef535"
+          "@id": "b0b6618c-f548-458f-bb0a-a6589614c250"
+        },
+        {
+          "@id": "ada2e928-acf4-4dfa-840d-18218d18ee91"
         },
         {
           "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME"
         },
         {
-          "@id": "openBIS:hasSPACE"
+          "@id": "openBIS:Object"
         },
         {
-          "@id": ":Project"
+          "@id": "6018f76e-1ec0-405c-8fb8-0bae31c399ab"
+        },
+        {
+          "@id": "openBIS:hasSPACE"
         },
         {
           "@id": "PUBLICATION_PUBLISHER"
@@ -118,46 +133,34 @@
           "@id": "openBIS:hasPUBLICATION.ORGANIZATION"
         },
         {
+          "@id": "a9f438ba-0048-40f8-8ba2-b83d153e85a7"
+        },
+        {
           "@id": "openBIS:Collection"
         },
         {
-          "@id": "83be7d34-91ac-4d08-9cd5-4f9cb758a967"
+          "@id": "6c034c79-2ac2-412c-8233-40462d5394a4"
         },
         {
-          "@id": "77a00451-b1af-4994-9a65-ecf3cc791e3b"
-        },
-        {
-          "@id": "261b1281-1f90-4202-b725-a1c6ed1eca87"
-        },
-        {
-          "@id": "openBIS:hasPUBLICATION_CREATOR.FULL_NAME"
-        },
-        {
-          "@id": "35db541a-c52c-49f0-bd46-9a8f60b4a537"
+          "@id": "52a78636-9a1a-46fa-8637-a7657d9a7d83"
         },
         {
           "@id": "openBIS:hasPUBLICATION.DESCRIPTION"
         },
         {
-          "@id": "fde51c61-c5c6-4097-89c9-d1acfbf9e417"
-        },
-        {
           "@id": "openBIS:hasPUBLICATION.TYPE"
-        },
-        {
-          "@id": "146a6aba-10bd-49f4-a51c-6c450cb60d91"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION"
         },
         {
-          "@id": "019e020d-03c0-4eea-ad11-3a698e486ebe"
-        },
-        {
           "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME_URI"
         },
         {
-          "@id": "9c2fedaf-6216-4fd3-8668-d075aa3466b6"
+          "@id": "openBIS:Dataset"
+        },
+        {
+          "@id": "e78bc0d6-0cda-4192-bf9c-2e8925311d59"
         },
         {
           "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME"
@@ -169,19 +172,19 @@
           "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR"
         },
         {
-          "@id": ":Space"
-        },
-        {
-          "@id": "openBIS:hasPUBLICATION.ABSTRACT"
-        },
-        {
           "@id": "openBIS:hasPUBLICATION.PUBLISHER"
         },
         {
           "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER"
         },
         {
+          "@id": "431dcce6-41ce-4246-99bd-3d2b30a18d21"
+        },
+        {
           "@id": "openBIS:hasNAME"
+        },
+        {
+          "@id": "29c6f0d3-b6ab-426e-88e6-c2efe8b6c3a6"
         },
         {
           "@id": "openBIS:hasPUBLICATION.CONTRIBUTOR"
@@ -190,55 +193,28 @@
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION"
         },
         {
-          "@id": "8483940c-966c-4269-a521-7adb0a62cc43"
-        },
-        {
           "@id": "openBIS:Space"
         },
         {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
         },
         {
-          "@id": "7f7e5302-0cc0-4e6e-b9bd-bf266527800b"
+          "@id": "76abbae2-dc17-4c2b-8e2f-5377a8a54e12"
         },
         {
-          "@id": "275097ea-cd84-496e-ac1a-22581d432ab1"
+          "@id": "ebe20931-4fa6-4b7a-977b-36f2059a7e5e"
         },
         {
-          "@id": "bc8c9b69-4c1a-4cfa-91f8-c806a6d910f7"
-        },
-        {
-          "@id": "58f40086-3cde-463f-8957-d59a5069bbfd"
-        },
-        {
-          "@id": "openBIS:hasPUBLICATION.DATASETS"
-        },
-        {
-          "@id": "00d262cf-ead1-4264-8b0b-475cdd2b42c2"
-        },
-        {
-          "@id": "b1d4ba2e-de11-4ad1-aed1-c0e8c8bbac36"
+          "@id": "9fd87f95-7840-42e8-8d4e-13581a58681c"
         },
         {
           "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME"
         },
         {
-          "@id": "89f64955-375a-4978-8eda-a1c0d03fe7ac"
-        },
-        {
           "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER"
         },
         {
-          "@id": "66b2dfc2-3ea1-4d85-91a7-f6e2a3690980"
-        },
-        {
-          "@id": "c5184a73-c6db-4b38-8b88-21ce9d3a1d95"
-        },
-        {
           "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME_URI"
-        },
-        {
-          "@id": "2b7168ea-1595-438c-b4f7-28fa042e5257"
         },
         {
           "@id": "openBIS:hasPUBLICATION.URL"
@@ -265,19 +241,13 @@
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA23"
         },
         {
-          "@id": "00c7421f-c174-4f52-a8d0-151a9f1a727a"
-        },
-        {
           "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30"
         },
         {
-          "@id": "c05e0978-cc96-40b1-8453-a02e6e70b83b"
-        },
-        {
-          "@id": "75d20b19-8020-4728-bc16-f3700f9377e2"
-        },
-        {
           "@id": "openBIS:hasXMLCOMMENTS"
+        },
+        {
+          "@id": "openBIS:Vocabulary"
         }
       ]
     },
@@ -292,68 +262,47 @@
       "@type": "CreativeWork"
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Affilition",
-      "rdfs:comment": "Affiliation Identifier",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION_CREATOR"
-    },
-      "owl:equivalentProperty": {
-        "@id": "https://schema.org/affiliation"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Comments",
-      "rdfs:comment": "Comments log",
-      "@id": "openBIS:hasXMLCOMMENTS",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      }
-    },
-    {
-      "@id": "PUBLICATION_PUBLISHER",
-      "@type": "rdfs:Class",
-      "owl:restriction": [
-        {
-          "@id": "af9516ee-5a24-42de-acfc-19513b12930a"
-        },
-        {
-          "@id": "c163d26d-9c5f-4afe-944b-361f27bef535"
-        },
-        {
-          "@id": "b1d4ba2e-de11-4ad1-aed1-c0e8c8bbac36"
-        },
-        {
-          "@id": "7b5e347f-e111-44aa-a9ce-9fc2faa567d9"
-        }
-      ],
-      "rdfs:subClassOf": {
-        "@id": ":Object"
-      },
-      "owl:equivalentClass": {
-        "@id": "https://schema.org/publisher"
-      }
-    },
-    {
-      "@id": "c05e0978-cc96-40b1-8453-a02e6e70b83b",
+      "@id": "431dcce6-41ce-4246-99bd-3d2b30a18d21",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.DATASETS"
+        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "9e471192-4447-4bf9-9de9-9ccf9fe942ba",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.TYPE"
       },
       "owl:minCardinality": 1,
       "owl:maxCardinality": 1
     },
     {
-      "@id": ":Dataset",
+      "@id": "openBIS:Vocabulary",
       "@type": "rdfs:Class"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Affiliation Identifier Scheme",
+      "rdfs:comment": "Affiliation Identifier Scheme",
+      "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION_CREATOR"
+      }
+    },
+    {
+      "@id": "6018f76e-1ec0-405c-8fb8-0bae31c399ab",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.OPENBIS_RELATED_IDENTIFIERS"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
     },
     {
       "@type": "rdfs:Property",
@@ -379,170 +328,6 @@
       ]
     },
     {
-      "@id": "9c2fedaf-6216-4fd3-8668-d075aa3466b6",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.ABSTRACT"
-      },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "c163d26d-9c5f-4afe-944b-361f27bef535",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER"
-    },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER": "https://orcid.org/0000-0002-2423-3090",
-      "openBIS:hasPUBLICATION_CREATOR.FULL_NAME": "Erola Pairo-Castineira",
-      "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER": "Roslin Institute, University of Edinburgh, Edinburgh, UK",
-      "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME": "Pairo-Castineira",
-      "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME": "Castineira",
-      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME": "https://orcid.org/",
-      "openBIS:hasNAME": "Erola Pairo-Castineira",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA23",
-      "openBIS:hasSPACE": {
-        "@id": "PUBLICATIONS"
-      },
-      "openBIS:hasPROJECT": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
-      },
-      "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
-    },
-      "@type": "PUBLICATION_CREATOR"
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Publisher",
-      "rdfs:comment": "Publisher",
-      "@id": "openBIS:hasPUBLICATION.PUBLISHER",
-      "schema:rangeIncludes": {
-        "@id": "PUBLICATION_PUBLISHER"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-    },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#publisher"
-        },
-        {
-          "@id": "https://schema.org/publisher"
-        }
-      ]
-    },
-    {
-      "@id": "b1d4ba2e-de11-4ad1-aed1-c0e8c8bbac36",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasNAME"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": ":Collection",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "openBIS Related Identifiers",
-      "rdfs:comment": "openBIS Related Identifiers",
-      "@id": "openBIS:hasPUBLICATION.OPENBIS_RELATED_IDENTIFIERS",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": {
-        "@id": "http://datacite.org/schema/kernel-4#relatedIdentifiers"
-      }
-    },
-    {
-      "@id": "75d20b19-8020-4728-bc16-f3700f9377e2",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME_URI"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "66b2dfc2-3ea1-4d85-91a7-f6e2a3690980",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "openBIS:Collection",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@id": ":Space",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@id": ":Vocabulary",
-      "@type": "rdfs:Class"
-    },
-    {
-      "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER": "https://www.nature.com",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB24",
-      "openBIS:hasSPACE": {
-        "@id": "PUBLICATIONS"
-      },
-      "openBIS:hasPROJECT": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
-      },
-      "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION"
-    },
-      "@type": "PUBLICATION_PUBLISHER"
-    },
-    {
-      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION_CREATOR",
-      "openBIS:hasNAME": "Publications creator collection",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION",
-      "@type": "COLLECTION"
-    },
-    {
-      "@id": "77a00451-b1af-4994-9a65-ecf3cc791e3b",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION",
-      "openBIS:hasNAME": "Publications Collection",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION",
-      "@type": "COLLECTION"
-    },
-    {
-      "@id": "openBIS:Project",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@id": "00d262cf-ead1-4264-8b0b-475cdd2b42c2",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.OPENBIS_RELATED_IDENTIFIERS"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
       "@type": "rdfs:Property",
       "rdfs:label": "Identifier Scheme",
       "rdfs:comment": "Identifier Scheme",
@@ -558,57 +343,154 @@
       }
     },
     {
+      "@id": "d27f2c13-653c-48ba-935d-69b229668cfb",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "COLLECTION",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7"
+        },
+        {
+          "@id": "76abbae2-dc17-4c2b-8e2f-5377a8a54e12"
+        },
+        {
+          "@id": "4730dab1-ff0e-4680-b6c8-5a55eab1a63f"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Collection"
+      }
+    },
+    {
       "@type": "rdfs:Property",
-      "rdfs:label": "Full name",
-      "rdfs:comment": "FullName",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.FULL_NAME",
+      "rdfs:label": "Creators",
+      "rdfs:comment": "Creators",
+      "@id": "openBIS:hasPUBLICATION.CREATOR",
+      "schema:rangeIncludes": {
+        "@id": "PUBLICATION_CREATOR"
+    },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      }
+    },
+    {
+      "@id": "77a56e0c-ba8a-491f-97ad-3cc65b6ff63d",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "e78bc0d6-0cda-4192-bf9c-2e8925311d59",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.STATUS"
+      },
+      "owl:minCardinality": 1,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Affilition",
+      "rdfs:comment": "Affiliation Identifier",
+      "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER",
       "schema:rangeIncludes": {
         "@id": "xsd:string"
       },
       "schema:domainIncludes": {
         "@id": "PUBLICATION_CREATOR"
-    },
-      "owl:equivalentProperty": {
-        "@id": "https://schema.org/name"
       }
     },
     {
-      "@id": "89f64955-375a-4978-8eda-a1c0d03fe7ac",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.CONTRIBUTOR"
+      "openBIS:hasPUBLICATION.STATUS": "Registered",
+      "openBIS:hasPUBLICATION.URL": "https://www.nature.com/articles/s41586-020-3010-5#citeas",
+      "openBIS:hasNAME": "Global human-made mass exceeds all living biomass",
+      "openBIS:hasPUBLICATION.TYPE": "DataPaper",
+      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-09 15:43:20 +0100",
+      "openBIS:hasPUBLICATION.IDENTIFIER": "https://doi.org/10.1038/s41586-020-3010-5",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB25",
+      "openBIS:hasSPACE": {
+        "@id": "PUBLICATIONS"
+    },
+      "openBIS:hasPROJECT": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
       },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
+      "openBIS:hasCOLLECTION": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION"
+      },
+      "openBIS:hasPUBLICATION.CREATOR": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA22"
+      },
+      "openBIS:hasPUBLICATION.PUBLISHER": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB24"
+      },
+      "@type": "PUBLICATION"
     },
     {
-      "@id": "261b1281-1f90-4202-b725-a1c6ed1eca87",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER"
+      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER": "https://orcid.org/0000-0002-2423-3090",
+      "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME": "Pairo-Castineira",
+      "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME": "Erola",
+      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME": "https://orcid.org/",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA23",
+      "openBIS:hasSPACE": {
+        "@id": "PUBLICATIONS"
       },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
+      "openBIS:hasPROJECT": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
+      },
+      "openBIS:hasCOLLECTION": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
+    },
+      "@type": "PUBLICATION_CREATOR"
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Publication Year",
-      "rdfs:comment": "Publication Year",
-      "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR",
-      "schema:rangeIncludes": {
-        "@id": "xsd:dateTime"
+      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION",
+      "openBIS:hasNAME": "Publications Collection",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION",
+      "@type": "openBIS:Collection"
     },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-    },
-      "owl:equivalentProperty": [
+    {
+      "@id": "PUBLICATION_PUBLISHER",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
         {
-          "@id": "http://datacite.org/schema/kernel-4#publicationYear"
+          "@id": "b0b6618c-f548-458f-bb0a-a6589614c250"
         },
         {
-          "@id": "https://schema.org/datePublished"
+          "@id": "a9f438ba-0048-40f8-8ba2-b83d153e85a7"
+        },
+        {
+          "@id": "a04bbb06-65a5-4990-80b9-e357c424eb78"
+        },
+        {
+          "@id": "52a78636-9a1a-46fa-8637-a7657d9a7d83"
         }
-      ]
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+    },
+      "owl:equivalentClass": {
+        "@id": "https://schema.org/Publisher"
+      }
+    },
+    {
+      "@id": "a9f438ba-0048-40f8-8ba2-b83d153e85a7",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
     },
     {
       "@type": "rdfs:Property",
@@ -623,141 +505,57 @@
       }
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Datasets",
-      "rdfs:comment": "Datasets",
-      "@id": "openBIS:hasPUBLICATION.DATASETS",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": {
-        "@id": "https://schema.org/hasPart"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "@id": "openBIS:hasSPACE",
-      "schema:rangeIncludes": {
-        "@id": "openBIS:Space"
-      },
-      "schema:domainIncludes": [
-        {
-          "@id": "COLLECTION"
-        },
-        {
-          "@id": "PUBLICATION_CREATOR"
-        },
-        {
-          "@id": "PUBLICATION"
-        },
-        {
-          "@id": "PUBLICATION_PUBLISHER"
-        }
-      ]
-    },
-    {
-      "@id": "146a6aba-10bd-49f4-a51c-6c450cb60d91",
+      "@id": "14d56b04-2b08-4e0b-a5aa-6a00ecede709",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.URL"
-    },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER": "Science",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26",
-      "openBIS:hasSPACE": {
-        "@id": "PUBLICATIONS"
+        "@id": "openBIS:hasNAME"
       },
-      "openBIS:hasPROJECT": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
-      },
-      "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION"
-      },
-      "@type": "PUBLICATION_PUBLISHER"
-    },
-    {
-      "@id": ":Object",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@id": "COLLECTION",
-      "@type": "rdfs:Class",
-      "owl:restriction": [
-        {
-          "@id": "66b2dfc2-3ea1-4d85-91a7-f6e2a3690980"
-        },
-        {
-          "@id": "9a9c4a68-31ae-4e4b-bb5c-9743e40d0fa8"
-        },
-        {
-          "@id": "bc8c9b69-4c1a-4cfa-91f8-c806a6d910f7"
-        }
-      ],
-      "rdfs:subClassOf": {
-        "@id": ":Collection"
-      }
-    },
-    {
-      "@id": "77d6d4d6-b90c-4545-952f-8b42426dc04b",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.PUBLISHER"
-    },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "788899b6-1365-46eb-9539-3c084011fa1b",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER"
-      },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Default collection view",
-      "rdfs:comment": "Default view for experiments of the type collection",
-      "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "COLLECTION"
-      }
-    },
-    {
-      "@id": "af9516ee-5a24-42de-acfc-19513b12930a",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME"
-    },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
-      "description": "Public Repositories",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES",
-      "@type": "openBIS:Project"
+      "@id": "PUBLICATION_CREATOR",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "52a8af1f-32c7-409e-b915-f037363e9536"
+        },
+        {
+          "@id": "ebe20931-4fa6-4b7a-977b-36f2059a7e5e"
+        },
+        {
+          "@id": "d27f2c13-653c-48ba-935d-69b229668cfb"
+        },
+        {
+          "@id": "77a56e0c-ba8a-491f-97ad-3cc65b6ff63d"
+        },
+        {
+          "@id": "6e9cc4a2-b791-4510-b9cf-58b78081bac7"
+        },
+        {
+          "@id": "431dcce6-41ce-4246-99bd-3d2b30a18d21"
+        },
+        {
+          "@id": "90b0a506-d4b5-4640-8df1-0ea3152952b7"
+        },
+        {
+          "@id": "9fd87f95-7840-42e8-8d4e-13581a58681c"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
     },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Type",
-      "rdfs:comment": "Type",
-      "@id": "openBIS:hasPUBLICATION.TYPE",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      }
+      "owl:equivalentClass": [
+        {
+          "@id": "http://datacite.org/schema/kernel-4#Creator"
+        },
+        {
+          "@id": "https://schema.org/Creator"
+        },
+        {
+          "@id": "https://schema.org/author"
+        }
+      ]
     },
     {
       "@type": "rdfs:Property",
@@ -775,279 +573,18 @@
       }
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Family Name",
-      "rdfs:comment": "Family Name",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION_CREATOR"
-      },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#familyName"
-        },
-        {
-          "@id": "https://schema.org/familyName"
-        }
-      ]
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Publisher Identifier",
-      "rdfs:comment": "Publisher Identifier",
-      "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION_PUBLISHER"
-    },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#publisherIdentifier"
-        },
-        {
-          "@id": "https://schema.org/identifier"
-        }
-      ]
-    },
-    {
-      "@id": "275097ea-cd84-496e-ac1a-22581d432ab1",
+      "@id": "2f9d92e7-2e90-47c0-949b-a50c2ab147e7",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.DESCRIPTION"
+        "@id": "openBIS:hasDEFAULT_OBJECT_TYPE"
       },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
-      "@id": ":Project",
-      "@type": "rdfs:Class"
-    },
-    {
-      "@id": "PUBLICATIONS",
-      "@type": "openBIS:Space"
-    },
-    {
-      "@id": "PUBLICATION_CREATOR",
-      "@type": "rdfs:Class",
-      "owl:restriction": [
-        {
-          "@id": "75d20b19-8020-4728-bc16-f3700f9377e2"
-        },
-        {
-          "@id": "77a00451-b1af-4994-9a65-ecf3cc791e3b"
-        },
-        {
-          "@id": "019e020d-03c0-4eea-ad11-3a698e486ebe"
-        },
-        {
-          "@id": "79b88764-999f-47b8-9989-b88f82cc2e9b"
-        },
-        {
-          "@id": "788899b6-1365-46eb-9539-3c084011fa1b"
-        },
-        {
-          "@id": "fde51c61-c5c6-4097-89c9-d1acfbf9e417"
-        },
-        {
-          "@id": "83be7d34-91ac-4d08-9cd5-4f9cb758a967"
-        },
-        {
-          "@id": "261b1281-1f90-4202-b725-a1c6ed1eca87"
-        },
-        {
-          "@id": "35db541a-c52c-49f0-bd46-9a8f60b4a537"
-        }
-      ],
-      "rdfs:subClassOf": {
-        "@id": ":Object"
-    },
-      "owl:equivalentClass": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#creator"
-        },
-        {
-          "@id": "https://schema.org/author"
-        },
-        {
-          "@id": "https://schema.org/creator"
-        }
-      ]
-    },
-    {
-      "@id": "PUBLICATION",
-      "@type": "rdfs:Class",
-      "owl:restriction": [
-        {
-          "@id": "275097ea-cd84-496e-ac1a-22581d432ab1"
-        },
-        {
-          "@id": "c5184a73-c6db-4b38-8b88-21ce9d3a1d95"
-        },
-        {
-          "@id": "00c7421f-c174-4f52-a8d0-151a9f1a727a"
-        },
-        {
-          "@id": "8483940c-966c-4269-a521-7adb0a62cc43"
-        },
-        {
-          "@id": "fdf9de4a-9233-4f9a-beee-b16c85ac7899"
-        },
-        {
-          "@id": "9c2fedaf-6216-4fd3-8668-d075aa3466b6"
-        },
-        {
-          "@id": "77d6d4d6-b90c-4545-952f-8b42426dc04b"
-        },
-        {
-          "@id": "2b7168ea-1595-438c-b4f7-28fa042e5257"
-        },
-        {
-          "@id": "89f64955-375a-4978-8eda-a1c0d03fe7ac"
-        },
-        {
-          "@id": "c05e0978-cc96-40b1-8453-a02e6e70b83b"
-        },
-        {
-          "@id": "58f40086-3cde-463f-8957-d59a5069bbfd"
-        },
-        {
-          "@id": "146a6aba-10bd-49f4-a51c-6c450cb60d91"
-        },
-        {
-          "@id": "7c6a44df-1a55-4476-b853-198d12402059"
-        },
-        {
-          "@id": "00d262cf-ead1-4264-8b0b-475cdd2b42c2"
-        },
-        {
-          "@id": "7f7e5302-0cc0-4e6e-b9bd-bf266527800b"
-        }
-      ],
-      "rdfs:subClassOf": {
-        "@id": ":Object"
-    },
-      "owl:equivalentClass": {
-        "@id": "https://schema.org/creativeWork"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Publication Identifier",
-      "rdfs:comment": "Publication Identifier",
-      "@id": "openBIS:hasPUBLICATION.IDENTIFIER",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#doi"
-        },
-        {
-          "@id": "https://schema.org/identifier"
-        }
-      ]
-    },
-    {
-      "@id": "7f7e5302-0cc0-4e6e-b9bd-bf266527800b",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasXMLCOMMENTS"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "c5184a73-c6db-4b38-8b88-21ce9d3a1d95",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.TYPE"
-      },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Organization",
-      "rdfs:comment": "Organization",
-      "@id": "openBIS:hasPUBLICATION.ORGANIZATION",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": {
-        "@id": "http://schema.org/Organization"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Abstract",
-      "rdfs:comment": "Abstract",
-      "@id": "openBIS:hasPUBLICATION.ABSTRACT",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-    },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": {
-        "@id": "https://schema.org/datePublished"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Identifier Scheme",
-      "rdfs:comment": "Identifier",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION_CREATOR"
-      }
-    },
-    {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Creators",
-      "rdfs:comment": "Creators",
-      "@id": "openBIS:hasPUBLICATION.CREATOR",
-      "schema:rangeIncludes": {
-        "@id": "PUBLICATION_CREATOR"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-      },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#creator"
-        },
-        {
-          "@id": "https://schema.org/author"
-        },
-        {
-          "@id": "https://schema.org/creator"
-        }
-      ]
-    },
-    {
-      "openBIS:hasPUBLICATION.STATUS": "Registered",
-      "openBIS:hasPUBLICATION.URL": "https://www.nature.com/articles/s41586-020-3010-5#citeas",
-      "openBIS:hasNAME": "Global human-made mass exceeds all living biomass",
-      "openBIS:hasPUBLICATION.TYPE": "DataPaper",
-      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-09 15:43:20 +0100",
-      "openBIS:hasPUBLICATION.IDENTIFIER": "https://doi.org/10.1038/s41586-020-3010-5",
-      "openBIS:hasPUBLICATION.DATASETS": "https://www.kaggle.com/datasets/uciml/mushroom-classification",
-      "openBIS:hasPUBLICATION.ABSTRACT": "Humanity has become a dominant force in shaping the face of Earth1,2,3,4,5,6,7,8,9. An emerging question is how the overall material output of human activities compares to the overall natural biomass. Here we quantify the human-made mass, referred to as ‘anthropogenic mass’, and compare it to the overall living biomass on Earth, which currently equals approximately 1.1 teratonnes10,11. We find that Earth is exactly at the crossover point; in the year 2020 (± 6), the anthropogenic mass, which has recently doubled roughly every 20 years, will surpass all global living biomass. On average, for each person on the globe, anthropogenic mass equal to more than his or her bodyweight is produced every week. This quantification of the human enterprise gives a mass-based quantitative and symbolic characterization of the human-induced epoch of the Anthropocene.",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB25",
+      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER": "https://orcid.org/0000-0001-9844-8214",
+      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME": "https://orcid.org",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27",
       "openBIS:hasSPACE": {
         "@id": "PUBLICATIONS"
       },
@@ -1055,15 +592,205 @@
         "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
       },
       "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION"
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
     },
+      "@type": "PUBLICATION_CREATOR"
+    },
+    {
+      "@id": "6e9cc4a2-b791-4510-b9cf-58b78081bac7",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "@id": "openBIS:hasSPACE",
+      "schema:rangeIncludes": {
+        "@id": "openBIS:Space"
+    },
+      "schema:domainIncludes": [
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "PUBLICATION_CREATOR"
+        },
+        {
+          "@id": "PUBLICATION_PUBLISHER"
+        },
+        {
+          "@id": "PUBLICATION"
+        }
+      ]
+    },
+    {
+      "@id": "f34f64d6-df55-4b9e-bec7-a8b4c6dbb783",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasXMLCOMMENTS"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "openBIS:Object",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "a04bbb06-65a5-4990-80b9-e357c424eb78",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Given Name",
+      "rdfs:comment": "Given Name",
+      "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION_CREATOR"
+    },
+      "owl:equivalentProperty": [
+        {
+          "@id": "http://datacite.org/schema/kernel-4#givenName"
+        },
+        {
+          "@id": "https://schema.org/givenName"
+        }
+      ]
+    },
+    {
+      "@id": "openBIS:Project",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "8b107a0e-116b-4ee5-a761-c9c1f1f37131",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR"
+      },
+      "owl:minCardinality": 1,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Contributors",
+      "rdfs:comment": "Contributors",
+      "@id": "openBIS:hasPUBLICATION.CONTRIBUTOR",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+    },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      },
+      "owl:equivalentProperty": [
+        {
+          "@id": "https://schema.org/identifier"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#doi"
+        }
+      ]
+    },
+    {
+      "@id": "openBIS:Space",
+      "@type": "rdfs:Class"
+    },
+    {
+      "@id": "9fd87f95-7840-42e8-8d4e-13581a58681c",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Default collection view",
+      "rdfs:comment": "Default view for experiments of the type collection",
+      "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "COLLECTION"
+      }
+    },
+    {
+      "description": "Public Repositories",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES",
+      "@type": "openBIS:Project"
+    },
+    {
+      "openBIS:hasPUBLICATION.STATUS": "Registered",
+      "openBIS:hasPUBLICATION.URL": "https://www.science.org/doi/10.1126/science.abe8770",
+      "openBIS:hasNAME": "Quantum computational advantage using photons",
+      "openBIS:hasPUBLICATION.TYPE": "DataPaper",
+      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-11 15:50:44 +0100",
+      "openBIS:hasPUBLICATION.IDENTIFIER": "DOI: 10.1126/science.abe8770",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30",
+      "openBIS:hasSPACE": {
+        "@id": "PUBLICATIONS"
+    },
+      "openBIS:hasPROJECT": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
+      },
+      "openBIS:hasCOLLECTION": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION"
+      },
       "openBIS:hasPUBLICATION.CREATOR": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA22"
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27"
       },
       "openBIS:hasPUBLICATION.PUBLISHER": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB24"
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26"
       },
       "@type": "PUBLICATION"
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Comments",
+      "rdfs:comment": "Comments log",
+      "@id": "openBIS:hasXMLCOMMENTS",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Publication Year",
+      "rdfs:comment": "Publication Year",
+      "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR",
+      "schema:rangeIncludes": {
+        "@id": "xsd:dateTime"
+    },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+    },
+      "owl:equivalentProperty": [
+        {
+          "@id": "https://schema.org/datePublished"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#publicationYear"
+        }
+      ]
+    },
+    {
+      "@id": "PUBLICATIONS",
+      "@type": "openBIS:Space"
     },
     {
       "@type": "rdfs:Property",
@@ -1075,52 +802,99 @@
       },
       "schema:domainIncludes": {
         "@id": "PUBLICATION"
-    },
+      },
       "owl:equivalentProperty": [
         {
-          "@id": "http://datacite.org/schema/kernel-4#stateSelection"
+          "@id": "https://schema.org/creativeWorkStatus"
         },
         {
-          "@id": "https://schema.org/creativeWorkStatus"
+          "@id": "http://datacite.org/schema/kernel-4#stateSelection"
         }
       ]
     },
     {
-      "@id": "58f40086-3cde-463f-8957-d59a5069bbfd",
+      "@id": "52a78636-9a1a-46fa-8637-a7657d9a7d83",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.ORGANIZATION"
+        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME_URI"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER": "https://www.nature.com",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB24",
+      "openBIS:hasSPACE": {
+        "@id": "PUBLICATIONS"
+      },
+      "openBIS:hasPROJECT": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
+      },
+      "openBIS:hasCOLLECTION": {
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION"
+      },
+      "@type": "PUBLICATION_PUBLISHER"
+    },
+    {
+      "@id": "4730dab1-ff0e-4680-b6c8-5a55eab1a63f",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "openBIS:hasDEFAULT_COLLECTION_VIEW": "LIST_VIEW",
+      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION_PUBLISHER",
+      "openBIS:hasNAME": "Publications Publisher Collection",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION",
+      "@type": "openBIS:Collection"
+    },
+    {
+      "@id": "90b0a506-d4b5-4640-8df1-0ea3152952b7",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME"
       },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "URL",
-      "rdfs:comment": "URL",
-      "@id": "openBIS:hasPUBLICATION.URL",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": {
-        "@id": "PUBLICATION"
-    },
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#url"
-        },
-        {
-          "@id": "https://schema.org/url"
-        }
-      ]
+      "@id": "openBIS:Dataset",
+      "@type": "rdfs:Class"
     },
     {
-      "@id": "8483940c-966c-4269-a521-7adb0a62cc43",
+      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION_CREATOR",
+      "openBIS:hasNAME": "Publications creator collection",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION",
+      "@type": "openBIS:Collection"
+    },
+    {
+      "@id": "52a8af1f-32c7-409e-b915-f037363e9536",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.CREATOR"
+        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME_URI"
+      },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
     },
-      "owl:minCardinality": 1,
+    {
+      "@id": "ada2e928-acf4-4dfa-840d-18218d18ee91",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.ORGANIZATION"
+    },
+      "owl:minCardinality": 0,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@id": "b0b6618c-f548-458f-bb0a-a6589614c250",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME"
+      },
+      "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
@@ -1144,139 +918,53 @@
       ]
     },
     {
-      "@type": "rdfs:Property",
-      "rdfs:label": "Name",
-      "rdfs:comment": "Name",
-      "@id": "openBIS:hasNAME",
-      "schema:rangeIncludes": {
-        "@id": "xsd:string"
-      },
-      "schema:domainIncludes": [
-        {
-          "@id": "COLLECTION"
-        },
-        {
-          "@id": "PUBLICATION_CREATOR"
-        },
-        {
-          "@id": "PUBLICATION"
-        },
-        {
-          "@id": "PUBLICATION_PUBLISHER"
-        }
-      ],
-      "owl:equivalentProperty": [
-        {
-          "@id": "http://datacite.org/schema/kernel-4#title"
-        },
-        {
-          "@id": "https://schema.org/title"
-        },
-        {
-          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
-        },
-        {
-          "@id": "https://schema.org/name"
-        },
-        {
-          "@id": "http://datacite.org/schema/kernel-4#title"
-        },
-        {
-          "@id": "https://schema.org/title"
-        },
-        {
-          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
-        },
-        {
-          "@id": "https://schema.org/name"
-        },
-        {
-          "@id": "http://datacite.org/schema/kernel-4#title"
-        },
-        {
-          "@id": "https://schema.org/title"
-        },
-        {
-          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
-        },
-        {
-          "@id": "https://schema.org/name"
-        }
-      ]
-    },
-    {
-      "@id": "bc8c9b69-4c1a-4cfa-91f8-c806a6d910f7",
+      "@id": "ebe20931-4fa6-4b7a-977b-36f2059a7e5e",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasDEFAULT_COLLECTION_VIEW"
-      },
+        "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME"
+    },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
       "@type": "rdfs:Property",
-      "rdfs:label": "Default object type",
-      "rdfs:comment": "Enter the code of the object type for which the collection is used",
-      "@id": "openBIS:hasDEFAULT_OBJECT_TYPE",
+      "rdfs:label": "Publisher Identifier",
+      "rdfs:comment": "Publisher Identifier",
+      "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER",
       "schema:rangeIncludes": {
         "@id": "xsd:string"
       },
       "schema:domainIncludes": {
-        "@id": "COLLECTION"
-      }
+        "@id": "PUBLICATION_PUBLISHER"
+      },
+      "owl:equivalentProperty": [
+        {
+          "@id": "http://datacite.org/schema/kernel-4#publisherIdentifier"
+        },
+        {
+          "@id": "https://schema.org/identifier"
+        }
+      ]
     },
     {
-      "openBIS:hasPUBLICATION_CREATOR.FULL_NAME": "Emily Elhacham",
-      "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER": "Department of Plant and Environmental Sciences, Weizmann Institute of Science, Rehovot, Israel",
-      "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME": "Emily",
-      "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME": "Elhacham",
-      "openBIS:hasNAME": "Emily Elhacham",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA22",
+      "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER": "Science",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26",
       "openBIS:hasSPACE": {
         "@id": "PUBLICATIONS"
-      },
-      "openBIS:hasPROJECT": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
     },
-      "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
-      },
-      "@type": "PUBLICATION_CREATOR"
-    },
-    {
-      "@id": "019e020d-03c0-4eea-ad11-3a698e486ebe",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER": "https://orcid.org/0000-0001-9844-8214",
-      "openBIS:hasPUBLICATION_CREATOR.FULL_NAME": "Han-Sen Zhong",
-      "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER": "Unknown",
-      "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME": "Han-Sen",
-      "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME": "Zhong",
-      "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME": "https://orcid.org",
-      "openBIS:hasNAME": "Han-Sen Zhong",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27",
-      "openBIS:hasSPACE": {
-        "@id": "PUBLICATIONS"
-      },
       "openBIS:hasPROJECT": {
         "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
       },
       "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION"
       },
-      "@type": "PUBLICATION_CREATOR"
+      "@type": "PUBLICATION_PUBLISHER"
     },
     {
       "@type": "rdfs:Property",
-      "rdfs:label": "Affiliation Identifier Scheme",
-      "rdfs:comment": "Affiliation Identifier Scheme",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME",
+      "rdfs:label": "Identifier Scheme",
+      "rdfs:comment": "Identifier",
+      "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME",
       "schema:rangeIncludes": {
         "@id": "xsd:string"
       },
@@ -1285,50 +973,19 @@
       }
     },
     {
-      "@id": "9a9c4a68-31ae-4e4b-bb5c-9743e40d0fa8",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasNAME"
+      "@type": "rdfs:Property",
+      "rdfs:label": "Publisher",
+      "rdfs:comment": "Publisher",
+      "@id": "openBIS:hasPUBLICATION.PUBLISHER",
+      "schema:rangeIncludes": {
+        "@id": "PUBLICATION_PUBLISHER"
       },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      }
     },
     {
-      "@id": "7c6a44df-1a55-4476-b853-198d12402059",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.IDENTIFIER"
-      },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "79b88764-999f-47b8-9989-b88f82cc2e9b",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasNAME"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "7b5e347f-e111-44aa-a9ce-9fc2faa567d9",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_PUBLISHER.IDENTIFIER_SCHEME_URI"
-      },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasDEFAULT_COLLECTION_VIEW": "LIST_VIEW",
-      "openBIS:hasDEFAULT_OBJECT_TYPE": "PUBLICATION_PUBLISHER",
-      "openBIS:hasNAME": "Publications Publisher Collection",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_PUBLISHER_COLLECTION",
-      "@type": "COLLECTION"
-    },
-    {
-      "@id": "openBIS:Space",
+      "@id": "openBIS:Collection",
       "@type": "rdfs:Class"
     },
     {
@@ -1345,33 +1002,62 @@
           "@id": "PUBLICATION_CREATOR"
         },
         {
-          "@id": "PUBLICATION"
+          "@id": "PUBLICATION_PUBLISHER"
         },
         {
-          "@id": "PUBLICATION_PUBLISHER"
+          "@id": "PUBLICATION"
         }
       ]
     },
     {
-      "@id": "35db541a-c52c-49f0-bd46-9a8f60b4a537",
+      "@type": "rdfs:Property",
+      "rdfs:label": "URL",
+      "rdfs:comment": "URL",
+      "@id": "openBIS:hasPUBLICATION.URL",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+    },
+      "owl:equivalentProperty": [
+        {
+          "@id": "https://schema.org/url"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#url"
+        }
+      ]
+    },
+    {
+      "@id": "29c6f0d3-b6ab-426e-88e6-c2efe8b6c3a6",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.FULL_NAME"
+        "@id": "openBIS:hasPUBLICATION.PUBLISHER"
+      },
+      "owl:minCardinality": 1,
+      "owl:maxCardinality": 0
+    },
+    {
+      "@id": "76abbae2-dc17-4c2b-8e2f-5377a8a54e12",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasNAME"
       },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
       "@type": "rdfs:Property",
-      "rdfs:label": "Contributors",
-      "rdfs:comment": "Contributors",
-      "@id": "openBIS:hasPUBLICATION.CONTRIBUTOR",
+      "rdfs:label": "Publication Identifier",
+      "rdfs:comment": "Publication Identifier",
+      "@id": "openBIS:hasPUBLICATION.IDENTIFIER",
       "schema:rangeIncludes": {
         "@id": "xsd:string"
-    },
+      },
       "schema:domainIncludes": {
         "@id": "PUBLICATION"
-    },
+      },
       "owl:equivalentProperty": [
         {
           "@id": "http://datacite.org/schema/kernel-4#doi"
@@ -1382,14 +1068,21 @@
       ]
     },
     {
+      "@id": "6f446021-bb2f-40c7-a610-b174ba28019e",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.CREATOR"
+      },
+      "owl:minCardinality": 1,
+      "owl:maxCardinality": 0
+    },
+    {
       "openBIS:hasPUBLICATION.STATUS": "Registered",
       "openBIS:hasPUBLICATION.URL": "https://www.nature.com/articles/s41586-020-03065-y#citeas",
       "openBIS:hasNAME": "Genetic mechanisms of critical illness in COVID-19",
       "openBIS:hasPUBLICATION.TYPE": "DataPaper",
       "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-11 15:48:55 +0100",
       "openBIS:hasPUBLICATION.IDENTIFIER": "https://doi.org/10.1038/s41586-020-03065-y",
-      "openBIS:hasPUBLICATION.DATASETS": "https://www.kaggle.com/datasets/shahriar26s/malaria-detection",
-      "openBIS:hasPUBLICATION.ABSTRACT": "Host-mediated lung inflammation is present1, and drives mortality2, in the critical illness caused by coronavirus disease 2019 (COVID-19). Host genetic variants associated with critical illness may identify mechanistic targets for therapeutic development3. Here we report the results of the GenOMICC (Genetics Of Mortality In Critical Care) genome-wide association study in 2,244 critically ill patients with COVID-19 from 208 UK intensive care units. We have identified and replicated the following new genome-wide significant associations: on chromosome 12q24.13 (rs10735079, P = 1.65 × 10−8) in a gene cluster that encodes antiviral restriction enzyme activators (OAS1, OAS2 and OAS3); on chromosome 19p13.2 (rs74956615, P = 2.3 × 10−8) near the gene that encodes tyrosine kinase 2 (TYK2); on chromosome 19p13.3 (rs2109069, P = 3.98 ×  10−12) within the gene that encodes dipeptidyl peptidase 9 (DPP9); and on chromosome 21q22.1 (rs2236757, P = 4.99 × 10−8) in the interferon receptor gene IFNAR2. We identified potential targets for repurposing of licensed medications: using Mendelian randomization, we found evidence that low expression of IFNAR2, or high expression of TYK2, are associated with life-threatening disease; and transcriptome-wide association in lung tissue revealed that high expression of the monocyte–macrophage chemotactic receptor CCR2 is associated with severe COVID-19. Our results identify robust genetic signals relating to key host antiviral defence mechanisms and mediators of inflammatory organ damage in COVID-19. Both mechanisms may be amenable to targeted treatment with existing drugs. However, large-scale randomized clinical trials will be essential before any change to clinical practice.",
       "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB29",
       "openBIS:hasSPACE": {
         "@id": "PUBLICATIONS"
@@ -1410,52 +1103,90 @@
     },
     {
       "@type": "rdfs:Property",
-      "rdfs:label": "Given Name",
-      "rdfs:comment": "Given Name",
-      "@id": "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME",
+      "rdfs:label": "Organization",
+      "rdfs:comment": "Organization",
+      "@id": "openBIS:hasPUBLICATION.ORGANIZATION",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      },
+      "owl:equivalentProperty": {
+        "@id": "http://schema.org/Organization"
+      }
+    },
+    {
+      "@id": "PUBLICATION",
+      "@type": "rdfs:Class",
+      "owl:restriction": [
+        {
+          "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59"
+        },
+        {
+          "@id": "9e471192-4447-4bf9-9de9-9ccf9fe942ba"
+        },
+        {
+          "@id": "e78bc0d6-0cda-4192-bf9c-2e8925311d59"
+        },
+        {
+          "@id": "6f446021-bb2f-40c7-a610-b174ba28019e"
+        },
+        {
+          "@id": "8b107a0e-116b-4ee5-a761-c9c1f1f37131"
+        },
+        {
+          "@id": "29c6f0d3-b6ab-426e-88e6-c2efe8b6c3a6"
+        },
+        {
+          "@id": "14d56b04-2b08-4e0b-a5aa-6a00ecede709"
+        },
+        {
+          "@id": "ada2e928-acf4-4dfa-840d-18218d18ee91"
+        },
+        {
+          "@id": "6c034c79-2ac2-412c-8233-40462d5394a4"
+        },
+        {
+          "@id": "691a4e5a-7138-44b1-be58-ceabf988d8eb"
+        },
+        {
+          "@id": "6018f76e-1ec0-405c-8fb8-0bae31c399ab"
+        },
+        {
+          "@id": "f34f64d6-df55-4b9e-bec7-a8b4c6dbb783"
+        }
+      ],
+      "rdfs:subClassOf": {
+        "@id": "openBIS:Object"
+    },
+      "owl:equivalentClass": {
+        "@id": "https://schema.org/CreativeWork"
+      }
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "Family Name",
+      "rdfs:comment": "Family Name",
+      "@id": "openBIS:hasPUBLICATION_CREATOR.FAMILY_NAME",
       "schema:rangeIncludes": {
         "@id": "xsd:string"
       },
       "schema:domainIncludes": {
         "@id": "PUBLICATION_CREATOR"
-    },
+      },
       "owl:equivalentProperty": [
         {
-          "@id": "http://datacite.org/schema/kernel-4#givenName"
+          "@id": "http://datacite.org/schema/kernel-4#familyName"
         },
         {
-          "@id": "https://schema.org/givenName"
+          "@id": "https://schema.org/familyName"
         }
       ]
     },
     {
-      "@id": "fdf9de4a-9233-4f9a-beee-b16c85ac7899",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.PUBLICATION_YEAR"
-    },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "@id": "00c7421f-c174-4f52-a8d0-151a9f1a727a",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION.STATUS"
-      },
-      "owl:minCardinality": 1,
-      "owl:maxCardinality": 1
-    },
-    {
-      "openBIS:hasPUBLICATION.STATUS": "Registered",
-      "openBIS:hasPUBLICATION.URL": "https://www.science.org/doi/10.1126/science.abe8770",
-      "openBIS:hasNAME": "Quantum computational advantage using photons",
-      "openBIS:hasPUBLICATION.TYPE": "DataPaper",
-      "openBIS:hasPUBLICATION.PUBLICATION_YEAR": "2020-12-11 15:50:44 +0100",
-      "openBIS:hasPUBLICATION.IDENTIFIER": "DOI: 10.1126/science.abe8770",
-      "openBIS:hasPUBLICATION.DATASETS": "https://www.kaggle.com/datasets/shantanuss/banknote-authentication-uci$",
-      "openBIS:hasPUBLICATION.ABSTRACT": "Quantum computational advantage or supremacy is a long-anticipated milestone toward practical quantum computers. Recent work claimed to have reached this point, but subsequent work managed to speed up the classical simulation and pointed toward a sample size–dependent loophole. Quantum computational advantage, rather than being a one-shot experimental proof, will be the result of a long-term competition between quantum devices and classical simulation. Zhong et al. Sent 50 indistinguishable single-mode squeezed states into a 100-mode ultralow-loss interferometer and sampled the output using 100 high-efficiency single-photon detectors. By obtaining up to 76-photon coincidence, yielding a state space dimension of about 1030, they measured a sampling rate that is about 1014-fold faster than using state-of-the-art classical simulation strategies and supercomputers.",
-      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUB30",
+      "openBIS:hasPUBLICATION_CREATOR.GIVEN_NAME": "Elhacham",
+      "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA22",
       "openBIS:hasSPACE": {
         "@id": "PUBLICATIONS"
       },
@@ -1463,41 +1194,135 @@
         "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES"
       },
       "openBIS:hasCOLLECTION": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_COLLECTION"
+        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBLICATIONS_CREATOR_COLLECTION"
       },
-      "openBIS:hasPUBLICATION.CREATOR": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBCREA27"
-    },
-      "openBIS:hasPUBLICATION.PUBLISHER": {
-        "@id": "/PUBLICATIONS/PUBLIC_REPOSITORIES/PUBPUB26"
-    },
-      "@type": "PUBLICATION"
+      "@type": "PUBLICATION_CREATOR"
     },
     {
-      "@id": "2b7168ea-1595-438c-b4f7-28fa042e5257",
+      "@type": "rdfs:Property",
+      "rdfs:label": "Type",
+      "rdfs:comment": "Type",
+      "@id": "openBIS:hasPUBLICATION.TYPE",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+      }
+    },
+    {
+      "@id": "691a4e5a-7138-44b1-be58-ceabf988d8eb",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasNAME"
+        "@id": "openBIS:hasPUBLICATION.IDENTIFIER"
       },
+      "owl:minCardinality": 1,
+      "owl:maxCardinality": 1
+    },
+    {
+      "@type": "rdfs:Property",
+      "rdfs:label": "openBIS Related Identifiers",
+      "rdfs:comment": "openBIS Related Identifiers",
+      "@id": "openBIS:hasPUBLICATION.OPENBIS_RELATED_IDENTIFIERS",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "PUBLICATION"
+    },
+      "owl:equivalentProperty": {
+        "@id": "http://datacite.org/schema/kernel-4#relatedIdentifiers"
+      }
+    },
+    {
+      "@id": "0ba94db4-fcbe-4d60-90b2-500890764b59",
+      "@type": "owl:restriction",
+      "owl:onProperty": {
+        "@id": "openBIS:hasPUBLICATION.DESCRIPTION"
+    },
       "owl:minCardinality": 0,
       "owl:maxCardinality": 1
     },
     {
-      "@id": "83be7d34-91ac-4d08-9cd5-4f9cb758a967",
-      "@type": "owl:restriction",
-      "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.IDENTIFIER_SCHEME"
+      "@type": "rdfs:Property",
+      "rdfs:label": "Name",
+      "rdfs:comment": "Name",
+      "@id": "openBIS:hasNAME",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
       },
-      "owl:minCardinality": 0,
-      "owl:maxCardinality": 1
+      "schema:domainIncludes": [
+        {
+          "@id": "COLLECTION"
+        },
+        {
+          "@id": "PUBLICATION_CREATOR"
+        },
+        {
+          "@id": "PUBLICATION_PUBLISHER"
+        },
+        {
+          "@id": "PUBLICATION"
+        }
+      ],
+      "owl:equivalentProperty": [
+        {
+          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
+        },
+        {
+          "@id": "https://schema.org/name"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#title"
+        },
+        {
+          "@id": "https://schema.org/title"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
+        },
+        {
+          "@id": "https://schema.org/name"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#title"
+        },
+        {
+          "@id": "https://schema.org/title"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#nameIdentifier"
+        },
+        {
+          "@id": "https://schema.org/name"
+        },
+        {
+          "@id": "http://datacite.org/schema/kernel-4#title"
+        },
+        {
+          "@id": "https://schema.org/title"
+        }
+      ]
     },
     {
-      "@id": "fde51c61-c5c6-4097-89c9-d1acfbf9e417",
+      "@type": "rdfs:Property",
+      "rdfs:label": "Default object type",
+      "rdfs:comment": "Enter the code of the object type for which the collection is used",
+      "@id": "openBIS:hasDEFAULT_OBJECT_TYPE",
+      "schema:rangeIncludes": {
+        "@id": "xsd:string"
+      },
+      "schema:domainIncludes": {
+        "@id": "COLLECTION"
+      }
+    },
+    {
+      "@id": "6c034c79-2ac2-412c-8233-40462d5394a4",
       "@type": "owl:restriction",
       "owl:onProperty": {
-        "@id": "openBIS:hasPUBLICATION_CREATOR.AFFILITION_IDENTIFIER_SCHEME"
-      },
-      "owl:minCardinality": 0,
+        "@id": "openBIS:hasPUBLICATION.URL"
+    },
+      "owl:minCardinality": 1,
       "owl:maxCardinality": 1
     }
   ]

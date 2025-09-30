@@ -11,10 +11,8 @@ import java.nio.file.Path;
 public class Write
 {
 
-    private static boolean TEST_MODE = true;
+    private static boolean TEST_MODE = false;
 
-    private static String TEST_FILE =
-            "/home/meiandr/Downloads/metadata.2025-07-23-13-20-25-933.xlsx";
 
     public static void main(String[] args) throws IOException, ParseException
     {

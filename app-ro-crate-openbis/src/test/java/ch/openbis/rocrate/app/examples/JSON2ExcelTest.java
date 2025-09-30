@@ -53,7 +53,6 @@ public class JSON2ExcelTest {
 
         }
 
-
         OpenBisModel
                 openBisModel =
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(),
@@ -71,7 +70,7 @@ public class JSON2ExcelTest {
                 "PUBLICATION.PUBLICATION_YEAR",
                 "XMLCOMMENTS");
 
-        assertEquals(11, openBisModel.getEntities().size());
+        assertEquals(8, openBisModel.getEntities().size());
         assertTrue(maybePublicatioNType.isPresent());
         assertEquals(2, openBisModel.getSpaces().size());
         assertEquals(2, openBisModel.getProjects().size());

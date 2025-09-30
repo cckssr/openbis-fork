@@ -10,6 +10,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.Validation
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -61,7 +62,7 @@ public class RoCrateService {
     @Consumes({ APPLICATION_LD_JSON, "application/zip" })
     @Path("import")
     @SneakyThrows
-    public Map<String, String> import_(
+    public Response import_(
             @BeanParam ImportParams headers,
             InputStream body)
     {
@@ -74,8 +75,12 @@ public class RoCrateService {
         }
 
         try {
-            return importDelegate.import_(openBIS, headers, body, false)
-                    .getExternalToOpenBisIdentifiers();
+            Map<String, String> externalToOpenBisIdentifiers =
+                    importDelegate.import_(openBIS, headers, body, false)
+                            .getExternalToOpenBisIdentifiers();
+            ObjectMapper objectMapper = new ObjectMapper();
+            String serialized = objectMapper.writeValueAsString(externalToOpenBisIdentifiers);
+            return Response.ok(serialized).build();
         } catch (Exception ex) {
             LOG.error("There was an error", ex);
             throw new RuntimeException(ex);

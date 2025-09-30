@@ -8,6 +8,13 @@ public class Constants
 
     public static final String GRAPH_ID_Collection = "openBIS:Collection";
 
+    public static final String GRAPH_ID_DATASET = "openBIS:Dataset";
+
+    public static final String GRAPH_ID_OBJECT = "openBIS:Object";
+
+    public static final String GRAPH_ID_VOCABULARY = "openBIS:Vocabulary";
+
+
     public static final String PROPERTY_SPACE = "openBIS:hasSPACE";
 
     public static final String PROPERTY_PROJECT = "openBIS:hasPROJECT";

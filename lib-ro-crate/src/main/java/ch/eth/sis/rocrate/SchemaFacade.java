@@ -512,8 +512,6 @@ public class SchemaFacade implements ISchemaFacade
             entry.setReferences(references);
             entries.put(id, entry);
         }
-
-        System.out.println("Done");
         this.types = idsToTypes;
         this.propertyTypes = properties;
         this.metadataEntries = entries;
