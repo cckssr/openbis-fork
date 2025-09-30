@@ -19,7 +19,7 @@ public class Connection
         criteria.withOrOperator();
         for (Sample sample : samples)
         {
-            criteria.withIdentifier().thatEquals(sample.getIdentifier().toString());
+            criteria.withCode().thatEquals(sample.getCode());
         }
         List<Sample> found = new ArrayList<>();
         List<Sample> missing = new ArrayList<>();

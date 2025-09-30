@@ -3,6 +3,7 @@ package ch.ethz.sis.tools.importcheck;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.ethz.sis.rdf.main.Config;
 import ch.ethz.sis.rdf.main.mappers.openBis.RdfToOpenBisMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.parser.RDFReader;
@@ -43,6 +44,8 @@ public class ImportCheck
             ex.printStackTrace();
         }
 
+        Config.setConfig(true, false, false);
+
         if (Arrays.stream(args).anyMatch(x -> x.equals("--help") || x.equals("-h")))
         {
             formatter.printHelp(helperCommand, options);
@@ -59,6 +62,7 @@ public class ImportCheck
 
         OpenBIS openBIS = new OpenBIS(url);
         openBIS.setSessionToken(token);
+        openBIS.isSessionActive();
 
         String space = cmd.getOptionValue('s');
         String project = cmd.getOptionValue('p');
@@ -90,7 +94,7 @@ public class ImportCheck
 
         for (Sample missingSample : checkResult.getMissing())
         {
-            System.out.println(String.format("Missing resource \"{}\"", missingSample));
+            System.out.println(String.format("Missing resource \"%s\"", missingSample.getCode()));
         }
 
 
