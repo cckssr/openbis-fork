@@ -12,3 +12,4 @@ Common
    share-ids
    sharing-databases
    user-group-management-for-multi-groups-openbis-instances
+   folder-monitor
