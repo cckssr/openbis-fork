@@ -83,11 +83,9 @@ If you are looking for an example on how to migrate your own DSS Jython dropboxe
 the openBIS ELN dropbox code. The dropbox was originally written in Jython to run on DSS. Now, a newer Java based version is also available. 
 It offers similar functionality but implements it using the new folder monitor mechanism and new V3 API Two-Phase-Commit transactions.
 
-Old ELN dropbox:
-https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/dss/drop-boxes/eln-lims-dropbox/eln-lims-dropbox.py
+Old ELN dropbox: [eln-lims-dropbox.py](https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/core-plugins/eln-lims/1/dss/drop-boxes/eln-lims-dropbox/eln-lims-dropbox.py)
 
-New ELN dropbox:
-https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/main/java/ch/ethz/sis/elnlims/dropbox/ElnDropbox.java
+New ELN dropbox: [ElnDropbox.java](https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/main/java/ch/ethz/sis/elnlims/dropbox/ElnDropbox.java)
 
 ### Folder Monitor Task Development
 
