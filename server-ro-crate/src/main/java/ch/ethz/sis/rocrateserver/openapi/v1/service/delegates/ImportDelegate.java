@@ -177,6 +177,8 @@ public class ImportDelegate
             Path path = Path.of(UUID.randomUUID() + ".zip");
             SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
             RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
+            LOG.debug(String.format("Crate location %s",
+                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path)));
             crate = roCrateReader.readCrate(
                     SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path).toString());
         }
