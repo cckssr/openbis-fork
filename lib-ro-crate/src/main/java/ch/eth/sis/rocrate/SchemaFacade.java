@@ -228,9 +228,6 @@ public class SchemaFacade implements ISchemaFacade
             } else if (o instanceof String)
             {
                 builder.addProperty(s, o.toString());
-            } else if (o == null)
-            {
-                builder.addProperty(s, objectMapper.nullNode());
             }
         });
         DataEntity dataEntity = builder.build();
