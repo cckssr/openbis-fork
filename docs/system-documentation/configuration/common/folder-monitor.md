@@ -91,7 +91,9 @@ https://sissource.ethz.ch/sispub/openbis/-/blob/master/ui-eln-lims/src/main/java
 
 ### Folder Monitor Task Development
 
-Folder monitor tasks are far easier to develop than the old DSS dropboxes. The tasks can be developed and tested in your local environment. For instance:
+Folder monitor tasks are far easier to develop than the old DSS dropboxes. The tasks can be developed and tested in your local environment. See an example below.
+Once your task is ready, you should pack it as a jar and put it in the folder monitor `lib` folder. The jar will be automatically added to the classpath when the monitor is started.
+Don't forget to change your `service.properties` file to point to your new task class.
 
 ```java
 public class FolderMonitorTaskExample implements FolderMonitorTask
