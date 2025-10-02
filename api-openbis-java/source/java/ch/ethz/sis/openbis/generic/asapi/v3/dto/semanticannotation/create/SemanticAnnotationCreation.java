@@ -109,31 +109,38 @@ public class SemanticAnnotationCreation implements ICreation, IObjectCreation
         this.predicateAccessionId = predicateAccessionId;
     }
 
+    @Deprecated
     public String getDescriptorOntologyId()
     {
         return descriptorOntologyId;
     }
 
+    @Deprecated
     public void setDescriptorOntologyId(String descriptorOntologyId)
     {
         this.descriptorOntologyId = descriptorOntologyId;
     }
+
+    @Deprecated
 
     public String getDescriptorOntologyVersion()
     {
         return descriptorOntologyVersion;
     }
 
+    @Deprecated
     public void setDescriptorOntologyVersion(String descriptorOntologyVersion)
     {
         this.descriptorOntologyVersion = descriptorOntologyVersion;
     }
 
+    @Deprecated
     public String getDescriptorAccessionId()
     {
         return descriptorAccessionId;
     }
 
+    @Deprecated
     public void setDescriptorAccessionId(String descriptorAccessionId)
     {
         this.descriptorAccessionId = descriptorAccessionId;
