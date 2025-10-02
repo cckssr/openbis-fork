@@ -1,16 +1,21 @@
 package ch.openbis.drive;
 
+import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.Event;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
+import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
+import ch.openbis.drive.util.OsDetectionUtil;
 import lombok.NonNull;
 import org.apache.commons.cli.*;
 
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class DriveAPICmdLineApp {
 
@@ -39,31 +44,30 @@ public class DriveAPICmdLineApp {
      * ./drive-app events -limit=100 (default: 100)
      */
     public static void main(String[] args) throws Exception {
+        DriveAPICmdLineApp driveAPICmdLineApp = new DriveAPICmdLineApp();
+
         if(args.length >= 1) {
             switch (args[0]) {
-                case "help" -> printHelp();
-                case "start" -> handleStartCommand(args);
-                case "stop" -> handleStopCommand(args);
-                case "status" -> handleStatusCommand(args);
-                case "config" -> {
-                    handleConfigCommand(args);
-                }
-                case "jobs" -> {
-                    handleJobsCommand(args);
-                }
-                case "notifications" -> {
-                    handleNotificationsCommand(args);
-                }
-                case "events" -> {
-                    handleEventsCommand(args);
-                }
+                case "help" -> driveAPICmdLineApp.printHelp();
+                case "start" -> driveAPICmdLineApp.handleStartCommand(args);
+                case "stop" -> driveAPICmdLineApp.handleStopCommand(args);
+                case "status" -> driveAPICmdLineApp.handleStatusCommand(args);
+                case "config" -> driveAPICmdLineApp.handleConfigCommand(args);
+                case "jobs" -> driveAPICmdLineApp.handleJobsCommand(args);
+                case "notifications" -> driveAPICmdLineApp.handleNotificationsCommand(args);
+                case "events" -> driveAPICmdLineApp.handleEventsCommand(args);
+                default -> driveAPICmdLineApp.printHelp();
             }
         } else {
-            printHelp();
+            driveAPICmdLineApp.printHelp();
         }
     }
 
-    static void handleEventsCommand(String[] args) throws Exception {
+    DriveAPIClientProtobufImpl getNewDriveAPIClient() throws Exception {
+        return new DriveAPIClientProtobufImpl(new Configuration());
+    }
+
+    void handleEventsCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder().option("limit").longOpt("limit").required(false).hasArg(true).desc("Limit of printed items (default: 100)").get());
         CommandLineParser commandLineParser = new DefaultParser();
@@ -75,7 +79,7 @@ public class DriveAPICmdLineApp {
             printHelp();
             return;
         }
-        int limit = 10;
+        int limit = 100;
         if (commandLine.hasOption("limit")) {
             try {
                 limit = Integer.parseInt(commandLine.getOptionValue("limit"));
@@ -88,7 +92,7 @@ public class DriveAPICmdLineApp {
         printEvents(limit);
     }
 
-    static void handleNotificationsCommand(String[] args) throws Exception {
+    void handleNotificationsCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder().option("limit").longOpt("limit").required(false).hasArg(true).desc("Limit of printed items (default: 100)").get());
         CommandLineParser commandLineParser = new DefaultParser();
@@ -113,7 +117,7 @@ public class DriveAPICmdLineApp {
         printNotifications(limit);
     }
 
-    static void handleJobsCommand(String[] args) throws Exception {
+    void handleJobsCommand(String[] args) throws Exception {
         if (args.length == 1) {
             printJobs();
         } else {
@@ -130,7 +134,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void handleAddJobCommand(String[] args) throws Exception {
+    void handleAddJobCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder()
                 .option("type").longOpt("type").required(true).hasArg(true).desc("Sync-job type (Upload|Download|Bidirectional): required").get())
@@ -217,7 +221,7 @@ public class DriveAPICmdLineApp {
         addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, remoteDirectory, enabled);
     }
 
-    static void handleRemoveJobCommand(String[] args) throws Exception {
+    void handleRemoveJobCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder()
                         .option("dir").longOpt("dir").required(true).hasArg(true).desc("Local synchronized directory: required").get());
@@ -241,7 +245,7 @@ public class DriveAPICmdLineApp {
         removeJob(localDirectory);
     }
 
-    static void handleStartJobCommand(String[] args) throws Exception {
+    void handleStartJobCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder()
                 .option("dir").longOpt("dir").required(true).hasArg(true).desc("Local synchronized directory: required").get());
@@ -265,7 +269,7 @@ public class DriveAPICmdLineApp {
         startJob(localDirectory);
     }
 
-    static void handleStopJobCommand(String[] args) throws Exception {
+    void handleStopJobCommand(String[] args) throws Exception {
         Options options = new Options();
         options.addOption(Option.builder()
                 .option("dir").longOpt("dir").required(true).hasArg(true).desc("Local synchronized directory: required").get());
@@ -289,7 +293,7 @@ public class DriveAPICmdLineApp {
         stopJob(localDirectory);
     }
 
-    static void handleConfigCommand(String[] args) throws Exception {
+    void handleConfigCommand(String[] args) throws Exception {
         if (args.length == 1) {
             printConfig();
         } else {
@@ -343,7 +347,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void printHelp() {
+    void printHelp() {
         System.out.println("""
             Use 'help' command to print this message.
             Supported commands:
@@ -364,22 +368,22 @@ public class DriveAPICmdLineApp {
                 events -limit=100   (default: 100)  -> prints the last limit-number of events""");
     }
 
-    static void printConfig() throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void printConfig() throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             Settings settings = driveAPIClient.getSettings();
             System.out.println("Start-at-login: " + settings.isStartAtLogin());
             System.out.println("Language: " + settings.getLanguage());
             System.out.println(String.format("Sync-interval: %s seconds", settings.getSyncInterval()));
             System.out.println("Synchronization-jobs: ");
-            for(SyncJob syncJob : settings.getJobs()) {
+            for (SyncJob syncJob : settings.getJobs()) {
                 System.out.println("----------");
                 printSyncJob(syncJob);
             }
         }
     }
 
-    static void setConfig(Boolean startAtLogin, String language, Integer syncInterval) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void setConfig(Boolean startAtLogin, String language, Integer syncInterval) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             Settings settings = driveAPIClient.getSettings();
             if(startAtLogin != null) {
                 settings.setStartAtLogin(startAtLogin);
@@ -395,8 +399,8 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void addJob(@NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void addJob(@NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             SyncJob newSyncJob = new SyncJob();
             newSyncJob.setType(type);
             newSyncJob.setLocalDirectoryRoot(localDirectory);
@@ -410,14 +414,14 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void removeJob(@NonNull String localDirectory) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void removeJob(@NonNull String localDirectory) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
 
             List<SyncJob> currentJobs = driveAPIClient.getSyncJobs();
 
             for (SyncJob syncJob : currentJobs) {
-                if(Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
+                if (Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
                     driveAPIClient.removeSyncJobs(Collections.singletonList(syncJob));
                 }
             }
@@ -426,14 +430,14 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void startJob(@NonNull String localDirectory) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void startJob(@NonNull String localDirectory) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
 
             List<SyncJob> currentJobs = driveAPIClient.getSyncJobs();
 
             for (SyncJob syncJob : currentJobs) {
-                if(Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
+                if (Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
                     driveAPIClient.startSyncJobs(Collections.singletonList(syncJob));
                 }
             }
@@ -442,14 +446,14 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void stopJob(@NonNull String localDirectory) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void stopJob(@NonNull String localDirectory) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
 
             List<SyncJob> currentJobs = driveAPIClient.getSyncJobs();
 
             for (SyncJob syncJob : currentJobs) {
-                if(Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
+                if (Path.of(syncJob.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)) {
                     driveAPIClient.stopSyncJobs(Collections.singletonList(syncJob));
                 }
             }
@@ -458,29 +462,29 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void printJobs() throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void printJobs() throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             Settings settings = driveAPIClient.getSettings();
             System.out.println("Synchronization-jobs: ");
-            for(SyncJob syncJob : settings.getJobs()) {
+            for (SyncJob syncJob : settings.getJobs()) {
                 System.out.println("----------");
                 printSyncJob(syncJob);
             }
         }
     }
 
-    static void printNotifications(int limit) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void printNotifications(int limit) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             List<Notification> notifications = driveAPIClient.getNotifications(limit);
             System.out.println("Notifications: ");
-            for(Notification notification : notifications) {
+            for (Notification notification : notifications) {
                 System.out.println("----------");
                 printNotification(notification);
             }
         }
     }
 
-    static void printNotification(@NonNull Notification notification) {
+    void printNotification(@NonNull Notification notification) {
         System.out.println("Type: " + notification.getType());
         System.out.println("Local directory: " + notification.getLocalDirectory());
         if(notification.getLocalFile() != null) {
@@ -493,18 +497,18 @@ public class DriveAPICmdLineApp {
         System.out.println("Timestamp: " + Instant.ofEpochMilli(notification.getTimestamp()));
     }
 
-    static void printEvents(int limit) throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void printEvents(int limit) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             List<? extends Event> events = driveAPIClient.getEvents(limit);
             System.out.println("Events: ");
-            for(Event event : events) {
+            for (Event event : events) {
                 System.out.println("----------");
                 printEvent(event);
             }
         }
     }
 
-    static void printEvent(@NonNull Event event) {
+    void printEvent(@NonNull Event event) {
         System.out.println("Synchronization-direction: " + event.getSyncDirection());
         System.out.println("Local directory: " + event.getLocalDirectoryRoot());
         System.out.println("Local file: " + event.getLocalFile());
@@ -514,7 +518,7 @@ public class DriveAPICmdLineApp {
         System.out.println("Timestamp: " + Instant.ofEpochMilli(event.getTimestamp()));
     }
 
-    static void printSyncJob(@NonNull SyncJob syncJob) {
+    void printSyncJob(@NonNull SyncJob syncJob) {
         System.out.println("Type: " + syncJob.getType());
         System.out.println("Local directory: " + syncJob.getLocalDirectoryRoot());
         System.out.println("openBIS url: " + syncJob.getOpenBisUrl());
@@ -524,7 +528,7 @@ public class DriveAPICmdLineApp {
         System.out.println("Enabled: " + syncJob.isEnabled());
     }
 
-    static void handleStartCommand(String[] args) throws Exception {
+    void handleStartCommand(String[] args) throws Exception {
         if (args.length == 1) {
             startService();
         } else {
@@ -533,7 +537,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void handleStopCommand(String[] args) throws Exception {
+    void handleStopCommand(String[] args) throws Exception {
         if (args.length == 1) {
             stopService();
         } else {
@@ -542,7 +546,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void handleStatusCommand(String[] args) throws Exception {
+    void handleStatusCommand(String[] args) throws Exception {
         if (args.length == 1) {
             checkServiceStatus();
         } else {
@@ -551,16 +555,39 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    static void startService() throws Exception {
-        Runtime.getRuntime().exec("bash openbis-drive-service.sh");
+    void startService() throws Exception {
+        switch (OsDetectionUtil.detectOS()) {
+
+            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"sh", "openbis-drive-service-start.sh"}, new String[]{
+                            String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
+                            String.format("OPENBIS_DRIVE_PORT=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_PORT")).orElse("")),
+                            String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
+                            String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
+                    },
+                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+
+            case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  "openbis-drive-service-start.bat"}, new String[]{
+                            String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
+                            String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
+                            String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
+                            String.format("USERPROFILE=%s", Optional.ofNullable(System.getenv("USERPROFILE")).orElse("")),
+                    },
+                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+
+            case Unknown -> throw new IllegalStateException("Unknown operating-system");
+        }
     }
 
-    static void stopService() throws Exception {
-        Runtime.getRuntime().exec("pkill -f openbis-drive-service");
+    void stopService() throws Exception {
+        switch (OsDetectionUtil.detectOS()) {
+            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"pkill", "-SIGKILL", "-f", "java -jar app-openbis-drive-service\\.jar"});
+            case Windows -> Runtime.getRuntime().exec("powershell.exe -command \"$result = Get-WmiObject -Class win32_process -Filter \\\"Name LIKE 'javaw.exe'\\\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-jar app-openbis-drive-service.jar' ) { Stop-Process -Force $i.ProcessId ; }}\"");
+            case Unknown -> throw new IllegalStateException("Unknown operating-system");
+        }
     }
 
-    static void checkServiceStatus() throws Exception {
-        try ( DriveAPIClientDummyImpl driveAPIClient = new DriveAPIClientDummyImpl() ) {
+    void checkServiceStatus() throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             driveAPIClient.getSettings();
             System.out.println("OpenBIS Drive Service is running with this configuration:");
             printConfig();
