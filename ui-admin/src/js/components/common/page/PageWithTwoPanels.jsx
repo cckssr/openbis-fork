@@ -82,7 +82,7 @@ class PageWithTwoPanels extends React.PureComponent {
         <div className={classes.content}>
           {<div className={classes.mainPanel}>{mainPanel}</div>}
           {
-            <ResizableWithOpenbis
+           renderAdditionalPanel && <ResizableWithOpenbis
               id={id + '_resizable'}
               direction={{
                 left: true
