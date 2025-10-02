@@ -218,15 +218,15 @@ class ToolSearch extends React.Component {
           validFromDate: FormUtil.createField({
             value: validFromDate
               ? {
-                  dateObject: new Date(validFromDate)
-                }
+                dateObject: new Date(validFromDate)
+              }
               : null
           }),
           validToDate: FormUtil.createField({
             value: validToDate
               ? {
-                  dateObject: new Date(validToDate)
-                }
+                dateObject: new Date(validToDate)
+              }
               : null
           }),
           owner: FormUtil.createField({
@@ -238,15 +238,15 @@ class ToolSearch extends React.Component {
           registrationDate: FormUtil.createField({
             value: registrationDate
               ? {
-                  dateObject: new Date(registrationDate)
-                }
+                dateObject: new Date(registrationDate)
+              }
               : null
           }),
           accessDate: FormUtil.createField({
             value: accessDate
               ? {
-                  dateObject: new Date(accessDate)
-                }
+                dateObject: new Date(accessDate)
+              }
               : null
           })
         }
@@ -339,8 +339,8 @@ class ToolSearch extends React.Component {
           <PluginsGrid
             id={ids.DYNAMIC_PROPERTY_PLUGINS_GRID_ID}
             controllerRef={controller =>
-              (this.gridControllers[objectTypes.DYNAMIC_PROPERTY_PLUGIN] =
-                controller)
+            (this.gridControllers[objectTypes.DYNAMIC_PROPERTY_PLUGIN] =
+              controller)
             }
             pluginType={openbis.PluginType.DYNAMIC_PROPERTY}
             rows={this.state.dynamicPropertyPlugins}
@@ -368,8 +368,8 @@ class ToolSearch extends React.Component {
           <PluginsGrid
             id={ids.ENTITY_VALIDATION_PLUGINS_GRID_ID}
             controllerRef={controller =>
-              (this.gridControllers[objectTypes.ENTITY_VALIDATION_PLUGIN] =
-                controller)
+            (this.gridControllers[objectTypes.ENTITY_VALIDATION_PLUGIN] =
+              controller)
             }
             pluginType={openbis.PluginType.ENTITY_VALIDATION}
             rows={this.state.entityValidationPlugins}
@@ -423,8 +423,8 @@ class ToolSearch extends React.Component {
           <PersonalAccessTokensGrid
             id={ids.PERSONAL_ACCESS_TOKEN_GRID_ID}
             controllerRef={controller =>
-              (this.gridControllers[objectTypes.PERSONAL_ACCESS_TOKEN] =
-                controller)
+            (this.gridControllers[objectTypes.PERSONAL_ACCESS_TOKEN] =
+              controller)
             }
             rows={this.state.pats}
             onSelectedRowChange={this.handleSelectedRowChange(

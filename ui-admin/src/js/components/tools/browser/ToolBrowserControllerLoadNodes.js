@@ -90,6 +90,7 @@ export default class ToolBrowserControllerLoadNodes {
         nodes.push(ToolBrowserCommon.queriesFolderNode())
         nodes.push(ToolBrowserCommon.historyFolderNode())
         nodes.push(ToolBrowserCommon.importFolderNode())
+        nodes.push(ToolBrowserCommon.trashcanFolderNode())
 
         const personalAccessTokensEnabled =
           AppController.getInstance().getServerInformation(

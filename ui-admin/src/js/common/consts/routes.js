@@ -271,6 +271,11 @@ const routes = {
     type: objectTypes.ACTIVE_USERS_REPORT,
     id: objectTypes.ACTIVE_USERS_REPORT
   }),
+  TRASHCAN_OVERVIEW: new Route('/trashcan-overview', {
+    page: pages.TOOLS,
+    type: objectTypes.OVERVIEW,
+    id: objectTypes.TRASHCAN
+  }),
   DEFAULT: new DefaultRoute()
 }
 

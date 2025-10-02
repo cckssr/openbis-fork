@@ -259,6 +259,22 @@ class Facade {
     return this.promise(this.v3.searchSemanticAnnotations(criteria, fo))
   }
 
+  searchDeletions(criteria, fo) {
+    return this.promise(this.v3.searchDeletions(criteria, fo))
+  }
+
+  revertDeletions(ids) {
+    return this.promise(this.v3.revertDeletions(ids))
+  }
+
+  deletePermanently(ids) {
+    return this.promise(this.v3.deletePermanently(ids))
+  }
+
+  deletePermanentlyForced(ids) {
+    return this.promise(this.v3.deletePermanentlyForced(ids))
+  }
+
   deleteSampleTypes(ids, options) {
     return this.promise(this.v3.deleteSampleTypes(ids, options))
   }
