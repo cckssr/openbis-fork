@@ -420,7 +420,8 @@ public class RdfToModel
                         DataType dataType =
                                 DataTypeMatcher.findDataType(property.getValue(), dataTypes,
                                         idToEntities);
-                        properties.put(key, property.getValue());
+                        properties.put(DataTypeMatcher.suffixTypeCode(key, dataType),
+                                property.getValue());
 
                     } else
                     {
@@ -948,7 +949,7 @@ public class RdfToModel
 
     private static String suffixCodeType(String code, DataType dataType)
     {
-        return code + dataType.name().toUpperCase();
+        return DataTypeMatcher.suffixTypeCode(code, dataType);
     }
 
     private static String openBisifyCode(String code)

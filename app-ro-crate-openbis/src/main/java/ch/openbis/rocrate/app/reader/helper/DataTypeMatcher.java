@@ -2,6 +2,7 @@ package ch.openbis.rocrate.app.reader.helper;
 
 import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyAssignment;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -68,7 +69,7 @@ public class DataTypeMatcher
                 {
                     return false;
                 }
-            case DATE:
+            case TIMESTAMP:
                 try
                 {
                     SimpleDateFormat ISO8601DATEFORMAT =
@@ -80,18 +81,28 @@ public class DataTypeMatcher
                     return false;
                 }
 
-            case VARCHAR:
-                return true;
-            case REAL:
+            case DATE:
                 try
                 {
-                    Double.parseDouble(value.toString());
+                    SimpleDateFormat ISO8601DATEFORMAT =
+                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
+                    ISO8601DATEFORMAT.parse(value.toString());
                     return true;
-
-                } catch (NumberFormatException e)
+                } catch (ParseException e)
                 {
                     return false;
                 }
+            case BOOLEAN:
+                try
+                {
+
+                    return Stream.of("true", "false", "0", "1")
+                            .anyMatch(x -> x.equals(value.toString()));
+                } catch (RuntimeException e)
+                {
+                    return false;
+                }
+
             case SAMPLE:
                 String[] identifiers = value.toString().split(",");
                 for (String identifier : identifiers)
@@ -107,31 +118,58 @@ public class DataTypeMatcher
                     String code = parts[3];
                 }
                 return true;
-            case BOOLEAN:
+
+            case VARCHAR:
+                return true;
+            case REAL:
                 try
                 {
-
-                    return Stream.of("true", "false", "0", "1")
-                            .anyMatch(x -> x.equals(value.toString()));
-                } catch (RuntimeException e)
-                {
-                    return false;
-                }
-
-            case TIMESTAMP:
-                try
-                {
-                    SimpleDateFormat ISO8601DATEFORMAT =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
-                    ISO8601DATEFORMAT.parse(value.toString());
+                    Double.parseDouble(value.toString());
                     return true;
-                } catch (ParseException e)
+
+                } catch (NumberFormatException e)
                 {
                     return false;
                 }
+
+
+
         }
         return false;
 
+    }
+
+    public static String suffixTypeCode(String code, DataType dataType)
+    {
+        return code + dataType.name().toUpperCase();
+    }
+
+    public static List<DataType> getDataTypesInPriorityOrder()
+    {
+        return List.of(DataType.HYPERLINK, DataType.REAL, DataType.INTEGER, DataType.SAMPLE,
+                DataType.DATE, DataType.TIMESTAMP, DataType.VARCHAR);
+
+    }
+
+    public static PropertyAssignment matchPropertyAssignment(
+            Map<String, PropertyAssignment> codeToPropertyAssignment, String key,
+            Serializable value)
+    {
+        PropertyAssignment assignment = codeToPropertyAssignment.get(key);
+        if (assignment != null)
+        {
+            return assignment;
+        }
+        for (DataType dataType : DataTypeMatcher.getDataTypesInPriorityOrder())
+        {
+            String newCode = DataTypeMatcher.suffixTypeCode(key, dataType);
+            if (DataTypeMatcher.matches(value, dataType) && codeToPropertyAssignment.containsKey(
+                    newCode))
+            {
+                return codeToPropertyAssignment.get(newCode);
+            }
+        }
+        return null;
     }
 
 }
