@@ -38,6 +38,7 @@ const IMPORT = 'import'
 const REPORT = 'report'
 const ACCESS = 'access'
 const ACTIVE_USERS_REPORT = 'activeUsersReport'
+const TRASHCAN = 'trashcan'
 
 const SEARCH = 'search'
 const OVERVIEW = 'overview'
@@ -83,5 +84,6 @@ export default {
   ACCESS,
   SEARCH,
   OVERVIEW,
-  ACTIVE_USERS_REPORT
+  ACTIVE_USERS_REPORT,
+  TRASHCAN
 }

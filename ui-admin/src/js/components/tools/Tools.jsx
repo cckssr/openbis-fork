@@ -11,6 +11,7 @@ import PluginForm from '@src/js/components/tools/form/plugin/PluginForm.jsx'
 import QueryForm from '@src/js/components/tools/form/query/QueryForm.jsx'
 import PersonalAccessTokenForm from '@src/js/components/tools/form/pat/PersonalAccessTokenForm.jsx'
 import HistoryForm from '@src/js/components/tools/form/history/HistoryForm.jsx'
+import TrashcanForm from '@src/js/components/tools/form/trashcan/TrashcanForm.jsx'
 import ImportForm from '@src/js/components/tools/form/import/ImportForm.jsx'
 import ImportType from '@src/js/components/tools/form/import/ImportType.js'
 import ActiveUserReportForm from '@src/js/components/tools/form/activeUserReport/ActiveUserReportForm.jsx'
@@ -67,6 +68,8 @@ class Tools extends React.PureComponent {
     } else if (object.type === objectType.OVERVIEW) {
       if (object.id === objectType.PERSONAL_ACCESS_TOKEN) {
         return <PersonalAccessTokenForm object={object} />
+      } else if (object.id === objectType.TRASHCAN) {
+        return <TrashcanForm object={object} />
       } else {
         return <ToolSearch objectType={object.id} />
       }
@@ -93,7 +96,8 @@ class Tools extends React.PureComponent {
         ),
         [objectType.PERSONAL_ACCESS_TOKEN]: messages.get(
           messages.PERSONAL_ACCESS_TOKENS
-        )
+        ),
+        [objectType.TRASHCAN]: messages.get(messages.TRASHCAN)
       }
       label = labels[object.id]
     } else {

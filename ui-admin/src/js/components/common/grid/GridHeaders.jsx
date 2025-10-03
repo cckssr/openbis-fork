@@ -34,7 +34,10 @@ const styles = theme => ({
       left: '48px'
     }
   },
-  firstHeader: {}
+  firstHeader: {},
+  smallHeader: {
+    width: '200px'
+  }
 })
 
 class GridHeaders extends React.PureComponent {
@@ -86,6 +89,14 @@ class GridHeaders extends React.PureComponent {
     if (columnIndex === 0) {
       headerClasses.push(classes.firstHeader)
     }
+    
+    let columnStyle = null
+    
+    if (column.style) {
+      if (typeof column.style === 'object') {
+        columnStyle = column.style
+      }
+    }
 
     return (
       <GridHeader
@@ -96,6 +107,7 @@ class GridHeaders extends React.PureComponent {
         sortDirection={index !== -1 ? sortings[index].sortDirection : null}
         onSortChange={onSortChange}
         className={headerClasses.join(' ')}
+        style={columnStyle}
       />
     )
   }

@@ -170,6 +170,16 @@ function personalAccessTokensNode() {
   }
 }
 
+function trashcanFolderNode() {
+  return {
+    text: messages.get(messages.TRASHCAN),
+    object: {
+      type: objectType.OVERVIEW,
+      id: objectType.TRASHCAN
+    }
+  }
+}
+
 export default {
   TOTAL_LOAD_LIMIT,
   LOAD_LIMIT,
@@ -187,5 +197,6 @@ export default {
   reportFolderNode,
   activeUsersReportNode,
   accessFolderNode,
-  personalAccessTokensNode
+  personalAccessTokensNode,
+  trashcanFolderNode
 }
