@@ -8,6 +8,7 @@ import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
+import org.apache.commons.cli.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,9 +21,16 @@ public class Read
     private final static String TEST_DIR =
             "/home/meiandr/Documents/sissource/openbis/build/ro_out_3";
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws IOException, ParseException
     {
-        String path = args.length >= 1 ? args[0] : TEST_DIR;
+
+        Options options = createOptions();
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+        cmd = parser.parse(options, args);
+
+        String path = cmd.getOptionValue('i');
         RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
         RoCrate crate = roCrateFolderReader.readCrate(path);
         SchemaFacade schemaFacade = SchemaFacade.of(crate);
@@ -49,11 +57,41 @@ public class Read
                 RdfToModel.convert(types, schemaFacade.getPropertyTypes(), entryList, "DEFAULT",
                         "DEFAULT");
         byte[] writtenStuff = ExcelWriter.convert(ExcelWriter.Format.EXCEL, openBisModel);
+        String outPath = cmd.getOptionValue('o');
         try (FileOutputStream byteArrayOutputStream = new FileOutputStream(
-                "/tmp/ro_out.xlsx"))
+                outPath))
         {
             byteArrayOutputStream.write(writtenStuff);
         }
+
+    }
+
+    private static Options createOptions()
+    {
+        Options options = new Options();
+
+        {
+            Option option = Option.builder("i")
+                    .longOpt("input")
+                    .hasArgs()
+                    .required()
+                    .desc("Provide an input file in form of an RO-Crate")
+                    .build();
+            options.addOption(option);
+
+        }
+        {
+            Option option = Option.builder("o")
+                    .longOpt("output")
+                    .numberOfArgs(1)
+                    .required()
+                    .desc("Provide output path")
+                    .build();
+            options.addOption(option);
+
+        }
+
+        return options;
 
     }
 }

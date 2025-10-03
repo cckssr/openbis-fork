@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,16 +24,20 @@ public class SettingsManagerTest {
     private final Configuration configuration;
     private final SettingsManager settingsManager;
 
-    public SettingsManagerTest() {
-        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent());
+    public SettingsManagerTest() throws Exception {
+        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test"));
+        Files.createDirectories(configuration.getLocalAppDirectory());
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
         settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));
+        Mockito.doNothing().when(settingsManager).addStartAtLogin();
+        Mockito.doNothing().when(settingsManager).removeStartAtLogin();
     }
 
     @Before
     synchronized public void before() throws Exception {
-        new SettingsManager(configuration, Mockito.mock(SyncJobEventDAO.class), Mockito.mock(NotificationManager.class)).setSettings(Settings.defaultSettings());
+        settingsManager.setSettings(Settings.defaultSettings());
+        Mockito.clearInvocations(settingsManager);
     }
     
 
@@ -56,6 +61,55 @@ public class SettingsManagerTest {
         Assert.assertEquals(settings1, settingsManager.getSettings());
         Mockito.verify(settingsManager, Mockito.times(1)).cleanSyncJobApplicationFiles(syncJob1);
         Mockito.verify(settingsManager, Mockito.times(1)).cleanSyncJobApplicationFiles(syncJob2);
+    }
+
+    @Test
+    synchronized public void addAndRemoveStartAtLoginTest() throws Exception {
+        Settings settings = Settings.defaultSettings();
+        settings.setStartAtLogin(false);
+        settingsManager.setSettings(settings);
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("en");
+        settings.setStartAtLogin(true);
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(1)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(0)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("it");
+        settings.setStartAtLogin(false);
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(0)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(1)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("en");
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(0)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(0)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("it");
+        settings.setStartAtLogin(true);
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(1)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(0)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("en");
+        settings.setStartAtLogin(true);
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(0)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(0)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
+
+        settings.setLanguage("it");
+        settings.setStartAtLogin(false);
+        settingsManager.setSettings(settings);
+        Mockito.verify(settingsManager, Mockito.times(0)).addStartAtLogin();
+        Mockito.verify(settingsManager, Mockito.times(1)).removeStartAtLogin();
+        Mockito.clearInvocations(settingsManager);
     }
 
     @Test

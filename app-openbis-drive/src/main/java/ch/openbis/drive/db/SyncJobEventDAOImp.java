@@ -51,16 +51,21 @@ public class SyncJobEventDAOImp implements SyncJobEventDAO {
                           
                           PRIMARY KEY (syncDirection, localFile, remoteFile)
                       );
-        
-                      CREATE INDEX jobId ON SyncJobEvents(entityPermId, localDirectoryRoot);
-                      CREATE INDEX timestamp ON SyncJobEvents(timestamp);
         """;
+    String CREATE_JOB_ID_INDEX = "CREATE INDEX IF NOT EXISTS jobId ON SyncJobEvents(entityPermId, localDirectoryRoot);";
+    String CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS timestamp ON SyncJobEvents(timestamp);";
 
     @Override
     public void createDatabaseIfNotExists() throws SQLException, IOException {
         try (Connection connection = getConnection();
-                PreparedStatement statement = connection.prepareStatement(CREATE_DATABASE)) {
-            statement.executeUpdate();
+                PreparedStatement createTableStatement = connection.prepareStatement(CREATE_DATABASE)) {
+            createTableStatement.executeUpdate();
+        }
+        try (Connection connection = getConnection();
+                PreparedStatement createJobIdIndexStatement = connection.prepareStatement(CREATE_JOB_ID_INDEX);
+                PreparedStatement createTimestampIndexStatement = connection.prepareStatement(CREATE_TIMESTAMP_INDEX)) {
+            createJobIdIndexStatement.executeUpdate();
+            createTimestampIndexStatement.executeUpdate();
         }
     }
 

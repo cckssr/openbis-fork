@@ -11,22 +11,12 @@ import java.nio.file.Path;
 public class Write
 {
 
-    private static boolean TEST_MODE = false;
 
 
     public static void main(String[] args) throws IOException, ParseException
     {
 
-        if (TEST_MODE)
-        {
-            Path excelInputFile =
-                    Path.of("/home/meiandr/Downloads/metadata.2025-07-23-13-20-25-933edited.xlsx");
-            OpenBisModel openBisModel = ExcelReader.convert(ExcelReader.Format.EXCEL, excelInputFile);
 
-            Writer writer = new Writer();
-            writer.write(openBisModel, Path.of("ro_out"));
-            System.exit(0);
-        }
 
         Options options = createOptions();
         CommandLineParser parser = new DefaultParser();
