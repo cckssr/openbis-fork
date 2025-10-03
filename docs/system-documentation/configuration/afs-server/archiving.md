@@ -1,7 +1,7 @@
 Archiving
 =========
 
-**IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa).
+**IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa). Still they can share the same path info and multi dataset archiving databases.
 
 **IMPORTANT:** Only immutable data can be archived.
 
