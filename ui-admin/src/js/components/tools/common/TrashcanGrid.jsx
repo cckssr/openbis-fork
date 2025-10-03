@@ -6,6 +6,7 @@ import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.
 import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js'
 import logger from '@src/js/common/logger.js'
 import TrashcanGridEntitiesCell from '@src/js/components/tools/form/trashcan/TrashcanGridEntitiesCell.jsx'
+import TrashcanGridOperationsCell from '@src/js/components/tools/form/trashcan/TrashcanGridOperationsCell.jsx'
 import GridUtil from '@src/js/components/common/grid/GridUtil.js'
 import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import ids from '@src/js/common/consts/ids.js'
@@ -24,9 +25,12 @@ class TrashcanGrid extends React.PureComponent {
 		}
 	}
 
+	changeOperationLoading(loading) {
+		this.setState({ operationLoading: loading })
+	}
+
 	render() {
 		logger.log(logger.DEBUG, 'TrashcanGrid.render')
-		console.log('TrashcanGrid.props', this.props)
 		const { rows, controllerRef } = this.props
 		const { operationLoading } = this.state
 		const id = ids.TRASHCAN_GRID_ID
@@ -63,7 +67,12 @@ class TrashcanGrid extends React.PureComponent {
 						style: {width: '250px'},
 						getValue: ({ row }) => row.operations,
 						renderValue: ({ value, row }) => {
-							return this.renderOperations(row)
+							return <TrashcanGridOperationsCell row={row} 
+								facade={this.props.facade}
+								onReload={this.props.onReload}
+								operationLoading={operationLoading}
+								changeOperationLoading={this.changeOperationLoading}
+							/>
 						},
 						filterable: false,
 						sortable: false
@@ -80,100 +89,6 @@ class TrashcanGrid extends React.PureComponent {
 				selectable={true}
 			/>
 		)
-	}
-
-	renderOperations(row) {
-		console.log('renderOperations.row', row)
-		// Create options for the SelectField based on available operations
-		const operationOptions = [
-			{
-				label: 'Revert Deletions',
-				value: 'revert'
-			},
-			{
-				label: 'Delete Permanently',
-				value: 'delete'
-			},
-			{
-				label: 'Delete Permanently (including dependent entries)',
-				value: 'deleteWithDependents'
-			}
-		]
-
-		return (
-			<SelectField
-				label="Operations"
-				value=""
-				emptyOption={{
-					label: 'Select operation...',
-					value: ''
-				}}
-				options={operationOptions}
-				onChange={(event) => this.handleOperationChange(event, row)}
-			/>
-		)
-	}
-
-	handleOperationChange = async (event, row) => {
-		const selectedOperation = event.target.value
-
-		if (!selectedOperation || !row) {
-			return
-		}
-
-		// Set loading state and record start time
-		const startTime = Date.now()
-		this.setState({ operationLoading: true })
-
-		try {
-			// Route to the appropriate handler based on the selected operation
-			switch (selectedOperation) {
-				case 'revert':
-					await this.handleRevertDeletions(row)
-					break
-				case 'delete':
-					await this.handleDeletePermanently(row, false)
-					break
-				case 'deleteWithDependents':
-					await this.handleDeletePermanently(row, true)
-					break
-				default:
-					console.log('Unknown operation:', selectedOperation)
-			}
-		} catch (error) {
-			console.error('Operation failed:', error)
-		} finally {
-			this.setState({ operationLoading: false })
-			this.reloadTabContent()
-		}
-	}
-
-	handleRevertDeletions = async (row) => {
-		if (row) {
-			// Call the controller method to revert deletions
-			console.log('Revert deletions for row:', row)
-			await this.props.facade.revertDeletions(row)
-			AppController.getInstance().objectUpdate(objectTypes.TRASHCAN)
-			this.props.onDeleteChange()
-		}
-	}
-
-	handleDeletePermanently = async (row, includeDependent = false) => {
-		if (row) {
-			// Call the controller method to delete permanently
-			console.log('Delete permanently for row:', row, 'includeDependent:', includeDependent)
-			return await this.props.facade.deletePermanently(row, includeDependent)
-		}
-	}
-
-	reloadTabContent = () => {
-		// Get the controller from the grid controller ref
-		const gridController = this.props.controllerRef
-		if (gridController && gridController.controller) {
-			// Call the controller's load method to reload the tab content
-			gridController.controller.load()
-
-		}
 	}
 }
 

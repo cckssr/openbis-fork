@@ -38,15 +38,11 @@ class TrashcanForm extends React.PureComponent {
     this.controller.gridController = gridController
   }
 
-  handleDeleteChange() {
-    this.setState({ loadId: _.uniqueId('load') })
-  }
-
   render() {
     logger.log(logger.DEBUG, 'TrashcanForm.render')
 
     const { loadId, loading, loaded } = this.state
-    console.log('TrashcanForm', this.state, this.props )
+
     return (
       <PageWithTwoPanels
         key={loadId}
@@ -64,7 +60,12 @@ class TrashcanForm extends React.PureComponent {
     const { rows } = this.state
     return (
       <GridContainer>
-        <TrashcanGrid controllerRef={this.handleGridControllerRef} rows={rows} facade={this.controller.facade} onDeleteChange={this.handleDeleteChange} />
+        <TrashcanGrid
+          controllerRef={this.handleGridControllerRef}
+          rows={rows}
+          facade={this.controller.facade}
+          onReload={this.controller.load}
+        />
       </GridContainer>
     )
   }
@@ -77,7 +78,6 @@ class TrashcanForm extends React.PureComponent {
       <TrashcanFormFormButtons
         rows={rows}
         mode={PageMode.EDIT}
-        onCancel={controller.handleCancel}
         onEmptyTrashcan={controller.handleEmptyTrashcan}
       />
     )
