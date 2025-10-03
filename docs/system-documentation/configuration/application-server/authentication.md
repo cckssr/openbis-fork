@@ -1,5 +1,5 @@
-Authentication Systems
-======================
+Authentication
+==============
 
 openBIS currently supports 3 authentication systems: a
 self-contained system based on a UNIX-like passwd file, LDAP, and Single Sign

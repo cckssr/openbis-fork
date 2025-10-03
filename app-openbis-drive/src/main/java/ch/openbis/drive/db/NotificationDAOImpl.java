@@ -46,15 +46,20 @@ public class NotificationDAOImpl implements NotificationDAO {
                           
                           PRIMARY KEY (type, localDirectory, localFile, remoteFile)
                       );
-        
-                      CREATE INDEX timestamp ON Notifications(timestamp);
-                      CREATE INDEX localDirectory ON Notifications(localDirectory);
         """;
+    String CREATE_TIMESTAMP_INDEX = "CREATE INDEX IF NOT EXISTS timestamp ON Notifications(timestamp);";
+    String CREATE_LOCAL_DIRECTORY_INDEX = "CREATE INDEX IF NOT EXISTS localDirectory ON Notifications(localDirectory);";
 
     public void createDatabaseIfNotExists() throws SQLException, IOException {
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(CREATE_DATABASE)) {
-            statement.executeUpdate();
+             PreparedStatement createTableStatement = connection.prepareStatement(CREATE_DATABASE)) {
+            createTableStatement.executeUpdate();
+        }
+        try (Connection connection = getConnection();
+             PreparedStatement createTimestampIndexStatement = connection.prepareStatement(CREATE_TIMESTAMP_INDEX);
+             PreparedStatement createLocalDirectoryIndexStatement = connection.prepareStatement(CREATE_LOCAL_DIRECTORY_INDEX)) {
+            createTimestampIndexStatement.executeUpdate();
+            createLocalDirectoryIndexStatement.executeUpdate();
         }
     }
 

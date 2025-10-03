@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class SyncJobEventDAOImpTest {
     private final String localDirectoryRoot = Path.of(
             this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent()
+            .resolve("sync-job-event-dao-impl-test")
             .toAbsolutePath().toString();
 
     @Test

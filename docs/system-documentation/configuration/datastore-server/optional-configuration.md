@@ -1,5 +1,5 @@
-Optional Datastore Server Configuration
-=======================================
+Optional Configuration
+======================
 
 ## Configuring DSS Data Sources
 

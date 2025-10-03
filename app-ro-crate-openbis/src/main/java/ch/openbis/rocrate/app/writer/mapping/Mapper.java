@@ -15,7 +15,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.openbis.rocrate.app.Constants;
-import ch.openbis.rocrate.app.writer.Writer;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import ch.openbis.rocrate.app.writer.mapping.types.RdfsSchema;
 import ch.openbis.rocrate.app.writer.mappinginfo.MappingInfo;
@@ -91,16 +90,15 @@ public class Mapper
                                         Collectors.toList());
                 myClass.setOntologicalAnnotations(ontologicalAnnotations);
 
-
-                myClass.setSubClassOf(List.of(Writer.SYSTEM_OBJECT));
+                myClass.setSubClassOf(List.of(Constants.GRAPH_ID_OBJECT));
             }
             if (value instanceof DataSetType)
             {
-                myClass.setSubClassOf(List.of(Writer.SYSTEM_DATASET));
+                myClass.setSubClassOf(List.of(Constants.GRAPH_ID_DATASET));
             }
             if (value instanceof ExperimentType)
             {
-                myClass.setSubClassOf(List.of(Writer.SYSTEM_COLLECTION));
+                myClass.setSubClassOf(List.of(Constants.GRAPH_ID_Collection));
             }
             for (PropertyAssignment propertyAssignment : value.getPropertyAssignments())
             {
@@ -294,7 +292,7 @@ public class Mapper
             }
             if (val instanceof Experiment experiment)
             {
-                String type = typeToRdfsName.get(experiment.getType());
+                String type = Constants.GRAPH_ID_Collection;
                 for (Map.Entry<String, Serializable> a : experiment.getProperties().entrySet())
                 {
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());

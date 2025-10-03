@@ -1,12 +1,23 @@
 package ch.openbis.drive;
 
+import ch.ethz.sis.afsapi.dto.File;
 import ch.openbis.drive.conf.Configuration;
+import ch.openbis.drive.db.SyncJobEventDAO;
+import ch.openbis.drive.db.SyncJobEventDAOImp;
 import ch.openbis.drive.model.*;
+import ch.openbis.drive.notifications.NotificationManager;
+import ch.openbis.drive.notifications.NotificationManagerSqliteImpl;
+import ch.openbis.drive.settings.SettingsManager;
+import ch.openbis.drive.tasks.TaskManager;
+import ch.openbis.drive.tasks.TaskManagerImpl;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mockito;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -15,160 +26,190 @@ import java.util.concurrent.ThreadLocalRandom;
 public class DriveAPIServerImplTest {
 
     private final Configuration configuration;
+    private final SyncJobEventDAO syncJobEventDAO;
+    private final NotificationManager notificationManager;
+    private final SettingsManager settingsManager;
+    private final TaskManager taskManager;
+    private final DriveAPIServerImpl driveAPIServerImpl;
 
-    public DriveAPIServerImplTest() {
-        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent());
+    public DriveAPIServerImplTest() throws Exception {
+        configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test"));
+        Files.createDirectories(configuration.getLocalAppDirectory());
+        syncJobEventDAO = new SyncJobEventDAOImp(configuration);
+        notificationManager = new NotificationManagerSqliteImpl(configuration);
+        settingsManager = Mockito.mock(SettingsManager.class);
+        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager));
+        driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO));
     }
 
+    @Before
+    synchronized public void before() {
+        Mockito.reset(settingsManager);
+        Mockito.reset(taskManager);
+    }
 
     @Test
     synchronized public void setAndGetSettingsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
-        openBISSyncClient.setSettings(settings1);
-        Assert.assertEquals(settings1, openBISSyncClient.getSettings());
+        driveAPIServerImpl.setSettings(settings1);
+        Mockito.verify(settingsManager, Mockito.times(1)).setSettings(settings1);
+        Mockito.verify(taskManager, Mockito.times(1)).clear();
+        Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(settings1.getJobs(), 120);
 
-        openBISSyncClient.setSettings(settings2);
-        Assert.assertEquals(settings2, openBISSyncClient.getSettings());
+        Mockito.clearInvocations(settingsManager);
+        Mockito.clearInvocations(taskManager);
+
+        driveAPIServerImpl.setSettings(settings2);
+        Mockito.verify(settingsManager, Mockito.times(1)).setSettings(settings2);
+        Mockito.verify(taskManager, Mockito.times(1)).clear();
+        Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(settings2.getJobs(), 15);
+
+        Mockito.doReturn(settings2).when(settingsManager).getSettings();
+        Assert.assertEquals(settings2, driveAPIServerImpl.getSettings());
+        Mockito.verify(settingsManager, Mockito.times(1)).getSettings();
     }
 
     @Test
     synchronized public void getSyncJobsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
         Settings settings1 = Settings.defaultSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "/localdir1", true);
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "/localdir2", false);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
-        openBISSyncClient.setSettings(settings1);
-        Assert.assertEquals(Collections.emptyList(), openBISSyncClient.getSyncJobs());
+        Mockito.doReturn(settings1.getJobs()).when(settingsManager).getSyncJobs();
+        Assert.assertEquals(Collections.emptyList(), driveAPIServerImpl.getSyncJobs());
 
-        openBISSyncClient.setSettings(settings2);
-        Assert.assertEquals(List.of(syncJob1, syncJob2), openBISSyncClient.getSyncJobs());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    synchronized public void setInvalidSettingsForOverlappinglocalDirTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir1/subdir", false);
-        Settings settings = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
-
-        openBISSyncClient.setSettings(settings);
+        Mockito.doReturn(settings2.getJobs()).when(settingsManager).getSyncJobs();
+        Assert.assertEquals(List.of(syncJob1, syncJob2), driveAPIServerImpl.getSyncJobs());
     }
 
     @Test
     synchronized public void addSyncJobTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
-        openBISSyncClient.setSettings(Settings.defaultSettings());
+        Settings settings = new Settings(true, "it", 15, new ArrayList<>());
+        Mockito.doReturn(settings).when(settingsManager).getSettings();
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
-        openBISSyncClient.addSyncJobs(List.of(syncJob1));
+        driveAPIServerImpl.addSyncJobs(List.of(syncJob1));
+        Mockito.verify(settingsManager, Mockito.times(1)).addSyncJobs(List.of(syncJob1));
+        Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(List.of(syncJob1), 15);
 
-        Assert.assertEquals(List.of(syncJob1), openBISSyncClient.getSettings().getJobs());
+        Mockito.clearInvocations(settingsManager);
+        Mockito.clearInvocations(taskManager);
 
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob2));
-
-        Assert.assertEquals(List.of(syncJob1, syncJob2), openBISSyncClient.getSettings().getJobs());
-
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "/localdir2", false);
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob3));
-
-        Assert.assertEquals(List.of(syncJob1, syncJob2, syncJob3), openBISSyncClient.getSettings().getJobs());
-    }
-
-    @Test
-    synchronized public void addSyncJobsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
-        openBISSyncClient.setSettings(Settings.defaultSettings());
-
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        openBISSyncClient.addSyncJobs(Collections.singletonList(syncJob1));
-
-        Assert.assertEquals(List.of(syncJob1), openBISSyncClient.getSettings().getJobs());
-
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", false);
-        openBISSyncClient.addSyncJobs(List.of(syncJob2, syncJob3));
-
-        Assert.assertEquals(List.of(syncJob1, syncJob2, syncJob3), openBISSyncClient.getSettings().getJobs());
+        driveAPIServerImpl.addSyncJobs(List.of(syncJob2, syncJob3));
+        Mockito.verify(settingsManager, Mockito.times(1)).addSyncJobs(List.of(syncJob2, syncJob3));
+        Mockito.verify(taskManager, Mockito.times(1)).addSyncJobs(List.of(syncJob2, syncJob3), 15);
     }
 
     @Test(expected = IllegalArgumentException.class)
     synchronized public void addSyncJobWithDuplicatelocalDirTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
-        openBISSyncClient.setSettings(Settings.defaultSettings());
+        DriveAPIServerImpl driveAPIServerWithRealSettingsManager = new DriveAPIServerImpl(new SettingsManager(configuration, syncJobEventDAO, notificationManager), notificationManager, taskManager, syncJobEventDAO);
+        driveAPIServerWithRealSettingsManager.setSettings(Settings.defaultSettings());
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
-        openBISSyncClient.addSyncJobs(List.of(syncJob1));
+        driveAPIServerWithRealSettingsManager.addSyncJobs(List.of(syncJob1));
 
-        Assert.assertEquals(List.of(syncJob1), openBISSyncClient.getSettings().getJobs());
+        Assert.assertEquals(List.of(syncJob1), driveAPIServerWithRealSettingsManager.getSettings().getJobs());
 
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir1", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob2));
+        driveAPIServerWithRealSettingsManager.addSyncJobs(List.of(syncJob2));
     }
 
     @Test
     synchronized public void removeSyncJobTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-
-        openBISSyncClient.setSettings(Settings.defaultSettings());
 
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob1));
         SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
-        openBISSyncClient.addSyncJobs(List.of(syncJob2));
         SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob3));
 
-        Assert.assertEquals(List.of(syncJob1, syncJob2, syncJob3), openBISSyncClient.getSettings().getJobs());
 
-        openBISSyncClient.removeSyncJobs(List.of(new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false)));
-        Assert.assertEquals(List.of(syncJob1, syncJob3), openBISSyncClient.getSettings().getJobs());
-        openBISSyncClient.removeSyncJobs(List.of(new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true)));
-        Assert.assertEquals(List.of(syncJob3), openBISSyncClient.getSettings().getJobs());
-        openBISSyncClient.removeSyncJobs(List.of(new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true)));
-        Assert.assertEquals(Collections.emptyList(), openBISSyncClient.getSettings().getJobs());
+        driveAPIServerImpl.removeSyncJobs(List.of(syncJob1));
+        Mockito.verify(settingsManager, Mockito.times(1)).removeSyncJobs(List.of(syncJob1));
+        Mockito.verify(taskManager, Mockito.times(1)).removeSyncJobs(List.of(syncJob1));
+
+        Mockito.clearInvocations(settingsManager);
+        Mockito.clearInvocations(taskManager);
+
+        driveAPIServerImpl.removeSyncJobs(List.of(syncJob2, syncJob3));
+        Mockito.verify(settingsManager, Mockito.times(1)).removeSyncJobs(List.of(syncJob2, syncJob3));
+        Mockito.verify(taskManager, Mockito.times(1)).removeSyncJobs(List.of(syncJob2, syncJob3));
     }
 
     @Test
-    synchronized public void removeSyncJobsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
+    synchronized public void startSyncJobTest() {
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", false);
+        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "/remotedir1", "/localdir4", true);
+        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "/remotedir2", "/localdir5", false);
+        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "/remotedir3", "/localdir6", true);
+        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "/remotedir3", "/localdir7", false);
 
-        openBISSyncClient.setSettings(Settings.defaultSettings());
+        Settings settings = new Settings();
+        settings.setLanguage("fr");
+        settings.setStartAtLogin(true);
+        settings.setSyncInterval(45);
+        settings.setJobs(new ArrayList<>(List.of(syncJob1, syncJob2, syncJob3, syncJob4, syncJob5, syncJob6)));
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true);
-        openBISSyncClient.addSyncJobs(List.of(syncJob1, syncJob2, syncJob3));
+        Mockito.doReturn(settings).when(driveAPIServerImpl).getSettings();
 
-        Assert.assertEquals(List.of(syncJob1, syncJob2, syncJob3), openBISSyncClient.getSettings().getJobs());
+        driveAPIServerImpl.startSyncJobs(List.of(syncJob4, syncJob7, syncJob3, syncJob2));
+        Mockito.verify(driveAPIServerImpl, Mockito.times(1)).getSettings();
 
-        openBISSyncClient.removeSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", true)));
-        Assert.assertEquals(List.of(syncJob1, syncJob3), openBISSyncClient.getSettings().getJobs());
+        Settings newSettings = new Settings();
+        newSettings.setLanguage("fr");
+        newSettings.setStartAtLogin(true);
+        newSettings.setSyncInterval(45);
+        syncJob3.setEnabled(true);
+        syncJob2.setEnabled(true);
+        newSettings.setJobs(new ArrayList<>(List.of(syncJob1, syncJob4, syncJob5, syncJob6, syncJob3, syncJob2)));
 
-        openBISSyncClient.removeSyncJobs(
-                List.of(new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", false),
-                        new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", true)));
-        Assert.assertEquals(Collections.emptyList(), openBISSyncClient.getSettings().getJobs());
+        Mockito.verify(driveAPIServerImpl, Mockito.times(1)).setSettings(newSettings);
+    }
+
+    @Test
+    synchronized public void stopSyncJobTest() {
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "/remotedir1", "/localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "/remotedir2", "/localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "/remotedir3", "/localdir3", false);
+        SyncJob syncJob4 = new SyncJob(SyncJob.Type.Bidirectional, "url4", "token1", "id1", "/remotedir1", "/localdir4", true);
+        SyncJob syncJob5 = new SyncJob(SyncJob.Type.Bidirectional, "url5", "token2", "id2", "/remotedir2", "/localdir5", false);
+        SyncJob syncJob6 = new SyncJob(SyncJob.Type.Bidirectional, "url6", "token3", "id3", "/remotedir3", "/localdir6", true);
+        SyncJob syncJob7 = new SyncJob(SyncJob.Type.Bidirectional, "url7", "token3", "id3", "/remotedir3", "/localdir7", false);
+
+        Settings settings = new Settings();
+        settings.setLanguage("fr");
+        settings.setStartAtLogin(true);
+        settings.setSyncInterval(45);
+        settings.setJobs(new ArrayList<>(List.of(syncJob1, syncJob2, syncJob3, syncJob4, syncJob5, syncJob6)));
+
+        Mockito.doReturn(settings).when(driveAPIServerImpl).getSettings();
+
+        driveAPIServerImpl.stopSyncJobs(List.of(syncJob3, syncJob7, syncJob6, syncJob1));
+        Mockito.verify(driveAPIServerImpl, Mockito.times(1)).getSettings();
+
+        Settings newSettings = new Settings();
+        newSettings.setLanguage("fr");
+        newSettings.setStartAtLogin(true);
+        newSettings.setSyncInterval(45);
+        syncJob6.setEnabled(false);
+        syncJob1.setEnabled(false);
+        newSettings.setJobs(new ArrayList<>(List.of(syncJob2, syncJob3, syncJob4, syncJob5, syncJob6, syncJob1)));
+
+        Mockito.verify(driveAPIServerImpl, Mockito.times(1)).setSettings(newSettings);
     }
 
     @Test
     synchronized public void addAndGetNotificationsTest() {
-        DriveAPIServerImpl openBISSyncClient = new DriveAPIServerImpl(configuration);
-        openBISSyncClient.clearNotifications();
+        driveAPIServerImpl.clearNotifications();
 
         List<Notification> notifications = new LinkedList<>();
         long now = System.currentTimeMillis();
@@ -181,10 +222,10 @@ public class DriveAPIServerImplTest {
                     "message" + i,
                     now + i));
         }
-        openBISSyncClient.addNotifications(notifications);
+        driveAPIServerImpl.addNotifications(notifications);
 
         Collections.reverse(notifications);
-        Assert.assertEquals(notifications, openBISSyncClient.getNotifications(100));
+        Assert.assertEquals(notifications, driveAPIServerImpl.getNotifications(100));
 
         List<Notification> notifications2 = new LinkedList<>();
         for(int i = 100; i<200; i++) {
@@ -195,11 +236,11 @@ public class DriveAPIServerImplTest {
                     "message" + i,
                     now + 2000 + i));
         }
-        openBISSyncClient.addNotifications(notifications2);
+        driveAPIServerImpl.addNotifications(notifications2);
 
         Collections.reverse(notifications2);
         notifications2.addAll(notifications);
-        Assert.assertEquals(notifications2, openBISSyncClient.getNotifications(200));
+        Assert.assertEquals(notifications2, driveAPIServerImpl.getNotifications(200));
     }
 
     @Test

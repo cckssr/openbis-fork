@@ -2,23 +2,21 @@ Advanced Configuration
 ======================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   required-configuration
-   afs-configuration
-   configuration-properties-by-module
-   optional-application-server-configuration
-   optional-datastore-server-configuration
-   authentication-systems
-   authorization
-   maintenance-tasks
-   user-group-management-for-multi-groups-openbis-instances
-   archiving-dss-datasets
-   archiving-afs-datasets
-   multi-data-set-archiving
-   master-data
-   querying-project-db
-   share-ids
-   sharing-databases
-   openbis-sync
-   logging
+   application-server/index
+
+.. toctree::
+   :maxdepth: 2
+
+   datastore-server/index
+
+.. toctree::
+   :maxdepth: 2
+
+   afs-server/index
+
+.. toctree::
+   :maxdepth: 2
+
+   common/index

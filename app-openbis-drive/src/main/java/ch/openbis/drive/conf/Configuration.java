@@ -11,9 +11,12 @@ import java.util.Map;
 public class Configuration {
     public static final String LOCAL_OPENBIS_HIDDEN_DIRECTORY = ".openbis-drive";
     public static final String LOCAL_APPLICATION_DIRECTORY_ENV_KEY = "OPENBIS_DRIVE_DIR";
+    public static final int OPENBIS_DRIVE_DEFAULT_PORT = 65342;
+    public static final String OPENBIS_DRIVE_PORT_ENV_KEY = "OPENBIS_DRIVE_PORT";
 
     @NonNull
     private final Path localAppDirectory;
+    private final int openbisDrivePort;
 
     public Configuration() throws IOException {
         this(System.getenv());
@@ -34,13 +37,30 @@ public class Configuration {
         } else {
             Files.createDirectory(localAppDirectory);
         }
+
+        String openbisPortFromEnv = env.get(OPENBIS_DRIVE_PORT_ENV_KEY);
+        if(openbisPortFromEnv != null && !openbisPortFromEnv.isEmpty()) {
+            openbisDrivePort = Integer.parseInt(openbisPortFromEnv);
+        } else {
+            openbisDrivePort = OPENBIS_DRIVE_DEFAULT_PORT;
+        }
     }
 
     public Configuration(@NonNull Path localAppDirectory) {
         this.localAppDirectory = localAppDirectory;
+        this.openbisDrivePort = OPENBIS_DRIVE_DEFAULT_PORT;
+    }
+
+    public Configuration(@NonNull Path localAppDirectory, int openbisDrivePort) {
+        this.localAppDirectory = localAppDirectory;
+        this.openbisDrivePort = openbisDrivePort;
     }
 
     public Path getLocalAppDirectory() {
         return localAppDirectory;
+    }
+
+    public int getOpenbisDrivePort() {
+        return openbisDrivePort;
     }
 }

@@ -25,6 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.exceptions.NotFetchedException;
 import ch.systemsx.cisd.base.annotation.JsonObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -200,6 +201,7 @@ public class SemanticAnnotation implements Serializable, IPermIdHolder
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    @Deprecated
     public String getDescriptorOntologyId()
     {
         return descriptorOntologyId;
@@ -213,12 +215,14 @@ public class SemanticAnnotation implements Serializable, IPermIdHolder
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    @Deprecated
     public String getDescriptorOntologyVersion()
     {
         return descriptorOntologyVersion;
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public void setDescriptorOntologyVersion(String descriptorOntologyVersion)
     {
         this.descriptorOntologyVersion = descriptorOntologyVersion;
@@ -226,12 +230,14 @@ public class SemanticAnnotation implements Serializable, IPermIdHolder
 
     // Method automatically generated with DtoGenerator
     @JsonIgnore
+    @Deprecated
     public String getDescriptorAccessionId()
     {
         return descriptorAccessionId;
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public void setDescriptorAccessionId(String descriptorAccessionId)
     {
         this.descriptorAccessionId = descriptorAccessionId;

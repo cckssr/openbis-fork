@@ -1,0 +1,90 @@
+syntax="proto3";
+
+package ch.openbis.drive.protobuf;
+
+message Settings {
+    bool start_at_login = 1;
+    string language = 2;
+    int32 sync_interval_seconds = 3;
+    SyncJobs jobs = 4;
+}
+
+message SyncJob {
+    Type type = 1;
+    string open_bis_url = 2;
+    string open_bis_personal_access_token = 3;
+    string entity_perm_id = 4;
+    string remote_directory_root = 5;
+    string local_directory_root = 6;
+    bool enabled = 7;
+
+    enum Type {
+      BIDIRECTIONAL = 0;
+      UPLOAD = 1;
+      DOWNLOAD = 2;
+    }
+}
+
+message SyncJobs {
+    repeated SyncJob sync_jobs = 1;
+}
+
+message Event {
+    SyncDirection sync_direction = 1;
+    string local_file = 2;
+    string remote_file = 3;
+    bool directory = 4;
+    bool source_deleted = 5;
+    int64 timestamp = 6;
+    string local_directory_root = 7;
+
+    enum SyncDirection {
+      UP = 0;
+      DOWN = 1;
+    }
+}
+
+message Events {
+    repeated Event events = 1;
+}
+
+message Notification {
+    Type type = 1;
+    string local_directory = 2;
+
+    optional string local_file = 3;
+    optional string remote_file = 4;
+
+    string message = 5;
+    int64 timestamp = 6;
+
+    enum Type {
+      CONFLICT = 0;
+      JOB_STOPPED = 1;
+      JOB_EXCEPTION = 2;
+    }
+}
+
+message Notifications {
+    repeated Notification notifications = 1;
+}
+
+message Limit {
+    int32 limit = 1;
+}
+
+message Empty {}
+
+service DriveAPIService {
+    rpc SetSettings(Settings) returns (Empty);
+    rpc GetSettings(Empty) returns (Settings);
+
+    rpc GetSyncJobs(Empty) returns (SyncJobs);
+    rpc AddSyncJobs(SyncJobs) returns (Empty);
+    rpc RemoveSyncJobs(SyncJobs) returns (Empty);
+    rpc StartSyncJobs(SyncJobs) returns (Empty);
+    rpc StopSyncJobs(SyncJobs) returns (Empty);
+
+    rpc GetEvents(Limit) returns (Events);
+    rpc GetNotifications(Limit) returns (Notifications);
+}

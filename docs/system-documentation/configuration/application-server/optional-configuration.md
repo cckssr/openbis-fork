@@ -1,5 +1,5 @@
-Optional Application Server Configuration
-=========================================
+Optional Configuration
+======================
 
 ### The base URL for Web client access to the application server.
 

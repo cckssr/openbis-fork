@@ -30,6 +30,13 @@ public class DriveAPIServerImpl implements DriveAPI {
         taskManager = new TaskManagerImpl(syncJobEventDAO, notificationManager);
     }
 
+    public DriveAPIServerImpl(SettingsManager settingsManager, NotificationManager notificationManager, TaskManager taskManager, SyncJobEventDAO syncJobEventDAO) {
+        this.settingsManager = settingsManager;
+        this.notificationManager = notificationManager;
+        this.taskManager = taskManager;
+        this.syncJobEventDAO = syncJobEventDAO;
+    }
+
     synchronized public void setSettings(@NonNull Settings settings) {
         settingsManager.setSettings(settings);
         taskManager.clear();
@@ -46,38 +53,34 @@ public class DriveAPIServerImpl implements DriveAPI {
 
     synchronized public void addSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
         settingsManager.addSyncJobs(syncJobs);
-        for (SyncJob syncJob:syncJobs) {
-            if (syncJob.isEnabled()) {
-                taskManager.addSyncJobs(syncJobs, getSettings().getSyncInterval());
-            }
-        }
+        taskManager.addSyncJobs(syncJobs, getSettings().getSyncInterval());
     }
 
     synchronized public void removeSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
         settingsManager.removeSyncJobs(syncJobs);
-        for (SyncJob syncJob:syncJobs) {
-            if (syncJob.isEnabled()) {
-                taskManager.removeSyncJobs(syncJobs);
-            }
-        }
+        taskManager.removeSyncJobs(syncJobs);
     }
 
     synchronized public void startSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        ArrayList<@NonNull SyncJob> disabledJobsOnly = syncJobs.stream().filter(syncJob -> !syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
-        removeSyncJobs(disabledJobsOnly);
+        Settings currentSettings = getSettings();
+        ArrayList<@NonNull SyncJob> disabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && !syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
+        currentSettings.getJobs().removeAll(disabledJobsOnly);
         for (SyncJob syncJob:disabledJobsOnly) {
             syncJob.setEnabled(true);
         }
-        addSyncJobs(disabledJobsOnly);
+        currentSettings.getJobs().addAll(disabledJobsOnly);
+        setSettings(currentSettings);
     }
 
     synchronized public void stopSyncJobs(@NonNull List<@NonNull SyncJob> syncJobs) {
-        ArrayList<@NonNull SyncJob> enabledJobsOnly = syncJobs.stream().filter(SyncJob::isEnabled).collect(Collectors.toCollection(ArrayList::new));
-        removeSyncJobs(enabledJobsOnly);
+        Settings currentSettings = getSettings();
+        ArrayList<@NonNull SyncJob> enabledJobsOnly = syncJobs.stream().filter(syncJob -> currentSettings.getJobs().contains(syncJob) && syncJob.isEnabled()).collect(Collectors.toCollection(ArrayList::new));
+        currentSettings.getJobs().removeAll(enabledJobsOnly);
         for (SyncJob syncJob:enabledJobsOnly) {
             syncJob.setEnabled(false);
         }
-        addSyncJobs(enabledJobsOnly);
+        currentSettings.getJobs().addAll(enabledJobsOnly);
+        setSettings(currentSettings);
     }
 
     @SneakyThrows

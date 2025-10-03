@@ -6,8 +6,10 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.EntityKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.ExperimentType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentTypeFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.id.ExperimentIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.fetchoptions.ProjectFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.id.ProjectIdentifier;
@@ -66,8 +68,68 @@ public class RdfToModel
 
         Map<String, Sample> roCrateIdsToObjects = new LinkedHashMap<>();
 
+        Map<String, ExperimentType> identifierToCollectionType = new LinkedHashMap<>();
+
+        Map<ExperimentIdentifier, Experiment> idsToCollections = new LinkedHashMap<>();
+
 
         Map<EntityTypePermId, IEntityType> schema = new LinkedHashMap<>();
+        handleTypes(types, IdsToTypes, typeToInheritanceChain, entityTypeToRdfIdentifier,
+                codeToSampleType,
+                schema, identifierToCollectionType);
+
+        Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
+        for (IPropertyType typeProperty : typeProperties)
+        {
+            for (IType domain : typeProperty.getDomain())
+            {
+                List<String> typeToDomain =
+                        typesToProperties.getOrDefault(domain, new ArrayList<>());
+                typeToDomain.add(typeProperty.getId());
+                typesToProperties.put(domain, typeToDomain);
+            }
+        }
+        Map<Pair<String, DataType>, PropertyTypeMapping> propertyTypeMappings =
+                new LinkedHashMap<>();
+        Map<String, Set<DataType>> baseCodeToPossibleDataTypes = new LinkedHashMap<>();
+
+        handlePropertyTypes(typeProperties, baseCodeToPossibleDataTypes, propertyTypeMappings,
+                codeToSampleType);
+        handleIntersectionTypes(entries, schema, entityTypeToRdfIdentifier, codeToSampleType);
+        Map<String, String> identifierToOpenBisCode = new LinkedHashMap<>();
+
+        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
+        Map<String, IMetadataEntry> idToEntities =
+                entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
+        processEntities(entries, fallbackSpaceCode, fallbackProjectCode, typeToInheritanceChain,
+                codeToSampleType,
+                identifierToOpenBisCode, baseCodeToPossibleDataTypes, idToEntities,
+                roCrateIdsToObjects,
+                samplesWithSpaceAndProjectCodes, spaces, projects);
+
+        mapSpaces(fallbackSpaceCode, fallbackProjectCode, spaces, projects);
+        mapProjects(projects, spaces);
+
+        mapCollections(entries, typeToInheritanceChain, identifierToCollectionType,
+                idsToCollections);
+
+        resolveSpaceProjectAndCollections(samplesWithSpaceAndProjectCodes, spaces, projects,
+                idsToCollections, metadata);
+
+        resolveOpenBisStructure(entries, fallbackSpaceCode, fallbackProjectCode,
+                typeToInheritanceChain,
+                roCrateIdsToObjects, spaces, projects);
+
+        return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
+                identifierToOpenBisCode);
+    }
+
+    private static void handleTypes(List<IType> types, Map<String, IType> IdsToTypes,
+            Map<String, List<String>> typeToInheritanceChain,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier,
+            Map<String, SampleType> codeToSampleType, Map<EntityTypePermId, IEntityType> schema,
+            Map<String, ExperimentType> identifierToCollectionType)
+    {
         for (IType type : types)
         {
             if (isProject(type) || isSpace(type))
@@ -98,7 +160,7 @@ public class RdfToModel
 
                 codeToSampleType.put(sampleType.getCode(), sampleType);
 
-                if (isOpenBisDerivedType(type))
+                if (!isCollection(type) && (isOpenBisDerivedType(type) || isSample(type)))
                 {
                     schema.put(sampleType.getPermId(), sampleType);
                 }
@@ -128,32 +190,24 @@ public class RdfToModel
                 fetchOptions.withPropertyAssignments();
 
                 ExperimentType experimentType = new ExperimentType();
-                experimentType.setCode(type.getId());
+                experimentType.setCode(getCollectionTypeCode(type));
                 experimentType.setPermId(new EntityTypePermId(type.getId(), kind));
 
                 if (isOpenBisDerivedType(type))
                 {
                     schema.put(experimentType.getPermId(), experimentType);
                 }
+                identifierToCollectionType.put(type.getId(), experimentType);
             }
 
         }
+    }
 
-        Map<IType, List<String>> typesToProperties = new LinkedHashMap<>();
-        for (IPropertyType typeProperty : typeProperties)
-        {
-            for (IType domain : typeProperty.getDomain())
-            {
-                List<String> typeToDomain =
-                        typesToProperties.getOrDefault(domain, new ArrayList<>());
-                typeToDomain.add(typeProperty.getId());
-                typesToProperties.put(domain, typeToDomain);
-            }
-        }
-        Map<Pair<String, DataType>, PropertyTypeMapping> propertyTypeMappings =
-                new LinkedHashMap<>();
-        Map<String, Set<DataType>> baseCodeToPossibleDataTypes = new LinkedHashMap<>();
-
+    private static void handlePropertyTypes(List<IPropertyType> typeProperties,
+            Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
+            Map<Pair<String, DataType>, PropertyTypeMapping> propertyTypeMappings,
+            Map<String, SampleType> codeToSampleType)
+    {
         for (IPropertyType a : typeProperties)
         {
             Set<DataType> dataTypes = matchDataTypes(a);
@@ -244,71 +298,79 @@ public class RdfToModel
 
             }
         }
+    }
+
+    private static void handleIntersectionTypes(List<IMetadataEntry> entries,
+            Map<EntityTypePermId, IEntityType> schema,
+            Map<String, EntityTypePermId> entityTypeToRdfIdentifier,
+            Map<String, SampleType> codeToSampleType)
+    {
+        Set<Set<String>> intersectionTypes = new LinkedHashSet<>();
+        for (IMetadataEntry entry : entries)
         {
-            Set<Set<String>> intersectionTypes = new LinkedHashSet<>();
-            for (IMetadataEntry entry : entries)
+            if (entry.getTypes().size() > 1)
             {
-                if (entry.getTypes().size() > 1)
-                {
-                    intersectionTypes.add(entry.getTypes());
-                }
+                intersectionTypes.add(entry.getTypes());
             }
-            for (Set<String> intersectionType : intersectionTypes)
+        }
+        for (Set<String> intersectionType : intersectionTypes)
+        {
+            SampleType sampleType = new SampleType();
+            sampleType.setFetchOptions(getSampleTypeFetchOptions());
+            String artificialTypeIdentifier =
+                    openBisifyCode(getIntersectionTypeIdentifier(intersectionType));
+            sampleType.setCode(artificialTypeIdentifier);
+
+            List<PropertyAssignment> assignments = new ArrayList<>();
+            List<SemanticAnnotation> semanticAnnotations = new ArrayList<>();
+
+            for (String type : intersectionType)
             {
-                SampleType sampleType = new SampleType();
-                sampleType.setFetchOptions(getSampleTypeFetchOptions());
-                String artificialTypeIdentifier =
-                        openBisifyCode(getIntersectionTypeIdentifier(intersectionType));
-                sampleType.setCode(artificialTypeIdentifier);
 
-                List<PropertyAssignment> assignments = new ArrayList<>();
-                List<SemanticAnnotation> semanticAnnotations = new ArrayList<>();
-
-                for (String type : intersectionType)
+                IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
+                if (entityType == null)
                 {
-
-                    IEntityType entityType = schema.get(entityTypeToRdfIdentifier.get(type));
-                    if (entityType == null)
-                    {
-                        continue;
-                    }
-                    SampleType sampleType1 =
-                            (SampleType) entityType;
-
-                    for (var propertyAssignment : sampleType1.getPropertyAssignments())
-                    {
-                        PropertyAssignment newAssignment = new PropertyAssignment();
-                        newAssignment.setMandatory(propertyAssignment.isMandatory());
-                        newAssignment.setFetchOptions(propertyAssignment.getFetchOptions());
-                        newAssignment.setPropertyType(propertyAssignment.getPropertyType());
-                        newAssignment.setSemanticAnnotations(
-                                propertyAssignment.getSemanticAnnotations());
-                        newAssignment.setUnique(propertyAssignment.isUnique());
-                        newAssignment.setEntityType(sampleType1);
-                        if (assignments.stream().noneMatch(
-                                x -> x.getPropertyType().equals(newAssignment.getPropertyType())))
-                        {
-                            assignments.add(newAssignment);
-                        }
-                    }
-
+                    continue;
                 }
-                sampleType.setPropertyAssignments(assignments);
-                sampleType.setSemanticAnnotations(semanticAnnotations);
-                sampleType.setCode(artificialTypeIdentifier);
-                sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
-                schema.put(sampleType.getPermId(), sampleType);
-                codeToSampleType.put(sampleType.getCode(), sampleType);
+                SampleType sampleType1 =
+                        (SampleType) entityType;
+
+                for (var propertyAssignment : sampleType1.getPropertyAssignments())
+                {
+                    PropertyAssignment newAssignment = new PropertyAssignment();
+                    newAssignment.setMandatory(propertyAssignment.isMandatory());
+                    newAssignment.setFetchOptions(propertyAssignment.getFetchOptions());
+                    newAssignment.setPropertyType(propertyAssignment.getPropertyType());
+                    newAssignment.setSemanticAnnotations(
+                            propertyAssignment.getSemanticAnnotations());
+                    newAssignment.setUnique(propertyAssignment.isUnique());
+                    newAssignment.setEntityType(sampleType1);
+                    if (assignments.stream().noneMatch(
+                            x -> x.getPropertyType().equals(newAssignment.getPropertyType())))
+                    {
+                        assignments.add(newAssignment);
+                    }
+                }
 
             }
+            sampleType.setPropertyAssignments(assignments);
+            sampleType.setSemanticAnnotations(semanticAnnotations);
+            sampleType.setCode(artificialTypeIdentifier);
+            sampleType.setPermId(new EntityTypePermId(sampleType.getCode(), EntityKind.SAMPLE));
+            schema.put(sampleType.getPermId(), sampleType);
+            codeToSampleType.put(sampleType.getCode(), sampleType);
 
         }
-        Map<String, String> identifierToOpenBisCode = new LinkedHashMap<>();
+    }
 
-
-        Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
-        Map<String, IMetadataEntry> idToEntities =
-                entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
+    private static void processEntities(List<IMetadataEntry> entries, String fallbackSpaceCode,
+            String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
+            Map<String, SampleType> codeToSampleType, Map<String, String> identifierToOpenBisCode,
+            Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
+            Map<String, IMetadataEntry> idToEntities, Map<String, Sample> roCrateIdsToObjects,
+            List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects)
+    {
         for (IMetadataEntry entry : entries)
         {
             AbstractEntityPropertyHolder entity;
@@ -326,6 +388,7 @@ public class RdfToModel
                     fetchOptions.withProject();
                     fetchOptions.withSpace();
                     fetchOptions.withProperties();
+                    fetchOptions.withExperiment();
                     sample.setFetchOptions(fetchOptions);
                 }
                 String typeCode = entry.getTypes().size() == 1 ?
@@ -344,6 +407,10 @@ public class RdfToModel
                 Map<String, Serializable> properties = new LinkedHashMap<>();
                 for (Map.Entry<String, Serializable> property : entry.getValues().entrySet())
                 {
+                    if (requiresSpecialHandling(property.getKey()))
+                    {
+                        continue;
+                    }
 
                     String key = openBisifyCode(deRdfIdentifier(property.getKey()));
                     if (baseCodeToPossibleDataTypes.containsKey(
@@ -353,8 +420,6 @@ public class RdfToModel
                         DataType dataType =
                                 DataTypeMatcher.findDataType(property.getValue(), dataTypes,
                                         idToEntities);
-                        String newIdentifier = propertyTypeMappings.get(
-                                new ImmutablePair<>(key, dataType)).newIdentifier;
                         properties.put(key, property.getValue());
 
                     } else
@@ -369,11 +434,11 @@ public class RdfToModel
 
 
 
-                metadata.put(objectIdentifier, entity);
                 sample.setProperties(properties);
                 properties.get("SPACE");
                 ReferencesToResolve referencesToResolve =
-                        buildEntryWithSpaceAndProjectToResolve(properties, fallbackSpaceCode,
+                        buildEntryWithSpaceAndProjectToResolve(entry.getReferences(),
+                                fallbackSpaceCode,
                                 fallbackProjectCode, sample.getType().getCode() + "_COLLECTION");
                 samplesWithSpaceAndProjectCodes.add(
                         new ImmutablePair<>(sample, referencesToResolve));
@@ -403,82 +468,85 @@ public class RdfToModel
 
                 projects.put(identifier, project);
 
-            } else if (entry.getTypes().stream().anyMatch(
-                    x -> typeToInheritanceChain.get(x) != null && typeToInheritanceChain.get(x)
-                            .stream()
-                    .filter(Objects::nonNull)
-                            .anyMatch(y -> y.equals(Constants.GRAPH_ID_Collection))))
-            {
-                ExperimentType experiment = new ExperimentType();
-                experiment.setCode(entry.getId());
-                experiment.setPermId(new EntityTypePermId(entry.getId(), EntityKind.EXPERIMENT));
-
-                schema.put(experiment.getPermId(), experiment);
-
             }
 
         }
-        for (IMetadataEntry entry : entries)
+    }
+
+    private static void mapSpaces(String fallbackSpaceCode, String fallbackProjectCode,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects)
+    {
+        SpacePermId spacePermId = new SpacePermId(fallbackSpaceCode);
+
+        if (!spaces.containsKey(new SpacePermId(fallbackSpaceCode)))
         {
-            Optional<EntityKind> entityKind =
-                    matchEntityKind(entry, typeToInheritanceChain);
-
-            if (!entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
-            {
-                continue;
-            }
-            Sample sample = roCrateIdsToObjects.get(entry.getId());
-
-            // resolving object references needs another pass after creating all objects
-            for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
-            {
-                sample.getProperties().put(openBisifyCode(deRdfIdentifier(reference.getKey())),
-                        String.join(",",
-                                reference.getValue().stream().map(x -> roCrateIdsToObjects.get(x))
-                                        .filter(Objects::nonNull)
-                                        .map(x -> mapIdentifier(fallbackSpaceCode,
-                                                fallbackProjectCode, spaces, projects, x.getCode()))
-                                        .collect(
-                                                Collectors.toList())));
-            }
+            Space space = new Space();
+            space.setPermId(spacePermId);
+            space.setCode(spacePermId.getPermId());
+            spaces.put(spacePermId, space);
         }
-
-
+        ProjectIdentifier projectIdentifier =
+                new ProjectIdentifier(fallbackSpaceCode, fallbackProjectCode);
+        if (!projects.containsKey(projectIdentifier))
         {
-            SpacePermId spacePermId = new SpacePermId(fallbackSpaceCode);
+            Project project = new Project();
 
-            if (!spaces.containsKey(new SpacePermId(fallbackSpaceCode)))
-            {
-                Space space = new Space();
-                space.setPermId(spacePermId);
-                space.setCode(spacePermId.getPermId());
-                spaces.put(spacePermId, space);
-            }
-            ProjectIdentifier projectIdentifier =
-                    new ProjectIdentifier(fallbackSpaceCode, fallbackProjectCode);
-            if (!projects.containsKey(projectIdentifier))
-            {
-                Project project = new Project();
+            ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
+            fetchOptions.withSpace();
+            project.setFetchOptions(fetchOptions);
 
-                ProjectFetchOptions fetchOptions = new ProjectFetchOptions();
-                fetchOptions.withSpace();
-                project.setFetchOptions(fetchOptions);
-
-                project.setSpace(spaces.get(new SpacePermId(fallbackSpaceCode)));
-                project.setIdentifier(projectIdentifier);
-                project.setCode(fallbackProjectCode);
-                projects.put(projectIdentifier, project);
-
-            }
+            project.setSpace(spaces.get(new SpacePermId(fallbackSpaceCode)));
+            project.setIdentifier(projectIdentifier);
+            project.setCode(fallbackProjectCode);
+            projects.put(projectIdentifier, project);
 
         }
-        //resolve stuff all references and stuff. This should help. Or something.
+    }
+
+    private static void mapProjects(Map<ProjectIdentifier, Project> projects,
+            Map<SpacePermId, Space> spaces)
+    {
         for (Project project : projects.values())
         {
             SpacePermId identifier =
                     new SpacePermId(project.getIdentifier().getIdentifier().split("/")[1]);
             project.setSpace(spaces.get(identifier));
         }
+    }
+
+    private static void mapCollections(List<IMetadataEntry> entries,
+            Map<String, List<String>> typeToInheritanceChain,
+            Map<String, ExperimentType> identifierToCollectionType,
+            Map<ExperimentIdentifier, Experiment> idsToCollections)
+    {
+        for (IMetadataEntry entry : entries)
+        {
+            Optional<EntityKind> entityKind =
+                    matchEntityKind(entry, typeToInheritanceChain);
+
+
+            if (entityKind.filter(x -> x == EntityKind.EXPERIMENT).isPresent())
+            {
+                Experiment experiment = new Experiment();
+                ExperimentType experimentType = identifierToCollectionType.get(
+                        entry.getTypes().stream().findFirst().orElseThrow());
+                experiment.setType(experimentType);
+                ExperimentIdentifier identifier = new ExperimentIdentifier(entry.getId());
+                experiment.setIdentifier(identifier);
+                experimentType.setCode(entry.getId().split("/")[3]);
+                idsToCollections.put(identifier, experiment);
+
+            }
+
+        }
+    }
+
+    private static void resolveSpaceProjectAndCollections(
+            List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
+            Map<ExperimentIdentifier, Experiment> idsToCollections,
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata)
+    {
         for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
         {
             Space space = spaces.get(new SpacePermId(sampleToResolve.getRight().getSpaceCode()));
@@ -487,11 +555,54 @@ public class RdfToModel
                             sampleToResolve.getRight().getProjectCode()));
             sampleToResolve.getLeft().setSpace(space);
             sampleToResolve.getLeft().setProject(project);
+            sampleToResolve.getLeft().setExperiment(idsToCollections.get(new ExperimentIdentifier(
+                    "/" + space.getCode() + "/" + project.getCode() + "/" + sampleToResolve.getRight().collectionCode)));
+            ObjectIdentifier objectIdentifier = new SampleIdentifier(
+                    "/" + sampleToResolve.getLeft().getSpace()
+                            .getCode() + "/" + sampleToResolve.getLeft().getProject()
+                            .getCode() + "/" + sampleToResolve.getLeft().getCode());
+            metadata.put(objectIdentifier, sampleToResolve.getLeft());
+
 
         }
+    }
 
-        return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                identifierToOpenBisCode);
+    private static void resolveOpenBisStructure(List<IMetadataEntry> entries,
+            String fallbackSpaceCode,
+            String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
+            Map<String, Sample> roCrateIdsToObjects, Map<SpacePermId, Space> spaces,
+            Map<ProjectIdentifier, Project> projects)
+    {
+        for (IMetadataEntry entry : entries)
+        {
+            Optional<EntityKind> entityKind =
+                    matchEntityKind(entry, typeToInheritanceChain);
+
+            if (entityKind.filter(x -> x == EntityKind.SAMPLE).isPresent())
+            {
+                Sample sample = roCrateIdsToObjects.get(entry.getId());
+
+                // resolving object references needs another pass after creating all objects
+                for (Map.Entry<String, List<String>> reference : entry.getReferences().entrySet())
+                {
+                    if (requiresSpecialHandling(reference.getKey()))
+                    {
+                        continue;
+                    }
+
+                    sample.getProperties().put(openBisifyCode(deRdfIdentifier(reference.getKey())),
+                            String.join(",",
+                                    reference.getValue().stream()
+                                            .map(x -> roCrateIdsToObjects.get(x))
+                                            .filter(Objects::nonNull)
+                                            .map(x -> mapIdentifier(fallbackSpaceCode,
+                                                    fallbackProjectCode, spaces, projects,
+                                                    x))
+                                            .collect(
+                                                    Collectors.toList())));
+                }
+            }
+        }
     }
 
     private static SampleTypeFetchOptions getSampleTypeFetchOptions()
@@ -529,24 +640,30 @@ public class RdfToModel
     }
 
     private static ReferencesToResolve buildEntryWithSpaceAndProjectToResolve(
-            Map<String, Serializable> properties, String spaceCode, String projectCode,
+            Map<String, List<String>> properties, String spaceCode, String projectCode,
             String defaultExperimentCode)
     {
-        String mySpace = properties.getOrDefault(Constants.PROPERTY_SPACE, spaceCode).toString();
+
+        String mySpace = Optional.ofNullable(properties.get(PROPERTY_SPACE)).map(x -> x.get(0))
+                .orElse(spaceCode);
         String myProject =
-                properties.getOrDefault(Constants.PROPERTY_PROJECT, projectCode).toString();
+                Optional.ofNullable(properties.get(PROPERTY_PROJECT)).map(x -> x.get(0))
+                        .orElse(spaceCode);
         String myExperiment =
                 Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
                                 Object::toString)
                         .map(x -> x.split("/"))
                         .map(x -> x[3])
+                        .map(x -> x.replaceAll("]$", ""))
                         .orElse(defaultExperimentCode);
 
-        myProject = Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION))
-                .map(Object::toString)
-                .map(x -> x.split("/"))
-                .map(x -> x[2])
-                .orElse(myProject);
+        myProject =
+                Optional.ofNullable(properties.get(Constants.PROPERTY_COLLECTION)).map(
+                                Object::toString)
+                        .map(x -> x.split("/"))
+                        .map(x -> x[2])
+                        .map(x -> x.replaceAll("]$", ""))
+                        .orElse(myProject);
 
         return new ReferencesToResolve(mySpace, myProject, myExperiment);
     }
@@ -687,9 +804,20 @@ public class RdfToModel
         return type.getId().equals(GRAPH_ID_SPACE);
     }
 
+    private static boolean isCollection(IType type)
+    {
+        return type.getSubClassOf().contains(GRAPH_ID_Collection);
+    }
+
+
     private static boolean isProject(IType type)
     {
         return type.getId().equals(GRAPH_ID_PROJECT);
+    }
+
+    private static boolean isSample(IType type)
+    {
+        return type.getSubClassOf().stream().anyMatch(GRAPH_ID_OBJECT::equals);
     }
 
     private static boolean isOpenBisDerivedType(IType type)
@@ -702,7 +830,7 @@ public class RdfToModel
         {
             return false;
         }
-        if (type.getId().equals(":Dataset"))
+        if (type.getId().equals(GRAPH_ID_DATASET))
         {
             return false;
         }
@@ -710,11 +838,11 @@ public class RdfToModel
         {
             return false;
         }
-        if (type.getId().equals(":Object"))
+        if (type.getId().equals(GRAPH_ID_OBJECT))
         {
             return false;
         }
-        if (type.getId().equals(":Vocabulary"))
+        if (type.getId().equals(GRAPH_ID_VOCABULARY))
         {
             return false;
         }
@@ -743,6 +871,25 @@ public class RdfToModel
         return false;
 
     }
+
+    private static boolean requiresSpecialHandling(String identifier)
+    {
+        if (deRdfIdentifier(identifier).toUpperCase(Locale.ROOT).equals("SPACE"))
+        {
+            return true;
+        }
+        if (deRdfIdentifier(identifier).toUpperCase(Locale.ROOT).equals("PROJECT"))
+        {
+            return true;
+        }
+        if (deRdfIdentifier(identifier).toUpperCase(Locale.ROOT).equals("COLLECTION"))
+        {
+            return true;
+        }
+        return false;
+
+    }
+
 
     private static String removePrefix(String a)
     {
@@ -826,37 +973,36 @@ public class RdfToModel
             return OpenBisModel.makeOpenBisCodeCompliant(
                     sampleType.getCode() + "_" + parts[parts.length - 1]);
         }
+        if (DataTypeMatcher.matches(identifier, DataType.SAMPLE))
+        {
+            String[] parts = identifier.split("/");
+            return parts[parts.length - 1];
+        }
+
+
         return OpenBisModel.makeOpenBisCodeCompliant(identifier);
 
     }
 
     private static String mapIdentifier(String fallbackSpace, String fallBackProject,
-            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, String code)
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects, Sample sample)
     {
 
-        String[] parts = code.split("/");
-        if (parts.length != 3)
-        {
-            return code;
+        String spaceCode =
+                Optional.ofNullable(sample.getSpace()).map(Space::getCode).orElse(fallbackSpace);
+        String projectCode = Optional.ofNullable(sample.getProject()).map(Project::getCode)
+                .orElse(fallbackSpace);
 
-        }
-        Space space = spaces.get(new SpacePermId(parts[0]));
-        if (space == null)
-        {
-            return List.of(fallbackSpace, fallBackProject, code).stream()
-                    .collect(Collectors.joining("/"));
-        }
+        return "/" + spaceCode + "/" + projectCode + "/" + sample.getCode();
 
-        Project project = projects.get(new ProjectIdentifier(space.getCode(), parts[1]));
-
-        if (project == null)
-        {
-            return List.of(fallbackSpace, fallBackProject, code).stream()
-                    .collect(Collectors.joining("/"));
-        }
-        return code;
 
     }
 
+    private static String getCollectionTypeCode(IType type)
+    {
+        String[] split = type.getId().split(":");
+        return split[split.length - 1].toUpperCase();
+
+    }
 
 }

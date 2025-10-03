@@ -15,8 +15,9 @@ public class ConfigurationTest extends TestCase {
 
     @Test
     public void testGetLocalAppDirectory() throws IOException {
-        Configuration configuration = new Configuration(Path.of("/testpath/subdir"));
+        Configuration configuration = new Configuration(Path.of("/testpath/subdir"), 12345);
         Assert.assertEquals(Path.of("/testpath/subdir"), configuration.getLocalAppDirectory());
+        Assert.assertEquals(12345, configuration.getOpenbisDrivePort());
     }
 
     @Test()

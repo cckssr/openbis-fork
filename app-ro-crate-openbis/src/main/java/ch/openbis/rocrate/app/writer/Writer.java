@@ -3,6 +3,7 @@ package ch.openbis.rocrate.app.writer;
 import ch.eth.sis.rocrate.SchemaFacade;
 import ch.eth.sis.rocrate.facade.*;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
+import ch.openbis.rocrate.app.Constants;
 import ch.openbis.rocrate.app.writer.mapping.Mapper;
 import ch.openbis.rocrate.app.writer.mapping.types.MapResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,21 +20,7 @@ public class Writer
 
     private static final String TYPE = "@type";
 
-    public static final String NAMESPACE_SEPARATOR = ":";
 
-    public static final String SYSTEM_SPACE = NAMESPACE_SEPARATOR + "Space";
-
-    public static final String SYSTEM_OBJECT = NAMESPACE_SEPARATOR + "Object";
-
-    public static final String SYSTEM_COLLECTION =
-            NAMESPACE_SEPARATOR + "Collection";
-
-    public static final String SYSTEM_PROJECT = NAMESPACE_SEPARATOR + "Project";
-
-    public static final String SYSTEM_DATASET = NAMESPACE_SEPARATOR + "Dataset";
-
-    public static final String SYSTEM_VOCABULARY =
-            NAMESPACE_SEPARATOR + "Vocabulary";
 
     public void write(OpenBisModel openBisModel, Path outPath) throws JsonProcessingException
     {
@@ -78,34 +65,34 @@ public class Writer
 
         {
             Type type = new Type();
-            type.setId(SYSTEM_SPACE);
+            type.setId(Constants.PROPERTY_SPACE);
             facade.addType(type);
 
         }
         {
             Type type = new Type();
-            type.setId(SYSTEM_OBJECT);
+            type.setId(Constants.GRAPH_ID_OBJECT);
             facade.addType(type);
 
         }
         {
             Type type = new Type();
-            type.setId(SYSTEM_COLLECTION);
+            type.setId(Constants.GRAPH_ID_Collection);
             facade.addType(type);
         }
         {
             Type type = new Type();
-            type.setId(SYSTEM_PROJECT);
+            type.setId(Constants.GRAPH_ID_PROJECT);
             facade.addType(type);
         }
         {
             Type type = new Type();
-            type.setId(SYSTEM_DATASET);
+            type.setId(Constants.GRAPH_ID_DATASET);
             facade.addType(type);
         }
         {
             Type type = new Type();
-            type.setId(SYSTEM_VOCABULARY);
+            type.setId(Constants.GRAPH_ID_VOCABULARY);
             facade.addType(type);
         }
 
