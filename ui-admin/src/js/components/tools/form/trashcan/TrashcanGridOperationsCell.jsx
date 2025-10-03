@@ -17,13 +17,8 @@ const OPERATIONS_OPTIONS = [
 ]
 
 class TrashcanGridOperationsCell extends React.PureComponent {
-	constructor(props) {
-		super(props)
-		
-	}
-
 	render() {
-		const { row, operationLoading } = this.props
+		const { row, operationLoading, onOperationSelect } = this.props
 
 		return (
 			<SelectField
@@ -36,43 +31,11 @@ class TrashcanGridOperationsCell extends React.PureComponent {
 				}}
 				sort={false}
 				options={OPERATIONS_OPTIONS}
-				onChange={(event) => this.handleOperationChange(event, row)}
+				onChange={(event) => onOperationSelect && onOperationSelect(event, row)}
 			/>
 		)
 	}
 
-	handleOperationChange = async (event, row) => {
-		const selectedOperation = event.target.value
-
-		if (!selectedOperation || !row) {
-			return
-		}
-		this.props.changeOperationLoading(true)
-
-		try {
-			// Route to the appropriate handler based on the selected operation
-			switch (selectedOperation) {
-				case 'revert':
-					await this.props.facade.revertDeletions(row)
-					break
-				case 'delete':
-					await this.props.facade.deletePermanently(row, false)
-					break
-				case 'deleteWithDependents':
-					await this.props.facade.deletePermanently(row, true)
-					break
-				default:
-					console.log('Unknown operation:', selectedOperation)
-			}
-		} catch (error) {
-			console.error('Operation failed:', error)
-		} finally {
-			this.props.changeOperationLoading(false)
-			if (this.props.onReload) {
-				this.props.onReload()
-			}
-		}
-	}
 }
 
 export default TrashcanGridOperationsCell

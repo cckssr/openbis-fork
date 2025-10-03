@@ -3,36 +3,23 @@ import React from 'react'
 import autoBind from 'auto-bind'
 import GridWithOpenbis from '@src/js/components/common/grid/GridWithOpenbis.jsx'
 import GridExportOptions from '@src/js/components/common/grid/GridExportOptions.js'
-import GridFilterOptions from '@src/js/components/common/grid/GridFilterOptions.js'
 import logger from '@src/js/common/logger.js'
 import TrashcanGridEntitiesCell from '@src/js/components/tools/form/trashcan/TrashcanGridEntitiesCell.jsx'
 import TrashcanGridOperationsCell from '@src/js/components/tools/form/trashcan/TrashcanGridOperationsCell.jsx'
 import GridUtil from '@src/js/components/common/grid/GridUtil.js'
-import SelectField from '@src/js/components/common/form/SelectField.jsx'
 import ids from '@src/js/common/consts/ids.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
-import openbis from '@src/js/services/openbis.js'
 import messages from '@src/js/common/messages.js'
-import FormUtil from '@src/js/components/common/form/FormUtil.js'
-import AppController from '@src/js/components/AppController.js'
+
 
 class TrashcanGrid extends React.PureComponent {
 	constructor(props) {
 		super(props)
 		autoBind(this)
-		this.state = {
-			operationLoading: false
-		}
-	}
-
-	changeOperationLoading(loading) {
-		this.setState({ operationLoading: loading })
 	}
 
 	render() {
 		logger.log(logger.DEBUG, 'TrashcanGrid.render')
-		const { rows, controllerRef } = this.props
-		const { operationLoading } = this.state
+		const { rows, controllerRef, onOperationSelect, operationLoading } = this.props
 		const id = ids.TRASHCAN_GRID_ID
 		return (
 			<GridWithOpenbis
@@ -68,10 +55,8 @@ class TrashcanGrid extends React.PureComponent {
 						getValue: ({ row }) => row.operations,
 						renderValue: ({ value, row }) => {
 							return <TrashcanGridOperationsCell row={row} 
-								facade={this.props.facade}
-								onReload={this.props.onReload}
 								operationLoading={operationLoading}
-								changeOperationLoading={this.changeOperationLoading}
+								onOperationSelect={onOperationSelect}
 							/>
 						},
 						filterable: false,
