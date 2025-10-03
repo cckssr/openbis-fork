@@ -1,7 +1,9 @@
 Archiving
 =========
 
-**IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa). Still they can share the same path info and multi dataset archiving databases.
+**IMPORTANT:** AFS and DSS only consider their own data for the archiving/unarchiving (DSS does NOT archive/unarchive AFS data sets and vice versa). 
+
+**IMPORTANT:** AFS and DSS can share the same path info and multi dataset archiving databases. AFS and AS must share the same messages database.
 
 **IMPORTANT:** Only immutable data can be archived.
 
@@ -31,21 +33,21 @@ AFS service.properties:
     
       # NOTE: properties not directly related with the archiving have been skipped for brevity
     
-      # path info database
+      # path info database (this can be the same database that DSS uses i.e. AFS and DSS can share the path info database)
       pathInfoDB.name = pathinfo
       pathInfoDB.kind = test
       pathInfoDB.engine = postgresql
       pathInfoDB.version-holder-class = ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoDatabaseVersionHolder
       pathInfoDB.script-folder = afs-server/sql/pathinfo
     
-      # messages database
+      # messages database (this MUST be the same database that AS uses, otherwise AFS and AS won't be able to communicate via messages)
       messagesDB.name = messages
       messagesDB.kind = test
       messagesDB.engine = postgresql
       messagesDB.version-holder-class = ch.ethz.sis.messages.db.MessagesDatabaseVersionHolder
       messagesDB.script-folder = afs-server/sql/messages
     
-      # archiver database
+      # archiver database (this can be the same database that DSS uses i.e. AFS and DSS can share the archiver database)
       archiverDB.name = multi_dataset_archive
       archiverDB.kind = test
       archiverDB.engine = postgresql
