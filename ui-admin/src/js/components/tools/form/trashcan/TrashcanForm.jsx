@@ -10,7 +10,6 @@ import TrashcanFormFormButtons from '@src/js/components/tools/form/trashcan/Tras
 import PageMode from '@src/js/components/common/page/PageMode.js'
 import ids from '@src/js/common/consts/ids.js'
 import logger from '@src/js/common/logger.js'
-import AppController from '@src/js/components/AppController.js'
 
 class TrashcanForm extends React.PureComponent {
   constructor(props) {
@@ -38,11 +37,19 @@ class TrashcanForm extends React.PureComponent {
     this.controller.gridController = gridController
   }
 
+  handleEmptyTrashcan() {
+    this.controller.facade.emptyTrashcan(this.state.rows)
+    this.setState({ loading: true })
+    setTimeout(() => {
+      this.controller.load()
+    }, 1000)
+  }
+
   render() {
     logger.log(logger.DEBUG, 'TrashcanForm.render')
 
     const { loadId, loading, loaded } = this.state
-
+    console.log('TrashcanForm', this.state, this.props )
     return (
       <PageWithTwoPanels
         key={loadId}
@@ -58,34 +65,32 @@ class TrashcanForm extends React.PureComponent {
 
   renderMainPanel() {
     const { rows } = this.state
+    const { facade, load } = this.controller
     return (
       <GridContainer>
-        <TrashcanGrid
-          controllerRef={this.handleGridControllerRef}
-          rows={rows}
-          facade={this.controller.facade}
-          onReload={this.controller.load}
+        <TrashcanGrid 
+          controllerRef={this.handleGridControllerRef} 
+          rows={rows} 
+          facade={facade} 
+          onReload={load}
         />
       </GridContainer>
     )
   }
 
   renderButtons() {
-    const { controller } = this
+    const { facade } = this.controller
     const { rows } = this.state
 
     return (
       <TrashcanFormFormButtons
         rows={rows}
         mode={PageMode.EDIT}
-        onEmptyTrashcan={controller.handleEmptyTrashcan}
+        onEmptyTrashcan={this.handleEmptyTrashcan}
       />
     )
   }
 
 }
 
-export default AppController.getInstance().withState(() => ({
-  lastObjectModifications:
-    AppController.getInstance().getLastObjectModifications()
-}))(TrashcanForm)
+export default TrashcanForm

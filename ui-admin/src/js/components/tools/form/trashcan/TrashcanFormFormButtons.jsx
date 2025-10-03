@@ -13,12 +13,11 @@ class TrashcanFormFormButtons extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'TrashcanFormFormButtons.render')
 
-    const { mode, onEmptyTrashcan, onCancel, changed } = this.props
+    const { mode } = this.props
 
     return (
       <PageButtons
         mode={mode}
-        onCancel={onCancel}
         renderAdditionalButtons={params => this.renderAdditionalButtons(params)}
       />
     )

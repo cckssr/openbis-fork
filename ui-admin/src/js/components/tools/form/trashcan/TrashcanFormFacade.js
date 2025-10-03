@@ -12,10 +12,8 @@ export default class TrashcanFormFacade {
   }
 
   async revertDeletions(row) {
-    console.log('TrashcanFormFacade.revertDeletions', row)
     const deletionIds = [new openbis.DeletionTechId(row.id)]
     const result = await openbis.revertDeletions(deletionIds)
-    console.log('TrashcanFormFacade.revertDeletions', result)
     return result
   }
 
@@ -23,22 +21,15 @@ export default class TrashcanFormFacade {
     const deletionIds = [new openbis.DeletionTechId(row.id)]
     const confirmOperation = new openbis.ConfirmDeletionsOperation(deletionIds);
     confirmOperation.setForceDeletionOfDependentDeletions(includeDependent);
-    const result = openbis.executeOperations([confirmOperation], new openbis.SynchronousOperationExecutionOptions())
-    console.log(result)
-    /* if (includeDependent){
-      const result = await openbis.deletePermanentlyForced(deletionIds)
-      console.log('TrashcanFormFacade.deletePermanentlyForced', result)
-    } else {
-      const result = await openbis.deletePermanently(deletionIds)
-      console.log('TrashcanFormFacade.deletePermanently', result)
-    } */
+    const result = await openbis.executeOperations([confirmOperation], new openbis.SynchronousOperationExecutionOptions())
     return result
   }
 
   async emptyTrashcan(deletions) {
-    const deleteIds = deletions.map(deletion => deletion.id)
-    const result = await openbis.deletePermanently(deleteIds, true)
-    console.log('TrashcanFormFacade.emptyTrashcan', result)
+    const deleteIds = deletions.map(deletion => new openbis.DeletionTechId(deletion.id))
+    const confirmOperation = new openbis.ConfirmDeletionsOperation(deleteIds);
+    confirmOperation.setForceDeletionOfDependentDeletions(true);
+    const result = await openbis.executeOperations([confirmOperation], new openbis.SynchronousOperationExecutionOptions())
     return result
   }
 }
