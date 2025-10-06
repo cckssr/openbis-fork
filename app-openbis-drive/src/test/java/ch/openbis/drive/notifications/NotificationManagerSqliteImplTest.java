@@ -1,11 +1,8 @@
 package ch.openbis.drive.notifications;
 
 import ch.openbis.drive.conf.Configuration;
-import ch.openbis.drive.db.NotificationDAOImpl;
 import ch.openbis.drive.model.Notification;
-import junit.framework.TestCase;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -132,6 +129,42 @@ public class NotificationManagerSqliteImplTest {
         sortedNotifications.removeIf(entry -> "remoteFile".equals(entry.getRemoteFile()));
 
         Assert.assertEquals(sortedNotifications, notificationManager.getNotifications(100));
+    }
+
+    @Test
+    public void testGetSpecificNotification() {
+        notificationManager.clearAllNotifications();
+
+        String localDir = "localDir";
+        long now = System.currentTimeMillis();
+        List<Notification> notificationList = List.of(
+                new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
+                new Notification(Notification.Type.Conflict, localDir, "localFile1", "remoteFile1", "MESSAGE__", now-190),
+                new Notification(Notification.Type.Conflict, localDir, "localFile2", "remoteFile2", "MESSAGE__", now),
+                new Notification(Notification.Type.Conflict, localDir, "localFile3", "remoteFile3", "MESSAGE__", now-32),
+                new Notification(Notification.Type.Conflict, localDir, "localFile4", "remoteFile4", "MESSAGE__", now-2),
+                new Notification(Notification.Type.Conflict, localDir, "localFile5", "remoteFile5", "MESSAGE__", now-324),
+                new Notification(Notification.Type.Conflict, localDir, "localFile6", "remoteFile6", "MESSAGE__", now+1),
+                new Notification(Notification.Type.Conflict, localDir, "localFile7", "remoteFile7", "MESSAGE__", now+2),
+                new Notification(Notification.Type.JobStopped, localDir, null, null, "MESSAGE__", now+20000),
+                new Notification(Notification.Type.JobException, localDir, null, null, "MESSAGE__", now+233333)
+        );
+
+        notificationManager.addNotifications(notificationList);
+
+        for (Notification notification : notificationList) {
+            Assert.assertEquals(notification, notificationManager.getSpecificNotification(notification));
+            Assert.assertEquals(notification, notificationManager.getSpecificNotification(notification.toBuilder().message(notification.getMessage() + "CHANGED").build()));
+            Assert.assertEquals(notification, notificationManager.getSpecificNotification(notification.toBuilder().timestamp(notification.getTimestamp() + 10000).build()));
+            Assert.assertNull(notificationManager.getSpecificNotification(notification.toBuilder().localDirectory(notification.getLocalDirectory() + "CHANGED").build()));
+            Assert.assertNull(notificationManager.getSpecificNotification(notification.toBuilder().localFile(notification.getLocalFile() + "CHANGED").build()));
+            Assert.assertNull(notificationManager.getSpecificNotification(notification.toBuilder().remoteFile(notification.getRemoteFile() + "CHANGED").build()));
+            Assert.assertNull(notificationManager.getSpecificNotification(notification.toBuilder().type(switch (notification.getType()) {
+                case JobStopped, JobException -> Notification.Type.Conflict;
+                case Conflict -> Notification.Type.JobException;
+            }).build()));
+        }
+
     }
 
     @Test

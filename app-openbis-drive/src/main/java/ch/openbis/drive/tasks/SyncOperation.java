@@ -7,6 +7,7 @@ import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
 import ch.openbis.drive.db.SyncJobEventDAO;
 
+import ch.openbis.drive.model.Event;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -29,6 +32,7 @@ import java.util.stream.Stream;
 public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 10000;
+    static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
 
     private final @NonNull SyncJob syncJob;
 
@@ -147,7 +151,7 @@ public class SyncOperation {
             Optional<FileInfo> sourceInfoOpt;
             SyncJobEvent syncJobEvent = null;
 
-            if( skipLocalHiddenAppDirPrecheck(syncDirection, sourcePath, destinationPath) ) {
+            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
                 sourceInfoOpt = Optional.empty();
                 collisionAction = ClientAPI.CollisionAction.Skip;
             } else {
@@ -524,13 +528,15 @@ public class SyncOperation {
         syncJobEventDAO.insertOrUpdate(newFileSyncEntry);
     }
 
-    boolean skipLocalHiddenAppDirPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
+    boolean skipAppPrivateFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
         Path localPath = switch (syncDirection) {
             case UP -> source;
             case DOWN -> destination;
         };
 
-        return localPath.toAbsolutePath().startsWith(localOpenBisHiddenDirectory);
+        return localPath.toAbsolutePath().startsWith(localOpenBisHiddenDirectory) ||
+                source.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX) ||
+                destination.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX);
     }
 
     static SyncJobEvent pickMoreRecentCompletedFileSyncState(SyncJobEvent entry1, SyncJobEvent entry2) {
@@ -539,8 +545,86 @@ public class SyncOperation {
                 .max(Comparator.comparing(SyncJobEvent::getTimestamp)).orElse(null);
     }
 
+    @SneakyThrows
     ClientAPI.CollisionAction handleFileVersionConflict(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
-        raiseConflictNotification(source, destination, syncDirection, syncJobEvent);
+        Path localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source : destination;
+        Path remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination : source;
+        Notification alreadyPresentConflictNotification = notificationManager.getSpecificNotification(new Notification(
+                Notification.Type.Conflict,
+                syncJob.getLocalDirectoryRoot(),
+                localFile.toString(),
+                remoteFile.toString(),
+                "FILE VERSION CONFLICT",
+                Instant.now().toEpochMilli()
+        ));
+
+        Path localSuffixedConflictFile = Path.of(localFile + CONFLICT_FILE_SUFFIX).toAbsolutePath();
+
+        //Check if conflict notification is present and .openbis-conflict file has been deleted, that means: conflict resolution has been performed
+        if (alreadyPresentConflictNotification != null && !Files.exists(localSuffixedConflictFile)) {
+            afsClientProxy.delete(syncJob.getEntityPermId(), remoteFile.toString());
+            FileTime localLastModification = Files.getLastModifiedTime(localFile);
+            ClientAPI.DefaultTransferMonitorLister transferMonitorListener = new ClientAPI.DefaultTransferMonitorLister();
+            transferMonitorListener.addFileTransferredListener(new ClientAPI.FileTransferredListener() {
+                @Override
+                @SneakyThrows
+                public void transferred(@NonNull Path sourcePath, @NonNull Path destinationPath) {
+                    if(sourcePath.equals(localFile) && destinationPath.equals(remoteFile)) {
+                        SyncJobEvent updatedSyncJobEvent = SyncJobEvent.builder()
+                                .syncDirection(Event.SyncDirection.UP)
+                                .localDirectoryRoot(syncJob.getLocalDirectoryRoot())
+                                .entityPermId(syncJob.getEntityPermId())
+                                .localFile(localFile.toAbsolutePath().toString())
+                                .remoteFile(remoteFile.toAbsolutePath().toString())
+                                .sourceTimestamp(localLastModification.toMillis())
+                                .destinationTimestamp(getRemoteFileInfo(remoteFile).map(FileInfo::getLastModifiedDate)
+                                        .map(Instant::toEpochMilli)
+                                        .orElseThrow(() -> new IllegalStateException("Error retrieving remote destination last-modification date")))
+                                .timestamp(Instant.now().toEpochMilli())
+                                .directory(false)
+                                .sourceDeleted(false).build();
+                        syncJobEventDAO.insertOrUpdate(updatedSyncJobEvent);
+                    }
+                }
+            });
+            boolean uploadResult = afsClientProxy.upload(localFile, syncJob.getEntityPermId(), remoteFile, ClientAPI.overrideCollisionListener, transferMonitorListener);
+
+            if (uploadResult && transferMonitorListener.getException() == null) {
+                removePossibleConflictNotification(source, destination, syncDirection);
+            } else {
+                throw new RuntimeException(String.format("Upload of conflict resolution failed for local file: %s", localFile));
+            }
+        } else {
+            boolean doDownloadRemoteVersion = false;
+            boolean localConflictFileExists = Files.exists(localSuffixedConflictFile);
+            if (localConflictFileExists) {
+                Optional<FileInfo> remoteFileInfo = getRemoteFileInfo(remoteFile);
+                if(remoteFileInfo.isPresent()) {
+                    BasicFileAttributes attr = Files.readAttributes(localSuffixedConflictFile, BasicFileAttributes.class);
+                    FileTime fileTime = attr.creationTime();
+                    if (remoteFileInfo.get().getLastModifiedDate().toEpochMilli() >
+                            fileTime.toMillis()) {
+                        doDownloadRemoteVersion = true;
+                    }
+                }
+            } else {
+                doDownloadRemoteVersion = true;
+            }
+
+            if(doDownloadRemoteVersion) {
+                ClientAPI.DefaultTransferMonitorLister transferMonitorListener = new ClientAPI.DefaultTransferMonitorLister();
+                if(!localConflictFileExists) {
+                    Files.createFile(localSuffixedConflictFile);
+                }
+                boolean downloadResult = afsClientProxy.download(syncJob.getEntityPermId(), remoteFile, localSuffixedConflictFile, ClientAPI.overrideCollisionListener, transferMonitorListener);
+                if(!downloadResult || transferMonitorListener.getException() != null) {
+                    throw new RuntimeException(String.format("Download of conflicting remote content failed: %s", remoteFile));
+                }
+            }
+
+            raiseConflictNotification(source, destination, syncDirection, syncJobEvent);
+        }
+
         return ClientAPI.CollisionAction.Skip;
     }
 
@@ -553,7 +637,7 @@ public class SyncOperation {
                 syncJob.getLocalDirectoryRoot(),
                 localFile,
                 remoteFile,
-                "FILE VERSION CONFLICT",
+                String.format("FILE VERSION CONFLICT: check remote version in %s.openbis-conflict, make due changes in %s if necessary, then delete %s.openbis-conflict to mark resolution", localFile, localFile, localFile),
                 Instant.now().toEpochMilli()
         );
 
@@ -624,6 +708,10 @@ public class SyncOperation {
 
         @NonNull public Boolean download(@NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath, @NonNull ClientAPI.FileCollisionListener fileCollisionListener, @NonNull ClientAPI.TransferMonitorListener transferMonitorListener) throws Exception{
             return AfsClientDownloadHelper.download(afsClient, sourceOwner, sourcePath, destinationPath, fileCollisionListener, transferMonitorListener);
+        }
+
+        public void delete(@NonNull String sourceOwner, @NonNull String sourcePath) throws Exception {
+            afsClient.delete(sourceOwner, sourcePath);
         }
     }
 }

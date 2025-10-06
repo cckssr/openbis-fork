@@ -4,11 +4,13 @@ import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.db.SyncJobEventDAOImp;
+import ch.openbis.drive.model.Event;
 import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import ch.openbis.drive.notifications.NotificationManager;
 import junit.framework.TestCase;
+import lombok.NonNull;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +22,8 @@ import org.mockito.Mockito;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -652,27 +656,49 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
         SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
 
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir"), Path.of("/remote")));
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir")));
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir/subfile"), Path.of("/remote")));
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir/subfile")));
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir/subfile/subfile2"), Path.of("/remote")));
-        Assert.assertTrue(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir/subfile/subfile2")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir"), Path.of("/remote")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir/subfile"), Path.of("/remote")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir/subfile")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/hidden-dir/subfile/subfile2"), Path.of("/remote")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/hidden-dir/subfile/subfile2")));
 
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir/subfile"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir/subfile")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir/subfile/subfile2"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir/subfile/subfile2")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir/subfile"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir/subfile")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/hidden-dir/subfile/subfile2"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/remote"), Path.of("/hidden-dir/subfile/subfile2")));
 
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir/subfile"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir/subfile")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir/subfile/subfile2"), Path.of("/remote")));
-        Assert.assertFalse(syncOperation1.skipLocalHiddenAppDirPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir/subfile/subfile2")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir/subfile"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir/subfile")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/good-dir/subfile/subfile2"), Path.of("/remote")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/remote"), Path.of("/good-dir/subfile/subfile2")));
 
+    }
+
+    @Test
+    public void testSkipAppPrivateConflictFilesPrecheck() {
+        SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
+        ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+
+        SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Upload, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
+
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test.openbis-conflict")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test"), Path.of("/remote/test.openbis-conflict")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.UP, Path.of("/local/test"), Path.of("/remote/test")));
+
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test.openbis-conflict")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/local/test.openbis-conflict"), Path.of("/remote/test")));
+        Assert.assertTrue(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/local/test"), Path.of("/remote/test.openbis-conflict")));
+        Assert.assertFalse(syncOperation1.skipAppPrivateFilesPrecheck(SyncJobEvent.SyncDirection.DOWN, Path.of("/local/test"), Path.of("/remote/test")));
     }
 
     @Test
@@ -885,7 +911,7 @@ public class SyncOperationTest extends TestCase {
                 Path sourcePath = Path.of("source");
                 Path destinationPath = Path.of("destination");
 
-                Mockito.doReturn(true).when(syncOperation1).skipLocalHiddenAppDirPrecheck(syncDirection, sourcePath, destinationPath);
+                Mockito.doReturn(true).when(syncOperation1).skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath);
 
                 ClientAPI.CollisionAction collisionAction = fileSyncCollisionListener.precheck(sourcePath, destinationPath, false);
 
@@ -960,7 +986,7 @@ public class SyncOperationTest extends TestCase {
                                 SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
                                 SyncOperation.FileSyncCollisionListener fileSyncCollisionListener = Mockito.spy(syncOperation1.new FileSyncCollisionListener(syncDirection));
 
-                                Mockito.doReturn(false).when(syncOperation1).skipLocalHiddenAppDirPrecheck(syncDirection, sourcePath, destinationPath);
+                                Mockito.doReturn(false).when(syncOperation1).skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath);
 
                                 Instant now = Instant.now();
                                 Instant later = now.plusMillis(100);
@@ -1087,7 +1113,7 @@ public class SyncOperationTest extends TestCase {
     }
 
     @Test
-    public void testHandleFileVersionConflict() {
+    public void testHandleFileVersionConflict_resolvedConflict() throws Exception {
         SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
         ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
         ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
@@ -1097,12 +1123,182 @@ public class SyncOperationTest extends TestCase {
         SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
         SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
 
-        Path source = Path.of("source");
-        Path destination = Path.of("destination");
-        SyncJobEvent fakeSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(source.toAbsolutePath().toString()).remoteFile(destination.toAbsolutePath().toString())
-                .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(System.currentTimeMillis()).timestamp(System.currentTimeMillis()).build();
-        syncOperation1.handleFileVersionConflict(source, destination, SyncJobEvent.SyncDirection.UP, fakeSyncEntry);
-        Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, SyncJobEvent.SyncDirection.UP, fakeSyncEntry);
+        for( SyncJobEvent.SyncDirection syncDirection : List.of(Event.SyncDirection.UP, Event.SyncDirection.DOWN)) {
+            Path source = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("source");
+            Path destination = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("destination");
+
+            Path localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source : destination;
+            Path remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination : source;
+
+            Path conflictLocalFile = Path.of(localFile.toAbsolutePath() + SyncOperation.CONFLICT_FILE_SUFFIX);
+            Files.write(localFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            FileTime localFileLastModified = Files.getLastModifiedTime(localFile);
+
+            for(boolean remoteFileInfoIsPresent : List.of(false, true)) {
+                for(boolean uploadResult : List.of(false, true)) {
+                    for(boolean transferMonitorException : List.of(false, true)) {
+                        Mockito.clearInvocations(syncOperation1);
+                        Mockito.clearInvocations(afsClient);
+                        Mockito.clearInvocations(notificationManager);
+                        Mockito.clearInvocations(syncJobEventDAO1);
+                        Files.deleteIfExists(conflictLocalFile);
+                        Notification alreadyPresentNotification = new Notification(
+                                Notification.Type.Conflict,
+                                syncJob1.getLocalDirectoryRoot(),
+                                localFile.toString(),
+                                remoteFile.toString(),
+                                "FILE VERSION CONFLICT",
+                                Instant.now().toEpochMilli()
+                        );
+                        Mockito.doReturn(alreadyPresentNotification).when(notificationManager).getSpecificNotification(Mockito.any());
+                        Instant remoteLastModifiedDate = Instant.now().minusSeconds(1000000);
+                        Mockito.doReturn( remoteFileInfoIsPresent ? Optional.of(new SyncOperation.FileInfo(false,
+                                remoteLastModifiedDate)) : Optional.empty()
+                        ).when(syncOperation1).getRemoteFileInfo(remoteFile);
+                        Mockito.doAnswer((invocationOnMock)->{
+                            ClientAPI.TransferMonitorListener transferMonitorListener = invocationOnMock.getArgument(4, ClientAPI.TransferMonitorListener.class);
+                            //call start and add on transferMonitorListener to cause a 'transferred' event
+                            transferMonitorListener.start(localFile, remoteFile, 10);
+                            transferMonitorListener.add(localFile, remoteFile, 10, true);
+                            if(transferMonitorException) {
+                                transferMonitorListener.failed(new RuntimeException("EXCEPTIONAL RESULT"));
+                            }
+                            return uploadResult;
+                        }).when(afsClient).upload(Mockito.any(), Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any());
+
+                        SyncJobEvent fakeSyncEntry = SyncJobEvent.builder().syncDirection(syncDirection).localFile(localFile.toString()).remoteFile(remoteFile.toString())
+                                .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(System.currentTimeMillis()).timestamp(System.currentTimeMillis()).build();
+
+                        Exception exception = null;
+                        try {
+                            syncOperation1.handleFileVersionConflict(source, destination, syncDirection, fakeSyncEntry);
+                        } catch (Exception e) {
+                            exception = e;
+                        }
+                        Mockito.verify(afsClient, Mockito.times(1)).delete(syncJob1.getEntityPermId(), remoteFile.toString());
+
+                        Mockito.verify(afsClient, Mockito.times(1)).upload(
+                                Mockito.eq(localFile),
+                                Mockito.eq(syncJob1.getEntityPermId()),
+                                Mockito.eq(remoteFile), Mockito.any(), Mockito.any());
+
+                        if(remoteFileInfoIsPresent) {
+                            SyncJobEvent expectedSyncJobEvent = SyncJobEvent.builder()
+                                    .syncDirection(Event.SyncDirection.UP)
+                                    .localDirectoryRoot(syncJob1.getLocalDirectoryRoot())
+                                    .entityPermId(syncJob1.getEntityPermId())
+                                    .localFile(localFile.toAbsolutePath().toString())
+                                    .remoteFile(remoteFile.toAbsolutePath().toString())
+                                    .sourceTimestamp(localFileLastModified.toMillis())
+                                    .destinationTimestamp(remoteLastModifiedDate.toEpochMilli())
+                                    .timestamp(Instant.now().toEpochMilli())
+                                    .directory(false)
+                                    .sourceDeleted(false).build();
+                            ArgumentCaptor<SyncJobEvent> syncJobEventArgumentCaptor = ArgumentCaptor.forClass(SyncJobEvent.class);
+                            Mockito.verify(syncJobEventDAO1, Mockito.times(1)).insertOrUpdate(syncJobEventArgumentCaptor.capture());
+                            Assert.assertEquals(
+                                    expectedSyncJobEvent.toBuilder().timestamp(syncJobEventArgumentCaptor.getValue().getTimestamp()).build(),
+                                    syncJobEventArgumentCaptor.getValue());
+                        }
+
+                        if(uploadResult && !transferMonitorException && remoteFileInfoIsPresent) {
+                            Mockito.verify(syncOperation1, Mockito.times(1)).removePossibleConflictNotification(source, destination, syncDirection);
+                            Assert.assertNull(exception);
+                        } else {
+                            Mockito.verify(syncOperation1, Mockito.times(0)).removePossibleConflictNotification(Mockito.any(), Mockito.any(), Mockito.any());
+                            Assert.assertNotNull(exception);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    public void testHandleFileVersionConflict_raiseConflictNotification() throws Exception {
+        SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
+        ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+
+        SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
+
+        for( SyncJobEvent.SyncDirection syncDirection : List.of(Event.SyncDirection.UP, Event.SyncDirection.DOWN)) {
+            Path source = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("source");
+            Path destination = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("destination");
+
+            Path localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source : destination;
+            Path remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination : source;
+
+            for (boolean conflictFileAlreadyPresent : List.of(false, true)) {
+                Path conflictLocalFile = Path.of(localFile.toAbsolutePath() + SyncOperation.CONFLICT_FILE_SUFFIX);
+                for(boolean remoteFileInfoIsPresent : List.of(false, true)) {
+
+                    for(boolean remoteLaterModifiedThanLocalConflictFile : List.of(false, true)) {
+
+                        boolean doDownload = !conflictFileAlreadyPresent || (remoteFileInfoIsPresent && remoteLaterModifiedThanLocalConflictFile);
+
+                        for(boolean downloadResult : List.of(false, true)) {
+                            for(boolean transferMonitorException : List.of(false, true)) {
+                                if(conflictFileAlreadyPresent) {
+                                    Files.write(conflictLocalFile, new byte[0], StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                                } else {
+                                    Files.deleteIfExists(conflictLocalFile);
+                                }
+                                Mockito.clearInvocations(syncOperation1);
+                                Mockito.clearInvocations(afsClient);
+                                if (remoteFileInfoIsPresent) {
+                                    Mockito.doReturn(Optional.of(new SyncOperation.FileInfo(false,
+                                            remoteLaterModifiedThanLocalConflictFile ? Instant.now().plusSeconds(1000) : Instant.now().minusSeconds(1000000)
+                                    ))).when(syncOperation1).getRemoteFileInfo(remoteFile);
+                                } else {
+                                    Mockito.doReturn(Optional.empty()).when(syncOperation1).getRemoteFileInfo(remoteFile);
+                                }
+                                Mockito.doAnswer((invocationOnMock)->{
+                                    ClientAPI.TransferMonitorListener transferMonitorListener = invocationOnMock.getArgument(4, ClientAPI.TransferMonitorListener.class);
+                                    if(transferMonitorException) {
+                                        transferMonitorListener.failed(new RuntimeException("EXCEPTIONAL RESULT"));
+                                    }
+                                    return downloadResult;
+                                }).when(afsClient).download(Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+
+                                SyncJobEvent fakeSyncEntry = SyncJobEvent.builder().syncDirection(syncDirection).localFile(localFile.toString()).remoteFile(remoteFile.toString())
+                                        .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(System.currentTimeMillis()).timestamp(System.currentTimeMillis()).build();
+
+                                Exception exception = null;
+                                try {
+                                    syncOperation1.handleFileVersionConflict(source, destination, syncDirection, fakeSyncEntry);
+                                } catch (Exception e) {
+                                    exception = e;
+                                }
+                                if(doDownload) {
+                                    if(downloadResult && !transferMonitorException) {
+                                        Assert.assertNull(exception);
+                                        Mockito.verify(afsClient, Mockito.times(1)).download(Mockito.eq(syncJob1.getEntityPermId()), Mockito.eq(remoteFile), Mockito.eq(conflictLocalFile), Mockito.any(), Mockito.any());
+                                        Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                        Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                    } else {
+                                        Assert.assertNotNull(exception);
+                                        Mockito.verify(afsClient, Mockito.times(1)).download(Mockito.eq(syncJob1.getEntityPermId()), Mockito.eq(remoteFile), Mockito.eq(conflictLocalFile), Mockito.any(), Mockito.any());
+                                        Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                        Mockito.verify(syncOperation1, Mockito.times(0)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                    }
+                                } else {
+                                    Assert.assertNull(exception);
+                                    Mockito.verify(afsClient, Mockito.times(0)).download(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                    Mockito.verify(afsClient, Mockito.times(0)).upload(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+                                    Mockito.verify(syncOperation1, Mockito.times(1)).raiseConflictNotification(source, destination, syncDirection, fakeSyncEntry);
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     @Test
@@ -1131,7 +1327,7 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
         Assert.assertEquals(source.toString(), notificationArgumentCaptor.getValue().get(0).getLocalFile());
         Assert.assertEquals(destination.toString(), notificationArgumentCaptor.getValue().get(0).getRemoteFile());
-        Assert.assertEquals("FILE VERSION CONFLICT", notificationArgumentCaptor.getValue().get(0).getMessage());
+        Assert.assertTrue(notificationArgumentCaptor.getValue().get(0).getMessage().contains("FILE VERSION CONFLICT"));
         Assert.assertTrue(now.toEpochMilli() <= notificationArgumentCaptor.getValue().get(0).getTimestamp());
         Assert.assertTrue(Instant.now().toEpochMilli() >= notificationArgumentCaptor.getValue().get(0).getTimestamp());
     }

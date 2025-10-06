@@ -44,6 +44,12 @@ public class NotificationManagerSqliteImpl implements NotificationManager {
 
     @Override
     @SneakyThrows
+    synchronized public Notification getSpecificNotification(@NonNull Notification notification) {
+        return notificationDAO.selectByPrimaryKey(notification.getType(), notification.getLocalDirectory(), notification.getLocalFile(), notification.getRemoteFile());
+    }
+
+    @Override
+    @SneakyThrows
     synchronized public void clearNotificationsForSyncJob(@NonNull SyncJob syncJob) {
         notificationDAO.removeByLocalDirectory(syncJob.getLocalDirectoryRoot());
     }
