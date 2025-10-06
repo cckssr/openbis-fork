@@ -22,11 +22,18 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Mapper
 {
+
+    public static final String CANONICAL_OPENBIS_DATE_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss Z";
+
+
 
     public MapResult transform(OpenBisModel openBisModel)
     {
@@ -246,6 +253,11 @@ public class Mapper
                         .map(x -> x.getCode())
                         .collect(Collectors.toSet());
 
+                Map<String, DataType> codeToDataType = sample.getType().getPropertyAssignments()
+                        .stream()
+                        .map(x -> x.getPropertyType())
+                        .collect(Collectors.toMap(x -> x.getCode(), x -> x.getDataType()));
+
                 String type = typeToRdfsName.get(sample.getType());
                 for (Map.Entry<String, Serializable> a : sample.getProperties().entrySet())
                 {
@@ -254,12 +266,20 @@ public class Mapper
                         continue;
                     }
                     String propName = openBisPropertiesToRdfsProperties.get(a.getKey());
+                    DataType dataType = codeToDataType.get(a.getKey());
                     if (!referenceTypeNames.contains(a.getKey()))
                     {
-                        props.put(propName, a.getValue());
+                        String[] vals = extractSerializableList(a.getValue()).stream()
+                                .map(x -> mapValue(x, dataType)).map(x -> x.toString())
+                                .toArray(String[]::new);
+
+                        props.put(propName, vals);
                     } else
                     {
-                        references.put(propName, extractSerializableList(a.getValue()));
+
+                        references.put(propName, extractSerializableList(a.getValue()).stream()
+                                .map(x -> mapValue(x, dataType)).collect(
+                                        Collectors.toList()));
 
                     }
 
@@ -334,6 +354,27 @@ public class Mapper
                 new RdfsSchema(classes.values().stream().collect(Collectors.toList()), properties),
                 new MappingInfo(reverseMapping, rdfsPropertiesUsedIn), metaDataEntries);
     }
+
+    private String mapValue(String val, DataType dataType)
+    {
+        if (dataType == DataType.DATE || dataType == DataType.TIMESTAMP)
+        {
+
+            DateTimeFormatter dateTimeFormatter =
+                    DateTimeFormatter.ofPattern(CANONICAL_OPENBIS_DATE_FORMAT_PATTERN);
+            TemporalAccessor parsed = dateTimeFormatter.parse(val);
+            Instant i = Instant.from(parsed);
+            Date d = Date.from(i);
+            String format = DateTimeFormatter.ISO_DATE_TIME.format(parsed);
+            return format;
+
+        }
+
+        return val;
+
+    }
+
+
 
     private List<String> extractSerializableList(Serializable a)
     {

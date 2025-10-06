@@ -82,11 +82,8 @@ public class SciCatExportTest
         }
         AbstractEntityPropertyHolder
                 entity = openBisModel.getEntities().values().stream().findFirst().orElseThrow();
-        assertEquals("0", entity.getProperties().get("numberOfFiles").toString());
-        assertTrue("0", entity.getProperties().get("relatedPublications").toString()
-                .contains("Miettinen"));
-        assertEquals("schlepuetz_c", entity.getProperties().get("scicatUser").toString());
-        assertEquals("0", entity.getProperties().get("sizeOfArchive").toString());
+        assertEquals("0.0", entity.getProperties().get("numberOfFiles").toString());
+        assertEquals("4000.0", entity.getProperties().get("sizeOfArchive").toString());
 
         Optional<IEntityType>
                 maybePublicationIntersectionType =

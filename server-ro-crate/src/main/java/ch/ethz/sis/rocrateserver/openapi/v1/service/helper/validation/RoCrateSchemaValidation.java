@@ -50,7 +50,8 @@ public class RoCrateSchemaValidation
                 for (Map.Entry<String, Serializable> property : sample.getProperties().entrySet())
                 {
                     PropertyAssignment propertyAssignment =
-                            codeToPropertyAssignment.get(property.getKey());
+                            matchPropertyAssignment(codeToPropertyAssignment, property.getKey(),
+                                    property.getValue());
 
                     if (propertyAssignment == null && !property.getKey().equalsIgnoreCase("name"))
                     {
@@ -116,6 +117,14 @@ public class RoCrateSchemaValidation
     private static boolean validateDataType(DataType dataType, Serializable value)
     {
         return DataTypeMatcher.matches(value, dataType);
+    }
+
+    private static PropertyAssignment matchPropertyAssignment(
+            Map<String, PropertyAssignment> codeToPropertyAssignment, String key,
+            Serializable value)
+    {
+        return DataTypeMatcher.matchPropertyAssignment(codeToPropertyAssignment, key, value);
+
     }
 
 }
