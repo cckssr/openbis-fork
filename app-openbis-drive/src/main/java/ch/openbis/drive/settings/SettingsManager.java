@@ -148,7 +148,7 @@ public class SettingsManager {
         if (settings.getJobs() != null) {
 
             ArrayList<Path> localDirValues = settings.getJobs().stream()
-                    .map( SyncJob::getLocalDirectoryRoot).map(Path::of).map(Path::toAbsolutePath).collect(Collectors.toCollection(ArrayList::new));
+                    .map( SyncJob::getLocalDirectoryRoot).map(Path::of).map(Path::toAbsolutePath).map(Path::normalize).collect(Collectors.toCollection(ArrayList::new));
 
             for(int i=0; i<localDirValues.size(); i++) {
                 for(int j=i+1; j<localDirValues.size(); j++) {
