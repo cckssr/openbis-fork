@@ -79,3 +79,27 @@ tasks.register('buildRdfImport', Jar) {
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
 }
+
+tasks.register('buildRepairTool', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-rdf-repair')
+    includeEmptyDirs = false
+
+    manifest {
+        attributes(
+                'Main-Class': 'ch.ethz.sis.tools.referencecheck.ReferenceCheck'
+        )
+    }
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
