@@ -35,8 +35,8 @@ public class SettingsManager {
 
     public SettingsManager(@NonNull Configuration configuration, @NonNull SyncJobEventDAO syncJobEventDAO, @NonNull NotificationManager notificationManager) {
         this.configuration = configuration;
-        this.settingsPath = Path.of(configuration.getLocalAppDirectory().toString(), DEFAULT_SETTINGS_FILE);
-        this.backupSettingsPath = Path.of(configuration.getLocalAppDirectory().toString(), DEFAULT_BACKUP_SETTINGS_FILE);
+        this.settingsPath = Path.of(configuration.getLocalAppStateDirectory().toString(), DEFAULT_SETTINGS_FILE);
+        this.backupSettingsPath = Path.of(configuration.getLocalAppStateDirectory().toString(), DEFAULT_BACKUP_SETTINGS_FILE);
         this.syncJobEventDAO = syncJobEventDAO;
         this.notificationManager = notificationManager;
     }

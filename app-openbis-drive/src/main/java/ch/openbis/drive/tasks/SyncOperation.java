@@ -5,6 +5,7 @@ import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper;
 import ch.ethz.sis.afsclient.client.AfsClientUploadHelper;
+import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 
 import ch.openbis.drive.model.Event;
@@ -41,12 +42,15 @@ public class SyncOperation {
     final @NonNull ClientAPI.TransferMonitorListener downloadMonitor;
 
     final @NonNull SyncJobEventDAO syncJobEventDAO;
-    final Path localOpenBisHiddenDirectory;
+    final Path localOpenBisHiddenStateDirectory;
 
     final @NonNull NotificationManager notificationManager;
 
 
-    public SyncOperation(@NonNull SyncJob syncJob, @NonNull SyncJobEventDAO syncJobEventDAO, @NonNull NotificationManager notificationManager) throws SQLException, IOException {
+    public SyncOperation(@NonNull SyncJob syncJob,
+                         @NonNull SyncJobEventDAO syncJobEventDAO,
+                         @NonNull NotificationManager notificationManager,
+                         @NonNull Configuration configuration) throws SQLException, IOException {
         AfsClient afsClient = new AfsClient(URI.create(syncJob.getOpenBisUrl()), MAX_READ_SIZE_BYTES, AFS_CLIENT_TIMEOUT);
         afsClient.setSessionToken(syncJob.getOpenBisPersonalAccessToken());
 
@@ -55,14 +59,12 @@ public class SyncOperation {
         uploadMonitor.addFileTransferredListener(new SyncTaskFileTransferredListener(SyncJobEvent.SyncDirection.UP));
         downloadMonitor.addFileTransferredListener(new SyncTaskFileTransferredListener(SyncJobEvent.SyncDirection.DOWN));
 
-        Path localOpenBisHiddenDirectory = OpenBISDriveUtil.getLocalHiddenDirectoryPath(syncJob.getLocalDirectoryRoot());
-
         this.syncJob = syncJob;
         this.afsClientProxy = new AfsClientProxy(afsClient);
         this.uploadMonitor = uploadMonitor;
         this.downloadMonitor = downloadMonitor;
         this.syncJobEventDAO = syncJobEventDAO;
-        this.localOpenBisHiddenDirectory = localOpenBisHiddenDirectory;
+        this.localOpenBisHiddenStateDirectory = configuration.getLocalAppStateDirectory();
         this.notificationManager = notificationManager;
     }
 
@@ -71,7 +73,7 @@ public class SyncOperation {
                   @NonNull ClientAPI.TransferMonitorListener uploadMonitor,
                   @NonNull ClientAPI.TransferMonitorListener downloadMonitor,
                   @NonNull SyncJobEventDAO syncJobEventDAO,
-                  @NonNull Path localOpenBisHiddenDirectory,
+                  @NonNull Path localOpenBisHiddenStateDirectory,
                   @NonNull NotificationManager notificationManager
     ) {
         this.syncJob = syncJob;
@@ -79,7 +81,7 @@ public class SyncOperation {
         this.uploadMonitor = uploadMonitor;
         this.downloadMonitor = downloadMonitor;
         this.syncJobEventDAO = syncJobEventDAO;
-        this.localOpenBisHiddenDirectory = localOpenBisHiddenDirectory;
+        this.localOpenBisHiddenStateDirectory = localOpenBisHiddenStateDirectory;
         this.notificationManager = notificationManager;
     }
 
@@ -534,7 +536,7 @@ public class SyncOperation {
             case DOWN -> destination;
         };
 
-        return localPath.toAbsolutePath().startsWith(localOpenBisHiddenDirectory) ||
+        return localPath.toAbsolutePath().normalize().startsWith(localOpenBisHiddenStateDirectory) ||
                 source.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX) ||
                 destination.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX);
     }

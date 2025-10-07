@@ -22,7 +22,7 @@ public class StartAtLoginUtil {
             if(Files.isRegularFile(loginProfileFile) && Files.size(loginProfileFile) < 10000000) {
                 byte[] loginProfileFileContent = Files.readAllBytes(loginProfileFile);
                 String loginProfileFileContentUTF8 = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(loginProfileFileContent)).toString();
-                String startUpProfileAddition = String.format(LINUX_USER_LOGIN_PROFILE_ADDITION, configuration.getLocalAppDirectory().resolve(Path.of("start-at-login", "*")));
+                String startUpProfileAddition = String.format(LINUX_USER_LOGIN_PROFILE_ADDITION, configuration.getLocalAppStateDirectory().resolve(Path.of("start-at-login", "*")));
                 if (!loginProfileFileContentUTF8.contains(startUpProfileAddition)) {
                     Files.copy(loginProfileFile, loginProfileFile.getParent().resolve(".profile.openbis-drive-bak"), StandardCopyOption.REPLACE_EXISTING);
                     Files.write(loginProfileFile, startUpProfileAddition.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
@@ -37,7 +37,7 @@ public class StartAtLoginUtil {
     synchronized public static void removeStartAtLogin(@NonNull Configuration configuration) throws Exception {
         switch (OsDetectionUtil.detectOS()) {
             case Linux -> {
-                Path startAtLoginDir = configuration.getLocalAppDirectory().resolve("start-at-login");
+                Path startAtLoginDir = configuration.getLocalAppStateDirectory().resolve("start-at-login");
                 if(Files.isDirectory(startAtLoginDir)) {
                     try (Stream<Path> pathStream = Files.list(startAtLoginDir)){
                         pathStream.forEach(path -> {
@@ -90,7 +90,7 @@ public class StartAtLoginUtil {
             case Linux -> {
                 prepareUserStartUpProfile(configuration);
 
-                Path startAtLoginDir = configuration.getLocalAppDirectory().resolve("start-at-login");
+                Path startAtLoginDir = configuration.getLocalAppStateDirectory().resolve("start-at-login");
                 if(!Files.exists(startAtLoginDir)) {
                     Files.createDirectories(startAtLoginDir);
                 }
@@ -98,7 +98,7 @@ public class StartAtLoginUtil {
                     try (Stream<Path> pathStream = Files.list(startAtLoginDir)) {
                         if (pathStream.noneMatch(path -> path.getFileName().equals(Path.of(LINUX_START_AT_LOGIN_SCRIPT_NAME)))) {
                             Path startAtLoginScript = startAtLoginDir.resolve(LINUX_START_AT_LOGIN_SCRIPT_NAME);
-                            Path launchScriptsDir = configuration.getLocalAppDirectory().resolve("launch-scripts");
+                            Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
                             Files.createFile(startAtLoginScript);
                             Files.write(startAtLoginScript, String.format(LINUX_START_AT_LOGIN_SCRIPT, launchScriptsDir.toAbsolutePath()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                         }
@@ -114,7 +114,7 @@ public class StartAtLoginUtil {
 
                 Path startupScriptCopy = userMenuStartupDir.resolve("openbis-drive-service-start.bat");
                 if(!Files.exists(startupScriptCopy)) {
-                    Path launchScriptsDir = configuration.getLocalAppDirectory().resolve("launch-scripts");
+                    Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
                     Files.copy(launchScriptsDir.resolve("openbis-drive-service-start.bat"), startupScriptCopy, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
@@ -127,7 +127,7 @@ public class StartAtLoginUtil {
                     try (Stream<Path> pathStream = Files.list(startAtLoginDir)) {
                         if (pathStream.noneMatch(path -> path.getFileName().equals(Path.of(MAC_OS_START_AT_LOGIN_PLIST_FILE_NAME)))) {
                             Path startAtLoginScript = startAtLoginDir.resolve(MAC_OS_START_AT_LOGIN_PLIST_FILE_NAME);
-                            Path launchScriptsDir = configuration.getLocalAppDirectory().resolve("launch-scripts");
+                            Path launchScriptsDir = configuration.getLocalAppLaunchDirectory();
                             Files.write(startAtLoginScript, String.format(MAC_OS_START_AT_LOGIN_PLIST_FILE, launchScriptsDir.toAbsolutePath()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                         }
                     }

@@ -8,19 +8,62 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.nio.file.Path;
+import java.util.List;
 
 @RunWith(JUnit4.class)
 public class OpenBISDriveUtilTest extends TestCase {
 
     @Test
     public void testGetLocalHiddenDirectoryPath() {
-        Assert.assertEquals(Path.of("/dir/sub/dir/" + Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), OpenBISDriveUtil.getLocalHiddenDirectoryPath("/dir/sub/dir"));
-        Assert.assertEquals(Path.of("/dir/sub/dir/" + Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), OpenBISDriveUtil.getLocalHiddenDirectoryPath("/dir/sub/dir/"));
+        for(OsDetectionUtil.OS os : OsDetectionUtil.OS.values()) {
+            Path hiddenAppDirectoryPath = null;
+            Exception exception = null;
+            try {
+                hiddenAppDirectoryPath = OpenBISDriveUtil.getLocalHiddenDirectoryPath(Path.of("dir", "sub", "dir").toString(), os);
+            } catch (Exception e) {
+                exception = e;
+            }
+            switch (os) {
+                case Linux -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", ".local", "state", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Windows -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", "AppData", "Local", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Mac -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", "Library", "Application Support", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Unknown -> {
+                    Assert.assertTrue(exception instanceof IllegalArgumentException);
+                }
+            }
+        }
     }
 
     @Test
     public void testTestGetLocalHiddenDirectoryPath() {
-        Assert.assertEquals(Path.of("/dir/sub/dir/" + Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), OpenBISDriveUtil.getLocalHiddenDirectoryPath(Path.of("/dir/sub/dir")));
-        Assert.assertEquals(Path.of("/dir/sub/dir/" + Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), OpenBISDriveUtil.getLocalHiddenDirectoryPath(Path.of("/dir/sub/dir/")));
+        for(OsDetectionUtil.OS os : OsDetectionUtil.OS.values()) {
+            Path hiddenAppDirectoryPath = null;
+            Exception exception = null;
+            try {
+                hiddenAppDirectoryPath = OpenBISDriveUtil.getLocalHiddenDirectoryPath(Path.of("dir", "sub", "dir"), os);
+            } catch (Exception e) {
+                exception = e;
+            }
+            switch (os) {
+                case Linux -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", ".local", "state", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Windows -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", "AppData", "Local", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Mac -> {
+                    Assert.assertEquals(Path.of("dir", "sub", "dir", "Library", "Application Support", Configuration.LOCAL_OPENBIS_HIDDEN_DIRECTORY).toAbsolutePath(), hiddenAppDirectoryPath);
+                }
+                case Unknown -> {
+                    Assert.assertTrue(exception instanceof IllegalArgumentException);
+                }
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package ch.openbis.drive.tasks;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.dto.File;
+import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.db.SyncJobEventDAO;
 import ch.openbis.drive.db.SyncJobEventDAOImp;
 import ch.openbis.drive.model.Event;
@@ -10,7 +11,6 @@ import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import ch.openbis.drive.notifications.NotificationManager;
 import junit.framework.TestCase;
-import lombok.NonNull;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,20 +32,22 @@ import java.util.*;
 @RunWith(JUnit4.class)
 public class SyncOperationTest extends TestCase {
 
+    private final Configuration configuration = new Configuration(Path.of("/fake-local-app-directory"));
+
     @Test
     public void testPublicContructor() throws Exception {
         String localDirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toString();
         SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "/remotedir1", localDirPath, true);
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAOImp.class);
-        SyncOperation syncOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager);
+        SyncOperation syncOperation = new SyncOperation(syncJob, syncJobEventDAO, notificationManager, configuration);
 
         Assert.assertEquals(syncJobEventDAO, syncOperation.syncJobEventDAO);
         Assert.assertEquals(syncOperation.afsClientProxy.afsClient, syncOperation.getAfsClient());
         Assert.assertEquals(URI.create(syncJob.getOpenBisUrl()), syncOperation.getAfsClient().getServerUri());
         Assert.assertEquals(SyncOperation.MAX_READ_SIZE_BYTES, syncOperation.getAfsClient().getMaxReadSizeInBytes());
         Assert.assertEquals("uuid", syncOperation.getAfsClient().getSessionToken());
-        Assert.assertEquals(Path.of(localDirPath).resolve(".openbis-drive").toAbsolutePath(), syncOperation.localOpenBisHiddenDirectory);
+        Assert.assertEquals(configuration.getLocalAppStateDirectory(), syncOperation.localOpenBisHiddenStateDirectory);
         Assert.assertEquals(ClientAPI.DefaultTransferMonitorLister.class, syncOperation.uploadMonitor.getClass());
         Assert.assertEquals(ClientAPI.DefaultTransferMonitorLister.class, syncOperation.downloadMonitor.getClass());
         Assert.assertEquals(notificationManager, syncOperation.notificationManager);

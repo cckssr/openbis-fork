@@ -48,7 +48,7 @@ public class DriveAPIService {
 
     public DriveAPIService() throws Exception {
         this.configuration = new Configuration();
-        applicationFileLock = FileChannel.open(configuration.getLocalAppDirectory().resolve(LOCK_FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.WRITE).tryLock();
+        applicationFileLock = FileChannel.open(configuration.getLocalAppStateDirectory().resolve(LOCK_FILE_NAME), StandardOpenOption.CREATE, StandardOpenOption.WRITE).tryLock();
         driveAPIServer = new DriveAPIServerImpl(configuration);
 
         if(applicationFileLock == null) {
@@ -65,8 +65,8 @@ public class DriveAPIService {
                 switch (OsDetectionUtil.detectOS()) {
 
                     case Linux, Mac -> {
-                        Files.deleteIfExists(configuration.getLocalAppDirectory().resolve(SOCKET_FILE_NAME));
-                        server = NettyServerBuilder.forAddress(new DomainSocketAddress(configuration.getLocalAppDirectory().resolve(DriveAPIService.SOCKET_FILE_NAME).toString()))
+                        Files.deleteIfExists(configuration.getLocalAppStateDirectory().resolve(SOCKET_FILE_NAME));
+                        server = NettyServerBuilder.forAddress(new DomainSocketAddress(configuration.getLocalAppStateDirectory().resolve(DriveAPIService.SOCKET_FILE_NAME).toString()))
                             .channelType(EpollServerDomainSocketChannel.class)
                             .workerEventLoopGroup(new EpollEventLoopGroup())
                             .bossEventLoopGroup(new EpollEventLoopGroup())

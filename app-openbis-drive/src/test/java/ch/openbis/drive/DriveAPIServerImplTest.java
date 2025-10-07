@@ -34,11 +34,11 @@ public class DriveAPIServerImplTest {
 
     public DriveAPIServerImplTest() throws Exception {
         configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("drive-api-server-impl-test"));
-        Files.createDirectories(configuration.getLocalAppDirectory());
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
         syncJobEventDAO = new SyncJobEventDAOImp(configuration);
         notificationManager = new NotificationManagerSqliteImpl(configuration);
         settingsManager = Mockito.mock(SettingsManager.class);
-        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager));
+        taskManager = Mockito.spy(new TaskManagerImpl(syncJobEventDAO, notificationManager, configuration));
         driveAPIServerImpl = Mockito.spy(new DriveAPIServerImpl(settingsManager, notificationManager, taskManager, syncJobEventDAO));
     }
 

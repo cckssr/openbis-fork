@@ -620,7 +620,7 @@ public class DriveAPICmdLineApp {
                             String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
                             String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
                     },
-                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+                    new Configuration().getLocalAppLaunchDirectory().toFile());
 
             case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  "openbis-drive-service-start.bat"}, new String[]{
                             String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
@@ -628,7 +628,7 @@ public class DriveAPICmdLineApp {
                             String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
                             String.format("USERPROFILE=%s", Optional.ofNullable(System.getenv("USERPROFILE")).orElse("")),
                     },
-                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+                    new Configuration().getLocalAppLaunchDirectory().toFile());
 
             case Unknown -> throw new IllegalStateException("Unknown operating-system");
         }

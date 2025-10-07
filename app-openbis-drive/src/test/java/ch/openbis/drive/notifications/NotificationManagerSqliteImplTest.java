@@ -27,8 +27,8 @@ public class NotificationManagerSqliteImplTest {
     }
 
     public void createDatabaseDirectoryIfNotExists() throws Exception {
-        if(!Files.exists(configuration.getLocalAppDirectory())) {
-            Files.createDirectories(configuration.getLocalAppDirectory());
+        if(!Files.exists(configuration.getLocalAppStateDirectory())) {
+            Files.createDirectories(configuration.getLocalAppStateDirectory());
         }
     }
 

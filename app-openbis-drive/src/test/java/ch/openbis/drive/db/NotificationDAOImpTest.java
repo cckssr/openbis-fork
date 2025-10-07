@@ -26,13 +26,11 @@ public class NotificationDAOImpTest {
     @Before
     synchronized public void clearDatabase() throws Exception {
         createDatabaseDirectoryIfNotExists();
-        Files.deleteIfExists(Path.of(localDirectoryRoot, NotificationDAOImpl.DB_FILE_NAME));
+        Files.deleteIfExists(configuration.getLocalAppStateDirectory().resolve(NotificationDAOImpl.DB_FILE_NAME));
     }
 
     public void createDatabaseDirectoryIfNotExists() throws Exception {
-        if(!Files.exists(Path.of(localDirectoryRoot))) {
-            Files.createDirectories(Path.of(localDirectoryRoot));
-        }
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
     }
 
     @Test
