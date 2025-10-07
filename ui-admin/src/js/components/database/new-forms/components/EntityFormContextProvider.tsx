@@ -1,35 +1,27 @@
-// ============================================================================
-// STATE MANAGEMENT: EntityFormContextProvider
-// Description: holds the single source of truth for form state.
-// It handles action execution by looking up handlers in the registry.
-// ============================================================================
-
-import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
 import EntityForm from '@src/js/components/database/new-forms/components/EntityForm.tsx';
 import ControllerDispatcher from '@src/js/components/database/new-forms/engine/ControllerDispatcher.ts';
 import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form, ActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { objectTypeToEntityKindMap } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { useAutoSave } from '@src/js/components/database/new-forms/hooks/useAutoSave.tsx';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
+import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/DeleteConfirmationDialog.tsx';
+import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
 
 export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, permId, initialMode, externalAppController }:
 	{
 		openbisFacade: any,
-		params: any, 
-		entityKind: string, 
-		user: string, 
-		permId: string, 
-		initialMode: FormMode, 
+		params: any,
+		entityKind: string,
+		user: string,
+		permId: string,
+		initialMode: FormMode,
 		externalAppController: any
 	}) => {
-	const [form, setForm] = useState<Form | null>(null);
-	const [initialForm, setInitialForm] = useState<Form | null>(null); // For 'cancel'
-	const [mode, setMode] = useState<FormMode>(initialMode);
+	const { form, mode, setForm, setMode, updateField } = useFormState({ initialForm: null, initialMode });
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<any>(null);
@@ -67,6 +59,29 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		[entityKind, openbisFacade, user]
 	);
 
+	const getExtendedActionContext = useCallback((reason?: string): IExtendedActionContext => {
+		if (!form) throw new Error('Form is not loaded');
+		return {
+			controller,
+			form,
+			setForm,
+			mode,
+			setMode,
+			onAfterSave: (params?: any) => {
+				console.log('[EntityFormContextProvider] context onAfterSave:', params);
+				// Reload or update state after save
+				setMode(FormMode.VIEW);
+				if (params) {
+					externalAppController.objectCreate(params);
+				}
+				reloadForm();
+			},
+			externalAppController,
+			deleteReason: reason || undefined,
+			dependentEntities: deleteDialogConfig?.dependentEntities || undefined,
+		}
+	}, [form, mode, externalAppController]);
+
 	// Load initial form data
 	useEffect(() => {
 		reloadForm();
@@ -78,7 +93,6 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		controller.load(permId, entityKind, params)
 			.then((loadedForm: Form) => {
 				setForm(loadedForm);
-				setInitialForm(loadedForm);
 				setLoading(false);
 			})
 			.catch((e: any) => {
@@ -90,96 +104,20 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	const handleErrorCancel = () => {
 		setError(null);
 	};
-	// Handle field changes directly in the context
-	const handleFieldChange = useCallback((fieldId: string, value: any) => {
-		setForm(prevForm => {
-			if (!prevForm) return null;
-			return {
-				...prevForm,
-				fields: prevForm.fields.map(currentField => {
-					if (currentField.id === fieldId) {
-						console.log(`[EntityFormContextProvider] Updating field: ${currentField.id} to ${value}`);
-						return { ...currentField, value };
-					}
-					return currentField;
-				})
-			};
-		});
-	}, []);
 
 	// Handle actions by creating them from dispatcher
 	const handleAction = useCallback(async (actionName: string) => {
 		console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
 		const actionHandler = ActionHandlerDispatcher.getActionHandler(actionName);
 		if (actionHandler && form) {
-			const context: ActionContext = {
-				controller,
-				form,
-				setForm,
-				mode,
-				setMode,
-				permissions,
-				onAfterSave: (params?: any) => {
-					console.log('[EntityFormContextProvider] context onAfterSave:', params);
-					// Reload or update state after save
-					setMode(FormMode.VIEW);
-					if (params) {
-						externalAppController.objectCreate(params);
-					}
-					reloadForm();
-				},
-				openbisFacade,
-				externalAppController,
-				isAutoSaveEnabled,
-				setAutoSaveEnabled,
-			};
 			if (actionName.toLowerCase().includes('save')) {
-				setSaving(true);
-				setError(null);
-				if (mode === FormMode.EDIT) {
-					console.log(`[EntityFormContextProvider] Invoking EDIT action handler: ${actionHandler}`);
-					try {
-						const latestForm = await controller.load(form.entityPermId);
-						if (!conflictResolutionActive && checkModificationDateConflict(form, latestForm)) {
-							// Use resolveConflicts to get merged fields with conflict info
-							const conflicts = findConflicts(form, latestForm) as any[];
-
-							setConflictFields(conflicts);
-							setShowConflictDialog(true);
-							return;
-						}
-						// No conflicts, proceed to save
-						const newVersion = await actionHandler(context); // await controller.save(form);
-						//setForm(prev => ({ ...prev, version: newVersion }));
-						//setMode(FormMode.VIEW);
-						//setShowSuccess(true);
-						setConflictResolutionActive(false);
-						//if (onEntityChange) onEntityChange(form.entityPermId, false);
-						if (context.onAfterSave) context.onAfterSave(params);
-					} catch (error: any) {
-						if (error.status === 409) {
-							const latestForm = await controller.load(form.entityPermId);
-							resolveConflicts(form, latestForm);
-						} else {
-							console.error('Save failed:', error);
-							setError(error.message);
-						}
-					} finally {
-						setSaving(false);
-					}
-				} else if (mode === FormMode.CREATE) {
-					console.log(`[EntityFormContextProvider] Invoking CREATE action handler: ${actionHandler}`);
-					await actionHandler(context);
-					setSaving(false);
-					/* try {
-						await registeredActionHandler(context);
-					} catch (e: any) {
-						setError(e.message);
-					} finally {
-						setSaving(false);
-					} */
-				}
-			} else if (actionName.toLowerCase().includes('edit')) {
+				handleSaveActions(actionHandler);
+			} else if (actionName === 'delete') {
+				// Check for dependent entities before showing dialog
+				handleDeleteWithDependencyCheck();
+			} else {
+				console.log(`[EntityFormContextProvider] Invoking action handler: ${actionHandler}`);
+				const context: IExtendedActionContext = getExtendedActionContext();
 				try {
 					await actionHandler(context);
 				} catch (e: any) {
@@ -187,21 +125,13 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				} finally {
 					setSaving(false);
 				}
-			} else if (actionName === 'cancel') {
-				actionHandler(context);
-				setForm(initialForm); // Reset to original state
-			} else if (actionName === 'delete') {
-				// Check for dependent entities before showing dialog
-				handleDeleteWithDependencyCheck();
-			} else {
-				actionHandler(context);
 			}
 		} else {
 			console.warn(`No action handler registered for '${actionName}'`);
 		}
-	}, [form, mode, permissions, openbisFacade, initialForm, externalAppController]);
+	}, [form, mode, permissions, openbisFacade, externalAppController]);
 
-	const handleResolveConflicts = (resolved: Record<string, any>) => {
+	const handleResolveConflicts = async (resolved: Record<string, any>) => {
 		setForm(prevForm => {
 			if (!prevForm) return null;
 			return {
@@ -213,47 +143,66 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		});
 		setShowConflictDialog(false);
 		setConflictResolutionActive(true);
-		reloadForm();
+	};
+
+	const handleSaveActions = async (actionHandler: any) => {
+		if (!form) throw new Error('Form is not loaded');
+		const context: IExtendedActionContext = getExtendedActionContext();
+		setSaving(true);
+		setError(null);
+		if (mode === FormMode.EDIT) {
+			try {
+				const latestForm = await controller.load(form.entityPermId);
+				if (!conflictResolutionActive && checkModificationDateConflict(form, latestForm)) {
+					const conflicts = findConflicts(form, latestForm) as any[];
+					setConflictFields(conflicts);
+					setShowConflictDialog(true);
+					return;
+				}
+				await actionHandler(context);
+				setConflictResolutionActive(false);
+				if (context.onAfterSave) context.onAfterSave(params);
+			} catch (error: any) {
+				if (error.status === 409) {
+					const latestForm = await controller.load(form.entityPermId);
+					resolveConflicts(form, latestForm);
+				} else {
+					console.error('Save failed:', error);
+					setError(error.message);
+				}
+			} finally {
+				setSaving(false);
+			}
+		} else if (mode === FormMode.CREATE) {
+			try {
+				await actionHandler(context);
+			} catch (error: any) {
+				setError(error.message);
+			} finally {
+				setSaving(false);
+			}
+			setSaving(false);
+		} else {
+			throw new Error('Invalid mode');
+		}
 	};
 
 	const handleDeleteConfirm = async (reason: string) => {
 		setShowDeleteDialog(false);
 		setSaving(true);
 		setError(null);
-		
-		try {
-			const actionHandler = ActionHandlerDispatcher.getActionHandler('delete');
-			if (actionHandler && form) {
-				const context: ActionContext = {
-					controller,
-					form,
-					setForm,
-					mode,
-					setMode,
-					permissions,
-					onAfterSave: (params?: any) => {
-						console.log('[EntityFormContextProvider] context onAfterSave:', params);
-						setMode(FormMode.VIEW);
-						if (params) {
-							externalAppController.objectCreate(params);
-						}
-						reloadForm();
-					},
-					openbisFacade,
-					externalAppController,
-					isAutoSaveEnabled,
-					setAutoSaveEnabled,
-					deleteReason: reason, // Pass the reason to the action handler
-					dependentEntities: deleteDialogConfig?.dependentEntities, // Pass dependent entities info
-				};
+
+		const actionHandler = ActionHandlerDispatcher.getActionHandler('delete');
+		if (actionHandler && form) {
+			const context: IExtendedActionContext = getExtendedActionContext(reason);
+			try {
 				await actionHandler(context);
-				externalAppController.closeForm();
+			} catch (error: any) {
+				setError(error.message);
+			} finally {
+				setSaving(false);
 			}
-		} catch (error: any) {
-			console.error('Delete failed:', error);
-			setError(error.message);
-		} finally {
-			setSaving(false);
+			externalAppController.closeForm({ type: context.form.entityType, id: context.form.entityPermId });
 		}
 	};
 
@@ -264,11 +213,10 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 
 	const handleDeleteWithDependencyCheck = async () => {
 		if (!form || !controller) return;
-		
 		try {
-			//setLoading(true);
+			setLoading(true);
 			setError(null);
-			
+
 			// First check for existing deletions in trashcan
 			try {
 				await controller.delete(form, { checkOnly: true });
@@ -277,28 +225,20 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				setError(deletionError.message);
 				return;
 			}
-			
+
 			// Check for dependent entities using the controller's method
 			const dependentEntities = await controller.getDependentEntities(form);
+			console.log('handleDeleteWithDependencyCheck.dependentEntities:', dependentEntities);
 			const totalDependentEntities = dependentEntities.experiments.length + dependentEntities.samples.length;
-			
+
 			// Simplified configuration - let the dialog handle text generation
 			setDeleteDialogConfig({
 				includeReason: true,
 				numberOfEntities: totalDependentEntities, // +1 for the main entity
-				bypassesTrashcan: false,
+				bypassesTrashcan: totalDependentEntities === 0,
 				dependentEntities: dependentEntities,
 				entityKind: entityKind
 			});
-
-			/* warningText={deleteDialogConfig.warningText}
-			includeReason={deleteDialogConfig.includeReason}
-			numberOfEntities={deleteDialogConfig.numberOfEntities}
-			bypassesTrashcan={deleteDialogConfig.bypassesTrashcan}
-			additionalText={deleteDialogConfig.additionalText}
-			customPlugin={deleteDialogConfig.customPlugin}
-			dependentEntities={deleteDialogConfig.dependentEntities}
-			entityKind={deleteDialogConfig.entityKind} */
 
 			setShowDeleteDialog(true);
 		} catch (error: any) {
@@ -310,28 +250,53 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	};
 
 	if (loading) return <LoadingDialog loading={loading} />;
-	// @ts-ignore
-	if (error?.state) return <ErrorDialog open={error?.state} error={error?.error} onClose={handleErrorCancel} />;
 	if (!form) return null;
 
 	return (
-		<EntityForm
-			form={form}
-			mode={mode}
-			permissions={permissions}
-			onFieldChange={handleFieldChange}
-			onAction={handleAction}
-			isSaving={saving}
-			error={error}
-			showConflictDialog={showConflictDialog}
-			conflictFields={conflictFields}
-			handleResolveConflicts={handleResolveConflicts}
-			setShowConflictDialog={setShowConflictDialog}
-			showDeleteDialog={showDeleteDialog}
-			deleteDialogConfig={deleteDialogConfig}
-			onDeleteConfirm={handleDeleteConfirm}
-			onDeleteCancel={handleDeleteCancel}
-			onErrorClose={handleErrorCancel}
-		/>
+		<>
+			{saving && <LoadingDialog loading={saving} />}
+			{//@ts-ignore
+				error && <ErrorDialog key='entity-form-error-dialog' open={!!error} error={error} onClose={handleErrorCancel} />}
+			<EntityForm
+				form={form}
+				mode={mode}
+				permissions={permissions}
+				onFieldChange={updateField}
+				onAction={handleAction}
+			/>
+			{showConflictDialog && (
+				<ConflictResolutionDialog
+					open={showConflictDialog}
+					conflicts={conflictFields}
+					onResolve={handleResolveConflicts}
+					onCancel={() => setShowConflictDialog(false)}
+				/>
+			)}
+			{showDeleteDialog && deleteDialogConfig && (
+				<DeleteConfirmationDialog
+					open={showDeleteDialog}
+					onConfirm={handleDeleteConfirm}
+					onCancel={handleDeleteCancel}
+					config={{
+						includeReason: deleteDialogConfig.includeReason,
+						entity: {
+							kind: deleteDialogConfig.entityKind,
+							dependentEntities: deleteDialogConfig.dependentEntities,
+							count: deleteDialogConfig.numberOfEntities,
+							bypassesTrashcan: deleteDialogConfig.bypassesTrashcan
+						},
+						ui: {
+							title: deleteDialogConfig.title,
+							content: deleteDialogConfig.content,
+							warningText: deleteDialogConfig.warningText,
+							additionalText: deleteDialogConfig.additionalText,
+							inputLabel: deleteDialogConfig.inputLabel,
+							customPlugin: deleteDialogConfig.customPlugin,
+							type: deleteDialogConfig.type
+						}
+					}}
+				/>
+			)}
+		</>
 	);
 };

@@ -1,9 +1,10 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 
 export class SpaceFormController implements IFormController {
   private openbisFacade: any;
@@ -29,14 +30,29 @@ export class SpaceFormController implements IFormController {
     return SpaceFormModel.adaptSpaceDtoToForm(spaceDto);
   }
 
-  async save(form: Form): Promise<number> {
+  async save(form: Form, mode: FormMode): Promise<number> {
+    if (mode === FormMode.CREATE) {
+      return this._createSpace(form);
+    } else if (mode === FormMode.EDIT) {
+      return this._updateSpace(form);
+    } else {
+      throw new Error(`Invalid form mode: ${mode}`);
+    }
+  }
+
+  async _createSpace(form: Form): Promise<number> {
+    throw new Error('Not implemented');
+  }
+
+  async _updateSpace(form: Form): Promise<number> {
     const { SpacePermId, SpaceUpdate } = this.openbisFacade;
     const spaceUpdate = new SpaceUpdate()
     spaceUpdate.setSpaceId(new SpacePermId(form.entityPermId));
-    const description = findFormFieldById(form.fields, form.entityPermId + '-description')?.value;
+    const description = findFormFieldByLabel(form.fields, 'Description', true);
+    console.log({description})
     spaceUpdate.setDescription(description);
     const result = await this.openbisFacade.updateSpaces([spaceUpdate]);
-    console.log(result)
+    console.log('SpaceFormController.updateSpace', result);
     return Promise.resolve(form.version ? form.version + 1 : 1);
   }
 

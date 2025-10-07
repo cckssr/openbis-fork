@@ -1,8 +1,3 @@
-/**
- * Action Handler Dispatcher - Creates action handler instances based on action name
- */
-
-// Direct imports for action handlers
 import { CoreFormModel } from '@src/js/components/database/new-forms/engine/CoreFormModel.ts';
 import { ProjectFormModel } from '@src/js/components/database/new-forms/entities/Project/ProjectFormModel.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';

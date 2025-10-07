@@ -43,28 +43,13 @@ export class ProjectFormController implements IFormController {
   }
 
   async save(form: Form, mode: FormMode): Promise<any> {
-    console.log('ProjectFormController.save:', form, mode);
     if (mode === FormMode.CREATE) {
-      const { ProjectCreation, SpacePermId } = this.openbisFacade;
-      const creation = new ProjectCreation();
-      creation.setCode(findFormFieldByLabel(form.fields, 'Code', true));
-      creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
-      creation.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
-      const result = await this.openbisFacade.createProjects([creation]);
-      console.log('ProjectFormController.create', result);
-      return result[0].getPermId();
+      return this._createProject(form);
     } else if (mode === FormMode.EDIT) {
-      const { ProjectPermId, ProjectUpdate } = this.openbisFacade;
-      const projectUpdate = new ProjectUpdate();
-      projectUpdate.setProjectId(new ProjectPermId(form.entityPermId));
-      projectUpdate.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
-      const result = await this.openbisFacade.updateProjects([projectUpdate]);
-      console.log('ProjectFormController.update', result);
-      return Promise.resolve(form.version ? form.version + 1 : 1);
+      return this._updateProject(form);
     } else {
       throw new Error(`Invalid form mode: ${mode}`);
     }
-    //return Promise.resolve(form.version + 1);
   }
 
   async checkPermissions(form: Form) {
@@ -150,7 +135,7 @@ export class ProjectFormController implements IFormController {
   }
 
   async checkExistingDeletions(projectIdentifier: string): Promise<any[]> {
-    console.log('ProjectFormController.checkExistingDeletions', projectIdentifier);
+    console.log('ProjectFormController.checkExistingDeletions', {projectIdentifier});
     
     const { DeletionSearchCriteria, DeletionFetchOptions } = this.openbisFacade;
     const criteria = new DeletionSearchCriteria();
@@ -158,7 +143,7 @@ export class ProjectFormController implements IFormController {
     fetchOptions.withDeletedObjects();
     
     const deletions = await this.openbisFacade.searchDeletions(criteria, fetchOptions);
-    console.log('ProjectFormController.allDeletions:', deletions);
+    console.log('ProjectFormController.allDeletions:', {deletions});
     
     const dependentDeletions: any[] = [];
     
@@ -182,7 +167,7 @@ export class ProjectFormController implements IFormController {
       });
     }
     
-    console.log('ProjectFormController.dependentDeletions:', dependentDeletions);
+    console.log('ProjectFormController.dependentDeletions:', {dependentDeletions});
     return dependentDeletions;
   }
 
@@ -233,9 +218,26 @@ export class ProjectFormController implements IFormController {
     // Implement move logic as needed
   }
 
-  create(form: Form): void {
+  async _createProject(form: Form): Promise<any> {
     console.log('ProjectFormController.create', form);
-    // This method is not used in the current implementation
-    // The create logic is handled in the save method with FormMode.CREATE
+    const { ProjectCreation, SpacePermId } = this.openbisFacade;
+    const creation = new ProjectCreation();
+    creation.setCode(findFormFieldByLabel(form.fields, 'Code', true));
+    creation.setSpaceId(new SpacePermId(form.meta.spacePermId));
+    creation.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
+    const result = await this.openbisFacade.createProjects([creation]);
+    console.log('ProjectFormController.create', result);
+    return result[0].getPermId();
+  }
+
+  async _updateProject(form: Form): Promise<any> {
+    console.log('ProjectFormController.update', form);
+    const { ProjectPermId, ProjectUpdate } = this.openbisFacade;
+    const projectUpdate = new ProjectUpdate();
+    projectUpdate.setProjectId(new ProjectPermId(form.entityPermId));
+    projectUpdate.setDescription(findFormFieldByLabel(form.fields, 'Description', true));
+    const result = await this.openbisFacade.updateProjects([projectUpdate]);
+    console.log('ProjectFormController.update', result);
+    return Promise.resolve(form.version ? form.version + 1 : 1);
   }
 }

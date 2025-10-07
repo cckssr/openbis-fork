@@ -1,7 +1,6 @@
-import { ActionContext, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
@@ -10,10 +9,10 @@ export class SpaceFormModel {
 		const permId = dto.permId.permId;
 		return {
 			entityPermId: permId,
-			entityType: 'SPACE',
+			entityType: EntityKind.SPACE,
 			title: `Space: ${dto.code}`,
 			version: dto.version || 1,
-			entityKind: 'SPACE',
+			entityKind: EntityKind.SPACE,
 			meta: {},
 			sections: [
 				{
@@ -99,23 +98,21 @@ export class SpaceFormModel {
 		};
 	}
 
-	static saveSpaceAction = async (context: ActionContext) => {
-		const { form, controller, onAfterSave } = context;
-		await new Promise(resolve => setTimeout(resolve, 1000)); // to display the loading spinner
-		const newVersion = await controller.save(form);
+	static saveSpaceAction = async (context: IExtendedActionContext) => {
+		const { form, mode, controller, onAfterSave } = context;
+		await new Promise(resolve => setTimeout(resolve, 500)); // to display the loading spinner
+		const newVersion = await controller.save(form, mode);
 		console.log("Space saved successfully! New version:", newVersion);
 		onAfterSave();
 	};
 
-	static newProjectAction = (context: ActionContext) => {
+	static newProjectAction = (context: IExtendedActionContext) => {
 		const { form, externalAppController } = context;
-		console.log("SpaceFormModel.newProjectAction", context);
 		if (externalAppController) {
-			console.log("Invoking onNewObject callback...");
-			externalAppController.createNewObject({newObjectType: objectType.NEW_PROJECT, fromObjectType: 'space', fromId: form.entityPermId});
-			//onNewObject(objectType.NEW_PROJECT, form.entityPermId);
+			externalAppController.createNewObject({newObjectType: objectType.NEW_PROJECT, fromObjectType: EntityKind.SPACE, fromId: form.entityPermId});
 		} else {
 			console.warn("onNewObject callback not provided to context.");
+			throw new Error("onNewObject callback not provided to context.");
 		}
 	};
 }

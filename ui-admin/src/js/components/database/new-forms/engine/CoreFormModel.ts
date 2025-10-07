@@ -1,26 +1,24 @@
-import { ActionContext } from "@src/js/components/database/new-forms/types/form.types.ts";
+import { IAutoSaveActionContext, IModeActionContext, IExtendedActionContext } from "@src/js/components/database/new-forms/types/form.types.ts";
 import { FormMode } from "@src/js/components/database/new-forms/types/form.enums.ts";
 
 export class CoreFormModel {
-	static editAction = (context: ActionContext) => {
+	static editAction = (context: IModeActionContext) => {
 		context.setMode(FormMode.EDIT);
 	};
 	
-	static cancelEditAction = (context: ActionContext) => {
+	static cancelEditAction = (context: IModeActionContext) => {
 		context.setMode(FormMode.VIEW);
-		// The logic to reset the form state is now handled in the context provider
 	};
 	
-	static cancelNewFormAction = (context: ActionContext) => {
-		context.externalAppController.closeForm();
-		// The logic to reset the form state is now handled in the context provider
+	static cancelNewFormAction = (context: IExtendedActionContext) => {
+		context.externalAppController.closeForm(context.form.entityType, context.form.entityPermId);
 	};
 	
-	static autoSaveAction = (context: ActionContext) => {
+	static autoSaveAction = (context: IAutoSaveActionContext) => {
 		context.setAutoSaveEnabled(!context.isAutoSaveEnabled);
 	};
 
-	static deleteAction = (context: ActionContext) => {
+	static deleteAction = (context: IExtendedActionContext) => {
 		context.controller.delete(context.form, context);
 	};
 

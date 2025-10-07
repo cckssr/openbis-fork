@@ -71,8 +71,31 @@ export interface SectionGroup {
   fields: string[];
 }
 
+export interface IBaseActionContext {
+  controller: IFormController;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form | null>>;
+}
+
+export interface IModeActionContext extends IBaseActionContext {
+  mode: FormMode;
+  setMode: React.Dispatch<React.SetStateAction<FormMode>>;
+}
+
+export interface IExtendedActionContext extends IModeActionContext {
+  externalAppController: any;
+  onAfterSave: (params?: any) => void;
+  deleteReason?: string;
+  dependentEntities?: any;
+}
+
+export interface IAutoSaveActionContext extends IBaseActionContext {
+  isAutoSaveEnabled: boolean;
+  setAutoSaveEnabled: (isAutoSaveEnabled: boolean) => void;
+}
+
 // Context object for actions
-export interface ActionContext {
+/* export interface ActionContext {
   controller: IFormController;
   form: Form;
   setForm: React.Dispatch<React.SetStateAction<Form | null>>;
@@ -86,7 +109,7 @@ export interface ActionContext {
   setAutoSaveEnabled: (isAutoSaveEnabled: boolean) => void;
   deleteReason?: string; // Optional reason for delete operations
   dependentEntities?: any; // Optional dependent entities info for delete operations
-}
+} */
 
 // NEW: Props for field renderers
 export interface FieldRendererProps {

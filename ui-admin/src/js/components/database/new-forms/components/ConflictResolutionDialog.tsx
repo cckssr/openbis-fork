@@ -7,6 +7,8 @@ import TextField from '@src/js/components/common/form/TextField.jsx';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
+import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import messages from '@src/js/common/messages';
 
 interface ConflictResolutionDialogProps {
   open: boolean;
@@ -73,7 +75,7 @@ const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> = ({ ope
                     <TextField
                       mandatory={localField.required}
                       label={localField.label + ' (Local)'}
-                      mode={'view'}
+                      mode={FormMode.VIEW}
                       disabled={true}
                       value={localField.value}
                       disableUnderline={true}
@@ -87,7 +89,7 @@ const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> = ({ ope
                     <TextField
                       mandatory={serverField.required}
                       label={serverField.label + ' (Server)'}
-                      mode={'view'}
+                      mode={FormMode.VIEW}
                       disabled={true}
                       value={serverField.value}
                       disableUnderline={true}
@@ -101,7 +103,7 @@ const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> = ({ ope
                     <TextField
                       mandatory={localField.required}
                       label={localField.label + ' (Merge)'}
-                      mode={choices[localField.id] === 'merge' ? 'edit' : 'view'}
+                      mode={choices[localField.id] === 'merge' ? FormMode.EDIT : FormMode.VIEW}
                       disabled={choices[localField.id] !== 'merge'}
                       value={choices[localField.id] === 'merge' ? mergedValues[localField.id] ?? '' : mergedValues[localField.id] ?? ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleMergeEdit(localField.id, e.target.value)}
@@ -116,8 +118,8 @@ const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> = ({ ope
       }
       actions={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <Button label='Cancel' onClick={onCancel} />
-          <Button label='Confirm' onClick={handleConfirm} disabled={!allChosen} />
+          <Button label={messages.get(messages.CANCEL)} onClick={onCancel} />
+          <Button label={messages.get(messages.CONFIRM)} onClick={handleConfirm} disabled={!allChosen} />
         </div>
       }
     />

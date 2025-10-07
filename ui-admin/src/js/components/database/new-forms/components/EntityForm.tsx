@@ -1,23 +1,9 @@
-// ============================================================================
-// 3. PRESENTATION: EntityForm.tsx (REFACTORED - NOW "DUMB")
-// Description: This component is now stateless and purely presentational.
-// It receives all data and handlers from its parent context and uses the
-// ComponentRegistry to render the correct components.
-// ============================================================================
 import React from 'react';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { Form, FormAction as FormActionDef, FormField, VisibilityRule, SectionGroup } from '@src/js/components/database/new-forms/types/form.types.ts';
 import ComponentRegistry from '@src/js/components/database/new-forms/engine/ComponentRegistry.ts';
-import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx';
 import { Stack } from '@mui/material'
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';
-import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
-import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/DeleteConfirmationDialog.tsx';
-import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx';
-import Dialog from '@src/js/components/common/dialog/Dialog.jsx';
-import Button from '@src/js/components/common/form/Button.jsx';
-import Message from '@src/js/components/common/form/Message.jsx';
-import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx';
 
 
 interface EntityFormProps {
@@ -26,20 +12,9 @@ interface EntityFormProps {
   permissions: any;
   onFieldChange: (fieldId: string, value: any) => void;
   onAction: (actionName: string) => void;
-  isSaving: boolean;
-  error: string | null;
-  showConflictDialog: boolean;
-  conflictFields: any;
-  handleResolveConflicts: (resolved: Record<string, any>) => void;
-  setShowConflictDialog: (show: boolean) => void;
-  showDeleteDialog: boolean;
-  deleteDialogConfig: any;
-  onDeleteConfirm: (reason: string) => void;
-  onDeleteCancel: () => void;
-  onErrorClose?: () => void;
 }
 
-const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving, error, showConflictDialog, conflictFields, handleResolveConflicts, setShowConflictDialog, showDeleteDialog, deleteDialogConfig, onDeleteConfirm, onDeleteCancel, onErrorClose }: EntityFormProps) => {
+const EntityForm = ({ form, mode, permissions, onFieldChange, onAction }: EntityFormProps) => {
 
   const renderToolbar = () => {
     // UPDATED: Interpret declarative visibility rules
@@ -140,34 +115,8 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, isSaving
 
   return (
     <>
-      {isSaving && <LoadingDialog loading={isSaving} />}
-      {error && <ErrorDialog key='entity-form-error-dialog' open={!!error} error={error} onClose={onErrorClose} />}
       {renderToolbar()}
       {renderSections()}
-      {showConflictDialog && (
-        <ConflictResolutionDialog
-          open={showConflictDialog}
-          conflicts={conflictFields}
-          onResolve={handleResolveConflicts}
-          onCancel={() => setShowConflictDialog(false)}
-        />
-      )}
-      {showDeleteDialog && deleteDialogConfig && (
-        <DeleteConfirmationDialog
-          open={showDeleteDialog}
-          onConfirm={onDeleteConfirm}
-          onCancel={onDeleteCancel}
-          warningText={deleteDialogConfig.warningText}
-          includeReason={deleteDialogConfig.includeReason}
-          numberOfEntities={deleteDialogConfig.numberOfEntities}
-          bypassesTrashcan={deleteDialogConfig.bypassesTrashcan}
-          additionalText={deleteDialogConfig.additionalText}
-          customPlugin={deleteDialogConfig.customPlugin}
-          dependentEntities={deleteDialogConfig.dependentEntities}
-          entityKind={deleteDialogConfig.entityKind}
-        />
-      )}
-
     </>
   );
 };

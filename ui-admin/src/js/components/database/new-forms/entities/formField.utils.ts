@@ -6,7 +6,6 @@ import { getFormatedDate } from '@src/js/components/database/new-forms/utils/Uti
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
 
 export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
-  console.log('getCodeField', dto);
   const permId = dto.permId.permId;
   return {
     id: permId + '-code',

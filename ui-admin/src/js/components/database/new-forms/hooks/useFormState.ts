@@ -50,9 +50,13 @@ export const useFormState = ({
       
       return {
         ...prevForm,
-        fields: prevForm.fields.map(field => 
-          field.id === fieldId ? { ...field, value } : field
-        ),
+        fields: prevForm.fields.map(currentField => {
+					if (currentField.id === fieldId) {
+						console.log(`[useFormState] Updating field: ${currentField.id} to ${value}`);
+						return { ...currentField, value };
+					}
+					return currentField;
+				}),
         isDirty: true
       };
     });

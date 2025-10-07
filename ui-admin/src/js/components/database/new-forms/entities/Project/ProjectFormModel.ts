@@ -1,18 +1,17 @@
-import { ActionContext, Form } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 
 export class ProjectFormModel {
-	
+
 	static adaptProjectDtoToForm(dto: any): Form {
-		console.log('adaptProjectDtoToForm', dto);
 		const permId = dto.permId.permId;
 		return {
 			entityPermId: permId,
-			entityType: 'PROJECT',
+			entityType: EntityKind.PROJECT,
 			title: `Project: ${dto.code}`,
 			version: dto.version || 1,
-			entityKind: 'PROJECT',
+			entityKind: EntityKind.PROJECT,
 			meta: {},
 			sections: [
 				{
@@ -98,16 +97,16 @@ export class ProjectFormModel {
 			],
 		};
 	}
-	
+
 	static adaptNewProjectDtoToForm(tmpPermId: string, params: any): Form {
 		const permId = tmpPermId + '-newproject';
 		return {
 			entityPermId: tmpPermId,
-			entityType: 'NEWPROJECT',
+			entityType: EntityKind.NEW_PROJECT,
 			title: `New Project`,
 			version: 1,
-			entityKind: 'NEWPROJECT',
-			meta: {spacePermId: params.parentId},
+			entityKind: EntityKind.NEW_PROJECT,
+			meta: { spacePermId: params.parentId },
 			sections: [
 				{
 					section: FormSection.IDENTIFICATION_INFO,
@@ -123,8 +122,8 @@ export class ProjectFormModel {
 				},
 			],
 			fields: [
-				getCodeField({permId:{permId:permId}}, { readOnly: false, value: '', id: permId + '-code' }),
-				getDescriptionField({permId:{permId:permId}}, { column: 'center', value: '', id: permId + '-description' }),
+				getCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-code' }),
+				getDescriptionField({ permId: { permId: permId } }, { column: 'center', value: '', id: permId + '-description' }),
 			],
 			isDirty: false,
 			isValid: true,
@@ -155,14 +154,13 @@ export class ProjectFormModel {
 		}
 	}
 
-	static saveProjectAction = async (context: ActionContext) => {
-		console.log("Invoking saveProjectAction", context);
-		const { form, controller, onAfterSave, mode, externalAppController } = context;
-		console.log("saveProjectAction", form,  mode);
-		await new Promise(resolve => setTimeout(resolve, 1000)); // to display the loading spinner
+	static saveProjectAction = async (context: IExtendedActionContext) => {
+		const { form, controller, onAfterSave, mode } = context;
+		await new Promise(resolve => setTimeout(resolve, 500));
 		const newPermId = await controller.save(form, mode);
+		console.log("Project saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
-			onAfterSave({oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId});
+			onAfterSave({ oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId });
 		} else {
 			onAfterSave();
 		}
