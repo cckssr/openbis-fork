@@ -64,7 +64,8 @@ public class ReferenceCheck
             QuerySolution next = resultSet.next();
             RDFNode p = next.get("p");
             RDFNode o = next.get("o");
-            if (o.asResource().getURI().startsWith("https://biomedit.ch/rdf/sphn-schema/sphn#"))
+            if (!o.isResource() || o.asResource().getURI()
+                    .startsWith("https://biomedit.ch/rdf/sphn-schema/sphn#"))
             {
                 continue;
             }
