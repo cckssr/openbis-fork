@@ -16,7 +16,7 @@ import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
-
+import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 const styles = theme => ({
@@ -42,7 +42,6 @@ class DatabaseComponent extends React.PureComponent {
   async componentDidMount() {
     try {
       const { object } = this.props
-      console.log('DatabaseComponent.componentDidMount', this.props);
       let json = {}
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
@@ -183,21 +182,19 @@ class DatabaseComponent extends React.PureComponent {
   renderDataBrowsers() {
     const { object, classes } = this.props
     const { value } = this.state
-    return (
-      <Container>
-        <TabContext value={value}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value}
-              onChange={this.handleTabChange}
-              textColor='secondary'
-              indicatorColor='secondary'>
-              <Tab label={messages.get(messages.DETAILS)} value="2" />
-              <Tab label={messages.get(messages.FILES)} value="0" />
-              <Tab label={messages.get(messages.IMAGES)} value="1" />
-            </Tabs>
-          </Box>
-          <TabPanel classes={{ root: classes.tabsPanel }} value="0">
-            {/* <DataBrowser
+
+    const tabs = [
+      { key: 'details-tab-id', label: 'Details' },
+      { key: 'files-tab-id', label: 'Files' },
+      { key: 'images-tab-id', label: 'Images' },
+    ]
+
+    const tabContent = [
+      <div key="details">
+        {this.renderJson()}
+      </div>,
+      <div key="files">
+        {/* <DataBrowser
               key={object.id}
               id={object.id}
               objId={object.id}
@@ -209,22 +206,27 @@ class DatabaseComponent extends React.PureComponent {
               onStoreDisplaySettings={this.onGridSettingsChange}
               leftToolbar={true}
             /> */}
-          </TabPanel>
-          <TabPanel classes={{ root: classes.tabsPanel }} value="1">
-            {(object.type === objectType.COLLECTION
-              || object.type === objectType.OBJECT)
-              && <ImagingGalleryViewer onStoreDisplaySettings={null}
-                onLoadDisplaySettings={null}
-                onOpenPreview={this.datasetOpenTab}
-                objId={object.id}
-                objType={object.type}
-                extOpenbis={openbis} />}
-          </TabPanel>
-          <TabPanel classes={{ root: classes.tabsPanel }} value="2">
-            {this.renderJson()}
-          </TabPanel>
-        </TabContext>
-      </Container>
+      </div>,
+      <div key="images">
+        {(object.type === objectType.COLLECTION
+          || object.type === objectType.OBJECT)
+          && <ImagingGalleryViewer onStoreDisplaySettings={null}
+            onLoadDisplaySettings={null}
+            onOpenPreview={this.datasetOpenTab}
+            objId={object.id}
+            objType={object.type}
+            extOpenbis={openbis} />}
+      </div>
+    ]
+
+    return (
+      <TabViewer
+        tabs={tabs}
+        defaultTab={0}
+        variant='standard'
+      >
+        {tabContent}
+      </TabViewer>
     )
   }
 
@@ -241,10 +243,10 @@ class DatabaseComponent extends React.PureComponent {
   objectCreate(oldType, oldId, newType, newId) {
     console.log('DatabaseComponent.objectCreate', oldType, oldId, newType, newId);
     AppController.getInstance().objectCreate(
-      pages.DATABASE, 
-      oldType, 
-      oldId, 
-      newType, 
+      pages.DATABASE,
+      oldType,
+      oldId,
+      newType,
       newId)
   }
 

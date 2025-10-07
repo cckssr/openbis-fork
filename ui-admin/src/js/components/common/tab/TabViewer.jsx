@@ -34,13 +34,13 @@ class TabViewer extends React.PureComponent {
   }
 
   render() {
-    const { classes, tabs, children } = this.props
+    const { classes, tabs, children, variant = 'fullWidth' } = this.props
     const { tabSelected } = this.state
 
     return (
       <TabContext value={tabSelected}>
         <TabList
-          variant='fullWidth'
+          variant={variant}
           onChange={this.handleTabChange}
           classes={{ root: classes.tabsRoot }}
           textColor='inherit'

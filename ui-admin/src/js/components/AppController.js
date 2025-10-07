@@ -225,12 +225,11 @@ export class AppController {
     if (oldTab) {
       const newTab = {
         ...oldTab,
-        object: { type: newType, id: newId, fromType: oldType, fromId: oldId },
+        object: { type: newType, id: newId },
         changed: false
       }
       await this.replaceOpenTab(page, oldTab.id, newTab)
-
-      const route = routes.format({ page, type: newType, id: newId, fromType: oldType, fromId: oldId })
+      const route = routes.format({ page, type: newType, id: newId })
       await this.routeReplace(route)
 
       await this.setLastObjectModification(
@@ -407,7 +406,8 @@ export class AppController {
   }
 
   async setOpenTabs(page, newOpenTabs) {
-    await this.context.setState(state => ({
+    await this.context.setState(state => (
+    {
       pages: {
         ...state.pages,
         [page]: {
