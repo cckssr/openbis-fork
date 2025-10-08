@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class DataTypeMatcher
 
     private static List<DataType> orderedTypes =
             List.of(DataType.INTEGER, DataType.REAL, DataType.BOOLEAN, DataType.DATE,
-                    DataType.SAMPLE, DataType.HYPERLINK, DataType.SAMPLE, DataType.VARCHAR);
+                    DataType.HYPERLINK, DataType.SAMPLE, DataType.SAMPLE, DataType.VARCHAR);
 
     public static DataType findDataType(Serializable value, Set<DataType> possibleTypes,
             Map<String, IMetadataEntry> entities)
@@ -84,11 +85,10 @@ public class DataTypeMatcher
             case DATE:
                 try
                 {
-                    SimpleDateFormat ISO8601DATEFORMAT =
-                            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
-                    ISO8601DATEFORMAT.parse(value.toString());
+
+                    DateTimeFormatter.ISO_INSTANT.parse(value.toString());
                     return true;
-                } catch (ParseException e)
+                } catch (RuntimeException e)
                 {
                     return false;
                 }

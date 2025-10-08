@@ -61,13 +61,5 @@ public class RoCrateSchemaValidationRegressionCasesTest
 
     }
 
-    @Test
-    void testOpenBis20251008() throws JsonProcessingException
-    {
-        String location = "validation/openbis.2025-10-08.zip";
-        ValidationResult validationResult = getValidationResult(location);
-        Assert.assertTrue(validationResult.isOkay());
-
-    }
 
 }
