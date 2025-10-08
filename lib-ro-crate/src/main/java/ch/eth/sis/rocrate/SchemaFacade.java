@@ -216,31 +216,58 @@ public class SchemaFacade implements ISchemaFacade
         ObjectMapper objectMapper = new ObjectMapper();
 
         metaDataEntry.getValues().forEach((s, o) -> {
-            if (o instanceof Double)
-            {
-                builder.addProperty(s, (Double) o);
-            } else if (o instanceof Integer)
-            {
-                builder.addProperty(s, (Integer) o);
-            } else if (o instanceof Boolean)
-            {
-                builder.addProperty(s, (Boolean) o);
-            } else if (o instanceof String)
-            {
-                builder.addProperty(s, o.toString());
-            }
+            addVals(s, o, builder);
         });
         DataEntity dataEntity = builder.build();
         metaDataEntry.getReferences().forEach(dataEntity::addIdListProperties);
+        this.metadataEntries.put(metaDataEntry.getId(), metaDataEntry);
 
         crate.addDataEntity(dataEntity);
 
+    }
+
+    private static void addVals(String s, Serializable o, DataEntity.DataEntityBuilder builder)
+    {
+        if (o instanceof Double)
+        {
+            builder.addProperty(s, (Double) o);
+        } else if (o instanceof Double[])
+        {
+            Arrays.stream((Double[]) o).forEach(x -> builder.addProperty(s, x));
+
+        } else if (o instanceof Integer)
+        {
+            builder.addProperty(s, (Integer) o);
+        } else if (o instanceof Integer[])
+        {
+            Arrays.stream((Integer[]) o).forEach(x -> builder.addProperty(s, x));
+
+        } else if (o instanceof Boolean)
+        {
+            builder.addProperty(s, (Boolean) o);
+        } else if (o instanceof Boolean[])
+        {
+            Arrays.stream((Boolean[]) o).forEach(x -> builder.addProperty(s, x));
+
+        } else if (o instanceof String)
+        {
+            builder.addProperty(s, o.toString());
+        } else if (o instanceof String[])
+        {
+            Arrays.stream((String[]) o).forEach(x -> builder.addProperty(s, x));
+
+        }
     }
 
     @Override
     public IMetadataEntry getEntry(String id)
     {
         return metadataEntries.get(id);
+    }
+
+    List<IMetadataEntry> getAllEntries()
+    {
+        return metadataEntries.values().stream().collect(Collectors.toList());
     }
 
     @Override
