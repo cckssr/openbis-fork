@@ -387,6 +387,14 @@ function MainController(profile) {
         });
 	}
 
+	this.reInitCurrentView = function() {
+	    if(this.currentView) {
+	        var tabInfo = mainController.tabContent.getCurrentTabInfo();
+	        var views = this._getNewViewModel(true, true, undefined, tabInfo);
+	        this.currentView.init(views);
+	    }
+	}
+
 	this._enablePasswordResetLink = function() {
 
         var userId = $("#username").val();
