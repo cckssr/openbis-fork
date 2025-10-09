@@ -25,21 +25,21 @@ function TabContentViewer(controller) {
 
         let SimpleContentLabNotebook = React.createElement(window.NgComponents.default.ElnContent, props)
 
-        NgComponentsManager.renderComponent(SimpleContentLabNotebook, this._$lab.get(0));
+        NgComponentsManager.renderComponent(SimpleContentLabNotebook, this._$lab.get(0), true);
         if(mainController.sideMenu.getCurrentTree() !== "lab_notebook") {
             this._$lab.hide()
         }
 
         props.controller = this._controller._tabControllerMap["lims"];
         let SimpleContentInventory = React.createElement(window.NgComponents.default.ElnContent, props)
-        NgComponentsManager.renderComponent(SimpleContentInventory, this._$inv.get(0));
+        NgComponentsManager.renderComponent(SimpleContentInventory, this._$inv.get(0), true);
         if(mainController.sideMenu.getCurrentTree() !== "lims") {
             this._$inv.hide()
         }
 
         props.controller = this._controller._tabControllerMap["tools"];
         let SimpleContentTools = React.createElement(window.NgComponents.default.ElnContent, props)
-        NgComponentsManager.renderComponent(SimpleContentTools, this._$tools.get(0));
+        NgComponentsManager.renderComponent(SimpleContentTools, this._$tools.get(0), true);
         if(mainController.sideMenu.getCurrentTree() !== "tools") {
             this._$tools.hide()
         }

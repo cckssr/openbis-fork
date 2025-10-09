@@ -76,7 +76,7 @@ function MainHeaderView(controller) {
         }
 
         let Menu = React.createElement(window.NgComponents.default.Menu, props)
-        return NgComponentsManager.renderComponent(Menu, $container.get(0));
+        return NgComponentsManager.renderComponent(Menu, $container.get(0), true);
     }
 
 }

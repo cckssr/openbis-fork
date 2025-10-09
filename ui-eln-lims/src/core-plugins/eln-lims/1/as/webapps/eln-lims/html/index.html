@@ -363,7 +363,7 @@
 
 		this.components = []
 
-		this.renderComponent = function(reactComponent, domContainer){
+		this.renderComponent = function(reactComponent, domContainer, isNotRemovable){
 			var reactComponentWithProviders = React.createElement(
 				window.NgComponents.default.StyledEngineProvider,
 				{ injectFirst : true },
@@ -385,7 +385,9 @@
 			var reactRoot = ReactDOM.createRoot(dedicatedDomContainer)
 			reactRoot.render(reactComponentWithProviders)
 			var url = window.location.href;
-			this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer, url: url })
+			if(!isNotRemovable) {
+			    this.components.push({ reactRoot: reactRoot, domContainer: dedicatedDomContainer, url: url })
+			}
 			return reactRoot;
 		}
 		
