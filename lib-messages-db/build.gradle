@@ -1,6 +1,9 @@
 apply from: '../build/javalibrary.gradle'
 
 dependencies {
-    api project(':lib-logging'), project(':lib-db')
-    testImplementation 'testng:testng:6.8-CISD', 'jmock:jmock:2.5.1'
+    api project(':lib-logging'),
+            project(':lib-db')
+    testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
+            'testng:testng:6.8-CISD',
+            'jmock:jmock:2.5.1'
 }

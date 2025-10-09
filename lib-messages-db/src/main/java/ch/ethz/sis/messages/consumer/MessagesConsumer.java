@@ -7,8 +7,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.ethz.sis.messages.db.IMessagesDatabase;
 import ch.ethz.sis.messages.db.LastSeenMessage;
 import ch.ethz.sis.messages.db.Message;
@@ -16,6 +14,7 @@ import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
 import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 public class MessagesConsumer
 {
