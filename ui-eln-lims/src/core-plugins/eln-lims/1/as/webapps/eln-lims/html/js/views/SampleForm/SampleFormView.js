@@ -1563,7 +1563,7 @@
 	
 					$("#newSampleCodeForCopy").val(defaultCode);
 	
-					$("body").on("click", "#copyAccept", function(event) {
+					$("#copyAccept").on("click", function(event) {
 						var newSampleCodeForCopy = $("#newSampleCodeForCopy");
 						var linkParentsOnCopy = $("#linkParentsOnCopy")[0].checked;
 						var copyChildrenOnCopy = $("input[name=copyChildrenOnCopy]:checked").val();
@@ -1582,7 +1582,7 @@
 						}
 					});
 	
-					$("body").on("click", "#copyCancel", function(event) {
+					$("#copyCancel").on("click", function(event) {
 						Util.unblockUI();
 					});
 				};
