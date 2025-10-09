@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import ch.ethz.sis.afsjson.jackson.JacksonObjectMapper;
 import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
 import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.archive.DataSetArchiveOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
@@ -68,7 +69,7 @@ public class ArchiveDataSetExecutor extends AbstractArchiveUnarchiveDataSetExecu
 
                     ArchiveDataSetMessage archiveMessage = new ArchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes,
                             options.isRemoveFromDataStore(), options.getOptions());
-                    messagesDatabase.execute(() ->
+                    MessagesDatabaseUtil.execute(messagesDatabase, () ->
                     {
                         messagesDatabase.getMessagesDAO().create(archiveMessage.serialize(JacksonObjectMapper.getInstance()));
                         return null;
