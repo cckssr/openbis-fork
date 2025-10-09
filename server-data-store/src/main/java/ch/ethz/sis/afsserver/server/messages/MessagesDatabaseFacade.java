@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 
 import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
 
 public class MessagesDatabaseFacade implements IMessagesDatabaseFacade
 {
@@ -20,7 +21,7 @@ public class MessagesDatabaseFacade implements IMessagesDatabaseFacade
     @Override public void create(Message message)
     {
         MessagesDatabase messagesDatabase = new MessagesDatabase(dataSource);
-        messagesDatabase.execute(() ->
+        MessagesDatabaseUtil.execute(messagesDatabase, () ->
         {
             messagesDatabase.getMessagesDAO().create(message);
             return null;
@@ -30,6 +31,6 @@ public class MessagesDatabaseFacade implements IMessagesDatabaseFacade
     @Override public List<Message> listByTypesNotConsumed(final List<String> messageTypes)
     {
         MessagesDatabase messagesDatabase = new MessagesDatabase(dataSource);
-        return messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO().listByTypesNotConsumed(messageTypes));
+        return MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getMessagesDAO().listByTypesNotConsumed(messageTypes));
     }
 }

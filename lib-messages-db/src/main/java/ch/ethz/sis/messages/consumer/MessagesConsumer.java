@@ -12,6 +12,7 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.messages.db.IMessagesDatabase;
 import ch.ethz.sis.messages.db.LastSeenMessage;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.db.MessagesDatabaseUtil;
 import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -41,12 +42,14 @@ public class MessagesConsumer
     {
         final Set<String> allSupportedMessageTypes = getAllSupportedMessageTypes();
 
+        Message newestMessage = MessagesDatabaseUtil.execute(messagesDatabase,
+                () -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
+
         while (true)
         {
 
-            LastSeenMessage lastSeenMessage = messagesDatabase.execute(() -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
-            Message newestMessage =
-                    messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO().getNewestByTypes(new ArrayList<>(allSupportedMessageTypes)));
+            LastSeenMessage lastSeenMessage =
+                    MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getLastSeenMessagesDAO().getByConsumerId(consumerId));
 
             List<Message> messages = loadNextBatch(allSupportedMessageTypes, lastSeenMessage != null ? lastSeenMessage.getLastSeenMessageId() : null,
                     newestMessage != null ? newestMessage.getId() : null);
@@ -62,7 +65,7 @@ public class MessagesConsumer
 
     private List<Message> loadNextBatch(Set<String> messageTypes, Long minMessageId, Long maxMessageId)
     {
-        List<Message> messages = messagesDatabase.execute(() -> messagesDatabase.getMessagesDAO()
+        List<Message> messages = MessagesDatabaseUtil.execute(messagesDatabase, () -> messagesDatabase.getMessagesDAO()
                 .listByTypesAndIdRange(new ArrayList<>(messageTypes), minMessageId, maxMessageId, messageBatchSize));
 
         if (messages.isEmpty())
@@ -140,9 +143,10 @@ public class MessagesConsumer
                 messagesDatabase.getMessagesDAO().update(message);
 
                 messagesDatabase.commit();
-            } finally
+            } catch (Exception e)
             {
                 messagesDatabase.rollback();
+                throw e;
             }
         }
 
