@@ -96,14 +96,14 @@ public class RdfToModel
         handlePropertyTypes(typeProperties, baseCodeToPossibleDataTypes, propertyTypeMappings,
                 codeToSampleType);
         handleIntersectionTypes(entries, schema, entityTypeToRdfIdentifier, codeToSampleType);
-        Map<String, String> identifierToOpenBisCode = new LinkedHashMap<>();
+        Map<String, Sample> externalIdentifierToSample = new LinkedHashMap<>();
 
         Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata = new LinkedHashMap<>();
         Map<String, IMetadataEntry> idToEntities =
                 entries.stream().collect(Collectors.toMap(x -> x.getId(), x -> x, (x, y) -> y));
         processEntities(entries, fallbackSpaceCode, fallbackProjectCode, typeToInheritanceChain,
                 codeToSampleType,
-                identifierToOpenBisCode, baseCodeToPossibleDataTypes, idToEntities,
+                externalIdentifierToSample, baseCodeToPossibleDataTypes, idToEntities,
                 roCrateIdsToObjects,
                 samplesWithSpaceAndProjectCodes, spaces, projects);
 
@@ -120,8 +120,14 @@ public class RdfToModel
                 typeToInheritanceChain,
                 roCrateIdsToObjects, spaces, projects);
 
+        resolveSamples(samplesWithSpaceAndProjectCodes, spaces, projects, idsToCollections,
+                metadata, externalIdentifierToSample);
+        Map<String, String> collect = externalIdentifierToSample.entrySet().stream()
+                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue().getCode()));
+
         return new OpenBisModel(Map.of(), schema, spaces, projects, metadata, Map.of(), Map.of(),
-                identifierToOpenBisCode);
+                collect
+        );
     }
 
     private static void handleTypes(List<IType> types, Map<String, IType> IdsToTypes,
@@ -365,7 +371,8 @@ public class RdfToModel
 
     private static void processEntities(List<IMetadataEntry> entries, String fallbackSpaceCode,
             String fallbackProjectCode, Map<String, List<String>> typeToInheritanceChain,
-            Map<String, SampleType> codeToSampleType, Map<String, String> identifierToOpenBisCode,
+            Map<String, SampleType> codeToSampleType,
+            Map<String, Sample> externalIdentifierToSample,
             Map<String, Set<DataType>> baseCodeToPossibleDataTypes,
             Map<String, IMetadataEntry> idToEntities, Map<String, Sample> roCrateIdsToObjects,
             List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
@@ -400,7 +407,7 @@ public class RdfToModel
 
                 String code = createSampleCode(type, entry.getId());
                 sample.setCode(code);
-                identifierToOpenBisCode.put(entry.getId(), code);
+                externalIdentifierToSample.put(entry.getId(), sample);
 
                 objectIdentifier = new SampleIdentifier(entry.getId());
                 entity = sample;
@@ -562,8 +569,37 @@ public class RdfToModel
                     "/" + sampleToResolve.getLeft().getSpace()
                             .getCode() + "/" + sampleToResolve.getLeft().getProject()
                             .getCode() + "/" + sampleToResolve.getLeft().getCode());
+            sampleToResolve.getLeft()
+                    .setIdentifier(new SampleIdentifier(objectIdentifier.toString()));
             metadata.put(objectIdentifier, sampleToResolve.getLeft());
 
+
+        }
+    }
+
+    private static void resolveSamples(
+            List<Pair<Sample, ReferencesToResolve>> samplesWithSpaceAndProjectCodes,
+            Map<SpacePermId, Space> spaces, Map<ProjectIdentifier, Project> projects,
+            Map<ExperimentIdentifier, Experiment> idsToCollections,
+            Map<ObjectIdentifier, AbstractEntityPropertyHolder> metadata,
+            Map<String, Sample> externalIdentifierToSample)
+    {
+        for (Pair<Sample, ReferencesToResolve> sampleToResolve : samplesWithSpaceAndProjectCodes)
+        {
+            Map<String, List<String>> sampleIdentifiers =
+                    sampleToResolve.getRight().sampleIdentifiers;
+            Sample sample = sampleToResolve.getLeft();
+            for (Map.Entry<String, List<String>> propertyToVals : sampleIdentifiers.entrySet())
+            {
+                String[] array = propertyToVals.getValue().stream()
+                        .map(x -> externalIdentifierToSample.get(x))
+                        .map(x -> x.getIdentifier().toString()).toArray(String[]::new);
+
+                Map<String, Serializable> properties = sample.getProperties();
+                properties.put(deRdfIdentifier(propertyToVals.getKey()), array);
+                sample.setProperties(properties);
+
+            }
 
         }
     }
@@ -666,7 +702,12 @@ public class RdfToModel
                         .map(x -> x.replaceAll("]$", ""))
                         .orElse(myProject);
 
-        return new ReferencesToResolve(mySpace, myProject, myExperiment);
+        Set<String> filterSet = Set.of(PROPERTY_SPACE, PROPERTY_PROJECT, PROPERTY_COLLECTION);
+        Map<String, List<String>> samplesToResolve =
+                properties.entrySet().stream().filter(x -> !filterSet.contains(x.getKey()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        return new ReferencesToResolve(mySpace, myProject, myExperiment, samplesToResolve);
     }
 
 
@@ -922,11 +963,15 @@ public class RdfToModel
 
         String collectionCode;
 
-        public ReferencesToResolve(String spaceCode, String projectCode, String collectionCode)
+        Map<String, List<String>> sampleIdentifiers;
+
+        public ReferencesToResolve(String spaceCode, String projectCode, String collectionCode,
+                Map<String, List<String>> sampleIdentifiers)
         {
             this.spaceCode = spaceCode;
             this.projectCode = projectCode;
             this.collectionCode = collectionCode;
+            this.sampleIdentifiers = sampleIdentifiers;
         }
 
         public String getSpaceCode()
