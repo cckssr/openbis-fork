@@ -1,5 +1,6 @@
 package ch.ethz.sis.rdf.main.parser;
 
+import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rdf.main.Constants;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.PropertyTupleRDF;
@@ -41,8 +42,11 @@ public class ParserUtils {
             for (String prefix: sampleObjectPrefixList){
                 // Iterate through all statements with rdf:type predicate
                 model.listStatements(null, RDF.type, (Resource) null).forEachRemaining(statement -> {
+
                     Resource subject = statement.getSubject();
-                    if (subject.isURIResource() && subject.getURI().startsWith(prefix)) {
+                    if (subject.isURIResource() && subject.getURI()
+                            .startsWith(prefix))
+                    {
                         Resource object = statement.getObject().asResource();
                         String typeURI = object.getURI();
                         String type = object.getLocalName();
@@ -137,6 +141,11 @@ public class ParserUtils {
     private static String findIdentifier(Resource subject)
     {
         return SplitIRI.localname(subject.getURI());
+    }
+
+    public static String getResourceCode(Resource resource)
+    {
+        return OpenBisModel.makeOpenBisCodeCompliant(SplitIRI.localname(resource.getURI()));
     }
 
 
@@ -489,5 +498,6 @@ public class ParserUtils {
 
 
     }
+
 
 }

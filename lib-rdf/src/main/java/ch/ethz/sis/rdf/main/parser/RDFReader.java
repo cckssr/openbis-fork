@@ -9,6 +9,7 @@ import ch.ethz.sis.rdf.main.mappers.rdf.ObjectPropertyMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.OntClassExtension;
 import ch.ethz.sis.rdf.main.model.xlsx.*;
+import ch.ethz.sis.rdf.main.parser.repair.RepairUtil;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.jena.ontology.OntClass;
@@ -51,6 +52,7 @@ public class RDFReader
         handleOntologyModel(model, inputFileNames, inputFormatValue, modelRDF);
         ResourceParsingResult resourceParsingResult =
                 handleResources(model, modelRDF, additionalModel);
+
         printResourceParsingResult(resourceParsingResult);
         CardinalityCheckResult cardinalityCheckResult = checkCardinalities(modelRDF);
 
@@ -62,6 +64,10 @@ public class RDFReader
             System.out.println("Cardinality check okay");
         }
 
+        if (Config.getINSTANCE().isRepair())
+        {
+            RepairUtil.repairEncodingIssueSamples(model, modelRDF);
+        }
 
         if (verbose) ParserUtils.extractGeneralInfo(model, model.getNsPrefixURI(""));
 

@@ -11,6 +11,18 @@ public class Config
 
     private final boolean enforceSingleValues;
 
+    private boolean repair;
+
+    public boolean isRepair()
+    {
+        return repair;
+    }
+
+    public void setRepair(boolean repair)
+    {
+        this.repair = repair;
+    }
+
     public Config(boolean removeDanglingReferences, boolean writeSchema,
             boolean enforceSingleValues)
     {
