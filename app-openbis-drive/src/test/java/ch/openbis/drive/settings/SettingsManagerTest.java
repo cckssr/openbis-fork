@@ -26,7 +26,7 @@ public class SettingsManagerTest {
 
     public SettingsManagerTest() throws Exception {
         configuration = new Configuration(Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("settings-manager-test"));
-        Files.createDirectories(configuration.getLocalAppDirectory());
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
         NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
         SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
         settingsManager = Mockito.spy(new SettingsManager(configuration, syncJobEventDAO, notificationManager));

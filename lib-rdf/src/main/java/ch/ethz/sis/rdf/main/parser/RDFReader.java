@@ -241,7 +241,9 @@ public class RDFReader
                             continue;
                         }
 
-                        if (!objectCodes.contains(valProperty.getValue()))
+                        if (!objectCodes.contains(valProperty.getValue()) && !objectCodes.contains(
+                                valProperty.valueURI)
+                        )
                         {
                             editedStuff.add(new ImmutableTriple<>(sampleObject, property,
                                     valProperty.getValue()));

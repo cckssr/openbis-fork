@@ -8,6 +8,7 @@ evaluationDependsOn(':lib-dbmigration')
 evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
+evaluationDependsOn(':server-ro-crate')
 evaluationDependsOn(':core-plugin-openbis')
 
 apply from: '../build/javaproject.gradle'

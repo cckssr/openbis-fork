@@ -26,9 +26,11 @@ function MainHeaderController() {
 
     this.handlePageChange = function(event, value) {
         _this._mainHeaderModel.currentPage = value;
-        mainController.sideMenu.changeCurrentTree(value);
         mainController.sideMenu.removeSubSideMenu();
         mainController.tabContent.changePage(value);
+        var tabInfo = mainController.tabContent.getCurrentTabInfo();
+        var node = JSON.parse(tabInfo.node);
+        mainController.sideMenu.changeCurrentTree(value, node);
         if(mainController.sideMenu.isCollapsed) {
             mainController.sideMenu.expandSideMenu();
         }

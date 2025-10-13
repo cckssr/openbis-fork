@@ -26,10 +26,9 @@ public class SyncJobEventDAOImpTest {
 
     @Test
     public void createDatabaseIfNotExists() throws Exception {
-        if(!Files.exists(Path.of(localDirectoryRoot))) {
-            Files.createDirectories(Path.of(localDirectoryRoot));
-        }
-        SyncJobEventDAOImp syncJobEventDAOImp = new SyncJobEventDAOImp(new Configuration(Path.of(localDirectoryRoot)));
+        Configuration configuration = new Configuration(Path.of(localDirectoryRoot));
+        Files.createDirectories(configuration.getLocalAppStateDirectory());
+        SyncJobEventDAOImp syncJobEventDAOImp = new SyncJobEventDAOImp(configuration);
         syncJobEventDAOImp.createDatabaseIfNotExists();
     }
 

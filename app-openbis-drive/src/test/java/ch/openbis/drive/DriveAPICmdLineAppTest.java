@@ -2,6 +2,8 @@ package ch.openbis.drive;
 
 import ch.openbis.drive.model.*;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -588,7 +590,7 @@ public class DriveAPICmdLineAppTest {
         Mockito.clearInvocations(driveAPICmdLineApp);
 
         //STATUS NOT RUNNING
-        Mockito.doThrow(new RuntimeException()).when(driveAPIClient).getSettings();
+        Mockito.doThrow(new StatusRuntimeException(Status.UNAVAILABLE)).when(driveAPIClient).getSettings();
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         System.setOut(new PrintStream(bo));
 

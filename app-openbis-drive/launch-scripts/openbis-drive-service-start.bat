@@ -34,7 +34,7 @@ goto fail
 :execute
 @rem Execute
 if not defined OPENBIS_DRIVE_DIR (
-    cd %USERPROFILE% && cd .openbis-drive && cd launch-scripts
+    cd %USERPROFILE% && cd AppData && cd Local && cd openbis-drive && cd launch-scripts
 ) else (
     cd %OPENBIS_DRIVE_DIR% && cd launch-scripts
 )

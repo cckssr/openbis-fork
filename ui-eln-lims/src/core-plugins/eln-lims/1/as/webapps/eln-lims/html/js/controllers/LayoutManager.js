@@ -530,6 +530,7 @@ var LayoutManager = {
 //				this.FOUND_SIZE = this.DESKTOP_SIZE;
 //			}
 //		} else
+        var previousFoundSize = this.FOUND_SIZE;
 		if (width > this.TABLET_SIZE) {
 			if (this.FOUND_SIZE !== this.TABLET_SIZE) {
 				isFirstTime = true;
@@ -562,6 +563,13 @@ var LayoutManager = {
 		    _this.tabContent.empty();
             _this.tabContent.append(view.tabContent);
 		}
+
+        // Logic for switching from mobile view to regular one
+		if(previousFoundSize === this.MOBILE_SIZE && this.FOUND_SIZE  !== this.MOBILE_SIZE) {
+            $("#tab-content-header").remove();
+            $("#tab-content-body").remove();
+            mainController.reInitCurrentView();
+        }
 
 		// sideMenuBody scroll fix
 		if(this.FOUND_SIZE >= this.TABLET_SIZE && firstColumnScroll) {

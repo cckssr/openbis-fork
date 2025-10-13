@@ -27,7 +27,7 @@ public class NotificationDAOImpl implements NotificationDAO {
     }
 
     private Connection getConnection() throws SQLException, IOException {
-        String databaseFile = "jdbc:sqlite:" + configuration.getLocalAppDirectory().toAbsolutePath() + "/" + DB_FILE_NAME;
+        String databaseFile = "jdbc:sqlite:" + configuration.getLocalAppStateDirectory().toAbsolutePath() + "/" + DB_FILE_NAME;
         return DriverManager.getConnection(databaseFile);
     }
 

@@ -7,6 +7,8 @@ import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
 import ch.openbis.drive.util.OsDetectionUtil;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import lombok.NonNull;
 import org.apache.commons.cli.*;
 
@@ -379,6 +381,12 @@ public class DriveAPICmdLineApp {
                 System.out.println("----------");
                 printSyncJob(syncJob);
             }
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -396,6 +404,12 @@ public class DriveAPICmdLineApp {
             }
             driveAPIClient.setSettings(settings);
             printConfig();
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -411,6 +425,12 @@ public class DriveAPICmdLineApp {
             newSyncJob.setEnabled(enabled);
             driveAPIClient.addSyncJobs(Collections.singletonList(newSyncJob));
             printJobs();
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -427,6 +447,12 @@ public class DriveAPICmdLineApp {
             }
 
             printJobs();
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -443,6 +469,12 @@ public class DriveAPICmdLineApp {
             }
 
             printJobs();
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -459,6 +491,12 @@ public class DriveAPICmdLineApp {
             }
 
             printJobs();
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -470,6 +508,12 @@ public class DriveAPICmdLineApp {
                 System.out.println("----------");
                 printSyncJob(syncJob);
             }
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 
@@ -480,6 +524,12 @@ public class DriveAPICmdLineApp {
             for (Notification notification : notifications) {
                 System.out.println("----------");
                 printNotification(notification);
+            }
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
             }
         }
     }
@@ -504,6 +554,12 @@ public class DriveAPICmdLineApp {
             for (Event event : events) {
                 System.out.println("----------");
                 printEvent(event);
+            }
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
             }
         }
     }
@@ -564,7 +620,7 @@ public class DriveAPICmdLineApp {
                             String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
                             String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
                     },
-                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+                    new Configuration().getLocalAppLaunchDirectory().toFile());
 
             case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  "openbis-drive-service-start.bat"}, new String[]{
                             String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
@@ -572,7 +628,7 @@ public class DriveAPICmdLineApp {
                             String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
                             String.format("USERPROFILE=%s", Optional.ofNullable(System.getenv("USERPROFILE")).orElse("")),
                     },
-                    new Configuration().getLocalAppDirectory().resolve("launch-scripts").toFile());
+                    new Configuration().getLocalAppLaunchDirectory().toFile());
 
             case Unknown -> throw new IllegalStateException("Unknown operating-system");
         }
@@ -592,7 +648,11 @@ public class DriveAPICmdLineApp {
             System.out.println("OpenBIS Drive Service is running with this configuration:");
             printConfig();
         } catch (Exception e) {
-            System.out.println("OpenBIS Drive Service is not running.");
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
         }
     }
 }

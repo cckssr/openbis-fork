@@ -19,6 +19,10 @@ function TabContentController(controller) {
 
     }
 
+    this.getCurrentTabInfo = function() {
+        return this._model.currentTab;
+    }
+
     this.changePage = function(page) {
         this._tabController = this._tabControllerMap[page];
         this._view.changeTabView(page);

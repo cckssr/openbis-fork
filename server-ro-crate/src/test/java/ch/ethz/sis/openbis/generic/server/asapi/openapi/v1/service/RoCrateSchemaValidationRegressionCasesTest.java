@@ -33,8 +33,8 @@ public class RoCrateSchemaValidationRegressionCasesTest
         List<IMetadataEntry> metadataEntries = new ArrayList<>();
         for (IType type : types)
         {
-            schemaFacade.getEntries(type.getId());
-            metadataEntries.addAll(metadataEntries);
+            List<IMetadataEntry> entries = schemaFacade.getEntries(type.getId());
+            metadataEntries.addAll(entries);
         }
         List<IPropertyType> propertyTypes = schemaFacade.getPropertyTypes();
         OpenBisModel openBisModel =
@@ -60,5 +60,15 @@ public class RoCrateSchemaValidationRegressionCasesTest
         Assert.assertTrue(validationResult.isOkay());
 
     }
+
+    @Test
+    void testOpenBis20251009() throws JsonProcessingException
+    {
+        String location = "validation/openbis.2025-10-09.zip";
+        ValidationResult validationResult = getValidationResult(location);
+        Assert.assertTrue(validationResult.isOkay());
+
+    }
+
 
 }

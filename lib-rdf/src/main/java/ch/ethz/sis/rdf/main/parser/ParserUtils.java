@@ -63,7 +63,10 @@ public class ParserUtils {
 
                                     //need to differentiate from resources and primitive objects: https://biomedit.ch/rdf/sphn-resource/Code-SNOMED-CT-419199007 || "2011-07-28T16:16:28+00:00"^^xsd:dateTime
                                     SampleObjectProperty sampleObjectProperty = propObject.isResource() ?
-                                            new SampleObjectProperty(predicate.getURI(), predicate.getLocalName(), propObject.asResource().getLocalName(), propObject.asResource().getURI()) :
+                                            new SampleObjectProperty(predicate.getURI(),
+                                                    predicate.getLocalName(), SplitIRI.localname(
+                                                    propObject.asResource().getURI()),
+                                                    propObject.asResource().getURI()) :
                                             new SampleObjectProperty(predicate.getURI(), predicate.getLocalName(), propObject.toString(), propObject.toString());
 
                                     sampleObject.addProperty(sampleObjectProperty);

@@ -958,10 +958,30 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
             
             var searchUntilFound = null;
                 searchUntilFound = function() {
+                var nodeToRefresh = {};
+                if(isCopyWithNewCode) {
+                    var s3 = _this._sampleFormModel.v3_sample;
+                    if(s3.experiment) {
+                       nodeToRefresh.type = 'EXPERIMENT';
+                       nodeToRefresh.id = s3.experiment.permId.permId;
+                    } else if(s3.project) {
+                       nodeToRefresh.type = 'PROJECT';
+                       nodeToRefresh.id = s3.project.permId.permId;
+                    } else {
+                       nodeToRefresh.type = 'SPACE';
+                       nodeToRefresh.id = s3.space.code;
+                    }
+                }
+
                 mainController.serverFacade.searchWithUniqueId(permId, function(data) {
                     if(data && data.length > 0) {
                         if(_this._sampleFormModel.mode === FormMode.CREATE) {
                             _this._mainController.sideMenu.refreshCurrentNode().then(x => {
+                                var nodeId = {type: 'SAMPLE', id: data[0].permId}
+                                _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
+                            });
+                        } else if(isCopyWithNewCode) {
+                            _this._mainController.sideMenu.refreshNodeByPermId(nodeToRefresh.type, nodeToRefresh.id).then(x => {
                                 var nodeId = {type: 'SAMPLE', id: data[0].permId}
                                 _this._mainController.sideMenu.moveToNodeId(JSON.stringify(nodeId));
                             });

@@ -35,8 +35,8 @@ public class SettingsManager {
 
     public SettingsManager(@NonNull Configuration configuration, @NonNull SyncJobEventDAO syncJobEventDAO, @NonNull NotificationManager notificationManager) {
         this.configuration = configuration;
-        this.settingsPath = Path.of(configuration.getLocalAppDirectory().toString(), DEFAULT_SETTINGS_FILE);
-        this.backupSettingsPath = Path.of(configuration.getLocalAppDirectory().toString(), DEFAULT_BACKUP_SETTINGS_FILE);
+        this.settingsPath = Path.of(configuration.getLocalAppStateDirectory().toString(), DEFAULT_SETTINGS_FILE);
+        this.backupSettingsPath = Path.of(configuration.getLocalAppStateDirectory().toString(), DEFAULT_BACKUP_SETTINGS_FILE);
         this.syncJobEventDAO = syncJobEventDAO;
         this.notificationManager = notificationManager;
     }
@@ -148,7 +148,7 @@ public class SettingsManager {
         if (settings.getJobs() != null) {
 
             ArrayList<Path> localDirValues = settings.getJobs().stream()
-                    .map( SyncJob::getLocalDirectoryRoot).map(Path::of).map(Path::toAbsolutePath).collect(Collectors.toCollection(ArrayList::new));
+                    .map( SyncJob::getLocalDirectoryRoot).map(Path::of).map(Path::toAbsolutePath).map(Path::normalize).collect(Collectors.toCollection(ArrayList::new));
 
             for(int i=0; i<localDirValues.size(); i++) {
                 for(int j=i+1; j<localDirValues.size(); j++) {

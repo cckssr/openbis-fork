@@ -1,0 +1,119 @@
+{
+  "@context": {
+    "Organization": "https://schema.org/Organization",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "CreativeWork": "https://schema.org/CreativeWork",
+    "about": "https://schema.org/about",
+    "description": "https://schema.org/description",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "dateCreated": "https://schema.org/dateCreated",
+    "rangeIncludes": "https://schema.org/rangeIncludes",
+    "creativeWorkStatus": "https://schema.org/creativeWorkStatus",
+    "identifier": "https://schema.org/identifier",
+    "creator": "https://schema.org/creator",
+    "hasPart": "https://schema.org/hasPart",
+    "Dataset": "https://schema.org/Dataset",
+    "dateModified": "https://schema.org/dateModified",
+    "abstract": "https://schema.org/abstract",
+    "sdDatePublished": "https://schema.org/sdDatePublished",
+    "domainIncludes": "https://schema.org/domainIncludes",
+    "datePublished": "https://schema.org/datePublished",
+    "license": "https://schema.org/license",
+    "additionalType": "https://schema.org/additionalType",
+    "name": "https://schema.org/name",
+    "publisher": "https://schema.org/publisher",
+    "conformsTo": "http://purl.org/dc/terms/conformsTo",
+    "Person": "https://schema.org/Person"
+  },
+  "@graph": [
+    {
+      "@id": "./",
+      "@type": "Dataset",
+      "name": "First data to public URLs",
+      "description": "First data to public URLs",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by-sa/4.0/"
+      },
+      "datePublished": "2023-01-01",
+      "hasPart": [
+        {
+          "@id": "https://doi.org/10.16907/eb75dfba-6c91-4276-8dd6-05f949307213"
+        },
+        {
+          "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2F0e54729b-75c5-42fa-a628-aae5dc3f3dae"
+        },
+        {
+          "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2Feeae04f3-c4f3-4487-bbb3-500acfa989ee"
+        }
+      ]
+    },
+    {
+      "about": {
+        "@id": "./"
+      },
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "@id": "ro-crate-metadata.json",
+      "@type": "CreativeWork"
+    },
+    {
+      "name": "Pedro/MoreData",
+      "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2Feeae04f3-c4f3-4487-bbb3-500acfa989ee",
+      "@type": "Dataset"
+    },
+    {
+      "name": "Pedro/TralalaData",
+      "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2F0e54729b-75c5-42fa-a628-aae5dc3f3dae",
+      "@type": "Dataset"
+    },
+    {
+      "identifier": "10.16907/eb75dfba-6c91-4276-8dd6-05f949307213",
+      "creator": {
+        "@id": "fe9a2c8c-6f43-449e-b384-063c1b545963"
+      },
+      "publisher": {
+        "@id": "https://ror.org/03eh3y714"
+      },
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by-sa/4.0/"
+      },
+      "datePublished": "2023",
+      "name": "First data to public URLs",
+      "abstract": "First data to public URLs",
+      "additionalType": "raw",
+      "sdDatePublished": "2023-03-10T14:30:39.900Z",
+      "creativeWorkStatus": "registered",
+      "dateCreated": "2023-03-10T14:30:38.016Z",
+      "dateModified": "2023-03-10T14:30:38.025Z",
+      "description": "First data to public URLs",
+      "hasPart": [
+        {
+          "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2Feeae04f3-c4f3-4487-bbb3-500acfa989ee"
+        },
+        {
+          "@id": "http://backend.scicat-development/api/v3/datasets/20.500.11935%2F0e54729b-75c5-42fa-a628-aae5dc3f3dae"
+        }
+      ],
+      "@id": "https://doi.org/10.16907/eb75dfba-6c91-4276-8dd6-05f949307213",
+      "@type": "CreativeWork"
+    },
+    {
+      "name": "huesser",
+      "@id": "fe9a2c8c-6f43-449e-b384-063c1b545963",
+      "@type": "Person"
+    },
+    {
+      "identifier": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "name": "Creative Commons Attribution Share Alike 4.0 International",
+      "@id": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "@type": "CreativeWork"
+    },
+    {
+      "name": "Paul Scherrer Institute",
+      "@id": "https://ror.org/03eh3y714",
+      "@type": "Organization"
+    }
+  ]
+}

@@ -29,12 +29,15 @@ public class RoCrateSchemaValidation
         Map<String, List<PropertyProblem>> entitiesToMissingProperties = new LinkedHashMap<>();
         Map<String, List<PropertyProblem>> entititesToUndefinedProperties = new LinkedHashMap<>();
         Map<String, List<PropertyProblem>> wrongDataTypes = new LinkedHashMap<>();
+        List<String> foundIdentifiers = new ArrayList<>();
+
 
         for (AbstractEntityPropertyHolder entity : openBisModel.getEntities().values())
         {
             if (entity instanceof Sample)
             {
                 Sample sample = (Sample) entity;
+                foundIdentifiers.add(sample.getCode());
                 IEntityType entityType =
                         openBisModel.getEntityTypes().get(sample.getType().getPermId());
                 SampleType sampleType = (SampleType) entityType;
@@ -110,7 +113,7 @@ public class RoCrateSchemaValidation
         }
 
         return new ValidationResult(entitiesToMissingProperties, entititesToUndefinedProperties,
-                wrongDataTypes);
+                wrongDataTypes, foundIdentifiers);
 
     }
 

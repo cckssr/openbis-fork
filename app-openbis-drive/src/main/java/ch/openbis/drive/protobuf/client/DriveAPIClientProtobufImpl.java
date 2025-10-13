@@ -51,7 +51,7 @@ public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
     }
 
     private ManagedChannel getGrpcChannel(Configuration configuration) {
-        return NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getLocalAppDirectory().resolve(DriveAPIService.SOCKET_FILE_NAME).toString()))
+        return NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getLocalAppStateDirectory().resolve(DriveAPIService.SOCKET_FILE_NAME).toString()))
                 .withOption(ChannelOption.SO_KEEPALIVE, null)
                 .usePlaintext()
                 .channelType(EpollDomainSocketChannel.class)

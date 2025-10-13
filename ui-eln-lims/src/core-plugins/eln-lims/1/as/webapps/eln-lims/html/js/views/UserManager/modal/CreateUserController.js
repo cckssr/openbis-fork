@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 ETH Zuerich, Scientific IT Services
+ * Copyright 2014-2025 ETH Zuerich, Scientific IT Services
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 function CreateUserController(authenticationService) {
 	this._createUserModel = new CreateUserModel(authenticationService);
 	this._createUserView = new CreateUserView(this, this._createUserModel);
+	var codeRegExp = new RegExp("^[A-Za-z0-9_\\-\\.]+$");
 	
 	this.init = function() {
 		this._createUserView.repaint();
@@ -25,14 +26,14 @@ function CreateUserController(authenticationService) {
 	this.createUser = function() {
 		var _this = this;
 		this._createUserView.disableAccept();
-		
+
 			var createUser = function() {
-			    if(_this._createUserModel.userId.indexOf("_at_") > -1 || _this._createUserModel.userId.indexOf("_AT_") > -1) {
-			        Util.showUserError("Please use @ instead of _at_ for emails.", function() {
-                	    _this._createUserView.enableAccept();
+                if(!codeRegExp.test(_this._createUserModel.userId)) {
+                    Util.showUserError("Please use allowed characters for ELN user creation (allowed: A-Z, a-z, 0-9 and _, -, .)", function() {
+                        _this._createUserView.enableAccept();
                     }, true);
                     return;
-			    }
+                }
 
 				mainController.serverFacade.createELNUser(_this._createUserModel.userId, function(isRegistered, message) {
 					if(isRegistered) {
