@@ -174,7 +174,7 @@ function StorageListView(storageListController, storageListModel) {
 		$storageAddButton.addClass("btn-secondary");
 		$storageAddButton.append($("<i>", { class : "material-icons", text: "add" } )).append(" Storage Position");
 
-        $("body").off("click", "#"+storageAddButtonId)
+        $("body").off("click", "#"+storageAddButtonId);
 		$("body").on("click", "#"+storageAddButtonId, function(event) {
 			var uuid = Util.guid();
 			var newChildSample = {
