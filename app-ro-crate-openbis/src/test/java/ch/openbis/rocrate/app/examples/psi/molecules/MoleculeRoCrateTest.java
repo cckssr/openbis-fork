@@ -58,6 +58,8 @@ public class MoleculeRoCrateTest
         assertEquals("MATERIALS", sample.getSpace().getCode());
         assertEquals("/MATERIALS/MOLECULES", sample.getProject().getIdentifier().getIdentifier());
         assertNotNull(sample.getExperiment());
+        assertEquals("MOLECULE_COLLECTION", sample.getExperiment().getCode());
+
 
     }
 }

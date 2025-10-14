@@ -541,7 +541,7 @@ public class RdfToModel
                 experiment.setType(experimentType);
                 ExperimentIdentifier identifier = new ExperimentIdentifier(entry.getId());
                 experiment.setIdentifier(identifier);
-                experimentType.setCode(entry.getId().split("/")[3]);
+                experiment.setCode(entry.getId().split("/")[3]);
                 idsToCollections.put(identifier, experiment);
 
             }
