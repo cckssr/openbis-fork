@@ -174,6 +174,7 @@ function StorageListView(storageListController, storageListModel) {
 		$storageAddButton.addClass("btn-secondary");
 		$storageAddButton.append($("<i>", { class : "material-icons", text: "add" } )).append(" Storage Position");
 
+        $("body").off("click", "#"+storageAddButtonId)
 		$("body").on("click", "#"+storageAddButtonId, function(event) {
 			var uuid = Util.guid();
 			var newChildSample = {
@@ -263,10 +264,11 @@ function StorageListView(storageListController, storageListModel) {
                             delete sampleChild.newSampleJustCreated;
                             var postFix = "";
                             if(storageSpaceCode.length > "STORAGE".length) {
-															  var start = storageSpaceCode.indexOf("_");
-															  postFix = storageSpaceCode.substring((start + 1) + "STORAGE".length + 1);
+                              var start = storageSpaceCode.indexOf("_");
+                              postFix = storageSpaceCode.substring((start + 1) + "STORAGE".length + 1);
                             }
-                            sampleChild.experimentIdentifier = "/" + storageSpaceCode + "/STORAGE_POSITIONS" + postFix + "/STORAGE_POSITIONS_COLLECTION" + postFix;
+                            // BIS-2297: disabled to fix setting storage in multi-group instances
+//                            sampleChild.experimentIdentifier = "/" + storageSpaceCode + "/STORAGE_POSITIONS" + postFix + "/STORAGE_POSITIONS_COLLECTION" + postFix;
                         } else {
                             // On update the identifier should be set, fail if not
                         }
