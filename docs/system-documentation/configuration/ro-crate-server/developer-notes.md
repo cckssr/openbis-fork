@@ -18,6 +18,10 @@ specification.
 
 Currently there are three endpoints
 
+- Export: export openBIS objects based on identifier, permID or annotated properties
+- Validate: check internal consistency of RO-Crate
+- Import: import RO-Crate into openBIS
+
 #### Export
 
 `<openbis-url>/ro-crate-server/export`
