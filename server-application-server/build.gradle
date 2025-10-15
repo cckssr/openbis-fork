@@ -174,8 +174,6 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
-             '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
-             '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
              '-Xmx4096M', '-ea'])
     args(['--classes', '../lib-commonbase/targets/gradle/classes/java/main',
