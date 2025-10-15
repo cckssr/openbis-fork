@@ -84,7 +84,7 @@ tasks.register('javadoc', Copy) {
 //    }
 //}
 
-tasks.register('build', Tar) {
+tasks.register('buildRelease', Tar) {
     // API
     dependsOn([project(':api-openbis-java').tasks.openbisJavaApiTar,
                project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar,
@@ -98,6 +98,7 @@ tasks.register('build', Tar) {
     ])
     //JAVADOC
     dependsOn([':server-application-server:serverApplicationServerJavadocZip',
+            ':server-application-server:dynamicApiJavadocZip',
             ':server-original-data-store:serverOriginalDataStoreJavadocZip',
             ':server-original-data-store:dropboxJavaDocZip'
     ])
@@ -124,6 +125,7 @@ tasks.register('build', Tar) {
     }
 
     from([project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile,
+          project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile,
           project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile,
           project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
     ]) {
