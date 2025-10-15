@@ -96,6 +96,7 @@ dependencies {
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
     testRuntimeFirst 'javax:servlet-api:4.0.1'
+//            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
 
 
@@ -148,6 +149,7 @@ task openBISDevelopmentEnvironmentDSSStart(type: JavaExec) {
 }
 
 task serverOriginalDataStoreJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project(':server-original-data-store').files('source/java').getAsFileTree().matching {
         include "**/ch/systemsx/cisd/openbis/dss/generic/server/plugins/jython/api/**/*.java"
         include "**/ch/systemsx/cisd/openbis/dss/generic/shared/api/internal/**/*.java"
@@ -181,6 +183,7 @@ task dropboxApiZip(type: Zip, dependsOn: [dropboxApiJar]) {
 
 
 task dropboxApiJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project(':server-original-data-store').files('source/java').getAsFileTree().matching {
         include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.java"
         include "ch/systemsx/cisd/etlserver/registrator/api/v2/impl/*.java"

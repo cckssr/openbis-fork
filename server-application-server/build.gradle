@@ -189,6 +189,7 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
 /////////// AS JAVADOC ////////////////////
 
 task serverApplicationServerJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project(':server-application-server').files('source/java').getAsFileTree().matching {
         include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
         include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
@@ -208,6 +209,7 @@ task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationSe
 
 
 task dynamicApiJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project(':server-application-server').files('source/java').getAsFileTree().matching {
         include "ch/systemsx/cisd/openbis/generic/shared/hotdeploy_plugins/api/*.java"
     }
