@@ -16,16 +16,17 @@
  *
  */
 
-task cleanBuild(type: Delete) {
+tasks.register('clean', Delete) {
     delete 'build'
 }
 
-task openbisPython3ApiZip(type: Zip) {
+tasks.register('build', Tar) {
+    dependsOn tasks.clean
     destinationDirectory = layout.buildDirectory.dir(".")
     def contentOfSetUpFile = file('src/python/setup.cfg').text
     def version = (contentOfSetUpFile =~ /version.*=.*(.*)/)[0][0]
     def pybisVersion = (version =~ /\d.*/)[0]
-    archiveFileName = 'openbis-python3-api-' + pybisVersion + '.zip'
+    archiveFileName = 'openbis-python3-api-' + pybisVersion + '.tar.gz'
     from 'src'
 }
 

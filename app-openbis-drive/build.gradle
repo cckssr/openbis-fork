@@ -143,8 +143,9 @@ tasks.register('app-openbis-drive-cmd-line-jar', Jar) {
     }
 }
 // openbis-drive-VERSION.tar.gz
-task openbisDriveTar(type: Tar, dependsOn: [jar]) {
-    archiveFileName =  'openbis-drive-' + project.ext.versionNumber + ".tar.gz"
+tasks.register('openbisDriveTar', Tar) {
+    dependsOn([jar])
+    archiveFileName = 'openbis-drive-' + project.ext.versionNumber + ".tar.gz"
     from jar.archiveFile
     into 'openbis-drive'
 }

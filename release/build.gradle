@@ -15,9 +15,126 @@
  *
  */
 
-apply from: '../build/javaproject.gradle'
-apply from: 'openbis-java-api.gradle'
-apply from: 'openbis-javascript-api.gradle'
+//apply from: '../build/javaproject.gradle'
+
+tasks.register('clean', Delete) {
+    delete 'build'
+}
+
+tasks.register('api', Copy) {
+    dependsOn([project(':api-openbis-java').tasks.openbisJavaApiTar,
+               project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar,
+               project(':api-openbis-javascript').tasks.resources,
+               project(':api-openbis-python3-pybis').tasks.build
+    ])
+
+    from project(':api-openbis-java').tasks.openbisJavaApiTar.archiveFile
+    from project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar.archiveFile
+    from project(':api-openbis-javascript').tasks.resources.archiveFile
+    from project(':api-openbis-python3-pybis').tasks.build.archiveFile
+
+    into file('build/api')
+}
+
+tasks.register('app', Copy) {
+    dependsOn([project(':app-openbis-command-line').tasks.build,
+               project(':app-openbis-drive').tasks.openbisDriveTar,
+               project(':app-openbis-installer').tasks.createInstallerZip
+    ])
+
+    from project(':app-openbis-command-line').tasks.build.archiveFile
+    from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
+    from project(':app-openbis-installer').tasks.createInstallerZip.archiveFile
+    into file('build/app')
+}
+
+
+tasks.register('javadoc', Copy) {
+    dependsOn( ':server-application-server:serverApplicationServerJavadocZip',
+        ':server-application-server:dynamicApiJavadocZip',
+        ':server-original-data-store:serverOriginalDataStoreJavadocZip', ':server-original-data-store:dropboxJavaDocZip',
+        ':core-plugin-openbis:queryApiJavaDocZip'
+                                           )
+    from project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile
+    from project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile
+    from project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile
+    from project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
+    into file('build/javadoc')
+}
+
+
+//tasks.register('build', Tar) {
+//    dependsOn([tasks.api, tasks.app, tasks.javadoc])
+//
+//    def version = project(":build").project.ext.versionNumber
+//
+//    archiveFileName = 'openbis-release-' + version + '.tar.gz'
+//    destinationDirectory = layout.buildDirectory.dir(".")
+//
+//    from('build/api') {
+//        into 'api'
+//    }
+//
+//    from('build/app') {
+//        into 'app'
+//    }
+//
+//    from('build/javadoc') {
+//        into 'javadoc'
+//    }
+//}
+
+tasks.register('build', Tar) {
+    // API
+    dependsOn([project(':api-openbis-java').tasks.openbisJavaApiTar,
+               project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar,
+               project(':api-openbis-javascript').tasks.resources,
+               project(':api-openbis-python3-pybis').tasks.build
+    ])
+    // APP
+    dependsOn([project(':app-openbis-command-line').tasks.build,
+               project(':app-openbis-drive').tasks.openbisDriveTar,
+               project(':app-openbis-installer').tasks.createInstallerZip
+    ])
+    //JAVADOC
+    dependsOn( ':server-application-server:serverApplicationServerJavadocZip',
+            ':server-application-server:dynamicApiJavadocZip',
+            ':server-original-data-store:serverOriginalDataStoreJavadocZip',
+            ':server-original-data-store:dropboxJavaDocZip',
+            ':core-plugin-openbis:queryApiJavaDocZip'
+    )
+
+    def version = project(":build").project.ext.versionNumber
+
+    archiveFileName = 'openbis-release-' + version + '.tar.gz'
+    destinationDirectory = layout.buildDirectory.dir(".")
+
+
+    from([project(':api-openbis-java').tasks.openbisJavaApiTar.archiveFile,
+          project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar.archiveFile,
+          project(':api-openbis-javascript').tasks.resources.archiveFile,
+          project(':api-openbis-python3-pybis').tasks.build.archiveFile
+    ]) {
+        into 'api'
+    }
+
+    from([project(':app-openbis-command-line').tasks.build.archiveFile,
+          project(':app-openbis-installer').tasks.createInstallerZip.archiveFile,
+          project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
+    ]) {
+        into 'app'
+    }
+
+    from([project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile,
+          project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile,
+          project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile,
+          project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
+    ]) {
+        into 'javadoc'
+    }
+}
+
+
 
 
 //task javadocs(type: Zip, dependsOn: [ ':server-application-server:serverApplicationServerJavadocZip',

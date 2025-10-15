@@ -16,18 +16,19 @@
  *
  */
 
-task cleanBuild(type: Delete) {
+tasks.register('clean', Delete) {
     delete 'build'
 }
 
-task openbisCommandLineToolZip(type: Zip) {
+tasks.register('build', Tar) {
+    dependsOn(tasks.clean)
     destinationDirectory = layout.buildDirectory.dir(".")
     def contentOfSetUpFile = file('src/python/setup.py').text
     def version = (contentOfSetUpFile =~ /version.*=.*(.*)"/)[0][0]
     def obisVersion = (version =~ /\d.*/)[0]
     int end = obisVersion.indexOf("\"")
     obisVersion = obisVersion.substring(0, end)
-    archiveFileName = 'openbis-command-line-tool-' + obisVersion + '.zip'
+    archiveFileName = 'openbis-command-line-tool-' + obisVersion + '.tar.gz'
     from 'src'
 }
 
