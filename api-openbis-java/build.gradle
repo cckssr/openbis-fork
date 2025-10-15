@@ -295,7 +295,7 @@ tasks.register('openbisJavaApiTar', Tar) {
 }
 
 // openbis-java-api-VERSION-dependencies-included.tar.gz
-task openbisJavaApiDependenciesIncludedTar(type: Tar) {
+tasks.register('openbisJavaApiDependenciesIncludedTar', Tar) {
     dependsOn([jarWithDependencies, sourcesJar, javadocTar])
     archiveFileName = baseName + '-' + project.ext.versionNumber + "-dependencies-included.tar.gz"
     from jarWithDependencies.archiveFile
