@@ -1665,7 +1665,7 @@ var FormUtil = new function() {
 		}
 		var $dropdownOptionsMenuCaret = $("<a>", { 'href' : '#', 'data-toggle' : 'dropdown', class : 'dropdown-toggle btn btn-default', 'id' : id})
 				.append(title).append($("<b>", { class : 'caret' }));
-		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu' });
+		var $dropdownOptionsMenuList = $("<ul>", { class : 'dropdown-menu', 'role' : 'menu', 'style' : "overflow-y: scroll; max-height: 64vh;" });
 		if(alignLeft) {
 		    $dropdownOptionsMenuList.css("right", "0").css("left", "auto");
 		}
