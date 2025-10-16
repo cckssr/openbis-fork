@@ -1386,7 +1386,7 @@
 																				this._sampleFormModel.sample.spaceCode,
 																				function() {
 																				},
-																				this._viewId,
+																				'parents-'+this._viewId,
 																				);
 			_refreshableFields.push(this._sampleFormModel.sampleLinksParents);
 			var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
@@ -1477,7 +1477,7 @@
 																spaceCode,
 																function() {
 																},
-																this._viewId,
+																'children-'+this._viewId,
 																);
             _refreshableFields.push(this._sampleFormModel.sampleLinksChildren);
 			if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
