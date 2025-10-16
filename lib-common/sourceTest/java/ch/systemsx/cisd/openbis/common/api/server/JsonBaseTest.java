@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.is;
 
 import java.net.URL;
 
+import ch.systemsx.cisd.common.logging.LogInitializer;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -40,10 +41,6 @@ import org.testng.annotations.Test;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import com.googlecode.jsonrpc4j.ProxyUtil;
 import com.googlecode.jsonrpc4j.spring.JsonServiceExporter;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * By-product of BIS-35. Can be used as a basis for testing JSON calls.
