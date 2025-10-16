@@ -748,8 +748,8 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
-            $("body").off("click", "#"+id)
-            $("body").on("click", "#"+id, clickEvent)
+            $("body").off("click", "[id='"+id+"']");
+            $("body").on("click", "[id='"+id+"']", clickEvent);
         } else if(clickEvent) {
             $btn.click(clickEvent);
         }
@@ -1680,8 +1680,8 @@ var FormUtil = new function() {
 				var title = option.title ? option.title : label;
 				var id = _this.prepareId(title).toLowerCase() + "-" +  + mainController.getNextId();
 				var $dropdownElement = $("<li>", { 'role' : 'presentation' }).append($("<a>", {'title' : title, 'id' : id}).append(label));
-				$("body").off("click", "#"+id)
-				$("body").on("click", "#"+id, option.action)
+				$("body").off("click", "[id='"+id+"']");
+                $("body").on("click", "[id='"+id+"']", option.action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		}
@@ -1731,8 +1731,8 @@ var FormUtil = new function() {
 						mainController.serverFacade.setSetting(settingsKey, JSON.stringify(sectionsSettings));
 					});
 				};
-				$("body").off("click", "#"+id)
-				$("body").on("click", "#"+id, {option : option, label : $label, section : $section}, action)
+				$("body").off("click", "[id='"+id+"']");
+                $("body").on("click", "[id='"+id+"']", {option : option, label : $label, section : $section}, action);
 				$dropdownOptionsMenuList.append($dropdownElement);
 			}
 		});
@@ -1940,8 +1940,8 @@ var FormUtil = new function() {
 		}
 
 		var link = $("<a>", { "href" : href, "class" : "browser-compatible-javascript-link", "id" : id }).text(displayName);
-		$("body").off("click", "#"+id)
-        $("body").on("click", "#"+id, clickFunction)
+		$("body").off("click", "[id='"+id+"']");
+        $("body").on("click", "[id='"+id+"']", clickFunction);
 
         //this is workaround for links in DataGrids to work in tabs
         link.click(clickFunction)
