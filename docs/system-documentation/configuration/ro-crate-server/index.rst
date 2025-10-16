@@ -5,4 +5,5 @@ RO-Crate Server
    :maxdepth: 2
 
    configuration
+   developer-notes.md
 
