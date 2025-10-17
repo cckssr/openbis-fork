@@ -99,7 +99,7 @@ export class ProjectFormModel {
 	}
 
 	static adaptNewProjectDtoToForm(tmpPermId: string, params: any): Form {
-		const permId = tmpPermId + '-newproject';
+		const permId = tmpPermId + '-' + EntityKind.NEW_PROJECT;
 		return {
 			entityPermId: tmpPermId,
 			entityType: EntityKind.NEW_PROJECT,
@@ -160,7 +160,7 @@ export class ProjectFormModel {
 		const newPermId = await controller.save(form, mode);
 		console.log("Project saved successfully! New permId:", newPermId);
 		if (mode === FormMode.CREATE) {
-			onAfterSave({ oldType: 'newProject', oldId: form.entityPermId, newType: 'project', newId: newPermId });
+			onAfterSave({ oldType: EntityKind.NEW_PROJECT, oldId: form.entityPermId, newType: EntityKind.PROJECT, newId: newPermId });
 		} else {
 			onAfterSave();
 		}

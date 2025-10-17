@@ -4,19 +4,20 @@ import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
 import EntityForm from '@src/js/components/database/new-forms/components/EntityForm.tsx';
 import ControllerDispatcher from '@src/js/components/database/new-forms/engine/ControllerDispatcher.ts';
 import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/DeleteConfirmationDialog.tsx';
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
 
-export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, permId, initialMode, externalAppController }:
+export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, sessionID, permId, initialMode, externalAppController }:
 	{
 		openbisFacade: any,
 		params: any,
 		entityKind: string,
 		user: string,
+		sessionID: string,
 		permId: string,
 		initialMode: FormMode,
 		externalAppController: any
@@ -90,7 +91,19 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	const reloadForm = () => {
 		console.log('reloadForm', { permId }, { entityKind }, { params });
 		setLoading(true);
-		controller.load(permId, entityKind, params)
+		setError(null);
+		if (entityKind === EntityKind.NEW_OBJECT) {
+			controller.load(permId, entityKind, params, 'ENTRY')
+				.then((loadedForm: Form) => {
+					setForm(loadedForm);
+					setLoading(false);
+				})
+				.catch((e: any) => {
+					setError({ state: true, error: e });
+					setLoading(false);
+				});
+		} else {
+			controller.load(permId, entityKind, params)
 			.then((loadedForm: Form) => {
 				setForm(loadedForm);
 				setLoading(false);
@@ -99,6 +112,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				setError({ state: true, error: e });
 				setLoading(false);
 			});
+		}
 	};
 
 	const handleErrorCancel = () => {
@@ -116,7 +130,6 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				// Check for dependent entities before showing dialog
 				handleDeleteWithDependencyCheck();
 			} else {
-				console.log(`[EntityFormContextProvider] Invoking action handler: ${actionHandler}`);
 				const context: IExtendedActionContext = getExtendedActionContext();
 				try {
 					await actionHandler(context);
@@ -192,11 +205,10 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		setSaving(true);
 		setError(null);
 
-		const actionHandler = ActionHandlerDispatcher.getActionHandler('delete');
-		if (actionHandler && form) {
+		if (form) {
 			const context: IExtendedActionContext = getExtendedActionContext(reason);
 			try {
-				await actionHandler(context);
+				await controller.delete(form, context);
 			} catch (error: any) {
 				setError(error.message);
 			} finally {
@@ -263,6 +275,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				permissions={permissions}
 				onFieldChange={updateField}
 				onAction={handleAction}
+				params={{ sessionID: sessionID }}
 			/>
 			{showConflictDialog && (
 				<ConflictResolutionDialog
@@ -277,24 +290,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 					open={showDeleteDialog}
 					onConfirm={handleDeleteConfirm}
 					onCancel={handleDeleteCancel}
-					config={{
-						includeReason: deleteDialogConfig.includeReason,
-						entity: {
-							kind: deleteDialogConfig.entityKind,
-							dependentEntities: deleteDialogConfig.dependentEntities,
-							count: deleteDialogConfig.numberOfEntities,
-							bypassesTrashcan: deleteDialogConfig.bypassesTrashcan
-						},
-						ui: {
-							title: deleteDialogConfig.title,
-							content: deleteDialogConfig.content,
-							warningText: deleteDialogConfig.warningText,
-							additionalText: deleteDialogConfig.additionalText,
-							inputLabel: deleteDialogConfig.inputLabel,
-							customPlugin: deleteDialogConfig.customPlugin,
-							type: deleteDialogConfig.type
-						}
-					}}
+					config={deleteDialogConfig}
 				/>
 			)}
 		</>

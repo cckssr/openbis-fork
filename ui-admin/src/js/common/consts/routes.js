@@ -85,6 +85,10 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.OBJECT
   }),
+  NEW_OBJECT: new Route('/new-object/:parentId/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_OBJECT
+  }),
   OBJECT_TYPE: new Route('/object-type/:id', {
     page: pages.TYPES,
     type: objectTypes.OBJECT_TYPE

@@ -45,6 +45,7 @@ export const useFormState = ({
 
   // Update field value
   const updateField = useCallback((fieldId: string, value: any) => {
+    console.log(`[useFormState] Updating field: ${fieldId} to ${value}`);
     setForm(prevForm => {
       if (!prevForm) return null;
       
@@ -52,7 +53,6 @@ export const useFormState = ({
         ...prevForm,
         fields: prevForm.fields.map(currentField => {
 					if (currentField.id === fieldId) {
-						console.log(`[useFormState] Updating field: ${currentField.id} to ${value}`);
 						return { ...currentField, value };
 					}
 					return currentField;

@@ -5,6 +5,23 @@ import { getFormatedDate } from '@src/js/components/database/new-forms/utils/Uti
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
 
+export function getObjectTypeCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-objectTypeCode',
+    label: 'Object Type Code',
+    value: overrides.value ?? dto.objectTypeCode,
+    dataType: FormFieldDataType.CONTROLLED_VOCABULARY,
+    required: true,
+    readOnly: true,
+    isMultiValue: false,
+    section: FormSection.SELECT_TYPE,
+    column: 'left',
+    meta: {},
+    ...overrides
+  };
+}
+
 export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
   return {
@@ -29,6 +46,23 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
     label: 'Description',
     value: overrides.value ?? dto.description,
     dataType: FormFieldDataType.MULTILINE_VARCHAR,
+    required: false,
+    readOnly: false,
+    isMultiValue: false,
+    section: FormSection.GENERAL,
+    column: 'center',
+    meta: {},
+    ...overrides
+  };
+}
+
+export function getLexicalField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-lexical',
+    label: 'Lexical',
+    value: overrides.value ?? dto.lexical,
+    dataType: FormFieldDataType.LEXICAL,
     required: false,
     readOnly: false,
     isMultiValue: false,
@@ -190,4 +224,39 @@ export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormFiel
     meta: {},
     ...overrides
   };
-} 
+};
+
+export function getShowOnProjectOverviewField(dto: any, overrides: FieldOverrides = {}): FormField<boolean> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-showOnProjectOverview',
+    label: 'Show On Project Overview',
+    value: overrides.value ?? dto.showOnProjectOverview,
+    dataType: FormFieldDataType.BOOLEAN,
+    required: false,
+    readOnly: false,
+    isMultiValue: false,
+    section: FormSection.GENERAL,
+    column: 'left',
+    meta: {},
+    ...overrides
+  };
+};
+
+export function getDocumentField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-document',
+    label: 'Document',
+    value: overrides.value ?? dto.properties.DOCUMENT,
+    dataType: FormFieldDataType.WORD_PROCESSOR,
+    required: false,
+    readOnly: false,
+    isMultiValue: false,
+    section: FormSection.GENERAL,
+    column: 'center',
+    meta: {},
+    ...overrides
+  };
+}
+  

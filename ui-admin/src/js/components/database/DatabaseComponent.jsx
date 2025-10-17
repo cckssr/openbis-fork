@@ -284,6 +284,7 @@ class DatabaseComponent extends React.PureComponent {
       entityKind={object.type}
       permId={object.id}
       user={AppController.getInstance().getUser()}
+      sessionID={AppController.getInstance().getSessionToken()}
       initialMode={String(object.type).includes('new') ? 'create' : 'view'}
       externalAppController={this.externalAppController}
     />)

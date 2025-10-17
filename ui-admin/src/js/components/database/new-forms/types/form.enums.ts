@@ -38,6 +38,7 @@ export enum Widget {
 }
 
 export enum FormSection {
+	SELECT_TYPE = 'Select Type',
 	IDENTIFICATION_INFO = 'Identification Info',
 	GENERAL = 'General',
 	OVERVIEW = 'Overview'

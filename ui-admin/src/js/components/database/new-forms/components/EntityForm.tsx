@@ -12,10 +12,12 @@ interface EntityFormProps {
   permissions: any;
   onFieldChange: (fieldId: string, value: any) => void;
   onAction: (actionName: string) => void;
+  params: any;
 }
 
-const EntityForm = ({ form, mode, permissions, onFieldChange, onAction }: EntityFormProps) => {
+const EntityForm = ({ form, mode, permissions, onFieldChange, onAction, params }: EntityFormProps) => {
 
+  console.log('EntityForm', { form, mode, permissions, onFieldChange, onAction });
   const renderToolbar = () => {
     // UPDATED: Interpret declarative visibility rules
     const visibleActions = form.actions?.filter(action => {
@@ -99,7 +101,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction }: Entity
   const renderField = (field: FormField | undefined) => {
     if (!field) return null;
     // Get the correct renderer component from the registry
-    const FieldRenderer = ComponentRegistry.getFieldRenderer(field.dataType);
+    const FieldRenderer = ComponentRegistry.getFieldRenderer(field.dataType, params);
     if (!FieldRenderer) {
       return <div>Unsupported field type: {field.dataType}</div>;
     }
@@ -109,6 +111,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onAction }: Entity
         field={field}
         onFieldChange={onFieldChange}
         mode={mode}
+        params={params}
       />
     );
   };

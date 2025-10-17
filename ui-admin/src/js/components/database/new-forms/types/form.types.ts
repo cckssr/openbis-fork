@@ -111,14 +111,13 @@ export interface IAutoSaveActionContext extends IBaseActionContext {
   dependentEntities?: any; // Optional dependent entities info for delete operations
 } */
 
-// NEW: Props for field renderers
 export interface FieldRendererProps {
   field: FormField;
   onFieldChange: (fieldId: string, value: any) => void;
   mode: FormMode;
+  params?: any;
 }
 
-// NEW: Props for action renderers
 export interface ActionRendererProps {
   action: FormAction;
   onAction: (actionName: string) => void;

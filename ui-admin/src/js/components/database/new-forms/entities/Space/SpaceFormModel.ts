@@ -1,6 +1,6 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getLexicalField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
@@ -25,7 +25,9 @@ export class SpaceFormModel {
 				},
 				{
 					section: FormSection.GENERAL,
-					fields: [permId + '-description'],
+					fields: [permId + '-description',
+						permId + '-lexical',
+					],
 				},
 			],
 			fields: [
@@ -35,6 +37,7 @@ export class SpaceFormModel {
 				getRegistrationDateField(dto),
 				getModifierField(dto),
 				getModificationDateField(dto),
+				getLexicalField(dto),
 			],
 			isDirty: false,
 			isValid: true,
@@ -84,6 +87,17 @@ export class SpaceFormModel {
 					],
 				},
 				{
+					name: 'space:new-object',
+					label: '+ Entry',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				},
+				{
 					name: 'auto-save',
 					label: 'Auto-save',
 					component: 'switch',
@@ -110,6 +124,16 @@ export class SpaceFormModel {
 		const { form, externalAppController } = context;
 		if (externalAppController) {
 			externalAppController.createNewObject({newObjectType: objectType.NEW_PROJECT, fromObjectType: EntityKind.SPACE, fromId: form.entityPermId});
+		} else {
+			console.warn("onNewObject callback not provided to context.");
+			throw new Error("onNewObject callback not provided to context.");
+		}
+	};
+
+	static newObjectAction = (context: IExtendedActionContext) => {
+		const { form, externalAppController } = context;
+		if (externalAppController) {
+			externalAppController.createNewObject({newObjectType: objectType.NEW_OBJECT, fromObjectType: EntityKind.SPACE, fromId: form.entityPermId});
 		} else {
 			console.warn("onNewObject callback not provided to context.");
 			throw new Error("onNewObject callback not provided to context.");
