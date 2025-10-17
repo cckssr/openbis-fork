@@ -14,30 +14,13 @@ const styles = (theme: any) => ({
   }
 });
 
-type MessageType = 'warning' | 'info';
-
-interface DeleteDialogEntityContext {
-  kind?: string;
-  dependentEntities?: { experiments?: any[]; samples?: any[] } | null;
-  count?: number; // number of dependent entities
-  bypassesTrashcan?: boolean;
-}
-
-interface DeleteDialogUIConfig {
-  title?: string;
-  content?: string;
-  warningText?: string;
-  additionalText?: string;
-  inputLabel?: string;
-  customPlugin?: React.ReactNode;
-  type?: MessageType;
-}
-
 interface DeleteDialogConfig {
-  includeReason?: boolean;
+  includeReason: boolean;
+  entityKind: string;
+  dependentEntities: { experiments?: any[]; samples?: any[] } | null;
+  numberOfEntities: number;
+  bypassesTrashcan: boolean;
   inputValue?: string;
-  entity?: DeleteDialogEntityContext;
-  ui?: DeleteDialogUIConfig;
 }
 
 interface DeleteConfirmationDialogProps {
@@ -51,10 +34,12 @@ interface DeleteConfirmationDialogProps {
 const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }: DeleteConfirmationDialogProps) => {
   logger.log(logger.DEBUG, 'DeleteConfirmationDialog.render');
 
-  const includeReason = config?.includeReason !== undefined ? config.includeReason : true;
+  const includeReason = config?.includeReason ?? true;
   const inputValue = config?.inputValue || '';
-  const ui = config?.ui || {};
-  const entity = config?.entity || {};
+  const entityKind = config?.entityKind || 'entity';
+  const numberOfEntities = config?.numberOfEntities || 0;
+  const dependentEntities = config?.dependentEntities || null;
+  const bypassesTrashcan = !!config?.bypassesTrashcan;
 
   const [value, setValue] = useState<string>(inputValue);
 
@@ -62,28 +47,15 @@ const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }
     setValue(inputValue || '');
   }, [inputValue]);
 
-  const type: MessageType = ui.type || 'warning';
-
   const isReasonValid = useMemo(() => {
     return includeReason ? value.trim().length > 0 : true;
   }, [includeReason, value]);
 
-  const getButtonType = () => {
-    if (type === 'warning') return 'risky';
-    if (type === 'info') return null;
-    throw new Error('Unsupported type: ' + type);
-  };
+  const getButtonType = () => 'risky';
 
   const renderWarningContent = () => {
-    const { customPlugin, warningText } = ui;
-    const entityKind = entity.kind || 'entity';
-    const totalDependentEntities = entity.count || 0;
-
-    if (customPlugin) {
-      return customPlugin;
-    } else if (warningText) {
-      return <Message type="warning">{warningText}</Message>;
-    } else if (totalDependentEntities > 0) {
+    const totalDependentEntities = numberOfEntities || 0;
+    if (totalDependentEntities > 0) {
       return (
         <Message type="warning">
           <>
@@ -96,8 +68,7 @@ const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }
 
   const renderInfoText = () => {
     if (!includeReason) return null;
-    const count = entity.count || 1;
-    const bypassesTrashcan = !!entity.bypassesTrashcan;
+    const count = numberOfEntities || 1;
     const infoText = (
       <>
         <br />
@@ -110,13 +81,8 @@ const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }
   };
 
   const renderAdditionalText = () => {
-    const { additionalText } = ui;
-    const dependentEntities = entity.dependentEntities;
-    const count = entity.count || 1;
-
-    if (additionalText) {
-      return <>{additionalText}</>;
-    } else if (dependentEntities && count > 1) {
+    const count = numberOfEntities || 1;
+    if (dependentEntities && count > 1) {
       const experimentsCount = dependentEntities.experiments?.length || 0;
       const samplesCount = dependentEntities.samples?.length || 0;
       let generatedAdditionalText = 'This action cannot be undone.';
@@ -134,26 +100,24 @@ const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }
   const dialogContent: any[] = [];
 
   const warningContent = renderWarningContent();
-  if (warningContent) dialogContent.push(warningContent);
+  if (warningContent) dialogContent.push(<React.Fragment key='warning-content'>{warningContent}</React.Fragment>);
 
   const infoText = renderInfoText();
-  if (infoText) dialogContent.push(infoText);
+  if (infoText) dialogContent.push(<React.Fragment key='info-text'>{infoText}</React.Fragment>);
 
   const additionalText = renderAdditionalText();
-  if (additionalText) dialogContent.push(additionalText);
+  if (additionalText) dialogContent.push(<React.Fragment key='additional-text'>{additionalText}</React.Fragment>);
 
-  if (ui.content) {
-    dialogContent.push(<DialogContentText key='dialog-content'>{ui.content}</DialogContentText>);
-  }
+  dialogContent.push(<DialogContentText key='dialog-content' />);
 
   if (includeReason) {
     dialogContent.push(
       <TextAreaField
         key="reason-to-delete-id"
         id="reason-to-delete-id"
-        name={ui.inputLabel || 'Reason for the delete'}
+        name={'Reason for the delete'}
         mandatory={true}
-        label={ui.inputLabel || 'Reason for the delete'}
+        label={'Reason for the delete'}
         mode={'edit'}
         disabled={false}
         value={value}
@@ -177,7 +141,7 @@ const DeleteConfirmationDialog = ({ open, onConfirm, onCancel, config, classes }
     <Dialog
       open={open}
       onClose={onCancel}
-      title={ui.title || 'Confirm Delete'}
+      title={'Confirm Delete'}
       content={dialogContent}
       actions={(
         <>

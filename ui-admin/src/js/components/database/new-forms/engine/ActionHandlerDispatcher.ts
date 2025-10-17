@@ -2,6 +2,7 @@ import { CoreFormModel } from '@src/js/components/database/new-forms/engine/Core
 import { ProjectFormModel } from '@src/js/components/database/new-forms/entities/Project/ProjectFormModel.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
 import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
+import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
 
 class ActionHandlerDispatcher {
   static getActionHandler(actionName: string) {
@@ -20,11 +21,17 @@ class ActionHandlerDispatcher {
       case 'space:save':
         return SpaceFormModel.saveSpaceAction;
       case 'space:new-project': 
-        return SpaceFormModel.newProjectAction
+        return SpaceFormModel.newProjectAction;
+      case 'space:new-object':
+        return SpaceFormModel.newObjectAction;
 
       // Project-specific actions
       case 'project:save':
         return ProjectFormModel.saveProjectAction;
+
+      // Object-specific actions
+      case 'object:save':
+        return ObjectFormModel.saveObjectAction;
 
       // Collection-specific actions
       case 'collection:save':

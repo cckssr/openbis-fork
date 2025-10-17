@@ -24,15 +24,23 @@ class TrashcanFormFormButtons extends React.PureComponent {
   }
 
   renderAdditionalButtons({ classes }) {
-      const { onEmptyTrashcan } = this.props
+      const { onEmptyTrashcan, onRefreshTrashcan } = this.props
 
       return (
-          <Button
+          <>
+            <Button
             name='emptyTrashcan'
             label={messages.get(messages.EMPTY_TRASHCAN)}
             styles={{ root: classes.button }}
             onClick={onEmptyTrashcan}
           />
+          <Button
+            name='refreshTrashcan'
+            label='Refresh Trashcan'
+            styles={{ root: classes.button }}
+            onClick={onRefreshTrashcan}
+          />
+          </>
       )
   }
 }

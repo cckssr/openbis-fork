@@ -179,6 +179,7 @@ class TrashcanForm extends React.PureComponent {
         rows={rows}
         mode={PageMode.EDIT}
         onEmptyTrashcan={() => this.setState({ emptyTrashcanDialogOpen: true })}
+        onRefreshTrashcan={() => this.controller.load()}
       />
       <ConfirmationDialog
         open={emptyTrashcanDialogOpen || operationDialogOpen}
