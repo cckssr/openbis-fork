@@ -1070,6 +1070,12 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             "as/dto/experiment/id/ExperimentPermId",
         ],
             function (RightsFetchOptions, ExperimentPermId) {
+                let isArchived = false;
+
+                if(_this._experimentFormModel.afs_data && _this._experimentFormModel.afs_data.physicalData) {
+                    isArchived = _this._experimentFormModel.afs_data.physicalData.status === "ARCHIVED";
+                }
+
                 let props = {
                     id:id,
                     objId: id,
@@ -1078,6 +1084,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     withoutToolbar: true,
                     extOpenbis: _this.extOpenbis,
                     frozen: _this._experimentFormModel.v3_experiment.immutableDataDate,
+                    archived: isArchived
                 }
                 let configKey = "AFS-WIDGET-KEY-EX";
 
