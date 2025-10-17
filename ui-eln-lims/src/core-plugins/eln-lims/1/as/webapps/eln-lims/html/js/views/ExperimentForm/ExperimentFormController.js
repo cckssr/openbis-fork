@@ -32,6 +32,20 @@ function ExperimentFormController(mainController, mode, experiment) {
 		var _this = this;
 		mainController.serverFacade.getExperimentType(experiment.experimentTypeCode, function(experimentType) {
         _this._experimentFormModel.experimentType = experimentType;
+
+		if(experiment && experiment.permId && profile.isAFSAvailable()) {
+			require([ "as/dto/dataset/id/DataSetPermId", "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],
+					function(DataSetPermId, DataSetFetchOptions) {
+						var ids = [new DataSetPermId(experiment.permId)];
+						var fetchOptions = new DataSetFetchOptions();
+						fetchOptions.withPhysicalData();
+						mainController.openbisV3.getDataSets(ids, fetchOptions).done(function(map) {
+							var datasets = Util.mapValuesToList(map);
+							_this._experimentFormModel.afs_data = datasets.length > 0 ? datasets[0] : null;
+						});
+			});
+		}
+
 		require([ "as/dto/experiment/id/ExperimentPermId", "as/dto/sample/id/SampleIdentifier", 
             "as/dto/dataset/id/DataSetPermId", "as/dto/experiment/fetchoptions/ExperimentFetchOptions", "as/dto/dataset/search/DataSetSearchCriteria",
             "as/dto/dataset/fetchoptions/DataSetFetchOptions" ],

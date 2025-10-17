@@ -1386,7 +1386,7 @@
 																				this._sampleFormModel.sample.spaceCode,
 																				function() {
 																				},
-																				this._viewId,
+																				'parents-'+this._viewId,
 																				);
 			_refreshableFields.push(this._sampleFormModel.sampleLinksParents);
 			var sampleType = mainController.profile.getSampleTypeForSampleTypeCode(sampleTypeCode);
@@ -1477,7 +1477,7 @@
 																spaceCode,
 																function() {
 																},
-																this._viewId,
+																'children-'+this._viewId,
 																);
             _refreshableFields.push(this._sampleFormModel.sampleLinksChildren);
 			if(!sampleTypeDefinitionsExtension || !sampleTypeDefinitionsExtension["SAMPLE_CHILDREN_DISABLED"]) {
@@ -2059,6 +2059,12 @@
 				"as/dto/experiment/id/ExperimentPermId",
 			],
 				function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+					let isArchived = false;
+
+					if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
+						isArchived = _this._sampleFormModel.afs_data.physicalData.status === "ARCHIVED";
+					}
+
 					let props = {
 						id:id,
 						objId: id,
@@ -2067,6 +2073,7 @@
 						withoutToolbar: true,
 						extOpenbis: _this.extOpenbis,
 						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
+						archived: isArchived
 					}
 					let configKey = "AFS-WIDGET-KEY";
 										

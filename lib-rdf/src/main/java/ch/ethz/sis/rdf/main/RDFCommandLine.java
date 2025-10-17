@@ -54,6 +54,11 @@ public class RDFCommandLine {
 
     public static final String OPTION_SINGLE_VALUE = "singlevalue";
 
+    public static final String ARG_LONG_REPAIR = "repair-split-iri-issues";
+
+    public static final String OPTION_REPAIR = "repair";
+
+
 
     public static final String OPTION_SCHEMA = "noschema";
 
@@ -202,6 +207,10 @@ public class RDFCommandLine {
                         "Enforce single values.");
         options.addOption(enforceSingleValues);
 
+        Option repair =
+                new Option(OPTION_REPAIR, ARG_LONG_REPAIR, false,
+                        "Repair split IRI issues. If that does not ring a bell, don't use the argument");
+        options.addOption(repair);
 
 
 
@@ -283,8 +292,11 @@ public class RDFCommandLine {
         boolean removeDanglingReferences = cmd.hasOption(ARG_LONG_REMOVE_DANGLING_REFERENCES);
         boolean writeSchema = !cmd.hasOption(ARG_LONG_WRITE_SCHEMA);
         boolean enforceSingleValues = cmd.hasOption(ARG_LONG_ENFORCE_SINGLE_VALUES);
+        boolean repair = cmd.hasOption(ARG_LONG_REPAIR);
+
 
         Config.setConfig(removeDanglingReferences, writeSchema, removeDanglingReferences);
+        Config.getINSTANCE().setRepair(repair);
 
 
         String[] additionalFileOption = cmd.getOptionValues(ADDITIONALFILES);

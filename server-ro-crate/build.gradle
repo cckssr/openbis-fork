@@ -53,6 +53,7 @@ test {
 
 mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
+compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
     mainClass = mainClassName

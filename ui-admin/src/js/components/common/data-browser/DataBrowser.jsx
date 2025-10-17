@@ -218,6 +218,9 @@ class DataBrowser extends React.Component {
   }
 
   async handleRowDoubleClick(row) {
+    if(this.props.archived){
+      return;
+    }
     const file = row.data
     const { directory, path } = file
     if (directory) {
