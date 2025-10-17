@@ -81,6 +81,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		// Toolbar
 		//
 		var toolbarModel = [];
+		var rightToolbarModel = [];
+		var altRightToolbarModel = [];
 		var continuedToolbarModel = [];
 		var dropdownOptionsModel = [];
 		if(this._experimentFormModel.mode === FormMode.VIEW) {
@@ -340,13 +342,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
 
                 if(profile.showDatasetArchivingButton && (isEntityFrozen || (profile.isAFSAvailable() && isImmutableData)) ) {
-
-                    dropdownOptionsModel.push({
-                        label : "Data archiving",
-                        action : function () {
-                            FormUtil.showArchiveAfsDataForm("EXPERIMENT",  _this._experimentFormModel.v3_experiment.permId.permId, _this._experimentFormModel.v3_experiment.code);
-                        }
-                    });
+                    var $archivingAfsButtons = FormUtil.archivingAfsDataSectionButtons(_this._experimentFormModel.v3_experiment.permId.permId);
+                    altRightToolbarModel.push({ component : $archivingAfsButtons });
                 }
             }
 
@@ -503,7 +500,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             $container.empty();
 		    $container.append($form);
         } else {
-            this._initTabHandling($header, $container, $form, toolbarModel);
+            this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel);
         }
 
         mainController.profile.afterViewPaint(ViewType.EXPERIMENT_FORM, this._experimentFormModel, $container);
@@ -960,7 +957,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 		var experiment = this._experimentFormModel.v3_experiment;
 		return experiment.frozenForDataSets == false && this._experimentFormModel.dataSetRights.rights.indexOf("CREATE") >= 0;
 	}
-    this._initTabHandling = function($header, $container, $form, toolbarModel) {
+    this._initTabHandling = function($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel) {
         const _this = this;
         const $tabsContainer = $('<div class="tabs-container">');
         const tabs = [
@@ -986,8 +983,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
 
         const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._experimentFormModel.v3_experiment.permId, "onlyLeftToolbar");
         const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, this._experimentFormModel.v3_experiment.permId, "onlyRightToolbar");
-        const $alternateRightToolbar = FormUtil.getToolbar([]);
-        const rightToolbarModel = []
+        const $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
         const $toolbarWithTabs = FormUtil.getToolbarWithTabs(
             toolbarModel,
             tabsModel,
