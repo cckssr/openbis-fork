@@ -11,6 +11,7 @@ import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import ch.openbis.drive.notifications.NotificationManager;
 import junit.framework.TestCase;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -83,6 +84,7 @@ public class SyncOperationTest extends TestCase {
 
         Mockito.verify(syncOperation3, Mockito.times(1)).synchronize();
         Mockito.verify(syncOperation3, Mockito.times(1)).pruneOldDeletedSyncEvents();
+        Mockito.verify(syncOperation3, Mockito.times(1)).clearStaleConflictNotifications();
     }
 
     @Test
@@ -1427,6 +1429,45 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals("java.lang.RuntimeException exception with message: !!!UNEXPECTED EXCEPTION!!!", notificationArgumentCaptor.getValue().get(0).getMessage());
         Assert.assertTrue(now.toEpochMilli() <= notificationArgumentCaptor.getValue().get(0).getTimestamp());
         Assert.assertTrue(Instant.now().toEpochMilli() >= notificationArgumentCaptor.getValue().get(0).getTimestamp());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testClearStaleConflictNotifications() {
+        Path localDirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toAbsolutePath();
+        Files.deleteIfExists(localDirPath.resolve("conflict1"));
+        Files.deleteIfExists(localDirPath.resolve("conflict2"));
+        Files.createFile(localDirPath.resolve("conflict1"));
+        Files.createFile(localDirPath.resolve("conflict2"));
+
+        SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
+        ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+
+        SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
+
+        List<Notification> conflictNotifications = List.of(
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict1").toString()).remoteFile("/remote1")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build(),
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict2").toString()).remoteFile("/remote2")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build(),
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict3").toString()).remoteFile("/remote3")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build()
+        );
+        Mockito.doReturn(conflictNotifications).when(notificationManager).getConflictNotifications(syncJob1, 100);
+
+        syncOperation1.clearStaleConflictNotifications();
+
+        ArgumentCaptor<List<Notification>> removedNotificationArgCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(notificationManager, Mockito.times(1)).removeNotifications(removedNotificationArgCaptor.capture());
+        assertEquals(1, removedNotificationArgCaptor.getValue().size());
+        assertEquals(conflictNotifications.get(2), removedNotificationArgCaptor.getValue().get(0));
     }
 
     private static SyncJobEvent[] getDifferentFakeSyncJobEntries(SyncJobEvent.SyncDirection syncDirection, Path sourcePath, Path destinationPath, SyncJob syncJob) {

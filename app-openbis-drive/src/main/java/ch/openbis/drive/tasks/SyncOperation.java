@@ -13,7 +13,6 @@ import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import ch.openbis.drive.notifications.NotificationManager;
-import ch.openbis.drive.util.OpenBISDriveUtil;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -115,6 +114,7 @@ public class SyncOperation {
             throw e;
         } finally {
             pruneOldDeletedSyncEvents();
+            clearStaleConflictNotifications();
         }
     }
 
@@ -660,6 +660,28 @@ public class SyncOperation {
         );
 
         notificationManager.removeNotifications(Collections.singletonList(notification));
+    }
+
+    void clearStaleConflictNotifications() {
+        List<Notification> conflictNotifications = notificationManager.getConflictNotifications(syncJob, 100);
+
+        for (Notification notification: conflictNotifications) {
+            boolean removeNotification = false;
+            Path localFile = null;
+            try {
+                localFile = Path.of(notification.getLocalFile());
+            } catch (Exception e) {
+                removeNotification = true;
+            }
+
+            if(localFile != null && !Files.exists(localFile)) {
+                removeNotification = true;
+            }
+
+            if(removeNotification) {
+                notificationManager.removeNotifications(Collections.singletonList(notification));
+            }
+        }
     }
 
     void raiseJobStoppedNotification() {

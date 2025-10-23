@@ -12,6 +12,7 @@ public interface NotificationManager {
     List<Notification> getNotifications(@NonNull Integer limit);
     void removeNotifications(@NonNull List<@NonNull Notification> notifications);
     Notification getSpecificNotification(@NonNull Notification notification);
+    List<Notification> getConflictNotifications(@NonNull SyncJob syncJob, @NonNull Integer limit);
 
     void clearNotificationsForSyncJob(@NonNull SyncJob syncJob);
     void clearAllNotifications();
