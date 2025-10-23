@@ -2062,7 +2062,8 @@
 					let isArchived = false;
 
 					if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
-						isArchived = _this._sampleFormModel.afs_data.physicalData.status === "ARCHIVED";
+						var archivingStatus = _this._sampleFormModel.afs_data.physicalData.status;
+						isArchived = archivingStatus === "ARCHIVED" || archivingStatus === "ARCHIVE_PENDING" || archivingStatus === "UNARCHIVE_PENDING";
 					}
 
 					let props = {
