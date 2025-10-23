@@ -1,4 +1,4 @@
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
@@ -58,7 +58,7 @@ export class ObjectFormController implements IFormController {
 
 		const result = await this.openbisFacade.searchSamples(criteria, fetchOptions);
 		const sampleDto = Object.values(result.objects)[0];
-
+		console.log('ObjectFormController.load', { sampleDto });
 		if (!sampleDto) throw new Error(`Sample with permId ${permId} not found`);
 		return ObjectFormModel.adaptSampleDtoToForm(sampleDto);
 	}
@@ -83,7 +83,10 @@ export class ObjectFormController implements IFormController {
 	async _updateObject(form: Form): Promise<any> {
 		console.log('ObjectFormController._updateObject', { form });
 		const sampleUpdate = this._updateSample(form);
-		return Promise.resolve(form.version + 1);
+		console.log('ObjectFormController._updateObject', { sampleUpdate });
+		const result = await this.openbisFacade.updateSamples([sampleUpdate]);
+		console.log('ObjectFormController._updateObject', result);
+		return Promise.resolve(form.version ? form.version + 1 : 1);
 	}
 
 	_createSampleCreation(parameters: any): Promise<any> {
@@ -113,9 +116,16 @@ export class ObjectFormController implements IFormController {
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const update = new SampleUpdate();
 		update.setSampleId(new SamplePermId(form.entityPermId));
-		for(const propertyCode in form.fields) {
-			update.setProperty(propertyCode, form.fields[propertyCode].value);
+		const documentField = findFormFieldById(form.fields, form.entityPermId, 'document') as FormField;
+		const properties: { [key: string]: string } = {};
+		if (documentField) {
+			properties['DOCUMENT'] = documentField.value;
+			properties['NAME'] = documentField.meta?.title;
 		}
+		//update.getMetaData().set('MARKDOWN', documentField.meta?.isMarkdown ? 'true' : 'false');
+		
+		console.log('ObjectFormController._updateSample', { properties });
+		update.setProperties(properties);
 		return update;
 	}
 

@@ -227,6 +227,10 @@ class Facade {
     return this.promise(this.v3.updateProjects(updates))
   }
 
+  updateSamples(updates) {
+    return this.promise(this.v3.updateSamples(updates))
+  }
+
   updateSampleTypes(updates) {
     return this.promise(this.v3.updateSampleTypes(updates))
   }

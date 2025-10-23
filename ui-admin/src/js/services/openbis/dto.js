@@ -169,6 +169,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/sample/search/SearchSamplesOperation',
   'as/dto/sample/update/SampleTypeUpdate',
   'as/dto/sample/update/UpdateSampleTypesOperation',
+  'as/dto/sample/update/SampleUpdate', 
   'as/dto/typegroup/id/TypeGroupAssignmentId',
   'as/dto/typegroup/id/TypeGroupId',
   'as/dto/typegroup/search/TypeGroupSearchCriteria',

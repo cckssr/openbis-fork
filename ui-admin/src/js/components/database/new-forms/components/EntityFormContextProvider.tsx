@@ -22,7 +22,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		initialMode: FormMode,
 		externalAppController: any
 	}) => {
-	const { form, mode, setForm, setMode, updateField } = useFormState({ initialForm: null, initialMode });
+	const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({ initialForm: null, initialMode });
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState<any>(null);
@@ -274,6 +274,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				mode={mode}
 				permissions={permissions}
 				onFieldChange={updateField}
+				onFieldMetadataChange={updateFieldMetadata}
 				onAction={handleAction}
 				params={{ sessionID: sessionID }}
 			/>

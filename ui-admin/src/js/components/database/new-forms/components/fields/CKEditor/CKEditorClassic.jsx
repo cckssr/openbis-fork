@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {
-	DecoupledEditor,
+	ClassicEditor,
 	Alignment,
 	AutoImage,
 	AutoLink,
@@ -12,6 +12,7 @@ import {
 	Bold,
 	Code,
 	CodeBlock,
+	Emoji,
 	Essentials,
 	FontBackgroundColor,
 	FontColor,
@@ -42,6 +43,7 @@ import {
 	List,
 	Markdown,
 	MediaEmbed,
+	Mention,
 	Minimap,
 	Paragraph,
 	PasteFromMarkdownExperimental,
@@ -55,26 +57,23 @@ import {
 	Table,
 	TableCaption,
 	TableToolbar,
+	TextPartLanguage,
 	TextTransformation,
 	Title,
 	TodoList,
-	Underline
+	Underline,
 } from 'ckeditor5';
-//import Markdown from '@ckeditor/ckeditor5-markdown-gfm';
+
+import MarkdownToggler from '@src/js/components/database/new-forms/components/fields/CKEditor/MarkdownToggler.jsx';
 
 import 'ckeditor5/ckeditor5.css';
-
-import '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditor_doc.css';
-import MarkdownToggler from '@src/js/components/database/new-forms/components/fields/CKEditor/MarkdownToggler.jsx';
+import '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorClassic.css';
 
 const LICENSE_KEY = 'GPL'; // or <YOUR_LICENSE_KEY>.
 
-export default function CKEditorDocument({ value, sessionID, onEditorContentChange, disabled, markdownEnabled = false, onToggleMarkdown, onEditorReady }) {
+export default function CKEditorClassic({ value, sessionID, onEditorContentChange, disabled, markdownEnabled = false, onToggleMarkdown, onEditorReady }) {
 	const editorContainerRef = useRef(null);
-	const editorMenuBarRef = useRef(null);
-	const editorToolbarRef = useRef(null);
 	const editorRef = useRef(null);
-	const editorMinimapRef = useRef(null);
 	const [isLayoutReady, setIsLayoutReady] = useState(false);
 
 	useEffect(() => {
@@ -83,24 +82,23 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 		return () => setIsLayoutReady(false);
 	}, []);
 
-
 	const { editorConfig } = useMemo(() => {
 		if (!isLayoutReady) {
 			return {};
 		}
 
-		// Create plugins array conditionally
 		const plugins = [
 			Alignment,
-			Autoformat,
 			AutoImage,
 			AutoLink,
+			Autoformat,
 			Autosave,
 			BalloonToolbar,
 			BlockQuote,
 			Bold,
 			Code,
 			CodeBlock,
+			Emoji,
 			Essentials,
 			FontBackgroundColor,
 			FontColor,
@@ -117,12 +115,12 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 			ImageEditing,
 			ImageInline,
 			ImageInsertViaUrl,
+			ImageResize,
 			ImageStyle,
 			ImageTextAlternative,
 			ImageToolbar,
 			ImageUpload,
 			ImageUtils,
-			ImageResize,
 			Indent,
 			IndentBlock,
 			Italic,
@@ -131,23 +129,24 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 			List,
 			MarkdownToggler,
 			MediaEmbed,
-			Minimap,
+			Mention,
 			Paragraph,
 			PlainTableOutput,
+			ShowBlocks,
 			SimpleUploadAdapter,
 			SourceEditing,
-			ShowBlocks,
 			Strikethrough,
 			Subscript,
 			Superscript,
 			Table,
 			TableCaption,
 			TableToolbar,
+			TextPartLanguage,
 			TextTransformation,
 			Title,
 			TodoList,
 			Underline
-		];
+		]
 
 		// Add Markdown and PasteFromMarkdownExperimental plugins only if markdown is enabled
 		if (markdownEnabled) {
@@ -167,7 +166,6 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 						'markdownToggler',
 						'|',
 						'heading',
-						'style',
 						'|',
 						'fontSize',
 						'fontFamily',
@@ -182,9 +180,9 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 						'superscript',
 						'code',
 						'|',
+						'emoji',
 						'horizontalLine',
 						'link',
-						'insertImageViaUrl',
 						'mediaEmbed',
 						'insertTable',
 						'highlight',
@@ -207,20 +205,56 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 				simpleUpload: {
 					uploadUrl: "/openbis/openbis/file-service/eln-lims?type=Files&sessionID=" + sessionID
 				},
+				licenseKey: LICENSE_KEY,
 				balloonToolbar: ['bold', 'italic', '|', 'link', '|', 'bulletedList', 'numberedList'],
 				fontFamily: {
-					supportAllValues: true
+					options: [
+						'default',
+						'Arial, Helvetica, sans-serif',
+						'Courier New, Courier, monospace',
+						'Georgia, serif',
+						'Lucida Sans Unicode, Lucida Grande, sans-serif',
+						'Tahoma, Geneva, sans-serif',
+						'Times New Roman, Times, serif',
+						'Trebuchet MS, Helvetica, sans-serif',
+						'Verdana, Geneva, sans-serif',
+						'Calibri, sans-serif',
+						'Arial Unicode MS, sans-serif',
+						'Comic Sans MS/Comic Sans MS, cursive;'
+					]
 				},
 				fontSize: {
-					options: [10, 12, 14, 'default', 18, 20, 22],
-					supportAllValues: true
+					options: [
+						9,
+						9.5,
+						10,
+						10.5,
+						11,
+						11.5,
+						12,
+						12.5,
+						13,
+						13.5,
+						'default',
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25
+					]
 				},
 				fullscreen: {
 					onEnterCallback: container =>
 						container.classList.add(
 							'editor-container',
-							'editor-container_document-editor',
-							'editor-container_include-minimap',
+							'editor-container_classic-editor',
 							'editor-container_include-style',
 							'editor-container_include-fullscreen',
 							'main-container'
@@ -270,10 +304,9 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 					]
 				},
 				image: {
-					toolbar: ['toggleImageCaption', 'imageTextAlternative', '|', 'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText']
+					toolbar: ['imageResize:original', '|', 'toggleImageCaption', 'imageTextAlternative', '|', 'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText']
 				},
 				initialData: value || '',
-				licenseKey: LICENSE_KEY,
 				link: {
 					addTargetToExternalLinks: true,
 					defaultProtocol: 'https://',
@@ -287,9 +320,15 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 						}
 					}
 				},
-				minimap: {
-					container: editorMinimapRef.current,
-					extraClasses: 'editor-container_include-minimap ck-minimap__iframe-content'
+				mention: {
+					feeds: [
+						{
+							marker: '@',
+							feed: [
+								/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+							]
+						}
+					]
 				},
 				placeholder: 'Type or paste your content here!',
 				table: {
@@ -301,103 +340,73 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 
 	return (
 		<div className="main-container">
+
 			<div
-				className="editor-container editor-container_document-editor editor-container_include-minimap editor-container_include-style editor-container_include-fullscreen"
+				className="editor-container editor-container_classic-editor editor-container_include-style editor-container_include-fullscreen"
 				ref={editorContainerRef}
 			>
-				<div className="editor-container__menu-bar" ref={editorMenuBarRef}></div>
-				<div className="editor-container__toolbar" ref={editorToolbarRef}></div>
-				<div className="editor-container__minimap-wrapper">
-					<div className="editor-container__editor-wrapper">
-						<div className="editor-container__editor">
-							<div ref={editorRef}>
-								{editorConfig && (
-									<CKEditor
-										key={`ckeditor-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
-										onReady={editor => {
-											// Call the onEditorReady callback to pass the editor instance to parent
-											if (onEditorReady) {
-												onEditorReady(editor);
-											}
-											
-											// Use setTimeout to ensure DOM is ready
-											setTimeout(() => {
-												// Clean up any existing elements first
-												if (editorToolbarRef.current) {
-													Array.from(editorToolbarRef.current.children).forEach(child => child.remove());
-												}
-												if (editorMenuBarRef.current) {
-													Array.from(editorMenuBarRef.current.children).forEach(child => child.remove());
-												}
+				<div ref={editorRef}>
+					{editorConfig && (<CKEditor
+						key={`ckeditor-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
+						editor={ClassicEditor}
+						config={editorConfig}
+						onReady={editor => {
+							// Call the onEditorReady callback to pass the editor instance to parent
+							if (onEditorReady) {
+								onEditorReady(editor);
+							}
 
-												const toolbarElement = editor.ui.view.toolbar.element;
-												const menuBarElement = editor.ui.view.menuBarView.element;
+							// Use setTimeout to ensure DOM is ready
+							setTimeout(() => {
+								
+								const toolbarElement = editor.ui.view.toolbar.element;
+								const editableElement = editor.ui.view.editable.element;
+								
+								// Set initial display state and CSS class
+								if (disabled) {
+									if (toolbarElement) {
+										toolbarElement.style.display = 'none';
+									}
+									if (editableElement) {
+										editableElement.classList.remove('ck-editor__editable_inline');
+									}
+								} else {
+									if (toolbarElement) {
+										toolbarElement.style.display = 'flex';
+										toolbarElement.style.visibility = 'visible';
+									}
+									if (editableElement) {
+										editableElement.classList.add('ck-editor__editable_inline');
+									}
+								}
 
-												// Append the new elements
-												if (editorToolbarRef.current && toolbarElement) {
-													editorToolbarRef.current.appendChild(toolbarElement);
-												}
-												if (editorMenuBarRef.current && menuBarElement) {
-													editorMenuBarRef.current.appendChild(menuBarElement);
-												}
-												
-												// Set initial display state
-												if (disabled) {
-													if (toolbarElement) {
-														toolbarElement.style.display = 'none';
-													}
-													if (menuBarElement) {
-														menuBarElement.style.display = 'none';
-													}
-												} else {
-													if (toolbarElement) {
-														toolbarElement.style.display = 'flex';
-														toolbarElement.style.visibility = 'visible';
-													}
-													if (menuBarElement) {
-														menuBarElement.style.display = 'flex';
-														menuBarElement.style.visibility = 'visible';
-													}
-												}
+								editor.on('change:isReadOnly', (evt, propertyName, isReadOnly) => {
+									if (isReadOnly) {
+										if (toolbarElement) toolbarElement.style.display = 'none';
+										if (editableElement) {
+											editableElement.classList.remove('ck-editor__editable_inline');
+										}
+									} else {
+										if (toolbarElement) {
+											toolbarElement.style.display = 'flex';
+											toolbarElement.style.visibility = 'visible';
+										}
+										if (editableElement) {
+											editableElement.classList.add('ck-editor__editable_inline');
+										}
+									}
+								});
+							}, 100);
+						}}
 
-												editor.on('change:isReadOnly', (evt, propertyName, isReadOnly) => {
-													if (isReadOnly) {
-														if (toolbarElement) toolbarElement.style.display = 'none';
-														if (menuBarElement) menuBarElement.style.display = 'none';
-													} else {
-														if (toolbarElement) {
-															toolbarElement.style.display = 'flex';
-															toolbarElement.style.visibility = 'visible';
-														}
-														if (menuBarElement) {
-															menuBarElement.style.display = 'flex';
-															menuBarElement.style.visibility = 'visible';
-														}
-													}
-												});
-											}, 100);
-										}}
-
-										onAfterDestroy={() => {
-											if (editorToolbarRef.current) {
-												Array.from(editorToolbarRef.current.children).forEach(child => child.remove());
-											}
-											if (editorMenuBarRef.current) {
-												Array.from(editorMenuBarRef.current.children).forEach(child => child.remove());
-											}
-										}}
-										onChange={(event, editor) => {
-											onEditorContentChange(editor.getData());
-										}}
-										editor={DecoupledEditor}
-										config={editorConfig}
-										disabled={disabled}
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-					<div className="editor-container__sidebar editor-container__sidebar_minimap" ref={editorMinimapRef}></div>
+						onAfterDestroy={() => {
+							// Clean up is handled automatically by CKEditor
+						}}
+						onChange={(event, editor) => {
+							onEditorContentChange(editor.getData());
+						}}
+						disabled={disabled} />
+					)}
 				</div>
 			</div>
 		</div>

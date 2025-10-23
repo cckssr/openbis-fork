@@ -114,6 +114,7 @@ export interface IAutoSaveActionContext extends IBaseActionContext {
 export interface FieldRendererProps {
   field: FormField;
   onFieldChange: (fieldId: string, value: any) => void;
+  onFieldMetadataChange?: (fieldId: string, meta: any) => void;
   mode: FormMode;
   params?: any;
 }

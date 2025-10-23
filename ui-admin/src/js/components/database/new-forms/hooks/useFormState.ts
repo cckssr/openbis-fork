@@ -13,6 +13,7 @@ interface UseFormStateReturn {
   isDirty: boolean;
   isValid: boolean;
   updateField: (fieldId: string, value: any) => void;
+  updateFieldMetadata: (fieldId: string, meta: any) => void;
   setMode: (mode: React.SetStateAction<FormMode>) => void;
   setForm: (form: React.SetStateAction<Form | null>) => void;
   resetForm: () => void;
@@ -45,7 +46,7 @@ export const useFormState = ({
 
   // Update field value
   const updateField = useCallback((fieldId: string, value: any) => {
-    console.log(`[useFormState] Updating field: ${fieldId} to ${value}`);
+    //console.log(`[useFormState] Updating field: ${fieldId} to ${value}`);
     setForm(prevForm => {
       if (!prevForm) return null;
       
@@ -57,6 +58,23 @@ export const useFormState = ({
 					}
 					return currentField;
 				}),
+        isDirty: true
+      };
+    });
+  }, []);
+
+  const updateFieldMetadata = useCallback((fieldId: string, meta: any) => {
+    setForm(prevForm => {
+      if (!prevForm) return null;
+      
+      return {
+        ...prevForm,
+        fields: prevForm.fields.map(currentField => {
+          if (currentField.id === fieldId) {
+            return { ...currentField, meta };
+          }
+          return currentField;
+        }),
         isDirty: true
       };
     });
@@ -91,6 +109,7 @@ export const useFormState = ({
     isDirty,
     isValid,
     updateField,
+    updateFieldMetadata,
     setMode,
     setForm: handleSetForm,
     resetForm

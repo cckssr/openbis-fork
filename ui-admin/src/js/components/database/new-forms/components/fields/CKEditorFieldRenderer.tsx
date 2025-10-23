@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
 import CKEditorDocument from '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorDocument.jsx';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import CKEditorClassic from '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorClassic.jsx';
 
 export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
   field,
   mode,
   onFieldChange,
+  onFieldMetadataChange,
   params
 }) => {
   const [markdownEnabled, setMarkdownEnabled] = useState(false);
@@ -23,11 +25,17 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
     if (originalHtmlContent !== null && onFieldChange && typeof onFieldChange === 'function') {
       onFieldChange(field.id, originalHtmlContent);
       setOriginalHtmlContent(null); // Reset after applying
+      //setMarkdownEnabled(field.meta?.isMarkdown ?? false);
     }
   }, [originalHtmlContent, onFieldChange, field.id]);
 
   // Wrapper function to ensure field updates are properly handled
   const handleEditorChange = useCallback((value: string) => {
+    console.log(editorRef.current.plugins.get('Title').getTitle());
+    if (onFieldMetadataChange && typeof onFieldMetadataChange === 'function') {
+      onFieldMetadataChange(field.id, { title: editorRef.current.plugins.get('Title').getTitle() });
+      onFieldMetadataChange(field.id, { isMarkdown: markdownEnabled });
+    }
     console.log(onFieldChange);
     if (onFieldChange && typeof onFieldChange === 'function') {
       onFieldChange(field.id, value);
@@ -37,7 +45,7 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
   const toggleMarkdownMode = () => {
     if (editorRef.current) {
       const currentContent = editorRef.current.getData();
-      
+
       if (markdownEnabled) {
         // Currently in markdown mode, switching to HTML mode
         // Restore the original HTML content
@@ -53,24 +61,22 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
         setOriginalHtmlContent(currentContent);
       }
     }
-    
+
     setMarkdownEnabled(prev => !prev);
     setDisabledToolbar(false);
   };
 
   return (
-    <div style={{ marginTop: '16px' }}>
-      <CKEditorDocument
-        value={originalHtmlContent !== null ? originalHtmlContent : field.value}
-        onEditorContentChange={handleEditorChange}
-        sessionID={params.sessionID}
-        disabled={disabledToolbar}
-        markdownEnabled={markdownEnabled}
-        onToggleMarkdown={toggleMarkdownMode}
-        onEditorReady={(editor: any) => {
-          editorRef.current = editor;
-        }}
-      />
-    </div>
+    <CKEditorClassic
+      value={originalHtmlContent !== null ? originalHtmlContent : field.value}
+      onEditorContentChange={handleEditorChange}
+      sessionID={params.sessionID}
+      disabled={disabledToolbar}
+      markdownEnabled={markdownEnabled}
+      onToggleMarkdown={toggleMarkdownMode}
+      onEditorReady={(editor: any) => {
+        editorRef.current = editor;
+      }}
+    />
   );
 };
