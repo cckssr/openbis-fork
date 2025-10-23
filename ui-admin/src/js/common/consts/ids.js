@@ -29,6 +29,7 @@ const QUERY_RESULTS_GRID_ID = 'query_results_grid'
 const HISTORY_OF_DELETION_GRID_ID = 'history_of_deletion_grid'
 const HISTORY_OF_FREEZING_GRID_ID = 'history_of_freezing_grid'
 const PERSONAL_ACCESS_TOKEN_GRID_ID = 'personal_access_token_grid'
+const TRASHCAN_GRID_ID = 'trashcan_grid'
 
 // browsers
 const DATABASE_BROWSER_ID = 'database_browser'
@@ -46,6 +47,7 @@ const PLUGIN_FORM_ID = 'plugin_form'
 const QUERY_FORM_ID = 'query_form'
 const IMPORT_ALL_FORM_ID = 'import_all_form'
 const PERSONAL_ACCESS_TOKEN_FORM_ID = 'personal_access_token_form'
+const TRASHCAN_FORM_ID = 'trashcan_form'
 
 export default {
   // app
@@ -55,6 +57,7 @@ export default {
   WEB_APP_SERVICE,
   EXPORT_SERVICE,
   CHATBOT_SERVICE,
+  
   // grids
   OBJECT_TYPES_GRID_ID,
   OBJECT_TYPE_GROUPS_GRID_ID,
@@ -80,6 +83,7 @@ export default {
   HISTORY_OF_DELETION_GRID_ID,
   HISTORY_OF_FREEZING_GRID_ID,
   PERSONAL_ACCESS_TOKEN_GRID_ID,
+  TRASHCAN_GRID_ID,
 
   // browsers
   DATABASE_BROWSER_ID,
@@ -96,5 +100,6 @@ export default {
   PLUGIN_FORM_ID,
   QUERY_FORM_ID,
   IMPORT_ALL_FORM_ID,
-  PERSONAL_ACCESS_TOKEN_FORM_ID
+  PERSONAL_ACCESS_TOKEN_FORM_ID,
+  TRASHCAN_FORM_ID
 }
