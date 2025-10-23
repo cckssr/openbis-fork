@@ -6,20 +6,22 @@ import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.afsserver.server.observer.APICall;
 import ch.ethz.sis.afsserver.server.observer.APIServerObserver;
+import ch.ethz.sis.openbis.afsserver.server.observer.impl.api.CreateDataSetsAPIServerObserver;
+import ch.ethz.sis.openbis.afsserver.server.observer.impl.api.UsePathInfoDatabaseAPIServerObserver;
 import ch.ethz.sis.shared.startup.Configuration;
 
 public class OpenBISAPIServerObserver implements APIServerObserver<TransactionConnection>
 {
 
-    private OpenBISCreateDataSetsAPIServerObserver createDataSetsObserver;
+    private CreateDataSetsAPIServerObserver createDataSetsObserver;
 
-    private OpenBISPathInfoDatabaseAPIServerObserver pathInfoDatabaseObserver;
+    private UsePathInfoDatabaseAPIServerObserver pathInfoDatabaseObserver;
 
     @Override
     public void init(Configuration configuration) throws Exception
     {
-        createDataSetsObserver = new OpenBISCreateDataSetsAPIServerObserver(configuration);
-        pathInfoDatabaseObserver = new OpenBISPathInfoDatabaseAPIServerObserver(configuration);
+        createDataSetsObserver = new CreateDataSetsAPIServerObserver(configuration);
+        pathInfoDatabaseObserver = new UsePathInfoDatabaseAPIServerObserver(configuration);
     }
 
     @Override

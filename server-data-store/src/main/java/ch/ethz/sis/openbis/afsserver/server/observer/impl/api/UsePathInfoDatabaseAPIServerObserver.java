@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.afsserver.server.observer.impl;
+package ch.ethz.sis.openbis.afsserver.server.observer.impl.api;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -16,14 +16,14 @@ import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.db.DBUtils;
 import net.lemnik.eodsql.QueryTool;
 
-public class OpenBISPathInfoDatabaseAPIServerObserver
+public class UsePathInfoDatabaseAPIServerObserver
 {
 
-    private static final Logger logger = LogManager.getLogger(OpenBISPathInfoDatabaseAPIServerObserver.class);
+    private static final Logger logger = LogManager.getLogger(UsePathInfoDatabaseAPIServerObserver.class);
 
     private IPathInfoAutoClosingDAO pathInfoDAO;
 
-    public OpenBISPathInfoDatabaseAPIServerObserver(final Configuration configuration)
+    public UsePathInfoDatabaseAPIServerObserver(final Configuration configuration)
     {
         if (PathInfoDatabaseConfiguration.hasInstance(configuration))
         {

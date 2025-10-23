@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.afsserver.server.observer.impl;
+package ch.ethz.sis.openbis.afsserver.server.observer.impl.api;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
+import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.create.DataSetCreation;
@@ -50,10 +51,10 @@ import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.log.standard.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 
-public class OpenBISCreateDataSetsAPIServerObserver
+public class CreateDataSetsAPIServerObserver
 {
 
-    private static final Logger logger = LogManager.getLogger(OpenBISCreateDataSetsAPIServerObserver.class);
+    private static final Logger logger = LogManager.getLogger(CreateDataSetsAPIServerObserver.class);
 
     private final String storageRoot;
 
@@ -65,7 +66,7 @@ public class OpenBISCreateDataSetsAPIServerObserver
 
     private final OpenBISConfiguration openBISConfiguration;
 
-    public OpenBISCreateDataSetsAPIServerObserver(Configuration configuration)
+    public CreateDataSetsAPIServerObserver(Configuration configuration)
     {
         storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
         storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(configuration);
