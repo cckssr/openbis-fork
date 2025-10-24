@@ -1,4 +1,4 @@
-package ch.ethz.sis.foldermonitor;
+package ch.ethz.sis.openbis.generic.foldermonitor.v3;
 
 import java.nio.file.Path;
 import java.util.Properties;

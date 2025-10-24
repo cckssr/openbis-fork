@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.foldermonitor.FolderMonitor;
 import ch.ethz.sis.foldermonitor.FolderMonitorConfiguration;
-import ch.ethz.sis.foldermonitor.FolderMonitorTask;
+import ch.ethz.sis.openbis.generic.foldermonitor.v3.FolderMonitorTask;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
