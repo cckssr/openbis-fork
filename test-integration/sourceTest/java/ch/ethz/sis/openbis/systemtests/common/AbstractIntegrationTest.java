@@ -71,12 +71,12 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
-import ch.ethz.sis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.afsserver.server.common.TestLogger;
-import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
+import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;

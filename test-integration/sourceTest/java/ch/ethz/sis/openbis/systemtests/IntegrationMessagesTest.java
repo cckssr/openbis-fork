@@ -10,8 +10,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.afsserver.server.messages.MessagesDatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.consumer.MessagesConsumer;
 import ch.ethz.sis.messages.db.Message;
