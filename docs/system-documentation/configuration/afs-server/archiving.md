@@ -64,21 +64,21 @@ pathInfoFeedingTask.interval = 60 sec
 pathInfoFeedingTask.compute-checksum = true
 
 # task that handles archiving and unarchiving messages
-archivingMessagesConsumerTask.class = ch.ethz.sis.afsserver.server.messages.MessagesConsumerMaintenanceTask
+archivingMessagesConsumerTask.class = ch.ethz.sis.openbis.afsserver.server.messages.MessagesConsumerMaintenanceTask
 archivingMessagesConsumerTask.consumerId = Archiving messages
-archivingMessagesConsumerTask.handlers = ch.ethz.sis.afsserver.server.archiving.messages.ArchiveDataSetMessageHandler, ch.ethz.sis.afsserver.server.archiving.messages.UnarchiveDataSetMessageHandler
+archivingMessagesConsumerTask.handlers = ch.ethz.sis.openbis.afsserver.server.archiving.messages.ArchiveDataSetMessageHandler, ch.ethz.sis.openbis.afsserver.server.archiving.messages.UnarchiveDataSetMessageHandler
 archivingMessagesConsumerTask.interval = 60 sec
 
 # task that handles archiving finalization messages
-finalizeArchivingMessagesConsumerTask.class = ch.ethz.sis.afsserver.server.messages.MessagesConsumerMaintenanceTask
+finalizeArchivingMessagesConsumerTask.class = ch.ethz.sis.openbis.afsserver.server.messages.MessagesConsumerMaintenanceTask
 finalizeArchivingMessagesConsumerTask.consumerId = Finalize archiving messages
-finalizeArchivingMessagesConsumerTask.handlers = ch.ethz.sis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessageHandler
+finalizeArchivingMessagesConsumerTask.handlers = ch.ethz.sis.openbis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessageHandler
 finalizeArchivingMessagesConsumerTask.interval = 60 sec
 
 # task that handles other messages
-commonMessagesConsumerTask.class = ch.ethz.sis.afsserver.server.messages.MessagesConsumerMaintenanceTask
+commonMessagesConsumerTask.class = ch.ethz.sis.openbis.afsserver.server.messages.MessagesConsumerMaintenanceTask
 commonMessagesConsumerTask.consumerId = Common messages
-commonMessagesConsumerTask.handlers = ch.ethz.sis.afsserver.server.messages.DeleteFileMessageHandler, ch.ethz.sis.afsserver.server.messages.DeleteDataSetFromStoreMessageHandler , ch.ethz.sis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessageHandler
+commonMessagesConsumerTask.handlers = ch.ethz.sis.openbis.afsserver.server.messages.DeleteFileMessageHandler, ch.ethz.sis.openbis.afsserver.server.messages.DeleteDataSetFromStoreMessageHandler , ch.ethz.sis.openbis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessageHandler
 commonMessagesConsumerTask.interval = 60 sec
 
 # multi dataset archiving (exactly the same configuration properties as for DSS)
