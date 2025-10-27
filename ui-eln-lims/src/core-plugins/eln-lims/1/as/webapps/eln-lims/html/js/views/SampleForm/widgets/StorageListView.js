@@ -262,13 +262,15 @@ function StorageListView(storageListController, storageListModel) {
                         if(sampleChild.newSampleJustCreated) {
                             sampleChild.identifier = IdentifierUtil.getSampleIdentifier(storageSpaceCode, null, sampleChild.code);
                             delete sampleChild.newSampleJustCreated;
-                            var postFix = "";
-                            if(storageSpaceCode.length > "STORAGE".length) {
-                              var start = storageSpaceCode.indexOf("_");
-                              postFix = storageSpaceCode.substring((start + 1) + "STORAGE".length + 1);
+                            if(!profile.isOpenBIS2020) {
+                                var prefix = SettingsManagerUtils.getSpaceGroupPrefix(settingsSpaceCode);
+                                if(prefix === "GENERAL") {
+                                  prefix = "";
+                                } else {
+                                   prefix += "_";
+                                }
+                                sampleChild.experimentIdentifier = "/" + storageSpaceCode + "/" + prefix + "STORAGE_POSITIONS/" + prefix + "STORAGE_POSITIONS_COLLECTION";
                             }
-                            // BIS-2297: disabled to fix setting storage in multi-group instances
-//                            sampleChild.experimentIdentifier = "/" + storageSpaceCode + "/STORAGE_POSITIONS" + postFix + "/STORAGE_POSITIONS_COLLECTION" + postFix;
                         } else {
                             // On update the identifier should be set, fail if not
                         }
