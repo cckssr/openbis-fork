@@ -29,6 +29,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
+
 public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 10000;
@@ -250,7 +252,7 @@ public class SyncOperation {
                 case DOWN -> source;
             };
 
-            SyncJobEvent syncJobEvent = syncJobEventDAO.selectByPrimaryKey(syncDirection, localFile.toAbsolutePath().toString(), remoteFile.toAbsolutePath().toString());
+            SyncJobEvent syncJobEvent = syncJobEventDAO.selectByPrimaryKey(syncDirection, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
 
             if (syncJobEvent != null) {
                 Instant completion;
@@ -404,7 +406,7 @@ public class SyncOperation {
                 Path parentPath = Path.of(remoteFile.getPath()).getParent();
                 if (parentPath != null) {
                     Instant lastModified = Arrays.stream(getRemoteFileList(parentPath))
-                            .filter(file -> file.getPath().equals(remotePath.toAbsolutePath().toString()))
+                            .filter(file -> file.getPath().equals(toServerPathString(remotePath)))
                             .findFirst().map(File::getLastModifiedTime).map(OffsetDateTime::toInstant).orElse(null);
 
                     return Optional.of(new FileInfo(true, lastModified));
@@ -419,16 +421,16 @@ public class SyncOperation {
     }
 
     Optional<File> getRemoteFilePresence(@NonNull Path remotePath) throws Exception {
-        return AfsClientUploadHelper.getServerFilePresence(getAfsClient(), syncJob.getEntityPermId(), remotePath.toAbsolutePath().toString());
+        return AfsClientUploadHelper.getServerFilePresence(getAfsClient(), syncJob.getEntityPermId(), toServerPathString(remotePath));
     }
 
     File[] getRemoteFileList(@NonNull Path remotePath) throws Exception {
-        return getAfsClient().list(syncJob.getEntityPermId(), remotePath.toAbsolutePath().toString(), false);
+        return getAfsClient().list(syncJob.getEntityPermId(), toServerPathString(remotePath), false);
     }
 
     void deleteRemoteFile(@NonNull Path remotePath) throws Exception {
         try {
-            getAfsClient().delete(syncJob.getEntityPermId(), remotePath.toAbsolutePath().toString());
+            getAfsClient().delete(syncJob.getEntityPermId(), toServerPathString(remotePath));
         } catch (Exception e) {
             if ( !AfsClientUploadHelper.isPathNotInStoreError(e) ) {
                 throw e;
@@ -454,15 +456,15 @@ public class SyncOperation {
         if (syncJob.getType() == SyncJob.Type.Bidirectional) {
 
             SyncJobEvent uploadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), remoteFile.toAbsolutePath().toString());
+                    SyncJobEvent.SyncDirection.UP, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
 
             SyncJobEvent downloadSyncJobEvent = syncJobEventDAO.selectByPrimaryKey(
-                    SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), remoteFile.toAbsolutePath().toString());
+                    SyncJobEvent.SyncDirection.DOWN, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
 
             return pickMoreRecentCompletedFileSyncState(uploadSyncJobEvent, downloadSyncJobEvent);
         } else {
             return syncJobEventDAO.selectByPrimaryKey(
-                    syncDirection, localFile.toAbsolutePath().toString(), remoteFile.toAbsolutePath().toString());
+                    syncDirection, localFile.toAbsolutePath().toString(), toServerPathString(remoteFile));
         }
     }
 
@@ -478,7 +480,7 @@ public class SyncOperation {
         };
 
         SyncJobEvent newFileSyncEntry = SyncJobEvent.builder()
-                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(remoteFile.toAbsolutePath().toString())
+                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(toServerPathString(remoteFile))
                 .entityPermId(syncJob.getEntityPermId()).localDirectoryRoot(syncJob.getLocalDirectoryRoot())
                 .sourceTimestamp(sourceLastModified.toEpochMilli()).destinationTimestamp(null)
                 .timestamp(System.currentTimeMillis()).build();
@@ -499,7 +501,7 @@ public class SyncOperation {
 
         Instant now = Instant.now();
         SyncJobEvent newFileSyncEntry = SyncJobEvent.builder()
-                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(remoteFile.toAbsolutePath().toString())
+                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(toServerPathString(remoteFile))
                 .entityPermId(syncJob.getEntityPermId()).localDirectoryRoot(syncJob.getLocalDirectoryRoot())
                 .sourceTimestamp(sourceLastModified.toEpochMilli()).destinationTimestamp(now.toEpochMilli()).timestamp(now.toEpochMilli())
                 .directory(directory)
@@ -521,7 +523,7 @@ public class SyncOperation {
 
         Instant now = Instant.now();
         SyncJobEvent newFileSyncEntry = SyncJobEvent.builder()
-                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(remoteFile.toAbsolutePath().toString())
+                .syncDirection(syncDirection).localFile(localFile.toAbsolutePath().toString()).remoteFile(toServerPathString(remoteFile))
                 .entityPermId(syncJob.getEntityPermId()).localDirectoryRoot(syncJob.getLocalDirectoryRoot())
                 .sourceTimestamp(now.toEpochMilli()).destinationTimestamp(null).timestamp(now.toEpochMilli())
                 .directory(directory).sourceDeleted(true)
@@ -555,7 +557,7 @@ public class SyncOperation {
                 Notification.Type.Conflict,
                 syncJob.getLocalDirectoryRoot(),
                 localFile.toString(),
-                remoteFile.toString(),
+                toServerPathString(remoteFile),
                 "FILE VERSION CONFLICT",
                 Instant.now().toEpochMilli()
         ));
@@ -564,7 +566,7 @@ public class SyncOperation {
 
         //Check if conflict notification is present and .openbis-conflict file has been deleted, that means: conflict resolution has been performed
         if (alreadyPresentConflictNotification != null && !Files.exists(localSuffixedConflictFile)) {
-            afsClientProxy.delete(syncJob.getEntityPermId(), remoteFile.toString());
+            afsClientProxy.delete(syncJob.getEntityPermId(), toServerPathString(remoteFile));
             FileTime localLastModification = Files.getLastModifiedTime(localFile);
             ClientAPI.DefaultTransferMonitorLister transferMonitorListener = new ClientAPI.DefaultTransferMonitorLister();
             transferMonitorListener.addFileTransferredListener(new ClientAPI.FileTransferredListener() {
@@ -577,7 +579,7 @@ public class SyncOperation {
                                 .localDirectoryRoot(syncJob.getLocalDirectoryRoot())
                                 .entityPermId(syncJob.getEntityPermId())
                                 .localFile(localFile.toAbsolutePath().toString())
-                                .remoteFile(remoteFile.toAbsolutePath().toString())
+                                .remoteFile(toServerPathString(remoteFile))
                                 .sourceTimestamp(localLastModification.toMillis())
                                 .destinationTimestamp(getRemoteFileInfo(remoteFile).map(FileInfo::getLastModifiedDate)
                                         .map(Instant::toEpochMilli)
@@ -632,7 +634,7 @@ public class SyncOperation {
 
     void raiseConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull SyncJobEvent syncJobEvent) {
         String localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source.toString() : destination.toString();
-        String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination.toString() : source.toString();
+        String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? toServerPathString(destination) : toServerPathString(source);
 
         Notification notification = new Notification(
                 Notification.Type.Conflict,
@@ -648,7 +650,7 @@ public class SyncOperation {
 
     void removePossibleConflictNotification(@NonNull Path source, @NonNull Path destination, @NonNull SyncJobEvent.SyncDirection syncDirection) {
         String localFile = syncDirection == SyncJobEvent.SyncDirection.UP ? source.toString() : destination.toString();
-        String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? destination.toString() : source.toString();
+        String remoteFile = syncDirection == SyncJobEvent.SyncDirection.UP ? toServerPathString(destination) : toServerPathString(source);
 
         Notification notification = new Notification(
                 Notification.Type.Conflict,

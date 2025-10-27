@@ -30,13 +30,13 @@ public class AfsClientDownloadHelper {
         DownloadCurrentsAndTotals currentsAndTotals = new DownloadCurrentsAndTotals();
 
         //Preliminary argument validation
-        if (!sourcePath.isAbsolute()) {
+        if (!sourcePath.startsWith(java.io.File.separator)) {
             throw new IllegalArgumentException("sourcePath must be absolute");
         }
         if (!Files.exists(destinationPath)) {
             throw new IllegalArgumentException("destinationPath must exist");
         }
-        File[] initialList = afsClient.list(sourceOwner, sourcePath.toString(), false);
+        File[] initialList = afsClient.list(sourceOwner, AfsClientUploadHelper.toServerPathString(sourcePath), false);
         checkInitialList(initialList, sourcePath, destinationPath);
 
         // Preliminary server-tree scan to compute total size
@@ -191,7 +191,7 @@ public class AfsClientDownloadHelper {
     }
 
     private static Path computeLocalPathForFile(Path sourcePath, Path destinationPath, File serverFile) {
-        Path relativeServerPath = sourcePath.toAbsolutePath().relativize(Path.of(serverFile.getPath()));
+        Path relativeServerPath = sourcePath.relativize(Path.of(serverFile.getPath()));
         Path localPath;
         if (relativeServerPath.toString().isEmpty()) {
             //Deal with different possible types (regular file or directory) of initial source and destination paths
@@ -278,7 +278,7 @@ public class AfsClientDownloadHelper {
     }
 
     private static boolean checkInitialList(@NonNull File[] initialList, @NonNull Path sourcePath, @NonNull Path destinationPath) throws Exception {
-        if (initialList.length == 1 && initialList[0].getPath().equals(sourcePath.toAbsolutePath().toString())) {
+        if (initialList.length == 1 && Path.of(initialList[0].getPath()).equals(sourcePath)) {
             //sourcePath is a regular file
             return true;
         } else {
@@ -456,7 +456,7 @@ public class AfsClientDownloadHelper {
                 currents.remove(fromPath);
                 Long expectedSrcLastModification = lastModificationTimestamps.remove(fromPath);
 
-                Optional<File> remoteFromPath = AfsClientUploadHelper.getServerFilePresence(afsClient, ownerId, fromPath.toAbsolutePath().toString());
+                Optional<File> remoteFromPath = AfsClientUploadHelper.getServerFilePresence(afsClient, ownerId, AfsClientUploadHelper.toServerPathString(fromPath));
                 Path twinLocalToPath = TemporaryPathUtil.getTwinTemporaryPath(toPath);
                 if(Files.exists(twinLocalToPath) && Files.size(twinLocalToPath) == total &&
                         remoteFromPath.isPresent() && (long) remoteFromPath.get().getSize() == total &&

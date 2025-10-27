@@ -42,7 +42,7 @@ public class AfsClientUploadHelper
         UploadCurrentsAndTotals currentsAndTotals = new UploadCurrentsAndTotals();
 
         //Preliminary argument validation
-        if (!destinationPath.isAbsolute())
+        if (!destinationPath.startsWith(java.io.File.separator))
         {
             throw new IllegalArgumentException("destinationPath must be absolute");
         }
@@ -51,7 +51,7 @@ public class AfsClientUploadHelper
             throw new IllegalArgumentException("sourcePath must exist");
         }
 
-        Optional<File> destinationInfo = getServerFilePresence(afsClient, destinationOwner, destinationPath.toString());
+        Optional<File> destinationInfo = getServerFilePresence(afsClient, destinationOwner, toServerPathString(destinationPath));
 
         if (destinationInfo.isEmpty() && !transactional)
         {
@@ -195,17 +195,17 @@ public class AfsClientUploadHelper
 
     private static String computeAbsoluteServerPath(Path sourcePath, Path destinationPath, Path nextFile, File destinationInfo)
     {
-        String absoluteServerPath;
+        Path absoluteServerPath;
         Path relativeSourcePath = sourcePath.toAbsolutePath().relativize(nextFile.toAbsolutePath());
         //Deal with case: sourcePath regular file, destinationPath directory
         if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && (destinationInfo == null || destinationInfo.getDirectory()))
         {
-            absoluteServerPath = destinationPath.resolve(nextFile.getFileName()).toString();
+            absoluteServerPath = destinationPath.resolve(nextFile.getFileName());
         } else
         {
-            absoluteServerPath = destinationPath.resolve(relativeSourcePath).toString();
+            absoluteServerPath = destinationPath.resolve(relativeSourcePath);
         }
-        return absoluteServerPath;
+        return toServerPathString(absoluteServerPath);
     }
 
     private static Optional<Path> checkAndPrepareRegularFilePaths(@NonNull AfsClient afsClient,
@@ -251,12 +251,12 @@ public class AfsClientUploadHelper
             {
                 if (localFileSize > 0)
                 {
-                    String tmpTwinServerPath = TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)).toString();
+                    String tmpTwinServerPath = toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)));
                     deleteAndRecreateServerRegularFile(afsClient, destinationOwner, tmpTwinServerPath);
                 } else
                 {
                     deleteServerRegularFile(afsClient, destinationOwner,
-                            TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath)).toString());
+                            toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(Path.of(absoluteServerPath))));
                     if (serverFile.isPresent())
                     {
                         if (serverFile.get().getSize() > 0)
@@ -470,11 +470,11 @@ public class AfsClientUploadHelper
 
                         if (transactional)
                         {
-                            requestChunks[i] = new Chunk(chunk.getOwner(), chunkServerPath.toString(), chunk.getOffset(), chunk.getLimit(), bytes);
+                            requestChunks[i] = new Chunk(chunk.getOwner(), toServerPathString(chunkServerPath), chunk.getOffset(), chunk.getLimit(), bytes);
                         } else
                         {
                             requestChunks[i] =
-                                    new Chunk(chunk.getOwner(), TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath).toString(), chunk.getOffset(),
+                                    new Chunk(chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)), chunk.getOffset(),
                                             chunk.getLimit(), bytes);
                         }
                     }
@@ -503,7 +503,7 @@ public class AfsClientUploadHelper
                                     chunk.getLimit(), transactional);
                     if (completed && !transactional)
                     {
-                        moveServerRegularFile(afsClient, chunk.getOwner(), TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath).toString(),
+                        moveServerRegularFile(afsClient, chunk.getOwner(), toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(chunkServerPath)),
                                 chunk.getSource());
                     }
                     transferMonitorListener.add(localPath, chunkServerPath, chunk.getLimit(), completed);
@@ -634,7 +634,7 @@ public class AfsClientUploadHelper
                 } else
                 {
                     Optional<File> remoteTmpToFile =
-                            getServerFilePresence(afsClient, ownerId, TemporaryPathUtil.getTwinTemporaryPath(toPath.toAbsolutePath()).toString());
+                            getServerFilePresence(afsClient, ownerId, toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(toPath)));
                     if (remoteTmpToFile.isPresent() && (long) remoteTmpToFile.get().getSize() == total &&
                             Files.exists(fromPath) && Files.size(fromPath) == total &&
                             Files.getLastModifiedTime(fromPath).toMillis() == expectedSrcLastModification
@@ -678,6 +678,12 @@ public class AfsClientUploadHelper
         {
             return fileMap.get(owner + path);
         }
+    }
+
+    public static String toServerPathString(@NonNull Path path) {
+        StringBuilder stringBuilder = new StringBuilder();
+        path.forEach( segment -> stringBuilder.append("/").append(segment.toString()));
+        return stringBuilder.toString();
     }
 
 }
