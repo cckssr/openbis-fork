@@ -28,6 +28,8 @@ public enum ExportFormat
 
     HTML,
 
-    DATA
+    DATA,
+
+    AFS_DATA
 
 }
