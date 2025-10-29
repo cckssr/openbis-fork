@@ -10,6 +10,7 @@ import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverServiceProvider;
 import ch.ethz.sis.openbis.afsserver.server.common.ApacheCommonsLoggingConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.HierarchicalContentServiceProvider;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
@@ -46,6 +47,9 @@ public class InitializeOpenBISPluginsServerObserver implements ServerObserver<Tr
     {
         // Make the legacy code that bases on Apache Commons Logging or Log4j use the same logging mechanism as the rest of AFS
         ApacheCommonsLoggingConfiguration.reconfigureToUseAFSLogging();
+
+        // Autoconfigure storage UUID
+        OpenBISConfiguration.getInstance(configuration).getStorageUuid();
 
         // Create messages DB, pathinfo DB and archiving DB
         if (MessagesDatabaseConfiguration.hasInstance(configuration))

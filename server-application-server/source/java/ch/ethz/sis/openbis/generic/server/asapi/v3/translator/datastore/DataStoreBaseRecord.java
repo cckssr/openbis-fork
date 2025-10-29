@@ -31,6 +31,8 @@ public class DataStoreBaseRecord extends ObjectBaseRecord
 
     public String remoteUrl;
 
+    public String storageUuid;
+
     public Date registrationDate;
 
     public Date modificationDate;

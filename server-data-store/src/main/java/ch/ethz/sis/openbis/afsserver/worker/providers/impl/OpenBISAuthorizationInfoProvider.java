@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
 import ch.ethz.sis.afs.dto.Lock;
 import ch.ethz.sis.afs.exception.AFSExceptions;
 import ch.ethz.sis.afs.manager.LockMapper;
-import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.afsserver.worker.WorkerContext;
 import ch.ethz.sis.afsserver.worker.providers.AuthorizationInfoProvider;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
@@ -70,8 +70,6 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
 
     private String storageRoot;
 
-    private String storageUuid;
-
     private Integer[] storageShares;
 
     private Integer storageIncomingShareId;
@@ -86,7 +84,6 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
     public void init(Configuration configuration) throws Exception
     {
         storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-        storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(configuration);
         storageShares = IOUtils.getShares(storageRoot);
         if (storageShares.length == 0)
         {
@@ -294,12 +291,12 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
 
         if (ownerShare != null)
         {
-            return createOwnerPath(ownerShare, storageUuid, shards, ownerPermId);
+            return createOwnerPath(ownerShare, openBISConfiguration.getStorageUuid(), shards, ownerPermId);
         } else
         {
             for (Integer share : storageShares)
             {
-                String potentialOwnerPath = createOwnerPath(share.toString(), storageUuid, shards, ownerPermId);
+                String potentialOwnerPath = createOwnerPath(share.toString(), openBISConfiguration.getStorageUuid(), shards, ownerPermId);
 
                 if (Files.exists(Paths.get(storageRoot, potentialOwnerPath)))
                 {
@@ -307,7 +304,7 @@ public class OpenBISAuthorizationInfoProvider implements AuthorizationInfoProvid
                 }
             }
 
-            return createOwnerPath(storageIncomingShareId.toString(), storageUuid, shards, ownerPermId);
+            return createOwnerPath(storageIncomingShareId.toString(), openBISConfiguration.getStorageUuid(), shards, ownerPermId);
         }
     }
 

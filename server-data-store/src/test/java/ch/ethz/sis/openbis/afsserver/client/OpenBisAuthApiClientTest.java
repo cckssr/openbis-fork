@@ -24,7 +24,14 @@ import static org.junit.Assert.fail;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.junit.After;
@@ -94,7 +101,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
 
     private static volatile Configuration configuration;
 
-    private DummyOpenBisServer dummyOpenBisServer;
+    private static DummyOpenBisServer dummyOpenBisServer;
 
     // used for creating test data for the super class tests
     @Override protected String getTestDataFolder(final String owner)
@@ -103,7 +110,8 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
     }
 
     @Override
-    protected Configuration getServerConfiguration() {
+    protected Configuration getServerConfiguration()
+    {
         return configuration;
     }
 
@@ -143,11 +151,12 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
         IOUtils.createDirectories(storageRoot + "/" + SHARE_2);
         IOUtils.createDirectories(storageRoot + "/" + SHARE_3);
 
+        setUpDummyOpenBis();
         afsServer = new Server<>(configuration);
+        tearDownDummyOpenBis();
     }
 
-    @Before
-    public void setUpDummyOpenBis() throws Exception
+    public static void setUpDummyOpenBis() throws Exception
     {
         dummyOpenBisServer =
                 new DummyOpenBisServer(OPENBIS_DUMMY_SERVER_PORT, OPENBIS_DUMMY_SERVER_PATH);
@@ -155,10 +164,21 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
         dummyOpenBisServer.start();
     }
 
-    @After
-    public void tearDownDummyOpenBis()
+    public static void tearDownDummyOpenBis()
     {
         dummyOpenBisServer.stop();
+    }
+
+    @Before
+    public void beforeMethod() throws Exception
+    {
+        setUpDummyOpenBis();
+    }
+
+    @After
+    public void afterMethod()
+    {
+        tearDownDummyOpenBis();
     }
 
     @Test
@@ -868,7 +888,7 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
         assertFalse(IOUtils.exists(IOUtils.getPath(testDataRoot, FILE_B)));
     }
 
-    private DummyOpenBisServer.OperationExecutor getDefaultOperationExecutor(String shareId)
+    private static DummyOpenBisServer.OperationExecutor getDefaultOperationExecutor(String shareId)
     {
         return (url, methodName, methodArguments) ->
         {
@@ -917,6 +937,8 @@ public class OpenBisAuthApiClientTest extends BaseApiClientTest
                     return Map.of(param, new Rights(Set.of(Right.UPDATE)));
                 case "searchEvents":
                     return new SearchResult<>(Collections.emptyList(), 0);
+                case "searchDataStores":
+                    return new SearchResult<>(List.of(), 0);
                 case "getSessionInformation":
                     return null;
             }

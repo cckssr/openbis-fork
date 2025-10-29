@@ -7,6 +7,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
@@ -31,6 +34,8 @@ public interface IOpenBISFacade
     SearchResult<DataSet> searchDataSets(DataSetSearchCriteria criteria, DataSetFetchOptions fetchOptions);
 
     SearchResult<Tag> searchTags(TagSearchCriteria criteria, TagFetchOptions fetchOptions);
+
+    SearchResult<DataStore> searchDataStores(DataStoreSearchCriteria criteria, DataStoreFetchOptions fetchOptions);
 
     void updateDataSets(List<DataSetUpdate> updates);
 
