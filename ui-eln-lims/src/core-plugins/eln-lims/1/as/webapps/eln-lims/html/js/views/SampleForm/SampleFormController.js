@@ -76,7 +76,11 @@ function SampleFormController(mainController, mode, sample, paginationInfo, acti
                             var dummySampleId = new SampleIdentifier(IdentifierUtil.createDummySampleIdentifierFromExperimentIdentifier(expeId));
                             var dummyDataSetId = new DataSetPermId(IdentifierUtil.createDummyDataSetIdentifierFromExperimentIdentifier(expeId));
                         } else {
-                            var spaceCode = _this._sampleFormModel.v3_sample.getSpace().getCode();
+                            var space = _this._sampleFormModel.v3_sample.getSpace();
+                            if(space) {
+                                // branch for shared samples
+                                var spaceCode = space.getCode();
+                            }
                             var project = _this._sampleFormModel.v3_sample.getProject();
                             if(project) {
                                 var projectCode = project.getCode();

@@ -39,7 +39,9 @@
 
 			mainController.profile.beforeViewPaint(ViewType.SAMPLE_FORM, this._sampleFormModel, $container);
 			var _this = this;
-			var spaceSettings = SettingsManagerUtils.getSpaceSettings(_this._sampleFormModel.sample.spaceCode);
+
+			var spaceCode = _this._sampleFormModel.sample.spaceCode ? _this._sampleFormModel.sample.spaceCode : "";
+			var spaceSettings = SettingsManagerUtils.getSpaceSettings(spaceCode);
 			var sampleTypeDefinitionsExtension = spaceSettings.sampleTypeDefinitionsExtension[_this._sampleFormModel.sample.sampleTypeCode];
 		
 			//
@@ -243,7 +245,7 @@
 					});
 				}
 	
-				if(_this._allowedToRegisterDataSet() && sampleTypeCode !== "FOLDER") {
+				if(_this._allowedToRegisterDataSet() && sampleTypeCode !== "FOLDER"  && spaceCode) {
 					//Create Dataset
 					var $uploadBtn = FormUtil.getToolbarButton("DATA", function () {
 						mainController.changeView('showCreateDataSetPageFromPermId',_this._sampleFormModel.sample.permId);
@@ -1955,7 +1957,7 @@
 			const $afsWidgetTab = $('<div id="afsWidgetTab-'+_this._viewId+'" class="tab-pane fade"></div>');
 			
 			$tabsContent.append($sampleFormTab);
-			if (profile.isAFSAvailable()) {
+			if (profile.isAFSAvailable() && this._sampleFormModel.v3_sample.space) {
 				$tabsContent.append($afsWidgetTab);
 				tabs.push({ id: "filesTab-"+_this._viewId, label: "Files", href: "#afsWidgetTab-"+_this._viewId, active: false });
 			}
