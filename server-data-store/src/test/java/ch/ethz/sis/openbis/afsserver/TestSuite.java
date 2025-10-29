@@ -19,10 +19,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import ch.ethz.sis.afsserver.client.DummyAuthApiClientTest;
-import ch.ethz.sis.openbis.afsserver.client.OpenBisAuthApiClientTest;
 import ch.ethz.sis.afsserver.impl.ApiServerAdapterTest;
 import ch.ethz.sis.afsserver.impl.ApiServerTest;
+import ch.ethz.sis.openbis.afsserver.client.OpenBisAuthApiClientTest;
+import ch.ethz.sis.openbis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessageTest;
+import ch.ethz.sis.openbis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessageTest;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfigurationTest;
 import ch.ethz.sis.openbis.afsserver.server.common.ShareIdManagerTest;
+import ch.ethz.sis.openbis.afsserver.server.messages.DeleteDataSetFromStoreMessageTest;
+import ch.ethz.sis.openbis.afsserver.server.messages.DeleteFileMessageTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -30,7 +35,12 @@ import ch.ethz.sis.openbis.afsserver.server.common.ShareIdManagerTest;
         ApiServerAdapterTest.class,
         DummyAuthApiClientTest.class,
         OpenBisAuthApiClientTest.class,
-        ShareIdManagerTest.class
+        OpenBISConfigurationTest.class,
+        ShareIdManagerTest.class,
+        FinalizeDataSetArchivingMessageTest.class,
+        UpdateDataSetArchivingStatusMessageTest.class,
+        DeleteDataSetFromStoreMessageTest.class,
+        DeleteFileMessageTest.class
 })
 
 public class TestSuite
