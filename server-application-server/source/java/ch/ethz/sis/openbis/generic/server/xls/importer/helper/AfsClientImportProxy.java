@@ -50,10 +50,9 @@ final class AfsClientImportProxy
             final int timeout = Integer.parseInt(timeoutStr);
             AfsClient client = getAfsClient(sessionToken, url, timeout, interactiveSessionKey);
 
-            AfsClientImportProxy result = new AfsClientImportProxy(client);
-            return result;
+            return new AfsClientImportProxy(client);
         } else {
-            throw new UserFailureException("AFS is not configured!");
+            return new AfsClientImportProxy(null);
         }
     }
 
@@ -80,6 +79,9 @@ final class AfsClientImportProxy
 
 
     public boolean isSessionValid() {
+        if(client == null) {
+            return false;
+        }
         try {
             return client.isSessionValid();
         } catch (Exception e)
