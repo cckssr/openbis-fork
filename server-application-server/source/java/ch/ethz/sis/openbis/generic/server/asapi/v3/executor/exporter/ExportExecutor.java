@@ -68,7 +68,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -315,6 +317,7 @@ public class ExportExecutor implements IExportExecutor
         final boolean hasHtmlFormat = exportFormats.contains(ExportFormat.HTML);
         final boolean hasPdfFormat = exportFormats.contains(ExportFormat.PDF);
         final boolean hasDataFormat = exportFormats.contains(ExportFormat.DATA);
+        final boolean hasAfsDataFormat = exportFormats.contains(ExportFormat.AFS_DATA);
 
         final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
         final File sessionWorkspaceDirectory = sessionWorkspaceProvider.getSessionWorkspace(sessionToken).getCanonicalFile();
@@ -327,8 +330,8 @@ public class ExportExecutor implements IExportExecutor
             exportXlsx(api, sessionToken, exportWorkspaceDirectory, exportablePermIds, exportReferredMasterData, exportFields, textFormatting,
                     compatibleWithImport, warnings);
         }
-
-        if (hasHtmlFormat || hasPdfFormat || hasDataFormat)
+        List<Consumer<ZipArchiveOutputStream>> consumers = null;
+        if (hasHtmlFormat || hasPdfFormat || hasDataFormat || hasAfsDataFormat)
         {
             final EntitiesVo entitiesVo = new EntitiesVo(sessionToken, exportablePermIds);
 
@@ -348,6 +351,11 @@ public class ExportExecutor implements IExportExecutor
             {
                 exportData(sessionToken, exportWorkspaceDirectory, entitiesVo, compatibleWithImport);
             }
+
+            if(hasAfsDataFormat)
+            {
+                consumers = exportAfsData(sessionToken, exportWorkspaceDirectory, entitiesVo);
+            }
         }
 
         final File file = getSingleFile(exportWorkspaceDirectoryPath);
@@ -364,7 +372,7 @@ public class ExportExecutor implements IExportExecutor
                 targetZipFile.delete();
             }
 
-            zipDirectory(exportWorkspaceDirectoryPathString, targetZipFile);
+            zipDirectory(exportWorkspaceDirectoryPathString, targetZipFile, consumers);
             exportResult = new ExportResult(getDownloadPath(sessionToken, zipFileName), warnings);
         } else
         {
@@ -495,6 +503,122 @@ public class ExportExecutor implements IExportExecutor
         }
 
         exportDataSetsData(sessionToken, exportWorkspaceDirectory, dataSets, compatibleWithImport);
+    }
+
+    private List<Consumer<ZipArchiveOutputStream>> exportAfsData(final String sessionToken, final File exportWorkspaceDirectory, final EntitiesVo entitiesVo
+            )
+    {
+
+
+        final AfsClientExportProxy afs = AfsClientExportProxy.getAfsClient(sessionToken);
+
+        long totalSize = 0;
+
+        final Collection<Sample> samples = entitiesVo.getSamples();
+        Map<ICodeHolder, ch.ethz.sis.afsapi.dto.File[]> sampleFileMap = new HashMap<>();
+        for(Sample s : samples) {
+            ch.ethz.sis.afsapi.dto.File[] files = afs.listFiles(s.getPermId().getPermId());
+            if(files != null && files.length > 0) {
+                sampleFileMap.put(s, files);
+                totalSize += Stream.of(files)
+                        .filter(Predicate.not(ch.ethz.sis.afsapi.dto.File::getDirectory))
+                        .mapToLong(ch.ethz.sis.afsapi.dto.File::getSize)
+                        .reduce(0L, Long::sum);
+            }
+        }
+
+        final Collection<Experiment> experiments = entitiesVo.getExperiments();
+        Map<ICodeHolder, ch.ethz.sis.afsapi.dto.File[]> experimentFileMap = new HashMap<>();
+        for(Experiment e : experiments) {
+            ch.ethz.sis.afsapi.dto.File[] files = afs.listFiles(e.getPermId().getPermId());
+            if(files != null && files.length > 0) {
+                experimentFileMap.put(e, files);
+                totalSize += Stream.of(files)
+                        .filter(Predicate.not(ch.ethz.sis.afsapi.dto.File::getDirectory))
+                        .mapToLong(ch.ethz.sis.afsapi.dto.File::getSize)
+                        .reduce(0L, Long::sum);
+            }
+        }
+
+        final long totalDataLimit = getDataLimit();
+        if (totalSize > totalDataLimit)
+        {
+            throw UserFailureException.fromTemplate("Total data size %d is larger than the data limit %d.", totalSize, totalDataLimit);
+        }
+
+        List<Consumer<ZipArchiveOutputStream>> result = new ArrayList<>();
+        result.add(exportAfsFileStreams(afs, exportWorkspaceDirectory, sampleFileMap, 'O'));
+        result.add(exportAfsFileStreams(afs, exportWorkspaceDirectory, experimentFileMap, 'E'));
+        return result;
+    }
+
+    private Consumer<ZipArchiveOutputStream> exportAfsFileStreams(final AfsClientExportProxy afs, final File exportWorkspaceDirectory,
+            Map<ICodeHolder, ch.ethz.sis.afsapi.dto.File[]> entityFileMap, final char prefix) {
+
+        entityFileMap.forEach((key, value) -> createDirectoriesForSampleOrExperiment(prefix,
+                new File(exportWorkspaceDirectory, PDF_DIRECTORY), key));
+
+        return (ZipArchiveOutputStream zipOutputStream) -> {
+            File topLevel = exportWorkspaceDirectory;
+            try
+            {
+//                final long chunkLimit = 1024 * 10; // 10 Kb
+                final long chunkLimit = 1024 * 1024 * 10; // 10 Mb
+
+                for (Map.Entry<ICodeHolder, ch.ethz.sis.afsapi.dto.File[]> singleEntry : entityFileMap.entrySet())
+                {
+                    ICodeHolder s = singleEntry.getKey();
+                    String permId = null;
+                    if(prefix == 'O') {
+                        permId = ((Sample) s).getPermId().getPermId();
+                    } else {
+                        permId = ((Experiment) s).getPermId().getPermId();
+                    }
+                    final File parentDataDirectory = createDirectoriesForSampleOrExperiment(prefix,
+                            new File(exportWorkspaceDirectory, PDF_DIRECTORY), singleEntry.getKey());
+                    Path entry = Path.of(exportWorkspaceDirectory.toPath()
+                            .relativize(parentDataDirectory.toPath()).toString(), "data");
+                    ZipEntry zipEntry =
+                            new ZipEntry(entry.toString() + "/");
+                    zipEntry.setMethod(ZipArchiveOutputStream.DEFLATED);
+                    zipOutputStream.putArchiveEntry(new ZipArchiveEntry(zipEntry));
+                    zipOutputStream.closeArchiveEntry();
+
+                    ch.ethz.sis.afsapi.dto.File[] files = singleEntry.getValue();
+                    for(ch.ethz.sis.afsapi.dto.File file : files) {
+
+                        boolean isDirectory = file.getDirectory();
+
+                        String filePath = Path.of(entry.toString(), file.getPath()).toString() + (isDirectory ? "/" : "");
+
+                        zipEntry =
+                                new ZipEntry(filePath);
+                        zipEntry.setMethod(ZipArchiveOutputStream.DEFLATED);
+                        if (!isDirectory)
+                        {
+                            zipEntry.setSize(file.getSize());
+                        }
+                        zipOutputStream.putArchiveEntry(new ZipArchiveEntry(zipEntry));
+                        if (!isDirectory)
+                        {
+                            long size = file.getSize();
+
+                            for(long i=0; i< size; i+= chunkLimit) {
+                                long limit = i + chunkLimit > size ? size - i : chunkLimit;
+                                byte[] data = afs.downloadFileChunk(permId, file.getPath(), i, (int) limit);
+                                zipOutputStream.write(data);
+                            }
+                        }
+                        zipOutputStream.closeArchiveEntry();
+                    }
+
+                }
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+
+        };
     }
 
     private long getDataLimit()
@@ -1794,7 +1918,7 @@ public class ExportExecutor implements IExportExecutor
         }
     }
 
-    private static void zipDirectory(final String sourceDirectory, final File targetZipFile)
+    private static void zipDirectory(final String sourceDirectory, final File targetZipFile, final List<Consumer<ZipArchiveOutputStream>> afsDataConsumers)
             throws IOException
     {
         final Path sourceDir = Paths.get(sourceDirectory);
@@ -1838,6 +1962,9 @@ public class ExportExecutor implements IExportExecutor
             } catch (final IOException e)
             {
                 throw new RuntimeException(e);
+            }
+            if(afsDataConsumers != null) {
+                afsDataConsumers.forEach(c -> c.accept(zipOutputStream));
             }
         }
     }

@@ -88,6 +88,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         boolean pdf = ((Map<String, Boolean>) parameters.get("formats")).get("pdf");
         boolean xlsx = ((Map<String, Boolean>) parameters.get("formats")).get("xlsx");
         boolean data = ((Map<String, Boolean>) parameters.get("formats")).get("data");
+        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).get("afsData");
 
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         ExportData exportData = new ExportData();
@@ -118,6 +119,9 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         }
         if (data) {
             formats.add(ExportFormat.DATA);
+        }
+        if (afsData) {
+            formats.add(ExportFormat.AFS_DATA);
         }
         exportOptions.setFormats(formats);
         exportOptions.setXlsTextFormat(XlsTextFormat.RICH);
