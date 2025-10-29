@@ -3030,3 +3030,5 @@ AccessDateSearchCriteria
 EventTechIdSearchCriteria
 withAccessDate
 withEventTechId
+get Storage Uuid
+set Storage Uuid
