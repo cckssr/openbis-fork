@@ -65,6 +65,7 @@ public class DataStoreTranslator extends AbstractCachingTranslator<Long, DataSto
         result.setCode(baseRecord.code);
         result.setDownloadUrl(baseRecord.downloadUrl);
         result.setRemoteUrl(baseRecord.remoteUrl);
+        result.setStorageUuid(baseRecord.storageUuid);
         result.setRegistrationDate(baseRecord.registrationDate);
         result.setModificationDate(baseRecord.modificationDate);
     }

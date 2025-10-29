@@ -886,7 +886,7 @@ public abstract class AbstractIntegrationTest
     {
         Configuration afsServerConfiguration = getAfsServerConfiguration();
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
-        String storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(afsServerConfiguration);
+        String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
         Integer shareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(afsServerConfiguration);
 
         List<String> dataSetFolderLocation = new ArrayList<>();
@@ -1017,7 +1017,7 @@ public abstract class AbstractIntegrationTest
     {
         Configuration afsServerConfiguration = getAfsServerConfiguration();
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
-        String storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(afsServerConfiguration);
+        String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
 
         List<String> dataSetFolderLocation = new ArrayList<>();
         dataSetFolderLocation.add(storageUuid);

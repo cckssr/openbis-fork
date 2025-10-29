@@ -25,8 +25,8 @@ import ch.ethz.sis.afsapi.dto.File;
 import ch.ethz.sis.afsserver.server.Request;
 import ch.ethz.sis.afsserver.server.Response;
 import ch.ethz.sis.afsserver.server.Worker;
-import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.observer.impl.OpenBISUtils;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -58,8 +58,6 @@ public class CreateDataSetsAPIServerObserver
 
     private final String storageRoot;
 
-    private final String storageUuid;
-
     private final Integer storageIncomingShareId;
 
     private final String interactiveSessionKey;
@@ -69,7 +67,6 @@ public class CreateDataSetsAPIServerObserver
     public CreateDataSetsAPIServerObserver(Configuration configuration)
     {
         storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-        storageUuid = AtomicFileSystemServerParameterUtil.getStorageUuid(configuration);
         storageIncomingShareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(configuration);
         interactiveSessionKey = AtomicFileSystemServerParameterUtil.getInteractiveSessionKey(configuration);
         openBISConfiguration = OpenBISConfiguration.getInstance(configuration);
@@ -99,16 +96,19 @@ public class CreateDataSetsAPIServerObserver
             } else if (isTwoPhaseTransaction)
             {
                 List<String> owners = getOwnerCreatedInRequest(request);
-                if (owners != null) {
-                    for (Iterator<String> it = owners.iterator(); it.hasNext() ;)
+                if (owners != null)
+                {
+                    for (Iterator<String> it = owners.iterator(); it.hasNext(); )
                     {
                         String owner = it.next();
-                        if (ownerExistsInTransaction(worker, owner) || ownerExistsInStore(worker, owner)) {
+                        if (ownerExistsInTransaction(worker, owner) || ownerExistsInStore(worker, owner))
+                        {
                             it.remove();
                         }
                     }
 
-                    if (!owners.isEmpty()) {
+                    if (!owners.isEmpty())
+                    {
                         OpenBIS openBIS = openBISConfiguration.getOpenBIS();
                         openBIS.setSessionToken(worker.getSessionToken());
                         openBIS.setTransactionId(worker.getConnection().getTransaction().getUuid());
@@ -127,15 +127,18 @@ public class CreateDataSetsAPIServerObserver
         {
             // We modify a mutable to avoid recreating multiple lists
             List<String> owners = getOwnerCreatedInRequest(request);
-            if (owners != null) {
-                for (Iterator<String> it = owners.iterator(); it.hasNext() ;)
+            if (owners != null)
+            {
+                for (Iterator<String> it = owners.iterator(); it.hasNext(); )
                 {
-                    if (ownerExistsInStore(worker, it.next())) {
+                    if (ownerExistsInStore(worker, it.next()))
+                    {
                         it.remove();
                     }
                 }
 
-                if (!owners.isEmpty()) {
+                if (!owners.isEmpty())
+                {
                     OpenBIS openBIS = openBISConfiguration.getOpenBIS();
                     openBIS.setSessionToken(worker.getSessionToken());
 
@@ -154,7 +157,8 @@ public class CreateDataSetsAPIServerObserver
             case "write":
                 Chunk[] chunks = (Chunk[]) request.getParams().get("chunks");
                 owners = new ArrayList<>(chunks.length);
-                for (Chunk chunk:chunks) {
+                for (Chunk chunk : chunks)
+                {
                     owners.add(chunk.getOwner());
                 }
                 break;
@@ -210,7 +214,8 @@ public class CreateDataSetsAPIServerObserver
         {
             File[] files = worker.list(owner, "", false);
             return files.length > 0;
-        } catch (NoSuchFileException e) {
+        } catch (NoSuchFileException e)
+        {
             return false;
         }
     }
@@ -293,7 +298,7 @@ public class CreateDataSetsAPIServerObserver
     {
         List<String> elements = new LinkedList<>(Arrays.asList(IOUtils.getShards(dataSetCode)));
         elements.add(dataSetCode);
-        return IOUtils.getPath(storageUuid, elements.toArray(new String[] {}));
+        return IOUtils.getPath(openBISConfiguration.getStorageUuid(), elements.toArray(new String[] {}));
     }
 
     private Experiment findExperiment(OpenBIS openBIS, String experimentPermId)

@@ -8,6 +8,9 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.search.DataSetSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.DataStore;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.fetchoptions.DataStoreFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.Event;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.fetchoptions.EventFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.event.search.EventSearchCriteria;
@@ -66,6 +69,11 @@ public class OpenBISFacade implements IOpenBISFacade
     @Override public SearchResult<Tag> searchTags(TagSearchCriteria criteria, TagFetchOptions fetchOptions)
     {
         return executeOperation(openBIS -> openBIS.searchTags(criteria, fetchOptions));
+    }
+
+    @Override public SearchResult<DataStore> searchDataStores(DataStoreSearchCriteria criteria, DataStoreFetchOptions fetchOptions)
+    {
+        return executeOperation(openBIS -> openBIS.searchDataStores(criteria, fetchOptions));
     }
 
     @Override public void updateDataSets(final List<DataSetUpdate> updates)
