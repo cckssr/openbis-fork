@@ -57,6 +57,7 @@ addStringField
 addTags
 ADMIN
 AFS
+AFS_DATA
 afterOperation
 Aggregation Service
 Aggregation Service Execution Options
