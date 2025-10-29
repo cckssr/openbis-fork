@@ -123,6 +123,8 @@ public class XLSImport
 
     private final byte[][] xls;
 
+    private final AfsDataImportHelper afsDataImportHelper;
+
     private static final String ZIP_EXTENSION = "." + "zip";
 
     public XLSImport(String sessionToken,
@@ -157,9 +159,12 @@ public class XLSImport
         this.typeGroupImportHelper = new TypeGroupImportHelper(this.delayedExecutor, mode, options);
         this.shouldCheckVersionsOnDatabase = shouldCheckVersionsOnDatabase;
 
+        this.afsDataImportHelper = new AfsDataImportHelper(sessionToken, mode, options);
+
         // File Parsing
         this.sessionWorkspaceFiles = sessionWorkspaceFiles;
         final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
+
 
         final Map<String, String> scripts = new HashMap<>();
         byte[][] xls = new byte[sessionWorkspaceFiles.length][];
@@ -182,7 +187,8 @@ public class XLSImport
                             if (!entryName.isEmpty() &&
                                     !SCRIPTS_FOLDER_NAME.equals(entryName) &&
                                     !DATA_FOLDER_NAME.equals(entryName) &&
-                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME))
+                                    !entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
+                                    !entryName.startsWith("hierarchy"))
                             {
                                 throw UserFailureException.fromTemplate("Illegal directory '%s' is found inside the imported file.", entryName);
                             }
@@ -206,7 +212,8 @@ public class XLSImport
                             {
                                 validateEntrySize(entry.getSize(), EMBEDDED_DOCUMENT_LIMIT);
                                 this.importValues.put(entryName.substring(DATA_FOLDER_NAME.length()), new String(zip.readAllBytes()));
-                            } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME))
+                            } else if (!entryName.startsWith(MISCELLANEOUS_FOLDER_NAME) &&
+                                        !entryName.startsWith("hierarchy"))
                             {
                                 throw UserFailureException.fromTemplate(
                                         "Entry '%s' is not allowed. Only one root XLS file is allowed and files inside the '%s' or '%s' folder",
@@ -278,6 +285,9 @@ public class XLSImport
 
         for (int i = 0; i < this.xls.length; i++)
         {
+            if(this.xls[i] == null) {
+                continue;
+            }
             List<List<List<String>>> lines = ExcelParser.parseExcel(this.xls[i], importValues);
             int pageNumber = 0;
             int lineNumber;
@@ -453,31 +463,44 @@ public class XLSImport
 
     private void importZipData() throws IOException
     {
-        for (int i = 0; i < this.sessionWorkspaceFiles.length; i++)
-        {
-            if (this.sessionWorkspaceFiles[i].toLowerCase().endsWith(ZIP_EXTENSION))
+        try {
+            boolean isAfsAvailable = afsDataImportHelper.isAfsConnectionAvailable();
+            for (int i = 0; i < this.sessionWorkspaceFiles.length; i++)
             {
-                final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
-                InputStream read = sessionWorkspaceProvider.read(this.sessionToken, this.sessionWorkspaceFiles[i]);
-
-                try (final ZipInputStream zip = new ZipInputStream(read))
+                if (this.sessionWorkspaceFiles[i].toLowerCase().endsWith(ZIP_EXTENSION))
                 {
-                    ZipEntry entry;
-                    while ((entry = zip.getNextEntry()) != null)
+                    final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
+                    InputStream read = sessionWorkspaceProvider.read(this.sessionToken, this.sessionWorkspaceFiles[i]);
+
+                    try (final ZipInputStream zip = new ZipInputStream(read))
                     {
-                        final String filePath = entry.getName().startsWith(XLSX_FOLDER_NAME) ? entry.getName().substring(XLSX_FOLDER_NAME.length())
-                                : entry.getName();
-                        if (!entry.isDirectory() && filePath.startsWith(FILE_SERVICES_FOLDER_NAME))
+                        ZipEntry entry;
+                        while ((entry = zip.getNextEntry()) != null)
                         {
-                            String fileServicePath = PATH_SEPARATOR + filePath.substring(FILE_SERVICES_FOLDER_NAME.length());
-                            try (final OutputStream outputStream = FileServerUtils.newOutputStream(fileServicePath))
+                            final String filePath = entry.getName().startsWith(XLSX_FOLDER_NAME) ? entry.getName().substring(XLSX_FOLDER_NAME.length())
+                                    : entry.getName();
+                            if (!entry.isDirectory() && filePath.startsWith(FILE_SERVICES_FOLDER_NAME))
                             {
-                                zip.transferTo(outputStream);
+                                String fileServicePath = PATH_SEPARATOR + filePath.substring(FILE_SERVICES_FOLDER_NAME.length());
+                                try (final OutputStream outputStream = FileServerUtils.newOutputStream(fileServicePath))
+                                {
+                                    zip.transferTo(outputStream);
+                                }
+                            }
+                            else if(isAfsAvailable && filePath.startsWith("hierarchy/") && filePath.contains("/data/")) {
+//                                afsDataImportHelper.beginIfNotStarted();
+                                afsDataImportHelper.importData(zip, entry);
                             }
                         }
                     }
                 }
             }
+//            afsDataImportHelper.commit();
+        } catch (Exception e)
+        {
+//            afsDataImportHelper.rollback();
+            throw new RuntimeException("Data upload failed.", e);
+
         }
     }
 }
