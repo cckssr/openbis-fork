@@ -50,6 +50,7 @@ import ch.ethz.sis.afsclient.client.TemporaryPathUtil;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.*;
 
@@ -801,6 +802,40 @@ public abstract class BaseApiClientTest
     }
 
     @Test
+    public void download_with_failure_from_dir_to_dir_for_concurrent_modification() throws Exception
+    {
+        login();
+
+        String serverMainDirectory = "/tobedownloaded";
+        afsClient.create(owner, serverMainDirectory, true);
+        for(int i = 0; i<5; i++) {
+            String testFileName = serverMainDirectory + String.format("/test%s.txt", i);
+            afsClient.create(owner, testFileName, false);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            afsClient.write(new ch.ethz.sis.afsapi.dto.Chunk[] { new ch.ethz.sis.afsapi.dto.Chunk(owner, testFileName, 0L, testFileContent.length, testFileContent) });
+        }
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(DOWNLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        ClientAPI.DefaultTransferMonitorLister sneakyContentChangingMonitor = new ClientAPI.DefaultTransferMonitorLister() {
+            static byte[] CHANGED_FILE_CONTENT = "CHANGED_FILE_CONTENT".getBytes(StandardCharsets.UTF_8);
+
+            @Override
+            public synchronized void start(Path from, Path to, long total) {
+                super.start(from, to, total);
+                try {
+                    afsClient.write(new Chunk[]{new Chunk(owner, from.toAbsolutePath().toString(), 0L, CHANGED_FILE_CONTENT.length, CHANGED_FILE_CONTENT)});
+                } catch (Exception e) { throw new RuntimeException(e); }
+            }
+        };
+        boolean result = afsClient.download(owner, Path.of("/"), resourceDirectoryPath, ClientAPI.overrideCollisionListener, sneakyContentChangingMonitor);
+        Assert.assertFalse(result);
+        Assert.assertTrue(sneakyContentChangingMonitor.getException() instanceof IllegalStateException);
+        Assert.assertEquals("Incomplete download", sneakyContentChangingMonitor.getException().getMessage());
+    }
+
+    @Test
     public void upload_successfully_from_dir_to_dir() throws Exception
     {
         login();
@@ -1214,6 +1249,46 @@ public abstract class BaseApiClientTest
         Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
 
         afsClient.upload(Path.of("NON-EXISTING_LOCAL_PATH"), owner, Path.of("/uploads"), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+    }
+
+    @Test
+    public void upload_with_failure_from_dir_to_dir_for_concurrent_modifications() throws Exception
+    {
+        login();
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            IOUtils.createFile(filePath.toAbsolutePath().toString());
+            IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+            assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+        }
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        ClientAPI.DefaultTransferMonitorLister sneakyContentChangingMonitor = new ClientAPI.DefaultTransferMonitorLister() {
+            @Override
+            public synchronized void start(Path from, Path to, long total) {
+                super.start(from, to, total);
+                try {
+                    IOUtils.write(from.toAbsolutePath().toString(), 0, "CHANGED_FILE_CONTENT".getBytes(StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        boolean result = afsClient.upload(resourceDirectoryPath, owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener, sneakyContentChangingMonitor);
+        Assert.assertFalse(result);
+        Assert.assertTrue(sneakyContentChangingMonitor.getException() instanceof IllegalStateException);
+        Assert.assertEquals("Incomplete upload", sneakyContentChangingMonitor.getException().getMessage());
     }
 
     @Test

@@ -6,16 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
@@ -84,13 +75,14 @@ public class AfsClientUploadHelper
             while (iterator.hasNext())
             {
                 Path nextFile = iterator.next();
-                String absoluteServerPath = computeAbsoluteServerPath(sourcePath, destinationPath, nextFile, destinationInfo.orElse(null));
+                String absServerPathAsStr = computeAbsoluteServerPath(sourcePath, destinationPath, nextFile, destinationInfo.orElse(null));
+                Path absServerPath = Path.of(absServerPathAsStr);
 
                 if (!Files.isDirectory(nextFile))
                 {
                     long nextFileSize = Files.size(nextFile);
                     Optional<Path> precheckedNextFile =
-                            checkAndPrepareRegularFilePaths(afsClient, nextFile, nextFileSize, destinationOwner, absoluteServerPath,
+                            checkAndPrepareRegularFilePaths(afsClient, nextFile, nextFileSize, destinationOwner, absServerPathAsStr,
                                     fileCollisionListener, transactional, cache);
 
                     if (precheckedNextFile.isPresent())
@@ -98,75 +90,77 @@ public class AfsClientUploadHelper
                         if (nextFileSize > 0)
                         {
                             currentsAndTotals.startTracking(nextFile.toAbsolutePath(), nextFileSize, Files.getLastModifiedTime(nextFile).toMillis());
-                            transferMonitorListener.start(nextFile.toAbsolutePath(), Path.of(absoluteServerPath), nextFileSize);
+                            transferMonitorListener.start(nextFile.toAbsolutePath(), absServerPath, nextFileSize);
                         } else
                         {
-                            transferMonitorListener.start(nextFile.toAbsolutePath(), Path.of(absoluteServerPath), 0);
-                            transferMonitorListener.add(nextFile.toAbsolutePath(), Path.of(absoluteServerPath), 0, true);
+                            transferMonitorListener.start(nextFile.toAbsolutePath(), absServerPath, 0);
+                            transferMonitorListener.add(nextFile.toAbsolutePath(), absServerPath, 0, true);
                         }
 
-                        ChunkIterable chunkIterable = new ChunkIterable(destinationOwner, absoluteServerPath, Files.size(precheckedNextFile.get()),
+                        ChunkIterable chunkIterable = new ChunkIterable(destinationOwner, absServerPathAsStr, Files.size(precheckedNextFile.get()),
                                 afsClient.getMaxReadSizeInBytes() - currentSize);
                         Iterator<Chunk> chunkIterator = chunkIterable.iterator();
                         while (chunkIterator.hasNext())
                         {
                             Chunk nextChunk = chunkIterator.next();
-                            chunkBatchToWriteInOneCall.add(nextChunk);
-                            currentSize += nextChunk.getLimit();
-                            chunkIterable.setChunkAvailableSize(afsClient.getMaxReadSizeInBytes() - currentSize);
+                            if(!currentsAndTotals.skipForConcurrentModification(precheckedNextFile.get())) {
+                                chunkBatchToWriteInOneCall.add(nextChunk);
+                                currentSize += nextChunk.getLimit();
+                                chunkIterable.setChunkAvailableSize(afsClient.getMaxReadSizeInBytes() - currentSize);
 
-                            if (currentSize >= afsClient.getMaxReadSizeInBytes() || !chunkIterator.hasNext())
-                            {
-                                // Read and upload to be scheduled on a different thread
-                                Chunk[] requestChunks = chunkBatchToWriteInOneCall.toArray(Chunk[]::new);
-
-                                maxThreadLimitSemaphore.acquire();
-                                if (transferMonitorListener.getException() != null)
+                                if (currentSize >= afsClient.getMaxReadSizeInBytes() || !chunkIterator.hasNext())
                                 {
-                                    throw transferMonitorListener.getException();
-                                }
-                                if (transferMonitorListener.isStop())
-                                {
-                                    return false;
-                                }
-                                ReadAndUploadRunnable readAndUploadRunnable = new ReadAndUploadRunnable(afsClient,
-                                        currentsAndTotals,
-                                        requestChunks,
-                                        sourcePath,
-                                        destinationOwner,
-                                        destinationPath,
-                                        transferMonitorListener,
-                                        maxThreadLimitSemaphore,
-                                        asyncTransferRunnables, transactional);
-                                Thread threadHandle = new Thread(readAndUploadRunnable);
-                                threadHandle.start();
-                                asyncTransferRunnables.add(readAndUploadRunnable);
+                                    // Read and upload to be scheduled on a different thread
+                                    Chunk[] requestChunks = chunkBatchToWriteInOneCall.toArray(Chunk[]::new);
 
-                                // Clean and retrieve next package
-                                chunkBatchToWriteInOneCall.clear();
-                                currentSize = 0;
-                                chunkIterable.setChunkAvailableSize(afsClient.getMaxReadSizeInBytes());
+                                    maxThreadLimitSemaphore.acquire();
+                                    if (transferMonitorListener.getException() != null)
+                                    {
+                                        throw transferMonitorListener.getException();
+                                    }
+                                    if (transferMonitorListener.isStop())
+                                    {
+                                        return false;
+                                    }
+                                    ReadAndUploadRunnable readAndUploadRunnable = new ReadAndUploadRunnable(afsClient,
+                                            currentsAndTotals,
+                                            requestChunks,
+                                            sourcePath,
+                                            destinationOwner,
+                                            destinationPath,
+                                            transferMonitorListener,
+                                            maxThreadLimitSemaphore,
+                                            asyncTransferRunnables, transactional);
+                                    Thread threadHandle = new Thread(readAndUploadRunnable);
+                                    threadHandle.start();
+                                    asyncTransferRunnables.add(readAndUploadRunnable);
+
+                                    // Clean and retrieve next package
+                                    chunkBatchToWriteInOneCall.clear();
+                                    currentSize = 0;
+                                    chunkIterable.setChunkAvailableSize(afsClient.getMaxReadSizeInBytes());
+                                }
                             }
                         }
                     }
 
                 } else if (Files.isDirectory(nextFile))
                 {
-                    Optional<File> serverDirectory = getServerFilePresence(afsClient, destinationOwner, absoluteServerPath, cache);
+                    Optional<File> serverDirectory = getServerFilePresence(afsClient, destinationOwner, absServerPathAsStr, cache);
 
-                    if (fileCollisionListener.precheck(nextFile.toAbsolutePath(), Path.of(absoluteServerPath), serverDirectory.isPresent())
+                    if (fileCollisionListener.precheck(nextFile.toAbsolutePath(), absServerPath, serverDirectory.isPresent())
                             != ClientAPI.CollisionAction.Skip)
                     {
                         if (serverDirectory.isEmpty())
                         {
-                            if (!afsClient.create(destinationOwner, absoluteServerPath, true))
+                            if (!afsClient.create(destinationOwner, absServerPathAsStr, true))
                             {
-                                throw new RuntimeException(String.format("Could not create directory %s on server", absoluteServerPath));
+                                throw new RuntimeException(String.format("Could not create directory %s on server", absServerPathAsStr));
                             }
                         } else if (!serverDirectory.get().getDirectory())
                         {
                             throw new IllegalArgumentException(
-                                    String.format("Cannot overwrite server regular file %s with local directory %s", absoluteServerPath, nextFile));
+                                    String.format("Cannot overwrite server regular file %s with local directory %s", absServerPathAsStr, nextFile));
                         }
                     }
                 }
@@ -188,9 +182,13 @@ public class AfsClientUploadHelper
             throw e;
         }
 
-        transferMonitorListener.success();
-
-        return true;
+        if (currentsAndTotals.isAllCompleted()) {
+            transferMonitorListener.success();
+            return true;
+        } else {
+            transferMonitorListener.failed(new IllegalStateException("Incomplete upload"));
+            return false;
+        }
     }
 
     private static String computeAbsoluteServerPath(Path sourcePath, Path destinationPath, Path nextFile, File destinationInfo)
@@ -604,13 +602,24 @@ public class AfsClientUploadHelper
     {
         private final @NonNull Map<Path, Long> lastModificationTimestamps = new HashMap<>();
 
+        private final @NonNull Map<Path, String> checksums = new HashMap<>();
+
         private final @NonNull Map<Path, Long> totals = new HashMap<>();
 
         private final @NonNull Map<Path, Long> currents = new HashMap<>();
 
+        private final @NonNull Set<Path> skipForConcurrentModification = new HashSet<>();
+
+
         synchronized boolean updateCurrentAmountsAndCheckCompletion(@NonNull AfsClient afsClient, @NonNull Path fromPath, @NonNull String ownerId,
                 @NonNull Path toPath, int writtenByteCount, boolean transactional) throws Exception
         {
+            Long expectedSrcLastModification = lastModificationTimestamps.get(fromPath);
+            if (Files.getLastModifiedTime(fromPath).toMillis() != expectedSrcLastModification) {
+                skipForConcurrentModification.add(fromPath);
+                return false;
+            }
+
             Long current = currents.get(fromPath);
             if (current == null)
             {
@@ -624,8 +633,8 @@ public class AfsClientUploadHelper
             {
                 totals.remove(fromPath);
                 currents.remove(fromPath);
-
-                Long expectedSrcLastModification = lastModificationTimestamps.remove(fromPath);
+                lastModificationTimestamps.remove(fromPath);
+                String expectedChecksum = checksums.remove(fromPath);
 
                 if (transactional)
                 {
@@ -637,13 +646,14 @@ public class AfsClientUploadHelper
                             getServerFilePresence(afsClient, ownerId, toServerPathString(TemporaryPathUtil.getTwinTemporaryPath(toPath)));
                     if (remoteTmpToFile.isPresent() && (long) remoteTmpToFile.get().getSize() == total &&
                             Files.exists(fromPath) && Files.size(fromPath) == total &&
-                            Files.getLastModifiedTime(fromPath).toMillis() == expectedSrcLastModification
+                            Files.getLastModifiedTime(fromPath).toMillis() == expectedSrcLastModification &&
+                            afsClient.hash(ownerId, remoteTmpToFile.get().getPath()).equals(expectedChecksum)
                     )
                     {
                         return true;
                     } else
                     {
-                        throw new IllegalStateException(String.format("Inconsistent upload result from %s to %s", fromPath, toPath));
+                        return false;
                     }
                 }
             } else
@@ -652,10 +662,19 @@ public class AfsClientUploadHelper
             }
         }
 
-        synchronized void startTracking(@NonNull Path from, long size, long lastModificationTs)
+        synchronized void startTracking(@NonNull Path from, long size, long lastModificationTs) throws Exception
         {
             lastModificationTimestamps.put(from, lastModificationTs);
             totals.put(from, size);
+            checksums.put(from, AfsClientDownloadHelper.computeLocalMD5(from));
+        }
+
+        synchronized boolean isAllCompleted() {
+            return totals.isEmpty();
+        }
+
+        synchronized boolean skipForConcurrentModification(@NonNull Path fromPath) {
+            return skipForConcurrentModification.contains(fromPath);
         }
     }
 
