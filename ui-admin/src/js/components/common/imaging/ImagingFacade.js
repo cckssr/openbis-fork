@@ -9,6 +9,7 @@ export default class ImagingFacade {
 
     constructor(extOpenbis) {
         this.openbis = extOpenbis;
+        this.isDataset = true;
     }
 
     async loadImagingVocabularyTerms(code) {
@@ -93,21 +94,44 @@ export default class ImagingFacade {
     };
 
     loadImagingDataset = async (objId, withProperties = false, withType = false, withDatasetsHierarchy = false) => {
-        const fetchOptions = new this.openbis.DataSetFetchOptions();
-        fetchOptions.withProperties();
-        fetchOptions.withType();
-        if (withDatasetsHierarchy) {
-            //fetchOptions.withSample().withParents().withChildren().withDataSets();
-            //fetchOptions.withSample().withChildren().withDataSets();
-            fetchOptions.withSample().withDataSets();
+        let skip = false;
+        let dataset = null;
+        if(this.openbis.isAFSAvailable()) {
+            //TODO improve this -> make use of objType?
+            const sampleFetchOptions = new this.openbis.SampleFetchOptions();
+            sampleFetchOptions.withProperties();
+            sampleFetchOptions.withType();
+            if (withDatasetsHierarchy) {
+                sampleFetchOptions.withDataSets();
+            }
+            const samples = await this.openbis.getSamples(
+                [new this.openbis.SamplePermId(objId)],
+                sampleFetchOptions
+            )
+            let sample = samples[objId];
+            if(sample) {
+               skip = true;
+               this.isDataset = false;
+               dataset = sample;
+            }
         }
 
-        const datasets = await this.openbis.getDataSets(
-            [new this.openbis.DataSetPermId(objId)],
-            fetchOptions
-        )
-        const dataset = datasets[objId];
+        if(!skip) {
+            const fetchOptions = new this.openbis.DataSetFetchOptions();
+            fetchOptions.withProperties();
+            fetchOptions.withType();
+            if (withDatasetsHierarchy) {
+                //fetchOptions.withSample().withParents().withChildren().withDataSets();
+                //fetchOptions.withSample().withChildren().withDataSets();
+                fetchOptions.withSample().withDataSets();
+            }
 
+            const datasets = await this.openbis.getDataSets(
+                [new this.openbis.DataSetPermId(objId)],
+                fetchOptions
+            )
+            dataset = datasets[objId];
+        }
         if (!dataset) return null;
 
         if (withProperties) return dataset.properties;
@@ -142,13 +166,24 @@ export default class ImagingFacade {
         return this.openbis.updateDataSets([update]);
     };
 
-    saveImagingDataset = async (permId, imagingDataset) => {
-        const update = new this.openbis.DataSetUpdate();
-        update.setDataSetId(new this.openbis.DataSetPermId(permId));
-        update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(imagingDataset));
-        const totalPreviews = imagingDataset.images.reduce((count, image) => count + image.previews.length, 0);
-        update.getMetaData().put(constants.METADATA_PREVIEW_COUNT, totalPreviews.toString());
-        return this.openbis.updateDataSets([update]);
+    saveImagingDataset = async (permId, objType, imagingDataset) => {
+        if(objType === ObjectType.OBJECT)
+        {
+            const update = new this.openbis.SampleUpdate();
+            update.setSampleId(new this.openbis.SamplePermId(permId))
+            update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(imagingDataset));
+            const totalPreviews = imagingDataset.images.reduce((count, image) => count + image.previews.length, 0);
+            update.getMetaData().put(constants.METADATA_PREVIEW_COUNT, totalPreviews.toString());
+            return this.openbis.updateSamples([update]);
+        } else {
+            const update = new this.openbis.DataSetUpdate();
+            update.setDataSetId(new this.openbis.DataSetPermId(permId));
+            update.setProperty(constants.IMAGING_DATA_CONFIG, JSON.stringify(imagingDataset));
+            const totalPreviews = imagingDataset.images.reduce((count, image) => count + image.previews.length, 0);
+            update.getMetaData().put(constants.METADATA_PREVIEW_COUNT, totalPreviews.toString());
+            return this.openbis.updateDataSets([update]);
+        }
+
     };
 
     updatePreview = async (permId, imageIdx, preview) => {
@@ -161,26 +196,26 @@ export default class ImagingFacade {
     };
 
     updateImagingDataset = async (objId, activeImageIdx, preview) => {
-        const serviceId = new this.openbis.CustomDssServiceCode(constants.IMAGING_CODE);
-        const options = new this.openbis.CustomDSSServiceExecutionOptions();
+        const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
+        const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingUpdateParams(objId, activeImageIdx, preview);
-        const updatedImagingDataset = await this.openbis.executeCustomDSSService(serviceId, options);
+        const updatedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
         return this.openbis.fromJson(null, updatedImagingDataset);
     };
 
     multiExportImagingDataset = async (exportConfig, exportList) => {
-        const serviceId = new this.openbis.CustomDssServiceCode(constants.IMAGING_CODE);
-        const options = new this.openbis.CustomDSSServiceExecutionOptions();
+        const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
+        const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingMultiExportParams(exportConfig, exportList);
-        const exportedImagingDataset = await this.openbis.executeCustomDSSService(serviceId, options);
+        const exportedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
         return exportedImagingDataset.url;
     };
 
     exportImagingDataset = async (objId, activeImageIdx, exportConfig, metadata) => {
-        const serviceId = new this.openbis.CustomDssServiceCode(constants.IMAGING_CODE);
-        const options = new this.openbis.CustomDSSServiceExecutionOptions();
+        const serviceId = new this.openbis.CustomASServiceCode(constants.IMAGING_CODE);
+        const options = new this.openbis.CustomASServiceExecutionOptions();
         options.parameters = new ImagingMapper(this.openbis).mapToImagingExportParams(objId, activeImageIdx, exportConfig, metadata);
-        const exportedImagingDataset = await this.openbis.executeCustomDSSService(serviceId, options);
+        const exportedImagingDataset = await this.openbis.executeCustomASService(serviceId, options);
         return exportedImagingDataset.url;
     };
 

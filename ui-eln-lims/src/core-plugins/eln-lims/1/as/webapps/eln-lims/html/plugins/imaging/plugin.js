@@ -13,7 +13,13 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
             "SHOW" : false,
             "SHOW_ON_NAV" : true,
             "ENABLE_STORAGE" : false,
-        }
+        },
+        "IMAGING_DATA" : {
+            "SHOW" : true,
+            "SHOW_ON_NAV" : true,
+            "ENABLE_STORAGE" : false,
+        },
+
     },
     dataSetTypeDefinitionsExtension : {
         "IMAGING_DATA" : {
@@ -36,8 +42,8 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     },
     displayImagingTechViewer: function ($container, isDataset, objId, objType, onActionCallback, objTypeCode) {
         let $element = $("<div>")
-        require(["dss/dto/service/id/CustomDssServiceCode",
-                "dss/dto/service/CustomDSSServiceExecutionOptions",
+        require(["as/dto/service/id/CustomASServiceCode",
+                "as/dto/service/CustomASServiceExecutionOptions",
                 "imaging/dto/ImagingPreviewContainer",
                 "imaging/dto/ImagingDataSetExport",
                 "imaging/dto/ImagingDataSetMultiExport",
@@ -61,8 +67,10 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                 "as/dto/dataset/fetchoptions/DataSetTypeFetchOptions",
                 "dss/dto/datasetfile/search/DataSetFileSearchCriteria",
                 "dss/dto/datasetfile/fetchoptions/DataSetFileFetchOptions",
-                "util/Json"],
-            function (CustomDssServiceCode, CustomDSSServiceExecutionOptions,
+                "util/Json",
+                "as/dto/sample/update/SampleUpdate",
+                "as/dto/sample/id/SamplePermId"],
+            function (CustomASServiceCode, CustomASServiceExecutionOptions,
                       ImagingPreviewContainer, ImagingDataSetExport,
                       ImagingDataSetMultiExport, ImagingDataSetPreview,
                       ImagingDataSetExportConfig, ImagingExportIncludeOptions,
@@ -74,13 +82,13 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                       SearchDataSetsOperation, DataSetUpdate, DataSetPermId,
                       DataSetFetchOptions, DataSetTypeFetchOptions,
                       DataSetFileSearchCriteria, DataSetFileFetchOptions,
-                      utilJson) {
+                      utilJson, SampleUpdate, SamplePermId) {
                 let props = {
                     objId: objId,
                     objType: objType,
                     extOpenbis: {
-                        CustomDssServiceCode: CustomDssServiceCode,
-                        CustomDSSServiceExecutionOptions: CustomDSSServiceExecutionOptions,
+                        CustomASServiceCode: CustomASServiceCode,
+                        CustomASServiceExecutionOptions: CustomASServiceExecutionOptions,
                         ImagingPreviewContainer: ImagingPreviewContainer,
                         ImagingDataSetExport: ImagingDataSetExport,
                         ImagingDataSetMultiExport: ImagingDataSetMultiExport,
@@ -109,11 +117,16 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         searchDataSetTypes: mainController.openbisV3.searchDataSetTypes.bind(mainController.openbisV3),
                         searchVocabularyTerms: mainController.openbisV3.searchVocabularyTerms.bind(mainController.openbisV3),
                         updateDataSets: mainController.openbisV3.updateDataSets.bind(mainController.openbisV3),
+                        updateSamples: mainController.openbisV3.updateSamples.bind(mainController.openbisV3),
                         executeCustomDSSService: mainController.openbisV3.getDataStoreFacade().executeCustomDSSService.bind(mainController.openbisV3.getDataStoreFacade()),
+                        executeCustomASService: mainController.openbisV3.executeCustomASService.bind(mainController.openbisV3),
                         getExperiments: mainController.openbisV3.getExperiments.bind(mainController.openbisV3),
                         getSamples: mainController.openbisV3.getSamples.bind(mainController.openbisV3),
+                        isAFSAvailable: profile.isAFSAvailable.bind(profile),
                         searchFiles: mainController.openbisV3.getDataStoreFacade().searchFiles.bind(mainController.openbisV3.getDataStoreFacade()),
-                        fromJson: utilJson.fromJson.bind(utilJson)
+                        fromJson: utilJson.fromJson.bind(utilJson),
+                        SampleUpdate: SampleUpdate,
+                        SamplePermId: SamplePermId
                     }
                 }
                 let reactImagingComponent = null;
@@ -219,6 +232,15 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
                         }
                         mainController.changeView('showViewDataSetPageFromPermId', arg)
                     }, model.sampleType.code);
+            }
+            let isImagingDatasetView = model.sample &&
+                model.sample.properties[profile.getInternalNamespacePrefix() + "DEFAULT_OBJECT_VIEW"] &&
+                model.sample.properties[profile.getInternalNamespacePrefix() + "DEFAULT_OBJECT_VIEW"] === "IMAGING_DATASET_VIEWER";
+            if (isImagingDatasetView) {
+                let viewDirty = function(objId, isDirty) {
+                    model.isFormDirty = isDirty;
+                }
+                this.displayImagingTechViewer($container, true, model.sample.permId, 'object', viewDirty, null);
             }
         }
     },
