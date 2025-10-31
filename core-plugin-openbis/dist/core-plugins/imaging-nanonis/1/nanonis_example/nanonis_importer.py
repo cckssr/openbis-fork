@@ -27,8 +27,8 @@ from datetime import datetime
 import shutil
 from collections import defaultdict
 
-SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisSxmAdaptor"
-DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisDatAdaptor"
+SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"
+DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
