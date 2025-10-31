@@ -26,13 +26,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import ch.ethz.sis.shared.log.classic.core.LogCategory;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.io.IOUtilities;
-import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.FilteredHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.Hdf5AwareHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
@@ -689,12 +689,15 @@ public class DataSetAndPathInfoDBConsistencyChecker
     {
         if (fileProvider == null)
         {
+            IHierarchicalContentFactory contentFactory =
+                    new FilteredHierarchicalContentFactory(new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders),
+                            HierarchicalContentServiceProviderFactory.getInstance().getHierarchicalContentNodeFilter());
             fileProvider =
                     new HierarchicalContentProvider(HierarchicalContentServiceProviderFactory.getInstance().getOpenBISService(),
                             HierarchicalContentServiceProviderFactory.getInstance().getShareIdManager(),
                             HierarchicalContentServiceProviderFactory.getInstance().getConfigProvider(),
                             HierarchicalContentServiceProviderFactory.getInstance().getContentCache(),
-                            new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders),
+                            contentFactory,
                             HierarchicalContentServiceProviderFactory.getInstance().getDssServiceFactory(),
                             null, null);
         }

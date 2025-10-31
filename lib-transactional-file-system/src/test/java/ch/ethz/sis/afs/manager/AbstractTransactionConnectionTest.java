@@ -26,10 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static ch.ethz.sis.shared.io.IOUtils.createDirectories;
 import static ch.ethz.sis.shared.io.IOUtils.createDirectory;
@@ -65,7 +62,7 @@ public abstract class AbstractTransactionConnectionTest extends AbstractTest {
         String storageRoot = AFSEnvironment.getDefaultAFSConfig().getStringProperty(AtomicFileSystemParameter.storageRoot);
         jsonObjectMapper = AFSEnvironment.getDefaultAFSConfig().getSharableInstance(AtomicFileSystemParameter.jsonObjectMapperClass);
         lockManager = new LockManager<>(new NopLockMapper<>(), new PathLockFinder());
-        transaction = new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, new RecoveredTransactions());
+        transaction = new TransactionConnection(lockManager, jsonObjectMapper, writeAheadLogRoot, storageRoot, new RecoveredTransactions(), Set.of("jpeg", "jpg", "png", "bmp"), 100_000_000);
     }
 
     @Before

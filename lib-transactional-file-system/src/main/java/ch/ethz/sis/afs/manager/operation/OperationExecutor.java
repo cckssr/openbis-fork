@@ -21,7 +21,13 @@ import ch.ethz.sis.afs.api.dto.File;
 import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 public interface OperationExecutor<OPERATION extends Operation, RESULT> {
+    String HIDDEN_AFS_DIRECTORY = ".afs";
+    String CACHED_MD5_SUFFIX = "-hash.md5";
+    String CACHED_PREVIEW_SUFFIX = "-preview.jpg";
 
     static @NonNull
     String getTransactionLogDir(Transaction transaction) {
@@ -64,6 +70,56 @@ public interface OperationExecutor<OPERATION extends Operation, RESULT> {
     String getTempPath(@NonNull Transaction transaction, @NonNull String source) {
         String transDir = getTransactionLogDir(transaction);
         return IOUtils.getPath(transDir, source);
+    }
+
+    static @NonNull Path getHiddenAfsDirectoryForSource(@NonNull Path sourcePath) throws Exception {
+        Path hiddenFolderPath = sourcePath.getParent().resolve(HIDDEN_AFS_DIRECTORY).toAbsolutePath();
+        if ( !IOUtils.isDirectory(hiddenFolderPath.toString()) ) {
+            IOUtils.createDirectories(hiddenFolderPath.toString());
+        }
+        return hiddenFolderPath;
+    }
+
+    static @NonNull Path getCachedPreviewPathForSource(@NonNull Path sourcePath) throws Exception {
+        Path hiddenFolderPath = getHiddenAfsDirectoryForSource(sourcePath);
+        return hiddenFolderPath.resolve( sourcePath.getFileName().toString() + CACHED_PREVIEW_SUFFIX).toAbsolutePath();
+    }
+
+    static @NonNull Path getCachedHashPathForSource(@NonNull Path sourcePath) throws Exception {
+        Path hiddenFolderPath = getHiddenAfsDirectoryForSource(sourcePath);
+        return hiddenFolderPath.resolve( sourcePath.getFileName().toString() + CACHED_MD5_SUFFIX).toAbsolutePath();
+    }
+
+    static void clearCaches(@NonNull String safeSourcePath) throws Exception {
+        Path sourcePath = Path.of(safeSourcePath);
+        String md5CachePath = getCachedHashPathForSource(sourcePath).toString();
+        String previewCachePath = getCachedPreviewPathForSource(sourcePath).toString();
+        if(IOUtils.exists(md5CachePath)) { IOUtils.delete(md5CachePath); }
+        if(IOUtils.exists(previewCachePath)) { IOUtils.delete(previewCachePath); }
+    }
+
+    static void moveCaches(@NonNull String safeSourcePath, @NonNull String safeTargetPath) throws Exception {
+        Path sourcePath = Path.of(safeSourcePath);
+        Path targetPath = Path.of(safeTargetPath);
+
+        String sourceMd5CachePath = getCachedHashPathForSource(sourcePath).toString();
+        String targetMd5CachePath = getCachedHashPathForSource(targetPath).toString();
+        String sourcePreviewCachePath = getCachedPreviewPathForSource(sourcePath).toString();
+        String targetPreviewCachePath = getCachedPreviewPathForSource(targetPath).toString();
+
+        if(IOUtils.exists(targetMd5CachePath)) { IOUtils.delete(targetMd5CachePath); }
+        if(IOUtils.exists(targetPreviewCachePath)) { IOUtils.delete(targetPreviewCachePath); }
+
+        if(IOUtils.exists(sourceMd5CachePath)) {
+            IOUtils.createFile(targetMd5CachePath);
+            IOUtils.write(targetMd5CachePath, 0L, IOUtils.readFully(sourceMd5CachePath));
+            IOUtils.delete(sourceMd5CachePath);
+        }
+        if(IOUtils.exists(sourcePreviewCachePath)) {
+            IOUtils.createFile(targetPreviewCachePath);
+            IOUtils.write(targetPreviewCachePath, 0L, IOUtils.readFully(sourcePreviewCachePath));
+            IOUtils.delete(sourcePreviewCachePath);
+        }
     }
 
     /*

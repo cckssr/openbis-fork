@@ -2,6 +2,7 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import javax.sql.DataSource;
 
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssService;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.DssServiceRpcGenericFactory;
@@ -44,6 +45,11 @@ public class HierarchicalContentServiceProvider implements IHierarchicalContentS
                 return PathInfoDataSourceProvider.isDataSourceDefined();
             }
         };
+    }
+
+    @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        return ServiceProvider.getHierarchicalContentNodeFilter();
     }
 
     @Override public IOpenBISService getOpenBISService()

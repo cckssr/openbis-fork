@@ -180,4 +180,15 @@ public class ExecutorProxy extends AbstractProxy
         return new FreeSpace(freeSpace.getTotal(), freeSpace.getFree());
     }
 
+    @Override
+    public String hash(String owner, String source) throws Exception
+    {
+        return workerContext.getConnection().hash(getSourcePath(owner, source));
+    }
+
+    @Override
+    public byte[] preview(String owner, String source) throws Exception
+    {
+        return workerContext.getConnection().preview(getSourcePath(owner, source));
+    }
 }

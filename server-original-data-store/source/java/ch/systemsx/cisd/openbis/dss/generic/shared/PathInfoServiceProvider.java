@@ -3,6 +3,7 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 import javax.sql.DataSource;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.PathInfoDataSourceProvider;
 
 public class PathInfoServiceProvider implements IPathInfoServiceProvider
@@ -42,6 +43,11 @@ public class PathInfoServiceProvider implements IPathInfoServiceProvider
     @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
     {
         return ServiceProvider.getHierarchicalContentProvider();
+    }
+
+    @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        return ServiceProvider.getHierarchicalContentNodeFilter();
     }
 
     @Override public IConfigProvider getConfigProvider()

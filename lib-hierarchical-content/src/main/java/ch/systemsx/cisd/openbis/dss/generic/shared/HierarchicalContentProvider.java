@@ -23,18 +23,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
-import ch.rinn.restrictions.Private;
-import ch.systemsx.cisd.common.action.IDelegatedAction;
+import ch.ethz.sis.afs.manager.operation.OperationExecutor;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.rinn.restrictions.Private;
+import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.ssl.SslCertificateHelper;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.FilteredHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.HierarchicalContentProxy;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentExecuteOnAccess;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.PathInfoDBAwareHierarchicalContentFactory;
@@ -246,7 +249,13 @@ public class HierarchicalContentProvider implements IHierarchicalContentProvider
                 {
                 }
             });
-            return asContent;
+            return new FilteredHierarchicalContent(asContent, new IHierarchicalContentNodeFilter()
+            {
+                @Override public boolean accept(final IHierarchicalContentNode node)
+                {
+                    return !node.getName().equals(OperationExecutor.HIDDEN_AFS_DIRECTORY);
+                }
+            });
         } else
         {
 

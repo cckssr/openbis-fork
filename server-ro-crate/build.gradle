@@ -82,3 +82,5 @@ task RoCrateServerZip(type: Zip, dependsOn: quarkusBuild) {
         into 'server-ro-crate/'
     }
 }
+
+compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
