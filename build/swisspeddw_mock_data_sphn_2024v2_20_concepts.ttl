@@ -1,0 +1,1371 @@
+@prefix :                <https://biomedit.ch/rdf/sphn-rml/sphn#> .
+@prefix brick:           <https://brickschema.org/schema/Brick#> .
+@prefix chop:            <https://biomedit.ch/rdf/sphn-resource/chop/> .
+@prefix csvw:            <http://www.w3.org/ns/csvw#> .
+@prefix dc:              <http://purl.org/dc/elements/1.1/> .
+@prefix dcam:            <http://purl.org/dc/dcam/> .
+@prefix dcat:            <http://www.w3.org/ns/dcat#> .
+@prefix dcmitype:        <http://purl.org/dc/dcmitype/> .
+@prefix dct:             <http://purl.org/dc/terms/> .
+@prefix doap:            <http://usefulinc.com/ns/doap#> .
+@prefix eco:             <http://purl.obolibrary.org/obo/ECO_> .
+@prefix edam:            <http://edamontology.org/> .
+@prefix efo:             <http://www.ebi.ac.uk/efo/EFO_> .
+@prefix emdn:            <https://biomedit.ch/rdf/sphn-resource/emdn/> .
+@prefix foaf:            <http://xmlns.com/foaf/0.1/> .
+@prefix genepio:         <http://purl.obolibrary.org/obo/GENEPIO_> .
+@prefix geno:            <http://purl.obolibrary.org/obo/GENO_> .
+@prefix geo:             <http://www.opengis.net/ont/geosparql#> .
+@prefix icd-10-gm:       <https://biomedit.ch/rdf/sphn-resource/icd-10-gm/> .
+@prefix loinc:           <https://loinc.org/rdf/> .
+@prefix obi:             <http://purl.obolibrary.org/obo/OBI_> .
+@prefix odrl:            <http://www.w3.org/ns/odrl/2/> .
+@prefix ordo:            <http://www.orpha.net/ORDO/> .
+@prefix org:             <http://www.w3.org/ns/org#> .
+@prefix owl:             <http://www.w3.org/2002/07/owl#> .
+@prefix prof:            <http://www.w3.org/ns/dx/prof/> .
+@prefix prov:            <http://www.w3.org/ns/prov#> .
+@prefix qb:              <http://purl.org/linked-data/cube#> .
+@prefix ql:              <http://semweb.mmlab.be/ns/ql#> .
+@prefix rdf:             <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:            <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix resource:        <https://biomedit.ch/rdf/sphn-resource/> .
+@prefix rml:             <http://semweb.mmlab.be/ns/rml#> .
+@prefix rr:              <http://www.w3.org/ns/r2rml#> .
+@prefix schema:          <https://schema.org/> .
+@prefix sh:              <http://www.w3.org/ns/shacl#> .
+@prefix skos:            <http://www.w3.org/2004/02/skos/core#> .
+@prefix snomed:          <http://snomed.info/id/> .
+@prefix so:              <http://purl.obolibrary.org/obo/SO_> .
+@prefix sosa:            <http://www.w3.org/ns/sosa/> .
+@prefix sphn:            <https://biomedit.ch/rdf/sphn-schema/sphn#> .
+@prefix sphn-atc:        <https://biomedit.ch/rdf/sphn-resource/atc/> .
+@prefix sphn-deprecated: <https://biomedit.ch/rdf/sphn-ontology/sphn#> .
+@prefix sphn-eco:        <https://biomedit.ch/rdf/sphn-resource/eco/> .
+@prefix sphn-edam:       <https://biomedit.ch/rdf/sphn-resource/edam/> .
+@prefix sphn-efo:        <https://biomedit.ch/rdf/sphn-resource/efo/> .
+@prefix sphn-genepio:    <https://biomedit.ch/rdf/sphn-resource/genepio/> .
+@prefix sphn-geno:       <https://biomedit.ch/rdf/sphn-resource/geno/> .
+@prefix sphn-hgnc:       <https://biomedit.ch/rdf/sphn-resource/hgnc/> .
+@prefix sphn-individual: <https://biomedit.ch/rdf/sphn-schema/sphn/individual#> .
+@prefix sphn-loinc:      <https://biomedit.ch/rdf/sphn-resource/loinc/> .
+@prefix sphn-obi:        <https://biomedit.ch/rdf/sphn-resource/obi/> .
+@prefix sphn-ordo:       <https://biomedit.ch/rdf/sphn-resource/ordo/> .
+@prefix sphn-so:         <https://biomedit.ch/rdf/sphn-resource/so/> .
+@prefix ssn:             <http://www.w3.org/ns/ssn/> .
+@prefix time:            <http://www.w3.org/2006/time#> .
+@prefix ucum:            <https://biomedit.ch/rdf/sphn-resource/ucum/> .
+@prefix vann:            <http://purl.org/vocab/vann/> .
+@prefix void:            <http://rdfs.org/ns/void#> .
+@prefix wgs:             <https://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix xml:             <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd:             <http://www.w3.org/2001/XMLSchema#> .
+
+resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3
+    a                         sphn:AdministrativeCase ;
+    sphn:hasAdmissionDateTime "2017-09-23T10:25:12.446583+00:00"^^xsd:dateTime ;
+    sphn:hasCareHandling      resource:CHE-229_707_417-sphn-CareHandling-fb3b2d47-8d08-4afe-b789-b716d7e9e34f ;
+    sphn:hasDataProvider      resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDischargeDateTime "2017-11-23T20:48:22.181543+00:00"^^xsd:dateTime ;
+    sphn:hasDischargeLocation resource:CHE-229_707_417-sphn-Location-26fd3679-2134-4cdf-870b-3064e472ada1 ;
+    sphn:hasIdentifier        "ID-38778408" ;
+    sphn:hasOriginLocation    resource:CHE-229_707_417-sphn-Location-96ac8600-b7e2-44a9-9bcb-1232abde02f1 ;
+    sphn:hasSubjectPseudoIdentifier
+                              resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-AdministrativeSex-068bf1e2-6cd4-4eeb-b2e7-042cf5d13ebb
+    a                      sphn:AdministrativeSex ;
+    sphn:hasCode           resource:CHE-229_707_417-sphn-AdministrativeSex-068bf1e2-6cd4-4eeb-b2e7-042cf5d13ebb-sphn-Code-SNOMED-CT-248152002 ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasRecordDateTime "2013-06-20T10:29:49.757363+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-AdministrativeSex-068bf1e2-6cd4-4eeb-b2e7-042cf5d13ebb-sphn-Code-SNOMED-CT-248152002
+    a snomed:248152002 .
+
+resource:CHE-229_707_417-sphn-AdverseEvent-2839e8da-c0fb-4327-88e2-77b5d1c47f20
+    a                     sphn:AdverseEvent ;
+    sphn:hasAdministrativeCase
+                          resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasCode          resource:CHE-229_707_417-sphn-AdverseEvent-2839e8da-c0fb-4327-88e2-77b5d1c47f20-sphn-Code-17802ab1-a8be-484f-850b-c3c4cd87253a ;
+    sphn:hasConsequences  sphn-individual:PermanentDamageOrDisability ;
+    sphn:hasDataProvider  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasIntervention  "reiciendis" ;
+    sphn:hasOnsetDateTime "1973-10-14T13:41:05.422198+00:00"^^xsd:dateTime ;
+    sphn:hasOutcome       sphn-individual:Recovering ;
+    sphn:hasSeverityCode  resource:CHE-229_707_417-sphn-AdverseEvent-2839e8da-c0fb-4327-88e2-77b5d1c47f20-sphn-Code-57caa751-7218-4b8f-ae43-70376789519a ;
+    sphn:hasSourceSystem  resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                          resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-AdverseEvent-2839e8da-c0fb-4327-88e2-77b5d1c47f20-sphn-Code-17802ab1-a8be-484f-850b-c3c4cd87253a
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "repellendus Hic accusantium accusantium officiis" ;
+    sphn:hasIdentifier             "ID-42320947" ;
+    sphn:hasName                   "architecto molestias, quas" .
+
+resource:CHE-229_707_417-sphn-AdverseEvent-2839e8da-c0fb-4327-88e2-77b5d1c47f20-sphn-Code-57caa751-7218-4b8f-ae43-70376789519a
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "architecto adipisicing modi consectetur ipsum Hic" ;
+    sphn:hasIdentifier             "ID-22018684" ;
+    sphn:hasName                   "officiis architecto" .
+
+resource:CHE-229_707_417-sphn-Age-a2433644-b0d1-42b1-aac1-563b01709f5c
+    a                             sphn:Age ;
+    sphn:hasDeterminationDateTime "2008-04-11T09:40:11.699816+00:00"^^xsd:dateTime ;
+    sphn:hasQuantity              resource:CHE-229_707_417-sphn-Quantity-758c023b-81fc-4e76-914e-b659d312ef89 ;
+    sphn:hasSourceSystem          resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                                  resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-BilledDiagnosis-52516f20-f022-4d94-ad36-1b8a474aaffe
+    a                      sphn:BilledDiagnosis ;
+    sphn:hasAdministrativeCase
+                           resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasCode           resource:CHE-229_707_417-sphn-BilledDiagnosis-52516f20-f022-4d94-ad36-1b8a474aaffe-sphn-Code-ICD-10-GM-2016-A00.0 ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasRank           sphn-individual:Secondary ;
+    sphn:hasRecordDateTime "1974-07-07T11:47:38.096366+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectAge     resource:CHE-229_707_417-sphn-Age-a2433644-b0d1-42b1-aac1-563b01709f5c ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-BilledDiagnosis-52516f20-f022-4d94-ad36-1b8a474aaffe-sphn-Code-ICD-10-GM-2016-A00.0
+    a <https://biomedit.ch/rdf/sphn-resource/icd-10-gm/2016/A00.0> .
+
+resource:CHE-229_707_417-sphn-BirthDate-3f28c374-fcc5-447b-89f5-a16ebd46133e
+    a                  sphn:BirthDate ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasDataProvider
+                       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDay        "---07-13:18"^^xsd:gDay ;
+    sphn:hasMonth      "--11"^^xsd:gMonth ;
+    sphn:hasSourceSystem
+                       resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                       resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTime       "16:11:11.826610+00:00"^^xsd:time ;
+    sphn:hasYear       "-7314"^^xsd:gYear .
+
+resource:CHE-229_707_417-sphn-BodyHeight-460f76d5-f548-4460-b2b9-05996deef99c
+    a                sphn:BodyHeight ;
+    sphn:hasDataDetermination
+                     resource:CHE-229_707_417-sphn-DataDetermination-095760dc-6c16-4436-997f-739497b13bea ;
+    sphn:hasDateTime "1995-11-14T18:25:10.380397+00:00"^^xsd:dateTime ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-8bbd648c-a43b-4dde-8166-ec7d6a85066a .
+
+resource:CHE-229_707_417-sphn-BodyHeightMeasurement-cb86c51b-f593-4276-9436-09e1eeec3ef5
+    a                     sphn:BodyHeightMeasurement ;
+    sphn:hasAdministrativeCase
+                          resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasEndDateTime   "2013-10-15T22:43:36.650502+00:00"^^xsd:dateTime ;
+    sphn:hasMedicalDevice resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f ;
+    sphn:hasMethodCode    resource:CHE-229_707_417-sphn-BodyHeightMeasurement-cb86c51b-f593-4276-9436-09e1eeec3ef5-sphn-Code-SNOMED-CT-301890004 ;
+    sphn:hasPerformer     resource:CHE-229_707_417-sphn-Performer-ae46c853-b582-404d-a10d-97398654be49 ;
+    sphn:hasResult        resource:CHE-229_707_417-sphn-BodyHeight-460f76d5-f548-4460-b2b9-05996deef99c ;
+    sphn:hasSourceSystem  resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasStartDateTime "2013-10-09T02:25:00.584377+00:00"^^xsd:dateTime ;
+    sphn:hasSubjectPseudoIdentifier
+                          resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-BodyHeightMeasurement-cb86c51b-f593-4276-9436-09e1eeec3ef5-sphn-Code-SNOMED-CT-301890004
+    a snomed:301890004 .
+
+resource:CHE-229_707_417-sphn-BodySite-0a75d9b6-d9ac-4b00-9abc-2e9321dda47c
+    a                  sphn:BodySite ;
+    sphn:hasCode       resource:CHE-229_707_417-sphn-BodySite-0a75d9b6-d9ac-4b00-9abc-2e9321dda47c-sphn-Code-SNOMED-CT-62940006 ;
+    sphn:hasLaterality resource:CHE-229_707_417-sphn-Laterality-27daa38c-9603-4be6-9a84-c8a00b2876e4 .
+
+resource:CHE-229_707_417-sphn-BodySite-0a75d9b6-d9ac-4b00-9abc-2e9321dda47c-sphn-Code-SNOMED-CT-62940006
+    a snomed:62940006 .
+
+resource:CHE-229_707_417-sphn-BodySite-31104214-c9b2-46ac-a578-2d76ade08423
+    a                  sphn:BodySite ;
+    sphn:hasCode       resource:CHE-229_707_417-sphn-BodySite-31104214-c9b2-46ac-a578-2d76ade08423-sphn-Code-SNOMED-CT-62940006 ;
+    sphn:hasLaterality resource:CHE-229_707_417-sphn-Laterality-80a5897f-8a50-4aa8-8bcc-32d5b5ea022a .
+
+resource:CHE-229_707_417-sphn-BodySite-31104214-c9b2-46ac-a578-2d76ade08423-sphn-Code-SNOMED-CT-62940006
+    a snomed:62940006 .
+
+resource:CHE-229_707_417-sphn-BodySite-c0ed77fc-6e84-4144-bc7c-a2b15f6d3020
+    a                  sphn:BodySite ;
+    sphn:hasCode       resource:CHE-229_707_417-sphn-BodySite-c0ed77fc-6e84-4144-bc7c-a2b15f6d3020-sphn-Code-SNOMED-CT-788600005 ;
+    sphn:hasLaterality resource:CHE-229_707_417-sphn-Laterality-f80efd68-4a07-4502-a5a0-a6e1fe56595e .
+
+resource:CHE-229_707_417-sphn-BodySite-c0ed77fc-6e84-4144-bc7c-a2b15f6d3020-sphn-Code-SNOMED-CT-788600005
+    a snomed:788600005 .
+
+resource:CHE-229_707_417-sphn-BodySite-f4b1cbb6-7804-4d0d-a560-ed49c99ddd0d
+    a                  sphn:BodySite ;
+    sphn:hasCode       resource:CHE-229_707_417-sphn-BodySite-f4b1cbb6-7804-4d0d-a560-ed49c99ddd0d-sphn-Code-SNOMED-CT-125327000 ;
+    sphn:hasLaterality resource:CHE-229_707_417-sphn-Laterality-5be7161e-da5e-4d0e-ad8a-43f1f5ff0f7d .
+
+resource:CHE-229_707_417-sphn-BodySite-f4b1cbb6-7804-4d0d-a560-ed49c99ddd0d-sphn-Code-SNOMED-CT-125327000
+    a snomed:125327000 .
+
+resource:CHE-229_707_417-sphn-BodyWeight-2eb366bf-8dd1-4c86-b86c-a3d3c2896bdb
+    a                sphn:BodyWeight ;
+    sphn:hasDataDetermination
+                     resource:CHE-229_707_417-sphn-DataDetermination-ae2c9ccf-b0a5-4527-aa4c-e938448ea4a0 ;
+    sphn:hasDateTime "2002-09-03T04:55:29.287937+00:00"^^xsd:dateTime ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-5c9b5f92-5b10-4fc7-932b-0f836e8a2299 .
+
+resource:CHE-229_707_417-sphn-BodyWeightMeasurement-0d929c07-7ddc-4d48-aaac-bdbda7dd1485
+    a                     sphn:BodyWeightMeasurement ;
+    sphn:hasAdministrativeCase
+                          resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasEndDateTime   "2021-11-09T12:22:39.495907+00:00"^^xsd:dateTime ;
+    sphn:hasMedicalDevice resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483 ;
+    sphn:hasMethodCode    resource:CHE-229_707_417-sphn-BodyWeightMeasurement-0d929c07-7ddc-4d48-aaac-bdbda7dd1485-sphn-Code-SNOMED-CT-440258006 ;
+    sphn:hasPerformer     resource:CHE-229_707_417-sphn-Performer-309857d9-e81e-4f94-91ee-b8422b6d65d1 ;
+    sphn:hasResult        resource:CHE-229_707_417-sphn-BodyWeight-2eb366bf-8dd1-4c86-b86c-a3d3c2896bdb ;
+    sphn:hasSourceSystem  resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasStartDateTime "2021-11-01T09:14:15.459012+00:00"^^xsd:dateTime ;
+    sphn:hasSubjectPseudoIdentifier
+                          resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-BodyWeightMeasurement-0d929c07-7ddc-4d48-aaac-bdbda7dd1485-sphn-Code-SNOMED-CT-440258006
+    a snomed:440258006 .
+
+resource:CHE-229_707_417-sphn-CareHandling-fb3b2d47-8d08-4afe-b789-b716d7e9e34f
+    a sphn:CareHandling ;
+    sphn:hasSourceSystem
+      resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasTypeCode
+      resource:CHE-229_707_417-sphn-CareHandling-fb3b2d47-8d08-4afe-b789-b716d7e9e34f-sphn-Code-SNOMED-CT-371883000 .
+
+resource:CHE-229_707_417-sphn-CareHandling-fb3b2d47-8d08-4afe-b789-b716d7e9e34f-sphn-Code-SNOMED-CT-371883000
+    a snomed:371883000 .
+
+resource:CHE-229_707_417-sphn-Consent-fb13fe07-8982-4f66-9398-3fd90f96b85a
+    a                          sphn:Consent ;
+    sphn:hasDataProvider       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDateTime           "2001-07-17T05:30:55.228939+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem       resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasStatusCode         resource:CHE-229_707_417-sphn-Consent-fb13fe07-8982-4f66-9398-3fd90f96b85a-sphn-Code-SNOMED-CT-443390004 ;
+    sphn:hasSubjectPseudoIdentifier
+                               resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTemplateIdentifier "reprehenderit illum ipsum, officiis officiis" ;
+    sphn:hasTypeCode           resource:CHE-229_707_417-sphn-Consent-fb13fe07-8982-4f66-9398-3fd90f96b85a-sphn-Code-SNOMED-CT-69658003 .
+
+resource:CHE-229_707_417-sphn-Consent-fb13fe07-8982-4f66-9398-3fd90f96b85a-sphn-Code-SNOMED-CT-443390004
+    a snomed:443390004 .
+
+resource:CHE-229_707_417-sphn-Consent-fb13fe07-8982-4f66-9398-3fd90f96b85a-sphn-Code-SNOMED-CT-69658003
+    a snomed:69658003 .
+
+resource:CHE-229_707_417-sphn-DataDetermination-095760dc-6c16-4436-997f-739497b13bea
+    a sphn:DataDetermination ;
+    sphn:hasMethodCode
+      resource:CHE-229_707_417-sphn-DataDetermination-095760dc-6c16-4436-997f-739497b13bea-sphn-Code-SNOMED-CT-414135002 .
+
+resource:CHE-229_707_417-sphn-DataDetermination-095760dc-6c16-4436-997f-739497b13bea-sphn-Code-SNOMED-CT-414135002
+    a snomed:414135002 .
+
+resource:CHE-229_707_417-sphn-DataDetermination-ae2c9ccf-b0a5-4527-aa4c-e938448ea4a0
+    a sphn:DataDetermination ;
+    sphn:hasMethodCode
+      resource:CHE-229_707_417-sphn-DataDetermination-ae2c9ccf-b0a5-4527-aa4c-e938448ea4a0-sphn-Code-SNOMED-CT-258090004 .
+
+resource:CHE-229_707_417-sphn-DataDetermination-ae2c9ccf-b0a5-4527-aa4c-e938448ea4a0-sphn-Code-SNOMED-CT-258090004
+    a snomed:258090004 .
+
+resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44
+    a                  sphn:DataProvider ;
+    sphn:hasCategory   sphn-individual:ResearchOrganization ;
+    sphn:hasDepartment resource:CHE-229_707_417-sphn-Department-a568da4e-2c37-4fb7-be36-8e22ea4296e1 ;
+    sphn:hasInstitutionCode
+                       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44-sphn-Code-0a3d1712-59de-4196-953c-24344665bb06 .
+
+resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44-sphn-Code-0a3d1712-59de-4196-953c-24344665bb06
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "quas culpa! culpa! nobis molestias, reprehenderit" ;
+    sphn:hasIdentifier             "ID-60487647" ;
+    sphn:hasName                   "libero Hic repellendus sit libero" .
+
+resource:CHE-229_707_417-sphn-DataRelease-67a7d37e-42b1-47ec-825f-f51fdf49197a
+    a                          sphn:DataRelease ;
+    dct:conformsTo             <https://biomedit.ch/rdf/sphn-schema/sphn/2024/2> ;
+    sphn:hasDataProvider       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasExtractionDateTime "2016-04-08T00:18:14.810069+00:00"^^xsd:dateTime .
+
+resource:CHE-229_707_417-sphn-Death-6bea8e87-6e77-4e33-bdeb-b9125a5f8603
+    a                      sphn:Death ;
+    sphn:hasAdministrativeCase
+                           resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasCircumstanceCode
+                           resource:CHE-229_707_417-sphn-Death-6bea8e87-6e77-4e33-bdeb-b9125a5f8603-sphn-Code-SNOMED-CT-276507005 ;
+    sphn:hasConditionCode  resource:CHE-229_707_417-sphn-Death-6bea8e87-6e77-4e33-bdeb-b9125a5f8603-sphn-Code-SNOMED-CT-200077002 ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDate           resource:CHE-229_707_417-sphn-DeathDate-1314d975-1ecd-40b4-81fb-4abebae19907 ;
+    sphn:hasReportDateTime "1998-08-04T08:05:14.764785+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-Death-6bea8e87-6e77-4e33-bdeb-b9125a5f8603-sphn-Code-SNOMED-CT-200077002
+    a snomed:200077002 .
+
+resource:CHE-229_707_417-sphn-Death-6bea8e87-6e77-4e33-bdeb-b9125a5f8603-sphn-Code-SNOMED-CT-276507005
+    a snomed:276507005 .
+
+resource:CHE-229_707_417-sphn-DeathDate-1314d975-1ecd-40b4-81fb-4abebae19907
+    a             sphn:DeathDate ;
+    sphn:hasDataProvider
+                  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDay   "---30Z"^^xsd:gDay ;
+    sphn:hasMonth "--10"^^xsd:gMonth ;
+    sphn:hasSourceSystem
+                  resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                  resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTime  "15:55:20.114944+00:00"^^xsd:time ;
+    sphn:hasYear  "-3389Z"^^xsd:gYear .
+
+resource:CHE-229_707_417-sphn-Department-a568da4e-2c37-4fb7-be36-8e22ea4296e1
+    a            sphn:Department ;
+    sphn:hasName "ipsum, consectetur reiciendis Lorem dolor placeat" .
+
+resource:CHE-229_707_417-sphn-Diagnosis-6feab590-b532-4969-a7fb-01fda64acdf7
+    a                      sphn:Diagnosis ;
+    sphn:hasAdministrativeCase
+                           resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasCode           resource:CHE-229_707_417-sphn-Diagnosis-6feab590-b532-4969-a7fb-01fda64acdf7-sphn-Code-493de893-ad90-4af0-b94b-eb919439051a,
+                           resource:CHE-229_707_417-sphn-Diagnosis-6feab590-b532-4969-a7fb-01fda64acdf7-sphn-Code-4fe6aafe-c2cb-4b52-a436-ec6494ce406a ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasRecordDateTime "2002-07-30T23:38:31.122709+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectAge     resource:CHE-229_707_417-sphn-Age-a2433644-b0d1-42b1-aac1-563b01709f5c ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-Diagnosis-6feab590-b532-4969-a7fb-01fda64acdf7-sphn-Code-493de893-ad90-4af0-b94b-eb919439051a
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "veniam sit esse" ;
+    sphn:hasIdentifier             "ID-99246610" ;
+    sphn:hasName                   "molestias, exercitationem sit" .
+
+resource:CHE-229_707_417-sphn-Diagnosis-6feab590-b532-4969-a7fb-01fda64acdf7-sphn-Code-4fe6aafe-c2cb-4b52-a436-ec6494ce406a
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "veniam reiciendis reprehenderit" ;
+    sphn:hasIdentifier             "ID-42375945" ;
+    sphn:hasName                   "dolor dolor consectetur veniam exercitationem sit" .
+
+resource:CHE-229_707_417-sphn-Drug-bd6340ff-7cff-4374-aa81-4098f82aca21
+    a                sphn:Drug ;
+    sphn:hasActiveIngredient
+                     resource:CHE-229_707_417-sphn-Substance-ddabba71-3dea-4384-b994-7ee3abc42477 ;
+    sphn:hasArticle  resource:CHE-229_707_417-sphn-DrugArticle-cba2dbf2-c16d-4729-a0ed-1a809e6e7888 ;
+    sphn:hasInactiveIngredient
+                     resource:CHE-229_707_417-sphn-Substance-40b29800-19ad-4314-b5b5-e40cbdaa379d,
+                     resource:CHE-229_707_417-sphn-Substance-71efa278-1caf-4dbe-aee7-6ac0c20e80cc ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-fcc995c0-9a01-4be7-b5cd-f69359ee3d9b ;
+    sphn:hasSourceSystem
+                     resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Drug-f62c63e9-d81b-4c73-aaba-d04334642230
+    a                sphn:Drug ;
+    sphn:hasActiveIngredient
+                     resource:CHE-229_707_417-sphn-Substance-bbcf8f21-1ab4-4eb2-93c3-c1d94cd74584,
+                     resource:CHE-229_707_417-sphn-Substance-c8aa728a-bfc8-4624-893a-5dad81a8f318 ;
+    sphn:hasArticle  resource:CHE-229_707_417-sphn-DrugArticle-ba2fa20b-a0f3-4ca9-8ab0-2e4601f9eb22 ;
+    sphn:hasInactiveIngredient
+                     resource:CHE-229_707_417-sphn-Substance-748732b3-b5a8-4bf7-8513-9f103a38860e ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-60cb4db6-650e-4160-89d7-b404472b503e ;
+    sphn:hasSourceSystem
+                     resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-DrugAdministrationEvent-62a5217f-746e-4ec6-8274-b1a400973964
+    a                     sphn:DrugAdministrationEvent ;
+    sphn:hasAdministrationRouteCode
+                          resource:CHE-229_707_417-sphn-DrugAdministrationEvent-62a5217f-746e-4ec6-8274-b1a400973964-sphn-Code-SNOMED-CT-447052000 ;
+    sphn:hasAdministrativeCase
+                          resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDrug          resource:CHE-229_707_417-sphn-Drug-bd6340ff-7cff-4374-aa81-4098f82aca21 ;
+    sphn:hasDuration      resource:CHE-229_707_417-sphn-Quantity-06d6c004-e975-415f-a57c-e17b4595ce35 ;
+    sphn:hasEndDateTime   "2020-06-22T16:29:45.522452+00:00"^^xsd:dateTime ;
+    sphn:hasReasonToStopCode
+                          resource:CHE-229_707_417-sphn-DrugAdministrationEvent-62a5217f-746e-4ec6-8274-b1a400973964-sphn-Code-SNOMED-CT-182846007 ;
+    sphn:hasSourceSystem  resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasStartDateTime "2020-06-18T01:05:48.177044+00:00"^^xsd:dateTime ;
+    sphn:hasSubjectPseudoIdentifier
+                          resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTimePattern   resource:CHE-229_707_417-sphn-TimePattern-b06b3ccd-d43f-4fec-a925-57215b629567 .
+
+resource:CHE-229_707_417-sphn-DrugAdministrationEvent-62a5217f-746e-4ec6-8274-b1a400973964-sphn-Code-SNOMED-CT-182846007
+    a snomed:182846007 .
+
+resource:CHE-229_707_417-sphn-DrugAdministrationEvent-62a5217f-746e-4ec6-8274-b1a400973964-sphn-Code-SNOMED-CT-447052000
+    a snomed:447052000 .
+
+resource:CHE-229_707_417-sphn-DrugArticle-ba2fa20b-a0f3-4ca9-8ab0-2e4601f9eb22
+    a            sphn:DrugArticle ;
+    sphn:hasCode resource:CHE-229_707_417-sphn-DrugArticle-ba2fa20b-a0f3-4ca9-8ab0-2e4601f9eb22-sphn-Code-6e88c000-6419-463f-8ec3-d746b279aa6b ;
+    sphn:hasManufacturedDoseForm
+                 resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-0913175b-f887-4f34-b76a-ffa656a95a11 ;
+    sphn:hasName "dolor officiis quas molestias, odit consectetur" ;
+    sphn:hasSourceSystem
+                 resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-DrugArticle-ba2fa20b-a0f3-4ca9-8ab0-2e4601f9eb22-sphn-Code-6e88c000-6419-463f-8ec3-d746b279aa6b
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "veniam amet odit exercitationem quas molestias," ;
+    sphn:hasIdentifier             "ID-33969477" ;
+    sphn:hasName                   "adipisicing culpa! ipsum, elit. odit officiis sit" .
+
+resource:CHE-229_707_417-sphn-DrugArticle-cba2dbf2-c16d-4729-a0ed-1a809e6e7888
+    a            sphn:DrugArticle ;
+    sphn:hasCode resource:CHE-229_707_417-sphn-DrugArticle-cba2dbf2-c16d-4729-a0ed-1a809e6e7888-sphn-Code-5476ce42-0349-48db-a51f-dca512ab1136 ;
+    sphn:hasManufacturedDoseForm
+                 resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-cabb3890-2ed4-462f-818a-6c11ca287ac6 ;
+    sphn:hasName "illum officiis nobis quas reiciendis possimus sit" ;
+    sphn:hasSourceSystem
+                 resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-DrugArticle-cba2dbf2-c16d-4729-a0ed-1a809e6e7888-sphn-Code-5476ce42-0349-48db-a51f-dca512ab1136
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "sit ipsum" ;
+    sphn:hasIdentifier             "ID-56428071" ;
+    sphn:hasName                   "ipsum, possimus adipisicing Hic accusantium amet" .
+
+resource:CHE-229_707_417-sphn-DrugPrescription-6c1d8f68-61e3-4ae9-bb95-ca7ab8997a99
+    a                                   sphn:DrugPrescription ;
+    sphn:hasAdministrationRouteCode     resource:CHE-229_707_417-sphn-DrugPrescription-6c1d8f68-61e3-4ae9-bb95-ca7ab8997a99-sphn-Code-SNOMED-CT-418136008 ;
+    sphn:hasAdministrativeCase          resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider                resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDrug                        resource:CHE-229_707_417-sphn-Drug-f62c63e9-d81b-4c73-aaba-d04334642230 ;
+    sphn:hasFirstAdministrationDateTime "2006-03-06T04:14:15.219769+00:00"^^xsd:dateTime ;
+    sphn:hasFrequency                   resource:CHE-229_707_417-sphn-Quantity-cf3614f2-4fc1-4c5f-b62d-6dcf3a1f1042 ;
+    sphn:hasIndicationToStart           resource:CHE-229_707_417-sphn-OncologyDiagnosis-ca60dc11-62b6-432c-bcc9-71715b626957 ;
+    sphn:hasIntent                      resource:CHE-229_707_417-sphn-Intent-f6c08013-6d4f-4a91-a360-ae91ec8bcebf ;
+    sphn:hasLastAdministrationDateTime  "2024-08-02T15:13:01.070813+00:00"^^xsd:dateTime ;
+    sphn:hasRecordDateTime              "2020-03-29T07:23:52.034086+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem                resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier     resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTimePattern                 resource:CHE-229_707_417-sphn-TimePattern-0fac4af3-5226-470d-99a6-4e51bc37d170 .
+
+resource:CHE-229_707_417-sphn-DrugPrescription-6c1d8f68-61e3-4ae9-bb95-ca7ab8997a99-sphn-Code-SNOMED-CT-418136008
+    a snomed:418136008 .
+
+resource:CHE-229_707_417-sphn-GestationalAgeAtBirth-f0b23445-b25a-4783-ab62-c655dad3afc6
+    a                sphn:GestationalAgeAtBirth ;
+    sphn:hasAdministrativeCase
+                     resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider
+                     resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-1a9f29f6-4d4c-4b34-ae57-60c273bb785d ;
+    sphn:hasSourceSystem
+                     resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                     resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-HealthcarePrimaryInformationSystem-84401ec8-ebfe-4aea-aa96-3efc3a4e132e
+    a            sphn:HealthcarePrimaryInformationSystem ;
+    sphn:hasCode resource:CHE-229_707_417-sphn-HealthcarePrimaryInformationSystem-84401ec8-ebfe-4aea-aa96-3efc3a4e132e-sphn-Code-SNOMED-CT-469950009 ;
+    sphn:hasDataProvider
+                 resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasName "esse adipisicing quas exercitationem" .
+
+resource:CHE-229_707_417-sphn-HealthcarePrimaryInformationSystem-84401ec8-ebfe-4aea-aa96-3efc3a4e132e-sphn-Code-SNOMED-CT-469950009
+    a snomed:469950009 .
+
+resource:CHE-229_707_417-sphn-Intent-f6c08013-6d4f-4a91-a360-ae91ec8bcebf
+    a sphn:Intent ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Intent-f6c08013-6d4f-4a91-a360-ae91ec8bcebf-sphn-Code-SNOMED-CT-360271000 .
+
+resource:CHE-229_707_417-sphn-Intent-f6c08013-6d4f-4a91-a360-ae91ec8bcebf-sphn-Code-SNOMED-CT-360271000
+    a snomed:360271000 .
+
+resource:CHE-229_707_417-sphn-Interpretation-ce062414-2c7f-44c8-bee5-2199fafe36c3
+    a                         sphn:Interpretation ;
+    sphn:hasDataProvider      resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDateTime          "2017-10-05T16:20:36.229122+00:00"^^xsd:dateTime ;
+    sphn:hasInput             resource:CHE-229_707_417-sphn-GestationalAgeAtBirth-f0b23445-b25a-4783-ab62-c655dad3afc6 ;
+    sphn:hasOutput            resource:CHE-229_707_417-sphn-AdministrativeSex-068bf1e2-6cd4-4eeb-b2e7-042cf5d13ebb,
+                              resource:CHE-229_707_417-sphn-LabTestEvent-db6ac62d-b753-42ed-ab35-cb41227f4add ;
+    sphn:hasSourceSystem      resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasStandardGuideline "ipsum molestias, veniam" .
+
+resource:CHE-229_707_417-sphn-Isolate-324442bf-0faf-4b93-98f5-bc97bb3754ee
+    a                          sphn:Isolate ;
+    sphn:hasAdministrativeCase resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasBodySite           resource:CHE-229_707_417-sphn-BodySite-f4b1cbb6-7804-4d0d-a560-ed49c99ddd0d ;
+    sphn:hasCollectionDateTime "2020-03-10T08:40:45.027979+00:00"^^xsd:dateTime ;
+    sphn:hasDataProvider       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasFixationType       sphn-individual:VacuumTechnologyStabilization ;
+    sphn:hasIdentifier         "ID-16097535" ;
+    sphn:hasMaterialTypeCode   resource:CHE-229_707_417-sphn-Isolate-324442bf-0faf-4b93-98f5-bc97bb3754ee-sphn-Code-SNOMED-CT-119342007 ;
+    sphn:hasOrganism           resource:CHE-229_707_417-sphn-Organism-d75517da-c6c8-49c4-87d4-973e695c058b ;
+    sphn:hasPrimaryContainer   sphn-individual:PolyethyleneTubeSterile ;
+    sphn:hasSharedIdentifier   "molestias, molestias, veniam officiis reiciendis"^^xsd:anyURI ;
+    sphn:hasSourceSystem       resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                               resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-Isolate-324442bf-0faf-4b93-98f5-bc97bb3754ee-sphn-Code-SNOMED-CT-119342007
+    a snomed:119342007 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52
+    a                sphn:LabAnalyzer ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52-sphn-Code-ac343fa3-a80b-430a-abc0-a9865c44a912 ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-367a85c2-63eb-4a89-a6c7-51cfb90842b7 ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52-sphn-Code-EMDN-A019010 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52-sphn-Code-EMDN-A019010
+    a emdn:A019010 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52-sphn-Code-ac343fa3-a80b-430a-abc0-a9865c44a912
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "molestias, Lorem elit. esse veniam officiis ipsum" ;
+    sphn:hasIdentifier             "ID-09032173" ;
+    sphn:hasName                   "architecto consectetur possimus esse" .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548
+    a                sphn:LabAnalyzer ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548-sphn-Code-66298602-ca97-4085-bf54-a61d54b876a3 ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-8728c16f-4905-44fd-8592-0bbbe6530e1b,
+                     resource:CHE-229_707_417-sphn-Software-db5d02a4-427e-4249-a070-0d1bc4040d41 ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548-sphn-Code-EMDN-A01010501 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548-sphn-Code-66298602-ca97-4085-bf54-a61d54b876a3
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "amet elit. modi ipsum libero architecto amet esse" ;
+    sphn:hasIdentifier             "ID-70916345" ;
+    sphn:hasName                   "architecto illum amet amet possimus ipsum amet" .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548-sphn-Code-EMDN-A01010501
+    a emdn:A01010501 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb
+    a                sphn:LabAnalyzer ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb-sphn-Code-13f87e07-434f-4add-ae75-37261bf90ef7 ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-956f91db-2b68-4afb-b25f-b94242f7de4c,
+                     resource:CHE-229_707_417-sphn-Software-b2e7afb0-4005-4b46-a31d-63ac1dad89ed ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb-sphn-Code-EMDN-A01010102 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb-sphn-Code-13f87e07-434f-4add-ae75-37261bf90ef7
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "reprehenderit elit. adipisicing reprehenderit sit" ;
+    sphn:hasIdentifier             "ID-39916151" ;
+    sphn:hasName                   "culpa! esse sit placeat reprehenderit odit Hic" .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb-sphn-Code-EMDN-A01010102
+    a emdn:A01010102 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862
+    a                sphn:LabAnalyzer ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862-sphn-Code-ddd2a407-2166-4b60-b37b-46ff6aaa2b49 ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-0e9c1188-b4db-4600-884a-b33a20e08d0a ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862-sphn-Code-EMDN-A0105 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862-sphn-Code-EMDN-A0105
+    a emdn:A0105 .
+
+resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862-sphn-Code-ddd2a407-2166-4b60-b37b-46ff6aaa2b49
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "consectetur reprehenderit adipisicing" ;
+    sphn:hasIdentifier             "ID-35256012" ;
+    sphn:hasName                   "elit. molestias, possimus dolor placeat ipsum sit" .
+
+resource:CHE-229_707_417-sphn-LabResult-35c076f5-3aa3-4db3-a06c-09c55791a339
+    a                   sphn:LabResult ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-LabResult-35c076f5-3aa3-4db3-a06c-09c55791a339-sphn-Code-36ef4823-d6e4-4bce-a8ad-3ef1df09d124 ;
+    sphn:hasNumericalReference
+                        resource:CHE-229_707_417-sphn-ReferenceRange-7344ed10-f9b8-4f0a-9ecb-b3fe4bf49728 ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-3ff8734b-98c5-4f03-acbb-994fb3712441 ;
+    sphn:hasStringValue "quas" .
+
+resource:CHE-229_707_417-sphn-LabResult-35c076f5-3aa3-4db3-a06c-09c55791a339-sphn-Code-36ef4823-d6e4-4bce-a8ad-3ef1df09d124
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "architecto quas architecto possimus veniam culpa!" ;
+    sphn:hasIdentifier             "ID-00869141" ;
+    sphn:hasName                   "modi exercitationem possimus nobis sit molestias," .
+
+resource:CHE-229_707_417-sphn-LabResult-62f957f7-288b-4e59-aee3-e2728307117b
+    a                   sphn:LabResult ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-LabResult-62f957f7-288b-4e59-aee3-e2728307117b-sphn-Code-675165d6-2815-4f4f-956b-f5d42f20e6f1 ;
+    sphn:hasNumericalReference
+                        resource:CHE-229_707_417-sphn-ReferenceValue-fd15e366-d1c8-402d-b64a-beee826e8ec4 ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-b612e172-21bd-4a9d-a7a8-03ae080e7b38 ;
+    sphn:hasStringValue "quas ipsum, nobis possimus exercitationem veniam" .
+
+resource:CHE-229_707_417-sphn-LabResult-62f957f7-288b-4e59-aee3-e2728307117b-sphn-Code-675165d6-2815-4f4f-956b-f5d42f20e6f1
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "veniam dolor dolor esse Lorem exercitationem Hic" ;
+    sphn:hasIdentifier             "ID-30989101" ;
+    sphn:hasName                   "magnam, ipsum, molestias, placeat consectetur Hic" .
+
+resource:CHE-229_707_417-sphn-LabResult-9f43a639-5ed4-4421-a4aa-c4c4d540b7d6
+    a                   sphn:LabResult ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-LabResult-9f43a639-5ed4-4421-a4aa-c4c4d540b7d6-sphn-Code-8e1835d2-fc88-4bcf-af1e-a7292a8738e2 ;
+    sphn:hasNumericalReference
+                        resource:CHE-229_707_417-sphn-ReferenceRange-f19f38da-6d67-4099-b9dc-c00ffe89c07a ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-4b0ff6f1-8d75-4ac9-9176-b2219c6d8b87 ;
+    sphn:hasStringValue "consectetur Lorem modi ipsum, magnam, placeat sit" .
+
+resource:CHE-229_707_417-sphn-LabResult-9f43a639-5ed4-4421-a4aa-c4c4d540b7d6-sphn-Code-8e1835d2-fc88-4bcf-af1e-a7292a8738e2
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "veniam modi officiis architecto ipsum, possimus" ;
+    sphn:hasIdentifier             "ID-31456208" ;
+    sphn:hasName                   "odit odit" .
+
+resource:CHE-229_707_417-sphn-LabTest-59c17872-1603-4ddf-9501-45f4c73ba84e
+    a               sphn:LabTest ;
+    sphn:hasCode    resource:CHE-229_707_417-sphn-LabTest-59c17872-1603-4ddf-9501-45f4c73ba84e-sphn-Code-SNOMED-CT-473018007 ;
+    sphn:hasInstrument
+                    resource:CHE-229_707_417-sphn-LabAnalyzer-0bdb8bf6-9351-4971-8537-747e51b9ed52 ;
+    sphn:hasResult  resource:CHE-229_707_417-sphn-LabResult-35c076f5-3aa3-4db3-a06c-09c55791a339,
+                    resource:CHE-229_707_417-sphn-LabResult-9f43a639-5ed4-4421-a4aa-c4c4d540b7d6 ;
+    sphn:hasTestKit resource:CHE-229_707_417-sphn-LabAnalyzer-32ca7a19-295f-45db-96d0-2a20adaa9548 .
+
+resource:CHE-229_707_417-sphn-LabTest-59c17872-1603-4ddf-9501-45f4c73ba84e-sphn-Code-SNOMED-CT-473018007
+    a snomed:473018007 .
+
+resource:CHE-229_707_417-sphn-LabTest-7c8cbfa4-e6c4-4d1e-95d9-e01af83ff463
+    a               sphn:LabTest ;
+    sphn:hasCode    resource:CHE-229_707_417-sphn-LabTest-7c8cbfa4-e6c4-4d1e-95d9-e01af83ff463-sphn-Code-SNOMED-CT-427489002 ;
+    sphn:hasInstrument
+                    resource:CHE-229_707_417-sphn-LabAnalyzer-fb2c0135-2c85-43d7-96a4-7ca79599a862 ;
+    sphn:hasResult  resource:CHE-229_707_417-sphn-LabResult-62f957f7-288b-4e59-aee3-e2728307117b ;
+    sphn:hasTestKit resource:CHE-229_707_417-sphn-LabAnalyzer-ee3715ff-852e-4d2b-8243-e6b0ce95effb .
+
+resource:CHE-229_707_417-sphn-LabTest-7c8cbfa4-e6c4-4d1e-95d9-e01af83ff463-sphn-Code-SNOMED-CT-427489002
+    a snomed:427489002 .
+
+resource:CHE-229_707_417-sphn-LabTestEvent-db6ac62d-b753-42ed-ab35-cb41227f4add
+    a                      sphn:LabTestEvent ;
+    sphn:hasAdministrativeCase
+                           resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDateTime       "1976-06-02T03:40:07.808851+00:00"^^xsd:dateTime ;
+    sphn:hasLabTest        resource:CHE-229_707_417-sphn-LabTest-59c17872-1603-4ddf-9501-45f4c73ba84e,
+                           resource:CHE-229_707_417-sphn-LabTest-7c8cbfa4-e6c4-4d1e-95d9-e01af83ff463 ;
+    sphn:hasReportDateTime "2019-07-22T07:11:13.166340+00:00"^^xsd:dateTime ;
+    sphn:hasSample         resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30 ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-Laterality-27daa38c-9603-4be6-9a84-c8a00b2876e4
+    a sphn:Laterality ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Laterality-27daa38c-9603-4be6-9a84-c8a00b2876e4-sphn-Code-SNOMED-CT-24028007 .
+
+resource:CHE-229_707_417-sphn-Laterality-27daa38c-9603-4be6-9a84-c8a00b2876e4-sphn-Code-SNOMED-CT-24028007
+    a snomed:24028007 .
+
+resource:CHE-229_707_417-sphn-Laterality-5be7161e-da5e-4d0e-ad8a-43f1f5ff0f7d
+    a sphn:Laterality ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Laterality-5be7161e-da5e-4d0e-ad8a-43f1f5ff0f7d-sphn-Code-SNOMED-CT-51440002 .
+
+resource:CHE-229_707_417-sphn-Laterality-5be7161e-da5e-4d0e-ad8a-43f1f5ff0f7d-sphn-Code-SNOMED-CT-51440002
+    a snomed:51440002 .
+
+resource:CHE-229_707_417-sphn-Laterality-80a5897f-8a50-4aa8-8bcc-32d5b5ea022a
+    a sphn:Laterality ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Laterality-80a5897f-8a50-4aa8-8bcc-32d5b5ea022a-sphn-Code-SNOMED-CT-24028007 .
+
+resource:CHE-229_707_417-sphn-Laterality-80a5897f-8a50-4aa8-8bcc-32d5b5ea022a-sphn-Code-SNOMED-CT-24028007
+    a snomed:24028007 .
+
+resource:CHE-229_707_417-sphn-Laterality-f80efd68-4a07-4502-a5a0-a6e1fe56595e
+    a sphn:Laterality ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Laterality-f80efd68-4a07-4502-a5a0-a6e1fe56595e-sphn-Code-SNOMED-CT-66459002 .
+
+resource:CHE-229_707_417-sphn-Laterality-f80efd68-4a07-4502-a5a0-a6e1fe56595e-sphn-Code-SNOMED-CT-66459002
+    a snomed:66459002 .
+
+resource:CHE-229_707_417-sphn-Location-26fd3679-2134-4cdf-870b-3064e472ada1
+    a             sphn:Location ;
+    sphn:hasDataProvider
+                  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasExact "elit. ipsum magnam, nobis magnam, odit quas Lorem" ;
+    sphn:hasTypeCode
+                  resource:CHE-229_707_417-sphn-Location-26fd3679-2134-4cdf-870b-3064e472ada1-sphn-Code-SNOMED-CT-216365002 .
+
+resource:CHE-229_707_417-sphn-Location-26fd3679-2134-4cdf-870b-3064e472ada1-sphn-Code-SNOMED-CT-216365002
+    a snomed:216365002 .
+
+resource:CHE-229_707_417-sphn-Location-96ac8600-b7e2-44a9-9bcb-1232abde02f1
+    a             sphn:Location ;
+    sphn:hasDataProvider
+                  resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasExact "molestias, architecto ipsum, reiciendis magnam," ;
+    sphn:hasTypeCode
+                  resource:CHE-229_707_417-sphn-Location-96ac8600-b7e2-44a9-9bcb-1232abde02f1-sphn-Code-SNOMED-CT-216364003 .
+
+resource:CHE-229_707_417-sphn-Location-96ac8600-b7e2-44a9-9bcb-1232abde02f1-sphn-Code-SNOMED-CT-216364003
+    a snomed:216364003 .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483
+    a                sphn:MedicalDevice ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483-sphn-Code-6ab29da4-abcb-418d-b6a4-ac744fc1076e ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-06bf1f31-42ed-4fba-bbf2-8dd74a2763b6,
+                     resource:CHE-229_707_417-sphn-Software-d46dd2b6-dd46-4453-b066-03540a9959a1 ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483-sphn-Code-SNOMED-CT-1177159005 .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483-sphn-Code-6ab29da4-abcb-418d-b6a4-ac744fc1076e
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "nobis officiis magnam, libero quas accusantium" ;
+    sphn:hasIdentifier             "ID-83989471" ;
+    sphn:hasName                   "amet architecto" .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-014ec33f-5bc3-4d73-bd42-579efd795483-sphn-Code-SNOMED-CT-1177159005
+    a snomed:1177159005 .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f
+    a                sphn:MedicalDevice ;
+    sphn:hasProductCode
+                     resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f-sphn-Code-9d213c2a-cf97-4316-9ee9-a9d382a01751 ;
+    sphn:hasSoftware resource:CHE-229_707_417-sphn-Software-5bf2cff4-ba08-4c1d-8e6e-ff6e0fc54085 ;
+    sphn:hasTypeCode resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f-sphn-Code-SNOMED-CT-1285729002 .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f-sphn-Code-9d213c2a-cf97-4316-9ee9-a9d382a01751
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "amet modi illum magnam, dolor modi Lorem Hic sit" ;
+    sphn:hasIdentifier             "ID-48924115" ;
+    sphn:hasName                   "accusantium reiciendis repellendus nobis Hic Hic" .
+
+resource:CHE-229_707_417-sphn-MedicalDevice-b2d210b9-ffe8-4608-944d-dfedcc34208f-sphn-Code-SNOMED-CT-1285729002
+    a snomed:1285729002 .
+
+resource:CHE-229_707_417-sphn-NursingDiagnosis-0d8bc9e2-6a8d-47b4-b16a-2a99f76646ab
+    a                      sphn:NursingDiagnosis ;
+    sphn:hasAdministrativeCase
+                           resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasCode           resource:CHE-229_707_417-sphn-NursingDiagnosis-0d8bc9e2-6a8d-47b4-b16a-2a99f76646ab-sphn-Code-2e025f27-b9dc-4c18-b752-e7ff59e7fd8a ;
+    sphn:hasDataProvider   resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasRecordDateTime "2010-01-29T22:41:46.308575+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem   resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectAge     resource:CHE-229_707_417-sphn-Age-a2433644-b0d1-42b1-aac1-563b01709f5c ;
+    sphn:hasSubjectPseudoIdentifier
+                           resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-NursingDiagnosis-0d8bc9e2-6a8d-47b4-b16a-2a99f76646ab-sphn-Code-2e025f27-b9dc-4c18-b752-e7ff59e7fd8a
+    a                              sphn:Code ;
+    sphn:hasCodingSystemAndVersion "officiis esse" ;
+    sphn:hasIdentifier             "ID-91795330" ;
+    sphn:hasName                   "odit odit" .
+
+resource:CHE-229_707_417-sphn-OncologyDiagnosis-ca60dc11-62b6-432c-bcc9-71715b626957
+    a                         sphn:OncologyDiagnosis ;
+    sphn:hasAdministrativeCase
+                              resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasBodySite          resource:CHE-229_707_417-sphn-BodySite-31104214-c9b2-46ac-a578-2d76ade08423 ;
+    sphn:hasCode              resource:CHE-229_707_417-sphn-OncologyDiagnosis-ca60dc11-62b6-432c-bcc9-71715b626957-sphn-Code-ICD-10-GM-2015-A00.1 ;
+    sphn:hasDataProvider      resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasIncidenceDateTime "1983-09-26T21:16:27.043516+00:00"^^xsd:dateTime ;
+    sphn:hasRecordDateTime    "2002-09-13T07:15:06.333353+00:00"^^xsd:dateTime ;
+    sphn:hasSourceSystem      resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectAge        resource:CHE-229_707_417-sphn-Age-a2433644-b0d1-42b1-aac1-563b01709f5c ;
+    sphn:hasSubjectPseudoIdentifier
+                              resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-OncologyDiagnosis-ca60dc11-62b6-432c-bcc9-71715b626957-sphn-Code-ICD-10-GM-2015-A00.1
+    a <https://biomedit.ch/rdf/sphn-resource/icd-10-gm/2015/A00.1> .
+
+resource:CHE-229_707_417-sphn-Organism-d75517da-c6c8-49c4-87d4-973e695c058b
+    a sphn:Organism ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Organism-d75517da-c6c8-49c4-87d4-973e695c058b-sphn-Code-SNOMED-CT-699410001 .
+
+resource:CHE-229_707_417-sphn-Organism-d75517da-c6c8-49c4-87d4-973e695c058b-sphn-Code-SNOMED-CT-699410001
+    a snomed:699410001 .
+
+resource:CHE-229_707_417-sphn-Performer-309857d9-e81e-4f94-91ee-b8422b6d65d1
+    a sphn:Performer ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Performer-309857d9-e81e-4f94-91ee-b8422b6d65d1-sphn-Code-SNOMED-CT-27733009 .
+
+resource:CHE-229_707_417-sphn-Performer-309857d9-e81e-4f94-91ee-b8422b6d65d1-sphn-Code-SNOMED-CT-27733009
+    a snomed:27733009 .
+
+resource:CHE-229_707_417-sphn-Performer-ae46c853-b582-404d-a10d-97398654be49
+    a sphn:Performer ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Performer-ae46c853-b582-404d-a10d-97398654be49-sphn-Code-SNOMED-CT-303071001 .
+
+resource:CHE-229_707_417-sphn-Performer-ae46c853-b582-404d-a10d-97398654be49-sphn-Code-SNOMED-CT-303071001
+    a snomed:303071001 .
+
+resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-0913175b-f887-4f34-b76a-ffa656a95a11
+    a sphn:PharmaceuticalDoseForm ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-0913175b-f887-4f34-b76a-ffa656a95a11-sphn-Code-SNOMED-CT-1230222007 .
+
+resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-0913175b-f887-4f34-b76a-ffa656a95a11-sphn-Code-SNOMED-CT-1230222007
+    a snomed:1230222007 .
+
+resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-cabb3890-2ed4-462f-818a-6c11ca287ac6
+    a sphn:PharmaceuticalDoseForm ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-cabb3890-2ed4-462f-818a-6c11ca287ac6-sphn-Code-SNOMED-CT-1209112001 .
+
+resource:CHE-229_707_417-sphn-PharmaceuticalDoseForm-cabb3890-2ed4-462f-818a-6c11ca287ac6-sphn-Code-SNOMED-CT-1209112001
+    a snomed:1209112001 .
+
+resource:CHE-229_707_417-sphn-Quantity-06d6c004-e975-415f-a57c-e17b4595ce35
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-44a4a6ad-11bc-41cc-acc8-7cb46c405203 ;
+    sphn:hasValue      9.312E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-1a9f29f6-4d4c-4b34-ae57-60c273bb785d
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-b4f399b6-66c8-48ce-92dd-5942554c800f ;
+    sphn:hasValue      2.553E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-24b87e52-a9a8-49be-b061-89643c6b4253
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-a7eb94ab-2e0b-4ccd-9ec3-15438d06bf01 ;
+    sphn:hasValue      3.731E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-3ff8734b-98c5-4f03-acbb-994fb3712441
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-be4c5313-e5b0-46e3-8574-26fc84c7c30f ;
+    sphn:hasValue      1.977E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-490e2045-0288-4515-9d5e-a99810f1990b
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-85c0a0ca-4956-4ac0-8d4c-3fc01f6550a1 ;
+    sphn:hasValue      8.457E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-4b0ff6f1-8d75-4ac9-9176-b2219c6d8b87
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-8d9e8a39-99ea-4332-9251-b09be8de7bdc ;
+    sphn:hasValue      4.428E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-4b9d1bc7-5096-411a-9c85-72f1c2630108
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-06ced722-256f-48c7-9c04-fc1fce827378 ;
+    sphn:hasValue      9.197E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-4df0c59e-59c6-4908-9644-11db2dbfd0d8
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-c84c6003-54ec-4f9c-b83c-f6216749cd7c ;
+    sphn:hasValue      8.461E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-5c9b5f92-5b10-4fc7-932b-0f836e8a2299
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-be51edb1-3945-45c8-b617-b717bf417111 ;
+    sphn:hasValue      1.65E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-60cb4db6-650e-4160-89d7-b404472b503e
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-e6b73f9f-2294-45bf-a903-9d94271e0e6a ;
+    sphn:hasValue      5.172E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-6ed9324b-208f-4cc9-88d9-880b725b4fed
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-ba13016b-64e5-4adb-8cf2-5cb76f68c58f ;
+    sphn:hasValue      9.838E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-758c023b-81fc-4e76-914e-b659d312ef89
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-3f625079-d46b-481f-aa0a-5822cab720eb ;
+    sphn:hasValue      5.2E1 .
+
+resource:CHE-229_707_417-sphn-Quantity-7811543d-6b20-4870-b2c0-07e43cff54d3
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-aaae64a6-0a31-407f-a67d-e9dd0dce2281 ;
+    sphn:hasValue      5.073E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-8bbd648c-a43b-4dde-8166-ec7d6a85066a
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-6c44bbbf-ad63-4d85-87ce-ec4d26af29da ;
+    sphn:hasValue      1.005E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-a19dbc6e-7aac-4107-87df-b3981a60a2d3
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-ff708aec-b50d-498a-b8ae-29f61058a116 ;
+    sphn:hasValue      2.136E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-aa1a241f-8dc3-407e-b8a6-4cca92a04b03
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-ec602bd3-6f40-45d6-b3e0-7bdc57b24c28 ;
+    sphn:hasValue      6.711E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-b0ee6820-1817-4ca5-bb79-896509f0e219
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-5b820c39-179d-43c3-87dd-0f87301f3ad1 ;
+    sphn:hasValue      8.78E2 .
+
+resource:CHE-229_707_417-sphn-Quantity-b612e172-21bd-4a9d-a7a8-03ae080e7b38
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-5ae68b86-f92a-4f89-a1d1-6194fa99c1da ;
+    sphn:hasValue      8.497E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-bc8210b7-443b-4a01-8fe2-e3f3d3aac31d
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-3c667ab8-9574-401d-89c8-031115a7a1a9 ;
+    sphn:hasValue      2.535E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-cf3614f2-4fc1-4c5f-b62d-6dcf3a1f1042
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-e8ae9e25-0fa5-4e65-b05a-4ceeb120e521 ;
+    sphn:hasValue      7.691E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-d360ec58-4f0d-4113-b505-81d4dec9f6eb
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThanOrEqual ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-43ce31a0-b7b9-447d-accd-a57b5c149dc8 ;
+    sphn:hasValue      6.72E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-fa45f171-8f7b-4dce-90e7-f803026d1c4a
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:GreaterThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-a0e798e2-bb0c-458f-b7a0-b36953d0d2d9 ;
+    sphn:hasValue      8.281E3 .
+
+resource:CHE-229_707_417-sphn-Quantity-fcc995c0-9a01-4be7-b5cd-f69359ee3d9b
+    a                  sphn:Quantity ;
+    sphn:hasComparator sphn-individual:LessThan ;
+    sphn:hasUnit       resource:CHE-229_707_417-sphn-Unit-b3413355-ff69-4471-a2bc-e50530084039 ;
+    sphn:hasValue      4.264E3 .
+
+resource:CHE-229_707_417-sphn-ReferenceRange-7344ed10-f9b8-4f0a-9ecb-b3fe4bf49728
+    a                  sphn:ReferenceRange ;
+    sphn:hasLowerLimit resource:CHE-229_707_417-sphn-Quantity-aa1a241f-8dc3-407e-b8a6-4cca92a04b03 ;
+    sphn:hasUpperLimit resource:CHE-229_707_417-sphn-Quantity-7811543d-6b20-4870-b2c0-07e43cff54d3 .
+
+resource:CHE-229_707_417-sphn-ReferenceRange-f19f38da-6d67-4099-b9dc-c00ffe89c07a
+    a                  sphn:ReferenceRange ;
+    sphn:hasLowerLimit resource:CHE-229_707_417-sphn-Quantity-6ed9324b-208f-4cc9-88d9-880b725b4fed ;
+    sphn:hasUpperLimit resource:CHE-229_707_417-sphn-Quantity-24b87e52-a9a8-49be-b061-89643c6b4253 .
+
+resource:CHE-229_707_417-sphn-ReferenceValue-fd15e366-d1c8-402d-b64a-beee826e8ec4
+    a                sphn:ReferenceValue ;
+    sphn:hasQuantity resource:CHE-229_707_417-sphn-Quantity-bc8210b7-443b-4a01-8fe2-e3f3d3aac31d .
+
+resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30
+    a                          sphn:Sample ;
+    sphn:hasAdministrativeCase resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasBodySite           resource:CHE-229_707_417-sphn-BodySite-c0ed77fc-6e84-4144-bc7c-a2b15f6d3020 ;
+    sphn:hasCollectionDateTime "1995-10-07T05:05:40.107980+00:00"^^xsd:dateTime ;
+    sphn:hasDataProvider       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasFixationType       sphn-individual:NonaldehydeBasedWithoutAceticAcid ;
+    sphn:hasIdentifier         "ID-92302258" ;
+    sphn:hasMaterialTypeCode   resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30-sphn-Code-SNOMED-CT-258454002,
+                               resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30-sphn-Code-SNOMED-CT-40511003 ;
+    sphn:hasPrimaryContainer   sphn-individual:ProteaseInhibitors ;
+    sphn:hasSharedIdentifier   "molestias, adipisicing esse amet modi quas libero"^^xsd:anyURI ;
+    sphn:hasSourceSystem       resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                               resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 .
+
+resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30-sphn-Code-SNOMED-CT-258454002
+    a snomed:258454002 .
+
+resource:CHE-229_707_417-sphn-Sample-59802a28-3abc-4fc4-a6eb-03b134bd7e30-sphn-Code-SNOMED-CT-40511003
+    a snomed:40511003 .
+
+resource:CHE-229_707_417-sphn-Software-06bf1f31-42ed-4fba-bbf2-8dd74a2763b6
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "accusantium ipsum nobis molestias, magnam, Lorem" ;
+    sphn:hasName                   "nobis placeat ipsum exercitationem placeat ipsum," ;
+    sphn:hasUniformResourceLocator "sit nobis adipisicing nobis officiis esse Hic Hic" ;
+    sphn:hasVersion                "magnam," .
+
+resource:CHE-229_707_417-sphn-Software-0e9c1188-b4db-4600-884a-b33a20e08d0a
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "molestias, dolor molestias," ;
+    sphn:hasName                   "officiis accusantium possimus adipisicing quas" ;
+    sphn:hasUniformResourceLocator "possimus amet modi placeat Lorem officiis Hic Hic" ;
+    sphn:hasVersion                "dolor Hic reiciendis architecto" .
+
+resource:CHE-229_707_417-sphn-Software-367a85c2-63eb-4a89-a6c7-51cfb90842b7
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "elit. exercitationem culpa! placeat Lorem amet" ;
+    sphn:hasName                   "possimus adipisicing amet" ;
+    sphn:hasUniformResourceLocator "molestias, ipsum, exercitationem" ;
+    sphn:hasVersion                "molestias," .
+
+resource:CHE-229_707_417-sphn-Software-5bf2cff4-ba08-4c1d-8e6e-ff6e0fc54085
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "esse odit elit. consectetur repellendus sit nobis" ;
+    sphn:hasName                   "elit. illum Lorem odit elit. esse repellendus Hic" ;
+    sphn:hasUniformResourceLocator "Lorem ipsum, placeat nobis accusantium Lorem esse" ;
+    sphn:hasVersion                "esse adipisicing officiis modi dolor libero illum" .
+
+resource:CHE-229_707_417-sphn-Software-8728c16f-4905-44fd-8592-0bbbe6530e1b
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "elit. esse officiis repellendus consectetur illum" ;
+    sphn:hasName                   "quas ipsum sit nobis accusantium veniam" ;
+    sphn:hasUniformResourceLocator "molestias, accusantium" ;
+    sphn:hasVersion                "sit amet molestias, adipisicing accusantium amet" .
+
+resource:CHE-229_707_417-sphn-Software-956f91db-2b68-4afb-b25f-b94242f7de4c
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "quas accusantium placeat" ;
+    sphn:hasName                   "quas consectetur ipsum, sit elit. adipisicing Hic" ;
+    sphn:hasUniformResourceLocator "illum reiciendis Hic dolor" ;
+    sphn:hasVersion                "odit esse reprehenderit Hic architecto illum quas" .
+
+resource:CHE-229_707_417-sphn-Software-b2e7afb0-4005-4b46-a31d-63ac1dad89ed
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "dolor ipsum, officiis molestias, elit. culpa!" ;
+    sphn:hasName                   "accusantium Lorem reprehenderit adipisicing amet" ;
+    sphn:hasUniformResourceLocator "reprehenderit dolor elit. libero exercitationem" ;
+    sphn:hasVersion                "consectetur" .
+
+resource:CHE-229_707_417-sphn-Software-d46dd2b6-dd46-4453-b066-03540a9959a1
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "libero dolor culpa! magnam, adipisicing culpa!" ;
+    sphn:hasName                   "libero adipisicing ipsum, libero elit. esse modi" ;
+    sphn:hasUniformResourceLocator "amet reprehenderit ipsum magnam, architecto elit." ;
+    sphn:hasVersion                "ipsum odit accusantium elit. officiis elit. quas" .
+
+resource:CHE-229_707_417-sphn-Software-db5d02a4-427e-4249-a070-0d1bc4040d41
+    a                              sphn:Software ;
+    sphn:hasDataProvider           resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasDescription            "veniam libero sit reprehenderit dolor possimus" ;
+    sphn:hasName                   "magnam," ;
+    sphn:hasUniformResourceLocator "ipsum ipsum, culpa! reiciendis quas possimus quas" ;
+    sphn:hasVersion                "reprehenderit magnam, dolor illum amet Lorem quas" .
+
+resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3
+    a                sphn:SourceSystem ;
+    sphn:hasCategory sphn-individual:Biobank ;
+    sphn:hasDataProvider
+                     resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasName     "molestias, amet adipisicing reprehenderit" ;
+    sphn:hasPrimarySystem
+                     resource:CHE-229_707_417-sphn-HealthcarePrimaryInformationSystem-84401ec8-ebfe-4aea-aa96-3efc3a4e132e ;
+    sphn:hasPurpose  sphn-individual:PatientCare .
+
+resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475
+    a                        sphn:SubjectPseudoIdentifier ;
+    sphn:hasDataProvider     resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasIdentifier       "ID-59382421" ;
+    sphn:hasSharedIdentifier "odit"^^xsd:anyURI .
+
+resource:CHE-229_707_417-sphn-Substance-40b29800-19ad-4314-b5b5-e40cbdaa379d
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-40b29800-19ad-4314-b5b5-e40cbdaa379d-sphn-Code-SNOMED-CT-443017007 ;
+    sphn:hasGenericName "Lorem illum reprehenderit placeat ipsum, Lorem" ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-4b9d1bc7-5096-411a-9c85-72f1c2630108 ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-40b29800-19ad-4314-b5b5-e40cbdaa379d-sphn-Code-SNOMED-CT-443017007
+    a snomed:443017007 .
+
+resource:CHE-229_707_417-sphn-Substance-71efa278-1caf-4dbe-aee7-6ac0c20e80cc
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-71efa278-1caf-4dbe-aee7-6ac0c20e80cc-sphn-Code-SNOMED-CT-418614009 ;
+    sphn:hasGenericName "nobis placeat magnam, adipisicing elit." ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-490e2045-0288-4515-9d5e-a99810f1990b ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-71efa278-1caf-4dbe-aee7-6ac0c20e80cc-sphn-Code-SNOMED-CT-418614009
+    a snomed:418614009 .
+
+resource:CHE-229_707_417-sphn-Substance-748732b3-b5a8-4bf7-8513-9f103a38860e
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-748732b3-b5a8-4bf7-8513-9f103a38860e-sphn-Code-SNOMED-CT-89086000 ;
+    sphn:hasGenericName "esse modi reprehenderit libero illum" ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-b0ee6820-1817-4ca5-bb79-896509f0e219 ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-748732b3-b5a8-4bf7-8513-9f103a38860e-sphn-Code-SNOMED-CT-89086000
+    a snomed:89086000 .
+
+resource:CHE-229_707_417-sphn-Substance-bbcf8f21-1ab4-4eb2-93c3-c1d94cd74584
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-bbcf8f21-1ab4-4eb2-93c3-c1d94cd74584-sphn-Code-SNOMED-CT-103248009 ;
+    sphn:hasGenericName "culpa! elit. consectetur accusantium quas nobis" ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-d360ec58-4f0d-4113-b505-81d4dec9f6eb ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-bbcf8f21-1ab4-4eb2-93c3-c1d94cd74584-sphn-Code-SNOMED-CT-103248009
+    a snomed:103248009 .
+
+resource:CHE-229_707_417-sphn-Substance-c8aa728a-bfc8-4624-893a-5dad81a8f318
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-c8aa728a-bfc8-4624-893a-5dad81a8f318-sphn-Code-SNOMED-CT-898199003 ;
+    sphn:hasGenericName "repellendus architecto elit. ipsum, veniam odit" ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-a19dbc6e-7aac-4107-87df-b3981a60a2d3 ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-c8aa728a-bfc8-4624-893a-5dad81a8f318-sphn-Code-SNOMED-CT-898199003
+    a snomed:898199003 .
+
+resource:CHE-229_707_417-sphn-Substance-ddabba71-3dea-4384-b994-7ee3abc42477
+    a                   sphn:Substance ;
+    sphn:hasCode        resource:CHE-229_707_417-sphn-Substance-ddabba71-3dea-4384-b994-7ee3abc42477-sphn-Code-SNOMED-CT-78588006 ;
+    sphn:hasGenericName "adipisicing repellendus officiis nobis veniam Hic" ;
+    sphn:hasQuantity    resource:CHE-229_707_417-sphn-Quantity-4df0c59e-59c6-4908-9644-11db2dbfd0d8 ;
+    sphn:hasSourceSystem
+                        resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 .
+
+resource:CHE-229_707_417-sphn-Substance-ddabba71-3dea-4384-b994-7ee3abc42477-sphn-Code-SNOMED-CT-78588006
+    a snomed:78588006 .
+
+resource:CHE-229_707_417-sphn-TimePattern-0fac4af3-5226-470d-99a6-4e51bc37d170
+    a sphn:TimePattern ;
+    sphn:hasTypeCode
+      resource:CHE-229_707_417-sphn-TimePattern-0fac4af3-5226-470d-99a6-4e51bc37d170-sphn-Code-SNOMED-CT-385432009 .
+
+resource:CHE-229_707_417-sphn-TimePattern-0fac4af3-5226-470d-99a6-4e51bc37d170-sphn-Code-SNOMED-CT-385432009
+    a snomed:385432009 .
+
+resource:CHE-229_707_417-sphn-TimePattern-b06b3ccd-d43f-4fec-a925-57215b629567
+    a sphn:TimePattern ;
+    sphn:hasTypeCode
+      resource:CHE-229_707_417-sphn-TimePattern-b06b3ccd-d43f-4fec-a925-57215b629567-sphn-Code-SNOMED-CT-7087005 .
+
+resource:CHE-229_707_417-sphn-TimePattern-b06b3ccd-d43f-4fec-a925-57215b629567-sphn-Code-SNOMED-CT-7087005
+    a snomed:7087005 .
+
+resource:CHE-229_707_417-sphn-TumorSpecimen-3fac35ba-1d0f-4033-9d29-daf97510d56b
+    a                          sphn:TumorSpecimen ;
+    sphn:hasAdministrativeCase resource:CHE-229_707_417-sphn-AdministrativeCase-d77a4813-f559-48be-a37a-28885d9683d3 ;
+    sphn:hasBodySite           resource:CHE-229_707_417-sphn-BodySite-0a75d9b6-d9ac-4b00-9abc-2e9321dda47c ;
+    sphn:hasCollectionDateTime "1973-06-14T11:23:00.198783+00:00"^^xsd:dateTime ;
+    sphn:hasDataProvider       resource:CHE-229_707_417-sphn-DataProvider-20b342da-ab00-4983-91be-d144fcf74f44 ;
+    sphn:hasFixationType       sphn-individual:PAXgeneTissue ;
+    sphn:hasIdentifier         "ID-93328711" ;
+    sphn:hasMaterialTypeCode   resource:CHE-229_707_417-sphn-TumorSpecimen-3fac35ba-1d0f-4033-9d29-daf97510d56b-sphn-Code-SNOMED-CT-119316007,
+                               resource:CHE-229_707_417-sphn-TumorSpecimen-3fac35ba-1d0f-4033-9d29-daf97510d56b-sphn-Code-SNOMED-CT-168140004 ;
+    sphn:hasPrimaryContainer   sphn-individual:AldehydeBasedStabilizerForCTCs ;
+    sphn:hasSharedIdentifier   "placeat accusantium amet consectetur modi amet"^^xsd:anyURI ;
+    sphn:hasSourceSystem       resource:CHE-229_707_417-sphn-SourceSystem-d01682a3-2fc4-486a-91f5-41ce9e713df3 ;
+    sphn:hasSubjectPseudoIdentifier
+                               resource:CHE-229_707_417-sphn-SubjectPseudoIdentifier-8b9dec66-7c4b-4794-908d-30facf2c9475 ;
+    sphn:hasTumorPurity        resource:CHE-229_707_417-sphn-Quantity-fa45f171-8f7b-4dce-90e7-f803026d1c4a .
+
+resource:CHE-229_707_417-sphn-TumorSpecimen-3fac35ba-1d0f-4033-9d29-daf97510d56b-sphn-Code-SNOMED-CT-119316007
+    a snomed:119316007 .
+
+resource:CHE-229_707_417-sphn-TumorSpecimen-3fac35ba-1d0f-4033-9d29-daf97510d56b-sphn-Code-SNOMED-CT-168140004
+    a snomed:168140004 .
+
+resource:CHE-229_707_417-sphn-Unit-06ced722-256f-48c7-9c04-fc1fce827378
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-06ced722-256f-48c7-9c04-fc1fce827378-sphn-Code-UCUM-Uper10exp12 .
+
+resource:CHE-229_707_417-sphn-Unit-06ced722-256f-48c7-9c04-fc1fce827378-sphn-Code-UCUM-Uper10exp12
+    a ucum:Uper10exp12 .
+
+resource:CHE-229_707_417-sphn-Unit-3c667ab8-9574-401d-89c8-031115a7a1a9
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-3c667ab8-9574-401d-89c8-031115a7a1a9-sphn-Code-UCUM-Upermmolcblcreatininecbr .
+
+resource:CHE-229_707_417-sphn-Unit-3c667ab8-9574-401d-89c8-031115a7a1a9-sphn-Code-UCUM-Upermmolcblcreatininecbr
+    a ucum:Upermmolcblcreatininecbr .
+
+resource:CHE-229_707_417-sphn-Unit-3f625079-d46b-481f-aa0a-5822cab720eb
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-3f625079-d46b-481f-aa0a-5822cab720eb-sphn-Code-UNKNOWN-23376960 .
+
+resource:CHE-229_707_417-sphn-Unit-3f625079-d46b-481f-aa0a-5822cab720eb-sphn-Code-UNKNOWN-23376960
+    a ucum:wk .
+
+resource:CHE-229_707_417-sphn-Unit-43ce31a0-b7b9-447d-accd-a57b5c149dc8
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-43ce31a0-b7b9-447d-accd-a57b5c149dc8-sphn-Code-UCUM-10exp6perrbl24dothrbr .
+
+resource:CHE-229_707_417-sphn-Unit-43ce31a0-b7b9-447d-accd-a57b5c149dc8-sphn-Code-UCUM-10exp6perrbl24dothrbr
+    a ucum:10exp6perrbl24dothrbr .
+
+resource:CHE-229_707_417-sphn-Unit-44a4a6ad-11bc-41cc-acc8-7cb46c405203
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-44a4a6ad-11bc-41cc-acc8-7cb46c405203-sphn-Code-UCUM-Ohmdotm .
+
+resource:CHE-229_707_417-sphn-Unit-44a4a6ad-11bc-41cc-acc8-7cb46c405203-sphn-Code-UCUM-Ohmdotm
+    a ucum:Ohmdotm .
+
+resource:CHE-229_707_417-sphn-Unit-5ae68b86-f92a-4f89-a1d1-6194fa99c1da
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-5ae68b86-f92a-4f89-a1d1-6194fa99c1da-sphn-Code-UCUM-10exp6perrbl24dothrbr .
+
+resource:CHE-229_707_417-sphn-Unit-5ae68b86-f92a-4f89-a1d1-6194fa99c1da-sphn-Code-UCUM-10exp6perrbl24dothrbr
+    a ucum:10exp6perrbl24dothrbr .
+
+resource:CHE-229_707_417-sphn-Unit-5b820c39-179d-43c3-87dd-0f87301f3ad1
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-5b820c39-179d-43c3-87dd-0f87301f3ad1-sphn-Code-UCUM-10exp3cblRBCscbr .
+
+resource:CHE-229_707_417-sphn-Unit-5b820c39-179d-43c3-87dd-0f87301f3ad1-sphn-Code-UCUM-10exp3cblRBCscbr
+    a ucum:10exp3cblRBCscbr .
+
+resource:CHE-229_707_417-sphn-Unit-6c44bbbf-ad63-4d85-87ce-ec4d26af29da
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-6c44bbbf-ad63-4d85-87ce-ec4d26af29da-sphn-Code-UCUM-Lperh .
+
+resource:CHE-229_707_417-sphn-Unit-6c44bbbf-ad63-4d85-87ce-ec4d26af29da-sphn-Code-UCUM-Lperh
+    a ucum:Lperh .
+
+resource:CHE-229_707_417-sphn-Unit-85c0a0ca-4956-4ac0-8d4c-3fc01f6550a1
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-85c0a0ca-4956-4ac0-8d4c-3fc01f6550a1-sphn-Code-UCUM-U .
+
+resource:CHE-229_707_417-sphn-Unit-85c0a0ca-4956-4ac0-8d4c-3fc01f6550a1-sphn-Code-UCUM-U
+    a ucum:U .
+
+resource:CHE-229_707_417-sphn-Unit-8d9e8a39-99ea-4332-9251-b09be8de7bdc
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-8d9e8a39-99ea-4332-9251-b09be8de7bdc-sphn-Code-UCUM-H .
+
+resource:CHE-229_707_417-sphn-Unit-8d9e8a39-99ea-4332-9251-b09be8de7bdc-sphn-Code-UCUM-H
+    a ucum:H .
+
+resource:CHE-229_707_417-sphn-Unit-a0e798e2-bb0c-458f-b7a0-b36953d0d2d9
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-a0e798e2-bb0c-458f-b7a0-b36953d0d2d9-sphn-Code-UNKNOWN-58714841 .
+
+resource:CHE-229_707_417-sphn-Unit-a0e798e2-bb0c-458f-b7a0-b36953d0d2d9-sphn-Code-UNKNOWN-58714841
+    a ucum:percent .
+
+resource:CHE-229_707_417-sphn-Unit-a7eb94ab-2e0b-4ccd-9ec3-15438d06bf01
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-a7eb94ab-2e0b-4ccd-9ec3-15438d06bf01-sphn-Code-UCUM-Lperminperm2 .
+
+resource:CHE-229_707_417-sphn-Unit-a7eb94ab-2e0b-4ccd-9ec3-15438d06bf01-sphn-Code-UCUM-Lperminperm2
+    a ucum:Lperminperm2 .
+
+resource:CHE-229_707_417-sphn-Unit-aaae64a6-0a31-407f-a67d-e9dd0dce2281
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-aaae64a6-0a31-407f-a67d-e9dd0dce2281-sphn-Code-UCUM-Upergcblproteincbr .
+
+resource:CHE-229_707_417-sphn-Unit-aaae64a6-0a31-407f-a67d-e9dd0dce2281-sphn-Code-UCUM-Upergcblproteincbr
+    a ucum:Upergcblproteincbr .
+
+resource:CHE-229_707_417-sphn-Unit-b3413355-ff69-4471-a2bc-e50530084039
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-b3413355-ff69-4471-a2bc-e50530084039-sphn-Code-UCUM-Hz .
+
+resource:CHE-229_707_417-sphn-Unit-b3413355-ff69-4471-a2bc-e50530084039-sphn-Code-UCUM-Hz
+    a ucum:Hz .
+
+resource:CHE-229_707_417-sphn-Unit-b4f399b6-66c8-48ce-92dd-5942554c800f
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-b4f399b6-66c8-48ce-92dd-5942554c800f-sphn-Code-UNKNOWN-72076984 .
+
+resource:CHE-229_707_417-sphn-Unit-b4f399b6-66c8-48ce-92dd-5942554c800f-sphn-Code-UNKNOWN-72076984
+    a ucum:d .
+
+resource:CHE-229_707_417-sphn-Unit-ba13016b-64e5-4adb-8cf2-5cb76f68c58f
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-ba13016b-64e5-4adb-8cf2-5cb76f68c58f-sphn-Code-UCUM-10dotLpermin .
+
+resource:CHE-229_707_417-sphn-Unit-ba13016b-64e5-4adb-8cf2-5cb76f68c58f-sphn-Code-UCUM-10dotLpermin
+    a ucum:10dotLpermin .
+
+resource:CHE-229_707_417-sphn-Unit-be4c5313-e5b0-46e3-8574-26fc84c7c30f
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-be4c5313-e5b0-46e3-8574-26fc84c7c30f-sphn-Code-UCUM-Uperkg .
+
+resource:CHE-229_707_417-sphn-Unit-be4c5313-e5b0-46e3-8574-26fc84c7c30f-sphn-Code-UCUM-Uperkg
+    a ucum:Uperkg .
+
+resource:CHE-229_707_417-sphn-Unit-be51edb1-3945-45c8-b617-b717bf417111
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-be51edb1-3945-45c8-b617-b717bf417111-sphn-Code-UCUM-10dotLperrblmindotm2rbr .
+
+resource:CHE-229_707_417-sphn-Unit-be51edb1-3945-45c8-b617-b717bf417111-sphn-Code-UCUM-10dotLperrblmindotm2rbr
+    a ucum:10dotLperrblmindotm2rbr .
+
+resource:CHE-229_707_417-sphn-Unit-c84c6003-54ec-4f9c-b83c-f6216749cd7c
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-c84c6003-54ec-4f9c-b83c-f6216749cd7c-sphn-Code-UCUM-Uperg .
+
+resource:CHE-229_707_417-sphn-Unit-c84c6003-54ec-4f9c-b83c-f6216749cd7c-sphn-Code-UCUM-Uperg
+    a ucum:Uperg .
+
+resource:CHE-229_707_417-sphn-Unit-e6b73f9f-2294-45bf-a903-9d94271e0e6a
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-e6b73f9f-2294-45bf-a903-9d94271e0e6a-sphn-Code-UCUM-Uper10 .
+
+resource:CHE-229_707_417-sphn-Unit-e6b73f9f-2294-45bf-a903-9d94271e0e6a-sphn-Code-UCUM-Uper10
+    a ucum:Uper10 .
+
+resource:CHE-229_707_417-sphn-Unit-e8ae9e25-0fa5-4e65-b05a-4ceeb120e521
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-e8ae9e25-0fa5-4e65-b05a-4ceeb120e521-sphn-Code-UCUM-Lperd .
+
+resource:CHE-229_707_417-sphn-Unit-e8ae9e25-0fa5-4e65-b05a-4ceeb120e521-sphn-Code-UCUM-Lperd
+    a ucum:Lperd .
+
+resource:CHE-229_707_417-sphn-Unit-ec602bd3-6f40-45d6-b3e0-7bdc57b24c28
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-ec602bd3-6f40-45d6-b3e0-7bdc57b24c28-sphn-Code-UCUM-UperL .
+
+resource:CHE-229_707_417-sphn-Unit-ec602bd3-6f40-45d6-b3e0-7bdc57b24c28-sphn-Code-UCUM-UperL
+    a ucum:UperL .
+
+resource:CHE-229_707_417-sphn-Unit-ff708aec-b50d-498a-b8ae-29f61058a116
+    a sphn:Unit ;
+    sphn:hasCode
+      resource:CHE-229_707_417-sphn-Unit-ff708aec-b50d-498a-b8ae-29f61058a116-sphn-Code-UCUM-Lperrblmindotm2rbr .
+
+resource:CHE-229_707_417-sphn-Unit-ff708aec-b50d-498a-b8ae-29f61058a116-sphn-Code-UCUM-Lperrblmindotm2rbr
+    a ucum:Lperrblmindotm2rbr .

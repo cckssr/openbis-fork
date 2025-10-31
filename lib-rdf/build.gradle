@@ -103,3 +103,28 @@ tasks.register('buildRepairTool', Jar) {
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
 }
+
+
+tasks.register('buildCountTool', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-rdf-count')
+    includeEmptyDirs = false
+
+    manifest {
+        attributes(
+                'Main-Class': 'ch.ethz.sis.tools.ResourceCount'
+        )
+    }
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
