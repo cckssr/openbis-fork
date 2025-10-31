@@ -44,9 +44,9 @@ final class AfsClientImportProxy
         if(url != null && !url.isBlank()) {
             String timeoutStr = CommonServiceProvider.tryToGetProperty(AFS_SERVER_TIMEOUT_PROPERTY_NAME, AFS_SERVER_TIMEOUT_DEFAULT);
             String interactiveSessionKey = CommonServiceProvider.tryToGetProperty(INTERACTIVE_SESSION_KEY_PROPERTY_NAME);
-            if(interactiveSessionKey == null || interactiveSessionKey.isBlank()) {
-                throw new IllegalStateException("Interactive Session Key is not configured!");
-            }
+//            if(interactiveSessionKey == null || interactiveSessionKey.isBlank()) {
+//                throw new IllegalStateException("Interactive Session Key is not configured!");
+//            }
             final int timeout = Integer.parseInt(timeoutStr);
             AfsClient client = getAfsClient(sessionToken, url, timeout, interactiveSessionKey);
 
