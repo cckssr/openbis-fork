@@ -37,7 +37,7 @@
         <property name="databaseKind" value="${database.kind}" />
         <property name="databaseEngineCode" value="${database.engine}" />
         <property name="validVersions" value="${database.validVersions}" />
-        <property name="scriptFolder" value="${script-folder}/sql" />
+        <property name="scriptFolder" value="${script-folder}" />
         <property name="scriptFolders" value="${script-folders}" />
         <property name="databaseInstance" value="${database-instance}" />
         <property name="maxWaitForConnectionProp" value="${database.max-wait-for-connection}" />
