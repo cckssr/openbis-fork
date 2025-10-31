@@ -46,7 +46,7 @@ public class ImagingFixes
             operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingFixes.class);
 
     private static final int TIMEOUT_COUNT = 60 * 60; //60 minutes
-    private static final String PYTHON_PATH = Paths.get("..", "..", "..", "imaging", "1", "dss", "services", "imaging", "Python-3.10.16-linux-x64", "bin", "python3.10").toString();
+    private static final String PYTHON_PATH = Paths.get("..", "..", "..", "imaging", "1", "as", "services", "imaging", "Python-3.10.16-linux-x64", "bin", "python3.10").toString();
 
     private static final String PYTHON_PATH_PROPERTY = "imaging.imaging-fixes-python3-path";
     private static final String URL_SYS_PROPERTY = "OPENBIS_FQDN";
