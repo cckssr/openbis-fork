@@ -44,7 +44,7 @@ jar {
 }
 
 
-task premiseImagingDatasetInterceptorJar(type: Copy) {
+tasks.register('premiseImagingDatasetInterceptorJar', Copy) {
     dependsOn jar
     from("${project.buildDir}/libs/${premiseArchiveName}")
     into ".."

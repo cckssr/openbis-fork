@@ -29,12 +29,22 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.UpdateDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.IVocabularyId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.id.VocabularyPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.listener.IOperationListener;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.*;
 import ch.ethz.sis.openbis.generic.server.sharedapi.v3.json.GenericObjectMapper;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
+import ch.systemsx.cisd.common.logging.LogCategory;
+import ch.systemsx.cisd.common.logging.LogFactory;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
@@ -42,9 +52,13 @@ import java.util.*;
 public class ImagingDataSetInterceptor implements IOperationListener
 {
 
+    private static final Logger
+            operationLog = LogFactory.getLogger(LogCategory.OPERATION, ImagingDataSetInterceptor.class);
+
     static final String IMAGING_CONFIG_PROPERTY_NAME = "IMAGING_DATA_CONFIG";
     static final String DEFAULT_DATASET_VIEW_PROPERTY = "DEFAULT_DATASET_VIEW";
-    static final String DEFAULT_DATASET_VIEWER_VALUE = "IMAGING_DATASET_VIEWER";
+    static final String DEFAULT_OBJECT_VIEW_PROPERTY = "DEFAULT_OBJECT_VIEW";
+    static final String DEFAULT_VIEWER_VALUE = "IMAGING_DATASET_VIEWER";
     static final String IMAGING_TYPE = "IMAGING_DATA";
     static final String USER_DEFINED_IMAGING_DATA = "USER_DEFINED_IMAGING_DATA";
     static final ObjectMapper OBJECT_MAPPER = new GenericObjectMapper();
@@ -150,9 +164,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
     public void beforeOperation(IApplicationServerApi api, String sessionToken,
             IOperation operation)
     {
-        if(operation instanceof CreateDataSetsOperation) {
-
-            CreateDataSetsOperation createDataSetsOperation = (CreateDataSetsOperation) operation;
+        if(operation instanceof CreateDataSetsOperation createDataSetsOperation) {
 
             for(DataSetCreation creation : createDataSetsOperation.getCreations()) {
 
@@ -170,7 +182,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
                             creation.setMetaData(metaData);
-                            creation.setProperty("DEFAULT_DATASET_VIEW", "IMAGING_DATASET_VIEWER");
+                            creation.setProperty(DEFAULT_DATASET_VIEW_PROPERTY, DEFAULT_VIEWER_VALUE);
 
                             String property = convertConfigToJson(config);
                             creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
@@ -199,7 +211,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
                     }
 
                     if(creation.getControlledVocabularyProperty(DEFAULT_DATASET_VIEW_PROPERTY) == null) {
-                        creation.setControlledVocabularyProperty(DEFAULT_DATASET_VIEW_PROPERTY, DEFAULT_DATASET_VIEWER_VALUE);
+                        creation.setControlledVocabularyProperty(DEFAULT_DATASET_VIEW_PROPERTY,
+                                DEFAULT_VIEWER_VALUE);
                     }
 
                 }
@@ -210,8 +223,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
 
         }
-        else if(operation instanceof UpdateDataSetsOperation) {
-            UpdateDataSetsOperation updateDataSetsOperation = (UpdateDataSetsOperation) operation;
+        else if(operation instanceof UpdateDataSetsOperation updateDataSetsOperation) {
 
             for(DataSetUpdate update : updateDataSetsOperation.getUpdates()) {
 
@@ -244,6 +256,55 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
 
             }
+        }
+        else if(operation instanceof CreateSamplesOperation createSamplesOperation) {
+            for(SampleCreation creation : createSamplesOperation.getCreations()) {
+                EntityTypePermId typeId = (EntityTypePermId) creation.getTypeId();
+                String objectTypeCode = typeId.getPermId();
+                if(isImagingDataSet(objectTypeCode) || hasImagingConfig(creation)) {
+                    String propertyConfig = getPropertyConfig(creation);
+                    if(propertyConfig == null || propertyConfig.trim().isEmpty() || "{}".equals(propertyConfig.trim())) {
+
+                            ImagingDataSetPropertyConfig config =
+                                    new ImagingDataSetPropertyConfig();
+                            config.setMetadata(Map.of("GENERATE", "true"));
+                            config.setImages(Arrays.asList(getUserDefinedDefaultImage()));
+                            Map<String, String> metaData = new HashMap<>();
+                            metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
+                            creation.setMetaData(metaData);
+                            creation.setProperty(DEFAULT_OBJECT_VIEW_PROPERTY, DEFAULT_VIEWER_VALUE);
+
+                            String property = convertConfigToJson(config);
+                            creation.setJsonProperty(IMAGING_CONFIG_PROPERTY_NAME, property);
+
+
+                    } else {
+                        ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
+
+                        if(config.getImages() == null || config.getImages().isEmpty()) {
+                            throw new UserFailureException("At least one image must be included!");
+                        }
+                        int count = 0;
+                        for(ImagingDataSetImage image : config.getImages()) {
+                            if(image.getPreviews() == null || image.getPreviews().isEmpty()) {
+                                throw new UserFailureException("At least one preview must be included!");
+                            }
+                            count += image.getPreviews().size();
+                        }
+                        if(creation.getMetaData() == null) {
+                            creation.setMetaData(new HashMap<>());
+                        }
+                        creation.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(count));
+                    }
+
+                    if(creation.getControlledVocabularyProperty(DEFAULT_OBJECT_VIEW_PROPERTY) == null) {
+                        creation.setControlledVocabularyProperty(DEFAULT_OBJECT_VIEW_PROPERTY,
+                                DEFAULT_VIEWER_VALUE);
+                    }
+                }
+            }
+        } else if(operation instanceof UpdateSamplesOperation updateSamplesOperation) {
+            //TODO
         }
     }
 
