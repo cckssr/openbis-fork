@@ -54,4 +54,9 @@ public interface OperationsAPI
     @NonNull
     FreeSpace free(@NonNull String owner, @NonNull String source) throws Exception;
 
+    @NonNull
+    String hash(@NonNull String owner, @NonNull String source) throws Exception; // Get MD5 (as hexadecimal lowercase string, such as: 48e1b59ac378e3f3098bbc0de9c19b9c), using the JDK implementation
+
+    @NonNull
+    byte[] preview(@NonNull String owner, @NonNull String source) throws Exception; // Get preview (JPEG smaller version of image): supported for a list of whitelisted image file-type extensions
 }

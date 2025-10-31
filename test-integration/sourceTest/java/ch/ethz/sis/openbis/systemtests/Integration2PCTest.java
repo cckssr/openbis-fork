@@ -9,8 +9,11 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -24,6 +27,8 @@ import javax.sql.DataSource;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.afsapi.api.ClientAPI;
+import ch.ethz.sis.afsclient.client.AfsClient;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.PersonalAccessToken;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.pat.create.PersonalAccessTokenCreation;
@@ -993,6 +998,44 @@ public class Integration2PCTest extends AbstractIntegrationTest
             assertEquals(trBytesRead, writeData.bytes);
             assertEquals(noTrBytesRead, writeData.bytes);
         }
+    }
+
+    @Test
+    public void testAFSUpload() throws IOException
+    {
+        OpenBIS openBISWithTr = createOpenBIS();
+        OpenBIS openBISWithNoTr = createOpenBIS();
+
+        openBISWithTr.setInteractiveSessionKey(TEST_INTERACTIVE_SESSION_KEY);
+
+        openBISWithTr.login(INSTANCE_ADMIN, PASSWORD);
+        openBISWithNoTr.login(INSTANCE_ADMIN, PASSWORD);
+
+        openBISWithTr.beginTransaction();
+
+        // create space and sample at AS
+        Space space = createSpace(openBISWithTr, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = createSample(openBISWithTr, space.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+
+        // upload an image to AFS
+        final String IMAGE_NAME = "test-image.bmp";
+
+        Path source = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + IMAGE_NAME);
+        openBISWithTr.getAfsServerFacade()
+                .upload(source, sample.getPermId().getPermId(), Path.of("/"), AfsClient.overrideCollisionListener,
+                        new ClientAPI.DefaultTransferMonitorLister());
+
+        openBISWithTr.commitTransaction();
+
+        // currently hash and preview can only be preformed once a transaction is commited
+        String hash = openBISWithNoTr.getAfsServerFacade().hash(sample.getPermId().getPermId(), IMAGE_NAME);
+        byte[] preview = openBISWithNoTr.getAfsServerFacade().preview(sample.getPermId().getPermId(), IMAGE_NAME);
+
+        String expectedHash = Files.readString(Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + IMAGE_NAME + "-hash.md5"));
+        byte[] expectedPreview = Files.readAllBytes(Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + IMAGE_NAME + "-preview.jpg"));
+
+        assertEquals(hash, expectedHash);
+        assertEquals(preview, expectedPreview);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package ch.ethz.sis.openbis.afsserver.server.common;
 
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentServiceProvider;
@@ -32,6 +33,11 @@ public class HierarchicalContentServiceProvider implements IHierarchicalContentS
     @Override public IPathInfoDataSourceProvider getPathInfoDataSourceProvider()
     {
         return serviceProvider.getPathInfoDataSourceProvider();
+    }
+
+    @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        return serviceProvider.getHierarchicalContentNodeFilter();
     }
 
     @Override public IOpenBISService getOpenBISService()

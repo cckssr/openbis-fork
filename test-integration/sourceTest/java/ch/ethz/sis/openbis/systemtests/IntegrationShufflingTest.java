@@ -135,8 +135,8 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
 
         assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
 
-        MessageChannel toShuffling = new MessageChannel(2000);
-        MessageChannel fromShuffling = new MessageChannel(2000);
+        MessageChannel toShuffling = new MessageChannel(5000);
+        MessageChannel fromShuffling = new MessageChannel(5000);
 
         Thread shufflingThread = new Thread(() ->
         {

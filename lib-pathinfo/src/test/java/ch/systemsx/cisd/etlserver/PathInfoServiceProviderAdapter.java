@@ -1,6 +1,7 @@
 package ch.systemsx.cisd.etlserver;
 
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
@@ -31,6 +32,11 @@ public class PathInfoServiceProviderAdapter implements IPathInfoServiceProvider
     }
 
     @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
     {
         throw new UnsupportedOperationException();
     }

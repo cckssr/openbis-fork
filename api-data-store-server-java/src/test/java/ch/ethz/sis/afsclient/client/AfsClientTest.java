@@ -278,6 +278,31 @@ public class AfsClientTest
         assertArrayEquals(httpServer.getLastRequestBody(), new byte[0]);
     }
 
+    @Test
+    public void hash_methodIsGet() throws Exception
+    {
+        login();
+
+        httpServer.setNextPlainTextResponse("e07c52633d334f363930c8b1f2fd5e33");
+        afsClient.hash("", "");
+
+        assertEquals("GET", httpServer.getHttpExchange().getRequestMethod());
+        assertArrayEquals(httpServer.getLastRequestBody(), new byte[0]);
+    }
+
+    @Test
+    public void preview_methodIsGet() throws Exception
+    {
+        login();
+
+        byte[] bytes = UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8);
+        httpServer.setNextResponse(bytes);
+        afsClient.preview("", "test.png");
+
+        assertEquals("GET", httpServer.getHttpExchange().getRequestMethod());
+        assertArrayEquals(httpServer.getLastRequestBody(), new byte[0]);
+    }
+
     private void login() throws Exception
     {
         afsClient.login("test", "test");

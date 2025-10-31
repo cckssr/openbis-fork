@@ -2,6 +2,7 @@ package ch.ethz.sis.openbis.afsserver.server.pathinfo;
 
 import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.IApplicationServerApi;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IConfigProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
@@ -42,6 +43,11 @@ public class PathInfoServiceProvider implements IPathInfoServiceProvider
     @Override public IHierarchicalContentProvider getHierarchicalContentProvider()
     {
         return serviceProvider.getHierarchicalContentProvider();
+    }
+
+    @Override public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        return serviceProvider.getHierarchicalContentNodeFilter();
     }
 
     @Override public IConfigProvider getConfigProvider()

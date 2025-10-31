@@ -614,7 +614,7 @@ public class ShareIdManagerTest extends AbstractTest
         openBISAuthorizationInfoProvider.init(configuration);
 
         TransactionManager transactionManager =
-                new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot);
+                new TransactionManager(openBISAuthorizationInfoProvider, jsonObjectMapper, writeAheadLogRoot, storageRoot, List.of("png", "jpeg", "jpg", "gif", "bmp", "tiff"), 100000000);
         return new ShareIdManager(openBISFacade, transactionManager, storageRoot, LOCKING_TIMEOUT_IN_SECONDS,
                 LOCKING_LOCKING_WAITING_INTERVAL_IN_MILLIS);
     }

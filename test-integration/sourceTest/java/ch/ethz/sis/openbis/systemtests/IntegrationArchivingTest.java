@@ -1,6 +1,7 @@
 package ch.ethz.sis.openbis.systemtests;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
 import java.io.File;
@@ -13,8 +14,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.shared.log.standard.core.Level;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -41,9 +40,11 @@ import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
 import ch.ethz.sis.openbis.systemtests.common.TestMessagesConsumerMaintenanceTask;
 import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.shared.io.IOUtils;
-import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.common.process.ProcessResult;
 import ch.systemsx.cisd.common.test.AssertionUtil;
@@ -215,6 +216,10 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
 
         log("upload a file");
         openBIS.getAfsServerFacade().write(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
+
+        log("calculate a hash for the file"); // it will be stored in OperationExecutor.HIDDEN_AFS_DIRECTORY folder
+        String hash = openBIS.getAfsServerFacade().hash(ownerId, TEST_FILE_NAME);
+        assertNotNull(hash);
 
         log("check data set is AVAILABLE");
         DataSet afsDataSet = getAfsDataSet(openBIS, ownerId);

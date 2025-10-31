@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import ch.ethz.sis.afs.manager.TransactionManager;
+import ch.ethz.sis.afs.manager.operation.OperationExecutor;
 import ch.ethz.sis.afsjson.JsonObjectMapper;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
@@ -35,6 +36,8 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.server.ISessionTokenProvider;
 import ch.systemsx.cisd.common.spring.HttpInvokerUtils;
 import ch.systemsx.cisd.common.time.DateTimeUtils;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.server.DatabaseBasedDataSetPathInfoProvider;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.AbstractMultiDataSetArchiveCleaner;
 import ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard.archiver.FileDeleter;
@@ -170,6 +173,17 @@ public class ServiceProvider implements IServiceProvider
         }
 
         return hierarchicalContentProvider;
+    }
+
+    public IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        return new IHierarchicalContentNodeFilter()
+        {
+            @Override public boolean accept(final IHierarchicalContentNode node)
+            {
+                return !node.getName().equals(OperationExecutor.HIDDEN_AFS_DIRECTORY);
+            }
+        };
     }
 
     public synchronized IDataSetDirectoryProvider getDataSetDirectoryProvider()
