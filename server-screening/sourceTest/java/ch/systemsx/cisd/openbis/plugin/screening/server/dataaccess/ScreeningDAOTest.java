@@ -42,7 +42,7 @@ public class ScreeningDAOTest extends AbstractScreeningDAOTest
 
     static
     {
-        System.setProperty("script-folder", "../server-application-server/sourceTest");
+        System.setProperty("script-folder", "../server-application-server/sourceTest/sql/openbis");
 //        System.setProperty("database.force-create-with-initial-data", "true");
         System.setProperty("mass-upload-folder",
                 "../server-application-server/sourceTest/sql/postgresql");

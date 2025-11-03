@@ -35,9 +35,9 @@ public class TestInitializer
     private static boolean createDBFromScratch = true;
     private static boolean forceCreateWithInitialData = false;
 
-    private static String scriptFolderForTestDB = "../server-application-server/sourceTest";
+    private static String scriptFolderForTestDB = "../server-application-server/sourceTest/sql/openbis";
 
-    private static String scriptFolderForEmptyDB = "../server-application-server/source";
+    private static String scriptFolderForEmptyDB = "../server-application-server/source/sql/openbis";
 
     public static void init()
     {

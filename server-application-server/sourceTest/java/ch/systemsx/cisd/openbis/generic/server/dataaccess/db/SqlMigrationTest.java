@@ -36,7 +36,7 @@ public class SqlMigrationTest extends SqlMigrationTestAbstract
     @Override
     protected String getSqlScriptInputDirectory()
     {
-        return "source" + File.separator + "sql";
+        return "source" + File.separator + "sql" + File.separator + "openbis";
     }
 
     @Override
