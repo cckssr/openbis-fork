@@ -177,10 +177,16 @@ public class ImportDelegate
             Path path = Path.of(UUID.randomUUID() + ".zip");
             SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
             RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
+            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
             LOG.debug(String.format("Crate location %s",
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path)));
+                    realPath));
+            if (realPath.toString().startsWith("./"))
+            {
+                LOG.error("How did this happen?");
+            }
+
             crate = roCrateReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path).toString());
+                    realPath.toString());
         }
         return crate;
     }
