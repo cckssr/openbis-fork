@@ -34,22 +34,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.ICustomASServiceExecu
 import ch.ethz.sis.openbis.generic.asapi.v3.plugin.service.context.CustomASServiceContext;
 import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.*;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.service.CustomDSSServiceExecutionOptions;
-import ch.ethz.sis.openbis.generic.dssapi.v3.dto.service.id.ICustomDSSServiceId;
 import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.IImagingDataSetAdaptor;
-import ch.ethz.sis.openbis.generic.dssapi.v3.plugin.service.ICustomDSSServiceExecutor;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
-import ch.systemsx.cisd.common.spring.ExposablePropertyPlaceholderConfigurer;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContent;
-import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
-import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.SessionWorkspaceUtil;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
-import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
