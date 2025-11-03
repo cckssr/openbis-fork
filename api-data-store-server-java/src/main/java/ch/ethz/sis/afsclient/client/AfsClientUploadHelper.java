@@ -615,7 +615,7 @@ public class AfsClientUploadHelper
                 @NonNull Path toPath, int writtenByteCount, boolean transactional) throws Exception
         {
             Long expectedSrcLastModification = lastModificationTimestamps.get(fromPath);
-            if (Files.getLastModifiedTime(fromPath).toMillis() != expectedSrcLastModification) {
+            if (expectedSrcLastModification == null || Files.getLastModifiedTime(fromPath).toMillis() != expectedSrcLastModification) {
                 skipForConcurrentModification.add(fromPath);
                 return false;
             }
