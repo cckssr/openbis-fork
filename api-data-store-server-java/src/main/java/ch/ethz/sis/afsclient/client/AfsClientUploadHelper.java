@@ -608,7 +608,7 @@ public class AfsClientUploadHelper
 
         private final @NonNull Map<Path, Long> currents = new HashMap<>();
 
-        private final @NonNull Set<Path> skipForConcurrentModification = new HashSet<>();
+        private final @NonNull Set<Path> concurrentModification = new HashSet<>();
 
 
         synchronized boolean updateCurrentAmountsAndCheckCompletion(@NonNull AfsClient afsClient, @NonNull Path fromPath, @NonNull String ownerId,
@@ -616,7 +616,7 @@ public class AfsClientUploadHelper
         {
             Long expectedSrcLastModification = lastModificationTimestamps.get(fromPath);
             if (expectedSrcLastModification == null || Files.getLastModifiedTime(fromPath).toMillis() != expectedSrcLastModification) {
-                skipForConcurrentModification.add(fromPath);
+                concurrentModification.add(fromPath);
                 return false;
             }
 
@@ -653,6 +653,7 @@ public class AfsClientUploadHelper
                         return true;
                     } else
                     {
+                        concurrentModification.add(fromPath);
                         return false;
                     }
                 }
@@ -670,11 +671,11 @@ public class AfsClientUploadHelper
         }
 
         synchronized boolean isAllCompleted() {
-            return totals.isEmpty();
+            return totals.isEmpty() && concurrentModification.isEmpty();
         }
 
         synchronized boolean skipForConcurrentModification(@NonNull Path fromPath) {
-            return skipForConcurrentModification.contains(fromPath);
+            return concurrentModification.contains(fromPath);
         }
     }
 

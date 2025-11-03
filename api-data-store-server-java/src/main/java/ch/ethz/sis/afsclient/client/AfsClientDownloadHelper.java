@@ -452,14 +452,14 @@ public class AfsClientDownloadHelper {
         private final @NonNull Map<Path, String> checksums = new HashMap<>();
         private final @NonNull Map<Path, Long> totals = new HashMap<>();
         private final @NonNull Map<Path, Long> currents = new HashMap<>();
-        private final @NonNull Set<Path> skipForConcurrentModification = new HashSet<>();
+        private final @NonNull Set<Path> concurrentModification = new HashSet<>();
 
 
         synchronized boolean updateCurrentAmountsAndCheckCompletion(@NonNull AfsClient afsClient, @NonNull String ownerId, @NonNull Path fromPath, @NonNull Path toPath, int writtenByteCount) throws Exception {
             Long expectedSrcLastModification = lastModificationTimestamps.get(fromPath);
             Optional<File> remoteFromPath = AfsClientUploadHelper.getServerFilePresence(afsClient, ownerId, AfsClientUploadHelper.toServerPathString(fromPath));
             if (expectedSrcLastModification == null || !remoteFromPath.map( info -> info.getLastModifiedTime().toInstant().toEpochMilli() == expectedSrcLastModification).orElse(false)) {
-                skipForConcurrentModification.add(fromPath);
+                concurrentModification.add(fromPath);
                 return false;
             }
 
@@ -485,6 +485,7 @@ public class AfsClientDownloadHelper {
                 ) {
                     return true;
                 } else {
+                    concurrentModification.add(fromPath);
                     return false;
                 }
             } else {
@@ -499,11 +500,11 @@ public class AfsClientDownloadHelper {
         }
 
         synchronized boolean isAllCompleted() {
-            return totals.isEmpty();
+            return totals.isEmpty() && concurrentModification.isEmpty();
         }
 
         synchronized boolean skipForConcurrentModification(@NonNull Path fromPath) {
-            return skipForConcurrentModification.contains(fromPath);
+            return concurrentModification.contains(fromPath);
         }
     }
 
