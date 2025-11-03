@@ -29,8 +29,12 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.DataSetUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.update.UpdateDataSetsOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.CreateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.create.SampleCreation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.UpdateSamplesOperation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.fetchoptions.VocabularyFetchOptions;
@@ -84,6 +88,14 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
         Map<IDataSetId, DataSet> dataSetToUpdateSearch = api.getDataSets(sessionToken, Arrays.asList(update.getDataSetId()), fetchOptions);
         return dataSetToUpdateSearch.get(update.getDataSetId());
+    }
+
+    private Sample getSampleToUpdate(SampleUpdate update, IApplicationServerApi api, String sessionToken) {
+        SampleFetchOptions fetchOptions = new SampleFetchOptions();
+        fetchOptions.withType();
+
+        Map<ISampleId, Sample> dataSetToUpdateSearch = api.getSamples(sessionToken, Arrays.asList(update.getSampleId()), fetchOptions);
+        return dataSetToUpdateSearch.get(update.getSampleId());
     }
 
     private ImagingDataSetPropertyConfig readConfig(String val)
@@ -226,7 +238,6 @@ public class ImagingDataSetInterceptor implements IOperationListener
         else if(operation instanceof UpdateDataSetsOperation updateDataSetsOperation) {
 
             for(DataSetUpdate update : updateDataSetsOperation.getUpdates()) {
-
                 DataSet dataSet = getDataSetToUpdate(update, api, sessionToken);
                 if (dataSet != null)
                 {
@@ -252,9 +263,6 @@ public class ImagingDataSetInterceptor implements IOperationListener
                         update.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(count));
                     }
                 }
-
-
-
             }
         }
         else if(operation instanceof CreateSamplesOperation createSamplesOperation) {
@@ -267,7 +275,7 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
-                            config.setMetadata(Map.of("GENERATE", "true"));
+                            config.setMetadata(Map.of("GENERATE", "false"));
                             config.setImages(Arrays.asList(getUserDefinedDefaultImage()));
                             Map<String, String> metaData = new HashMap<>();
                             metaData.put(PREVIEW_TOTAL_COUNT.toLowerCase(), "1");
@@ -304,7 +312,33 @@ public class ImagingDataSetInterceptor implements IOperationListener
                 }
             }
         } else if(operation instanceof UpdateSamplesOperation updateSamplesOperation) {
-            //TODO
+            for(SampleUpdate update : updateSamplesOperation.getUpdates()) {
+                Sample sample = getSampleToUpdate(update, api, sessionToken);
+                if (sample != null)
+                {
+                    EntityTypePermId typeId = sample.getType().getPermId();
+                    if(isImagingDataSet(typeId.getPermId()) || hasImagingConfig(update)) {
+
+                        String propertyConfig = getPropertyConfig(update);
+                        if(propertyConfig == null) {
+                            throw new UserFailureException("Imaging property config must not be empty!");
+                        }
+                        ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
+
+                        if(config.getImages() == null || config.getImages().isEmpty()) {
+                            throw new UserFailureException("At least one image must be included!");
+                        }
+                        int count = 0;
+                        for(ImagingDataSetImage image : config.getImages()) {
+                            if(image.getPreviews() == null || image.getPreviews().isEmpty()) {
+                                throw new UserFailureException("At least one preview must be included!");
+                            }
+                            count += image.getPreviews().size();
+                        }
+                        update.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(count));
+                    }
+                }
+            }
         }
     }
 
