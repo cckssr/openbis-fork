@@ -48,7 +48,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
           )
         }
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
-          operations.push(this._updatePropertyTypeOperation(property))
+          //operations.push(this._updatePropertyTypeOperation(property))
         }
         assignments.push(this._propertyAssignmentCreation(property, index))
       } else {

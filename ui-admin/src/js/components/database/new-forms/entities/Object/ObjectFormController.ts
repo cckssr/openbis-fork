@@ -193,7 +193,120 @@ export class ObjectFormController implements IFormController {
 		};
 	}
 
-	move(form: Form): void {
-		console.log(`CONTROLLER: Moving ${form.entityPermId}`);
+	async move(form: Form, context?: any, params?: any): Promise<void> {
+		const { SampleFetchOptions, SampleUpdate, SpacePermId } = this.openbisFacade;
+	
+		const sampleUpdate = this._prepareSampleUpdate(form.entityPermId, params);
+
+		console.log('ObjectFormController.move', form, context, params);
+		const result = await this.openbisFacade.updateSamples([sampleUpdate]);
+		return Promise.resolve();
 	}
+
+	_prepareSampleUpdate(samplePermId: any, params: any) {
+		const { SampleUpdate } = this.openbisFacade;
+		const sampleUpdate = new SampleUpdate();
+		sampleUpdate.setSampleId(samplePermId);
+  
+		const selectedEntityType = params.moveEntityModel.selected['@type'];
+		switch (selectedEntityType) {
+		  case 'as.dto.project.Project':
+			sampleUpdate.setExperimentId(null);
+			sampleUpdate.setProjectId(params.moveEntityModel.selected.getPermId());
+			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getSpace().getPermId());
+			break;
+		  case 'as.dto.experiment.Experiment':
+			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getProject().getSpace().getPermId());
+			sampleUpdate.setProjectId(params.moveEntityModel.selected.getProject().getPermId());
+			sampleUpdate.setExperimentId(params.moveEntityModel.selected.getPermId());
+			break;
+		  case 'as.dto.space.Space':
+			sampleUpdate.setExperimentId(null);
+			sampleUpdate.setProjectId(null);
+			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getPermId());
+			break;
+		}
+		return sampleUpdate;
+	  };
+
+	/* private async moveSample(descendants: boolean): Promise<void> {
+		const { SampleFetchOptions, SampleUpdate, SpacePermId } = this.openbisFacade;
+	
+		const sampleUpdate = this._prepareSampleUpdate(form.entityPermId);
+
+		const permIds = this.moveEntityModel.entities.map(x => x.getPermId());
+		const selectedEntityType = this.moveEntityModel.selected['@type'];
+	
+		if (descendants) {
+		  await this.moveSampleWithDescendants(permIds, selectedEntityType, prepareSampleUpdate);
+		} else {
+		  const sampleUpdates = permIds.map(x => prepareSampleUpdate(x));
+		  await this.openbisFacade.updateSamples(sampleUpdates);
+		}
+	  }
+
+	async moveSampleWithDescendants(
+		permIds: any[],
+		selectedEntityType: string,
+		prepareSampleUpdate: (permId: any) => any
+	  ): Promise<void> {
+		const { SampleFetchOptions } = this.openbisFacade;
+		const fetchOptions = new SampleFetchOptions();
+		fetchOptions.withExperiment();
+		fetchOptions.withProject();
+		fetchOptions.withSpace();
+		fetchOptions.withChildrenUsing(fetchOptions);
+	
+		const map = await this.openbisFacade.getSamples(permIds, fetchOptions);
+		const samplesToUpdate: any[] = [];
+		const updates: any[] = [];
+	
+		for (let i = 0; i < this.moveEntityModel.entities.length; i++) {
+		  const entity = this.moveEntityModel.entities[i];
+		  const permId = entity.getPermId();
+		  this.gatherAllDescendants(samplesToUpdate, map[permId]);
+	
+		  let level: string;
+		  let currentEntity: string;
+	
+		  if (entity.getExperiment()) {
+			level = 'EXPERIMENT';
+			currentEntity = entity.getExperiment().getPermId().getPermId();
+		  } else if (entity.getProject()) {
+			level = 'PROJECT';
+			currentEntity = entity.getProject().getPermId().getPermId();
+		  } else {
+			level = 'SPACE';
+			currentEntity = entity.getSpace().getPermId().getPermId();
+		  }
+	
+		  // Filter samples based on current level
+		  samplesToUpdate.forEach((sample: any) => {
+			let shouldUpdate = false;
+	
+			switch (level) {
+			  case 'EXPERIMENT':
+				shouldUpdate = sample.getExperiment() != null &&
+				  currentEntity === sample.getExperiment().getPermId().getPermId();
+				break;
+			  case 'PROJECT':
+				shouldUpdate = sample.getExperiment() == null &&
+				  currentEntity === sample.getProject().getPermId().getPermId();
+				break;
+			  case 'SPACE':
+				shouldUpdate = sample.getExperiment() == null &&
+				  sample.getProject() == null &&
+				  currentEntity === sample.getSpace().getPermId().getPermId();
+				break;
+			}
+	
+			if (shouldUpdate) {
+			  const sampleUpdate = prepareSampleUpdate(sample.getPermId());
+			  updates.push(sampleUpdate);
+			}
+		  });
+		}
+	
+		await this.openbisFacade.updateSamples(updates);
+	  } */
 }

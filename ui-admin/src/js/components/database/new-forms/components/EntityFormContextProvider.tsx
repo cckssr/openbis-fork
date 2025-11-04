@@ -7,9 +7,12 @@ import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engin
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
-import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/ConflictResolutionDialog.tsx';
-import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/DeleteConfirmationDialog.tsx';
+import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
+import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
+import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
+import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
 export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, sessionID, permId, initialMode, externalAppController }:
 	{
@@ -33,6 +36,8 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	const [conflictResolutionActive, setConflictResolutionActive] = useState(false);
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [deleteDialogConfig, setDeleteDialogConfig] = useState<any>(null);
+	const [showMoveDialog, setShowMoveDialog] = useState(false);
+	const [moveInfo, setMoveInfo] = useState<any>(null);
 
 	const { isConflicted, conflictingFields, resolveConflicts, checkModificationDateConflict, findConflicts } = useConflictResolution();
 
@@ -55,7 +60,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	} */
 
 	// Create controller using dispatcher
-	const controller = useMemo(
+	const controller: IFormController = useMemo(
 		() => ControllerDispatcher.createController(entityKind, openbisFacade, user),
 		[entityKind, openbisFacade, user]
 	);
@@ -129,6 +134,8 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 			} else if (actionName === 'delete') {
 				// Check for dependent entities before showing dialog
 				handleDeleteWithDependencyCheck();
+			} else if (actionName === 'move') {
+				handleMove();
 			} else {
 				const context: IExtendedActionContext = getExtendedActionContext();
 				try {
@@ -144,6 +151,25 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		}
 	}, [form, mode, permissions, openbisFacade, externalAppController]);
 
+	const handleMove = async () => {
+		console.log('handleMove', { form }, { controller });
+		if (!form || !controller) return;
+		
+		try {
+			setLoading(true);
+			setError(null);
+
+			console.log('handleMove.form:', form);			
+			setMoveInfo(form);
+			setShowMoveDialog(true);
+		} catch (error: any) {
+			console.error('Error fetching move information:', error);
+			setError(error.message);
+		} finally {
+			setLoading(false);
+		}
+	};
+	
 	const handleResolveConflicts = async (resolved: Record<string, any>) => {
 		setForm(prevForm => {
 			if (!prevForm) return null;
@@ -223,6 +249,46 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 		setDeleteDialogConfig(null);
 	};
 
+	const handleMoveConfirm = async (moveResult?: any) => {
+		if (!form || !controller || !moveInfo) return;
+
+		setShowMoveDialog(false);
+		setSaving(true);
+		setError(null);
+
+		try {
+			// If moveResult is provided, the move was already executed by MoveDialog
+			if (moveResult && moveResult.success) {
+				// Reload the form to reflect the move
+				reloadForm();
+				
+				// Notify external app controller if needed
+				if (externalAppController && externalAppController.objectMove) {
+					externalAppController.objectMove({
+						type: form.entityType,
+						id: form.entityPermId,
+						moveInfo: moveInfo
+					});
+				}
+			} else {
+				// Fallback to controller's move method if MoveDialog didn't handle it
+				//await controller.move(form);
+				reloadForm();
+			}
+		} catch (error: any) {
+			console.error('Move failed:', error);
+			setError(error.message);
+		} finally {
+			setSaving(false);
+			setMoveInfo(null);
+		}
+	};
+
+	const handleMoveCancel = () => {
+		setShowMoveDialog(false);
+		setMoveInfo(null);
+	};
+
 	const handleDeleteWithDependencyCheck = async () => {
 		if (!form || !controller) return;
 		try {
@@ -292,6 +358,17 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 					onConfirm={handleDeleteConfirm}
 					onCancel={handleDeleteCancel}
 					config={deleteDialogConfig}
+				/>
+			)}
+			{showMoveDialog && (
+				<MoveDialog
+					open={showMoveDialog}
+					onConfirm={handleMoveConfirm}
+					onCancel={handleMoveCancel}
+					form={form}
+					moveInfo={moveInfo}
+					openbisFacade={openbisFacade}
+					entityFormController={controller}
 				/>
 			)}
 		</>

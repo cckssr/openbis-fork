@@ -214,8 +214,16 @@ export class ProjectFormController implements IFormController {
     }
   }
 
-  move(form: Form): void {
-    // Implement move logic as needed
+  async move(form: Form, context?: any, params?: any): Promise<void> {
+    const { ProjectPermId, ProjectUpdate, SpacePermId } = this.openbisFacade;
+    const projectPermId = new ProjectPermId(form.entityPermId);
+    const projectUpdate = new ProjectUpdate();
+    console.log('ProjectFormController.move', params);
+    projectUpdate.setProjectId(projectPermId);
+    projectUpdate.setSpaceId(params.target.getPermId());
+    const result = await this.openbisFacade.updateProjects([projectUpdate]);
+    console.log('ProjectFormController.move', result);
+    return result;
   }
 
   async _createProject(form: Form): Promise<any> {

@@ -12,7 +12,7 @@ export interface IFormController {
    * @param entityPermId The permanent ID of the entity to load.
    * @returns A promise that resolves to the adapted Form object.
    */
-  load(entityPermId: string): Promise<Form>;
+  load(entityPermId: string, entityKind?: string, params?: any): Promise<Form>;
 
   /**
    * Saves the current state of the form to openBIS.
@@ -42,5 +42,11 @@ export interface IFormController {
    * @returns A promise resolving to an object containing arrays of dependent entities.
    */
   getDependentEntities(form: Form): Promise<any>;
-  
+
+  /**
+   * Moves the entity represented by the form.
+   * @param form The form object representing the entity to move.
+   * @returns A promise that resolves when the move is complete.
+   */
+  move(form: Form, context?: any, params?: any): Promise<void>;
 }

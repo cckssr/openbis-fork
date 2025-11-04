@@ -56,23 +56,6 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
   };
 }
 
-export function getLexicalField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-lexical',
-    label: 'Lexical',
-    value: overrides.value ?? dto.lexical,
-    dataType: FormFieldDataType.LEXICAL,
-    required: false,
-    readOnly: false,
-    isMultiValue: false,
-    section: FormSection.GENERAL,
-    column: 'center',
-    meta: {},
-    ...overrides
-  };
-}
-
 export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
   return {
@@ -130,6 +113,23 @@ export function getSpaceField(dto: any, overrides: FieldOverrides = {}): FormFie
     id: permId + '-space',
     label: 'Space',
     value: overrides.value ?? dto.space?.code,
+    dataType: FormFieldDataType.VARCHAR,
+    required: true,
+    readOnly: true,
+    isMultiValue: false,
+    section: FormSection.IDENTIFICATION_INFO,
+    column: 'left',
+    meta: {},
+    ...overrides
+  };
+}
+
+export function getProjectField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
+  const permId = dto.permId.permId;
+  return {
+    id: permId + '-project',
+    label: 'Project',
+    value: overrides.value ?? dto.project?.code,
     dataType: FormFieldDataType.VARCHAR,
     required: true,
     readOnly: true,

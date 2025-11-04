@@ -77,7 +77,8 @@ export class CollectionFormController implements IFormController {
 		};
 	}
 
-	move(form: Form): void {
-		console.log(`CONTROLLER: Moving ${form.entityPermId}`);
+	move(form: Form, context?: any): Promise<void> {
+		console.log('CollectionFormController.move', form, context);
+		return Promise.resolve();
 	}
 }

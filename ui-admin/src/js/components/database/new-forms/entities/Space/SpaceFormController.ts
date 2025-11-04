@@ -91,8 +91,10 @@ export class SpaceFormController implements IFormController {
     };
   }
 
-  move(form: Form): void {
+  move(form: Form, context?: any): Promise<void> {
     // Implement move logic as needed
+    console.log('SpaceFormController.move', form, context);
+    return Promise.resolve();
   }
 
 }

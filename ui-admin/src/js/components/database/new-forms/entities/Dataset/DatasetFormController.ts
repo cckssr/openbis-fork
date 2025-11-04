@@ -63,7 +63,8 @@ export class DatasetFormController implements IFormController {
 		};
 	}
 
-	move(form: Form): void {
-		console.log(`CONTROLLER: Moving ${form.entityPermId}`);
+	move(form: Form, context?: any): Promise<void> {
+		console.log('DatasetFormController.move', form, context);
+		return Promise.resolve();
 	}
 }

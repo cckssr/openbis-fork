@@ -1,6 +1,6 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getLexicalField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
@@ -26,7 +26,6 @@ export class SpaceFormModel {
 				{
 					section: FormSection.GENERAL,
 					fields: [permId + '-description',
-						permId + '-lexical',
 					],
 				},
 			],
@@ -37,7 +36,6 @@ export class SpaceFormModel {
 				getRegistrationDateField(dto),
 				getModifierField(dto),
 				getModificationDateField(dto),
-				getLexicalField(dto),
 			],
 			isDirty: false,
 			isValid: true,

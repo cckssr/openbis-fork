@@ -25,4 +25,8 @@ export class CoreFormModel {
 	static unknownAction = (actionName: string) => {
 		alert(`Unknown action: ${actionName}`);
 	};
+
+	static moveAction = (context: IExtendedActionContext) => {
+		context.controller.move(context.form);
+	};
 }

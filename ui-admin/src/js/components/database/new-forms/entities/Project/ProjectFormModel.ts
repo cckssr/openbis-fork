@@ -93,6 +93,17 @@ export class ProjectFormModel {
 							mode: FormMode.VIEW,
 						},
 					],
+				},
+				{
+					name: 'move',
+					label: 'Move',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
 				}
 			],
 		};

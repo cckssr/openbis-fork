@@ -16,6 +16,8 @@ class ActionHandlerDispatcher {
         return CoreFormModel.cancelNewFormAction;
       case 'delete':
         return CoreFormModel.deleteAction;
+      case 'move':
+        return CoreFormModel.moveAction;
       
       // Space-specific actions
       case 'space:save':

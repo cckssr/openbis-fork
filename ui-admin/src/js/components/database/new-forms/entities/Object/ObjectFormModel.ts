@@ -2,7 +2,7 @@ import { Form, FormField, IExtendedActionContext, } from '@src/js/components/dat
 import { EntityKind, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import {
   getCodeField,
-  getDescriptionField,
+  getProjectField,
   getPermIdField,
   getIdentifierField,
   getPathField,
@@ -43,6 +43,7 @@ export class ObjectFormModel {
             permId + '-identifier',
             permId + '-path',
             permId + '-space',
+            permId + '-project',
             permId + '-code',
             permId + '-registrator',
             permId + '-registrationDate',
@@ -57,6 +58,7 @@ export class ObjectFormModel {
         getIdentifierField(dto),
         getPathField(dto),
         getSpaceField(dto),
+        getProjectField(dto),
         getCodeField(dto),
         getRegistratorField(dto),
         getRegistrationDateField(dto),
@@ -99,7 +101,18 @@ export class ObjectFormModel {
 							mode: FormMode.EDIT,
 						},
 					],
-				}, 
+				},
+        {
+					name: 'move',
+					label: 'Move',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				}
       ]
     };
   }

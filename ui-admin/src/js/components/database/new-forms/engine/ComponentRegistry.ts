@@ -6,8 +6,8 @@ import { TextAreaFieldRenderer } from '@src/js/components/database/new-forms/com
 import { SelectFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SelectFieldRender.tsx';
 import { SwitchFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SwitchFieldRender.tsx';
 
-import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/fields/ButtonActionRenderer.tsx';
-import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/fields/SwitchActionRenderer.tsx';
+import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/actions/ButtonActionRenderer.tsx';
+import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/actions/SwitchActionRenderer.tsx';
 import { CKEditorFieldRenderer } from '@src/js/components/database/new-forms/components/fields/CKEditorFieldRenderer.tsx';
 
 class ComponentRegistry {
