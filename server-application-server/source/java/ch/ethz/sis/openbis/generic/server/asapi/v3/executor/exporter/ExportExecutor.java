@@ -242,7 +242,7 @@ public class ExportExecutor implements IExportExecutor
              */
             final ExportData expandedExportData;
             if (doExportDataRequiresExpansion(exportOptions)) {
-                expandedExportData = XLSExportEntityCollector.collectEntities(
+                expandedExportData = ExportEntityCollector.collectEntities(
                         CommonServiceProvider.getApplicationServerApi(), sessionToken, exportData, exportOptions);
             } else {
                 expandedExportData = exportData;
