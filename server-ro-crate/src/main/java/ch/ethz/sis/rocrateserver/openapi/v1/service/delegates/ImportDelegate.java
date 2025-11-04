@@ -22,6 +22,7 @@ import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import edu.kit.datamanager.ro_crate.reader.ZipReader;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.jboss.logging.Logger;
 
@@ -118,6 +119,7 @@ public class ImportDelegate
 
         } catch (Exception e)
         {
+            Log.error("Problem for user " + System.getProperty("user.name")); //platform independent
             LOG.error("Could not open RO-Crate", e);
             RoCrateExceptions.throwInstance(RoCrateExceptions.MALFORMED_INPUT);
 
