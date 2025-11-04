@@ -67,7 +67,8 @@ filter_config = json.loads(sys.argv[7])
 
 
 
-folder_dir = os.path.join(file, 'original')
+# folder_dir = os.path.join(file, 'original')
+folder_dir = file
 file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 # print(file_path)
 

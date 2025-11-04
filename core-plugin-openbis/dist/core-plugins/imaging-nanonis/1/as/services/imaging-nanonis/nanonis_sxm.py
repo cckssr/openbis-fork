@@ -43,8 +43,12 @@ preview_metadata = json.loads(sys.argv[6])
 filter_config = json.loads(sys.argv[7])
 
 
-folder_dir = os.path.join(file, 'original')
-file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
+# folder_dir = os.path.join(file, 'original')
+folder_dir = file
+files = list(filter(lambda x: x.endswith(".sxm"), os.listdir(folder_dir)))
+
+file_path = os.path.join(folder_dir, files[0])
+# file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 
 
 def sxm_mode(sxm_file_path, format, parameters, filter_config, print_out=True):
