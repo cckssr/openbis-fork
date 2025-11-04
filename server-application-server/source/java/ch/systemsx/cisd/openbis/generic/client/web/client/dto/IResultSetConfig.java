@@ -17,7 +17,7 @@ package ch.systemsx.cisd.openbis.generic.client.web.client.dto;
 
 import java.util.Set;
 
-import ch.systemsx.cisd.openbis.generic.client.web.server.resultset.IResultSet;
+
 import ch.systemsx.cisd.openbis.generic.shared.basic.IColumnDefinition;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.SortInfo;
 
