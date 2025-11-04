@@ -321,7 +321,8 @@ public class ImagingDataSetInterceptor implements IOperationListener
 
                         String propertyConfig = getPropertyConfig(update);
                         if(propertyConfig == null) {
-                            throw new UserFailureException("Imaging property config must not be empty!");
+                            continue;
+//                            throw new UserFailureException("Imaging property config must not be empty!");
                         }
                         ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
 

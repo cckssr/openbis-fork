@@ -122,10 +122,13 @@ def relative_position(img, spec, **params):
     height = img.get_param("height")[0]
     [o_x, o_y] = [o_x * 10**9, o_y * 10**9]
 
-    angle = float(img.get_param("scan_angle")) * -1 * np.pi / 180
+    angle = float(img.get_param("scan_angle")[0]) * -1 * np.pi / 180
 
-    x_spec = spec.get_param("x")[0]
-    y_spec = spec.get_param("y")[0]
+    x_spec = spec.get_param("x")
+    y_spec = spec.get_param("y")
+
+    x_spec = x_spec[0] if x_spec is not None else spec.get_param("X (m)")[0]
+    y_spec = y_spec[0] if y_spec is not None else spec.get_param("Y (m)")[0]
 
     if angle != 0:
         # Transforming to relative coordinates with angle
@@ -141,6 +144,35 @@ def relative_position(img, spec, **params):
         x_rel = x_spec - o_x + width / 2
         y_rel = y_spec - o_y + height / 2
     return [x_rel, y_rel]
+
+def relative_position_old(img,spec,**params):
+
+    #width = ref.get_param('width')
+    #height = ref.get_param('height')
+    #[px_x,px_y] = ref.get_param('scan_pixels')
+
+    [o_x,o_y] = img.get_param('scan_offset')
+    width = img.get_param('width')[0]
+    height = img.get_param('height')[0]
+    [o_x,o_y] = [o_x*10**9,o_y*10**9]
+
+    angle = float(img.get_param('scan_angle')[0])*-1* np.pi/180
+
+
+    x_spec = spec.get_param('x')
+    y_spec = spec.get_param('y')
+
+    x_spec = x_spec[0] if x_spec is not None else spec.get_param("X (m)")[0]
+    y_spec = y_spec[0] if y_spec is not None else spec.get_param("Y (m)")[0]
+    # raise ValueError(x_spec)
+    if angle != 0:
+        #Transforming to relative coordinates with angle
+        x_rel = (x_spec-o_x)*np.cos(angle) + (y_spec-o_y)*np.sin(angle)+width/2
+        y_rel = -(x_spec-o_x)*np.sin(angle) + (y_spec-o_y)*np.cos(angle)+height/2
+    else:
+        x_rel = x_spec-o_x+width/2
+        y_rel = y_spec-o_y+height/2
+    return [x_rel,y_rel]
 
 
 def kpfm(files: list, **params):

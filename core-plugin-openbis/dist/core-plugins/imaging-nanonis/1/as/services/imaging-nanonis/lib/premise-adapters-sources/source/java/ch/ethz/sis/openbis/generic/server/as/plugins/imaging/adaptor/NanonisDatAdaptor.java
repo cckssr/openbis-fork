@@ -17,6 +17,10 @@
 
 package ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor;
 
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.DataSetPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.id.IDataSetId;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetFilter;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetImage;
 import ch.ethz.sis.openbis.generic.imagingapi.v3.dto.ImagingDataSetPreview;
@@ -25,6 +29,7 @@ import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchical
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.api.IHierarchicalContentNode;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
 import ch.systemsx.cisd.openbis.generic.shared.dto.OpenBISSessionHolder;
 
 import java.io.File;
@@ -42,6 +47,8 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
     static final String DAT_SCRIPT_PROPERTY = "nanonis.dat-script-path";
 
     private IHierarchicalContentProvider contentProvider;
+    private final String storeRootDss;
+    private final String storeRootAfs;
 
     public NanonisDatAdaptor(Properties properties)
     {
@@ -59,6 +66,8 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
         }
         this.scriptPath = script.toString();
         this.pythonPath = properties.getProperty("python3-path", "python3");
+        this.storeRootDss = properties.getProperty("storageRoot.dss");
+        this.storeRootAfs = properties.getProperty("storageRoot.afs");
     }
 
     @Override
@@ -128,23 +137,22 @@ public class NanonisDatAdaptor extends ImagingDataSetAbstractPythonAdaptor
         return super.process(context, rootFile, format, imageConfig, imageMetadata, previewConfig, previewMetadata, filterConfig);
     }
 
-    private IHierarchicalContentProvider getHierarchicalContentProvider(String sessionToken)
-    {
-        if (contentProvider == null)
-        {
-            contentProvider = ServiceProvider.getHierarchicalContentProvider();
-        }
-        OpenBISSessionHolder sessionTokenHolder = new OpenBISSessionHolder();
-        sessionTokenHolder.setSessionToken(sessionToken);
-        return contentProvider.cloneFor(sessionTokenHolder);
+    private DataSet getDataSet(String sessionToken, String permId) {
+
+        IDataSetId dataSetId = new DataSetPermId(permId);
+        DataSetFetchOptions fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withPhysicalData();
+        Map<IDataSetId, DataSet> result = CommonServiceProvider.getApplicationServerApi()
+                .getDataSets(sessionToken, List.of(dataSetId),  fetchOptions);
+        return result.get(dataSetId);
     }
 
     private File getRootFile(String sessionToken, String permId)
     {
-        IHierarchicalContent content =
-                getHierarchicalContentProvider(sessionToken).asContent(permId);
-        IHierarchicalContentNode root = content.getRootNode();
-        return root.getFile();
+        DataSet dataSet = getDataSet(sessionToken, permId);
+        Path path  = Path.of(this.storeRootDss, dataSet.getPhysicalData().getShareId(), dataSet.getPhysicalData().getLocation());
+        File file = path.toFile();
+        return file;
     }
 
 }

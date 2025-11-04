@@ -26,6 +26,7 @@ from spmpy import Spm as spm
 from datetime import datetime
 import shutil
 from collections import defaultdict
+import itertools
 
 SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"
 DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
@@ -414,6 +415,8 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     # channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
     # channels = list([set([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
     channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    channels.sort()
+    channels = list(k for k,_ in itertools.groupby(channels))
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
 
@@ -446,8 +449,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         maximum_y = np.nanmax(maximum_y)
         step_x = abs(round((maximum_x - minimum_x) / 100, 2))
         step_y = abs(round((maximum_y - minimum_y) / 100, 2))
-
-        if step_x >= 1:
+        if step_x >= 1000:
+            step_x = 10 ** np.floor(np.log10(step_x))
+        elif step_x >= 1:
             step_x = 1
         elif step_x > 0:
             step_x = 0.01
@@ -459,7 +463,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
             else:
                 step_x = 10 ** np.floor(step_x)
 
-        if step_y >= 1:
+        if step_y >= 1000:
+            step_y = 10 ** np.floor(np.log10(step_y))
+        elif step_y >= 1:
             step_y = 1
         elif step_y > 0:
             step_y = 0.01
@@ -675,6 +681,8 @@ def demo_dat_flow(openbis, folder_path, permId=None):
     data.sort(key=lambda da: da.date_time)
 
     channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    channels.sort()
+    channels = list(k for k,_ in itertools.groupby(channels))
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
     channel_x = channels_x[0][0]
@@ -871,7 +879,7 @@ else:
 
 o = get_instance(openbis_url, token)
 
-measurement_files = [f for f in os.listdir(data_folder)]
+measurement_files = [f for f in os.listdir(data_folder) if f.endswith(".sxm") or f.endswith(".dat")]
 measurement_datetimes = []
 
 for f in measurement_files:

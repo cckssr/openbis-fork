@@ -22,10 +22,12 @@ import skimage
 
 from spmpy import Spm as spm
 
-# from spmpy import Spm as spmpy # <---new library does not work well with dat
+from spmpy import Spm as spmpy # <---new library does not work well with dat
+
+from spmpy import plotting
 
 # from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
-import spmpy_terry as spmpy   # <--- spmpy has other methods
+# import spmpy_terry as spmpy   # <--- spmpy has other methods
 
 
 from datetime import datetime
@@ -77,7 +79,7 @@ def remove_line_average(chData):
 
 # DAT image generation
 def get_dat_image(folder_dir, format, channel_x, channel_y, x_axis, y_axis, colormap, scaling, grouping, print_legend, resolution):
-    specs = spmpy.importall(folder_dir, '', 'spec')
+    specs = spmpy.importall(folder_dir, '')
 
     for spec in specs:
         date_time = spec.get_param('Saved Date')
@@ -89,9 +91,20 @@ def get_dat_image(folder_dir, format, channel_x, channel_y, x_axis, y_axis, colo
     specs_sub = list(filter(lambda spec:spec.name in grouping, specs))
     specs_sub.sort(key=lambda x: x.name)
 
-    fig = spmpy.specs_plot(specs_sub, channelx=channel_x, channely=channel_y, direction='forward',
+    # img = load_image(specs_sub)
+    # raise ValueError(specs_sub[0])
+    # multi plot
+    fig = plotting.specs_plot(specs_sub, channelx=channel_x, channely=channel_y, direction='forward',
                            print_legend=print_legend, show=False, colormap=colormap, scaling=scaling,
                            x_axis=x_axis, y_axis=y_axis)
+    # single plot
+    # fig = specs_sub[0].plot(channelx=channel_x, channely=channel_y, direction='forward',
+    #                        print_legend=print_legend, show=False, colormap=colormap, scaling=scaling,
+    #                        x_axis=x_axis, y_axis=y_axis)
+    # Old library call
+    # fig = spmpy.specs_plot(specs_sub, channelx=channel_x, channely=channel_y, direction='forward',
+    #                        print_legend=print_legend, show=False, colormap=colormap, scaling=scaling,
+    #                        x_axis=x_axis, y_axis=y_axis)
     img_byte_arr = io.BytesIO()
     plt.savefig(img_byte_arr, format=format, dpi=resolution)
 

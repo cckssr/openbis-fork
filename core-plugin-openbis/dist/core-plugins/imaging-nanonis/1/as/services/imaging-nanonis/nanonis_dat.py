@@ -24,10 +24,15 @@ import sys
 
 from nanonis_core import get_dat_image, get_sxm_image
 
-# from spmpy import Spm as spm # <---new library does not work well with dat
+from spmpy import Spm as spm # <---new library does not work well with dat
 
-from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
-import spmpy_terry as spmpy   # <--- spmpy has other methods
+from spmpy import Spm as spmpy # <---new library does not work well with dat
+from spmpy import analysis
+
+from spmpy import plotting
+
+# from spmpy_terry import spm   # <--- class spm defines objects of type spm with their attributes and class functions
+# import spmpy_terry as spmpy   # <--- spmpy has other methods
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -36,10 +41,10 @@ import matplotlib.patches as mpatches
 # %matplotlib inline
 
 
-# def load_image(path):
-#     return spm(path)
-#
-#
+def load_image(path):
+    return spm(path)
+
+
 # def get_lock_in(img):
 #     param_name = 'lock-in>lock-in status'
 #     param = img.get_param(param_name)
@@ -191,7 +196,8 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
 
     img = sxm_mode(sxm_path, format, sxmConfig, {}, print_out=False)
 
-    specs = spmpy.importall(folder_dir, '', 'spec')
+    specs = spmpy.importall(folder_dir, '')
+    # specs = load_image(folder_dir)
     if 'Grouping' in params and params['Grouping'] is not None:
         grouping = params['Grouping']
     else:
@@ -214,14 +220,16 @@ if 'spectraLocator' in params and params['spectraLocator'].upper() == "TRUE":
 
     ref_img = img
     legend = []
+
     # plot circle for each location
     for (s,c) in zip(specs_sub,col):
-        (x,y) = spmpy.relative_position(ref_img,s)
+        (x,y) = analysis.relative_position(ref_img,s)
         patch = mpatches.Patch(color=c, label=s.name)
         legend += [patch]
         plt.plot(x,y,'ro',color = c)
 
     fig = plt.gcf()
+    # fig = plotting.ref_spec_plotting(sxm_path, specs_sub, sxm_path, 'tralala')
     fig_width, fig_height = fig.get_size_inches()
 
     # Stupid, but works

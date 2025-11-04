@@ -122,6 +122,10 @@ Channels:
     nickname: t
     scaling: 1
     unit: s
+  Time:
+    nickname: t
+    scaling: 1
+    unit: s
   LI Demod 0 X (V):
     nickname: EOS
     scaling: 1
