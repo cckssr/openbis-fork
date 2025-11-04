@@ -171,8 +171,13 @@ public class ImportDelegate
 
             // Reading ro-crate model
             RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+            String realPath =
+                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString();
+            LOG.debug(String.format("Crate location %s",
+                    realPath));
+
             crate = roCrateFolderReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
+                    realPath);
         } else if (headers.getContentType().contains("application/zip"))
         {
 
