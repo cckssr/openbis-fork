@@ -38,12 +38,12 @@ tasks.register('api', Copy) {
 
 tasks.register('app', Copy) {
     dependsOn([project(':app-openbis-command-line').tasks.build,
-               project(':app-openbis-drive').tasks.openbisDriveTar,
+               project(':app-openbis-drive').tasks.release,
                project(':app-openbis-installer').tasks.createInstallerZip
     ])
 
     from project(':app-openbis-command-line').tasks.build.archiveFile
-    from project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
+    from project(':app-openbis-drive').tasks.release.archiveFile
     from project(':app-openbis-installer').tasks.createInstallerZip.archiveFile
     into file('build/app')
 }
@@ -93,7 +93,7 @@ tasks.register('buildRelease', Tar) {
     ])
     // APP
     dependsOn([project(':app-openbis-command-line').tasks.build,
-               project(':app-openbis-drive').tasks.openbisDriveTar,
+               project(':app-openbis-drive').tasks.release,
                project(':app-openbis-installer').tasks.createInstallerZip
     ])
     //JAVADOC
