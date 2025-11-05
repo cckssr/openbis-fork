@@ -153,6 +153,7 @@ class EntityTypeFormParametersMetadata extends React.PureComponent {
 			<MetadataParameters
 				title={title}
 				metadataArray={metadataArray}
+				enabled={entity.metadata.enabled}
 				mode={mode}
 				onAddMetadata={this.handleAddMetadata}
 				onRemoveMetadata={this.handleRemoveMetadata}

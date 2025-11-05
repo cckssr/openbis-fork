@@ -173,7 +173,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       metadata: FormUtil.createField({
         value: metadata,
-        enabled: true
+        enabled: !internal
       }),
       errors: 0
     }
@@ -215,11 +215,13 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       null
     )
 
+    const entityTypeInternal = _.get(entityType, 'managedInternally', false)
     const propertyTypeInternal = _.get(propertyType, 'managedInternally', false)
 
     const assignmentInternal =
       propertyTypeInternal && _.get(loadedAssignment, 'managedInternally', false)
 
+    const isSystemUser = AppController.getInstance().isSystemUser()
     return {
       id: id,
       code: FormUtil.createField({
@@ -228,40 +230,40 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       internal: FormUtil.createField({
         value: propertyTypeInternal,
-        visible: AppController.getInstance().isSystemUser(),
+        visible: isSystemUser,
         enabled: false
       }),
       assignmentInternal: FormUtil.createField({
         value: assignmentInternal,
-        visible: loadedAssignment && AppController.getInstance().isSystemUser(),
+        visible: loadedAssignment && isSystemUser,
         enabled: false
       }),
       label: FormUtil.createField({
         value: _.get(propertyType, 'label', null),
         enabled:
-          !propertyTypeInternal || AppController.getInstance().isSystemUser()
+          !propertyTypeInternal || isSystemUser
       }),
       description: FormUtil.createField({
         value: _.get(propertyType, 'description', null),
         enabled:
-          !propertyTypeInternal || AppController.getInstance().isSystemUser()
+          !propertyTypeInternal || isSystemUser
       }),
       dataType: FormUtil.createField({
         value: dataType,
         enabled:
-          !propertyTypeInternal || AppController.getInstance().isSystemUser()
+          !propertyTypeInternal || isSystemUser
       }),
       schema: FormUtil.createField({
         value: _.get(propertyType, 'schema', null),
         visible: dataType === openbis.DataType.XML,
         enabled:
-          !propertyTypeInternal || AppController.getInstance().isSystemUser()
+          !propertyTypeInternal || isSystemUser
       }),
       transformation: FormUtil.createField({
         value: _.get(propertyType, 'transformation', null),
         visible: dataType === openbis.DataType.XML,
         enabled:
-          !propertyTypeInternal || AppController.getInstance().isSystemUser()
+          !propertyTypeInternal || isSystemUser
       }),
       vocabulary: FormUtil.createField({
         value: _.get(propertyType, 'vocabulary.code', null),
@@ -282,26 +284,26 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         value: plugin,
         enabled:
           plugin &&
-          (!assignmentInternal || AppController.getInstance().isSystemUser())
+          (!assignmentInternal || isSystemUser)
       }),
       pattern: FormUtil.createField({
         value: _.get(loadedAssignment, 'pattern', null),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       patternType: FormUtil.createField({
         value: _.get(loadedAssignment, 'patternType', null),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       metadata: FormUtil.createField({
         value: metadata,
-        enabled: true
+        enabled: (!entityTypeInternal && !assignmentInternal && !propertyTypeInternal) || isSystemUser
       }),
       isMultiValue: FormUtil.createField({
         value: _.get(propertyType, 'multiValue', false),
@@ -310,7 +312,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       showInEditView: FormUtil.createField({
         value: _.get(loadedAssignment, 'showInEditView', true),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       unique: FormUtil.createField({
         value: _.get(loadedAssignment, 'unique', false),
@@ -318,26 +320,26 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       semanticAnnotations: FormUtil.createField({
         value: propertySemanticAnnotations,
-        enabled: !assignmentInternal || AppController.getInstance().isSystemUser()
+        enabled: !assignmentInternal || isSystemUser
       }),
       assignmentSemanticAnnotations: FormUtil.createField({
         value: assignmentSemanticAnnotations,
-        enabled: !assignmentInternal || AppController.getInstance().isSystemUser()
+        enabled: !assignmentInternal || isSystemUser
       }),
       assignmentSemanticAnnotationsInherited: FormUtil.createField({
         value: _.get(loadedAssignment, 'semanticAnnotationsInherited', false),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       showRawValueInForms: FormUtil.createField({
         value: _.get(loadedAssignment, 'showRawValueInForms', false),
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       initialValueForExistingEntities: FormUtil.createField({
         visible: false,
         enabled:
-          !assignmentInternal || AppController.getInstance().isSystemUser()
+          !assignmentInternal || isSystemUser
       }),
       assignments,
       errors: 0

@@ -47,6 +47,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
             property.assignmentSemanticAnnotations.value
           )
         }
+        if (FormUtil.haveFieldsChanged(property, original, ['metadata'])) {
+          operations.push(this._updatePropertyTypeMetadataOperation(property))
+        }
         if (this._isPropertyTypeUpdateNeeded(property, original)) {
           operations.push(this._updatePropertyTypeOperation(property))
         }
@@ -202,8 +205,7 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
       'label',
       'description',
       'schema',
-      'transformation',
-      'metadata'
+      'transformation'
     ])
   }
 
@@ -281,6 +283,16 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     update.setSchema(property.schema.value)
     update.setTransformation(property.transformation.value)
     update.convertToDataType(property.dataType.value)
+    const metadataObject = this._transformMetadataToObject(property.metadata.value)
+    update.getMetaData().set(metadataObject)
+    return new openbis.UpdatePropertyTypesOperation([update])
+  }
+
+  _updatePropertyTypeMetadataOperation(property) {
+    const update = new openbis.PropertyTypeUpdate()
+    if (property.code.value) {
+      update.setTypeId(new openbis.PropertyTypePermId(property.code.value))
+    }
     const metadataObject = this._transformMetadataToObject(property.metadata.value)
     update.getMetaData().set(metadataObject)
     return new openbis.UpdatePropertyTypesOperation([update])

@@ -121,33 +121,33 @@ class EntityTypeFormParametersType extends React.PureComponent {
   }
 
   renderMessageInternal(entityType) {
-      const { classes } = this.props
+    const { classes } = this.props
 
-      if (entityType.internal.value) {
-        if (AppController.getInstance().isSystemUser()) {
-          return (
-            <div className={classes.field}>
-              <Message type='lock'>
-                {messages.get(messages.ENTITY_TYPE_IS_INTERNAL)}
-              </Message>
-            </div>
-          )
-        } else {
-          return (
-            <div className={classes.field}>
-              <Message type='lock'>
-                {messages.get(messages.ENTITY_TYPE_IS_INTERNAL)}{' '}
-                {messages.get(
-                  messages.ENTITY_TYPE_CANNOT_BE_CHANGED_OR_REMOVED
-                )}
-              </Message>
-            </div>
-          )
-        }
+    if (entityType.internal.value) {
+      if (AppController.getInstance().isSystemUser()) {
+        return (
+          <div className={classes.field}>
+            <Message type='lock'>
+              {messages.get(messages.ENTITY_TYPE_IS_INTERNAL)}
+            </Message>
+          </div>
+        )
       } else {
-        return null
+        return (
+          <div className={classes.field}>
+            <Message type='lock'>
+              {messages.get(messages.ENTITY_TYPE_IS_INTERNAL)}{' '}
+              {messages.get(
+                messages.ENTITY_TYPE_CANNOT_BE_CHANGED_OR_REMOVED
+              )}
+            </Message>
+          </div>
+        )
       }
+    } else {
+      return null
     }
+  }
 
   renderCode(type) {
     const { visible, enabled, error, value } = { ...type.code }
