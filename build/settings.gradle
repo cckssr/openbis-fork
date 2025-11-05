@@ -28,8 +28,8 @@ if(currentJvm.getJavaVersionMajor() > 11){
 includeFlat('imaging-technology-sources')
 project(":imaging-technology-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources")
 
-includeFlat('imaging-dataset-interceptor')
-project(":imaging-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor")
+includeFlat('imaging-technology-dataset-interceptor')
+project(":imaging-technology-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-technology-dataset-interceptor")
 
 includeFlat('imaging-nanonis-adapters-sources')
 project(":imaging-nanonis-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/imaging-nanonis-adapters-sources")
