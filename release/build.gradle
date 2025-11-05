@@ -119,7 +119,7 @@ tasks.register('buildRelease', Tar) {
 
     from([project(':app-openbis-command-line').tasks.build.archiveFile,
           project(':app-openbis-installer').tasks.createInstallerZip.archiveFile,
-          project(':app-openbis-drive').tasks.openbisDriveTar.archiveFile
+          project(':app-openbis-drive').tasks.release.archiveFile
     ]) {
         into 'app'
     }
