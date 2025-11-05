@@ -272,6 +272,10 @@ public class ImagingService implements ICustomASServiceExecutor
                     //TODO download file to session workspace ?
                     int tmp = 1;
                 }
+                File[] files = rootFile.listFiles();
+                if(files.length == 1 && files[0].getName().equalsIgnoreCase("original")) {
+                    rootFile = files[0];
+                }
                 String adaptor = image.getConfig().getAdaptor();
                 if(adaptor == null || adaptor.isBlank()) {
                     ImagingDataSetPropertyConfig dataSetConfig = processUserDefinedImagingData(rootFile, dataSet);

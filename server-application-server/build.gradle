@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
 evaluationDependsOn(':api-openbis-java')
@@ -172,8 +174,6 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
-             '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
-             '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
              '-Xmx4096M', '-ea'])
     args(['--classes', '../lib-commonbase/targets/gradle/classes/java/main',
@@ -183,6 +183,43 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
           '--classes', '../lib-openbis-common/targets/gradle/classes/java/main',
           '--classes', '../api-openbis-java/targets/gradle/classes/java/main',
           '--classes', 'targets/gradle/classes/java/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
+}
+
+
+/////////// AS JAVADOC ////////////////////
+
+task serverApplicationServerJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
+    source project.files('source/java').getAsFileTree().matching {
+        include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
+        include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-server-application-server")
+}
+
+task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
+    archiveBaseName = 'openbis-application-server-javadoc'
+    from serverApplicationServerJavadoc.destinationDir
+}
+
+
+
+/////////// DYNAMIC PROPERTIES API ////////////////////
+
+
+task dynamicApiJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
+    source project.files('source/java').getAsFileTree().matching {
+        include "ch/systemsx/cisd/openbis/generic/shared/hotdeploy_plugins/api/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-dynamic-api")
+}
+
+task dynamicApiJavadocZip(type: Zip, dependsOn: dynamicApiJavadoc) {
+    archiveBaseName = 'dynamic-api-javadoc'
+    from dynamicApiJavadoc.destinationDir
 }
 
 testProjectSamplesEnabled.dependsOn(copyTestData)

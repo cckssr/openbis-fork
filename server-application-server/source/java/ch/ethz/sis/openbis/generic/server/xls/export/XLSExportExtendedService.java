@@ -100,11 +100,12 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
             boolean withLevelsAbove = (boolean) nodeExportMap.get("withLevelsAbove");
             boolean withLevelsBelow = (boolean) nodeExportMap.get("withLevelsBelow");
             boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.get("withObjectsAndDataSetsParents");
+            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.get("withObjectsAndDataSetsChildren");
             boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.get("withObjectsAndDataSetsOtherSpaces");
 
             ExportableKind rootKind = ExportableKind.valueOf(kind);
             ExportablePermId root = new ExportablePermId(rootKind, permId);
-            XLSExportEntityCollector.collectEntities(api, sessionToken, allPermIds, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces);
+            ExportEntityCollector.collectEntities(api, sessionToken, allPermIds, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsChildren, withObjectsAndDataSetsOtherSpaces);
         }
 
         exportData.setPermIds(new ArrayList<>(allPermIds));

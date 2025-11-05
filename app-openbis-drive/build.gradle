@@ -79,6 +79,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:4.4.0")
 }
 
+
 tasks.named('jar', Jar) {
     manifest {
         attributes(
@@ -138,3 +139,11 @@ tasks.register('app-openbis-drive-cmd-line-jar', Jar) {
         }
     }
 }
+// openbis-drive-VERSION.tar.gz
+tasks.register('openbisDriveTar', Tar) {
+    dependsOn([jar])
+    archiveFileName = 'openbis-drive-' + project.ext.versionNumber + ".tar.gz"
+    from jar.archiveFile
+    into 'openbis-drive'
+}
+

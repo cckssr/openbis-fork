@@ -42,6 +42,7 @@ ext.dssGuiClientJarName = 'dss_upload_gui.jar'
 
 task createOpenbisJar(type: Jar) {
     archiveBaseName = openbisClientJarName
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
     destinationDirectory = file(jarsToBeSignedFolder)
     // Gradle automatically calculates the output: destinationDirectory + archiveBaseName + .jar
     //outputs.file = new File(jarsToBeSignedFolder, archiveBaseName.get())

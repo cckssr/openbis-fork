@@ -35,6 +35,7 @@ evaluationDependsOn(':lib-openbis-common')
 evaluationDependsOn(':lib-authentication')
 evaluationDependsOn(':lib-dbmigration')
 evaluationDependsOn(':lib-two-phase-transaction')
+evaluationDependsOn(':lib-folder-monitor')
 evaluationDependsOn(':server-application-server')
 evaluationDependsOn(':server-original-data-store')
 evaluationDependsOn(':server-screening')
@@ -61,9 +62,6 @@ configurations.create('server_original_data_store')
 configurations.create('javadoc_sources')
 configurations.create('javadoc_compilation')
 configurations.create('blast_tar')
-configurations.create('libOpenbisCommonJavadoc')
-configurations.create('serverOriginalDataStoreJavadoc')
-configurations.create('serverApplicationServerJavadoc')
 
 def jettyVersion = '10.0.25'
 def jettyDistributionVersion = '10.0.25'
@@ -117,9 +115,6 @@ dependencies {
             'springframework:spring-test:5.3.39'
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
-    libOpenbisCommonJavadoc project(':lib-openbis-common')
-    serverOriginalDataStoreJavadoc project(':server-original-data-store')
-    serverApplicationServerJavadoc project(':server-application-server')
 }
 
 sourceSets {
@@ -414,91 +409,23 @@ task zipAfsServer(type: Zip, dependsOn: project(':server-data-store').tasks.AFSS
     from zipTree('../server-data-store/build/distributions/afs-server.zip')
 }
 
-task pybisZip(type: Zip) {
-    archiveBaseName = 'pybis'
-    from '../api-openbis-python3-pybis/'
-}
-
-task obisZip(type: Zip) {
-    archiveBaseName = 'obis'
-    from '../app-openbis-command-line/'
-}
-
-task libOpenbisCommonJavadoc(type: Javadoc) {
-    source project(':lib-openbis-common').files('source/java').getAsFileTree().matching {
-        include "**/ch/systemsx/cisd/openbis/common/io/hierarchical_content/api/**/*.java"
-    }
-    classpath = configurations.libOpenbisCommonJavadoc
-    destinationDir = file("$buildDir/docs/javadoc-lib-openbis-common")
-}
-
-task libOpenbisCommonJavadocZip(type: Zip, dependsOn: libOpenbisCommonJavadoc) {
-    archiveFileName = 'javadoc-lib-openbis-common.zip'
-    from libOpenbisCommonJavadoc.destinationDir
-}
-
-task serverOriginalDataStoreJavadoc(type: Javadoc) {
-    source project(':server-original-data-store').files('source/java').getAsFileTree().matching {
-        include "**/ch/systemsx/cisd/openbis/dss/generic/server/plugins/jython/api/**/*.java"
-        include "**/ch/systemsx/cisd/openbis/dss/generic/shared/api/internal/**/*.java"
-    }
-    classpath = configurations.serverOriginalDataStoreJavadoc
-    destinationDir = file("$buildDir/docs/javadoc-server-original-dataStore")
-}
-
-task serverOriginalDataStoreJavadocZip(type: Zip, dependsOn: serverOriginalDataStoreJavadoc) {
-    archiveFileName = 'javadoc-server-original-data-store.zip'
-    from serverOriginalDataStoreJavadoc.destinationDir
-}
-
 task commonbaseZip(type: Zip, dependsOn: [project(':lib-commonbase').tasks.jar]) {
     archiveBaseName = 'openBIS-API-commonbase'
     from project(':lib-commonbase').tasks.jar.archiveFile
     into 'openBIS-API-commonbase'
 }
 
-task serverApplicationServerJavadoc(type: Javadoc) {
-    source project(':server-application-server').files('source/java').getAsFileTree().matching {
-        include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
-        include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
-    }
-    classpath = configurations.serverApplicationServerJavadoc
-    destinationDir = file("$buildDir/docs/javadoc-server-application-server")
-}
-
-task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
-    archiveFileName = 'javadoc-server-application-server.zip'
-    from serverApplicationServerJavadoc.destinationDir
-}
-
-task clientsAndApis(type: Zip, dependsOn: [dssClientZip, queryApiZip, apiV3Zip, screeningApiZip, pybisZip, obisZip,
-                                           dropboxJavaDocZip, dynamicApiJavadocZip, libOpenbisCommonJavadocZip,
-                                           serverOriginalDataStoreJavadocZip, serverApplicationServerJavadocZip, dropboxApiZip, commonbaseZip]) {
-    archiveBaseName = 'openBIS-clients-and-APIs'
-    from dssClientZip.archiveFile
-    from queryApiZip.archiveFile
-    from apiV3Zip.archiveFile
-    from dropboxApiZip.archiveFile
-    from screeningApiZip.archiveFile
-    from pybisZip.archiveFile
-    from obisZip.archiveFile
-    from dropboxJavaDocZip.archiveFile
-    from dynamicApiJavadocZip.archiveFile
-    from libOpenbisCommonJavadocZip.archiveFile
-    from serverOriginalDataStoreJavadocZip.archiveFile
-    from serverApplicationServerJavadocZip.archiveFile
-    from commonbaseZip.archiveFile
-    from('dist/client/readme.txt')
-    rename { filename ->
-        if (filename.startsWith('pybis-')) {
-            def contentOfSetUpFile = zipTree(pybisZip.archiveFile).getFiles().findAll { it.path.endsWith('src/python/setup.cfg') }.iterator().next().text
-            def pybisVersion = (contentOfSetUpFile =~ /version.*=.*(.*)/)[0][1]
-            'pybis-' + pybisVersion + '.zip'
-        } else {
-            filename
-        }
-    }
-}
+// TODO FIX this
+//task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':lib-folder-monitor').tasks.folderMonitorZip]){
+//    archiveBaseName ='folder-monitor'
+//
+//    from(zipTree(project(':lib-folder-monitor').tasks.folderMonitorZip.archiveFile)) {
+//    }
+//
+//    from(apiV3JarBatteriesIncluded.archiveFile){
+//        into "folder-monitor/lib"
+//    }
+//}
 
 task deleteOpenbisNgUi(type: Delete) {
     delete 'dist/core-plugins/admin'
@@ -539,7 +466,7 @@ build.dependsOn zip
 build.dependsOn zipDss
 build.dependsOn zipRoCrateServer
 build.dependsOn zipBdlServer
-build.dependsOn clientsAndApis
+//build.dependsOn folderMonitorZipWithV3Batteries
 build.dependsOn dssUploadGuiStandaloneZip
 build.dependsOn dssUploadGuiStandaloneJar
 build.dependsOn generateJavadoc

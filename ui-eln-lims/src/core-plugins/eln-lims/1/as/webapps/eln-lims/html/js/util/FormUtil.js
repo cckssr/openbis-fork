@@ -3810,6 +3810,8 @@ var FormUtil = new function() {
                                         $window.append($levelsBelow);
                                         var $includeParents = $("<span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space</label></span>");
                                         $window.append($includeParents);
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT'>Include Object and Dataset children from same space</label></span>");
+                                        $window.append($includeChildren);
                                         var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT'>Include Objects and Datasets parents and children from different spaces</label></span>");
                                         $window.append($includeOtherSpaces);
 
@@ -3830,6 +3832,7 @@ var FormUtil = new function() {
                                                     withLevelsAbove: true,
                                                     withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
                                                     withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
+                                                    withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
                                                     withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
                                                 }],
                                                 withEmail : $("#EXPORT-EMAIL").is(":checked"),

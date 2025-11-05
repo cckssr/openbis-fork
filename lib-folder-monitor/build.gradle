@@ -1,6 +1,6 @@
 apply from: '../build/javalibrary.gradle'
 
-evaluationDependsOn(':core-plugin-openbis')
+evaluationDependsOn(':api-openbis-java')
 
 dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
@@ -29,13 +29,13 @@ task folderMonitorZip(type: Zip, dependsOn: compileJava) {
     }
 }
 
-task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':core-plugin-openbis').tasks.apiV3JarBatteriesIncluded]){
+task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':api-openbis-java').tasks.jarWithDependencies]){
     archiveBaseName ='folder-monitor-with-batteries'
 
     from(zipTree(folderMonitorZip.archiveFile)) {
     }
 
-    from(project(':core-plugin-openbis').tasks.apiV3JarBatteriesIncluded.archiveFile){
+    from(project(':api-openbis-java').tasks.jarWithDependencies.archiveFile){
         into "folder-monitor/lib"
     }
 }

@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.Copy
+
 plugins {
     id("com.github.node-gradle.node") version "7.1.0"
 }
@@ -11,14 +13,26 @@ node {
     //nodeModulesDir = file("${projectDir}")
 }
 
-task copyAfsApi(type: Copy) {
+tasks.register('copyAfsApi', Copy) {
     from("${project(':api-data-store-server-javascript').projectDir}/src/js/api")
     into file('src/v3/afs')
 }
 
-task bundleOpenbisStaticResources(type: Exec, dependsOn: copyAfsApi) {
+tasks.register('bundleOpenbisStaticResources', Exec) {
+    dependsOn copyAfsApi
     dependsOn 'npmInstall'
     commandLine 'bash', '-c', "${projectDir}/bin/build.sh"
+}
+
+//openbis-javascript-api-VERSION-esm.tar.gz
+tasks.register('resources', Tar) {
+    dependsOn([bundleOpenbisStaticResources, project(':api-openbis-typescript').generateTypeScript])
+    duplicatesStrategy 'include'
+    archiveFileName = 'openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
+    from("src/v3")
+    from("${project(':api-data-store-server-javascript').projectDir}/src/js")
+    from("${project(':api-openbis-typescript').projectDir}/targets/openbis-typescript-api")
+    into 'openbis-javascript-api'
 }
 
 

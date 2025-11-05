@@ -7,7 +7,7 @@ def includes11 = ['lib-logging', 'lib-commonbase', 'lib-common', 'api-openbis-ja
                 'lib-transactional-file-system', 'server-data-store', 'ui-eln-lims', 'api-openbis-javascript',
                 'lib-json', 'api-data-store-server-java', 'api-data-store-server-javascript', 'api-openbis-typescript',
                 'test-integration', 'lib-rdf', 'docs', 'lib-ro-crate', 'app-ro-crate-openbis', 'app-migration',
-                  'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis'
+                  'app-openbis-drive', 'app-openbis-command-line' , 'test-app-openbis-installer', 'api-openbis-python3-pybis', 'release'
 ]
 
 def includes17 = ['server-ro-crate'
@@ -28,11 +28,11 @@ if(currentJvm.getJavaVersionMajor() > 11){
 includeFlat('imaging-technology-sources')
 project(":imaging-technology-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/imaging-technology-sources")
 
-includeFlat('dataset-interceptor')
-project(":dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/dataset-interceptor")
+includeFlat('imaging-technology-dataset-interceptor')
+project(":imaging-technology-dataset-interceptor").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-technology-dataset-interceptor")
 
-includeFlat('premise-adapters-sources')
-project(":premise-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters-sources")
+includeFlat('imaging-nanonis-adapters-sources')
+project(":imaging-nanonis-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/imaging-nanonis-adapters-sources")
 
 includeFlat('imaging-test-adapters-sources')
 project(":imaging-test-adapters-sources").projectDir = new File("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters-sources")

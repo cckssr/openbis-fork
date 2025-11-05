@@ -2,4 +2,4 @@ includeFlat 'lib-commonbase', 'lib-common', 'lib-logging', 'lib-two-phase-transa
         'api-openbis-java', 'lib-openbis-common', 'lib-openbis-messages', 'lib-authentication', 'lib-json', 'lib-ro-crate', 'lib-rdf', 'lib-transactional-file-system', 'lib-hdf5', 'lib-openbis-commonbase',
         'lib-data-store-commonbase', 'lib-data-store-common', 'lib-maintenance', 'lib-microservice-server', 'lib-messages-db', 'lib-archiver-db', 'lib-archiver', 'lib-shuffling', 'lib-compress',
         'server-application-server', 'server-original-data-store', 'server-screening', 'server-external-data-store', 'server-data-store', 'server-ro-crate',
-        'ui-admin', 'ui-eln-lims', 'api-openbis-javascript', 'api-openbis-typescript', 'api-data-store-server-java', 'api-data-store-server-javascript', 'app-ro-crate-openbis'
+        'ui-admin', 'ui-eln-lims', 'api-openbis-javascript', 'api-openbis-typescript', 'api-data-store-server-java', 'api-data-store-server-javascript', 'app-ro-crate-openbis', 'lib-folder-monitor'
