@@ -973,7 +973,9 @@
 					continue;
 				} else if(propertyType.dinamic && this._sampleFormModel.mode === FormMode.CREATE) { //Skip
 					continue;
-				}
+				} else if(profile.isSystemProperty(propertyType)) {
+                    continue;
+                }
 
 
 				if(sampleTypeCode === "ENTRY" && (propertyType.code === profile.getInternalNamespacePrefix() + "NAME" || propertyType.code === profile.getInternalNamespacePrefix() + "DOCUMENT" || propertyType.code === profile.getInternalNamespacePrefix() + "ANNOTATIONS_STATE")) {
