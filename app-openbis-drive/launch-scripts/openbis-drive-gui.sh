@@ -35,4 +35,4 @@ then
 else
     cd "$OPENBIS_DRIVE_DIR" ; cd launch-scripts
 fi
-"$JAVACMD" -jar app-openbis-drive-cmd-line.jar $@
+nohup "$JAVACMD" -jar app-openbis-drive-gui.jar >/dev/null 2>&1 &

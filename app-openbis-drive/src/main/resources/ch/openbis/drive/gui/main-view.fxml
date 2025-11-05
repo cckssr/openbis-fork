@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:id="root"
+            fx:controller="ch.openbis.drive.gui.MainViewController">
+    <padding>
+        <Insets bottom="0.0" left="0.0" right="0.0" top="0.0"/>
+    </padding>
+</AnchorPane>

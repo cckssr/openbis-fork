@@ -34,7 +34,7 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 public class SyncOperation {
     static final int MAX_READ_SIZE_BYTES = 10485760;
     static final int AFS_CLIENT_TIMEOUT = 10000;
-    static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
+    public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
 
     private final @NonNull SyncJob syncJob;
 

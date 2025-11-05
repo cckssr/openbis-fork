@@ -6,7 +6,7 @@ import ch.openbis.drive.model.Notification;
 import ch.openbis.drive.model.Settings;
 import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.protobuf.client.DriveAPIClientProtobufImpl;
-import ch.openbis.drive.util.OsDetectionUtil;
+import ch.openbis.drive.util.OpenBISDriveUtil;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import lombok.NonNull;
@@ -15,10 +15,8 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
@@ -615,34 +613,11 @@ public class DriveAPICmdLineApp {
     }
 
     void startService() throws Exception {
-        switch (OsDetectionUtil.detectOS()) {
-
-            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"sh", "openbis-drive-service-start.sh"}, new String[]{
-                            String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
-                            String.format("OPENBIS_DRIVE_PORT=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_PORT")).orElse("")),
-                            String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
-                            String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
-                    },
-                    new Configuration().getLocalAppLaunchDirectory().toFile());
-
-            case Windows -> Runtime.getRuntime().exec(new String[]{"cmd.exe", "/K",  "openbis-drive-service-start.bat"}, new String[]{
-                            String.format("OPENBIS_DRIVE_DIR=%s", Optional.ofNullable(System.getenv("OPENBIS_DRIVE_DIR")).orElse("")),
-                            String.format("PATH=%s", Optional.ofNullable(System.getenv("PATH")).orElse("")),
-                            String.format("JAVA_HOME=%s", Optional.ofNullable(System.getenv("JAVA_HOME")).orElse("")),
-                            String.format("USERPROFILE=%s", Optional.ofNullable(System.getenv("USERPROFILE")).orElse("")),
-                    },
-                    new Configuration().getLocalAppLaunchDirectory().toFile());
-
-            case Unknown -> throw new IllegalStateException("Unknown operating-system");
-        }
+        OpenBISDriveUtil.startServiceBackgroundProcess();
     }
 
     void stopService() throws Exception {
-        switch (OsDetectionUtil.detectOS()) {
-            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"pkill", "-SIGKILL", "-f", "java -jar app-openbis-drive-service\\.jar"});
-            case Windows -> Runtime.getRuntime().exec("powershell.exe -command \"$result = Get-WmiObject -Class win32_process -Filter \\\"Name LIKE 'javaw.exe'\\\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-jar app-openbis-drive-service.jar' ) { Stop-Process -Force $i.ProcessId ; }}\"");
-            case Unknown -> throw new IllegalStateException("Unknown operating-system");
-        }
+        OpenBISDriveUtil.stopServiceBackgroundProcess();
     }
 
     void checkServiceStatus() throws Exception {

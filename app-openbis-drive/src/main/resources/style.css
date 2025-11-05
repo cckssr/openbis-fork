@@ -1,0 +1,96 @@
+.root {
+    -fx-font-family: "Open Sans";
+}
+
+#side-menu {
+    -fx-background-color: #e0e0e0;
+    -fx-border-width: 1px;
+    -fx-border-color: #b0b0b0;
+}
+
+.active-tab-button {
+    -fx-background-color: #b0b0b0;
+}
+
+#top-tab-labels {
+    -fx-background-color: #e0e0e0;
+    -fx-border-width: 1px;
+    -fx-border-color: #b0b0b0;
+}
+
+.sync-job-card {
+    -fx-table-cell-border-color: derive(-fx-base,-12%);
+    -fx-table-header-border-color: #959595;
+    -fx-background-color: -fx-table-cell-border-color, -fx-control-inner-background;
+    -fx-border-color: -fx-table-cell-border-color;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+.sync-job-card:hover {
+    -fx-background-color: -fx-table-cell-border-color, derive(-fx-control-inner-background,-5%);
+}
+
+.hidden {
+    visibility: "hidden"
+}
+
+.main-content-frame {
+    -fx-padding: 40 40 40 40;
+}
+
+.red-button {
+    -fx-red-button-base: #eb7f71;
+    -fx-base: -fx-red-button-base;
+}
+
+.red-button:focused {
+    -fx-base: -fx-red-button-base;
+}
+
+.red-button:hover {
+    -fx-base: -fx-red-button-base;
+}
+
+.red-button:armed {
+    -fx-base: -fx-red-button-base;
+    -fx-text-fill: black;
+}
+
+.text-area-table-cell {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, transparent, transparent, transparent;
+    -fx-background-image: null;
+}
+
+.text-area-table-cell .content {
+    -fx-background-insets: 0;
+    -fx-background-color: transparent, transparent, transparent, transparent;
+    -fx-background-image: null;
+}
+
+.text-area-table-cell .scroll-bar:vertical {
+    -fx-pref-width: 1;
+    -fx-opacity: 0;
+}
+
+.text-area-table-cell .scroll-bar:horizontal {
+    -fx-pref-height: 1;
+    -fx-opacity: 0;
+}
+
+.text-field.error {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
+}
+
+.notification-icon-table-column {
+    -fx-font-family: "Font Awesome 7 Free Solid";
+    -fx-font-size: 17;
+    -fx-alignment: CENTER;
+}
+
+.font-awesome-7-free-solid {
+    -fx-font-family: "Font Awesome 7 Free Solid";
+}
