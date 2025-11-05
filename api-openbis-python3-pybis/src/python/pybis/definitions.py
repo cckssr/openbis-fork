@@ -321,6 +321,12 @@ def openbis_definitions(entity):
         "dataSetFile": {
             "search": {"@type": "dss.dto.datasetfile.search.DataSetFileSearchCriteria"}
         },
+        "typeGroup": {
+            "attrs": "id code registrator registrationDate modifier modificationDate managedInternally metaData".split(),
+            "attrs_new": "code metaData".split(),
+            "attrs_up": "code metaData".split(),
+            "identifier": "typeGroupId",
+        }
     }
     return entities[entity]
 
