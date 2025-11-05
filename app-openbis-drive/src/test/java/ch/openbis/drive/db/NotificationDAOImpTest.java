@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -142,6 +141,42 @@ public class NotificationDAOImpTest {
                 List<Notification> retrievedNotifications = notificationDAOImpl.selectLast(limit);
                 Assert.assertEquals(expectedNotifications.stream().limit(limit).toList(), retrievedNotifications);
             }
+        }
+    }
+
+    @Test
+    synchronized public void selectByLocalDirAndType() throws Exception {
+
+        NotificationDAOImpl notificationDAOImpl = new NotificationDAOImpl(configuration);
+
+        LinkedList<Notification> expectedNotifications = new LinkedList<>();
+
+        for(int j = 0; j<30; j++) {
+            for (Notification.Type type : Notification.Type.values()) {
+                Notification notification = Notification.builder()
+                        .type(type)
+                        .localDirectory("localDir" + (j % 3))
+                        .localFile("localFile" + j)
+                        .remoteFile("remoteFile" + j)
+                        .message("MESSAGE__")
+                        .timestamp(System.currentTimeMillis())
+                        .build();
+
+                notificationDAOImpl.insertOrUpdate(notification);
+                Notification readNotification = notificationDAOImpl.selectByPrimaryKey(notification.getType(), notification.getLocalDirectory(), notification.getLocalFile(), notification.getRemoteFile());
+
+                Assert.assertEquals(notification, readNotification);
+
+                if (readNotification.getLocalDirectory().equals("localDir1") && readNotification.getType() == Notification.Type.Conflict) {
+                    expectedNotifications.addFirst(notification);
+                }
+            }
+        }
+
+        for(int i=0; i<20; i++) {
+            List<Notification> retrievedNotifications = notificationDAOImpl.selectByLocalDirectoryAndType("localDir1", Notification.Type.Conflict, i);
+            Assert.assertTrue(expectedNotifications.containsAll(retrievedNotifications));
+            Assert.assertTrue(retrievedNotifications.size() == Math.min(i, expectedNotifications.size()));
         }
     }
 

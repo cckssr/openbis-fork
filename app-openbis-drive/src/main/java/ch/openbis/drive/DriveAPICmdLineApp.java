@@ -12,12 +12,15 @@ import io.grpc.StatusRuntimeException;
 import lombok.NonNull;
 import org.apache.commons.cli.*;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 public class DriveAPICmdLineApp {
 
@@ -204,7 +207,7 @@ public class DriveAPICmdLineApp {
         String remoteDirectory;
         try {
             remoteDirectory = commandLine.getOptionValue("remDir");
-            if ( !Path.of(remoteDirectory).isAbsolute() ) {
+            if ( !Path.of(remoteDirectory).startsWith(File.separator) ) {
                 throw new IllegalArgumentException("'-remDir=' option must be absolute path");
             }
         } catch (Exception e) {
@@ -220,7 +223,7 @@ public class DriveAPICmdLineApp {
             printHelp();
             return;
         }
-        addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, remoteDirectory, enabled);
+        addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled);
     }
 
     void handleRemoveJobCommand(String[] args) throws Exception {

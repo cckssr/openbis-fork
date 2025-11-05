@@ -17,7 +17,7 @@ public class AtomicFileSystemServerParameterUtil
 
     public static String getStorageUuid(Configuration configuration)
     {
-        return getStringParameter(configuration, AtomicFileSystemServerParameter.storageUuid, true);
+        return getStringParameter(configuration, AtomicFileSystemServerParameter.storageUuid, false);
     }
 
     public static Integer getStorageIncomingShareId(Configuration configuration)

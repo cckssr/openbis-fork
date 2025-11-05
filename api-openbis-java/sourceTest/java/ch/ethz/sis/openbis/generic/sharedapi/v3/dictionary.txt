@@ -57,6 +57,7 @@ addStringField
 addTags
 ADMIN
 AFS
+AFS_DATA
 afterOperation
 Aggregation Service
 Aggregation Service Execution Options
@@ -3029,3 +3030,5 @@ AccessDateSearchCriteria
 EventTechIdSearchCriteria
 withAccessDate
 withEventTechId
+get Storage Uuid
+set Storage Uuid

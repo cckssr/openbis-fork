@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 evaluationDependsOn(':lib-commonbase')
 evaluationDependsOn(':lib-common')
 evaluationDependsOn(':api-openbis-java')
@@ -60,7 +62,10 @@ dependencies {
     runtimeOnly 'slf4j:slf4j-jdk14:1.7.24',
             'apache:commons-fileupload:1.3.3'
 
-    asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
+    asExecRuntime files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/imaging-nanonis/1/as/services/imaging-nanonis/lib/premise-adapters.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/imaging-test/1/as/services/imaging-test/lib/imaging-test-adapters.jar")
 
     testImplementation project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-common', configuration: 'tests'),
@@ -178,6 +183,43 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
           '--classes', '../lib-openbis-common/targets/gradle/classes/java/main',
           '--classes', '../api-openbis-java/targets/gradle/classes/java/main',
           '--classes', 'targets/gradle/classes/java/main', '--lib', 'targets/www/lib/', '--port', '8888', 'targets/www'])
+}
+
+
+/////////// AS JAVADOC ////////////////////
+
+task serverApplicationServerJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
+    source project.files('source/java').getAsFileTree().matching {
+        include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
+        include "**/ch/systemsx/cisd/openbis/generic/shared/managed_property/api/**/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-server-application-server")
+}
+
+task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
+    archiveBaseName = 'openbis-application-server-javadoc'
+    from serverApplicationServerJavadoc.destinationDir
+}
+
+
+
+/////////// DYNAMIC PROPERTIES API ////////////////////
+
+
+task dynamicApiJavadoc(type: Javadoc) {
+    mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
+    source project.files('source/java').getAsFileTree().matching {
+        include "ch/systemsx/cisd/openbis/generic/shared/hotdeploy_plugins/api/*.java"
+    }
+    classpath = sourceSets.asExec.runtimeClasspath
+    destinationDir = file("$buildDir/docs/javadoc-dynamic-api")
+}
+
+task dynamicApiJavadocZip(type: Zip, dependsOn: dynamicApiJavadoc) {
+    archiveBaseName = 'dynamic-api-javadoc'
+    from dynamicApiJavadoc.destinationDir
 }
 
 testProjectSamplesEnabled.dependsOn(copyTestData)

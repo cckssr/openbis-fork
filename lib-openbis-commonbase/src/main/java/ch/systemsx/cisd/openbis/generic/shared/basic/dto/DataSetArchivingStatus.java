@@ -27,14 +27,14 @@ import java.io.Serializable;
  *    | archive(removeFromDS=true)                 |
  *    |                                            |
  *    |                                            V
- *    ----------------  AVAILABLE  <------- UNARCHIVE_PENDING
+ *    ----------------  AVAILABLE  {@literal <}------- UNARCHIVE_PENDING
  *                      ^      ^
  *                      |      |
  *                      |      |
  *                      |      | archive(removeFromDS=false)
  *                      |      |
  *                      |      |
- *  LOCKED <------------|      |-------------> BACKUP_PENDING
+ *  LOCKED {@literal <}------------|      |-------------> BACKUP_PENDING
  * </pre>
  *
  * @author Piotr Buczek

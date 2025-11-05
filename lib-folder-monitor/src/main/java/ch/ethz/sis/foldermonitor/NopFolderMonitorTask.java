@@ -3,6 +3,7 @@ package ch.ethz.sis.foldermonitor;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import ch.ethz.sis.openbis.generic.foldermonitor.v3.FolderMonitorTask;
 import ch.ethz.sis.shared.log.classic.impl.LogManager;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

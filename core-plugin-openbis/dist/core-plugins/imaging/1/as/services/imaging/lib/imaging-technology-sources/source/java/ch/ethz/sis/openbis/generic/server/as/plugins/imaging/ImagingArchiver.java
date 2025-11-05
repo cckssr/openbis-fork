@@ -1,0 +1,188 @@
+/*
+ *  Copyright ETH 2023 - 2024 Zürich, Scientific IT Services
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+package ch.ethz.sis.openbis.generic.server.as.plugins.imaging;
+
+import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.archiving.AbstractImagingPackager;
+import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.archiving.TarImagingPackager;
+import ch.ethz.sis.openbis.generic.server.as.plugins.imaging.archiving.ZipImagingPackager;
+import ch.systemsx.cisd.common.exceptions.UserFailureException;
+//import ch.systemsx.cisd.openbis.dss.generic.server.AbstractDataSetPackager;
+//import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
+//import ch.systemsx.cisd.openbis.dss.generic.server.TarDataSetPackager;
+//import ch.systemsx.cisd.openbis.dss.generic.server.ZipDataSetPackager;
+//import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
+//import ch.systemsx.cisd.openbis.dss.generic.shared.api.internal.ISessionWorkspaceProvider;
+import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
+import ch.systemsx.cisd.openbis.generic.shared.ISessionWorkspaceProvider;
+import org.apache.commons.io.FileUtils;
+
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+
+import static ch.systemsx.cisd.openbis.generic.shared.Constants.DOWNLOAD_URL;
+
+class ImagingArchiver
+{
+    private final String sessionToken;
+    private final String exportDirName;
+    private final String exportArchiveName;
+    private final Function<InputStream, Long> checksumFunction;
+    private final AbstractImagingPackager packager;
+    private boolean isFinished;
+    private final long archiveDate;
+
+    private static final int DEFAULT_BUFFER_SIZE = (int) (10 * FileUtils.ONE_MB);
+
+    ImagingArchiver(String sessionToken, String archiveFormat) throws IOException {
+        this.sessionToken = sessionToken;
+        isFinished = false;
+
+        archiveDate = System.currentTimeMillis();
+        exportDirName = "imaging_export_" + String.valueOf(archiveDate);
+        LocalDateTime now = LocalDateTime.now();
+
+        final ISessionWorkspaceProvider sessionWorkspaceProvider = CommonServiceProvider.getSessionWorkspaceProvider();
+        File rootDirectory = sessionWorkspaceProvider.getSessionWorkspace(sessionToken).getCanonicalFile();
+//        ISessionWorkspaceProvider sessionWorkspaceProvider = getSessionWorkspaceProvider(sessionToken);
+//        File rootDirectory = sessionWorkspaceProvider.getSessionWorkspace();
+
+        Path tempDir = Files.createDirectory(
+                Path.of(rootDirectory.getAbsolutePath(), exportDirName));
+
+        // Define the format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH_mm_ss");
+
+        // Format the current date and time
+        String formattedNow = now.format(formatter);
+
+        if (archiveFormat.equalsIgnoreCase("zip"))
+        {
+            exportArchiveName = String.format("export-%s.zip", formattedNow);
+            File archiveFile =
+                    Files.createFile(Path.of(tempDir.toAbsolutePath().toString(), exportArchiveName))
+                            .toFile();
+            packager = new ZipImagingPackager(archiveFile, true);
+            checksumFunction = Util::getCRC32Checksum;
+        } else if (archiveFormat.equalsIgnoreCase("tar"))
+        {
+            exportArchiveName = String.format("export-%s.tar.gz", formattedNow);
+            File archiveFile =
+                    Files.createFile(Path.of(tempDir.toAbsolutePath().toString(), exportArchiveName))
+                            .toFile();
+            packager = new TarImagingPackager(archiveFile, DEFAULT_BUFFER_SIZE,
+                    5L * DEFAULT_BUFFER_SIZE);
+            checksumFunction = (x) -> 0L;
+        } else
+        {
+            throw new UserFailureException("Unknown archive format!");
+        }
+
+
+    }
+
+    void addToArchive(String folderName, String fileName, byte[] byteArray) {
+        assertNotFinished();
+        long size = byteArray.length;
+        packager.addEntry(Paths.get(folderName, fileName).toString(),
+                archiveDate,
+                size,
+                checksumFunction.apply(new ByteArrayInputStream(byteArray)),
+                new ByteArrayInputStream(byteArray));
+    }
+
+    void addToArchive(String folderName, File fileOrDirectoryToArchive) {
+        assertNotFinished();
+
+        Deque<Map.Entry<String, File>> queue = new LinkedList<>();
+
+        queue.add(new AbstractMap.SimpleImmutableEntry<>(folderName, fileOrDirectoryToArchive));
+        while (!queue.isEmpty())
+        {
+            Map.Entry<String, File> element = queue.pollFirst();
+            String prefixPath = element.getKey();
+            File file = element.getValue();
+            String path = Paths.get(prefixPath, file.getName()).toString();
+            if (file.isDirectory())
+            {
+                for (File f : file.listFiles())
+                {
+                    queue.add(new AbstractMap.SimpleImmutableEntry<>(path, f));
+                }
+                packager.addDirectoryEntry(path);
+            } else
+            {
+                try
+                {
+                    packager.addEntry(path,
+                            file.lastModified(),
+                            Files.size(file.toPath()),
+                            checksumFunction.apply(new FileInputStream(file)),
+                            new FileInputStream(file));
+                } catch (IOException exc)
+                {
+                    throw new UserFailureException("Failed during export!", exc);
+                }
+            }
+        }
+
+    }
+
+    String build() {
+        if(!isFinished) {
+            isFinished = true;
+            packager.close();
+        }
+        String url = getDownloadPath(sessionToken, Path.of(exportDirName, exportArchiveName).toString());
+//        String url = DataStoreServer.getConfigParameters().getDownloadURL() + "/datastore_server/session_workspace_file_download?sessionID=" + sessionToken + "&filePath=";
+        return url;
+    }
+
+//    private ISessionWorkspaceProvider getSessionWorkspaceProvider(String sessionToken)
+//    {
+//        return ServiceProvider.getDataStoreService().getSessionWorkspaceProvider(sessionToken);
+//    }
+
+    private String getDownloadPath(final String sessionToken, final String fileName)
+    {
+        final String protocolWithDomain = CommonServiceProvider.tryToGetProperty(DOWNLOAD_URL);
+        if (protocolWithDomain == null || protocolWithDomain.isBlank())
+        {
+            throw new UserFailureException(String.format("The property '%s' is not configured for the application server.", DOWNLOAD_URL));
+        }
+
+        return String.format("%s/openbis/openbis/download?sessionID=%s&filePath=%s", protocolWithDomain, sessionToken,
+                URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+    }
+
+    private void assertNotFinished()
+    {
+        if(isFinished){
+            throw new UserFailureException("Archive file is already closed!");
+        }
+    }
+
+    
+}

@@ -79,6 +79,16 @@ public class ValidationProxy extends AbstractProxy {
         return nextProxy.free(owner, source);
     }
 
+    @Override
+    public String hash(String owner, String source) throws Exception {
+        return nextProxy.hash(owner, source);
+    }
+
+    @Override
+    public byte[] preview(String owner, String source) throws Exception {
+        return nextProxy.preview(owner, source);
+    }
+
     private void validateReadSize(String source, Integer limit) {
         if (limit > maxReadSizeInBytes) {
             throw FSExceptions.MAX_READ_SIZE_EXCEEDED.getInstance(workerContext.getSessionToken(), limit, source, maxReadSizeInBytes);

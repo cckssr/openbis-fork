@@ -1,2 +1,2 @@
-includeFlat 'lib-logging', 'lib-json', 'lib-folder-monitor', 'lib-two-phase-transaction', 'lib-commonbase', 'lib-common',
-        'api-data-store-server-java', 'api-openbis-java'
+includeFlat 'lib-logging', 'lib-json', 'lib-two-phase-transaction', 'lib-commonbase', 'lib-common',
+        'api-openbis-java', 'api-data-store-server-java'

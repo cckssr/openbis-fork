@@ -36,6 +36,7 @@ function ExportTreeController(parentController) {
 				withLevelsAbove: true,
 				withLevelsBelow: !node.expanded,
 				withObjectsAndDataSetsParents: true,
+				withObjectsAndDataSetsChildren: !node.expanded,
 				withObjectsAndDataSetsOtherSpaces: true,
 			})
 		}
@@ -47,7 +48,8 @@ function ExportTreeController(parentController) {
 			formats: {
 				pdf: $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
 				xlsx: $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
-				data: $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+				data: $("#DATASET-EXPORT").is(":checked"), //DATA-EXPORT
+				afsData: $("#FILES-EXPORT").is(":checked") //DATA-EXPORT
 			}
 		}
 

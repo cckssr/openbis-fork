@@ -88,6 +88,7 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         boolean pdf = ((Map<String, Boolean>) parameters.get("formats")).get("pdf");
         boolean xlsx = ((Map<String, Boolean>) parameters.get("formats")).get("xlsx");
         boolean data = ((Map<String, Boolean>) parameters.get("formats")).get("data");
+        boolean afsData = ((Map<String, Boolean>) parameters.get("formats")).get("afsData");
 
         IApplicationServerInternalApi api = CommonServiceProvider.getApplicationServerApi();
         ExportData exportData = new ExportData();
@@ -99,11 +100,12 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
             boolean withLevelsAbove = (boolean) nodeExportMap.get("withLevelsAbove");
             boolean withLevelsBelow = (boolean) nodeExportMap.get("withLevelsBelow");
             boolean withObjectsAndDataSetsParents = (boolean) nodeExportMap.get("withObjectsAndDataSetsParents");
+            boolean withObjectsAndDataSetsChildren = (boolean) nodeExportMap.get("withObjectsAndDataSetsChildren");
             boolean withObjectsAndDataSetsOtherSpaces = (boolean) nodeExportMap.get("withObjectsAndDataSetsOtherSpaces");
 
             ExportableKind rootKind = ExportableKind.valueOf(kind);
             ExportablePermId root = new ExportablePermId(rootKind, permId);
-            XLSExportEntityCollector.collectEntities(api, sessionToken, allPermIds, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces);
+            ExportEntityCollector.collectEntities(api, sessionToken, allPermIds, root, withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsChildren, withObjectsAndDataSetsOtherSpaces);
         }
 
         exportData.setPermIds(new ArrayList<>(allPermIds));
@@ -118,6 +120,9 @@ public class XLSExportExtendedService implements ICustomASServiceExecutor
         }
         if (data) {
             formats.add(ExportFormat.DATA);
+        }
+        if (afsData) {
+            formats.add(ExportFormat.AFS_DATA);
         }
         exportOptions.setFormats(formats);
         exportOptions.setXlsTextFormat(XlsTextFormat.RICH);

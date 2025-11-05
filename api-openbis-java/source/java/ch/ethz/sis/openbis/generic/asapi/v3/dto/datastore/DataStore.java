@@ -47,6 +47,9 @@ public class DataStore implements Serializable, ICodeHolder, IModificationDateHo
     private String remoteUrl;
 
     @JsonProperty
+    private String storageUuid;
+
+    @JsonProperty
     private Date registrationDate;
 
     @JsonProperty
@@ -90,6 +93,16 @@ public class DataStore implements Serializable, ICodeHolder, IModificationDateHo
     public void setDownloadUrl(String downloadUrl)
     {
         this.downloadUrl = downloadUrl;
+    }
+
+    public String getStorageUuid()
+    {
+        return storageUuid;
+    }
+
+    public void setStorageUuid(final String storageUuid)
+    {
+        this.storageUuid = storageUuid;
     }
 
     // Method automatically generated with DtoGenerator

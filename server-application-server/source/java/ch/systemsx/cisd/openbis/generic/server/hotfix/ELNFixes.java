@@ -186,6 +186,17 @@ public class ELNFixes {
         operationLog.info(String.format("ELNFixes fixProperties for property_types table"));
     }
 
+    private static String getSpaceGroupPrefix(String spaceCode) {
+        int endOf = spaceCode.indexOf("_");
+        String prefix = "";
+
+        if(endOf != -1) {
+            prefix = spaceCode.substring(0, endOf);
+        }
+
+        return prefix;
+    }
+
     private static void storageCollectionIntroduction(String sessionToken,
             IApplicationServerInternalApi api)
     {
@@ -207,21 +218,15 @@ public class ELNFixes {
         for (Sample storagePosition:storagePositionResults.getObjects()) {
             Space space = storagePosition.getSpace();
             String spaceCode = space.getCode();
-            String postFix = "";
-
-            if (spaceCode.startsWith("STORAGE") && spaceCode.length() > "STORAGE".length())
-            {
-                int start = spaceCode.indexOf("_");
-                postFix = spaceCode.substring(start + 1);
-            }
+            String prefix = getSpaceGroupPrefix(spaceCode);
 
             ProjectIdentifier projectIdentifier = null;
 
             if (storagePosition.getProject() == null)
             {
                 String projectCode = "STORAGE_POSITIONS";
-                if (!postFix.isBlank()) {
-                    projectCode += "_" + postFix;
+                if (!prefix.isBlank()) {
+                    projectCode = prefix + "_" + projectCode;
                 }
                 projectIdentifier = new ProjectIdentifier(spaceCode, projectCode);
 
@@ -256,8 +261,8 @@ public class ELNFixes {
             if (storagePosition.getExperiment() == null)
             {
                 String experimentCode = "STORAGE_POSITIONS_COLLECTION";
-                if (!postFix.isBlank()) {
-                    experimentCode += "_" + postFix;
+                if (!prefix.isBlank()) {
+                    experimentCode = prefix + "_" + experimentCode;
                 }
                 String experimentType = "COLLECTION";
 

@@ -30,7 +30,7 @@ import ch.systemsx.cisd.common.db.mapper.LongSetMapper;
 public interface DataStoreQuery extends ObjectQuery
 {
 
-    @Select(sql = "select ds.id, ds.code, ds.download_url as downloadUrl, ds.remote_url as remoteUrl, "
+    @Select(sql = "select ds.id, ds.code, ds.download_url as downloadUrl, ds.remote_url as remoteUrl, ds.uuid as storageUuid, "
             + "ds.modification_timestamp as modificationDate, ds.registration_timestamp as registrationDate "
             + "from data_stores ds where ds.id = any(?{1})", parameterBindings = { LongSetMapper.class }, fetchSize = FETCH_SIZE)
     public List<DataStoreBaseRecord> getDataStores(LongSet dataStoreIds);

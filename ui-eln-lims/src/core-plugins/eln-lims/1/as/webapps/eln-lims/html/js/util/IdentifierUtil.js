@@ -81,10 +81,13 @@ var IdentifierUtil = new function() {
 	};
 
 	this.createDummySampleIdentifier = function(spaceCode, projectCode) {
-	    if(projectCode) {
-	        return "/" + spaceCode + "/" + projectCode + "/__DUMMY_SAMPLE_FOR_RIGHTS_CALCULATION__";
-	    }
-        return "/" + spaceCode + "/__DUMMY_SAMPLE_FOR_RIGHTS_CALCULATION__";
+	    if(spaceCode) {
+            if(projectCode) {
+                return "/" + spaceCode + "/" + projectCode + "/__DUMMY_SAMPLE_FOR_RIGHTS_CALCULATION__";
+            }
+            return "/" + spaceCode + "/__DUMMY_SAMPLE_FOR_RIGHTS_CALCULATION__";
+        }
+        return "/__DUMMY_SAMPLE_FOR_RIGHTS_CALCULATION__";
     }
 
     this.createDummyDataSetIdentifier = function(spaceCode, projectCode) {

@@ -11,11 +11,13 @@ import ch.openbis.drive.model.SyncJob;
 import ch.openbis.drive.model.SyncJobEvent;
 import ch.openbis.drive.notifications.NotificationManager;
 import junit.framework.TestCase;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 
@@ -28,6 +30,8 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+
+import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
 @RunWith(JUnit4.class)
 public class SyncOperationTest extends TestCase {
@@ -83,6 +87,7 @@ public class SyncOperationTest extends TestCase {
 
         Mockito.verify(syncOperation3, Mockito.times(1)).synchronize();
         Mockito.verify(syncOperation3, Mockito.times(1)).pruneOldDeletedSyncEvents();
+        Mockito.verify(syncOperation3, Mockito.times(1)).clearStaleConflictNotifications();
     }
 
     @Test
@@ -500,8 +505,8 @@ public class SyncOperationTest extends TestCase {
         Path destinationPath = Path.of("remote");
 
         syncOperation1.getSyncJobEvent(SyncJobEvent.SyncDirection.UP, sourcePath, destinationPath);
-        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), destinationPath.toAbsolutePath().toString());
-        Mockito.verify(syncJobEventDAO1, Mockito.times(0)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, sourcePath.toAbsolutePath().toString(), destinationPath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), toServerPathString(destinationPath));
+        Mockito.verify(syncJobEventDAO1, Mockito.times(0)).selectByPrimaryKey(Mockito.eq(SyncJobEvent.SyncDirection.DOWN), Mockito.anyString(), Mockito.anyString());
 
         try {
             syncOperation2.getSyncJobEvent(SyncJobEvent.SyncDirection.DOWN, sourcePath, destinationPath);
@@ -518,16 +523,16 @@ public class SyncOperationTest extends TestCase {
         }
 
         syncOperation4.getSyncJobEvent(SyncJobEvent.SyncDirection.DOWN, sourcePath, destinationPath);
-        Mockito.verify(syncJobEventDAO4, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), sourcePath.toAbsolutePath().toString());
-        Mockito.verify(syncJobEventDAO4, Mockito.times(0)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, destinationPath.toAbsolutePath().toString(), sourcePath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO4, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), toServerPathString(sourcePath));
+        Mockito.verify(syncJobEventDAO4, Mockito.times(0)).selectByPrimaryKey(Mockito.eq(SyncJobEvent.SyncDirection.UP), Mockito.anyString(), Mockito.anyString());
 
         syncOperation5.getSyncJobEvent(SyncJobEvent.SyncDirection.UP, sourcePath, destinationPath);
-        Mockito.verify(syncJobEventDAO5, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), destinationPath.toAbsolutePath().toString());
-        Mockito.verify(syncJobEventDAO5, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, sourcePath.toAbsolutePath().toString(), destinationPath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO5, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), toServerPathString(destinationPath));
+        Mockito.verify(syncJobEventDAO5, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, sourcePath.toAbsolutePath().toString(), toServerPathString(destinationPath));
 
         syncOperation6.getSyncJobEvent(SyncJobEvent.SyncDirection.DOWN, sourcePath, destinationPath);
-        Mockito.verify(syncJobEventDAO6, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, destinationPath.toAbsolutePath().toString(), sourcePath.toAbsolutePath().toString());
-        Mockito.verify(syncJobEventDAO6, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), sourcePath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO6, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, destinationPath.toAbsolutePath().toString(), toServerPathString(sourcePath));
+        Mockito.verify(syncJobEventDAO6, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), toServerPathString(sourcePath));
     }
 
 
@@ -551,10 +556,10 @@ public class SyncOperationTest extends TestCase {
         Mockito.verify(syncJobEventDAO1, Mockito.times(2)).insertOrUpdate(syncJobEventArgumentCaptor.capture());
 
         Assert.assertEquals(
-                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(destinationPath.toAbsolutePath().toString())
+                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(toServerPathString(destinationPath))
                         .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(now.toEpochMilli()).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(0).toBuilder().timestamp(0L).build());
         Assert.assertEquals(
-                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(sourcePath.toAbsolutePath().toString())
+                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(toServerPathString(sourcePath))
                         .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(now.toEpochMilli()).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(1).toBuilder().timestamp(0L).build());
 
         Assert.assertTrue(
@@ -586,10 +591,10 @@ public class SyncOperationTest extends TestCase {
         Mockito.verify(syncJobEventDAO1, Mockito.times(2)).insertOrUpdate(syncJobEventArgumentCaptor.capture());
 
         Assert.assertEquals(
-                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(destinationPath.toAbsolutePath().toString())
+                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(toServerPathString(destinationPath))
                         .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).directory(true).sourceTimestamp(now.toEpochMilli()).destinationTimestamp(0L).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(0).toBuilder().destinationTimestamp(0L).timestamp(0L).build());
         Assert.assertEquals(
-                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(sourcePath.toAbsolutePath().toString())
+                SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(toServerPathString(sourcePath))
                         .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).directory(true).sourceTimestamp(now.toEpochMilli()).destinationTimestamp(0L).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(1).toBuilder().destinationTimestamp(0L).timestamp(0L).build());
 
         Assert.assertTrue(
@@ -626,10 +631,10 @@ public class SyncOperationTest extends TestCase {
             Mockito.verify(syncJobEventDAO1, Mockito.times(2)).insertOrUpdate(syncJobEventArgumentCaptor.capture());
 
             Assert.assertEquals(
-                    SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(destinationPath.toAbsolutePath().toString())
+                    SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(toServerPathString(destinationPath))
                             .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceDeleted(true).directory(directory).sourceTimestamp(0L).destinationTimestamp(null).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(0).toBuilder().sourceTimestamp(0L).timestamp(0L).build());
             Assert.assertEquals(
-                    SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(sourcePath.toAbsolutePath().toString())
+                    SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.DOWN).localFile(destinationPath.toAbsolutePath().toString()).remoteFile(toServerPathString(sourcePath))
                             .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceDeleted(true).directory(directory).sourceTimestamp(0L).destinationTimestamp(null).timestamp(0L).build(), syncJobEventArgumentCaptor.getAllValues().get(1).toBuilder().sourceTimestamp(0L).timestamp(0L).build());
 
             Assert.assertTrue(
@@ -781,14 +786,14 @@ public class SyncOperationTest extends TestCase {
         Path sourcePath = Path.of("source");
         Path destinationPath = Path.of("destination");
 
-        SyncJobEvent selectedSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(destinationPath.toAbsolutePath().toString())
+        SyncJobEvent selectedSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(toServerPathString(destinationPath))
                 .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(Instant.now().toEpochMilli()).timestamp(System.currentTimeMillis()).build();
         Mockito.doReturn(selectedSyncEntry).when(syncJobEventDAO1).selectByPrimaryKey(Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Instant destinationLastModified = Instant.now();
         Mockito.doReturn(Optional.of(new SyncOperation.FileInfo(false, destinationLastModified))).when(syncOperation1).getRemoteFileInfo(destinationPath);
         syncTaskFileDownloadListener.transferred(sourcePath, destinationPath);
         ArgumentCaptor<SyncJobEvent> updatedSyncJobEventArgumentCaptor = ArgumentCaptor.forClass(SyncJobEvent.class);
-        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), destinationPath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.UP, sourcePath.toAbsolutePath().toString(), toServerPathString(destinationPath));
         Mockito.verify(syncJobEventDAO1, Mockito.times(1)).insertOrUpdate(updatedSyncJobEventArgumentCaptor.capture());
 
         Assert.assertEquals(destinationLastModified.toEpochMilli(), (long) updatedSyncJobEventArgumentCaptor.getValue().getDestinationTimestamp());
@@ -813,13 +818,13 @@ public class SyncOperationTest extends TestCase {
         Path sourcePath = Path.of("source");
         Path destinationPath = Path.of("destination");
 
-        SyncJobEvent selectedSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(destinationPath.toAbsolutePath().toString())
+        SyncJobEvent selectedSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(sourcePath.toAbsolutePath().toString()).remoteFile(toServerPathString(destinationPath))
                 .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(Instant.now().toEpochMilli()).timestamp(System.currentTimeMillis()).build();
         Mockito.doReturn(selectedSyncEntry).when(syncJobEventDAO1).selectByPrimaryKey(Mockito.any(), Mockito.anyString(), Mockito.anyString());
         Instant destinationLastModified = Instant.now();
         Mockito.doReturn(Optional.of(new SyncOperation.FileInfo(false, destinationLastModified))).when(syncOperation1).getLocalFileInfo(destinationPath);
         syncTaskFileDownloadListener.transferred(sourcePath, destinationPath);
-        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), sourcePath.toAbsolutePath().toString());
+        Mockito.verify(syncJobEventDAO1, Mockito.times(1)).selectByPrimaryKey(SyncJobEvent.SyncDirection.DOWN, destinationPath.toAbsolutePath().toString(), toServerPathString(sourcePath));
         ArgumentCaptor<SyncJobEvent> updatedSyncJobEventArgumentCaptor = ArgumentCaptor.forClass(SyncJobEvent.class);
         Mockito.verify(syncJobEventDAO1, Mockito.times(1)).insertOrUpdate(updatedSyncJobEventArgumentCaptor.capture());
         Assert.assertEquals(destinationLastModified.toEpochMilli(), (long) updatedSyncJobEventArgumentCaptor.getValue().getDestinationTimestamp());
@@ -1328,7 +1333,7 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(Notification.Type.Conflict, notificationArgumentCaptor.getValue().get(0).getType());
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
         Assert.assertEquals(source.toString(), notificationArgumentCaptor.getValue().get(0).getLocalFile());
-        Assert.assertEquals(destination.toString(), notificationArgumentCaptor.getValue().get(0).getRemoteFile());
+        Assert.assertEquals(toServerPathString(destination), notificationArgumentCaptor.getValue().get(0).getRemoteFile());
         Assert.assertTrue(notificationArgumentCaptor.getValue().get(0).getMessage().contains("FILE VERSION CONFLICT"));
         Assert.assertTrue(now.toEpochMilli() <= notificationArgumentCaptor.getValue().get(0).getTimestamp());
         Assert.assertTrue(Instant.now().toEpochMilli() >= notificationArgumentCaptor.getValue().get(0).getTimestamp());
@@ -1348,7 +1353,7 @@ public class SyncOperationTest extends TestCase {
 
         Path source = Path.of("source");
         Path destination = Path.of("destination");
-        SyncJobEvent fakeSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(source.toAbsolutePath().toString()).remoteFile(destination.toAbsolutePath().toString())
+        SyncJobEvent fakeSyncEntry = SyncJobEvent.builder().syncDirection(SyncJobEvent.SyncDirection.UP).localFile(source.toAbsolutePath().toString()).remoteFile(toServerPathString(destination))
                 .entityPermId(syncJob1.getEntityPermId()).localDirectoryRoot(syncJob1.getLocalDirectoryRoot()).sourceTimestamp(System.currentTimeMillis()).timestamp(System.currentTimeMillis()).build();
         Instant now = Instant.now();
 
@@ -1360,7 +1365,7 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals(Notification.Type.Conflict, notificationArgumentCaptor.getValue().get(0).getType());
         Assert.assertEquals(syncJob1.getLocalDirectoryRoot(), notificationArgumentCaptor.getValue().get(0).getLocalDirectory());
         Assert.assertEquals(source.toString(), notificationArgumentCaptor.getValue().get(0).getLocalFile());
-        Assert.assertEquals(destination.toString(), notificationArgumentCaptor.getValue().get(0).getRemoteFile());
+        Assert.assertEquals(toServerPathString(destination), notificationArgumentCaptor.getValue().get(0).getRemoteFile());
         Assert.assertEquals("FILE VERSION CONFLICT", notificationArgumentCaptor.getValue().get(0).getMessage());
         Assert.assertTrue(now.toEpochMilli() <= notificationArgumentCaptor.getValue().get(0).getTimestamp());
         Assert.assertTrue(Instant.now().toEpochMilli() >= notificationArgumentCaptor.getValue().get(0).getTimestamp());
@@ -1427,6 +1432,45 @@ public class SyncOperationTest extends TestCase {
         Assert.assertEquals("java.lang.RuntimeException exception with message: !!!UNEXPECTED EXCEPTION!!!", notificationArgumentCaptor.getValue().get(0).getMessage());
         Assert.assertTrue(now.toEpochMilli() <= notificationArgumentCaptor.getValue().get(0).getTimestamp());
         Assert.assertTrue(Instant.now().toEpochMilli() >= notificationArgumentCaptor.getValue().get(0).getTimestamp());
+    }
+
+    @Test
+    @SneakyThrows
+    public void testClearStaleConflictNotifications() {
+        Path localDirPath = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().toAbsolutePath();
+        Files.deleteIfExists(localDirPath.resolve("conflict1"));
+        Files.deleteIfExists(localDirPath.resolve("conflict2"));
+        Files.createFile(localDirPath.resolve("conflict1"));
+        Files.createFile(localDirPath.resolve("conflict2"));
+
+        SyncOperation.AfsClientProxy afsClient = Mockito.mock(SyncOperation.AfsClientProxy.class);
+        ClientAPI.TransferMonitorListener uploadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        ClientAPI.TransferMonitorListener downloadMonitor = Mockito.mock(ClientAPI.TransferMonitorListener.class);
+        NotificationManager notificationManager = Mockito.mock(NotificationManager.class);
+
+        SyncJobEventDAO syncJobEventDAO1 = Mockito.mock(SyncJobEventDAO.class);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
+        SyncOperation syncOperation1 = Mockito.spy(new SyncOperation(syncJob1, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO1, Path.of("/hidden-dir"), notificationManager));
+
+        List<Notification> conflictNotifications = List.of(
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict1").toString()).remoteFile("/remote1")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build(),
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict2").toString()).remoteFile("/remote2")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build(),
+                Notification.builder().type(Notification.Type.Conflict).localDirectory(localDirPath.toString())
+                        .localFile(localDirPath.resolve("conflict3").toString()).remoteFile("/remote3")
+                        .timestamp(System.currentTimeMillis()).message("CONFLICT").build()
+        );
+        Mockito.doReturn(conflictNotifications).when(notificationManager).getConflictNotifications(syncJob1, 100);
+
+        syncOperation1.clearStaleConflictNotifications();
+
+        ArgumentCaptor<List<Notification>> removedNotificationArgCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(notificationManager, Mockito.times(1)).removeNotifications(removedNotificationArgCaptor.capture());
+        assertEquals(1, removedNotificationArgCaptor.getValue().size());
+        assertEquals(conflictNotifications.get(2), removedNotificationArgCaptor.getValue().get(0));
     }
 
     private static SyncJobEvent[] getDifferentFakeSyncJobEntries(SyncJobEvent.SyncDirection syncDirection, Path sourcePath, Path destinationPath, SyncJob syncJob) {

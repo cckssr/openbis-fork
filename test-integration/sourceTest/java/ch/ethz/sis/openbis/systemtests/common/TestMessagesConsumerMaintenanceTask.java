@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import ch.ethz.sis.afsserver.server.messages.MessagesConsumerMaintenanceTask;
+import ch.ethz.sis.openbis.afsserver.server.messages.MessagesConsumerMaintenanceTask;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 
 public class TestMessagesConsumerMaintenanceTask implements IMaintenanceTask

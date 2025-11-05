@@ -6,6 +6,7 @@ import java.util.Properties;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import ch.ethz.sis.openbis.generic.foldermonitor.v3.FolderMonitorTask;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 
 public class FolderMonitorConfigurationTest
@@ -184,7 +185,8 @@ public class FolderMonitorConfigurationTest
         } catch (ConfigurationFailureException e)
         {
             Assert.assertEquals(e.getMessage(),
-                    "Task class 'ch.ethz.sis.foldermonitor.FolderMonitorConfigurationTest$IncorrectTask' does not implement 'ch.ethz.sis.foldermonitor.FolderMonitorTask' interface");
+                    "Task class 'ch.ethz.sis.foldermonitor.FolderMonitorConfigurationTest$IncorrectTask' does not implement '"
+                            + FolderMonitorTask.class.getName() + "' interface");
         }
     }
 

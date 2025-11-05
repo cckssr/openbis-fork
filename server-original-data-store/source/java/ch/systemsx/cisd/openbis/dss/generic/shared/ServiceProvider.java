@@ -17,7 +17,6 @@ package ch.systemsx.cisd.openbis.dss.generic.shared;
 
 import java.util.Date;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -33,6 +32,8 @@ import ch.ethz.sis.openbis.generic.server.dssapi.v3.Constants;
 import ch.ethz.sis.openbis.generic.server.dssapi.v3.DataStoreServerApiJsonServer;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentNodeFilter;
 import ch.systemsx.cisd.openbis.dss.generic.shared.content.IContentCache;
 import ch.systemsx.cisd.openbis.generic.shared.IServiceForDataStoreServer;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
@@ -41,7 +42,7 @@ import ch.systemsx.cisd.openbis.generic.shared.pat.IPersonalAccessTokenConverter
 
 /**
  * Provider of remote service onto openBIS.
- * 
+ *
  * @author Franz-Josef Elmer
  */
 public class ServiceProvider
@@ -71,7 +72,7 @@ public class ServiceProvider
 
     /**
      * @deprecated This method should only be used from {@link ServiceProviderTestWrapper} to avoid leaving the application context uncleaned after
-     *             test execution.
+     * test execution.
      */
     @Deprecated
     public static void setBeanFactory(BeanFactory applicationContext)
@@ -81,7 +82,7 @@ public class ServiceProvider
 
     /**
      * Return the application context
-     * 
+     *
      * @param create <code>true</code> if the application context should be created when it does not exist.
      */
     public static BeanFactory tryGetApplicationContext(boolean create)
@@ -100,11 +101,11 @@ public class ServiceProvider
                     }
                     buildingApplicationContext = true;
                     applicationContext = new ClassPathXmlApplicationContext(new String[] { "dssApplicationContext.xml" }, true)
+                    {
                         {
-                            {
-                                setDisplayName("Application Context from { dssApplicationContext.xml }");
-                            }
-                        };
+                            setDisplayName("Application Context from { dssApplicationContext.xml }");
+                        }
+                    };
                     buildingApplicationContext = false;
                 }
             }
@@ -177,6 +178,12 @@ public class ServiceProvider
     {
         return ((IHierarchicalContentProvider) getApplicationContext().getBean(
                 "hierarchical-content-provider"));
+    }
+
+    public static IHierarchicalContentNodeFilter getHierarchicalContentNodeFilter()
+    {
+        // no filtering
+        return null;
     }
 
     public static HttpInvokerServiceExporter getDataStoreServer()

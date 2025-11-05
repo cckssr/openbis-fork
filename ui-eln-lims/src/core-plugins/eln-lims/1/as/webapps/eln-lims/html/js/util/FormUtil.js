@@ -3796,8 +3796,12 @@ var FormUtil = new function() {
                                         $window.append($pdf);
                                         var $xlsx = $("<span class='checkbox'><label><input type='checkbox' id='XLSX-EXPORT'>Export metadata as XLSX</label></span>");
                                         $window.append($xlsx);
-                                        var $data = $("<span class='checkbox'><label><input type='checkbox' id='DATA-EXPORT'>Export data</label></span>");
+                                        var $data = $("<span class='checkbox'><label><input type='checkbox' id='DATA-EXPORT'>Export dataset data</label></span>");
                                         $window.append($data);
+                                        if(entityKind !== 'DATASET' && profile.isAFSAvailable()) {
+                                            var $afsData = $("<span class='checkbox'><label><input type='checkbox' id='AFS-DATA-EXPORT'>Export files</label></span>");
+                                            $window.append($afsData);
+                                        }
 
                                         var $hierarchyInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions"));
 
@@ -3806,6 +3810,8 @@ var FormUtil = new function() {
                                         $window.append($levelsBelow);
                                         var $includeParents = $("<span class='checkbox'><label><input type='checkbox' id='PARENTS-EXPORT'>Include Object and Dataset parents from same space</label></span>");
                                         $window.append($includeParents);
+                                        var $includeChildren = $("<span class='checkbox'><label><input type='checkbox' id='CHILDREN-EXPORT'>Include Object and Dataset children from same space</label></span>");
+                                        $window.append($includeChildren);
                                         var $includeOtherSpaces = $("<span class='checkbox'><label><input type='checkbox' id='OTHER-SPACES-EXPORT'>Include Objects and Datasets parents and children from different spaces</label></span>");
                                         $window.append($includeOtherSpaces);
 
@@ -3826,6 +3832,7 @@ var FormUtil = new function() {
                                                     withLevelsAbove: true,
                                                     withLevelsBelow : $("#LEVELS-BELOW-EXPORT").is(":checked"), //LEVELS-BELOW-EXPORT
                                                     withObjectsAndDataSetsParents : $("#PARENTS-EXPORT").is(":checked"), //PARENTS-EXPORT
+                                                    withObjectsAndDataSetsChildren : $("#CHILDREN-EXPORT").is(":checked"), //CHILDREN-EXPORT
                                                     withObjectsAndDataSetsOtherSpaces: $("#OTHER-SPACES-EXPORT").is(":checked") //OTHER-SPACES-EXPORT
                                                 }],
                                                 withEmail : $("#EXPORT-EMAIL").is(":checked"),
@@ -3833,7 +3840,8 @@ var FormUtil = new function() {
                                                 formats : {
                                                     pdf : $("#PDF-EXPORT").is(":checked"), //PDF-EXPORT
                                                     xlsx : $("#XLSX-EXPORT").is(":checked"), //XLSX-EXPORT
-                                                    data : $("#DATA-EXPORT").is(":checked") //DATA-EXPORT
+                                                    data : $("#DATA-EXPORT").is(":checked"), //DATA-EXPORT
+                                                    afsData : $("#AFS-DATA-EXPORT").is(":checked") //AFS-DATA-EXPORT
                                                 }
                                             }
                                             var numberOfFormats = 0;
@@ -3844,6 +3852,9 @@ var FormUtil = new function() {
                                                 numberOfFormats++;
                                             }
                                             if(exportModel.formats.data) {
+                                                numberOfFormats++;
+                                            }
+                                            if(exportModel.formats.afsData) {
                                                 numberOfFormats++;
                                             }
                                             if(numberOfFormats === 0) {

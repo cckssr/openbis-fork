@@ -56,7 +56,10 @@ public class ExportOptions implements Serializable
     private Boolean withObjectsAndDataSetsParents; // Include Object and Dataset parents from same space
 
     @JsonProperty
-    private Boolean withObjectsAndDataSetsOtherSpaces; // Include Objects and Datasets parents and children from different spaces
+    private Boolean  withObjectsAndDataSetsChildren; // Include Object and Dataset children from same space
+
+    @JsonProperty
+    private Boolean withObjectsAndDataSetsOtherSpaces; // Include Objects and Datasets from different spaces (if selected with withObjectsAndDataSetsParents and withObjectsAndDataSetsChildren)
 
     @SuppressWarnings("unused")
     public ExportOptions()
@@ -67,7 +70,7 @@ public class ExportOptions implements Serializable
             final Boolean withImportCompatibility, final Boolean zipSingleFiles)
     {
         this(formats, xlsTextFormat, withReferredTypes, withImportCompatibility, zipSingleFiles,
-                Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+                Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
     }
 
     public ExportOptions(final Set<ExportFormat> formats, final XlsTextFormat xlsTextFormat, final Boolean withReferredTypes,
@@ -75,6 +78,7 @@ public class ExportOptions implements Serializable
                          Boolean withLevelsAbove,
                          Boolean withLevelsBelow,
                          Boolean withObjectsAndDataSetsParents,
+                         Boolean withObjectsAndDataSetsChildren,
                          Boolean withObjectsAndDataSetsOtherSpaces)
     {
         this.formats = formats;
@@ -85,6 +89,7 @@ public class ExportOptions implements Serializable
         this.withLevelsAbove = withLevelsAbove;
         this.withLevelsBelow = withLevelsBelow;
         this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
         this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
     }
 
@@ -170,6 +175,14 @@ public class ExportOptions implements Serializable
 
     public void setWithObjectsAndDataSetsParents(Boolean withObjectsAndDataSetsParents) {
         this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+    }
+
+    public Boolean isWithObjectsAndDataSetsChildren() {
+        return withObjectsAndDataSetsChildren;
+    }
+
+    public void setWithObjectsAndDataSetsChildren(Boolean withObjectsAndDataSetsChildren) {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
     }
 
     public Boolean isWithObjectsAndDataSetsOtherSpaces() {

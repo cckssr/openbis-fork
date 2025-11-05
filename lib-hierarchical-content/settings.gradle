@@ -1,2 +1,2 @@
 includeFlat 'lib-logging', 'lib-json', 'lib-two-phase-transaction', 'lib-db', 'lib-commonbase', 'lib-common', 'lib-openbis-commonbase', 'lib-data-store-commonbase',
-        'lib-pathinfo-db', 'lib-hdf5', 'lib-compress', 'api-openbis-java', 'api-data-store-server-java'
+        'lib-pathinfo-db', 'lib-hdf5', 'lib-compress', 'lib-transactional-file-system', 'api-openbis-java', 'api-data-store-server-java'

@@ -246,61 +246,67 @@ public final class ScreeningClientService extends AbstractClientService implemen
         return prepareExportEntities(criteria);
     }
 
-    @Override
+
     public List<BatchRegistrationResult> registerLibrary(LibraryRegistrationInfo details, String sessionKey, boolean async, String userEmail)
-            throws UserFailureException
-    {
-        final String sessionToken = getSessionToken();
-        HttpSession session = getHttpSession();
-        UploadedFilesBean uploadedFiles = null;
-        String experiment = details.getExperiment();
-        
-        try
-        {
-            ExperimentIdentifier experimentIdentifier = new ExperimentIdentifierFactory(experiment).createIdentifier();
-            String space = experimentIdentifier.getSpaceCode();
-            boolean projectSamplesEnabled = server.isProjectSamplesEnabled(sessionToken);
-            String sampleProject = projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null;
-            uploadedFiles = getUploadedFiles(sessionKey, session);
-
-            List<NewLibrary> newLibraries = new LinkedList<NewLibrary>();
-            List<BatchRegistrationResult> results = new LinkedList<BatchRegistrationResult>();
-
-            for (IUncheckedMultipartFile file : uploadedFiles.iterable())
-            {
-                LibraryExtractor extractor =
-                        new LibraryExtractor(file.getInputStream(), details.getSeparator(),
-                                experiment, space, sampleProject, details.getPlateGeometry(), details.getScope());
-                extractor.extract();
-
-                NewLibrary newLibrary = new NewLibrary();
-                newLibrary.setNewGenesOrNull(extractor.getNewGenes());
-                newLibrary.setNewOligosOrNull(extractor.getNewOligos());
-                newLibrary.setNewSamplesWithType(extractor.getNewSamplesWithType());
-                newLibraries.add(newLibrary);
-
-                BatchRegistrationResult result = new BatchRegistrationResult();
-                result.setFileName(file.getOriginalFilename());
-                result.setMessage(String.format("%d gene(s), %d oligo(s) %d sample(s) found and registered.", newLibrary.getNewGenesCount(),
-                        newLibrary.getNewOligosCount(), newLibrary.getNewSamplesWithTypeCount()));
-                results.add(result);
-            }
-
-            if (async)
-            {
-                server.registerLibrariesAsync(sessionToken, newLibraries, userEmail);
-                String fileName = results.get(0).getFileName();
-                return AsyncBatchRegistrationResult.singletonList(fileName);
-            } else
-            {
-                server.registerLibraries(sessionToken, newLibraries);
-                return results;
-            }
-        } finally
-        {
-            cleanUploadedFiles(sessionKey, session, uploadedFiles);
-        }
+                throws UserFailureException {
+        throw new IllegalStateException("GWT removed");
     }
+//    Remove GWT
+//    @Override
+//    public List<BatchRegistrationResult> registerLibrary(LibraryRegistrationInfo details, String sessionKey, boolean async, String userEmail)
+//            throws UserFailureException
+//    {
+//        final String sessionToken = getSessionToken();
+//        HttpSession session = getHttpSession();
+//        UploadedFilesBean uploadedFiles = null;
+//        String experiment = details.getExperiment();
+//
+//        try
+//        {
+//            ExperimentIdentifier experimentIdentifier = new ExperimentIdentifierFactory(experiment).createIdentifier();
+//            String space = experimentIdentifier.getSpaceCode();
+//            boolean projectSamplesEnabled = server.isProjectSamplesEnabled(sessionToken);
+//            String sampleProject = projectSamplesEnabled ? experimentIdentifier.getProjectCode() : null;
+//            uploadedFiles = getUploadedFiles(sessionKey, session);
+//
+//            List<NewLibrary> newLibraries = new LinkedList<NewLibrary>();
+//            List<BatchRegistrationResult> results = new LinkedList<BatchRegistrationResult>();
+//
+//            for (IUncheckedMultipartFile file : uploadedFiles.iterable())
+//            {
+//                LibraryExtractor extractor =
+//                        new LibraryExtractor(file.getInputStream(), details.getSeparator(),
+//                                experiment, space, sampleProject, details.getPlateGeometry(), details.getScope());
+//                extractor.extract();
+//
+//                NewLibrary newLibrary = new NewLibrary();
+//                newLibrary.setNewGenesOrNull(extractor.getNewGenes());
+//                newLibrary.setNewOligosOrNull(extractor.getNewOligos());
+//                newLibrary.setNewSamplesWithType(extractor.getNewSamplesWithType());
+//                newLibraries.add(newLibrary);
+//
+//                BatchRegistrationResult result = new BatchRegistrationResult();
+//                result.setFileName(file.getOriginalFilename());
+//                result.setMessage(String.format("%d gene(s), %d oligo(s) %d sample(s) found and registered.", newLibrary.getNewGenesCount(),
+//                        newLibrary.getNewOligosCount(), newLibrary.getNewSamplesWithTypeCount()));
+//                results.add(result);
+//            }
+//
+//            if (async)
+//            {
+//                server.registerLibrariesAsync(sessionToken, newLibraries, userEmail);
+//                String fileName = results.get(0).getFileName();
+//                return AsyncBatchRegistrationResult.singletonList(fileName);
+//            } else
+//            {
+//                server.registerLibraries(sessionToken, newLibraries);
+//                return results;
+//            }
+//        } finally
+//        {
+//            cleanUploadedFiles(sessionKey, session, uploadedFiles);
+//        }
+//    }
 
     @Override
     public Vocabulary getPlateGeometryVocabulary() throws UserFailureException

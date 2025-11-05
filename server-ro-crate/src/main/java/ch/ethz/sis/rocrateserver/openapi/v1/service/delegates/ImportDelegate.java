@@ -22,6 +22,7 @@ import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
 import edu.kit.datamanager.ro_crate.reader.ZipReader;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.jboss.logging.Logger;
 
@@ -118,6 +119,7 @@ public class ImportDelegate
 
         } catch (Exception e)
         {
+            Log.error("Problem for user " + System.getProperty("user.name")); //platform independent
             LOG.error("Could not open RO-Crate", e);
             RoCrateExceptions.throwInstance(RoCrateExceptions.MALFORMED_INPUT);
 
@@ -169,18 +171,30 @@ public class ImportDelegate
 
             // Reading ro-crate model
             RoCrateReader roCrateFolderReader = new RoCrateReader(new FolderReader());
+            String realPath =
+                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString();
+            LOG.debug(String.format("Crate location %s",
+                    realPath));
+
             crate = roCrateFolderReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), null).toString());
+                    realPath);
         } else if (headers.getContentType().contains("application/zip"))
         {
 
             Path path = Path.of(UUID.randomUUID() + ".zip");
+            LOG.debug("Path: " + path.toString());
             SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
             RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
+            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
             LOG.debug(String.format("Crate location %s",
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path)));
+                    realPath));
+            if (realPath.toString().startsWith("./"))
+            {
+                LOG.error("How did this happen?");
+            }
+
             crate = roCrateReader.readCrate(
-                    SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path).toString());
+                    realPath.toString());
         }
         return crate;
     }

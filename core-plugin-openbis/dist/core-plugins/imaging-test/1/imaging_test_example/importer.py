@@ -18,12 +18,14 @@ import os
 
 from pybis import Openbis, ImagingControl
 from pybis import *
+import pybis.imaging as imaging
 
-TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.ImagingTestAdaptor"
+TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingTestAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "https://localhost:8443/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
+# DEFAULT_URL = "https://local.openbis.ch/openbis"
 
 
 def get_instance(url=None, token=None):
@@ -93,5 +95,24 @@ for file in files:
     print(f'Created dataset: {data_set.permId}')
 
 # export_image(o, 'permId', 0, 'path_to_download')
+
+
+# def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):
+#     imaging_control = ImagingControl(openbis)
+#     preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig, tags=tags)
+#     preview = imaging_control.make_preview(perm_id, image_index, preview)
+#     return preview
+#
+# config_preview = {
+#     # "Channel": channels[0],  # usually one of these: ['z', 'I', 'dIdV', 'dIdV_Y']
+#     # "X-axis": ["0", str(img.get_param('width')[0])],  # file dependent
+#     # "Y-axis": ["0", str(img.get_param('height')[0])],  # file dependent
+#     # "Color-scale": color_scale,  # file dependent
+#     "Colormap": "gray",  # [gray, YlOrBr, viridis, cividis, inferno, rainbow, Spectral, RdBu, RdGy]
+#     "Scaling": "linear",  # ['linear', 'logarithmic']
+# }
+#
+# create_preview(o, '20251024142437356-46', config_preview)
+
 
 o.logout()

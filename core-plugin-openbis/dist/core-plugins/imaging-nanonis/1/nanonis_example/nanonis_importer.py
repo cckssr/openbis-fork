@@ -26,6 +26,7 @@ from spmpy import Spm as spm
 from datetime import datetime
 import shutil
 from collections import defaultdict
+import itertools
 
 SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisSxmAdaptor"
 DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.dss.plugins.imaging.adaptor.NanonisDatAdaptor"
@@ -33,6 +34,12 @@ VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
 # DEFAULT_URL = "http://local.openbis.ch:8080/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
+
+SERVICE_TYPE = 'DSS'
+
+if SERVICE_TYPE == "AS":
+    SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"
+    DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
 
 
 def get_instance(url=None, token=None):
@@ -139,7 +146,7 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
     # Select default channel according to the measurement type
     channels = reorder_sxm_channels(channels, header)
 
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
 
     color_scale_visibility = [
         imaging.ImagingDataSetControlVisibility(
@@ -397,7 +404,7 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     if [] == data:
         raise ValueError(f"No nanonis .DAT files found in {folder_path}")
 
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
 
     for d in data:
         if d.type == 'scan':
@@ -414,6 +421,8 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     # channels = list(set([(channel['ChannelNickname'], channel['ChannelUnit'], channel['ChannelScaling']) for spec in data for channel in spec.SignalsList]))
     # channels = list([set([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
     channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    channels.sort()
+    channels = list(k for k,_ in itertools.groupby(channels))
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
 
@@ -446,8 +455,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
         maximum_y = np.nanmax(maximum_y)
         step_x = abs(round((maximum_x - minimum_x) / 100, 2))
         step_y = abs(round((maximum_y - minimum_y) / 100, 2))
-
-        if step_x >= 1:
+        if step_x >= 1000:
+            step_x = 10 ** np.floor(np.log10(step_x))
+        elif step_x >= 1:
             step_x = 1
         elif step_x > 0:
             step_x = 0.01
@@ -459,7 +469,9 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
             else:
                 step_x = 10 ** np.floor(step_x)
 
-        if step_y >= 1:
+        if step_y >= 1000:
+            step_y = 10 ** np.floor(np.log10(step_y))
+        elif step_y >= 1:
             step_y = 1
         elif step_y > 0:
             step_y = 0.01
@@ -525,14 +537,14 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
 
 
 def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
     preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig, tags=tags)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
 
 def update_image_with_preview(openbis, perm_id, image_id, preview: imaging.ImagingDataSetPreview):
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
     config = imaging_control.get_property_config(perm_id)
     image = config.images[image_id]
     if len(image.previews) > preview.index:
@@ -548,7 +560,7 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
                  include=None, image_format='original', archive_format="zip", resolution='original'):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
     export_config = {
         "include": include,
         "image_format": image_format,
@@ -563,7 +575,7 @@ def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[i
                         archive_format="zip", resolution='original'):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
-    imaging_control = ImagingControl(openbis)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
     export_config = {
         "include": include,
         "image_format": image_format,
@@ -675,6 +687,8 @@ def demo_dat_flow(openbis, folder_path, permId=None):
     data.sort(key=lambda da: da.date_time)
 
     channels = list([list([channel, spec.signals[channel]['ChannelUnit'], spec.signals[channel]['ChannelScaling']]) for spec in data for channel in spec.signals])
+    channels.sort()
+    channels = list(k for k,_ in itertools.groupby(channels))
     channels_x, channels_y = reorder_dat_channels(channels, data[0].header) # All files inside data belong to the same measurement type. Thus, the header of the first file can be used for all of them.
 
     channel_x = channels_x[0][0]
@@ -871,7 +885,7 @@ else:
 
 o = get_instance(openbis_url, token)
 
-measurement_files = [f for f in os.listdir(data_folder)]
+measurement_files = [f for f in os.listdir(data_folder) if f.endswith(".sxm") or f.endswith(".dat")]
 measurement_datetimes = []
 
 for f in measurement_files:

@@ -20,14 +20,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.ethz.sis.pathinfo.IPathInfoNonAutoClosingDAO;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.etlserver.plugins.AbstractMaintenanceTaskWithStateFile;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.FilteredHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.common.io.hierarchical_content.Hdf5AwareHierarchicalContentFactory;
+import ch.systemsx.cisd.openbis.common.io.hierarchical_content.IHierarchicalContentFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IDataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IShareIdManager;
+import ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoServiceProviderFactory;
 import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IDatasetLocation;
 
 /**
@@ -75,8 +77,11 @@ abstract class AbstractPathInfoDatabaseFeedingTask extends AbstractMaintenanceTa
 
         try
         {
+            IHierarchicalContentFactory contentFactory =
+                    new FilteredHierarchicalContentFactory(new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders),
+                            PathInfoServiceProviderFactory.getInstance().getHierarchicalContentNodeFilter());
             DatabaseBasedDataSetPathsInfoFeeder feeder =
-                    new DatabaseBasedDataSetPathsInfoFeeder(dao, new Hdf5AwareHierarchicalContentFactory(h5Folders, h5arFolders), computeChecksum,
+                    new DatabaseBasedDataSetPathsInfoFeeder(dao, contentFactory, computeChecksum,
                             checksumType);
             Long id = dao.tryGetDataSetId(dataSetCode);
 

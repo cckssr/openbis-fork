@@ -106,6 +106,33 @@ public class NotificationDAOImpl implements NotificationDAO {
         }
     }
 
+    String SELECT_BY_LOCAL_DIR_AND_TYPE = "SELECT * FROM Notifications WHERE localDirectory = ? AND type = ? LIMIT ?;";
+
+    public List<Notification> selectByLocalDirectoryAndType(@NonNull String localDirectory, @NonNull Notification.Type type, int limit) throws SQLException, IOException {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(SELECT_BY_LOCAL_DIR_AND_TYPE)) {
+
+            statement.setObject(1, localDirectory);
+            statement.setObject(2, getTypeAsInt(type));
+            statement.setObject(3, limit);
+
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Notification> notifications = new ArrayList<>();
+            while (resultSet.next()) {
+                notifications.add(Notification.builder()
+                        .type(getTypeFromInt(((Number) resultSet.getObject("type")).intValue()))
+                        .localDirectory((String) resultSet.getObject("localDirectory"))
+                        .localFile((String) resultSet.getObject("localFile"))
+                        .remoteFile((String) resultSet.getObject("remoteFile"))
+                        .message((String) resultSet.getObject("message"))
+                        .timestamp((Long) resultSet.getObject("timestamp"))
+                        .build());
+            }
+            return notifications;
+        }
+    }
+
     String SELECT_SPECIFIC_CONFLICT_ENTRY = "SELECT * FROM Notifications WHERE type = ? AND localDirectory = ? AND localFile IS ? AND remoteFile IS ?;";
 
     public Notification selectByPrimaryKey(@NonNull Notification.Type type, @NonNull String localDirectory, String localFile, String remoteFile) throws SQLException, IOException {

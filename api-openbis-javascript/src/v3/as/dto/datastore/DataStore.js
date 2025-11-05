@@ -12,6 +12,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.code = null;
 		prototype.downloadUrl = null;
 		prototype.remoteUrl = null;
+		prototype.storageUuid = null;
 		prototype.registrationDate = null;
 		prototype.modificationDate = null;
 
@@ -38,6 +39,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setRemoteUrl = function(remoteUrl) {
 			this.remoteUrl = remoteUrl;
+		};
+		prototype.getStorageUuid = function() {
+			return this.storageUuid;
+		};
+		prototype.setStorageUuid = function(storageUuid) {
+			this.storageUuid = storageUuid;
 		};
 		prototype.getRegistrationDate = function() {
 			return this.registrationDate;

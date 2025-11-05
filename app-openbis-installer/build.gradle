@@ -48,7 +48,8 @@ dependencies {
 
 }
 
-archivesBaseName = 'openBIS-installation-standard-technologies'
+def archiveNamePrefix = 'openbis-installer'
+archivesBaseName = archiveNamePrefix
 ext.installerDistDir = 'targets/dist/installer'
 ext.izPackJar = "${buildDir}/izPack.jar"
 println "installerDir:${installerDistDir}"
@@ -173,9 +174,6 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
     from zipTree(jar.archivePath)
     from zipTree(project(':lib-common').jar.archivePath)
     from zipTree(project(':lib-commonbase').jar.archivePath)
-//    for (f in configurations.archives.files) {
-//        from zipTree(f)
-//    }
     from {
         configurations.runtimeClasspath.files.collect { zipTree(it) }
     }
@@ -184,7 +182,7 @@ task createInstallerJar(type: Jar, dependsOn: [compileInstaller, jar]) {
 task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
     compression = Compression.GZIP
     archiveExtension = 'tar.gz'
-    archiveBaseName = 'openBIS-installation-standard-technologies'
+    archiveBaseName = archiveNamePrefix
     from createInstallerJar.archiveFile
     from('resource/tarball') {
         include 'console.properties'
@@ -193,7 +191,7 @@ task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
         include 'run-console.sh'
         include 'run-ui.sh'
     }
-    into "openBIS-installation-standard-technologies-${version}"
+    into "${archiveNamePrefix}-${version}"
 }
 
 build.dependsOn createInstallerZip

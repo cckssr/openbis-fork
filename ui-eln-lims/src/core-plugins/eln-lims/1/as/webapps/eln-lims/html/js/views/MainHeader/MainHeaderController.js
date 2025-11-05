@@ -116,10 +116,14 @@ function MainHeaderController() {
     }
 
     this._getTreeFromSpaceCode = function(spaceCode) {
-        if(SettingsManagerUtils.isLabNotebookSpace(spaceCode)) {
-            return "lab_notebook";
+        if(spaceCode) {
+            if(SettingsManagerUtils.isLabNotebookSpace(spaceCode)) {
+                return "lab_notebook";
+            } else {
+                return "lims";
+            }
         } else {
-            return "lims";
+            return "lab_notebook";
         }
     }
 

@@ -2,6 +2,7 @@ package ch.ethz.sis.rocrateserver.openapi.v1.service.helper;
 
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
+import org.jboss.logging.Logger;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -14,6 +15,9 @@ public class SessionWorkSpaceManager
     private SessionWorkSpaceManager()
     {
     }
+
+    private static final Logger LOG = Logger.getLogger(SessionWorkSpaceManager.class);
+
 
     public static void write(String sessionToken, Path path, InputStream inputStream)
             throws IOException
@@ -33,16 +37,23 @@ public class SessionWorkSpaceManager
     {
         String sessionWorkSpace = StartupMain.getConfiguration()
                 .getStringProperty(RoCrateServerParameter.sessionWorkSpace);
+        LOG.debug("sessionWorkSpace: " + sessionWorkSpace);
         Path userSessionWorkspace = Path.of(sessionWorkSpace, sessionToken);
+        LOG.debug("userSessionWorkSpace: " + userSessionWorkspace);
+
         if (!Files.exists(userSessionWorkspace))
         {
+            LOG.debug("Creating userSessionWorkspace: " + userSessionWorkspace);
+
             Files.createDirectories(userSessionWorkspace);
         }
         if (path == null)
         {
+            LOG.debug("Path is null, returning: " + userSessionWorkspace);
             return userSessionWorkspace;
         } else
         {
+            LOG.debug("Path is not null, returning: " + userSessionWorkspace.resolve(path));
             return userSessionWorkspace.resolve(path);
         }
     }

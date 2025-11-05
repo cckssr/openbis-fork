@@ -50,6 +50,12 @@ public class NotificationManagerSqliteImpl implements NotificationManager {
 
     @Override
     @SneakyThrows
+    synchronized public List<Notification> getConflictNotifications(@NonNull SyncJob syncJob, @NonNull Integer limit) {
+        return notificationDAO.selectByLocalDirectoryAndType(syncJob.getLocalDirectoryRoot(), Notification.Type.Conflict, limit);
+    }
+
+    @Override
+    @SneakyThrows
     synchronized public void clearNotificationsForSyncJob(@NonNull SyncJob syncJob) {
         notificationDAO.removeByLocalDirectory(syncJob.getLocalDirectoryRoot());
     }

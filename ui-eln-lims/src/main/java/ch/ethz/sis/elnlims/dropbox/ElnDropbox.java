@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
-import ch.ethz.sis.foldermonitor.FolderMonitorTask;
+import ch.ethz.sis.openbis.generic.foldermonitor.v3.FolderMonitorTask;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.entitytype.id.EntityTypePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;

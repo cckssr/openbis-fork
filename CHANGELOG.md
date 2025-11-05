@@ -1,5 +1,25 @@
 # OpenBIS Change Log
 
+## Version 20.10.12.1 (21 Oct 2025)
+
+### Core
+- Bugfix: User-management task fails with NullPointerException when users are passed as lists (BIS-2152)
+- Bugfix: export of Collection tables in ELN should be a .xlsx file (BIS-2168)
+
+### ELN-LIMS
+- Bugfix: Cannot assign storage positions in multi group instances (BIS-2297)
+- Bugfix: Navigation menu not updated after copying object (BIS-2289)
+- Bugfix: UI does not react to window resize (BIS-2268)
+- Bugfix: ELN "More..." dropdown does not have scroll bar - issue in small screens (BIS-2201)
+- Bugfix: ELN User creation bug (BIS-2194)
+- Bugfix: Occasionally the main frame of the UI disappears, leaving only the navigation menu (BIS-2193)
+- Bugfix: Incorrect property name in generated Jupyter Notebook cell (BIS-2179)
+- Bugfix: Main menu does not expand if I close an entity form without saving it (BIS-2178)
+- Bugfix: Open preview of text containing image in Collection table has no option to close image (BIS-2177)
+- Bugfix: Empty property in Forced Monospace Font and Forced Disable RTF throws null error in ELN General settings - Better Error Message (BIS-2167)
+- Bugfix: Inventory spaces in group ELN Settings in multi-group instance show all spaces, not only group spaces (BIS-2166)
+- Bugfix: Scrolling text with keyboard arrows in forms in edit mode opens new tabs (BIS-2165)
+
 ## Version 20.10.12 (19 Aug 2025)
 
 ### Core

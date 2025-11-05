@@ -64,6 +64,9 @@ public class IntegrationSftpTest extends AbstractIntegrationTest
                 DSS_DATA_SET_FILE_CONTENT.getBytes());
 
         openBIS.getAfsServerFacade().write(experiment.getPermId().getPermId(), AFS_DATA_SET_FILE_NAME, 0L, AFS_DATA_SET_FILE_CONTENT.getBytes());
+        // calculate a hash for the file, it will be stored in OperationExecutor.HIDDEN_AFS_DIRECTORY folder
+        openBIS.getAfsServerFacade().hash(experiment.getPermId().getPermId(), AFS_DATA_SET_FILE_NAME);
+
         DataSetPermId afsDataSetId = new DataSetPermId(experiment.getPermId().getPermId());
         afsDataSet = openBIS.getDataSets(List.of(afsDataSetId), new DataSetFetchOptions()).get(afsDataSetId);
 
@@ -142,6 +145,14 @@ public class IntegrationSftpTest extends AbstractIntegrationTest
 
             List<SftpClient.DirEntry> experimentEntries = listDir(sftp, "/ELN-LIMS/Lab Notebook/SFTP/SFTP/SFTP");
             assertDirEntries(experimentEntries, ".", "..", afsDataSet.getPermId().getPermId(), dssDataSet.getPermId().getPermId());
+
+            List<SftpClient.DirEntry> afsDataSetEntries =
+                    listDir(sftp, "/ELN-LIMS/Lab Notebook/SFTP/SFTP/SFTP/" + afsDataSet.getPermId().getPermId());
+            assertDirEntries(afsDataSetEntries, ".", "..", AFS_DATA_SET_FILE_NAME);
+
+            List<SftpClient.DirEntry> dssDataSetEntries =
+                    listDir(sftp, "/ELN-LIMS/Lab Notebook/SFTP/SFTP/SFTP/" + dssDataSet.getPermId().getPermId());
+            assertDirEntries(dssDataSetEntries, ".", "..", DSS_DATA_SET_FILE_NAME);
 
             byte[] afsFileContent =
                     readFile(sftp, "/ELN-LIMS/Lab Notebook/SFTP/SFTP/SFTP/" + afsDataSet.getPermId().getPermId() + "/" + AFS_DATA_SET_FILE_NAME);

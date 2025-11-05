@@ -8,6 +8,8 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import Button from '@src/js/components/common/form/Button.jsx';
 import { Typography } from '@mui/material';
+import AppController from '@src/js/components/AppController.js'
+import Message from '@src/js/components/common/form/Message.jsx'
 
 const styles = theme => ({
 	metadataField: {
@@ -50,6 +52,8 @@ const styles = theme => ({
 const MetadataParameters = ({
   title,
   metadataArray = [],
+  enabled = true,
+  visible = true,
   mode,
   onAddMetadata,
   onRemoveMetadata,
@@ -59,10 +63,11 @@ const MetadataParameters = ({
   showAddButton = true,
   classes
 }) => {
+
   const renderHeader = () => (
     <div className={classes.headerContainer}>
       <Header>{title}</Header>
-      {mode === 'edit' && showAddButton && (
+      {enabled && mode === 'edit' && showAddButton && (
         <Button 
           variant='contained'
           color='white'
@@ -76,19 +81,47 @@ const MetadataParameters = ({
     </div>
   );
 
+  const renderMessageInternal = (isEnabled = false) => {
+
+    if (!isEnabled) {
+      if (AppController.getInstance().isSystemUser()) {
+        return (
+          <div className={classes.metadataField}>
+            <Message type='lock'>
+              {messages.get(messages.META_DATA_IS_INTERNAL)}
+            </Message>
+          </div>
+        )
+      } else {
+        return (
+          <div className={classes.metadataField}>
+            <Message type='lock'>
+              {messages.get(messages.META_DATA_IS_INTERNAL)}{' '}
+              {messages.get(
+                messages.META_DATA_CANNOT_BE_CHANGED_OR_REMOVED
+              )}
+            </Message>
+          </div>
+        )
+      }
+    } else {
+      return null
+    }
+  }
+
   const renderMetadataItem = (metadata, index) => {
     const { key, value, action } = metadata;
     const isKeyEditable = action === 'CREATE';
 
     return (
-      <div key={`metadata-${index}`} className={mode === 'edit' ? classes.metadataItemEdit : classes.metadataItem}>
+      <div key={`metadata-${index}`} className={enabled && mode === 'edit' ? classes.metadataItemEdit : classes.metadataItem}>
         <div className={classes.metadataFieldsWrapper}>
           <div className={classes.metadataField}>
             <TextField
               label='Key'
               name={`metadata-key-${index}`}
               value={key || ''}
-              mode={mode}
+              mode={enabled ? mode : 'view'}
               disabled={!isKeyEditable}
               onChange={(event) => onMetadataFieldChange(index, 'key', event.target.value)}
               onFocus={onFocus}
@@ -100,14 +133,14 @@ const MetadataParameters = ({
               label='Value'
               name={`metadata-value-${index}`}
               value={value || ''}
-              mode={mode}
+              mode={enabled ? mode : 'view'}
               onChange={(event) => onMetadataFieldChange(index, 'value', event.target.value)}
               onFocus={onFocus}
               onBlur={onBlur}
             />
           </div>
         </div>
-        {mode === 'edit' && (
+        {enabled && mode === 'edit' && (
           <Button
             variant='contained'
             color='white'
@@ -139,6 +172,7 @@ const MetadataParameters = ({
   return (
     <Container>
       {renderHeader()}
+      {renderMessageInternal(enabled)}
       {renderMetadata()}
     </Container>
   );

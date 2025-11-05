@@ -120,4 +120,15 @@ public class LogProxy extends AbstractProxy {
         return logger.traceExit(nextProxy.free(owner, source));
     }
 
+    @Override
+    public String hash(@NonNull String owner, @NonNull String source) throws Exception {
+        logger.traceAccess(null, owner, source);
+        return logger.traceExit(nextProxy.hash(owner, source));
+    }
+
+    @Override
+    public byte[] preview(@NonNull String owner, @NonNull String source) throws Exception {
+        logger.traceAccess(null, owner, source);
+        return logger.traceExit(nextProxy.preview(owner, source));
+    }
 }

@@ -24,8 +24,7 @@ import ch.ethz.sis.shared.log.standard.LogManager;
 import ch.ethz.sis.shared.startup.Configuration;
 
 import java.io.File;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Main
 {
@@ -58,10 +57,14 @@ public class Main
                 configuration.getStringProperty(AtomicFileSystemParameter.writeAheadLogRoot);
         String storageRoot = configuration.getStringProperty(AtomicFileSystemParameter.storageRoot);
 
+        String enabledPreviewTypeList = configuration.getStringProperty(AtomicFileSystemParameter.enablePreview);
+        Collection<String> enabledPreviewTypes = enabledPreviewTypeList != null ? Arrays.asList(enabledPreviewTypeList.split(",")) : Collections.emptyList();
+        long enablePreviewSizeInBytes = configuration.getIntegerProperty(AtomicFileSystemParameter.enablePreviewSizeInBytes);
+
         lockMapper.init(configuration);
 
         TransactionManager transactionManager =
-                new TransactionManager(lockMapper, jsonObjectMapper, writeAheadLogRoot, storageRoot);
+                new TransactionManager(lockMapper, jsonObjectMapper, writeAheadLogRoot, storageRoot, enabledPreviewTypes, enablePreviewSizeInBytes);
         transactionManager.reCommitTransactionsAfterCrash();
     }
 }

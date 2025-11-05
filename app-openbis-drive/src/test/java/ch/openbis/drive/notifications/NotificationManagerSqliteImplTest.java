@@ -2,6 +2,7 @@ package ch.openbis.drive.notifications;
 
 import ch.openbis.drive.conf.Configuration;
 import ch.openbis.drive.model.Notification;
+import ch.openbis.drive.model.SyncJob;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -87,6 +88,40 @@ public class NotificationManagerSqliteImplTest {
         Assert.assertEquals(sortedNotifications.stream().limit(4).toList(), notificationManager.getNotifications(4));
         Assert.assertEquals(sortedNotifications.stream().limit(9).toList(), notificationManager.getNotifications(9));
 
+    }
+
+    @Test
+    public void testGetConflictNotifications() {
+        notificationManager.clearAllNotifications();
+
+        String localDir = "localDir";
+        String otherLocalDir = "other-localDir";
+        SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", localDir, false);
+        long now = System.currentTimeMillis();
+        List<Notification> notificationList = List.of(
+                new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),
+                new Notification(Notification.Type.Conflict, otherLocalDir, "localFile1", "remoteFile1", "MESSAGE__", now-190),
+                new Notification(Notification.Type.Conflict, localDir, "localFile2", "remoteFile2", "MESSAGE__", now),
+                new Notification(Notification.Type.Conflict, otherLocalDir, "localFile3", "remoteFile3", "MESSAGE__", now-32),
+                new Notification(Notification.Type.Conflict, localDir, "localFile4", "remoteFile4", "MESSAGE__", now-2),
+                new Notification(Notification.Type.Conflict, otherLocalDir, "localFile5", "remoteFile5", "MESSAGE__", now-324),
+                new Notification(Notification.Type.Conflict, localDir, "localFile6", "remoteFile6", "MESSAGE__", now+1),
+                new Notification(Notification.Type.Conflict, otherLocalDir, "localFile7", "remoteFile7", "MESSAGE__", now+2),
+                new Notification(Notification.Type.JobStopped, localDir, null, null, "MESSAGE__", now+20000),
+                new Notification(Notification.Type.JobException, otherLocalDir, null, null, "MESSAGE__", now+233333)
+        );
+
+        notificationManager.addNotifications(notificationList);
+
+        List<Notification> expectedNotifications = notificationList.stream().filter(
+                notification -> notification.getType() == Notification.Type.Conflict &&
+                        notification.getLocalDirectory().equals(localDir)
+                ).toList();
+        for(int i = 0; i<10; i++) {
+            List<Notification> retrievedNotifications = notificationManager.getConflictNotifications(syncJob, i);
+            Assert.assertTrue(expectedNotifications.containsAll(retrievedNotifications));
+            Assert.assertTrue(retrievedNotifications.size() == Math.min(i, expectedNotifications.size()));
+        }
     }
 
     @Test

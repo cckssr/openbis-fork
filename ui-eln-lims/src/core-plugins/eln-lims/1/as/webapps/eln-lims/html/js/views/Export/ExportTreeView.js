@@ -52,7 +52,9 @@ function ExportTreeView(exportTreeController, exportTreeModel) {
 		$container.append($pdf);
 		var $xlsx = $("<span class='checkbox'><label><input type='checkbox' checked id='XLSX-EXPORT'>Export metadata as XLSX</label></span>");
 		$container.append($xlsx);
-		var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='DATA-EXPORT'>Export data</label></span>");
+		var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='DATASET-EXPORT'>Export dataset data</label></span>");
+		$container.append($data);
+		var $data = $("<span class='checkbox'><label><input type='checkbox' checked id='FILES-EXPORT'>Export files</label></span>");
 		$container.append($data);
 
 		var $hierarchyInclusions = $("<span>").append($("<b>").append("Hierarchy Inclusions"));

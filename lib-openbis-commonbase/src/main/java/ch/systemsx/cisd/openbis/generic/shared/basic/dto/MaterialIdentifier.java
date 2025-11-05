@@ -90,7 +90,7 @@ public final class MaterialIdentifier implements Serializable
      * Creates material identifier from specified identifier or code and material type code if no full identifier is specified.
      * 
      * @return <code>null</code> if no full identifier specified and material type is unknown.
-     * @throw {@link IllegalArgumentException} if material type of full identifier doesn't match specified material type.
+     * @throws IllegalArgumentException if material type of full identifier doesn't match specified material type.
      */
     public static MaterialIdentifier tryCreate(String codeOrIdentifierOrNull,
             ICodeHolder materialTypeCodeHolderOrNull)

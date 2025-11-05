@@ -232,6 +232,9 @@ public abstract class AbstractAdapter<CONNECTION, API> implements HttpServerHand
             } else if (result instanceof File[]) {
                 contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
                 body = FileEncoderDecoder.encodeFilesAsBytes((File[]) result);
+            } else if (result instanceof byte[]) {
+                contentType = HttpResponse.CONTENT_TYPE_BINARY_DATA;
+                body = (byte[]) result;
             } else {
                 contentType = HttpResponse.CONTENT_TYPE_TEXT;
                 body = String.valueOf(result).getBytes(StandardCharsets.UTF_8);

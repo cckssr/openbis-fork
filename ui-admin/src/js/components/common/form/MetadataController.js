@@ -17,13 +17,17 @@ class MetadataController {
 		if (Array.isArray(metadata.value)) {
 			return metadata.value.map(item => ({
 				...item,
-				action: item.action || 'UPDATE'
+				action: item.action || 'UPDATE',
+				enabled: metadata.enabled,
+				visible: metadata.visible,
 			}));
 		} else if (typeof metadata.value === 'object') {
 			return Object.entries(metadata.value).map(([key, value]) => ({
 				key,
 				value,
-				action: 'UPDATE'
+				action: 'UPDATE',
+				enabled: metadata.enabled,
+				visible: metadata.visible,
 			}));
 		}
 

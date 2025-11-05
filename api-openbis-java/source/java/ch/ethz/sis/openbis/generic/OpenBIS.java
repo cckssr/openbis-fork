@@ -1558,7 +1558,7 @@ public class OpenBIS
             }
         }
 
-        public Chunk[] read(Chunk[] chunks) throws Exception
+        public Chunk[] read(Chunk[] chunks)
         {
             try
             {
@@ -1588,7 +1588,7 @@ public class OpenBIS
             }
         }
 
-        public Boolean write(Chunk[] chunks) throws Exception
+        public Boolean write(Chunk[] chunks)
         {
             try
             {
@@ -1689,7 +1689,7 @@ public class OpenBIS
 
         public Boolean upload(Path sourcePath, String destinationOwner,
                 final Path destinationPath, FileCollisionListener fileCollisionListener,
-                TransferMonitorListener transferMonitorListener) throws Exception
+                TransferMonitorListener transferMonitorListener)
         {
             try
             {
@@ -1706,7 +1706,7 @@ public class OpenBIS
 
         public Boolean download(String sourceOwner, Path sourcePath,
                 Path destinationPath, FileCollisionListener fileCollisionListener,
-                TransferMonitorListener transferMonitorListener) throws Exception
+                TransferMonitorListener transferMonitorListener)
         {
             try
             {
@@ -1720,6 +1720,33 @@ public class OpenBIS
             }
         }
 
+        @Override
+        public String hash(String owner, String source) {
+            try
+            {
+                return afsClientWithTransactions.hash(owner, source);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public byte[] preview(String owner, String source) {
+            try
+            {
+                return afsClientWithTransactions.preview(owner, source);
+            } catch (RuntimeException e)
+            {
+                throw e;
+            } catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     //

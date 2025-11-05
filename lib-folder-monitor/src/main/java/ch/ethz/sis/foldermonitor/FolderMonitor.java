@@ -9,6 +9,8 @@ import java.util.Properties;
 import java.util.Timer;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
+
+import ch.ethz.sis.openbis.generic.foldermonitor.v3.FolderMonitorTask;
 import ch.ethz.sis.shared.log.classic.impl.LogManager;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 

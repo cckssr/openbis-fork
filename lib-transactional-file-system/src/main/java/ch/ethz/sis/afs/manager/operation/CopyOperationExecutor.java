@@ -72,6 +72,7 @@ public class CopyOperationExecutor implements OperationExecutor<CopyOperation, V
                 IOUtils.createDirectories(targetFileParent);
             }
             IOUtils.move(tempFilePath, operation.getTarget());
+            OperationExecutor.clearCaches(operation.getTarget());
         }
         return true;
     }

@@ -8,6 +8,7 @@ dependencies {
             project(':lib-pathinfo-db'),
             project(':lib-hdf5'),
             project(':lib-compress'),
+            project(':lib-transactional-file-system'),
             'sis:sis-base:23.06.0',
             'sis:sis-jhdf5:19.04.0',
             'apache:commons-compress:1.8',
