@@ -87,6 +87,8 @@ public final class ExternalDataPE extends DataPE
 
     private boolean archivingRequested;
 
+    private boolean unarchivingRequested;
+
     /**
      * Returns the id of the locator type of the location of this external data, or <code>null</code> if not yet set.
      */
@@ -277,6 +279,17 @@ public final class ExternalDataPE extends DataPE
     public void setArchivingRequested(boolean archivingRequested)
     {
         this.archivingRequested = archivingRequested;
+    }
+
+    @Column(name = ColumnNames.UNARCHIVING_REQUESTED)
+    public boolean isUnarchivingRequested()
+    {
+        return unarchivingRequested;
+    }
+
+    public void setUnarchivingRequested(boolean unarchivingRequested)
+    {
+        this.unarchivingRequested = unarchivingRequested;
     }
 
     /**

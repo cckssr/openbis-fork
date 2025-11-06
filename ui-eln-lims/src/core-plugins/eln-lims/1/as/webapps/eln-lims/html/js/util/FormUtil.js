@@ -2877,24 +2877,41 @@ var FormUtil = new function() {
                     container.append($allowArchivingButton).append('&nbsp;')
                     archiveTooltip = "Allow archiving";
                 } else if (physicalData.status == "ARCHIVED") {
-                     var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'unarchive-btn-'+permId});
-                     $unarchiveButton.append(icon)
-                     $unarchiveButton.append('&nbsp;')
-                     $unarchiveButton.append('Unarchive')
-                     $("body").off('click', '#unarchive-btn-'+permId);
-                     $("body").on('click', '#unarchive-btn-'+permId, function() {
-                       mainController.serverFacade.unarchiveDataSets([permId], function(result){
-                           if(result){
-                                Util.showSuccess("Unarchive triggered.", function() {
-                                  container.empty();
-                                  FormUtil.archivingAfsDataSectionButtons(permId, container);
-                                  Util.unblockUI();
-                                });
-                           }
-                       });
-                     });
-                    container.append($unarchiveButton).append('&nbsp;')
-                    archiveTooltip = "Unarchive";
+					if (physicalData.unarchivingRequested) {
+							var $revokeButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'revoke-unarchiving-btn-'+permId});
+							$revokeButton.append(icon)
+							$revokeButton.append('&nbsp;')
+							$revokeButton.append('Revoke unarchiving request')
+							$("body").off('click', '#revoke-unarchiving-btn-'+permId);
+							$("body").on('click', '#revoke-unarchiving-btn-'+permId, function() {
+								var physicalDataUpdate = { unarchivingRequested : false }
+								mainController.serverFacade.updateDataSet(permId, physicalDataUpdate, function() {
+									container.empty();
+									FormUtil.archivingAfsDataSectionButtons(permId, container);
+									Util.unblockUI();
+									Util.showSuccess("Unarchive request revoked");
+								});
+							});
+							container.append($revokeButton).append('&nbsp;')
+							archiveTooltip = "Revoke unarchiving request";
+					} else {
+						var $unarchiveButton = $('<div>', {'class' : 'btn btn-primary btn-secondary', 'id' : 'request-unarchiving-btn-'+permId});
+						$unarchiveButton.append(icon)
+						$unarchiveButton.append('&nbsp;')
+						$unarchiveButton.append('Request unarchiving')
+						$("body").off('click', '#request-unarchiving-btn-'+permId);
+						$("body").on('click', '#request-unarchiving-btn-'+permId, function() {
+							mainController.serverFacade.unarchiveDataSets([permId], function(result){
+								if(result){
+									container.empty();
+									FormUtil.archivingAfsDataSectionButtons(permId, container);
+									Util.unblockUI();
+								}
+							});
+						});
+						container.append($unarchiveButton).append('&nbsp;')
+						archiveTooltip = "Request unarchiving";
+					}
                 } else if (physicalData.status == "ARCHIVE_PENDING") {
 					var $message = FormUtil.getToolbarButton("ARCHIVE_REQUESTED")
 					$message.attr("disabled", "disabled");

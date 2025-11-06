@@ -73,6 +73,9 @@ public class PhysicalData implements Serializable
     private Boolean archivingRequested;
 
     @JsonProperty
+    private Boolean unarchivingRequested;
+
+    @JsonProperty
     private Boolean h5Folders;
 
     @JsonProperty
@@ -268,6 +271,19 @@ public class PhysicalData implements Serializable
     public void setArchivingRequested(Boolean archivingRequested)
     {
         this.archivingRequested = archivingRequested;
+    }
+
+    // Method automatically generated with DtoGenerator
+    @JsonIgnore
+    public Boolean isUnarchivingRequested()
+    {
+        return unarchivingRequested;
+    }
+
+    // Method automatically generated with DtoGenerator
+    public void setUnarchivingRequested(Boolean unarchivingRequested)
+    {
+        this.unarchivingRequested = unarchivingRequested;
     }
 
     // Method automatically generated with DtoGenerator

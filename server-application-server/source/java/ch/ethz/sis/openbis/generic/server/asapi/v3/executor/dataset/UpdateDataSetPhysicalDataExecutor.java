@@ -75,6 +75,12 @@ public class UpdateDataSetPhysicalDataExecutor implements IUpdateDataSetPhysical
                         externalDataPE.setArchivingRequested(archivingRequested.getValue());
                     }
 
+                    FieldUpdateValue<Boolean> unarchivingRequested = physicalData.getValue().isUnarchivingRequested();
+                    if (unarchivingRequested != null && unarchivingRequested.isModified())
+                    {
+                        externalDataPE.setUnarchivingRequested(unarchivingRequested.getValue());
+                    }
+
                     FieldUpdateValue<Boolean> presentInArchive = physicalData.getValue().isPresentInArchive();
                     if (presentInArchive != null && presentInArchive.isModified())
                     {
