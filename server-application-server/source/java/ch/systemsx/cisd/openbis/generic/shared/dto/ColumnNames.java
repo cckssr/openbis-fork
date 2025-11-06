@@ -476,6 +476,8 @@ public final class ColumnNames
 
     public static final String ARCHIVING_REQUESTED = "archiving_requested";
 
+    public static final String UNARCHIVING_REQUESTED = "unarchiving_requested";
+
     public static final String EMAIL_COLUMN = "email";
 
     public static final String TS_VECTOR_COLUMN = "tsvector_document";
