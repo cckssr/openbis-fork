@@ -117,8 +117,7 @@ abstract class AbstractArchiveUnarchiveDataSetExecutor
 
         if (!afsDataSets.isEmpty())
         {
-            List<String> dataSetCodes = afsDataSets.stream().map(DataPE::getCode).collect(Collectors.toList());
-            afsAction.execute(dataSetCodes);
+            afsAction.execute(afsDataSets);
         }
     }
 
@@ -134,7 +133,7 @@ abstract class AbstractArchiveUnarchiveDataSetExecutor
     public interface IAfsArchiveUnarchiveAction
     {
 
-        void execute(List<String> dataSetCodes);
+        void execute(List<DataPE> dataSets);
 
     }
 

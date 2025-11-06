@@ -2008,10 +2008,8 @@
 				_this._updateToolbarForTab(target, _this._viewId);
 				if (target === "#afsWidgetTab-"+_this._viewId) {
 					if (!$("#afsWidgetTab-"+_this._viewId).data("dssLoaded")) {
-						_this._waitForExtOpenbisInitialization().then(()=> {
-						    $afsWidgetTab.empty()
-							_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
-						})
+						$afsWidgetTab.empty()
+						_this._displayAFSWidget($afsWidgetTab, _this._sampleFormModel.sample.permId);
 						$("#afsWidgetTab-"+_this._viewId).data("dssLoaded", true);
 					}
 				}
@@ -2053,122 +2051,113 @@
 				}
 			});
 		}
-		
 
 		this._displayAFSWidget= function ($container, id) {
 			const _this = this
 			let $element = $("<div>")
-			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
-				"as/dto/sample/id/SamplePermId",
-				"as/dto/experiment/id/ExperimentPermId",
-			],
-				function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
-					let isArchived = false;
 
-					if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
-						var archivingStatus = _this._sampleFormModel.afs_data.physicalData.status;
-						isArchived = archivingStatus === "ARCHIVED" || archivingStatus === "ARCHIVE_PENDING" || archivingStatus === "UNARCHIVE_PENDING";
-					}
-
-					let props = {
-						id:id,
-						objId: id,
-						objKind: "object",	
-						viewType:'list',					
-						withoutToolbar: true,
-						extOpenbis: _this.extOpenbis,
-						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
-						archived: isArchived
-					}
-					let configKey = "AFS-WIDGET-KEY";
-										
-					const loadSettings = function () {
-						return new Promise(function (resolve) {
-							mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
-								var gridSettingsObj = null
-				
-								if (elnGridSettingsStr) {
-									try {
-										var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
-				
-										gridSettingsObj = {
-											filterMode: elnGridSettingsObj.filterMode,
-											globalFilter: elnGridSettingsObj.globalFilter,
-											pageSize: elnGridSettingsObj.pageSize,
-											sortings: elnGridSettingsObj.sortings,
-											sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
-											sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
-											columnsVisibility: elnGridSettingsObj.columns,
-											columnsSorting: elnGridSettingsObj.columnsSorting,
-											exportOptions: elnGridSettingsObj.exportOptions,
-										}
-									} catch (e) {
-										//console.log("[WARNING] Could not parse grid settings", configKey, elnGridSettingsStr, e)
-									}
-								}
-								resolve(gridSettingsObj)
-								})
-							})
-					}
-
-
-					const onSettingsChange = function (gridSettingsObj) {
-						let elnGridSettingsObj = {
-							filterMode: gridSettingsObj.filterMode,
-							globalFilter: gridSettingsObj.globalFilter,
-							pageSize: gridSettingsObj.pageSize,
-							sortings: gridSettingsObj.sortings,
-							columns: gridSettingsObj.columnsVisibility,
-							columnsSorting: gridSettingsObj.columnsSorting,
-							exportOptions: gridSettingsObj.exportOptions,
+			_this._waitForExtOpenbisInitialization().then(()=> {
+				require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+					"as/dto/sample/id/SamplePermId",
+					"as/dto/experiment/id/ExperimentPermId",
+				],
+					function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+						let props = {
+							id:id,
+							objId: id,
+							objKind: "object",	
+							viewType:'list',					
+							withoutToolbar: true,
+							extOpenbis: _this.extOpenbis
 						}
-				
-						let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
-						mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
-					}
-					  
-
-                    props['onStoreDisplaySettings'] = onSettingsChange;
-                    props['onLoadDisplaySettings'] = loadSettings;
-
-					let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
+						let configKey = "AFS-WIDGET-KEY";
+											
+						const loadSettings = function () {
+							return new Promise(function (resolve) {
+								mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
+									var gridSettingsObj = null
 					
-					NgComponentsManager.renderComponent(DataBrowser, $element.get(0));					
-				}
-			);		
-			$container.append($element);
+									if (elnGridSettingsStr) {
+										try {
+											var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
+					
+											gridSettingsObj = {
+												filterMode: elnGridSettingsObj.filterMode,
+												globalFilter: elnGridSettingsObj.globalFilter,
+												pageSize: elnGridSettingsObj.pageSize,
+												sortings: elnGridSettingsObj.sortings,
+												sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
+												sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
+												columnsVisibility: elnGridSettingsObj.columns,
+												columnsSorting: elnGridSettingsObj.columnsSorting,
+												exportOptions: elnGridSettingsObj.exportOptions,
+											}
+										} catch (e) {
+											//console.log("[WARNING] Could not parse grid settings", configKey, elnGridSettingsStr, e)
+										}
+									}
+									resolve(gridSettingsObj)
+									})
+								})
+						}
+
+
+						const onSettingsChange = function (gridSettingsObj) {
+							let elnGridSettingsObj = {
+								filterMode: gridSettingsObj.filterMode,
+								globalFilter: gridSettingsObj.globalFilter,
+								pageSize: gridSettingsObj.pageSize,
+								sortings: gridSettingsObj.sortings,
+								columns: gridSettingsObj.columnsVisibility,
+								columnsSorting: gridSettingsObj.columnsSorting,
+								exportOptions: gridSettingsObj.exportOptions,
+							}
+					
+							let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
+							mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
+						}
+						
+
+						props['onStoreDisplaySettings'] = onSettingsChange;
+						props['onLoadDisplaySettings'] = loadSettings;
+
+						let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
+						
+						NgComponentsManager.renderComponent(DataBrowser, $element.get(0));					
+					}
+				);		
+				$container.append($element);
+			})
 		}
 
 		this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
 			let $element = $("<div>")
 			const _this = this
-			let isArchived = false;
-			if(_this._sampleFormModel.afs_data && _this._sampleFormModel.afs_data.physicalData) {
-			    isArchived = _this._sampleFormModel.afs_data.physicalData.status === "ARCHIVED";
-			}
-			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
-				"as/dto/sample/id/SamplePermId",
-				"as/dto/experiment/id/ExperimentPermId",
-			],
-				function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
-					let props = {						
-						owner: id,	
-						buttonSize: "small",
-						toolbarType: toolbarTypeIn,
-						viewType:'list',
-						className :'btn btn-default',
-						primaryClassName :'btn btn-primary',
-						extOpenbis: _this.extOpenbis,
-						frozen: _this._sampleFormModel.v3_sample.immutableDataDate,
-						archived: isArchived
+
+			_this._waitForExtOpenbisInitialization().then(()=> {
+				require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+					"as/dto/sample/id/SamplePermId",
+					"as/dto/experiment/id/ExperimentPermId",
+				],
+					function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+						let props = {						
+							owner: id,	
+							buttonSize: "small",
+							toolbarType: toolbarTypeIn,
+							viewType:'list',
+							className :'btn btn-default',
+							primaryClassName :'btn btn-primary',
+							extOpenbis: _this.extOpenbis
+						}
+
+
+						let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
+						
+						NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));					
 					}
+				);
+			});
 
-
-					let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
-					
-					NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));					
-				}
-			);		
 			return $element;
 		}
 	}

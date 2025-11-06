@@ -1016,10 +1016,8 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
             _this._updateToolbarForTab(target, _this._viewId);
             if (target === "#afsWidgetTab-"+_this._viewId) {
                 if (!$("#afsWidgetTab-"+_this._viewId).data("dssLoaded")) {
-                    _this._waitForExtOpenbisInitialization().then(()=> {
-                        $afsWidgetTab.empty()
-                        _this._displayAFSWidget($afsWidgetTab, _this._experimentFormModel.experiment.permId);
-                    })
+                    $afsWidgetTab.empty()
+                    _this._displayAFSWidget($afsWidgetTab, _this._experimentFormModel.experiment.permId);
                     $("#afsWidgetTab-"+_this._viewId).data("dssLoaded", true);
                 }
             }
@@ -1066,115 +1064,105 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
     this._displayAFSWidget= function ($container, id) {
         const _this = this
         let $element = $("<div>")
-        require(["as/dto/rights/fetchoptions/RightsFetchOptions",
-            "as/dto/experiment/id/ExperimentPermId",
-        ],
-            function (RightsFetchOptions, ExperimentPermId) {
-                let isArchived = false;
 
-                if(_this._experimentFormModel.afs_data && _this._experimentFormModel.afs_data.physicalData) {
-                    var archivingStatus = _this._experimentFormModel.afs_data.physicalData.status;
-                    isArchived = archivingStatus === "ARCHIVED" || archivingStatus === "ARCHIVE_PENDING" || archivingStatus === "UNARCHIVE_PENDING";
-                }
+        _this._waitForExtOpenbisInitialization().then(()=> {
+            require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+                "as/dto/experiment/id/ExperimentPermId",
+            ],
+                function (RightsFetchOptions, ExperimentPermId) {
+                    let props = {
+                        id:id,
+                        objId: id,
+                        objKind: "collection",
+                        viewType:'list',
+                        withoutToolbar: true,
+                        extOpenbis: _this.extOpenbis
+                    }
+                    let configKey = "AFS-WIDGET-KEY-EX";
 
-                let props = {
-                    id:id,
-                    objId: id,
-                    objKind: "collection",
-                    viewType:'list',
-                    withoutToolbar: true,
-                    extOpenbis: _this.extOpenbis,
-                    frozen: _this._experimentFormModel.v3_experiment.immutableDataDate,
-                    archived: isArchived
-                }
-                let configKey = "AFS-WIDGET-KEY-EX";
+                    const loadSettings = function () {
+                        return new Promise(function (resolve) {
+                            mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
+                                var gridSettingsObj = null
 
-                const loadSettings = function () {
-                    return new Promise(function (resolve) {
-                        mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
-                            var gridSettingsObj = null
+                                if (elnGridSettingsStr) {
+                                    try {
+                                        var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
 
-                            if (elnGridSettingsStr) {
-                                try {
-                                    var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
-
-                                    gridSettingsObj = {
-                                        filterMode: elnGridSettingsObj.filterMode,
-                                        globalFilter: elnGridSettingsObj.globalFilter,
-                                        pageSize: elnGridSettingsObj.pageSize,
-                                        sortings: elnGridSettingsObj.sortings,
-                                        sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
-                                        sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
-                                        columnsVisibility: elnGridSettingsObj.columns,
-                                        columnsSorting: elnGridSettingsObj.columnsSorting,
-                                        exportOptions: elnGridSettingsObj.exportOptions,
+                                        gridSettingsObj = {
+                                            filterMode: elnGridSettingsObj.filterMode,
+                                            globalFilter: elnGridSettingsObj.globalFilter,
+                                            pageSize: elnGridSettingsObj.pageSize,
+                                            sortings: elnGridSettingsObj.sortings,
+                                            sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
+                                            sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
+                                            columnsVisibility: elnGridSettingsObj.columns,
+                                            columnsSorting: elnGridSettingsObj.columnsSorting,
+                                            exportOptions: elnGridSettingsObj.exportOptions,
+                                        }
+                                    } catch (e) {
+                                        //console.log("[WARNING] Could not parse grid settings", configKey, elnGridSettingsStr, e)
                                     }
-                                } catch (e) {
-                                    //console.log("[WARNING] Could not parse grid settings", configKey, elnGridSettingsStr, e)
                                 }
-                            }
-                            resolve(gridSettingsObj)
+                                resolve(gridSettingsObj)
+                                })
                             })
-                        })
-                }
-
-
-                const onSettingsChange = function (gridSettingsObj) {
-                    let elnGridSettingsObj = {
-                        filterMode: gridSettingsObj.filterMode,
-                        globalFilter: gridSettingsObj.globalFilter,
-                        pageSize: gridSettingsObj.pageSize,
-                        sortings: gridSettingsObj.sortings,
-                        columns: gridSettingsObj.columnsVisibility,
-                        columnsSorting: gridSettingsObj.columnsSorting,
-                        exportOptions: gridSettingsObj.exportOptions,
                     }
 
-                    let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
-                    mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
+
+                    const onSettingsChange = function (gridSettingsObj) {
+                        let elnGridSettingsObj = {
+                            filterMode: gridSettingsObj.filterMode,
+                            globalFilter: gridSettingsObj.globalFilter,
+                            pageSize: gridSettingsObj.pageSize,
+                            sortings: gridSettingsObj.sortings,
+                            columns: gridSettingsObj.columnsVisibility,
+                            columnsSorting: gridSettingsObj.columnsSorting,
+                            exportOptions: gridSettingsObj.exportOptions,
+                        }
+
+                        let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
+                        mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
+                    }
+
+
+                    props['onStoreDisplaySettings'] = onSettingsChange;
+                    props['onLoadDisplaySettings'] = loadSettings;
+
+                    let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
+
+                    NgComponentsManager.renderComponent(DataBrowser, $element.get(0));
                 }
-
-
-                props['onStoreDisplaySettings'] = onSettingsChange;
-                props['onLoadDisplaySettings'] = loadSettings;
-
-                let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
-
-                NgComponentsManager.renderComponent(DataBrowser, $element.get(0));
-            }
-        );
-        $container.append($element);
+            );
+            $container.append($element);
+        });
     }
 
     this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
         let $element = $("<div>")
         const _this = this
-        let isArchived = false;
-        if(_this._experimentFormModel.afs_data && _this._experimentFormModel.afs_data.physicalData) {
-            isArchived = _this._experimentFormModel.afs_data.physicalData.status === "ARCHIVED";
-        }
-        require(["as/dto/rights/fetchoptions/RightsFetchOptions",
-            "as/dto/experiment/id/ExperimentPermId",
-        ],
-            function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
-                let props = {
-                    owner: id.permId,
-                    buttonSize: "small",
-                    toolbarType: toolbarTypeIn,
-                    viewType:'list',
-                    className :'btn btn-default',
-                    primaryClassName :'btn btn-primary',
-                    extOpenbis: _this.extOpenbis,
-                    frozen: _this._experimentFormModel.v3_experiment.immutableDataDate,
-                    archived: isArchived
+        _this._waitForExtOpenbisInitialization().then(()=> {
+            require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+                "as/dto/experiment/id/ExperimentPermId",
+            ],
+                function (RightsFetchOptions, SamplePermId,ExperimentPermId) {
+                    let props = {
+                        owner: id.permId,
+                        buttonSize: "small",
+                        toolbarType: toolbarTypeIn,
+                        viewType:'list',
+                        className :'btn btn-default',
+                        primaryClassName :'btn btn-primary',
+                        extOpenbis: _this.extOpenbis
+                    }
+
+
+                    let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
+
+                    NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));
                 }
-
-
-                let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
-
-                NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));
-            }
-        );
+            );
+        });
         return $element;
     }
 }

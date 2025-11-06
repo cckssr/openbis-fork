@@ -27,7 +27,7 @@ import DataBrowserController from '@src/js/components/common/data-browser/DataBr
 import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 import ResponsiveLeftToolbar from '@src/js/components/common/data-browser/components/toolbar/ResponsiveLeftToolbar.jsx'
 import RightToolbar  from '@src/js/components/common/data-browser/components/toolbar/RightToolbar.jsx'
-
+import {isArchived, isFrozen} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 import { debounce } from '@mui/material'
 
 
@@ -151,6 +151,8 @@ class DataBrowserToolbar extends React.Component {
       path: '/',
       multiselectedFiles:[],
       viewType: this.props.viewType,
+      archived: false,
+      frozen: false
     };
     this.onResize = debounce(this.onResize, 1)
   }
@@ -169,11 +171,17 @@ class DataBrowserToolbar extends React.Component {
     eventBus.emit('spaceStatusChanged', {});
   }
 
+  async fetchDataSet(){
+    var dataSet = await this.controller.getDataSet()
+    this.setState({ archived : isArchived(dataSet), frozen: isFrozen(dataSet) })
+  }
+
   async handleDownload() {
     eventBus.emit('downloadRequested', {});
   }
 
-  componentDidMount() {    
+  async componentDidMount() {
+    await this.fetchDataSet()
     eventBus.on('selectionChanged', this.handleSelectionChanged);
     eventBus.on('pathChanged', this.handlePathChanged);
     eventBus.on('rightsChanged', this.handleRightsChanged);    
@@ -223,17 +231,17 @@ class DataBrowserToolbar extends React.Component {
     const {
       classes,                 
       owner,  
-      extOpenbis,
-      frozen,
-      archived
+      extOpenbis
     } = this.props
 
     const {
       path,
       multiselectedFiles,
       editable,
+      archived,
+      frozen,
       showInfo,
-      viewType, 
+      viewType
     } = this.state 
             
 
@@ -280,15 +288,15 @@ class DataBrowserToolbar extends React.Component {
       owner,
       extOpenbis,
       className,
-      primaryClassName,
-      frozen,
-      archived
+      primaryClassName
     } = this.props
 
     const {
       path,
       multiselectedFiles,
       editable,
+      archived,
+      frozen,
       showInfo,
       width,
       viewType      
@@ -361,14 +369,14 @@ class DataBrowserToolbar extends React.Component {
       extOpenbis,
       className,
       primaryClassName,
-      frozen,
-      archived
     } = this.props
 
     const {
       path,
       multiselectedFiles,
       editable,
+      archived,
+      frozen,
       showInfo,
       width,
       viewType      

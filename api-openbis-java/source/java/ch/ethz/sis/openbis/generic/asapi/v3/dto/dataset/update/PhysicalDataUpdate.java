@@ -41,6 +41,9 @@ public class PhysicalDataUpdate implements IUpdate
     private FieldUpdateValue<Boolean> archivingRequested = new FieldUpdateValue<Boolean>();
 
     @JsonProperty
+    private FieldUpdateValue<Boolean> unarchivingRequested = new FieldUpdateValue<Boolean>();
+
+    @JsonProperty
     private FieldUpdateValue<Boolean> presentInArchive = new FieldUpdateValue<Boolean>();
 
     @JsonProperty
@@ -76,6 +79,18 @@ public class PhysicalDataUpdate implements IUpdate
     public void setArchivingRequested(boolean archivingRequested)
     {
         this.archivingRequested.setValue(archivingRequested);
+    }
+
+    @JsonIgnore
+    public FieldUpdateValue<Boolean> isUnarchivingRequested()
+    {
+        return unarchivingRequested;
+    }
+
+    @JsonIgnore
+    public void setUnarchivingRequested(boolean unarchivingRequested)
+    {
+        this.unarchivingRequested.setValue(unarchivingRequested);
     }
 
     @JsonIgnore

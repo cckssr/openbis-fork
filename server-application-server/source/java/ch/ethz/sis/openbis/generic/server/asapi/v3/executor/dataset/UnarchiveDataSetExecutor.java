@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -62,17 +63,32 @@ public class UnarchiveDataSetExecutor extends AbstractArchiveUnarchiveDataSetExe
                 }
             }, new IAfsArchiveUnarchiveAction()
             {
-                @Override public void execute(final List<String> dataSetCodes)
+                @Override public void execute(final List<DataPE> dataSets)
                 {
                     DatabaseConfigurationContext messagesDatabaseConfiguration = CommonServiceProvider.getMessagesDatabaseConfigurationContext();
                     MessagesDatabase messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
 
+                    List<String> dataSetCodes = dataSets.stream().map(DataPE::getCode).collect(Collectors.toList());
                     UnarchiveDataSetMessage unarchiveMessage = new UnarchiveDataSetMessage(MessageProcessId.getCurrentOrGenerateNew(), dataSetCodes);
                     MessagesDatabaseUtil.execute(messagesDatabase, () ->
                     {
                         messagesDatabase.getMessagesDAO().create(unarchiveMessage.serialize(JacksonObjectMapper.getInstance()));
                         return null;
                     });
+
+                    for (DataPE dataSet : dataSets)
+                    {
+                        if (dataSet.isExternalData())
+                        {
+                            dataSet.tryAsExternalData().setUnarchivingRequested(true);
+                        }
+                    }
+
+                    // Flush changes to AFS data sets before they become invisible again
+                    // (without this flush Hibernate would try to update these data sets
+                    // at the end of the transaction when these AFS data sets are no longer
+                    // visible and it would fail)
+                    daoFactory.getSessionFactory().getCurrentSession().flush();
                 }
             });
             return null;

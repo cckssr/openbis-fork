@@ -46,6 +46,8 @@ public class PhysicalDataSet extends AbstractExternalData implements IDatasetLoc
 
     private boolean archivingRequested;
 
+    private boolean unarchivingRequested;
+
     public PhysicalDataSet()
     {
         this(false);
@@ -221,6 +223,16 @@ public class PhysicalDataSet extends AbstractExternalData implements IDatasetLoc
     public void setArchivingRequested(boolean archivingRequested)
     {
         this.archivingRequested = archivingRequested;
+    }
+
+    public boolean isUnarchivingRequested()
+    {
+        return unarchivingRequested;
+    }
+
+    public void setUnarchivingRequested(boolean unarchivingRequested)
+    {
+        this.unarchivingRequested = unarchivingRequested;
     }
 
 }

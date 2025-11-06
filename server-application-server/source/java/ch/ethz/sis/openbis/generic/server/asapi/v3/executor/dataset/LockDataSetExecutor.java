@@ -16,6 +16,7 @@
 package ch.ethz.sis.openbis.generic.server.asapi.v3.executor.dataset;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,9 +49,10 @@ public class LockDataSetExecutor extends AbstractArchiveUnarchiveDataSetExecutor
             }
         }, new IAfsArchiveUnarchiveAction()
         {
-            @Override public void execute(final List<String> dataSetCodes)
+            @Override public void execute(final List<DataPE> dataSets)
             {
                 IDataSetTable dataSetTable = businessObjectFactory.createDataSetTable(context.getSession());
+                List<String> dataSetCodes = dataSets.stream().map(DataPE::getCode).collect(Collectors.toList());
                 dataSetTable.loadByDataSetCodes(dataSetCodes, false, true);
                 dataSetTable.lockDatasets();
             }

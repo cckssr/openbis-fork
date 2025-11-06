@@ -322,6 +322,7 @@ public class DataSetTranslator
         dataSet.setH5Folders(externalDataPE.isH5Folders());
         dataSet.setH5arFolders(externalDataPE.isH5arFolders());
         dataSet.setArchivingRequested(externalDataPE.isArchivingRequested());
+        dataSet.setUnarchivingRequested(externalDataPE.isUnarchivingRequested());
         dataSet.setMetaData(externalDataPE.getMetaData());
         return dataSet;
     }

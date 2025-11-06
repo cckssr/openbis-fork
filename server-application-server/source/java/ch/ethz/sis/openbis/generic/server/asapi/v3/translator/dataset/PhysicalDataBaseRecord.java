@@ -41,6 +41,8 @@ public class PhysicalDataBaseRecord extends ObjectBaseRecord
 
     public Boolean isArchivingRequested;
 
+    public Boolean isUnarchivingRequested;
+
     public Boolean isH5Folders;
 
     public Boolean isH5arFolders;
