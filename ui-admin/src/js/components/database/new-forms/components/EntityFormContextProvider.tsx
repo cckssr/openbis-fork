@@ -80,7 +80,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 				if (params) {
 					externalAppController.objectCreate(params);
 				}
-				reloadForm();
+				loadForm();
 			},
 			externalAppController,
 			deleteReason: reason || undefined,
@@ -90,11 +90,11 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 
 	// Load initial form data
 	useEffect(() => {
-		reloadForm();
+		loadForm();
 	}, [permId, controller]);
 
-	const reloadForm = () => {
-		console.log('reloadForm', { permId }, { entityKind }, { params });
+	const loadForm = () => {
+		console.log('loadForm', { permId }, { entityKind }, { params });
 		setLoading(true);
 		setError(null);
 		if (entityKind === EntityKind.NEW_OBJECT) {
@@ -260,7 +260,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 			// If moveResult is provided, the move was already executed by MoveDialog
 			if (moveResult && moveResult.success) {
 				// Reload the form to reflect the move
-				reloadForm();
+				loadForm();
 				
 				// Notify external app controller if needed
 				if (externalAppController && externalAppController.objectMove) {
@@ -273,7 +273,7 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 			} else {
 				// Fallback to controller's move method if MoveDialog didn't handle it
 				//await controller.move(form);
-				reloadForm();
+				loadForm();
 			}
 		} catch (error: any) {
 			console.error('Move failed:', error);
