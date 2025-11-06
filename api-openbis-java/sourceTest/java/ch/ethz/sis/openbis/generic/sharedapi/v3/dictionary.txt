@@ -3032,3 +3032,7 @@ withAccessDate
 withEventTechId
 get Storage Uuid
 set Storage Uuid
+isWithObjectsAndDataSetsChildren
+setWithObjectsAndDataSetsChildren
+isUnarchivingRequested
+setUnarchivingRequested
