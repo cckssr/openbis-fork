@@ -1459,6 +1459,7 @@ isZipSingleFiles
 isWithLevelsAbove
 isWithLevelsBelow
 isWithObjectsAndDataSetsParents
+isWithObjectsAndDataSetsChildren
 isWithObjectsAndDataSetsOtherSpaces
 ITagId
 ITagsHolder
@@ -2439,6 +2440,7 @@ setZipSingleFiles
 setWithLevelsAbove
 setWithLevelsBelow
 setWithObjectsAndDataSetsParents
+setWithObjectsAndDataSetsChildren
 setWithObjectsAndDataSetsOtherSpaces
 Share Id Search Criteria
 SHORT_DATE_FORMAT
