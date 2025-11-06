@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.openbis.afsserver.server.common.DTOTranslator;
-import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.openbis.afsserver.server.common.DTOTranslator;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -23,10 +21,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.messages.UnarchiveDataSetMessage;
-import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -96,7 +95,7 @@ public class UnarchiveDataSetMessageHandler implements IMessageHandler
         if (archivedDataSets.isEmpty())
         {
             operationLog.info(
-                    "All data sets to be archived have archiving status != '" + ArchivingStatus.ARCHIVED + "'. Nothing will be unarchived.");
+                    "All data sets to be unarchived have archiving status != '" + ArchivingStatus.ARCHIVED + "'. Nothing will be unarchived.");
             return;
         } else if (!notArchivedDataSets.isEmpty())
         {
@@ -106,7 +105,33 @@ public class UnarchiveDataSetMessageHandler implements IMessageHandler
                             + CollectionUtils.abbreviate(codesList(notArchivedDataSets), CollectionUtils.DEFAULT_MAX_LENGTH));
         }
 
-        unarchiveDataSets(archivedDataSets);
+        List<DataSet> dataSetsWithUnarchivingRequestedFlag = new ArrayList<>();
+        List<DataSet> dataSetsWithoutUnarchivingRequestedFlag = new ArrayList<>();
+
+        for (DataSet archivedDataSet : archivedDataSets)
+        {
+            if (archivedDataSet.getPhysicalData().isUnarchivingRequested())
+            {
+                dataSetsWithUnarchivingRequestedFlag.add(archivedDataSet);
+            } else
+            {
+                dataSetsWithoutUnarchivingRequestedFlag.add(archivedDataSet);
+            }
+        }
+
+        if (dataSetsWithUnarchivingRequestedFlag.isEmpty())
+        {
+            operationLog.info(
+                    "All data sets to be unarchived have 'unarchivingRequested' flag set to 'false' (their archiving request has been revoked). Nothing will be unarchived.");
+            return;
+        } else if (!dataSetsWithoutUnarchivingRequestedFlag.isEmpty())
+        {
+            operationLog.info(
+                    "The following data sets have 'unarchivingRequested' flag set to 'false' (their archiving request has been revoked) therefore they will not be unarchived: "
+                            + CollectionUtils.abbreviate(codesList(dataSetsWithoutUnarchivingRequestedFlag), CollectionUtils.DEFAULT_MAX_LENGTH));
+        }
+
+        unarchiveDataSets(dataSetsWithUnarchivingRequestedFlag);
     }
 
     private List<DataSet> findDataSets(List<String> dataSetCodes)

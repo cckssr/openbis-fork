@@ -5,6 +5,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 	var PhysicalDataUpdate = function() {
 		this.fileFormatTypeId = new FieldUpdateValue();
 		this.archivingRequested = new FieldUpdateValue();
+		this.unarchivingRequested = new FieldUpdateValue();
 		this.presentInArchive = new FieldUpdateValue();
 		this.status = new FieldUpdateValue();
 		this.shareId = new FieldUpdateValue();
@@ -19,6 +20,7 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		 */
 		prototype.fileFormatTypeId = null;
 		prototype.archivingRequested = null;
+		prototype.unarchivingRequested = null;
 		prototype.presentInArchive = null;
 		prototype.status = null;
 		prototype.shareId = null;
@@ -41,6 +43,12 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 		};
 		prototype.setArchivingRequested = function(archivingRequested) {
 			this.archivingRequested.setValue(archivingRequested);
+		};
+		prototype.isUnarchivingRequested = function() {
+			return this.unarchivingRequested;
+		};
+		prototype.setUnarchivingRequested = function(unarchivingRequested) {
+			this.unarchivingRequested.setValue(unarchivingRequested);
 		};
 		prototype.isPresentInArchive = function() {
 			return this.presentInArchive;
@@ -72,6 +80,10 @@ define([ "stjs", "as/dto/common/update/FieldUpdateValue" ], function(stjs, Field
 			arguments : [ "IFileFormatTypeId" ]
 		},
 		archivingRequested : {
+			name : "FieldUpdateValue",
+			arguments : [ "Boolean" ]
+		},
+		unarchivingRequested : {
 			name : "FieldUpdateValue",
 			arguments : [ "Boolean" ]
 		},
