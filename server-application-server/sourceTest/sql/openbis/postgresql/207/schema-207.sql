@@ -1901,7 +1901,8 @@ CREATE TABLE external_data (
     storage_confirmation boolean_char DEFAULT false NOT NULL,
     h5_folders boolean_char NOT NULL,
     h5ar_folders boolean_char NOT NULL,
-    archiving_requested boolean_char DEFAULT false NOT NULL
+    archiving_requested boolean_char DEFAULT false NOT NULL,
+    unarchiving_requested boolean_char DEFAULT false NOT NULL
 );
 CREATE SEQUENCE external_data_management_system_id_seq
     START WITH 1
