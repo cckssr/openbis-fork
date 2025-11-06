@@ -93,8 +93,7 @@ LIB_FOLDER=./lib
 CONF_FILE=./etc/afs_server.conf
 SERVICE_PROPERTIES_FILE=./etc/service.properties
 LOG_FOLDER=./log
-LOG_FILE=$LOG_FOLDER/afs_server.log
-STARTUP_LOG=$LOG_FOLDER/afs_server.log
+LOG_FILE=$LOG_FOLDER/afs.log
 SUCCESS_MSG="=== Server ready ==="
 MAX_LOOPS=20
 
@@ -151,49 +150,73 @@ case "$command" in
     echo -n "Starting AFS Server "
 
     shift 1
-    $JAVA_BIN $JAVA_OPTIONS "$@" > $STARTUP_LOG 2>&1 & echo $! > $PID_FILE
+
+    # Flag file toggled when SUCCESS_MSG appears on stdout
+    READY_FLAG=$(mktemp -t afs_ready.XXXXXX)
+    trap 'rm -f "$READY_FLAG"' EXIT
+
+    AWK_BIN=$(awkBin)
+
+    # Launch server in a subshell so we can capture the actual Java PID and keep the pipe open
+    (
+      # Start Java (line-buffered) in background
+      stdbuf -oL -eL $JAVA_BIN $JAVA_OPTIONS "$@" 2>&1 &
+      CHILD=$!
+      echo $CHILD > "$PID_FILE"
+      # Wait for the Java process so the pipe stays open for tee
+      wait $CHILD
+    ) | tee >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
+          index($0, s) { system("touch " ready); exit }
+        ' > /dev/null ) &
+    PIPE_PID=$!
+
+    # wait for initial self-test to finish (by success message or process exit)
+    n=0
+    while [ $n -lt $MAX_LOOPS ]; do
+      sleep 1
+
+      # If pid file vanished, assume process terminated
+      if [ ! -f "$PID_FILE" ]; then
+        break
+      fi
+
+      PID=`cat "$PID_FILE" 2> /dev/null`
+      isPIDRunning "$PID"
+      if [ $? -ne 0 ]; then
+        break
+      fi
+
+      # Success line seen?
+      if [ -f "$READY_FLAG" ]; then
+        break
+      fi
+
+      n=$((n+1))
+    done
+
+    # Final status check
+    if [ -f "$PID_FILE" ]; then
+      PID=`cat "$PID_FILE" 2> /dev/null`
+    else
+      PID=""
+    fi
+
+    isPIDRunning "$PID"
     if [ $? -eq 0 ]; then
-      # wait for initial self-test to finish
-      n=0
-      while [ $n -lt $MAX_LOOPS ]; do
-        sleep 1
-        if [ ! -f $PID_FILE ]; then
-          break
-        fi
-        if [ -s $STARTUP_LOG ]; then
-          PID=`cat $PID_FILE 2> /dev/null`
-          isPIDRunning $PID
-          if [ $? -ne 0 ]; then
-            break
-          fi
-        fi
-        grep "$SUCCESS_MSG" $LOG_FILE > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-          break
-        fi
-        n=$(($n+1))
-      done
-      PID=`cat $PID_FILE 2> /dev/null`
-      isPIDRunning $PID
-      if [ $? -eq 0 ]; then
-        grep "$SUCCESS_MSG" $LOG_FILE > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-          echo "(pid $PID - WARNING: SelfTest not yet finished)"
-        else
-          echo "(pid $PID)"
-        fi
+      if [ -f "$READY_FLAG" ]; then
+        echo "(pid $PID)"
       else
-        echo "FAILED"
-        if [ -s $STARTUP_LOG ]; then
-          echo "startup log says:"
-          cat $STARTUP_LOG
-        else
-          echo "log file says:"
-          tail $LOG_FILE
-        fi
+        echo "(pid $PID - WARNING: SelfTest not yet finished)"
       fi
     else
       echo "FAILED"
+
+      # Only consult the regular log file if it exists
+      if [ -f "$LOG_FILE" ]; then
+        echo
+        echo "log file ($LOG_FILE) says (recent):"
+        tail -n 400 "$LOG_FILE"
+      fi
     fi
     ;;
   stop)
