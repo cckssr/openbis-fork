@@ -10,6 +10,7 @@ import ch.openbis.drive.gui.util.DisplaySettings;
 import ch.openbis.drive.gui.util.SharedContext;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -19,7 +20,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import lombok.NonNull;
@@ -103,7 +106,7 @@ public class MainViewController {
 
         sideMenuButtonList.getChildren().addAll(sideMenuButtons);
 
-        Label aboutButton = getAboutButton(i18n);
+        Button aboutButton = getAboutButton(i18n);
         AnchorPane.setLeftAnchor(aboutButton, 10.0);
         AnchorPane.setBottomAnchor(aboutButton, 45.0);
         sideMenu.getChildren().add(0,aboutButton);
@@ -230,12 +233,18 @@ public class MainViewController {
                 .orElse(Collections.emptyList());
     }
 
-    private Label getAboutButton(I18n i18n) {
-        Label aboutButton = new Label();
+    private Button getAboutButton(I18n i18n) {
+        Button aboutButton = new Button();
         aboutButton.getStyleClass().add(DisplaySettings.FONT_AWESOME_CLASS);
+        aboutButton.setPadding(new Insets(0, 0, 0, 0));
+        aboutButton.setTextAlignment(TextAlignment.CENTER);
+        aboutButton.setMinSize(22,22);
+        aboutButton.setShape(new Circle(10));
         aboutButton.setStyle("-fx-font-size: 18");
-        aboutButton.setText(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_CIRCLE_QUESTION_MARK);
-        aboutButton.addEventHandler(MouseEvent.MOUSE_CLICKED, (e) -> {
+        Label questionMarkLabel = new Label(DisplaySettings.FONT_AWESOME_7_FREE_SOLID_CIRCLE_QUESTION_MARK);
+        aboutButton.setGraphic(questionMarkLabel);
+        questionMarkLabel.setTranslateY(-1);
+        aboutButton.setOnAction( (e) -> {
             new AboutDialog(i18n, (Stage) root.getScene().getWindow()).showAndWait();
         });
         return aboutButton;
