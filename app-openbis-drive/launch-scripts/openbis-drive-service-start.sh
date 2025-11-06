@@ -34,6 +34,6 @@ then
       cd "$HOME" ; cd Library ; cd "Application Support" ; cd openbis-drive ; cd launch-scripts
     fi
 else
-    cd "$OPENBIS_DRIVE_DIR" ; cd launch
+    cd "$OPENBIS_DRIVE_DIR" ; cd launch-scripts
 fi
 nohup "$JAVACMD" -jar app-openbis-drive-service.jar >/dev/null 2>&1 &

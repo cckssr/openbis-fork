@@ -4,20 +4,21 @@ This application can keep local directories synchronized with AFS-server directo
 
 ## Installation
 
-After building the following Gradle tasks:
+After building the Gradle task: "release"
 
-app-openbis-drive-service-jar
-app-openbis-drive-cmd-line-jar
+extract the content of build/distributions/app-openbis-drive-$VERSION.tar.gz and copy it all under:
+(equivalently, copy the content of build/release under:)
 
-copy the content of build/launch-scripts under:
+for Linux: `$HOME/.local/state/openbis-drive/`
 
-for Linux: `$HOME/.local/state/openbis-drive/launch-scripts`
+for Windows: `%USERPROFILE%\AppData\Local\openbis-drive\`
 
-for Windows: `%USERPROFILE%\AppData\Local\openbis-drive\launch-scripts`
-
-for MAC-OS: `$HOME/Library/"Application Support"/openbis-drive/launch-scripts`
+for MAC-OS: `$HOME/Library/"Application Support"/openbis-drive/`
 
 create the directory hierarchy if necessary.
+At the end, you should find the following subdirectory:
+
+`.../openbis-drive/launch-scripts`
 
 ## Configuration and state files
 
@@ -58,3 +59,30 @@ Check running status with: `openbis-drive-cmd-line.bat status`
 Stop:
 - by using the command-line-application stop command: `openbis-drive-cmd-line.bat stop`
 - directly with the stop-script: `openbis-drive-service-stop.bat`
+
+## Command-line (Linux and MAC OS)
+
+The command-line can be invoked by entering into the launch-scripts directory
+(or by adding this to the PATH environment variable) and typing:
+- `./openbis-drive-cmd-line.sh help`
+  (`openbis-drive-cmd-line.sh help` without initial dot if the launch-scripts directory is added to the PATH)
+
+## Command-line (Windows)
+
+The command-line can be invoked by entering into the launch-scripts directory
+(or by adding this to the PATH environment variable) and typing:
+- `openbis-drive-cmd-line.bat help`
+
+## Graphical user-interface (Linux and MAC OS)
+
+The graphical user-interface can be started by entering into the launch-scripts directory
+(or by adding this to the PATH environment variable) and typing:
+- `./openbis-drive-gui.sh`
+  (`openbis-drive-gui.sh` without initial dot if the launch-scripts directory is added to the PATH)
+
+## Graphical user-interface (Windows)
+
+The graphical user-interface can be started by entering into the launch-scripts directory
+(or by adding this to the PATH environment variable) and typing:
+- `openbis-drive-gui.bat`
+

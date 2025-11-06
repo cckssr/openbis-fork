@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+        <string>openBIS Drive</string>
+	<key>CFBundleExecutable</key>
+	    <string>openbis-drive-gui-launcher.sh</string>
+	<key>CFBundleIconFile</key>
+        <string>openbis-drive-icon.icns</string>
+	<key>CFBundleName</key>
+        <string>openbis-drive</string>
+</dict>
+</plist>

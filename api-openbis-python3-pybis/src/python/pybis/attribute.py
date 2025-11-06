@@ -80,7 +80,7 @@ class AttrHolder:
             self.__dict__["_fetchOptions"] = data['fetchOptions']
 
         for attr in self._defs["attrs"]:
-            if attr in ["code", "permId", "identifier", "type"]:
+            if attr in ["code", "permId", "identifier", "type", "id"]:
                 self.__dict__["_" + attr] = data.get(attr, None)
                 # remove the @id attribute
                 if isinstance(self.__dict__["_" + attr], dict):
@@ -536,6 +536,7 @@ class AttrHolder:
             if not isinstance(value, list):
                 value = [value]
             objs = []
+            permids = []
             for val in value:
                 if isinstance(val, str):
                     # fetch objects in openBIS, make sure they actually exists
@@ -545,7 +546,6 @@ class AttrHolder:
                     # we got an existing object
                     objs.append(val)
 
-            permids = []
             for item in objs:
                 if getattr(item, "_identifier") is not None:
                     id = item._identifier

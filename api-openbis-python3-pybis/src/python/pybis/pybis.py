@@ -91,6 +91,7 @@ from .utils import (
 )
 from .vocabulary import Vocabulary, VocabularyTerm
 from .spreadsheet import Spreadsheet
+from .type_group import TypeGroup
 from .imaging import *
 
 # import the various openBIS entities
@@ -1118,6 +1119,8 @@ class Openbis:
             "new_plugin()",
             "new_group()",
             "new_space()",
+            "get_type_groups()",
+            "get_type_group()",
             "new_project()",
             "new_experiment()",
             "new_collection()",
@@ -1134,6 +1137,7 @@ class Openbis:
             "new_transaction()",
             "get_or_create_personal_access_token()",
             "set_token()",
+
         ]
 
     def _repr_html_(self):
@@ -3063,7 +3067,7 @@ class Openbis:
         }
         return self._post_request_full_url(urljoin(self._get_dss_url(), self.dss_v3), request)
 
-    def execute_custom_as_service(self, code):
+    def execute_custom_as_service(self, code, parameters):
         """Executes a custom Application Server service with the provided service id. Additional execution options can be set via parameters.
             code: serviceId of the custom Application Server service
             parameters: parameters to be sent to the custom service
@@ -3074,13 +3078,11 @@ class Openbis:
         }
         options = {
             "@type": "as.dto.service.CustomASServiceExecutionOptions",
-            "parameters": {
-                "key": "value"
-            }
+            "parameters": parameters
         }
         request = {
             "method": "executeCustomASService",
-            "param": [
+            "params": [
                 self.token,
                 serviceId,
                 options
@@ -5460,7 +5462,340 @@ class Openbis:
         else:
             return dss[dss["code"] == dss_code]["downloadUrl"][0]
 
+    def new_type_group(self, name, **kwargs):
+        return TypeGroup(self, code=name, **kwargs)
 
+    def delete_type_group(self, id):
+        attrs = {
+                '@type': 'as.dto.typegroup.id.TypeGroupId',
+                'permId': id
+        }
+
+        del_options = {
+            "@type": "as.dto.typegroup.delete.TypeGroupDeletionOptions",
+            "reason": "pybis deletion"
+        }
+
+        request = {
+            "method": "deleteTypeGroups",
+            "params": [self.token, [attrs], del_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+
+    def get_type_group(self, type_group_id, only_data=False):
+        ids = {
+                '@type' : 'as.dto.typegroup.id.TypeGroupId',
+                'permId' : type_group_id
+            }
+
+        fetch_options = {
+            '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupFetchOptions',
+            'registrator' : {
+                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            'modifier' : {
+                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            "typeGroupAssignments": {
+                '@type': "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+                'typeGroup': {
+                    '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+                    'registrator': {
+                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                    }
+                },
+                'sampleType': {
+                    "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+                    'registrator': {
+                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                    }
+                },
+                'registrator': {
+                    '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                }
+            },
+            # 'sort': {
+            #     '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupSortOptions',
+            #
+            # }
+
+        }
+
+        request = {
+            "method": "getTypeGroups",
+            "params": [self.token, [ids], fetch_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+
+        if len(resp) == 0:
+            raise ValueError("No type group found!")
+
+        for id in resp:
+            group = resp[id]
+            parse_jackson(group)
+
+            if only_data:
+                return group
+            else:
+                return TypeGroup(self, data=group)
+
+    def search_type_group(self, name):
+
+        criteria = {
+                '@type' : 'as.dto.typegroup.search.TypeGroupSearchCriteria',
+                'criteria' : [{
+                    '@type': 'as.dto.typegroup.search.TypeGroupCodeSearchCriteria',
+                    'fieldName': 'code',
+                    'fieldType': 'ATTRIBUTE',
+                    "fieldValue": {
+                        "value": name,
+                        "@type": "as.dto.common.search.StringStartsWithValue",
+                    },
+                }]
+            }
+
+        fetch_options = {
+            '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupFetchOptions',
+            'registrator' : {
+                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            'modifier' : {
+                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            # 'sort': {
+            #     '@type' : 'as.dto.typegroup.fetchoptions.TypeGroupSortOptions',
+            #
+            # }
+
+        }
+
+        request = {
+            "method": "searchTypeGroups",
+            "params": [self.token, criteria, fetch_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+
+
+    def new_type_group_assignment(self, type_group_name, sample_type_code):
+        """
+        """
+        attrs = {
+            "@type": "as.dto.typegroup.create.TypeGroupAssignmentCreation",
+            "sampleTypeId": {
+                "@type" : "as.dto.entitytype.id.EntityTypePermId",
+                "entityKind": "SAMPLE",
+                "permId" : sample_type_code,
+            },
+            "typeGroupId": {
+                "@type" : "as.dto.typegroup.id.TypeGroupId",
+                "permId" : type_group_name,
+            },
+            "managedInternally": False,
+        }
+
+        request = {
+            "method": "createTypeGroupAssignments",
+            "params": [self.token, [attrs]],
+        }
+
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+        else:
+            raise ValueError("Could not get the server information")
+
+
+    def delete_type_group_assignment(self, type_group, sample_type):
+        """
+        """
+        attrs = {
+
+            '@type': 'as.dto.typegroup.id.TypeGroupAssignmentId',
+            "sampleTypeId": {
+                "@type" : "as.dto.entitytype.id.EntityTypePermId",
+                "entityKind": "SAMPLE",
+                "permId" : sample_type,
+            },
+            "typeGroupId": {
+                "@type" : "as.dto.typegroup.id.TypeGroupId",
+                "permId" : type_group,
+            },
+
+        }
+
+        del_options = {
+            "@type": "as.dto.typegroup.delete.TypeGroupAssignmentDeletionOptions",
+            "reason": "test"
+
+        }
+
+        request = {
+            "method": "deleteTypeGroupAssignments",
+            "params": [self.token, [attrs], del_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+
+
+    def get_type_group_assignment(self, type_group, sample_type):
+        """
+                """
+        attrs = {
+
+            '@type': 'as.dto.typegroup.id.TypeGroupAssignmentId',
+            "sampleTypeId": {
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
+                "entityKind": "SAMPLE",
+                "permId": sample_type,
+            },
+            "typeGroupId": {
+                "@type": "as.dto.typegroup.id.TypeGroupId",
+                "permId": type_group,
+            },
+
+        }
+
+        fetch_options = {
+            "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+            'registrator' : {
+                '@type' : 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            "typeGroup" : {
+                '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
+            },
+            "sampleType" : {
+                '@type': "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+                "propertyAssignments": {
+                    "@type" : "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+                }
+            }
+        }
+
+        request = {
+            "method": "getTypeGroupAssignments",
+            "params": [self.token, [attrs], fetch_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+
+    def search_type_group_assignment(self, type_group, sample_type):
+
+        criteria = {
+                '@type' : 'as.dto.typegroup.search.TypeGroupAssignmentSearchCriteria',
+                'criteria' : [{
+                        '@type': 'as.dto.typegroup.search.TypeGroupSearchCriteria',
+                        'criteria' : [{
+                            '@type': 'as.dto.common.search.CodeSearchCriteria',
+                            'fieldName': 'code',
+                            'fieldType': 'ATTRIBUTE',
+                            "fieldValue": {
+                                "value": type_group,
+                                "@type": "as.dto.common.search.StringStartsWithValue",
+                            },
+                        }]
+                    },
+                    {
+                        '@type': 'as.dto.sample.search.SampleTypeSearchCriteria',
+                        'criteria' : [{
+                            '@type': 'as.dto.common.search.CodeSearchCriteria',
+                             'fieldName': 'code',
+                             'fieldType': 'ATTRIBUTE',
+                             "fieldValue": {
+                                 "value": sample_type,
+                                 "@type": "as.dto.common.search.StringStartsWithValue",
+                             }
+                        }]
+                    }]
+            }
+
+        fetch_options = {
+            "@type": "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+            'registrator': {
+                '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+            },
+            "typeGroup": {
+                '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions"
+            },
+            "sampleType": {
+                '@type': "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+                "propertyAssignments": {
+                    "@type": "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+                }
+            }
+        }
+
+        request = {
+            "method": "searchTypeGroupAssignments",
+            "params": [self.token, criteria, fetch_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
+
+
+    def get_sample_type_new(self, sample_type):
+        """
+                """
+        attrs = {
+                "@type": "as.dto.entitytype.id.EntityTypePermId",
+                "entityKind": "SAMPLE",
+                "permId": sample_type,
+            }
+
+        fetch_options = {
+            "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+
+            "typeGroupAssignments" : {
+                '@type': "as.dto.typegroup.fetchoptions.TypeGroupAssignmentFetchOptions",
+                'typeGroup': {
+                    '@type': "as.dto.typegroup.fetchoptions.TypeGroupFetchOptions",
+                    'registrator': {
+                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                    }
+                },
+                'sampleType': {
+                    "@type": "as.dto.sample.fetchoptions.SampleTypeFetchOptions",
+                    'registrator': {
+                        '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                    }
+                },
+                'registrator' : {
+                    '@type': 'as.dto.person.fetchoptions.PersonFetchOptions'
+                }
+            },
+            "propertyAssignments": {
+                "@type" : "as.dto.property.fetchoptions.PropertyAssignmentFetchOptions"
+            }
+        }
+
+        request = {
+            "method": "getSampleTypes",
+            "params": [self.token, [attrs], fetch_options],
+        }
+
+        resp = self._post_request(self.as_v3, request)
+        if resp is not None:
+            print(resp)
+            return resp
 
 class ExternalDMS:
     """managing openBIS external data management systems"""
@@ -5638,9 +5973,16 @@ class ImagingControl:
     DEFAULT_DATASET_VIEW_PROP_NAME = "default_dataset_view"
     IMAGING_DATASET_VIEWER = "IMAGING_DATASET_VIEWER"
 
-    def __init__(self, openbis_instance, service_name=DEFAULT_SERVICE_NAME):
+    def __init__(self, openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS'):
         self._openbis = openbis_instance
         self._service_name = service_name
+        self._service_type = service_type
+
+    def _execute_service(self, parameters):
+        if self._service_type == "AS":
+            return self._openbis.execute_custom_as_service(self._service_name, parameters)
+        else:
+            return self._openbis.execute_custom_dss_service(self._service_name, parameters)
 
     def make_preview(self, perm_id: str, index: int, preview: ImagingDataSetPreview) -> ImagingDataSetPreview:
         """Execute preview generation of preview of imaging dataset with the config parameters"""
@@ -5655,7 +5997,7 @@ class ImagingControl:
             "error": None,
             "preview": preview_params
         }
-        service_response = self._openbis.execute_custom_dss_service(self._service_name, parameters)
+        service_response = self._execute_service(parameters)
         if service_response['error'] is None:
             if '@id' in service_response:
                 del service_response['@id']
@@ -5680,7 +6022,7 @@ class ImagingControl:
             "url": None,
             "export": export_params
         }
-        service_response = self._openbis.execute_custom_dss_service(self._service_name, parameters)
+        service_response = self._execute_service(parameters)
         if service_response['error'] is None:
             return service_response['url']
         else:
@@ -5696,7 +6038,7 @@ class ImagingControl:
             "url": None,
             "exports": [export.__dict__ for export in exports]
         }
-        service_response = self._openbis.execute_custom_dss_service(self._service_name, parameters)
+        service_response = self._execute_service(parameters)
         if service_response['error'] is None:
             return service_response['url']
         else:

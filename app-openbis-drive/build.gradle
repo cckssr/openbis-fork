@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.google.protobuf' version '0.9.5'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
 }
 
 protobuf {
@@ -20,10 +21,15 @@ protobuf {
     }
 }
 
+def baseName =  'app-openbis-drive'
+def implementationVersion = '0.0.1'
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
 }
+
+javafx.version = "21.0.6"
 
 evaluationDependsOn(':lib-json')
 evaluationDependsOn(':api-data-store-server-java')
@@ -74,76 +80,128 @@ dependencies {
     implementation("io.grpc:grpc-stub:1.74.0")
     compileOnly ("org.apache.tomcat:annotations-api:6.0.53") // necessary for Java 9+
 
+    //JAVAFX
+    implementation("org.openjfx:javafx-base:${javafx.version}:linux")
+    implementation("org.openjfx:javafx-base:${javafx.version}:win")
+    implementation("org.openjfx:javafx-base:${javafx.version}:mac")
+    implementation("org.openjfx:javafx-graphics:${javafx.version}:linux")
+    implementation("org.openjfx:javafx-graphics:${javafx.version}:win")
+    implementation("org.openjfx:javafx-graphics:${javafx.version}:mac")
+    implementation("org.openjfx:javafx-fxml:${javafx.version}:linux")
+    implementation("org.openjfx:javafx-fxml:${javafx.version}:win")
+    implementation("org.openjfx:javafx-fxml:${javafx.version}:mac")
+    implementation("org.openjfx:javafx-controls:${javafx.version}:linux")
+    implementation("org.openjfx:javafx-controls:${javafx.version}:win")
+    implementation("org.openjfx:javafx-controls:${javafx.version}:mac")
+    implementation("org.controlsfx:controlsfx:11.2.1")
 
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.mockito:mockito-core:4.4.0")
 }
 
-
 tasks.named('jar', Jar) {
     manifest {
         attributes(
-                'Implementation-Title':   'app-openbis-drive',
-                'Implementation-Version': '0.0.1'
+                'Implementation-Title':   baseName,
+                'Implementation-Version': implementationVersion
         )
     }
+}
+
+tasks.register('layReleaseDirectoriesOut') {
+    mkdir('build/release')
+    mkdir('build/release/launch-scripts')
 }
 
 tasks.register('copyLaunchScripts', Copy) {
+    dependsOn('layReleaseDirectoriesOut')
     from('launch-scripts')
-    into('build/launch-scripts')
+    into('build/release/launch-scripts')
 }
 
-tasks.register('app-openbis-drive-service-jar', Jar) {
+tasks.register('copyInstallScripts', Copy) {
+    dependsOn('layReleaseDirectoriesOut')
+    from('install-scripts')
+    into('build/release')
+}
+
+tasks.register('appOpenbisDriveServiceJar', Jar) {
     dependsOn('build')
     dependsOn('copyLaunchScripts')
 
     manifest {
         attributes(
-                'Implementation-Title':   'app-openbis-drive-service',
-                'Implementation-Version': '0.0.1',
+                'Implementation-Title':   baseName + '-service',
+                'Implementation-Version': implementationVersion,
                 'Main-Class': 'ch.openbis.drive.DriveAPIService'
         )
     }
-    archiveBaseName = 'app-openbis-drive-service'
+    archiveBaseName = baseName + '-service'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     doLast {
         copy {
-            from('build/libs/app-openbis-drive-service.jar')
-            into('build/launch-scripts')
+            from('build/libs/' + baseName + '-service.jar')
+            into('build/release/launch-scripts')
         }
     }
 }
 
-tasks.register('app-openbis-drive-cmd-line-jar', Jar) {
+tasks.register('appOpenbisDriveCmdLineJar', Jar) {
     dependsOn('build')
     dependsOn('copyLaunchScripts')
 
     manifest {
         attributes(
-                'Implementation-Title': 'app-openbis-drive-cmd-line',
-                'Implementation-Version': '0.0.1',
+                'Implementation-Title': baseName + '-cmd-line',
+                'Implementation-Version': implementationVersion,
                 'Main-Class': 'ch.openbis.drive.DriveAPICmdLineApp'
         )
     }
-    archiveBaseName = 'app-openbis-drive-cmd-line'
+    archiveBaseName = baseName + '-cmd-line'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     doLast {
         copy {
-            from('build/libs/app-openbis-drive-cmd-line.jar')
-            into('build/launch-scripts')
+            from('build/libs/' + baseName + '-cmd-line.jar')
+            into('build/release/launch-scripts')
         }
     }
 }
-// openbis-drive-VERSION.tar.gz
-tasks.register('openbisDriveTar', Tar) {
-    dependsOn([jar])
-    archiveFileName = 'openbis-drive-' + project.ext.versionNumber + ".tar.gz"
-    from jar.archiveFile
-    into 'openbis-drive'
+
+tasks.register('appOpenbisDriveGuiJar', Jar) {
+    dependsOn('build')
+    dependsOn('copyLaunchScripts')
+
+    manifest {
+        attributes(
+                'Implementation-Title' : baseName + '-gui',
+                'Implementation-Version' : implementationVersion,
+                'Main-Class' : 'ch.openbis.drive.gui.Launcher'
+        )
+    }
+    archiveBaseName = baseName + '-gui'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    doLast {
+        copy {
+            from('build/libs/' + baseName + '-gui.jar')
+            into('build/release/launch-scripts')
+        }
+    }
 }
 
+tasks.register('release', Tar) {
+    dependsOn('copyInstallScripts')
+    dependsOn('appOpenbisDriveServiceJar')
+    dependsOn('appOpenbisDriveCmdLineJar')
+    dependsOn('appOpenbisDriveGuiJar')
+
+    archiveFileName = baseName + '-' + implementationVersion+ ".tar.gz"
+
+    from 'build/release'
+    compression = Compression.GZIP
+}

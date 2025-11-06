@@ -109,7 +109,92 @@ $.extend(ImagingTechnology.prototype, ELNLIMSPlugin.prototype, {
     dataSetTypeDefinitionsExtension : {
         "IMAGING_DATA" : {
             "SHOW" : false,
-            "SHOW_ON_NAV" : true
+            "SHOW_ON_NAV" : true,
+            extraToolbarDropdown : function(mode, dataset) {
+                return {
+                    label:"Update imaging config",
+                    title:"Update imaging config",
+                    action : function() {
+                        Util.blockUINoMessage();
+                        var _this = this;
+
+                        var component = $("<div>");
+                        component.append($("<legend>", { 'text' : "Upload new imaging config"}))
+                        component.append($('<br>'));
+                        component.append($("<label>", { 'text' : 'Select JSON file that will be used to replace current imaging config'}))
+
+
+                        var fileChooser = $('<input>', { 'type' : 'file', 'id' : 'fileToRegister' , 'required' : '', 'accept' : 'application/JSON'});
+                        var file = null;
+                        fileChooser.change(function(event) {
+                            file = fileChooser[0].files[0];
+                        });
+
+                        var fileChooserBoxGroup = FormUtil.getFieldForComponentWithLabel(fileChooser, 'File');
+                        component.append(fileChooserBoxGroup);
+
+                        component.append($('<br>'));
+                        var acceptBtn = $("<a>", { 'class' : 'btn btn-primary', 'id' : 'updateAccept', 'text' : 'Accept' });
+                        var closeBtn = $("<a>", { 'class' : 'btn btn-default', 'id' : 'updateCancel', 'text' : 'Cancel' });
+                        component.append(acceptBtn).append('&nbsp;').append(closeBtn);
+
+                        Util.blockUI(component, FormUtil.getDialogCss());
+
+                        $("#updateAccept").on("click", function(event) {
+                            if(file === null) {
+                                Util.showError("You must select a JSON file!", function() {}, true);
+                            }
+
+                            require(["imaging/dto/ImagingDataSetPropertyConfig",
+                                "imaging/dto/ImagingPreviewContainer",
+                                "imaging/dto/ImagingDataSetExport",
+                                "imaging/dto/ImagingDataSetMultiExport",
+                                "imaging/dto/ImagingDataSetPreview",
+                                "imaging/dto/ImagingDataSetExportConfig",
+                                "imaging/dto/ImagingExportIncludeOptions",
+                                "util/Json",
+                                "as/dto/dataset/update/DataSetUpdate",
+                                "as/dto/dataset/id/DataSetPermId"],
+                            function (ImagingDataSetPropertyConfig,
+                                      ImagingPreviewContainer, ImagingDataSetExport,
+                                      ImagingDataSetMultiExport, ImagingDataSetPreview,
+                                      ImagingDataSetExportConfig, ImagingExportIncludeOptions,
+                                      utilJson, DataSetUpdate, DataSetPermId
+                                     ) {
+                                    let fileReader = new FileReader();
+                                    fileReader.readAsText(file);
+                                    fileReader.onload = function(event) {
+                                        // once it is loaded, try to parse it to validate
+                                        var jsonParsed = JSON.parse(fileReader.result);
+                                        utilJson.fromJson("ImagingDataSetPropertyConfig", jsonParsed).done(function(config) {
+
+                                            console.log(config);
+                                            const update = new DataSetUpdate();
+                                            update.setDataSetId(new DataSetPermId(dataset.permId.permId));
+                                            update.setProperty('IMAGING_DATA_CONFIG', JSON.stringify(config));
+
+                                            mainController.openbisV3.updateDataSets([update]).done(function(x) {
+                                                Util.showSuccess("Config has been updated", function () { Util.unblockUI(); });
+                                                mainController.refreshView();
+                                            }).fail(function() {
+                                                Util.showError("Failed to object with new config!", function() {}, true);
+                                            });
+
+                                        }).fail(function() {
+                                            Util.showError("Failed to parse provided JSON file!", function() {}, true);
+                                        });
+                                    };
+                                }
+                            );
+                        });
+
+                        $("#updateCancel").on("click", function(event) {
+                            Util.unblockUI();
+                        });
+
+                    }
+                }
+            }
         }
     },
     _getDataListDynamic: function(dataSets) {

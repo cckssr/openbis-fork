@@ -33,6 +33,6 @@ then
       cd "$HOME" ; cd Library ; cd "Application Support" ; cd openbis-drive ; cd launch-scripts
     fi
 else
-    cd "$OPENBIS_DRIVE_DIR" ; cd launch
+    cd "$OPENBIS_DRIVE_DIR" ; cd launch-scripts
 fi
 "$JAVACMD" -jar app-openbis-drive-cmd-line.jar $@
