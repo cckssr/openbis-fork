@@ -17,7 +17,7 @@
 
 define(["stjs"], function (stjs) {
   var ExportOptions = function(formats, xlsTextFormat, withReferredTypes, withImportCompatibility, zipSingleFiles,
-                                withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsOtherSpaces) {
+                                withLevelsAbove, withLevelsBelow, withObjectsAndDataSetsParents, withObjectsAndDataSetsChildren, withObjectsAndDataSetsOtherSpaces) {
     this.formats = formats;
     this.xlsTextFormat = xlsTextFormat;
     this.withReferredTypes = withReferredTypes;
@@ -26,6 +26,7 @@ define(["stjs"], function (stjs) {
     this.withLevelsAbove = withLevelsAbove;
     this.withLevelsBelow = withLevelsBelow;
     this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+    this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
     this.withObjectsAndDataSetsOtherSpaces = withObjectsAndDataSetsOtherSpaces;
   }
 
@@ -45,6 +46,7 @@ define(["stjs"], function (stjs) {
       prototype.withLevelsAbove = null;
       prototype.withLevelsBelow = null;
       prototype.withObjectsAndDataSetsParents = null;
+      prototype.withObjectsAndDataSetsChildren = null;
       prototype.withObjectsAndDataSetsOtherSpaces = null;
 
       prototype.getFormats = function() {
@@ -107,8 +109,16 @@ define(["stjs"], function (stjs) {
         return withObjectsAndDataSetsParents;
       };
 
+      prototype.isWithObjectsAndDataSetsChildren = function() {
+        return withObjectsAndDataSetsChildren;
+      }
+
       prototype.setWithObjectsAndDataSetsParents = function(withObjectsAndDataSetsParents) {
         this.withObjectsAndDataSetsParents = withObjectsAndDataSetsParents;
+      };
+
+      prototype.setWithObjectsAndDataSetsChildren = function(withObjectsAndDataSetsChildren) {
+        this.withObjectsAndDataSetsChildren = withObjectsAndDataSetsChildren;
       };
 
       prototype.isWithObjectsAndDataSetsOtherSpaces = function() {
