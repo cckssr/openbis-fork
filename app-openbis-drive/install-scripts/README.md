@@ -2,6 +2,8 @@
 
 A synchronization tool for openBIS (https://openbis.ch)
 
+(It requires Java 17 or newer)
+
 Distribution package containing installation and executable files for:
 - background synchronization process
 - a command-line program to interact with it

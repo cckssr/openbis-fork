@@ -30,7 +30,7 @@ then
     DETECTED_UNAME=$( uname -s )
     if [ $DETECTED_UNAME = "Linux" ] ; then
       cd "$HOME" ; cd .local ; cd state ; cd openbis-drive ; cd launch-scripts
-    elif [ $DETECTED_UNAME = "Darwin"] ; then
+    elif [ $DETECTED_UNAME = "Darwin" ] ; then
       cd "$HOME" ; cd Library ; cd "Application Support" ; cd openbis-drive ; cd launch-scripts
     fi
 else
