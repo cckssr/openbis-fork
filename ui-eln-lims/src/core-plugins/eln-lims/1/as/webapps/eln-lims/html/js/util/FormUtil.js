@@ -2781,6 +2781,9 @@ var FormUtil = new function() {
                     archiveIcon = "ARCHIVED";
                     archiveImage = "./img/archive-archived-icon.png";
                     archiveStatus = "ARCHIVED";
+                    if(physicalData.unarchivingRequested && physicalData.status == "ARCHIVED"){
+                        archiveIcon = "UNARCHIVE_REQUESTED";
+                    }
                 } else if (physicalData.archivingRequested || physicalData.status == "ARCHIVE_PENDING") {
                     archiveImage = "./img/archive-requested-icon.png";
                     archiveIcon = "ARCHIVE_REQUESTED";
