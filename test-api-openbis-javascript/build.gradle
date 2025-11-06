@@ -108,7 +108,7 @@ node {
 }
 
 task copyTypeScriptDTS(type: Copy, dependsOn: [':api-openbis-typescript:generateTypeScript']) {
-    from project(':api-openbis-javascript').file('src/v3/openbis.esm.d.ts')
+    from project(':api-openbis-typescript').file('targets/openbis-typescript-api/openbis.esm.d.ts')
     into file('servers/common/core-plugins/tests/1/as/webapps/openbis-v3-api-test/html/test/types/')
 }
 
