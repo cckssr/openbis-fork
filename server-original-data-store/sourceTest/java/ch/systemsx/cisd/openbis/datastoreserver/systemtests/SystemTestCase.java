@@ -263,7 +263,7 @@ public abstract class SystemTestCase extends AssertJUnit
      */
     protected void setUpDatabaseProperties()
     {
-        TestInitializer.initWithIndex();
+        TestInitializer.init();
     }
 
     /**
