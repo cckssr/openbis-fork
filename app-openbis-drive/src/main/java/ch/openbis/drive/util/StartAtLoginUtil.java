@@ -156,7 +156,10 @@ public class StartAtLoginUtil {
                <key>Label</key>
                <string>ch.openbis.drive.loginscript</string>
                <key>ProgramArguments</key>
-               <array><string>%s/openbis-drive-service-start.sh</string></array>
+               <array>
+                   <string>/bin/sh</string>
+                   <string>%s/openbis-drive-service-start.sh</string>
+               </array>
                <key>RunAtLoad</key>
                <true/>
             </dict>
