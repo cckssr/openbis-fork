@@ -100,6 +100,7 @@ public class PhysicalDataTranslator extends AbstractCachingTranslator<Long, Phys
         result.setStorageConfirmation(baseRecord.isStorageConfirmed);
         result.setSpeedHint(baseRecord.speedHint);
         result.setArchivingRequested(baseRecord.isArchivingRequested);
+        result.setUnarchivingRequested(baseRecord.isUnarchivingRequested);
         result.setH5Folders(baseRecord.isH5Folders);
         result.setH5arFolders(baseRecord.isH5arFolders);
 

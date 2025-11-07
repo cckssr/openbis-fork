@@ -26,7 +26,7 @@ public class CommonAuthorizationScreeningSystemTest
     public void setUpDatabaseProperties()
     {
         TestInitializer.setForceCreateWithInitialData(true);
-        TestInitializer.initEmptyDbWithIndex();
+        TestInitializer.initEmptyDb();
     }
 
     public String getApplicationContextLocation()

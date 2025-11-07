@@ -16,12 +16,12 @@ import FileDownloadManager from '@src/js/components/common/data-browser/componen
 import FileUploadManager from '@src/js/components/common/data-browser/components/upload/FileUploadManager.js'
 import messages from '@src/js/common/messages.js'
 import InfoBar from '@src/js/components/common/data-browser/InfoBar.jsx'
-import LoadingDialog from '@src/js/components/common/loading/LoadingDialog.jsx'
+import DataArchivedDialog from '@src/js/components/common/data-browser/DataArchivedDialog.jsx'
 import ErrorDialog from '@src/js/components/common/error/ErrorDialog.jsx'
 import FileExistsDialog from '@src/js/components/common/dialog/FileExistsDialog.jsx'
 import ConfirmationDialog from '@src/js/components/common/dialog/ConfirmationDialog.jsx'
 import LinearLoadingDialog from '@src/js/components/common/loading/LinearLoadingDialog.jsx';
-import {isUserAbortedError, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
+import {isUserAbortedError, isArchived, isFrozen, timeToString} from "@src/js/components/common/data-browser/DataBrowserUtils.js";
 import mimeTypeMap from './mimeTypes';
 import eventBus from "@src/js/components/common/data-browser/eventBus.js";
 
@@ -128,11 +128,14 @@ class DataBrowser extends React.Component {
       selectedFile: null,
       multiselectedFiles: new Set([]),
       showInfo: false,
+      showDataArchivedDialog: false,
       path: '/',
       freeSpace: -1,
       totalSpace: -1,      
       errorMessage: null,
-      editable: false,                                                
+      editable: false,
+      archived: false,
+      frozen: false,
       isDragging: false,
       ...(this.downloadManager.getDefaultState()),      
       ...(this.uploadManager.getDefaultState()),      
@@ -218,7 +221,9 @@ class DataBrowser extends React.Component {
   }
 
   async handleRowDoubleClick(row) {
-    if(this.props.archived){
+    const {archived} = this.state
+    if(archived){
+      this.setState({ showDataArchivedDialog: true })
       return;
     }
     const file = row.data
@@ -350,10 +355,16 @@ class DataBrowser extends React.Component {
     
   }
 
+  async fetchDataSet(){
+    var dataSet = await this.controller.getDataSet()
+    this.setState({ archived : isArchived(dataSet), frozen: isFrozen(dataSet) })
+  }
+
   async componentDidMount() {
     try {
       this.fetchSpaceStatus()
-      await this.fetchRights()   
+      await this.fetchRights()
+      await this.fetchDataSet()
       eventBus.on('spaceStatusChanged', this.handleSpaceStatusChanged);      
       eventBus.on('gridActionCompleted', this.onGridActionComplete);   
       eventBus.on('downloadRequested', this.handleDownload); 
@@ -471,6 +482,7 @@ class DataBrowser extends React.Component {
       fileName,
       averageSpeed,
       showFileExistsDialog,
+      showDataArchivedDialog,
       applyToAllFiles,
       showMergeDialog,
       showApplyToAll,
@@ -481,7 +493,9 @@ class DataBrowser extends React.Component {
       progressBarTo,
       loadingDialogVariant,
       customProgressDetails,      
-      progressStatus
+      progressStatus,
+      archived,
+      frozen
     } = this.state
 
 
@@ -495,8 +509,8 @@ class DataBrowser extends React.Component {
             owner={id}          
             extOpenbis={this.props.extOpenbis}
             viewType={viewType}
-            frozen={this.props.frozen}
-            archived={this.props.archived}
+            frozen={frozen}
+            archived={archived}
           />
         }
         <InfoBar
@@ -635,6 +649,11 @@ class DataBrowser extends React.Component {
         onCancel={this.handleCancelMerge}
         title={messages.get(messages.NON_EMPTY_FOLDER)}
         content={messages.get(messages.NON_EMPTY_FOLDER_MSG)}
+      />,
+      <DataArchivedDialog
+        key="data-browser-file-archived-dialog"
+        open={showDataArchivedDialog}
+        onClose={() => { this.setState({ showDataArchivedDialog : false })}}
       />
     ]
   }

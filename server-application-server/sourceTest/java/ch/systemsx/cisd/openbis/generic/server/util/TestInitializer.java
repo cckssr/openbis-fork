@@ -15,12 +15,11 @@
  */
 package ch.systemsx.cisd.openbis.generic.server.util;
 
-import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
+import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 
 /**
  * @author Franz-Josef Elmer
@@ -30,41 +29,31 @@ public class TestInitializer
     static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             TestInitializer.class);
 
-    private static String dbKind = "test";
+    private static final String dbKind = "test";
 
     private static boolean createDBFromScratch = true;
+
     private static boolean forceCreateWithInitialData = false;
 
-    private static String scriptFolderForTestDB = "../server-application-server/sourceTest/sql/openbis";
+    private static final String testOpenBISDBScriptFolder = "../server-application-server/sourceTest/sql/openbis";
 
-    private static String scriptFolderForEmptyDB = "../server-application-server/source/sql/openbis";
+    private static final String testMessagesDBScriptFolder = "../server-application-server/sourceTest/sql/messages";
+
+    private static final String emptyOpenBISDBScriptFolder = "../server-application-server/source/sql/openbis";
+
+    private static final String emptyMessagesDBScriptFolder = "../server-application-server/source/sql/messages";
 
     public static void init()
     {
-        initWithoutIndex();
+        init(testOpenBISDBScriptFolder, testMessagesDBScriptFolder);
     }
 
-    public static void initWithoutIndex()
+    public static void initEmptyDb()
     {
-        init(getScriptFolderTestDB());
+        init(emptyOpenBISDBScriptFolder, emptyMessagesDBScriptFolder);
     }
 
-    public static void initWithIndex()
-    {
-        initWithoutIndex();
-    }
-
-    public static void initEmptyDbNoIndex()
-    {
-        init(getScriptFolderEmptyDB());
-    }
-
-    public static void initEmptyDbWithIndex()
-    {
-        initEmptyDbNoIndex();
-    }
-
-    private static void init(String scriptFolder)
+    private static void init(String openBISDBScriptFolder, String messagesDBScriptFolder)
     {
         LogInitializer.init();
 
@@ -72,10 +61,11 @@ public class TestInitializer
                 String.valueOf(getCreateDBFromScratch()));
         System.setProperty("database.force-create-with-initial-data",
                 String.valueOf(getForceCreateWithInitialData()));
-        System.setProperty("database.kind", getDBKind());
-        System.setProperty("script-folder", scriptFolder);
+        System.setProperty("database.kind", dbKind);
+        System.setProperty("script-folder", openBISDBScriptFolder);
 
-        System.setProperty("messages-database.kind", getDBKind());
+        System.setProperty("messages-database.kind", dbKind);
+        System.setProperty("messages-database.script-folder", messagesDBScriptFolder);
 
         DBMigrationEngine.deleteFullTextSearchDocumentVersionFile();
     }
@@ -98,40 +88,6 @@ public class TestInitializer
     public static void setForceCreateWithInitialData(boolean forceCreateWithInitialData)
     {
         TestInitializer.forceCreateWithInitialData = forceCreateWithInitialData;
-    }
-
-    public static String getDBKind()
-    {
-        return dbKind;
-    }
-
-    public static void setDBKind(String dbKind)
-    {
-        TestInitializer.dbKind = dbKind;
-    }
-
-    public static void setDBKindForIndexing(String dbKindForIndexing)
-    {
-    }
-
-    public static String getScriptFolderTestDB()
-    {
-        return scriptFolderForTestDB;
-    }
-
-    public static void setScriptFolderForTestDB(String scriptFolderForTestDB)
-    {
-        TestInitializer.scriptFolderForTestDB = scriptFolderForTestDB;
-    }
-
-    public static String getScriptFolderEmptyDB()
-    {
-        return scriptFolderForEmptyDB;
-    }
-
-    public static void setScriptFolderForEmptyDB(String scriptFolderForEmptyDB)
-    {
-        TestInitializer.scriptFolderForEmptyDB = scriptFolderForEmptyDB;
     }
 
 }

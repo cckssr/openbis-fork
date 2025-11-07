@@ -23,10 +23,7 @@ describe(EntityTypeFormControllerTest.SUITE, () => {
   test('save update property assignment', testSaveUpdatePropertyAssignment)
   test('save update property type', testSaveUpdatePropertyType)
   test('save delete property', testSaveDeleteProperty)
-  test(
-    'save delete property last assignment',
-    testSaveDeletePropertyLastAssignment
-  )
+  test('save delete property last assignment', testSaveDeletePropertyLastAssignment)
 })
 
 async function testSaveAddProperty() {
@@ -101,10 +98,16 @@ async function testSaveUpdatePropertyAssignment() {
     value: true
   })
 
+  common.controller.handleChange(EntityTypeFormSelectionType.PROPERTY, {
+    id: 'property-0',
+    field: 'label',
+    value: 'Updated label'
+  })
+
   await common.controller.handleSave()
 
   expectExecuteOperations([
-    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), TEST_PROPERTY_TYPE.getLabel()),
+    updatePropertyTypeOperation(TEST_PROPERTY_TYPE.getCode(), 'Updated label'),
     setPropertyAssignmentOperation(
       SAMPLE_TYPE_WITH_TEST_PROPERTY.getCode(),
       TEST_PROPERTY_TYPE.getCode(),
@@ -307,6 +310,7 @@ TEST_PROPERTY_TYPE.setMultiValue(false)
 
 const TEST_PROPERTY_ASSIGNMENT = new openbis.PropertyAssignment()
 TEST_PROPERTY_ASSIGNMENT.setPropertyType(TEST_PROPERTY_TYPE)
+TEST_PROPERTY_ASSIGNMENT.setMandatory(false)
 TEST_PROPERTY_ASSIGNMENT.unique = false
 
 const SAMPLE_TYPE_WITH_TEST_PROPERTY = new openbis.SampleType()

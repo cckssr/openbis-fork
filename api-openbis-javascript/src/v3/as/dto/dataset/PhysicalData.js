@@ -24,6 +24,7 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		prototype.storageConfirmation = null;
 		prototype.speedHint = null;
 		prototype.archivingRequested = null;
+		prototype.unarchivingRequested = null;
 		prototype.h5Folders = null;
 		prototype.h5arFolders = null;
 
@@ -122,6 +123,12 @@ define([ "stjs", "util/Exceptions" ], function(stjs, exceptions) {
 		};
 		prototype.setArchivingRequested = function(archivingRequested) {
 			this.archivingRequested = archivingRequested;
+		};
+		prototype.isUnarchivingRequested = function() {
+			return this.unarchivingRequested;
+		};
+		prototype.setUnarchivingRequested = function(unarchivingRequested) {
+			this.unarchivingRequested = unarchivingRequested;
 		};
 		prototype.isH5Folders = function() {
 			return this.h5Folders;

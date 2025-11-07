@@ -197,7 +197,7 @@ var IconUtil = new function() {
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-not-requested-icon.png";
             icon.css = { "height": "21px", "margin-top": "4px"}
-        } else if(type === "ARCHIVE_REQUESTED") {
+        } else if(type === "ARCHIVE_REQUESTED" || type === "UNARCHIVE_REQUESTED") {
             icon.type = "img_with_class";
             icon.class = "fancytree-icon";
             icon.url = "./img/archive-requested-icon.png";
