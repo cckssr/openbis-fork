@@ -64,7 +64,7 @@ public class DriveAPIService {
 
                 switch (OsDetectionUtil.detectOS()) {
 
-                    case Linux, Mac -> {
+                    case Linux -> {
                         Files.deleteIfExists(configuration.getLocalAppStateDirectory().resolve(SOCKET_FILE_NAME));
                         server = NettyServerBuilder.forAddress(new DomainSocketAddress(configuration.getLocalAppStateDirectory().resolve(DriveAPIService.SOCKET_FILE_NAME).toString()))
                             .channelType(EpollServerDomainSocketChannel.class)
@@ -75,8 +75,7 @@ public class DriveAPIService {
                             .start();
                     }
 
-                    case Windows -> {
-                        System.out.println("Windows OS detected");
+                    case Windows, Mac -> {
                         server = NettyServerBuilder.forAddress(new InetSocketAddress("localhost", configuration.getOpenbisDrivePort()))
                             .addService(new DriveAPIGrpcImpl(driveAPIServer))
                             .build()

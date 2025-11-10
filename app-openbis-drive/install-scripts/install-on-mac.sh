@@ -8,6 +8,8 @@ if [ ! -d "$BASEDIR"/launch-scripts ] ; then
 fi
 
 createDesktopLink() {
+    chmod +x "$BASEDIR"/openbis-drive.app/Contents/MacOS/openbis-drive-gui-launcher.sh
+
     read -r -p "
 
 You can copy openbis-drive.app to your desktop to use it as a launch-icon for the graphical interface

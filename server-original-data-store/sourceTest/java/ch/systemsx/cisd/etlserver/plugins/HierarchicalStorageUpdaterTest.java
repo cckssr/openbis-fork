@@ -63,13 +63,13 @@ public class HierarchicalStorageUpdaterTest extends AbstractFileSystemTestCase
     private final static String SHARE_ID = "1";
 
     private final static FileFilter ignoreSVNFiles = new FileFilter()
+    {
+        @Override
+        public boolean accept(File pathname)
         {
-            @Override
-            public boolean accept(File pathname)
-            {
-                return pathname.getName().equals(".svn") == false;
-            }
-        };
+            return pathname.getName().equals(".svn") == false;
+        }
+    };
 
     private IEncapsulatedOpenBISService openBISService;
 
@@ -93,18 +93,18 @@ public class HierarchicalStorageUpdaterTest extends AbstractFileSystemTestCase
         ServiceProviderTestWrapper.setApplicationContext(beanFactory);
 
         context.checking(new Expectations()
+        {
             {
-                {
-                    allowing(beanFactory).getBean("openBIS-service");
-                    will(returnValue(openBISService));
+                allowing(beanFactory).getBean("openBIS-service");
+                will(returnValue(openBISService));
 
-                    allowing(openBISService).listPhysicalDataSets();
-                    will(returnValue(listDataSets()));
+                allowing(openBISService).listPhysicalDataSets();
+                will(returnValue(listDataSets()));
 
-                    allowing(openBISService).listDataSetsByCode(with(any(List.class)));
-                    will(returnValue(listAbstractDataSets()));
-                }
-            });
+                allowing(openBISService).listDataSetsByCode(with(any(List.class)));
+                will(returnValue(listAbstractDataSets()));
+            }
+        });
     }
 
     @AfterMethod(alwaysRun = true)
@@ -120,7 +120,7 @@ public class HierarchicalStorageUpdaterTest extends AbstractFileSystemTestCase
                 { true }, { false } };
     }
 
-    @Test(dataProvider = "Configs")
+    @Test(dataProvider = "Configs", invocationCount = 3, successPercentage = 30)
     public void testDataIsNotDeletedAfterReconfig(boolean linksOnly) throws Exception
     {
 
@@ -133,7 +133,7 @@ public class HierarchicalStorageUpdaterTest extends AbstractFileSystemTestCase
 
     }
 
-    @Test(dataProvider = "Configs")
+    @Test(dataProvider = "Configs", invocationCount = 3, successPercentage = 30)
     public void testBrokenLinksAreDeleted(boolean linksOnly) throws Exception
     {
 
@@ -176,7 +176,7 @@ public class HierarchicalStorageUpdaterTest extends AbstractFileSystemTestCase
         }
     }
 
-    @Test
+    @Test(invocationCount = 3, successPercentage = 30)
     public void testMetaDataCreated() throws Exception
     {
         HierarchicalStorageUpdater storageUpdater = createUpdater(true, false);

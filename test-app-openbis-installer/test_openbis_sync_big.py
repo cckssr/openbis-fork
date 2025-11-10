@@ -119,7 +119,7 @@ class TestCase(systemtest.testcase.TestCase):
         openbis.waitUntilDataSetRegistrationFinished(1, timeOutInMinutes = 20)
 
     def _drop_big_file(self, incoming):
-        big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openBIS-installation')
+        big_file = self.artifactRepository.getPathToArtifact(OPENBIS_STANDARD_TECHNOLOGIES_PROJECT, 'openbis-installer')
         big_file_folder, big_file_name = os.path.split(big_file)
         util.copyFromTo(big_file_folder, incoming, big_file_name)
         return big_file_name

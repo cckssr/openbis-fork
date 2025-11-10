@@ -260,7 +260,7 @@ class TestCase(object):
         The technologies are an array of enabled technologies.
         """
         installerPath = self.artifactRepository.getPathToArtifact(INSTALLER_PROJECT,
-                                                                  'openBIS-installation')
+                                                                  'openbis-installer')
         installerFileName = os.path.basename(installerPath).rpartition('.tar')[0]
         util.executeCommand(['tar', '-zxf', installerPath, '-C', self.playgroundFolder],
                             "Couldn't untar openBIS installer.")

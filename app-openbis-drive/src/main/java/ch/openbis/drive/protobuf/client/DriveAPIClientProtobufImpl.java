@@ -35,11 +35,11 @@ public class DriveAPIClientProtobufImpl implements DriveAPI, AutoCloseable {
 
     public DriveAPIClientProtobufImpl(Configuration configuration) throws Exception {
         switch (OsDetectionUtil.detectOS()) {
-            case Linux, Mac -> {
+            case Linux -> {
                 eventLoopGroup = new EpollEventLoopGroup();
                 grpcManagedChannel = getGrpcChannel(configuration);
             }
-            case Windows -> {
+            case Windows, Mac -> {
                 eventLoopGroup = null;
                 grpcManagedChannel = NettyChannelBuilder.forAddress(new InetSocketAddress("localhost", configuration.getOpenbisDrivePort()))
                         .withOption(ChannelOption.SO_KEEPALIVE, null)
