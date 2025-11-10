@@ -25,11 +25,13 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProvider;
 
 /**
  * A DSS implementation of {@link AbstractCrossOriginFilter}.
- * 
+ *
  * @author Kaloyan Enimanev
  */
 public class DssCrossOriginFilter extends AbstractCrossOriginFilter
 {
+
+    private boolean initialized = false;
 
     private List<String> ownDomains;
 
@@ -51,20 +53,28 @@ public class DssCrossOriginFilter extends AbstractCrossOriginFilter
 
     private void initializeIfNeeded()
     {
-        if (ownDomains != null)
+        if (initialized)
         {
-            // already initialized
             return;
         }
 
-        Properties properties = DssPropertyParametersUtil.loadServiceProperties();
+        synchronized (this)
+        {
+            if (initialized)
+            {
+                return;
+            }
 
-        final String dssUrl = DssPropertyParametersUtil.getDownloadUrl(properties);
-        final String openBisUrl = DssPropertyParametersUtil.getOpenBisServerUrl(properties);
+            Properties properties = DssPropertyParametersUtil.loadServiceProperties();
 
-        ownDomains = Arrays.asList(openBisUrl, dssUrl);
+            final String dssUrl = DssPropertyParametersUtil.getDownloadUrl(properties);
+            final String openBisUrl = DssPropertyParametersUtil.getOpenBisServerUrl(properties);
 
-        trustedDomains = ServiceProvider.getOpenBISService().getTrustedCrossOriginDomains();
+            ownDomains = Arrays.asList(openBisUrl, dssUrl);
+            trustedDomains = ServiceProvider.getOpenBISService().getTrustedCrossOriginDomains();
+            initialized = true;
+        }
     }
 
 }
+
