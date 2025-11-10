@@ -1,7 +1,8 @@
-## Changes with pybis-6.7.0.0
+## Changes with pybis-6.8.1.0
 
 - Changed versioning scheme
 - Added Imaging technology beta functionalities
+- Added AFS data handling
 
 ## Changes with pybis-1.37.4
 

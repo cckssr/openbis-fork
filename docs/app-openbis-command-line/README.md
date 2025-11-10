@@ -33,7 +33,7 @@ case, OpenBIS is aware of its existence and the data can be used for provenance 
 
 - python 3.6 or higher
 - git 2.11 or higher
-- git-annex 6 or higher [Installation guide](https://git-annex.branchable.com/install/)
+- git-annex 6, 7 or 8 [Installation guide](https://git-annex.branchable.com/install/)
 
 ## 2. Installation
 

@@ -93,6 +93,7 @@ from .vocabulary import Vocabulary, VocabularyTerm
 from .spreadsheet import Spreadsheet
 from .type_group import TypeGroup
 from .imaging import *
+from .afs_client import AfsClient
 
 # import the various openBIS entities
 
@@ -5840,6 +5841,8 @@ class ServerInformation:
             "personal_access_tokens_max_validity_period",
             "personal_access_tokens_validity_warning_period",
             "project_samples_enabled",
+            "server-public-information.afs-server.url",
+            "server-public-information.afs-server.timeout"
         ]
 
     def _reformat_info(self, info):
@@ -5971,12 +5974,15 @@ class ImagingControl:
     DEFAULT_SERVICE_NAME = "imaging"
     IMAGING_CONFIG_PROP_NAME = "IMAGING_DATA_CONFIG".lower()
     DEFAULT_DATASET_VIEW_PROP_NAME = "default_dataset_view"
+    DEFAULT_OBJECT_VIEW_PROP_NAME = "default_object_view"
     IMAGING_DATASET_VIEWER = "IMAGING_DATASET_VIEWER"
 
-    def __init__(self, openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS'):
+    def __init__(self, openbis_instance, service_name=DEFAULT_SERVICE_NAME, service_type='AS', afs_url=None):
         self._openbis = openbis_instance
         self._service_name = service_name
         self._service_type = service_type
+        if afs_url is not None:
+            self.afs_client = AfsClient(afs_url, openbis_instance.token, openbis_instance.verify_certificates)
 
     def _execute_service(self, parameters):
         if self._service_type == "AS":
@@ -6117,9 +6123,19 @@ class ImagingControl:
         assert dataset_type is not None
         assert files is not None and len(files) > 0, "Files parameter must not be empty!"
         assert config is not None
-        props = other_properties
-        props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
-        props[ImagingControl.DEFAULT_DATASET_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
-        dataset = self._openbis.new_dataset(dataset_type, experiment=experiment, sample=sample, files=files,
-                                            props=props)
-        return dataset.save()
+        if self.afs_client is not None and self.afs_client.is_session_valid():
+            props = other_properties
+            props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
+            props[ImagingControl.DEFAULT_OBJECT_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
+            sample = self._openbis.new_sample(dataset_type, experiment=experiment, props=props)
+            sample = sample.save()
+            self.afs_client.upload_files(sample.permId, "/", files, wait_until_finished=True)
+            return sample
+
+        else:
+            props = other_properties
+            props[ImagingControl.IMAGING_CONFIG_PROP_NAME] = config.to_json()
+            props[ImagingControl.DEFAULT_DATASET_VIEW_PROP_NAME] = ImagingControl.IMAGING_DATASET_VIEWER
+            dataset = self._openbis.new_dataset(dataset_type, experiment=experiment, sample=sample, files=files,
+                                                props=props)
+            return dataset.save()

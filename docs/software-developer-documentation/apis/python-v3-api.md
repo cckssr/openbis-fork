@@ -1946,6 +1946,8 @@ Currently, the value of the `custom_widget` key can be set to either
 
 `XML` property type with custom widget `Spreadhseet` configured, is displayed as a tabular, spreadsheet-like table in the ELN UI. Pybis supports extracting such property for further analysis in python.
 
+[How to enable Spreadsheet Widget in the ELN UI](./../../user-documentation/general-admin-users/admins-documentation/new-entity-type-registration.md#enable-rich-text-editor-or-spreadsheet-widgets)
+
 **⚠️ Important** pybis does **not** contain spreadsheet engine, so all changes to formulas will not be recomputed unless user re-saves object/collection/dataset in the ELN UI.
 
 Spreadsheet widget saves data in a base64 encoded text string. Pybis decodes it and includes a set of helper methods to read and manipulate values of it.
