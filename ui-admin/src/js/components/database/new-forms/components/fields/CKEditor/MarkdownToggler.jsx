@@ -1,41 +1,6 @@
-import { Plugin, ButtonView, SwitchButtonView } from 'ckeditor5';
+import { Plugin, SwitchButtonView } from 'ckeditor5';
 
 export default class MarkdownToggler extends Plugin {
-    /* init() {
-        const editor = this.editor;
-
-        // Register the button in the component factory.
-        editor.ui.componentFactory.add('markdownToggler', locale => {
-            const button = new ButtonView(locale);
-
-            button.set({
-                label: 'Toggle Markdown',
-                withText: true,
-                tooltip: true
-            });
-
-            // Update button label based on current markdown state from config
-            const updateButtonLabel = () => {
-                const markdownEnabled = editor.config.get('markdownEnabled');
-                button.set({
-                    label: markdownEnabled ? 'Disable Markdown output' : 'Enable Markdown output'
-                });
-            };
-
-            // Initial label update
-            updateButtonLabel();
-
-            button.on('execute', () => {
-                // Get the callback function from editor config
-                const onMarkdownToggle = editor.config.get('markdownToggleCallback');
-                if (onMarkdownToggle && typeof onMarkdownToggle === 'function') {
-                    onMarkdownToggle();
-                }
-            });
-
-            return button;
-        });
-    } */
     init() {
         const editor = this.editor;
 

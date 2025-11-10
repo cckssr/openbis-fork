@@ -45,13 +45,15 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
     id: permId + '-description',
     label: 'Description',
     value: overrides.value ?? dto.description,
-    dataType: FormFieldDataType.MULTILINE_VARCHAR,
+    dataType: FormFieldDataType.WORD_PROCESSOR,
     required: false,
     readOnly: false,
     isMultiValue: false,
     section: FormSection.GENERAL,
     column: 'center',
-    meta: {},
+    meta: {
+      mode: 'inline'
+    },
     ...overrides
   };
 }

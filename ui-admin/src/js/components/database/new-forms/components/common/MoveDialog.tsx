@@ -6,7 +6,6 @@ import TextField from '@src/js/components/common/form/TextField.jsx';
 import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { MoveService, MoveEntityConfig } from '@src/js/components/database/new-forms/services/MoveService.ts';
-import { FormUtil } from '@src/js/components/database/new-forms/utils/FormUtil.ts';
 import { AdvancedEntitySearchDropdown } from '@src/js/components/database/new-forms/components/common/AdvancedEntitySearchDropdown.tsx';
 import messages from '@src/js/common/messages';
 import {

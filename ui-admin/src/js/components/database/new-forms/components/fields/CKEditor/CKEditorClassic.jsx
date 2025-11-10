@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {
 	ClassicEditor,
+	InlineEditor,
 	Alignment,
 	AutoImage,
 	AutoLink,
@@ -68,10 +69,16 @@ import MarkdownToggler from '@src/js/components/database/new-forms/components/fi
 
 import 'ckeditor5/ckeditor5.css';
 import '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorClassic.css';
+import { ITEMS_CLASSIC, ITEMS_INLINE, FONT_FAMILY_OPTIONS, FONT_SIZE_OPTIONS, HEADING_OPTIONS } from '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorConfig.js';
 
 const LICENSE_KEY = 'GPL'; // or <YOUR_LICENSE_KEY>.
 
-export default function CKEditorClassic({ value, sessionID, onEditorContentChange, disabled, markdownEnabled = false, onToggleMarkdown, onEditorReady }) {
+const itemsConfigMap = {
+	classic: ITEMS_CLASSIC,
+	inline: ITEMS_INLINE
+}
+
+export default function CKEditorClassic({ value, sessionID, onEditorContentChange, disabled, markdownEnabled = false, onToggleMarkdown, onEditorReady, mode = 'classic' }) {
 	const editorContainerRef = useRef(null);
 	const editorRef = useRef(null);
 	const [isLayoutReady, setIsLayoutReady] = useState(false);
@@ -143,7 +150,6 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 			TableToolbar,
 			TextPartLanguage,
 			TextTransformation,
-			Title,
 			TodoList,
 			Underline
 		]
@@ -153,50 +159,19 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 			plugins.push(Markdown, PasteFromMarkdownExperimental);
 		}
 
+		if (mode === 'classic') {
+			plugins.push(Title);
+		}
+
+		const itemsConfig = itemsConfigMap[mode];
+		if (!itemsConfig) {
+			throw new Error(`Invalid mode: ${mode}`);
+		}
+
 		return {
 			editorConfig: {
 				toolbar: {
-					items: [
-						'undo',
-						'redo',
-						'|',
-						'showBlocks',
-						'sourceEditing',
-						'fullscreen',
-						'markdownToggler',
-						'|',
-						'heading',
-						'|',
-						'fontSize',
-						'fontFamily',
-						'fontColor',
-						'fontBackgroundColor',
-						'|',
-						'bold',
-						'italic',
-						'underline',
-						'strikethrough',
-						'subscript',
-						'superscript',
-						'code',
-						'|',
-						'emoji',
-						'horizontalLine',
-						'link',
-						'mediaEmbed',
-						'insertTable',
-						'highlight',
-						'blockQuote',
-						'codeBlock',
-						'|',
-						'alignment',
-						'|',
-						'bulletedList',
-						'numberedList',
-						'todoList',
-						'outdent',
-						'indent'
-					],
+					items: itemsConfig,
 					shouldNotGroupWhenFull: false
 				},
 				plugins: plugins,
@@ -208,47 +183,10 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 				licenseKey: LICENSE_KEY,
 				balloonToolbar: ['bold', 'italic', '|', 'link', '|', 'bulletedList', 'numberedList'],
 				fontFamily: {
-					options: [
-						'default',
-						'Arial, Helvetica, sans-serif',
-						'Courier New, Courier, monospace',
-						'Georgia, serif',
-						'Lucida Sans Unicode, Lucida Grande, sans-serif',
-						'Tahoma, Geneva, sans-serif',
-						'Times New Roman, Times, serif',
-						'Trebuchet MS, Helvetica, sans-serif',
-						'Verdana, Geneva, sans-serif',
-						'Calibri, sans-serif',
-						'Arial Unicode MS, sans-serif',
-						'Comic Sans MS/Comic Sans MS, cursive;'
-					]
+					options: FONT_FAMILY_OPTIONS
 				},
 				fontSize: {
-					options: [
-						9,
-						9.5,
-						10,
-						10.5,
-						11,
-						11.5,
-						12,
-						12.5,
-						13,
-						13.5,
-						'default',
-						14,
-						15,
-						16,
-						17,
-						18,
-						19,
-						20,
-						21,
-						22,
-						23,
-						24,
-						25
-					]
+					options: FONT_SIZE_OPTIONS
 				},
 				fullscreen: {
 					onEnterCallback: container =>
@@ -261,37 +199,7 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 						)
 				},
 				heading: {
-					options: [
-						{
-							model: 'paragraph',
-							title: 'Paragraph',
-							class: 'ck-heading_paragraph'
-						},
-						{
-							model: 'heading1',
-							view: 'h1',
-							title: 'Heading 1',
-							class: 'ck-heading_heading1'
-						},
-						{
-							model: 'heading2',
-							view: 'h2',
-							title: 'Heading 2',
-							class: 'ck-heading_heading2'
-						},
-						{
-							model: 'heading3',
-							view: 'h3',
-							title: 'Heading 3',
-							class: 'ck-heading_heading3'
-						},
-						{
-							model: 'heading4',
-							view: 'h4',
-							title: 'Heading 4',
-							class: 'ck-heading_heading4'
-						}
-					]
+					options: HEADING_OPTIONS
 				},
 				htmlSupport: {
 					allow: [
@@ -348,7 +256,7 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 				<div ref={editorRef}>
 					{editorConfig && (<CKEditor
 						key={`ckeditor-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
-						editor={ClassicEditor}
+						editor={mode === 'classic' ? ClassicEditor : InlineEditor}
 						config={editorConfig}
 						onReady={editor => {
 							// Call the onEditorReady callback to pass the editor instance to parent
