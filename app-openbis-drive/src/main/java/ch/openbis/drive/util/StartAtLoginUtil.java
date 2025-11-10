@@ -157,10 +157,11 @@ public class StartAtLoginUtil {
                <string>ch.openbis.drive.loginscript</string>
                <key>ProgramArguments</key>
                <array>
-                   <string>/bin/sh</string>
-                   <string>%s/openbis-drive-service-start.sh</string>
+                   <string>%s/mac-os-launchd/openbis-drive-service-start-for-launchd.sh</string>
                </array>
                <key>RunAtLoad</key>
+               <true/>
+               <key>KeepAlive</key>
                <true/>
             </dict>
             </plist>""";
