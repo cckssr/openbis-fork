@@ -220,11 +220,14 @@ public class ExportExecutor implements IExportExecutor
         boolean withLevelsBelow = Boolean.TRUE.equals(exportOptions.isWithLevelsBelow());
         boolean withObjectsAndDataSetsParents =
                 Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsParents());
+        boolean withObjectsAndDataSetsChildren =
+                Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsChildren());
         boolean withObjectsAndDataSetsOtherSpaces =
                 Boolean.TRUE.equals(exportOptions.isWithObjectsAndDataSetsOtherSpaces());
         return withLevelsAbove ||
                 withLevelsBelow ||
                 withObjectsAndDataSetsParents ||
+                withObjectsAndDataSetsChildren ||
                 withObjectsAndDataSetsOtherSpaces;
     }
 
