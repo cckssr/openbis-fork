@@ -32,6 +32,7 @@ public class Main
             System.out.println("Current Working Directory: " + (new File("")).getCanonicalPath());
             System.out.println("Configuration Location: " + (new File(args[0])).getCanonicalPath());
 
+            System.setProperty("java.awt.headless", "true");
             Configuration configuration =
                     new Configuration(List.of(AtomicFileSystemServerParameter.class), args[0]);
 

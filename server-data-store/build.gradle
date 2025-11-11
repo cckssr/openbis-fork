@@ -133,7 +133,3 @@ jar {
 artifacts {
     tests testJar
 }
-
-test {
-    systemProperty "java.awt.headless", "true"
-}
