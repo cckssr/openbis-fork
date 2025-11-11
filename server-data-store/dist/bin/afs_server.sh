@@ -129,7 +129,7 @@ else
 fi
 
 JAVA_CLASS_PATH=`echo $LIB_FOLDER/*.jar | sed 's/ /:/g'`
-JAVA_OPTIONS="${JAVA_OPTS} ${JAVA_MEM_OPTS} -Dio.netty.tryReflectionSetAccessible=true --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -classpath $JAVA_CLASS_PATH ch.ethz.sis.afsserver.startup.Main $SERVICE_PROPERTIES_FILE"
+JAVA_OPTIONS="${JAVA_OPTS} ${JAVA_MEM_OPTS} -Dio.netty.tryReflectionSetAccessible=true -Djava.awt.headless=true --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -classpath $JAVA_CLASS_PATH ch.ethz.sis.afsserver.startup.Main $SERVICE_PROPERTIES_FILE"
 
 #
 # ensure that we ignore a possible prefix "--" for any command
