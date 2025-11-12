@@ -24,6 +24,7 @@ The complete solution for managing your research data.
    APIS </software-developer-documentation/apis/index>
    Application Server Extensions </software-developer-documentation/as-server-side-extensions/index>
    Datastore Server Extensions </software-developer-documentation/dss-server-side-extensions/index>
+   RO-Crate Server Extensions </software-developer-documentation/ro-crate-server-extensions/index>
    UI Extensions </software-developer-documentation/ui-extensions/index>
    Legacy Server-Side Extensions </software-developer-documentation/legacy-server-side-extensions/index>
 
@@ -50,9 +51,10 @@ Software Developer Documentation
    - :doc:`APIS </software-developer-documentation/apis/index>`
    - :doc:`Application Server Extensions </software-developer-documentation/as-server-side-extensions/index>`
    - :doc:`Datastore Server Extensions </software-developer-documentation/dss-server-side-extensions/index>`
+   - :doc:`RO-Crate Server Extensions </software-developer-documentation/ro-crate-server-extensions/index>`
    - :doc:`UI Extensions </software-developer-documentation/ui-extensions/index>`
    - :doc:`Legacy Server-Side Extensions </software-developer-documentation/legacy-server-side-extensions/index>`
-   
+
 System Documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
    - :doc:`Standalone </system-documentation/standalone/index>`
