@@ -39,7 +39,6 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
           const titlePlugin = editorRef.current.plugins.get('Title');
           if (titlePlugin) {
             const title = titlePlugin.getTitle();
-            console.log(title);
             if (onFieldMetadataChange && typeof onFieldMetadataChange === 'function') {
               onFieldMetadataChange(field.id, { title });
             }
@@ -54,7 +53,6 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
         onFieldMetadataChange(field.id, { isMarkdown: markdownEnabled });
       }
     }
-    console.log(onFieldChange);
     if (onFieldChange && typeof onFieldChange === 'function') {
       onFieldChange(field.id, value);
     }

@@ -58,6 +58,7 @@ export const ITEMS_CLASSIC = [
 	'emoji',
 	'horizontalLine',
 	'link',
+	'imageUpload',
 	'mediaEmbed',
 	'insertTable',
 	'highlight',
