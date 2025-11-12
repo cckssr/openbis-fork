@@ -208,6 +208,7 @@ public class SemanticAnnotation implements Serializable, IPermIdHolder
     }
 
     // Method automatically generated with DtoGenerator
+    @Deprecated
     public void setDescriptorOntologyId(String descriptorOntologyId)
     {
         this.descriptorOntologyId = descriptorOntologyId;
