@@ -25,7 +25,8 @@ print(preview_config)
 print(preview_metadata)
 print(filter_config)
 
-folder_dir = os.path.join(file, 'original')
+# folder_dir = os.path.join(file, 'original')
+folder_dir = file
 file_path = os.path.join(folder_dir, os.listdir(folder_dir)[0])
 
 def get_upper_case_dict(params):
