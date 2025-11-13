@@ -4,5 +4,5 @@ RO-Crate Server
 .. toctree::
    :maxdepth: 2
 
-   configuration
+   ro-crate-api.md
 

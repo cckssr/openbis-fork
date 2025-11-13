@@ -90,7 +90,7 @@ printStatus()
 PIDFILE=${DATASTORE_SERVER_PID:-datastore_server.pid}
 CONFFILE=etc/datastore_server.conf
 LOGFILE=log/datastore_server.log
-STARTUPLOG=log/datastore_server.log
+# STARTUPLOG intentionally unused; we only stream to stdout now
 SUCCESS_MSG="Data Store Server ready and waiting for data"
 LIB_FOLDER=lib
 # contains custom libraries e.g. JDBC drivers for external databases
@@ -160,49 +160,72 @@ case "$command" in
 
     echo -n "Starting Data Store Server "
     shift 1
-    "${CMD}" $COMMON_OPTIONS "$@" >> $STARTUPLOG 2>&1 & echo $! > $PIDFILE
+
+    # Create a flag file when SUCCESS_MSG is seen on stdout
+    READY_FLAG=$(mktemp -t dss_ready.XXXXXX)
+    trap 'rm -f "$READY_FLAG"' EXIT
+
+    AWK_BIN=$(awkBin)
+
+    # Launch server in a subshell; capture the real Java PID and keep the pipe open
+    (
+      # Start Java (line-buffered) in background so we can write the PID file
+      stdbuf -oL -eL "${CMD}" $COMMON_OPTIONS "$@" 2>&1 &
+      CHILD=$!
+      echo $CHILD > "$PIDFILE"
+      # Wait for the Java process so the pipe stays open for tee
+      wait $CHILD
+    ) | tee >( "$AWK_BIN" -v s="$SUCCESS_MSG" -v ready="$READY_FLAG" '
+          index($0, s) { system("touch " ready); exit }
+        ' > /dev/null ) &
+    PIPE_PID=$!
+
+    # Wait for initial self-test to finish (by success line or process exit)
+    n=0
+    while [ $n -lt $MAX_LOOPS ]; do
+      sleep 1
+
+      # If pid file vanished, assume process terminated
+      if [ ! -f "$PIDFILE" ]; then
+        break
+      fi
+
+      PID=`cat "$PIDFILE" 2> /dev/null`
+      isPIDRunning "$PID"
+      if [ $? -ne 0 ]; then
+        break
+      fi
+
+      # Success line seen?
+      if [ -f "$READY_FLAG" ]; then
+        break
+      fi
+
+      n=$((n+1))
+    done
+
+    # Final status check
+    if [ -f "$PIDFILE" ]; then
+      PID=`cat "$PIDFILE" 2> /dev/null`
+    else
+      PID=""
+    fi
+
+    isPIDRunning "$PID"
     if [ $? -eq 0 ]; then
-      # wait for initial self-test to finish
-      n=0
-      while [ $n -lt $MAX_LOOPS ]; do
-        sleep 1
-        if [ ! -f $PIDFILE ]; then
-          break
-        fi
-        if [ -s $STARTUPLOG ]; then
-          PID=`cat $PIDFILE 2> /dev/null`
-          isPIDRunning $PID
-          if [ $? -ne 0 ]; then
-            break
-          fi
-        fi
-        grep "$SUCCESS_MSG" $LOGFILE > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-          break
-        fi
-        n=$(($n+1))
-      done 
-      PID=`cat $PIDFILE 2> /dev/null`
-      isPIDRunning $PID
-      if [ $? -eq 0 ]; then
-        grep "$SUCCESS_MSG" $LOGFILE > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-          echo "(pid $PID - WARNING: SelfTest not yet finished)"
-        else
-          echo "(pid $PID)"
-        fi
+      if [ -f "$READY_FLAG" ]; then
+        echo "(pid $PID)"
       else
-        echo "FAILED"
-        if [ -s $STARTUPLOG ]; then
-          echo "startup log says:"
-          cat $STARTUPLOG
-        else
-          echo "log file says:"
-          tail $LOGFILE
-        fi
+        echo "(pid $PID - WARNING: SelfTest not yet finished)"
       fi
     else
       echo "FAILED"
+      # Only consult the regular log file if it exists
+      if [ -f "$LOGFILE" ]; then
+        echo
+        echo "log file ($LOGFILE) says (recent):"
+        tail -n 200 "$LOGFILE"
+      fi
     fi
     ;;
   stop)

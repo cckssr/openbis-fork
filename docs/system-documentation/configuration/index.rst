@@ -19,4 +19,9 @@ Advanced Configuration
 .. toctree::
    :maxdepth: 2
 
+   ro-crate-server/index
+
+.. toctree::
+   :maxdepth: 2
+
    common/index

@@ -379,7 +379,7 @@ public class GlobalSearchCriteriaTranslator
             final TranslationContext translationContext, final GlobalSearchTextCriteria globalSearchTextCriterion,
             final TableMapper tableMapper)
     {
-        sqlBuilder.append(FROM).append(SP).append(tableMapper.getEntitiesTable()).append(SP).append(MAIN_TABLE_ALIAS);
+        sqlBuilder.append(FROM).append(SP).append(tableMapper.getGlobalSearchEntitiesTable()).append(SP).append(MAIN_TABLE_ALIAS);
         final Map<String, JoinInformation> joinInformationMap = getJoinInformationMap(tableMapper);
         joinInformationMap.values().forEach((joinInformation) ->
                 TranslatorUtils.appendJoin(sqlBuilder, joinInformation));
@@ -871,7 +871,7 @@ public class GlobalSearchCriteriaTranslator
     private static void buildShortFrom(final StringBuilder sqlBuilder, final TableMapper tableMapper,
             final boolean forAttributes)
     {
-        final String entitiesTable = tableMapper.getEntitiesTable();
+        final String entitiesTable = tableMapper.getGlobalSearchEntitiesTable();
 
         sqlBuilder.append(FROM).append(SP).append(entitiesTable).append(SP).append(MAIN_TABLE_ALIAS).append(NL);
         if (!forAttributes)
@@ -1448,7 +1448,7 @@ public class GlobalSearchCriteriaTranslator
     private static void buildDetailsFrom(final StringBuilder sqlBuilder, final TableMapper tableMapper,
             final boolean forAttributes)
     {
-        final String entitiesTable = tableMapper.getEntitiesTable();
+        final String entitiesTable = tableMapper.getGlobalSearchEntitiesTable();
 
         sqlBuilder.append(FROM).append(SP).append(entitiesTable).append(SP).append(MAIN_TABLE_ALIAS).append(NL);
 

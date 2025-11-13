@@ -55,6 +55,10 @@ mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
 compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
+tasks.named('quarkusAppPartsBuild') {
+    dependsOn(':lib-logging:jar')
+}
+
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {
     mainClass = mainClassName
     classpath = sourceSets.main.runtimeClasspath

@@ -61,6 +61,6 @@ cd -
 # move components to fileserver
 mv openbis/core-plugin-openbis/targets/gradle/distributions/openBIS-clients-and-APIs*.zip .
 mv openbis/core-plugin-openbis/targets/gradle/distributions/big_data_link_server*.zip .
-mv openbis/app-openbis-installer/targets/gradle/distributions/openBIS-installation-standard-technologies*.tar.gz .
+mv openbis/app-openbis-installer/targets/gradle/distributions/openbis-installer*.tar.gz .
 
 move_to_file_server

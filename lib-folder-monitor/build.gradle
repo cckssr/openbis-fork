@@ -39,3 +39,5 @@ task folderMonitorZipWithV3Batteries(type: Zip, dependsOn: [project(':api-openbi
         into "folder-monitor/lib"
     }
 }
+
+build.dependsOn folderMonitorZipWithV3Batteries

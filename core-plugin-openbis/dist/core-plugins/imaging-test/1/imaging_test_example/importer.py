@@ -16,13 +16,14 @@
 import sys
 import os
 
-from pybis import Openbis, ImagingControl
+from pybis import Openbis, ImagingControl, AfsClient
 from pybis import *
 import pybis.imaging as imaging
 
 TEST_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.ImagingTestAdaptor"
 VERBOSE = False
 DEFAULT_URL = "http://localhost:8888/openbis"
+AFS_URL = 'http://localhost:8085/afs-server/api'
 # DEFAULT_URL = "https://localhost:8443/openbis"
 # DEFAULT_URL = "https://openbis-sis-ci-sprint.ethz.ch/openbis"
 # DEFAULT_URL = "https://local.openbis.ch/openbis"
@@ -62,36 +63,58 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
 openbis_url = None
 data_folder = 'data'
 token = None
+afs_url = None
 
-if len(sys.argv) >= 3:
+if len(sys.argv) >= 4:
     openbis_url = sys.argv[1]
     data_folder = sys.argv[2]
-    if len(sys.argv) > 3:
-        token = sys.argv[3]
+    afs_url = sys.argv[3]
+    if len(sys.argv) > 4:
+        token = sys.argv[4]
 else:
-    print(f'Usage: python3 importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER>')
+    print(f'Usage: python3 importer.py <OPENBIS_URL> <PATH_TO_DATA_FOLDER> <AFS_URL>')
     print(f'Using default parameters')
     print(f'URL: {DEFAULT_URL}')
     print(f'Data folder: {data_folder}')
+    openbis_url = DEFAULT_URL
+    afs_url = AFS_URL
 
 o = get_instance(openbis_url, token)
 
 files = [f for f in os.listdir(data_folder) if f.endswith('.json')]
 print(f'Found {len(files)} JSON files in {data_folder}')
 
+
+client = AfsClient(afs_url, o.token, False)
+
 for file in files:
     file_path = os.path.join(data_folder, file)
     f = open(file_path, 'r')
-    props = {
-        'imaging_data_config': f.read(),
-        'default_dataset_view': 'IMAGING_DATASET_VIEWER',
-    }
-    data_set = o.new_dataset('IMAGING_DATA',
-                             experiment='/IMAGING/TEST/TEST_COLLECTION',
-                             sample='/IMAGING/TEST/TEMPLATE-TEST',
-                             files=file_path,
-                             props=props)
-    data_set.save()
+    data_set = None
+    if client.is_session_valid():
+        props = {
+            'imaging_data_config': f.read(),
+            'default_object_view': 'IMAGING_DATASET_VIEWER',
+        }
+        data_set = o.new_sample('IMAGING_DATA',
+                                # experiment='/IMAGING/NANONIS/NANONIS_EXP_1',
+                                experiment='/IMAGING/TEST/TEST_COLLECTION',
+                                props=props
+                                )
+        data_set.save()
+        text = "hello world!".encode("utf-8")
+        client.write(data_set.permId, '/test_file.txt', 0, len(text), text)
+    else:
+        props = {
+            'imaging_data_config': f.read(),
+            'default_dataset_view': 'IMAGING_DATASET_VIEWER',
+        }
+        data_set = o.new_dataset('IMAGING_DATA',
+                                 experiment='/IMAGING/TEST/TEST_COLLECTION',
+                                 sample='/IMAGING/TEST/TEMPLATE-TEST',
+                                 files=file_path,
+                                 props=props)
+        data_set.save()
     print(f'Created dataset: {data_set.permId}')
 
 # export_image(o, 'permId', 0, 'path_to_download')

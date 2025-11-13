@@ -17,6 +17,7 @@ import time
 import pytest
 
 from pybis import Openbis
+from pybis import AfsClient
 
 openbis_url = "https://localhost:8443"
 admin_username = "admin"
@@ -68,3 +69,16 @@ def space():
 
     # teardown
     o.logout()
+
+@pytest.fixture(scope="session")
+def afs(space):
+    token = space.openbis.token
+    o = space.openbis
+
+    server_info = o.get_server_information()
+
+    afs_url = getattr(server_info, "server-public-information.afs-server.url") + "/api"
+
+    afs_client = AfsClient(afs_url, token, False)
+
+    yield (space, afs_client)

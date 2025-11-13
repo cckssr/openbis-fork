@@ -15,6 +15,25 @@
  */
 package ch.ethz.sis.openbis.systemtest.asapi.v3;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.testng.annotations.Test;
+
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.IObjectId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.id.ObjectPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchOperator;
@@ -50,13 +69,6 @@ import ch.ethz.sis.openbis.generic.server.asapi.v3.IApplicationServerInternalApi
 import ch.systemsx.cisd.common.action.IDelegatedAction;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 import ch.systemsx.cisd.openbis.systemtest.authorization.ProjectAuthorizationUser;
-import org.testng.annotations.Test;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.testng.Assert.*;
 
 /**
  * @author pkupczyk
@@ -705,7 +717,8 @@ public class GlobalSearchTest extends AbstractTest
         List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 3);
 
-        objects.forEach(globalSearchObject -> {
+        objects.forEach(globalSearchObject ->
+        {
             assertNotNull(globalSearchObject.getMatch());
             assertFalse(globalSearchObject.getMatch().isEmpty());
         });
@@ -1358,7 +1371,8 @@ public class GlobalSearchTest extends AbstractTest
         final SearchResult<GlobalSearchObject> result = search(TEST_USER, criteria, fo);
         assertEquals(result.getObjects().size(), 24);
 
-        result.getObjects().forEach(globalSearchObject -> {
+        result.getObjects().forEach(globalSearchObject ->
+        {
             assertNotNull(globalSearchObject.getMatch());
             assertFalse(globalSearchObject.getMatch().isEmpty());
         });
@@ -1660,13 +1674,13 @@ public class GlobalSearchTest extends AbstractTest
         if (user.isDisabledProjectUser())
         {
             assertAuthorizationFailureException(new IDelegatedAction()
+            {
+                @Override
+                public void execute()
                 {
-                    @Override
-                    public void execute()
-                    {
-                        search(user.getUserId(), criteria, fetchOptions);
-                    }
-                });
+                    search(user.getUserId(), criteria, fetchOptions);
+                }
+            });
         } else
         {
             SearchResult<GlobalSearchObject> result = search(user.getUserId(), criteria, fetchOptions);
@@ -1719,7 +1733,8 @@ public class GlobalSearchTest extends AbstractTest
         final List<GlobalSearchObject> results = search(TEST_USER, c, fo).getObjects();
         assertEquals(results.size(), 4);
 
-        results.forEach(result -> {
+        results.forEach(result ->
+        {
             switch (result.getObjectKind())
             {
                 case DATA_SET:
@@ -2064,6 +2079,103 @@ public class GlobalSearchTest extends AbstractTest
         search(TEST_USER, criteria, fo);
     }
 
+    @Test
+    public void testSearchForDeletedDataSet()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // create data set
+        final DataSetCreation creation = physicalDataSetCreation();
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        final List<DataSetPermId> permIds = v3api.createDataSets(sessionToken, Collections.singletonList(creation));
+
+        // search before deletion
+        final GlobalSearchCriteria containsCriteria = new GlobalSearchCriteria();
+        containsCriteria.withText().thatContains(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria containsExactlyCriteria = new GlobalSearchCriteria();
+        containsExactlyCriteria.withText().thatContainsExactly(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria matchesCriteria = new GlobalSearchCriteria();
+        matchesCriteria.withText().thatMatches(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria startsWithCriteria = new GlobalSearchCriteria();
+        startsWithCriteria.withText().thatStartsWith(permIds.get(0).getPermId());
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        SearchResult<GlobalSearchObject> resultContains = search(TEST_USER, containsCriteria, fo);
+        assertEquals(resultContains.getObjects().size(), 1);
+
+        SearchResult<GlobalSearchObject> resultContainsExactly = search(TEST_USER, containsExactlyCriteria, fo);
+        assertEquals(resultContainsExactly.getObjects().size(), 1);
+
+        SearchResult<GlobalSearchObject> resultMatches = search(TEST_USER, matchesCriteria, fo);
+        assertEquals(resultMatches.getObjects().size(), 1);
+
+        SearchResult<GlobalSearchObject> resultStartsWith = search(TEST_USER, startsWithCriteria, fo);
+        assertEquals(resultStartsWith.getObjects().size(), 1);
+
+        // delete
+        final DataSetDeletionOptions deletionOptions = new DataSetDeletionOptions();
+        deletionOptions.setReason("test deletion");
+        v3api.deleteDataSets(sessionToken, permIds, deletionOptions);
+
+        // search after deletion
+        resultContains = search(TEST_USER, containsCriteria, fo);
+        assertEquals(resultContains.getObjects().size(), 0);
+
+        resultContainsExactly = search(TEST_USER, containsExactlyCriteria, fo);
+        assertEquals(resultContainsExactly.getObjects().size(), 0);
+
+        resultMatches = search(TEST_USER, matchesCriteria, fo);
+        assertEquals(resultMatches.getObjects().size(), 0);
+
+        resultStartsWith = search(TEST_USER, startsWithCriteria, fo);
+        assertEquals(resultStartsWith.getObjects().size(), 0);
+    }
+
+    @Test
+    public void testSearchForAFSDataSet()
+    {
+        String sessionToken = v3api.login(TEST_USER, PASSWORD);
+
+        // create AFS data set
+        final DataSetCreation creation = physicalDataSetCreation();
+        creation.setExperimentId(new ExperimentIdentifier("/TEST-SPACE/TEST-PROJECT/EXP-SPACE-TEST"));
+        creation.setAfsData(true);
+        final List<DataSetPermId> permIds = v3api.createDataSets(sessionToken, Collections.singletonList(creation));
+
+        // search
+        final GlobalSearchCriteria containsCriteria = new GlobalSearchCriteria();
+        containsCriteria.withText().thatContains(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria containsExactlyCriteria = new GlobalSearchCriteria();
+        containsExactlyCriteria.withText().thatContainsExactly(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria matchesCriteria = new GlobalSearchCriteria();
+        matchesCriteria.withText().thatMatches(permIds.get(0).getPermId());
+
+        final GlobalSearchCriteria startsWithCriteria = new GlobalSearchCriteria();
+        startsWithCriteria.withText().thatStartsWith(permIds.get(0).getPermId());
+
+        final GlobalSearchObjectFetchOptions fo = new GlobalSearchObjectFetchOptions();
+        fo.withMatch();
+
+        SearchResult<GlobalSearchObject> resultContains = search(TEST_USER, containsCriteria, fo);
+        assertEquals(resultContains.getObjects().size(), 0);
+
+        SearchResult<GlobalSearchObject> resultContainsExactly = search(TEST_USER, containsExactlyCriteria, fo);
+        assertEquals(resultContainsExactly.getObjects().size(), 0);
+
+        SearchResult<GlobalSearchObject> resultMatches = search(TEST_USER, matchesCriteria, fo);
+        assertEquals(resultMatches.getObjects().size(), 0);
+
+        SearchResult<GlobalSearchObject> resultStartsWith = search(TEST_USER, startsWithCriteria, fo);
+        assertEquals(resultStartsWith.getObjects().size(), 0);
+    }
+
     private ObjectPermId createSample(final String sessionToken, final PropertyTypePermId propertyTypeId,
             final String value, final String code)
     {
@@ -2081,12 +2193,12 @@ public class GlobalSearchTest extends AbstractTest
             final boolean withDataset, final boolean withSample, final boolean withExperiment)
     {
         return results.stream().filter(globalSearchObject -> withDataset && globalSearchObject.getDataSet() != null &&
-                globalSearchObject.getDataSet().getCode().startsWith(TERM) ||
-                withSample && globalSearchObject.getSample() != null &&
-                        globalSearchObject.getSample().getCode().startsWith(TERM)
-                ||
-                withExperiment && globalSearchObject.getExperiment() != null &&
-                        globalSearchObject.getExperiment().getCode().startsWith(TERM))
+                        globalSearchObject.getDataSet().getCode().startsWith(TERM) ||
+                        withSample && globalSearchObject.getSample() != null &&
+                                globalSearchObject.getSample().getCode().startsWith(TERM)
+                        ||
+                        withExperiment && globalSearchObject.getExperiment() != null &&
+                                globalSearchObject.getExperiment().getCode().startsWith(TERM))
                 .collect(Collectors.toList());
     }
 
@@ -2289,7 +2401,8 @@ public class GlobalSearchTest extends AbstractTest
         List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 3);
 
-        objects.forEach(object -> {
+        objects.forEach(object ->
+        {
             assertNotNull(object.getMatch());
             assertFalse(object.getMatch().isEmpty());
             assertEquals(object.getObjectKind(), GlobalSearchObjectKind.SAMPLE);
@@ -2367,7 +2480,8 @@ public class GlobalSearchTest extends AbstractTest
         final List<GlobalSearchObject> objects = result.getObjects();
         assertEquals(objects.size(), 8);
 
-        objects.forEach(globalSearchObject -> {
+        objects.forEach(globalSearchObject ->
+        {
             assertNotNull(globalSearchObject.getMatch());
             assertFalse(globalSearchObject.getMatch().isEmpty());
         });
@@ -2387,9 +2501,9 @@ public class GlobalSearchTest extends AbstractTest
 
     /**
      * Searches for an object with specified perm ID.
-     * 
+     *
      * @param objects collection of objects to search in.
-     * @param permId perm ID to search by.
+     * @param permId  perm ID to search by.
      * @return the first found object with the perm ID or {@code null} if none is found.
      */
     private GlobalSearchObject findObjectByPermId(final Collection<GlobalSearchObject> objects, final String permId)
@@ -2472,49 +2586,49 @@ public class GlobalSearchTest extends AbstractTest
     private void assertExperimentNotFetched(final GlobalSearchObject object)
     {
         assertNotFetched(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    object.getExperiment();
-                }
-            });
+                object.getExperiment();
+            }
+        });
     }
 
     private void assertSampleNotFetched(final GlobalSearchObject object)
     {
         assertNotFetched(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    object.getSample();
-                }
-            });
+                object.getSample();
+            }
+        });
     }
 
     private void assertDataSetNotFetched(final GlobalSearchObject object)
     {
         assertNotFetched(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    object.getDataSet();
-                }
-            });
+                object.getDataSet();
+            }
+        });
     }
 
     private void assertMaterialNotFetched(final GlobalSearchObject object)
     {
         assertNotFetched(new IDelegatedAction()
+        {
+            @Override
+            public void execute()
             {
-                @Override
-                public void execute()
-                {
-                    object.getMaterial();
-                }
-            });
+                object.getMaterial();
+            }
+        });
     }
 
     private enum MatchType

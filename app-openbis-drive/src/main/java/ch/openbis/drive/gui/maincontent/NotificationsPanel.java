@@ -10,10 +10,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
@@ -53,7 +50,7 @@ public class NotificationsPanel extends ResizablePanel {
         mainVBox.getStyleClass().add(DisplaySettings.MAIN_CONTENT_PADDED_FRAME_CLASS);
         this.getChildren().add(mainVBox);
 
-        AnchorPane filters = getFilters(i18n);
+        BorderPane filters = getFilters(i18n);
 
         tableView = initializeTable();
         pagination = initializePagination();
@@ -64,8 +61,8 @@ public class NotificationsPanel extends ResizablePanel {
         resize();
     }
 
-    private AnchorPane getFilters(I18n i18n) {
-        AnchorPane filters = new AnchorPane();
+    private BorderPane getFilters(I18n i18n) {
+        BorderPane filters = new BorderPane();
 
         HBox leftFilters = new HBox();
         leftFilters.setPadding(new Insets(15, 15, 15, 15));
@@ -77,9 +74,6 @@ public class NotificationsPanel extends ResizablePanel {
             refreshNotificationTableAtPage(pagination.getCurrentPageIndex(), pagination);
         });
         leftFilters.getChildren().add(refreshButton);
-
-        AnchorPane.setLeftAnchor(leftFilters, 0.0);
-        AnchorPane.setTopAnchor(leftFilters, 0.0);
 
         HBox rightFilters = new HBox();
         rightFilters.setPadding(new Insets(15, 15, 15, 15));
@@ -97,10 +91,8 @@ public class NotificationsPanel extends ResizablePanel {
             }
         });
 
-        AnchorPane.setRightAnchor(rightFilters, 0.0);
-        AnchorPane.setTopAnchor(rightFilters, 0.0);
-
-        filters.getChildren().addAll(leftFilters, rightFilters);
+        filters.setLeft(leftFilters);
+        filters.setRight(rightFilters);
 
         return filters;
     }

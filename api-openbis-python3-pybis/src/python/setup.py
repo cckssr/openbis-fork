@@ -26,7 +26,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pybis",
-    version="6.7.0.0-rc1",
+    version="6.8.1.0-rc0",
     author="ID SIS • ETH Zürich",
     author_email="openbis-support@id.ethz.ch",
     description="openBIS connection and interaction, optimized for using with Jupyter",

@@ -8,3 +8,4 @@ Advance Features
    command-line-tool
    openbis-data-modelling
    excel-import-service
+   openbis-drive

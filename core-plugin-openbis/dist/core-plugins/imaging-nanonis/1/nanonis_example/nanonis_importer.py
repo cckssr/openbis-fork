@@ -41,6 +41,7 @@ if SERVICE_TYPE == "AS":
     SXM_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisSxmAdaptor"
     DAT_ADAPTOR = "ch.ethz.sis.openbis.generic.server.as.plugins.imaging.adaptor.NanonisDatAdaptor"
 
+AFS_URL = None
 
 def get_instance(url=None, token=None):
     if url is None:
@@ -146,7 +147,7 @@ def create_sxm_dataset(openbis, experiment, file_path, sample=None):
     # Select default channel according to the measurement type
     channels = reorder_sxm_channels(channels, header)
 
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
 
     color_scale_visibility = [
         imaging.ImagingDataSetControlVisibility(
@@ -404,7 +405,7 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
     if [] == data:
         raise ValueError(f"No nanonis .DAT files found in {folder_path}")
 
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
 
     for d in data:
         if d.type == 'scan':
@@ -537,14 +538,14 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
 
 
 def create_preview(openbis, perm_id, config, preview_format="png", image_index=0, filterConfig=[], tags=[]):
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
     preview = imaging.ImagingDataSetPreview(preview_format, config=config, filterConfig=filterConfig, tags=tags)
     preview = imaging_control.make_preview(perm_id, image_index, preview)
     return preview
 
 
 def update_image_with_preview(openbis, perm_id, image_id, preview: imaging.ImagingDataSetPreview):
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
     config = imaging_control.get_property_config(perm_id)
     image = config.images[image_id]
     if len(image.previews) > preview.index:
@@ -560,7 +561,7 @@ def export_image(openbis: Openbis, perm_id: str, image_id: int, path_to_download
                  include=None, image_format='original', archive_format="zip", resolution='original'):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
     export_config = {
         "include": include,
         "image_format": image_format,
@@ -575,7 +576,7 @@ def multi_export_images(openbis: Openbis, perm_ids: list[str], image_ids: list[i
                         archive_format="zip", resolution='original'):
     if include is None:
         include = ['IMAGE', 'RAW_DATA']
-    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE)
+    imaging_control = ImagingControl(openbis, service_type=SERVICE_TYPE, afs_url=AFS_URL)
     export_config = {
         "include": include,
         "image_format": image_format,
