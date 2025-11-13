@@ -157,6 +157,7 @@ const CLASS_FULL_NAMES = [
   'as/dto/roleassignment/fetchoptions/RoleAssignmentFetchOptions',
   'as/dto/sample/create/CreateSampleTypesOperation',
   'as/dto/sample/create/SampleTypeCreation',
+  'as/dto/sample/create/SampleCreation',
   'as/dto/sample/delete/DeleteSampleTypesOperation',
   'as/dto/sample/delete/SampleTypeDeletionOptions',
   'as/dto/sample/delete/SampleDeletionOptions',

@@ -14,15 +14,6 @@ export class ObjectFormController implements IFormController {
 		this.openbisFacade = openbisFacade;
 	}
 
-	/* var parameters = {
-				"method" : "getNextSequenceForType",
-				"sampleTypeCode" : sampleType.code
-			}
-			this.customELNASAPI(parameters, function(nextInSequence) {
-				action(sampleType.codePrefix.toUpperCase() + nextInSequence);
-			});
-	} */
-
 	async _getNextSequenceForType(sampleTypeCode: string): Promise<string> {
 		const { SampleSearchCriteria, SampleFetchOptions } = this.openbisFacade;
 		const criteria = new SampleSearchCriteria();
@@ -77,7 +68,9 @@ export class ObjectFormController implements IFormController {
 	async _createObject(form: Form): Promise<any> {
 		console.log('ObjectFormController._createObject', { form });
 		const sampleCreation = this._createSample(form);
-		return Promise.resolve(sampleCreation, sample);
+		const result = await this.openbisFacade.createSamples([sampleCreation]);
+		console.log('ObjectFormController._createObject', { result });
+		return Promise.resolve(result[0].getPermId());
 	}
 
 	async _updateObject(form: Form): Promise<any> {
@@ -123,41 +116,11 @@ export class ObjectFormController implements IFormController {
 			properties['NAME'] = documentField.meta?.title;
 		}
 		//update.getMetaData().set('MARKDOWN', documentField.meta?.isMarkdown ? 'true' : 'false');
-		
+
 		console.log('ObjectFormController._updateSample', { properties });
 		update.setProperties(properties);
 		return update;
 	}
-
-	/* _setBasics(object: any, parameters: any): void {
-		const space = parameters["sampleSpace"];
-		object.setSpaceId(new SpacePermId(space));
-		let sampleIdentifier = "/" + space;
-		const project = parameters["sampleProject"];
-		if (project != null) {
-			object.setProjectId(new ProjectIdentifier("/" + space + "/" + project));
-			//if(IdentifierUtil.isProjectSamplesEnabled) {
-			sampleIdentifier = sampleIdentifier + "/" + project;
-			//}
-			const experiment = parameters["sampleExperiment"]
-			if (experiment != null) {
-				object.setExperimentId(new ExperimentIdentifier("/" + space + "/" + project + "/" + experiment));
-			}
-		}
-		if (object.setSampleId) {
-			object.setSampleId(new SampleIdentifier(sampleIdentifier + "/" + parameters["sampleCode"]));
-		}
-		var sampleProperties = parameters["sampleProperties"];
-		var properties = {};
-		Object.keys(sampleProperties).forEach(function(key) {
-			var sampleProperty = sampleProperties[key];
-			if (sampleProperty === "") {
-				sampleProperty = null;
-			}
-			properties[key] = sampleProperty;
-		});
-		object.setProperties(properties);
-	} */
 
 	async checkPermissions(form: Form) {
 		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;
@@ -195,61 +158,55 @@ export class ObjectFormController implements IFormController {
 
 	async move(form: Form, context?: any, params?: any): Promise<void> {
 		const { SampleFetchOptions, SampleUpdate, SpacePermId } = this.openbisFacade;
-	
-		const sampleUpdate = this._prepareSampleUpdate(form.entityPermId, params);
 
-		console.log('ObjectFormController.move', form, context, params);
-		const result = await this.openbisFacade.updateSamples([sampleUpdate]);
+		if (params.moveDescendants) {
+			await this.moveSampleWithDescendants([form.entityPermId], params.target['@type']);
+		} else {
+			const sampleUpdate = this._prepareSampleUpdate(form.entityPermId, params);
+
+			console.log('ObjectFormController.move', form, context, params);
+			const result = await this.openbisFacade.updateSamples([sampleUpdate]);
+			console.log('ObjectFormController.move', result);
+		}
 		return Promise.resolve();
 	}
 
-	_prepareSampleUpdate(samplePermId: any, params: any) {
-		const { SampleUpdate } = this.openbisFacade;
+	_prepareSampleUpdate(samplePermId: string, params: any) {
+		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const sampleUpdate = new SampleUpdate();
-		sampleUpdate.setSampleId(samplePermId);
-  
-		const selectedEntityType = params.moveEntityModel.selected['@type'];
+		sampleUpdate.setSampleId(new SamplePermId(samplePermId));
+
+		const selectedEntityType = params.target['@type'];
 		switch (selectedEntityType) {
-		  case 'as.dto.project.Project':
-			sampleUpdate.setExperimentId(null);
-			sampleUpdate.setProjectId(params.moveEntityModel.selected.getPermId());
-			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getSpace().getPermId());
-			break;
-		  case 'as.dto.experiment.Experiment':
-			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getProject().getSpace().getPermId());
-			sampleUpdate.setProjectId(params.moveEntityModel.selected.getProject().getPermId());
-			sampleUpdate.setExperimentId(params.moveEntityModel.selected.getPermId());
-			break;
-		  case 'as.dto.space.Space':
-			sampleUpdate.setExperimentId(null);
-			sampleUpdate.setProjectId(null);
-			sampleUpdate.setSpaceId(params.moveEntityModel.selected.getPermId());
-			break;
+			case 'as.dto.project.Project':
+				sampleUpdate.setExperimentId(null);
+				sampleUpdate.setProjectId(params.target.getPermId());
+				sampleUpdate.setSpaceId(params.target.getSpace().getPermId());
+				break;
+			case 'as.dto.experiment.Experiment':
+				sampleUpdate.setSpaceId(params.target.getProject().getSpace().getPermId());
+				sampleUpdate.setProjectId(params.target.getProject().getPermId());
+				sampleUpdate.setExperimentId(params.target.getPermId());
+				break;
+			case 'as.dto.space.Space':
+				sampleUpdate.setExperimentId(null);
+				sampleUpdate.setProjectId(null);
+				sampleUpdate.setSpaceId(params.target.getPermId());
+				break;
 		}
 		return sampleUpdate;
-	  };
+	};
 
-	/* private async moveSample(descendants: boolean): Promise<void> {
-		const { SampleFetchOptions, SampleUpdate, SpacePermId } = this.openbisFacade;
-	
-		const sampleUpdate = this._prepareSampleUpdate(form.entityPermId);
-
-		const permIds = this.moveEntityModel.entities.map(x => x.getPermId());
-		const selectedEntityType = this.moveEntityModel.selected['@type'];
-	
-		if (descendants) {
-		  await this.moveSampleWithDescendants(permIds, selectedEntityType, prepareSampleUpdate);
-		} else {
-		  const sampleUpdates = permIds.map(x => prepareSampleUpdate(x));
-		  await this.openbisFacade.updateSamples(sampleUpdates);
-		}
-	  }
-
+	/**
+   * Move sample with descendants
+   */
 	async moveSampleWithDescendants(
 		permIds: any[],
 		selectedEntityType: string,
-		prepareSampleUpdate: (permId: any) => any
-	  ): Promise<void> {
+	): Promise<void> {
+		throw new Error('[ObjectFormController.moveSampleWithDescendants] Not implemented yet.');
+		/* 
+		// implementation taken from ELN-LIMS
 		const { SampleFetchOptions } = this.openbisFacade;
 		const fetchOptions = new SampleFetchOptions();
 		fetchOptions.withExperiment();
@@ -307,6 +264,6 @@ export class ObjectFormController implements IFormController {
 		  });
 		}
 	
-		await this.openbisFacade.updateSamples(updates);
-	  } */
+		await this.openbisFacade.updateSamples(updates); */
+	}
 }

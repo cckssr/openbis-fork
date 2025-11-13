@@ -68,7 +68,6 @@ export class ProjectFormController implements IFormController {
     //return { canEdit: true, canDelete: true, canMove: true };
   }
 
-
   async delete(form: Form, context?: any): Promise<void> {
     console.log('ProjectFormController.delete', form, context);
     
@@ -120,7 +119,6 @@ export class ProjectFormController implements IFormController {
     console.log('ProjectFormController.delete result:', result);
     return
   }
-  
 
   async getDependentEntities(form: Form): Promise<any> {
     const { ProjectPermId, ProjectFetchOptions } = this.openbisFacade;
