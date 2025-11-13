@@ -6,16 +6,11 @@
 #
 # parameter $1: a file name
 #
-#!/bin/bash
-# Starts up AFS
 
-BASE=`dirname "$scriptName"`
-if [ ${BASE#/} == ${BASE} ]; then
-    BASE="`pwd`/${BASE}"
-fi
+STARTING_MESSAGE="STARTING SERVER"
+STARTED_MESSAGE="SERVER STARTED"
+ERROR_MESSAGE="ERROR"
 
-JETTY_HOME=$BASE/../servers/openBIS-server/jetty
-OPENBIS_LOG=$JETTY_HOME/logs/openbis.log
 
 if [ -n "$(readlink $0)" ]; then
    # handle symbolic links
@@ -27,4 +22,17 @@ else
     scriptName=$0
 fi
 
-"$JETTY_HOME/bin/startup.sh"
+BASE=`dirname "$scriptName"`
+if [ ${BASE#/} == ${BASE} ]; then
+    BASE="`pwd`/${BASE}"
+fi
+
+
+JETTY_HOME=$BASE/../servers/openBIS-server/jetty
+
+echo Starting openBIS...
+rm -f $STARTED_MARKER
+
+$JETTY_HOME/bin/startup.sh
+
+
