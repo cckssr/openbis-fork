@@ -22,6 +22,7 @@
 
 import os
 from random import randrange
+import time
 
 import settings
 import systemtest.testcase
@@ -50,6 +51,8 @@ class TestCase(systemtest.testcase.TestCase):
         self.openbisController = self.createOpenbisController()
         self.openbisController.createTestDatabase("openbis")
         self.openbisController.allUp()
+
+        time.sleep(15)
 
         openbis = self._get_openbis()
         self._test_login(openbis)
