@@ -270,9 +270,10 @@ public class ImagingDataSetInterceptor implements IOperationListener
                 EntityTypePermId typeId = (EntityTypePermId) creation.getTypeId();
                 String objectTypeCode = typeId.getPermId();
                 if(isImagingDataSet(objectTypeCode) || hasImagingConfig(creation)) {
+                    operationLog.info("Imaging sample detected.");
                     String propertyConfig = getPropertyConfig(creation);
                     if(propertyConfig == null || propertyConfig.trim().isEmpty() || "{}".equals(propertyConfig.trim())) {
-
+                            operationLog.info("Missing imaging config. Generating a default config.");
                             ImagingDataSetPropertyConfig config =
                                     new ImagingDataSetPropertyConfig();
                             config.setMetadata(Map.of("GENERATE", "false"));
@@ -302,7 +303,9 @@ public class ImagingDataSetInterceptor implements IOperationListener
                         if(creation.getMetaData() == null) {
                             creation.setMetaData(new HashMap<>());
                         }
-                        creation.getMetaData().put(PREVIEW_TOTAL_COUNT, Integer.toString(count));
+                        String countString = Integer.toString(count);
+                        operationLog.info("Detected imaging config. setting preview count to :"+countString);
+                        creation.getMetaData().put(PREVIEW_TOTAL_COUNT, countString);
                     }
 
                     if(creation.getControlledVocabularyProperty(DEFAULT_OBJECT_VIEW_PROPERTY) == null) {
@@ -318,11 +321,11 @@ public class ImagingDataSetInterceptor implements IOperationListener
                 {
                     EntityTypePermId typeId = sample.getType().getPermId();
                     if(isImagingDataSet(typeId.getPermId()) || hasImagingConfig(update)) {
-
+                        operationLog.info("Detected imaging sample update");
                         String propertyConfig = getPropertyConfig(update);
                         if(propertyConfig == null) {
+                            operationLog.info("Missing imaging config. Skipping");
                             continue;
-//                            throw new UserFailureException("Imaging property config must not be empty!");
                         }
                         ImagingDataSetPropertyConfig config = readConfig(propertyConfig);
 
