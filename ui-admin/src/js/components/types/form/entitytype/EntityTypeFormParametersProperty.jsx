@@ -840,7 +840,6 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
     if (mode != 'edit') {
       return null;
     }
-    console.log(this.props);
     let message = "";
     if (value == 'PATTERN') {
       message = messages.get(messages.PROPERTY_TYPE_VALIDATION_PATTERN)

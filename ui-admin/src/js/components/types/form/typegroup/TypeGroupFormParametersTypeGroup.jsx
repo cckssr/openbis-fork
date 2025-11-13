@@ -56,7 +56,6 @@ class TypeGroupFormParametersTypeGroup extends React.PureComponent {
   }
 
   handleChange(event) {
-    console.log('TypeGroupFormParameters.handleChange', event)
     this.props.onChange(TypeGroupFormSelectionType.TYPE_GROUP, {
       field: event.target.name,
       value: event.target.value
@@ -64,14 +63,12 @@ class TypeGroupFormParametersTypeGroup extends React.PureComponent {
   }
 
   handleFocus(event) {
-    console.log('TypeGroupFormParameters.handleFocus', event)
     this.props.onSelectionChange(TypeGroupFormSelectionType.TYPE_GROUP, {
       part: event.target.name
     })
   }
 
   handleBlur() {
-    console.log('TypeGroupFormParameters.handleBlur')
     this.props.onBlur()
   }
 
@@ -83,7 +80,6 @@ class TypeGroupFormParametersTypeGroup extends React.PureComponent {
       return null
     }
 
-    console.log('TypeGroupFormParametersTypeGroup.render', typeGroup)
     return (
       <Container>
         {this.renderHeader(typeGroup)}

@@ -112,7 +112,6 @@ class TrashcanForm extends React.PureComponent {
     logger.log(logger.DEBUG, 'TrashcanForm.render')
 
     const { loadId, loading, loaded } = this.state
-    console.log('TrashcanForm', this.state, this.props)
     return (
       <PageWithTwoPanels
         key={loadId}

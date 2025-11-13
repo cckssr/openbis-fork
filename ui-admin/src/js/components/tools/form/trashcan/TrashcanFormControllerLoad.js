@@ -15,13 +15,11 @@ export default class TrashcanFormControllerLoad {
 
 	async _loadTrashcan() {
 		const deletions = await this.facade.loadDeletions()
-		console.log('TrashcanFormControllerLoad._loadTrashcan.deletions', deletions)
 
 		const rows = deletions.map(deletion => {
 			return this._createRowDeletion(deletion)
 		})
 
-		console.log('loadTrashcan.rows', rows)
 		return this.context.setState({
 			rows,
 			totalCount: deletions.length,

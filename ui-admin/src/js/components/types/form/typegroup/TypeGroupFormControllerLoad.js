@@ -20,7 +20,6 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
     let objectTypesCounter = 0
     let objectTypes = []
 
-    console.log('TypeGroupFormControllerLoad.load', loadedTypeGroup)
     if (loadedTypeGroup && loadedTypeGroup.typeGroupAssignments) {
       objectTypes = loadedTypeGroup.typeGroupAssignments.map(typeGroupAssignment =>
         this._createObjectType('objectType-' + objectTypesCounter++, loadedTypeGroup, typeGroupAssignment)
@@ -28,9 +27,6 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
     }
     
     const selection = this._createSelection(objectTypes)
-
-    console.log('TypeGroupFormControllerLoad.load', typeGroup)
-    console.log('TypeGroupFormControllerLoad.load', objectTypes)
 
     const objectTypesOptions = await this.facade.loadObjectTypesOptions(objectTypes)
 

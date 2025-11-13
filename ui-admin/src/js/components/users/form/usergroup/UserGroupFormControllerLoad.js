@@ -98,7 +98,6 @@ export default class UserGroupFormControllerLoad extends PageControllerLoad {
   }
 
   _createUser(loadedUser) {
-    console.log('loadedUser', loadedUser)
     const metadata = Object.entries(_.get(loadedUser, 'metaData', [])).map(([key, value]) => ({
       key: key,
       value: value,

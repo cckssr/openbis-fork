@@ -39,7 +39,6 @@ class TrashcanGridEntitiesCell extends React.PureComponent {
 
     const { value } = this.props
     const { visible } = this.state
-    console.log('TrashcanGridEntitiesCell.value', value)
     if (value) {
       return (
         <div>
