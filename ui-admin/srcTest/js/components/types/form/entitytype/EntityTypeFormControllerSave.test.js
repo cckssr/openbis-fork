@@ -225,7 +225,7 @@ function createPropertyTypeOperation({
     )
   }
   creation.setLabel(propertyTypeLabel)
-  creation.setMetaData({})
+  //creation.setMetaData({})
   return new openbis.CreatePropertyTypesOperation([creation])
 }
 
@@ -233,7 +233,7 @@ function updatePropertyTypeOperation(propertyTypeCode, propertyTypeLabel) {
   const update = new openbis.PropertyTypeUpdate()
   update.setTypeId(new openbis.PropertyTypePermId(propertyTypeCode))
   update.setLabel(propertyTypeLabel)
-  update.getMetaData().set({})
+  //update.getMetaData().set({})
   return new openbis.UpdatePropertyTypesOperation([update])
 }
 
@@ -260,7 +260,7 @@ function setPropertyAssignmentOperation(
   update.setTypeId(
     new openbis.EntityTypePermId(typeCode, openbis.EntityKind.SAMPLE)
   )
-  update.getMetaData().set({})
+  //update.getMetaData().set({})
   update.getPropertyAssignments().set(assignments)
 
   return new openbis.UpdateSampleTypesOperation([update])
