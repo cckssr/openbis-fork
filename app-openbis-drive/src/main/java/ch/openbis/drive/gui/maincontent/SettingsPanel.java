@@ -64,7 +64,7 @@ public class SettingsPanel extends ResizablePanel {
             }
         });
 
-        List<Button> tabButtons = List.of(generalSectionButton, proxySectionButton, usageSectionButton);
+        List<Button> tabButtons = List.of(generalSectionButton, /*TODO KEEP proxySectionButton, FOR NOW*/ usageSectionButton);
 
         tabButtons.forEach( (button) -> {
             button.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);

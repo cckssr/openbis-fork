@@ -29,6 +29,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,8 +39,10 @@ import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathStr
 public class SyncJobDialog extends Dialog<SyncJob> {
     final int MAX_TEXT_INPUT_LENGTH = 300;
     Pattern HTTP_URL_PATTERN = Pattern.compile("^(http|https)://[^\\s/$.?#].[^\\s]*$");
+    final static String SUGGESTED_REMOTE_DIRECTORY = "/";
 
     final SyncJob editedSyncJob;
+    final List<SyncJob> currentSyncJobs;
 
     final TextField openbisServerUrlValue;
     final TextField openbisEntityIdValue;
@@ -60,9 +63,10 @@ public class SyncJobDialog extends Dialog<SyncJob> {
             () -> validationErrors.stream().noneMatch(BooleanProperty::getValue), validationErrors.toArray(BooleanProperty[]::new));
 
 
-    public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage) {
+    public SyncJobDialog(@Nullable SyncJob toBeModified, Stage mainStage, List<SyncJob> currentSyncJobs) {
         super();
         this.editedSyncJob = toBeModified;
+        this.currentSyncJobs = currentSyncJobs;
 
         I18n i18n = SharedContext.getContext().getI18n();
         initStyle(StageStyle.DECORATED);
@@ -301,6 +305,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         addValidationLayerToTextInput(personalAccessTokenValue, (textInput) -> validatePersonalAccessTokenValue(textInput.getText()), personalAccessTokenPropertyError);
         if (editedSyncJob != null) {
             personalAccessTokenValue.setText(editedSyncJob.getOpenBisPersonalAccessToken());
+        } else {
+            personalAccessTokenValue.setText(getMostRecentlyTouchedSyncJob().map( SyncJob::getOpenBisPersonalAccessToken ).orElse(""));
         }
         return personalAccessTokenValue;
     }
@@ -323,6 +329,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         addValidationLayerToTextInput(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         if (editedSyncJob != null) {
             openbisServerDirectoryValue.setText(editedSyncJob.getRemoteDirectoryRoot());
+        } else {
+            openbisServerDirectoryValue.setText(SUGGESTED_REMOTE_DIRECTORY);
         }
         return openbisServerDirectoryValue;
     }
@@ -371,6 +379,8 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         addValidationLayerToTextInput(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(openbisServerUrlValue.getText()), openbisUrlPropertyError);
         if (editedSyncJob != null) {
             openbisServerUrlValue.setText(editedSyncJob.getOpenBisUrl());
+        } else {
+            openbisServerUrlValue.setText(getMostRecentlyTouchedSyncJob().map( SyncJob::getOpenBisUrl ).orElse(""));
         }
         return openbisServerUrlValue;
     }
@@ -440,5 +450,13 @@ public class SyncJobDialog extends Dialog<SyncJob> {
         doValidationOnTextInputNode(openbisServerDirectoryValue, (textInput) -> validateRemoteDirectoryValue(textInput.getText()), remoteDirectoryPropertyError);
         addValidationLayerToTextInput(openbisEntityIdValue, (textInput) -> validateEntityIdValue(textInput.getText()), entityIdPropertyError);
         addValidationLayerToTextInput(openbisServerUrlValue, (textInput) -> validateOpenbisServerUrlValue(textInput.getText()), openbisUrlPropertyError);
+    }
+
+    Optional<SyncJob> getMostRecentlyTouchedSyncJob() {
+        if (currentSyncJobs != null && !currentSyncJobs.isEmpty()) {
+            return Optional.ofNullable(currentSyncJobs.get(currentSyncJobs.size() - 1));
+        } else {
+            return Optional.empty();
+        }
     }
 }
