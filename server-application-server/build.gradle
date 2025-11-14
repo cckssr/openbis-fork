@@ -173,6 +173,10 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     classpath = sourceSets.asExec.runtimeClasspath
     jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
+             // config for imaging
+             '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',
+             '-Dimaging.as.services.imaging.storageRoot.afs=../server-data-store/targets/tests/storage',
+
              '-Dorg.mortbay.util.FileResource.checkAliases=false',
              '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
              '-Xmx4096M', '-ea'])
@@ -188,7 +192,7 @@ task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
 
 /////////// AS JAVADOC ////////////////////
 
-task serverApplicationServerJavadoc(type: Javadoc) {
+tasks.register('serverApplicationServerJavadoc', Javadoc) {
     mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project.files('source/java').getAsFileTree().matching {
         include "**/ch/systemsx/cisd/openbis/generic/server/jython/api/v1/**/*.java"
@@ -198,8 +202,15 @@ task serverApplicationServerJavadoc(type: Javadoc) {
     destinationDir = file("$buildDir/docs/javadoc-server-application-server")
 }
 
-task serverApplicationServerJavadocZip(type: Zip, dependsOn: serverApplicationServerJavadoc) {
+tasks.register('serverApplicationServerJavadocZip', Zip) {
+    dependsOn serverApplicationServerJavadoc
     archiveBaseName = 'openbis-application-server-javadoc'
+    from serverApplicationServerJavadoc.destinationDir
+}
+
+tasks.register('javadocTar', Tar) {
+    dependsOn serverApplicationServerJavadoc
+    archiveFileName = "openbis-application-server-javadoc-${version}.tar.gz"
     from serverApplicationServerJavadoc.destinationDir
 }
 
@@ -217,8 +228,15 @@ task dynamicApiJavadoc(type: Javadoc) {
     destinationDir = file("$buildDir/docs/javadoc-dynamic-api")
 }
 
-task dynamicApiJavadocZip(type: Zip, dependsOn: dynamicApiJavadoc) {
+tasks.register('dynamicApiJavadocZip', Zip) {
+    dependsOn dynamicApiJavadoc
     archiveBaseName = 'dynamic-api-javadoc'
+    from dynamicApiJavadoc.destinationDir
+}
+
+tasks.register('dynamicApiJavadocTar', Tar) {
+    dependsOn dynamicApiJavadoc
+    archiveFileName = "dynamic-api-javadoc-${version}.tar.gz"
     from dynamicApiJavadoc.destinationDir
 }
 

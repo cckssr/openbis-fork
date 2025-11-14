@@ -15,120 +15,129 @@
  *
  */
 
-//apply from: '../build/javaproject.gradle'
 
 tasks.register('clean', Delete) {
     delete 'build'
 }
 
 tasks.register('api', Copy) {
-    dependsOn([project(':api-openbis-java').tasks.openbisJavaApiTar,
-               project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar,
-               project(':api-openbis-javascript').tasks.resources,
-               project(':api-openbis-python3-pybis').tasks.build
+    dependsOn([project(':api-openbis-java').tasks.release,
+               project(':api-openbis-java').tasks.releaseDependenciesIncluded,
+               project(':api-openbis-javascript').tasks.release,
+               project(':api-openbis-python3-pybis').tasks.release
     ])
 
-    from project(':api-openbis-java').tasks.openbisJavaApiTar.archiveFile
-    from project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar.archiveFile
-    from project(':api-openbis-javascript').tasks.resources.archiveFile
-    from project(':api-openbis-python3-pybis').tasks.build.archiveFile
+    from project(':api-openbis-java').tasks.release.archiveFile
+    from project(':api-openbis-java').tasks.releaseDependenciesIncluded.archiveFile
+    from project(':api-openbis-javascript').tasks.release.archiveFile
+    from project(':api-openbis-python3-pybis').tasks.release.archiveFile
 
     into file('build/api')
 }
 
 tasks.register('app', Copy) {
-    dependsOn([project(':app-openbis-command-line').tasks.build,
+    dependsOn([project(':app-openbis-command-line').tasks.release,
                project(':app-openbis-drive').tasks.release,
-               project(':app-openbis-installer').tasks.createInstallerZip
+               project(':app-openbis-installer').tasks.release
     ])
 
-    from project(':app-openbis-command-line').tasks.build.archiveFile
+    from project(':app-openbis-command-line').tasks.release.archiveFile
     from project(':app-openbis-drive').tasks.release.archiveFile
-    from project(':app-openbis-installer').tasks.createInstallerZip.archiveFile
+    from project(':app-openbis-installer').tasks.release.archiveFile
     into file('build/app')
 }
 
 
 tasks.register('javadoc', Copy) {
-    dependsOn( ':server-application-server:serverApplicationServerJavadocZip',
-            ':server-application-server:dynamicApiJavadocZip',
-            ':server-original-data-store:serverOriginalDataStoreJavadocZip',
-            ':server-original-data-store:dropboxJavaDocZip'
+    dependsOn( ':server-application-server:javadocTar',
+            ':server-application-server:dynamicApiJavadocTar',
+            ':server-original-data-store:javadocTar',
+            ':server-original-data-store:dropboxJavadocTar'
     )
-    from project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile
-    from project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile
-    from project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile
-    from project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
+    from project(':server-application-server').tasks.javadocTar.archiveFile
+    from project(':server-application-server').tasks.dynamicApiJavadocTar.archiveFile
+    from project(':server-original-data-store').tasks.javadocTar.archiveFile
+    from project(':server-original-data-store').tasks.dropboxJavadocTar.archiveFile
     into file('build/javadoc')
 }
 
 
-//tasks.register('build', Tar) {
-//    dependsOn([tasks.api, tasks.app, tasks.javadoc])
-//
-//    def version = project(":build").project.ext.versionNumber
-//
-//    archiveFileName = 'openbis-release-' + version + '.tar.gz'
-//    destinationDirectory = layout.buildDirectory.dir(".")
-//
-//    from('build/api') {
-//        into 'api'
-//    }
-//
-//    from('build/app') {
-//        into 'app'
-//    }
-//
-//    from('build/javadoc') {
-//        into 'javadoc'
-//    }
-//}
-
 tasks.register('buildRelease', Tar) {
+//tasks.register('release', Tar) {
     // API
-    dependsOn([project(':api-openbis-java').tasks.openbisJavaApiTar,
-               project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar,
-               project(':api-openbis-javascript').tasks.resources,
-               project(':api-openbis-python3-pybis').tasks.build
+    dependsOn([project(':api-openbis-java').tasks.release,
+               project(':api-openbis-java').tasks.releaseDependenciesIncluded,
+               project(':api-openbis-javascript').tasks.release,
+               project(':api-openbis-python3-pybis').tasks.release
     ])
     // APP
-    dependsOn([project(':app-openbis-command-line').tasks.build,
+    dependsOn([project(':app-openbis-command-line').tasks.release,
                project(':app-openbis-drive').tasks.release,
-               project(':app-openbis-installer').tasks.createInstallerZip
+               project(':app-openbis-installer').tasks.release
     ])
     //JAVADOC
-    dependsOn([':server-application-server:serverApplicationServerJavadocZip',
-               ':server-application-server:dynamicApiJavadocZip',
-               ':server-original-data-store:serverOriginalDataStoreJavadocZip',
-               ':server-original-data-store:dropboxJavaDocZip'
+    dependsOn([':server-application-server:javadocTar',
+               ':server-application-server:dynamicApiJavadocTar',
+               ':server-original-data-store:javadocTar',
+               ':server-original-data-store:dropboxJavadocTar'
     ])
 
-    def version = project(":build").project.ext.versionNumber
+    def version = project.ext.versionNumber
 
     archiveFileName = 'openbis-release-' + version + '.tar.gz'
     destinationDirectory = layout.buildDirectory.dir(".")
 
 
-    from([project(':api-openbis-java').tasks.openbisJavaApiTar.archiveFile,
-          project(':api-openbis-java').tasks.openbisJavaApiDependenciesIncludedTar.archiveFile,
-          project(':api-openbis-javascript').tasks.resources.archiveFile,
-          project(':api-openbis-python3-pybis').tasks.build.archiveFile
+    from([project(':api-openbis-java').tasks.release.archiveFile,
+          project(':api-openbis-java').tasks.releaseDependenciesIncluded.archiveFile,
+          project(':api-openbis-javascript').tasks.release.archiveFile,
+          project(':api-openbis-python3-pybis').tasks.release.archiveFile
     ]) {
         into 'api'
     }
 
-    from([project(':app-openbis-command-line').tasks.build.archiveFile,
-          project(':app-openbis-installer').tasks.createInstallerZip.archiveFile,
+    from([project(':app-openbis-command-line').tasks.release.archiveFile,
+          project(':app-openbis-installer').tasks.release.archiveFile,
           project(':app-openbis-drive').tasks.release.archiveFile
     ]) {
         into 'app'
     }
 
-    from([project(':server-application-server').tasks.serverApplicationServerJavadocZip.archiveFile,
-          project(':server-application-server').tasks.dynamicApiJavadocZip.archiveFile,
-          project(':server-original-data-store').tasks.serverOriginalDataStoreJavadocZip.archiveFile,
-          project(':server-original-data-store').tasks.dropboxJavaDocZip.archiveFile
+    from([project(':server-application-server').tasks.javadocTar.archiveFile,
+          project(':server-application-server').tasks.dynamicApiJavadocTar.archiveFile,
+          project(':server-original-data-store').tasks.javadocTar.archiveFile,
+          project(':server-original-data-store').tasks.dropboxJavadocTar.archiveFile
     ]) {
         into 'javadoc'
     }
 }
+
+
+
+def execute_working_dir(command, arguments, working_dir) {
+    new ByteArrayOutputStream().withStream { os ->
+        print "execute: ${command}"
+        arguments.collect({print " ${it}"})
+        println ''
+        def result = exec {
+            executable = command
+            args = arguments
+            standardOutput = os
+        }
+        return os.toString().split('\n')
+    }
+}
+
+def calculateBuildInfo() {
+
+    def gitlogoutput = execute_working_dir('git', ['log', '-1', '--format=%at'], '../' + project.name)
+    project.ext.revisionNumber = Integer.parseInt(gitlogoutput[0])
+    def tag = 'git tag -l --points-at HEAD'.execute().text.trim()
+    if (tag == null || tag.isEmpty() || tag.contains('pybis')) {
+        project.ext.versionNumber = 'SNAPSHOT'
+    } else {
+        project.ext.versionNumber = tag
+    }
+}
+
+calculateBuildInfo()

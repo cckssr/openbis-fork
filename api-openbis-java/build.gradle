@@ -105,47 +105,6 @@ javadoc {
 }
 
 
-
-// openbis-java-api.jar
-jar {
-    duplicatesStrategy DuplicatesStrategy.INCLUDE
-    archiveBaseName = baseName
-    includeEmptyDirs false
-    project(':lib-two-phase-transaction').getAllTasks(true); // because IntelliJ is dumb
-    from project(':lib-commonbase').compileJava.outputs.getFiles().getAsFileTree().plus(
-            project(':lib-common').compileJava.outputs.getFiles().getAsFileTree().plus(
-                    project(':lib-two-phase-transaction').compileJava.outputs.getFiles().getAsFileTree().plus(
-                            project.compileJava.outputs.getFiles().getAsFileTree().plus(
-                                    project(':lib-json').compileJava.outputs.getFiles().getAsFileTree()).plus(
-                                    project(':api-data-store-server-java').compileJava.outputs.getFiles().getAsFileTree()
-                            )
-                    )
-            )
-    )
-            .matching {
-                include "ch/systemsx/cisd/common/exceptions/**/*.class"
-                include "ch/systemsx/cisd/common/spring/HttpInvokerUtils.class"
-                include "ch/systemsx/cisd/common/spring/IRemoteSpringBeanProvider.class"
-                include "ch/systemsx/cisd/common/spring/Jetty*.class"
-                include "ch/systemsx/cisd/common/http/*.class"
-                include "ch/systemsx/cisd/common/api/**/*.class"
-                exclude "ch/systemsx/cisd/common/api/server/**/*.class"
-                include "ch/systemsx/cisd/common/reflection/*.class"
-                include "ch/systemsx/cisd/common/shared/basic/**/*.class"
-                include "ch/systemsx/cisd/openbis/common/api/**/*.class"
-                exclude "ch/systemsx/cisd/openbis/common/api/server/**/*.class"
-                include "ch/ethz/sis/openbis/generic/*.class"
-                include "ch/ethz/sis/openbis/generic/asapi/v3/**/*.class"
-                include "ch/ethz/sis/openbis/generic/dssapi/v3/**/*.class"
-                include "ch/ethz/sis/openbis/generic/imagingapi/v3/**/*.class"
-                include "ch/ethz/sis/afsapi/**/*.class"
-                include "ch/ethz/sis/afsclient/**/*.class"
-                include "ch/ethz/sis/afsjson/**/*.class"
-                include "ch/ethz/sis/transaction/api/**/*.class"
-                include "*.INFO"
-            }
-}
-
 sourcesJar {
     archiveFileName = baseName + "-sources-" + project.ext.versionNumber + ".zip"
     from project(':lib-commonbase').files('source/java').getAsFileTree().plus(
@@ -169,13 +128,6 @@ sourcesJar {
     }
 }
 
-// openbis-java-api-javadoc
-javadoc {
-    source sourcesJar.inputs.getFiles().getAsFileTree().matching {
-        include "**/*.java"
-    }
-    destinationDir = file("$buildDir/docs/"+baseName+"-javadoc")
-}
 
 // openbis-java-api-javadoc-VERSION.tar.gz
 tasks.register('javadocTar', Tar) {
@@ -219,9 +171,9 @@ tasks.register('jarWithDependencies', Jar) {
 
 
 // openbis-java-api-VERSION.tar.gz
-tasks.register('openbisJavaApiTar', Tar) {
+tasks.register('release', Tar) {
     dependsOn jar
-    archiveFileName = baseName + '-' + project.ext.versionNumber + ".tar.gz"
+    archiveFileName = "${baseName}-${version}.tar.gz"
     from jar.archiveFile
     from sourcesJar.archiveFile
     from javadocTar.archiveFile
@@ -230,9 +182,9 @@ tasks.register('openbisJavaApiTar', Tar) {
 }
 
 // openbis-java-api-VERSION-dependencies-included.tar.gz
-tasks.register('openbisJavaApiDependenciesIncludedTar', Tar) {
+tasks.register('releaseDependenciesIncluded', Tar) {
     dependsOn([jarWithDependencies, sourcesJar, javadocTar])
-    archiveFileName = baseName + '-' + project.ext.versionNumber + "-dependencies-included.tar.gz"
+    archiveFileName = "${baseName}-${version}-dependencies-included.tar.gz"
     from jarWithDependencies.archiveFile
     from sourcesJar.archiveFile
     from javadocTar.archiveFile

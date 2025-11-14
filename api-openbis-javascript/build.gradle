@@ -25,7 +25,7 @@ tasks.register('bundleOpenbisStaticResources', Exec) {
 }
 
 //openbis-javascript-api-VERSION-esm.tar.gz
-tasks.register('resources', Tar) {
+tasks.register('release', Tar) {
     dependsOn([bundleOpenbisStaticResources, project(':api-openbis-typescript').generateTypeScript])
     duplicatesStrategy 'include'
     archiveFileName = 'openbis-javascript-api-' + project.ext.versionNumber + "-esm.tar.gz"
