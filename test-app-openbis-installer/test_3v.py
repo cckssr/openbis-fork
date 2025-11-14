@@ -48,6 +48,10 @@ class TestCase(systemtest.testcase.TestCase):
         datamover2.setOutgoingTarget('../openbis1/data/incoming-analysis')
         os.makedirs("%s/data/drop-box1" % openbis2.installPath)
         os.makedirs("%s/data/drop-box2" % openbis2.installPath)
+
+        os.makedirs("%s/data/incoming-raw" % openbis1.installPath, exist_ok=True)
+        os.makedirs("%s/data/incoming-analysis" % openbis1.installPath, exist_ok=True)
+
         dummyImageAnalyser = self.installScriptBasedServer('dummy-img-analyser', 'dummy-img-analyser')
         datamover1.start()
         datamover2.start()
