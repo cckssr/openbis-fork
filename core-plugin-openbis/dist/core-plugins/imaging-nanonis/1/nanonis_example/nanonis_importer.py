@@ -436,6 +436,8 @@ def create_dat_dataset(openbis, folder_path, file_prefix='', sample=None, experi
 
         minimum_x, maximum_x = [], []
         minimum_y, maximum_y = [], []
+
+
         for spec in data:
             # # -------- Boolean flag was added to the code -------
             # channel_in_signals_list = False
@@ -870,7 +872,7 @@ def upload_measurements_into_openbis(openbis_url, data_folder, collection_permid
 
 
 openbis_url = None
-data_folder = 'data'
+data_folder = ['data', 'data/dat2']
 token = None
 
 if len(sys.argv) >= 3:
@@ -886,40 +888,48 @@ else:
 
 o = get_instance(openbis_url, token)
 
-measurement_files = [f for f in os.listdir(data_folder) if f.endswith(".sxm") or f.endswith(".dat")]
-measurement_datetimes = []
+if not isinstance(data_folder, list):
+    data_folder = [data_folder]
 
-for f in measurement_files:
-    if f.endswith(".sxm"):
-        img = spm(f"{data_folder}/{f}")
-        img_datetime = datetime.strptime(f"{img.header['rec_date']} {img.header['rec_time']}", "%d.%m.%Y %H:%M:%S")
-        measurement_datetimes.append(img_datetime)
+sorted_measurement_files = []
+for folder in data_folder:
+    # measurement_files = [f for f in os.listdir(folder) if f.endswith(".sxm") or f.endswith(".dat")]
+    measurement_files = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".sxm") or f.endswith(".dat")]
+    measurement_datetimes = []
 
-    elif f.endswith(".dat"):
-        img = spm(f"{data_folder}/{f}")
-        img_datetime = datetime.now()
-        if 'Saved Date' in img.header:
-            img_datetime = datetime.strptime(img.header['Saved Date'], "%d.%m.%Y %H:%M:%S")
-        measurement_datetimes.append(img_datetime)
+    for f in measurement_files:
+        if f.endswith(".sxm"):
+            # img = spm(f"{folder}/{f}")
+            img = spm(f"{f}")
+            img_datetime = datetime.strptime(f"{img.header['rec_date']} {img.header['rec_time']}", "%d.%m.%Y %H:%M:%S")
+            measurement_datetimes.append(img_datetime)
 
-# Sort files by datetime
-sorted_measurement_files = [x for _, x in sorted(zip(measurement_datetimes, measurement_files))]
+        elif f.endswith(".dat"):
+            img = spm(f"{f}")
+            img_datetime = datetime.now()
+            if 'Saved Date' in img.header:
+                img_datetime = datetime.strptime(img.header['Saved Date'], "%d.%m.%Y %H:%M:%S")
+            measurement_datetimes.append(img_datetime)
+
+    # Sort files by datetime
+    sorted_measurement_files.append([x for _, x in sorted(zip(measurement_datetimes, measurement_files))])
 
 # Dat files belonging to the same measurement session, i.e., that are consecutive, should be grouped into just one list of files.
 grouped_measurement_files = []
-group = []
-for i,f in enumerate(sorted_measurement_files):
-    if f.endswith(".sxm"):
-        if len(group) > 0:
-            grouped_measurement_files.append(group)
-            group = []
-        grouped_measurement_files.append([f])
-    elif f.endswith(".dat"):
-        group.append(f)
-
-if len(group) > 0:
-    grouped_measurement_files.append(group)
+for sorted_files in sorted_measurement_files:
     group = []
+    for i,f in enumerate(sorted_files):
+        if f.endswith(".sxm"):
+            if len(group) > 0:
+                grouped_measurement_files.append(group)
+                group = []
+            grouped_measurement_files.append([f])
+        elif f.endswith(".dat"):
+            group.append(f)
+
+    if len(group) > 0:
+        grouped_measurement_files.append(group)
+        group = []
 
 IMPORT = True
 # IMPORT = False
@@ -928,7 +938,8 @@ if IMPORT:
     for group in grouped_measurement_files:
         if group[0].endswith(".sxm"):
             print(f"SXM file: {group[0]}")
-            file_path = os.path.join(data_folder, group[0])
+            # file_path = os.path.join(data_folder, group[0])
+            file_path = group[0]
             try:
                 demo_sxm_flow(o, file_path)
                 # exit(0)
@@ -939,7 +950,8 @@ if IMPORT:
             # Split the dat files by measurement type (e.g.: bias spec dI vs V in one list, bias spec z vs V in another list, etc.)
             dat_files_types = []
             for dat_file in group:
-                dat_data = spm(f"{data_folder}/{dat_file}")
+                # dat_data = spm(f"{data_folder}/{dat_file}")
+                dat_data = spm(f"{dat_file}")
                 dat_files_types.append(get_dat_type(dat_data.header))
 
             grouped = defaultdict(list)
@@ -951,12 +963,14 @@ if IMPORT:
             # ---------------
 
             for dat_files_group in dat_files_grouped_by_type:
-                dat_files_directory = os.path.join(data_folder, "dat_files")
+                data_folder_path = os.path.dirname(dat_files_group[0])
+                dat_files_directory = os.path.join(data_folder_path, "dat_files")
                 shutil.rmtree(dat_files_directory, ignore_errors=True)
                 os.mkdir(dat_files_directory)
 
                 for dat_file in dat_files_group:
-                    shutil.copy(os.path.join(data_folder, dat_file), os.path.join(dat_files_directory, dat_file))
+                    file_name = os.path.basename(dat_file)
+                    shutil.copy(dat_file, os.path.join(dat_files_directory, file_name))
                 try:
                     demo_dat_flow(o, dat_files_directory)
                 except ValueError as e:
