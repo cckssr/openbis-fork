@@ -107,7 +107,6 @@ class TypeGroupForm extends React.PureComponent {
 
   renderMainPanel() {
     const { objectTypes, selection } = this.state
-    console.log('TypeGroupForm.renderMainPanel', {selection}, {objectTypes})
     const id = ids.TYPE_GROUP_OBJECT_TYPES_GRID_ID
 
     return (

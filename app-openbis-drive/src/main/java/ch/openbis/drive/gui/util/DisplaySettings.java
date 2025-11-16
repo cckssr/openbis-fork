@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public class DisplaySettings {
-    public static final double DEFAULT_INITIAL_WINDOW_WIDTH = 1024;
+    public static final double DEFAULT_INITIAL_WINDOW_WIDTH = 1100;
     public static final double DEFAULT_INITIAL_WINDOW_HEIGHT = 680;
 
     public static final double SIDE_MENU_WIDTH = 200;

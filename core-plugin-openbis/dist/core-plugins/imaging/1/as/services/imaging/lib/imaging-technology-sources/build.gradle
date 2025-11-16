@@ -37,15 +37,34 @@ sourceSets {
 
 
 def imagingTechnologyName = 'openBIS-imaging-technology.jar'
+
+// Dependencies for Jar
+configurations.create('apiDependenciesIncluded')
+dependencies {
+    apiDependenciesIncluded project(':api-openbis-java'),
+            project(':server-application-server'),
+            project(':lib-commonbase'),
+            project(':lib-logging'),
+            project(':server-original-data-store')
+}
+
 jar {
     dependsOn compileJava
+    duplicatesStrategy 'include'
     archiveFileName = imagingTechnologyName
     includeEmptyDirs false
     from sourceSets.main.allSource
+//    from(configurations.apiDependenciesIncluded.collect { zipTree(it) }) {
+//        include '**/ch/ethz/sis/openbis/**'
+//        include '**/ch/systemsx/cisd/openbis/**'
+//        include '**/ch/systemsx/cisd/common/exceptions/**'
+//        include '**/ch/ethz/sis/shared/log/classic/**'
+//        include '**/ch/systemsx/cisd/openbis/dss/generic/shared/**'
+//
+//    }
 }
 
-
-tasks.register('imagingTechnologyJar', Copy) {
+tasks.register('releaseImagingTechnology', Copy) {
     dependsOn jar
     from("${project.buildDir}/libs/${imagingTechnologyName}")
     into ".."

@@ -194,4 +194,19 @@ task createInstallerZip(type: Tar, dependsOn: createInstallerJar) {
     into "${archiveNamePrefix}-${version}"
 }
 
+tasks.register('release', Tar) {
+    dependsOn createInstallerJar
+    compression = Compression.GZIP
+    archiveFileName = "${archiveNamePrefix}-${version}.tar.gz"
+    from createInstallerJar.archiveFile
+    from('resource/tarball') {
+        include 'console.properties'
+        include 'extract.sh'
+        include 'jul.config'
+        include 'run-console.sh'
+        include 'run-ui.sh'
+    }
+    into "${archiveNamePrefix}-${version}"
+}
+
 build.dependsOn createInstallerZip

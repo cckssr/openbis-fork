@@ -141,14 +141,14 @@ jar {
     }
 }
 
-task openBISDevelopmentEnvironmentDSSStart(type: JavaExec) {
+tasks.register('openBISDevelopmentEnvironmentDSSStart', JavaExec) {
     mainClass = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
     classpath = sourceSets.datastoreExec.runtimeClasspath
     jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])
 }
 
-task serverOriginalDataStoreJavadoc(type: Javadoc) {
+tasks.register('serverOriginalDataStoreJavadoc', Javadoc) {
     mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project.files('source/java').getAsFileTree().matching {
         include "**/ch/systemsx/cisd/openbis/dss/generic/server/plugins/jython/api/**/*.java"
@@ -158,15 +158,22 @@ task serverOriginalDataStoreJavadoc(type: Javadoc) {
     destinationDir = file("$buildDir/docs/javadoc-server-original-dataStore")
 }
 
-task serverOriginalDataStoreJavadocZip(type: Zip, dependsOn: serverOriginalDataStoreJavadoc) {
+tasks.register('serverOriginalDataStoreJavadocZip', Zip) {
+    dependsOn serverOriginalDataStoreJavadoc
     archiveBaseName = 'openbis-original-data-store-javadoc'
+    from serverOriginalDataStoreJavadoc.destinationDir
+}
+
+tasks.register('javadocTar', Tar) {
+    dependsOn serverOriginalDataStoreJavadoc
+    archiveFileName = "openbis-original-data-store-javadoc-${version}.tar.gz"
     from serverOriginalDataStoreJavadoc.destinationDir
 }
 
 /////////// DROPBOX API V2 ////////////////////
 
-task dropboxApiJar(type: Jar) {
-    archiveBaseName =  'openbis-dropbox-api'
+tasks.register('dropboxApiJar', Jar) {
+    archiveBaseName = 'openbis-dropbox-api'
     includeEmptyDirs false
     from compileJava.outputs.getFiles().getAsFileTree().matching {
         include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.class"
@@ -175,14 +182,15 @@ task dropboxApiJar(type: Jar) {
     }
 }
 
-task dropboxApiZip(type: Zip, dependsOn: [dropboxApiJar]) {
+tasks.register('dropboxApiZip', Zip) {
+    dependsOn[dropboxApiJar]
     archiveBaseName = 'openbis-dropbox-api'
     from dropboxApiJar.archiveFile
     into 'openbis-dropbox-api'
 }
 
 
-task dropboxApiJavadoc(type: Javadoc) {
+tasks.register('dropboxApiJavadoc', Javadoc) {
     mustRunAfter ":core-plugin-openbis:copyOpenbisNgUiToCorePlugins"
     source project.files('source/java').getAsFileTree().matching {
         include "ch/systemsx/cisd/etlserver/registrator/api/v2/*.java"
@@ -193,7 +201,14 @@ task dropboxApiJavadoc(type: Javadoc) {
     destinationDir = file("$buildDir/docs/javadoc-dropbox")
 }
 
-task dropboxJavaDocZip(type: Zip, dependsOn: dropboxApiJavadoc) {
+tasks.register('dropboxJavaDocZip', Zip) {
+    dependsOn dropboxApiJavadoc
     archiveBaseName = 'openbis-dropbox-javadoc'
+    from dropboxApiJavadoc.destinationDir
+}
+
+tasks.register('dropboxJavadocTar', Tar) {
+    dependsOn dropboxApiJavadoc
+    archiveFileName = "openbis-dropbox-javadoc-${version}.tar.gz"
     from dropboxApiJavadoc.destinationDir
 }

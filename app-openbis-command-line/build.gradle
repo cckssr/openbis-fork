@@ -20,7 +20,7 @@ tasks.register('clean', Delete) {
     delete 'build'
 }
 
-tasks.register('build', Tar) {
+tasks.register('release', Tar) {
     dependsOn(tasks.clean)
     destinationDirectory = layout.buildDirectory.dir(".")
     def contentOfSetUpFile = file('src/python/setup.py').text

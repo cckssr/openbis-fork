@@ -23,6 +23,7 @@ import lombok.SneakyThrows;
 public class AfsClientUploadHelper
 {
     private static final int MAX_UPLOAD_THREADS = 4;
+    private static final String AFS_SERVER_PATH_SEPARATOR = "/";
 
     public static boolean upload(
             AfsClient afsClient,
@@ -702,8 +703,10 @@ public class AfsClientUploadHelper
 
     public static String toServerPathString(@NonNull Path path) {
         StringBuilder stringBuilder = new StringBuilder();
-        path.forEach( segment -> stringBuilder.append("/").append(segment.toString()));
+        path.forEach( segment -> stringBuilder.append(AFS_SERVER_PATH_SEPARATOR).append(segment.toString()));
+        if (stringBuilder.isEmpty()) {
+            stringBuilder.append(AFS_SERVER_PATH_SEPARATOR);
+        }
         return stringBuilder.toString();
     }
-
 }

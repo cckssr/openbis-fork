@@ -11,7 +11,6 @@ export default class TypeGroupFormFacade {
     fo.withTypeGroupAssignments().withSampleType()
 
     const typeGroup = await openbis.getTypeGroups([id], fo)
-    console.log('TypeGroupFormFacade.loadTypeGroup', typeGroup)
     return typeGroup[code]
   }
 
@@ -35,7 +34,6 @@ export default class TypeGroupFormFacade {
     })
 
     objects.sort((o1, o2) => compare(o1.text, o2.text))
-    console.log('TypeGroupFormFacade.loadObjectTypesOptions', objects)
 
     return objects
   }
