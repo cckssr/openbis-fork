@@ -35,14 +35,14 @@ const styles = theme => ({
 
 class FormFieldView extends React.PureComponent {
   render() {
-    const { label, value, description, classes, color } = this.props
+    const { label, value, description, classes, color, disableUnderline } = this.props
     return (
       <div className={classes.container}>
         <div className={classes.control}>
           <Typography variant='body2' component='div' className={classes.label}>
             {label}
           </Typography>
-          <Typography variant='body2' component='div' className={classes.value} color={color}>
+          <Typography variant='body2' component='div' className={!disableUnderline ? classes.value : ''} color={color}>
             {value ? value : <span>&nbsp;</span>}
           </Typography>
         </div>
