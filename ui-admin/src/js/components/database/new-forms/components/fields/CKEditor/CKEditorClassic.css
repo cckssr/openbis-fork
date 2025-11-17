@@ -1,0 +1,128 @@
+.ck-editor__main {
+	min-height: 300px;
+	max-height: 700px;
+	overflow-y: auto;
+}
+
+.ck-sticky-panel__content {
+	border: none !important; 
+    border-bottom-width: unset !important;
+}
+
+/* .ck-editor__main:has(> .ck-read-only) {
+	background: #fff;
+	padding: 0px 8px;
+} */
+
+.ck-read-only {
+	background: #fff;
+	padding: 0px 8px;
+}
+
+.ck-source-editing-area{
+	min-height: 300px;
+	max-height: 700px;
+	overflow-y: auto;
+}
+
+.editor-container {
+    margin: auto;
+    border: 1px solid hsl(0, 0%, 80%);
+}
+
+.ck-sticky-panel{
+	border-bottom: 1px solid hsl(0, 0%, 80%) !important;
+}
+
+.ck-editor__editable_inline {
+    min-height: 300px; 
+}
+
+.ck-editor__main .ck-read-only {
+    width: auto;
+    min-height: auto;
+    box-shadow: none;
+	background: #fff;
+    margin: 1;
+}
+
+.ck-content h3.category {
+	font-family: 'Oswald';
+	font-size: 20px;
+	font-weight: bold;
+	color: #555;
+	letter-spacing: 10px;
+	margin: 0;
+	padding: 0;
+}
+
+.ck-content h2.document-title {
+	font-family: 'Oswald';
+	font-size: 50px;
+	font-weight: bold;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.ck-content h3.document-subtitle {
+	font-family: 'Oswald';
+	font-size: 20px;
+	color: #555;
+	margin: 0 0 1em;
+	font-weight: bold;
+	padding: 0;
+}
+
+.ck-content p.info-box {
+	--background-size: 30px;
+	--background-color: #e91e63;
+	padding: 1.2em 2em;
+	border: 1px solid var(--background-color);
+	background:
+		linear-gradient(135deg, var(--background-color) 0%, var(--background-color) var(--background-size), transparent var(--background-size)),
+		linear-gradient(
+			135deg,
+			transparent calc(100% - var(--background-size)),
+			var(--background-color) calc(100% - var(--background-size)),
+			var(--background-color)
+		);
+	border-radius: 10px;
+	margin: 1.5em 2em;
+	box-shadow: 5px 5px 0 #ffe6ef;
+}
+
+.ck-content span.marker {
+	background: yellow;
+}
+
+.ck-content span.spoiler {
+	background: #000;
+	color: #000;
+}
+
+.ck-content span.spoiler:hover {
+	background: #000;
+	color: #fff;
+}
+
+.ck-content .button {
+	display: inline-block;
+	width: 260px;
+	border-radius: 8px;
+	margin: 0 auto;
+	padding: 12px;
+	color: #ffffff;
+	font-size: 24px;
+	font-weight: 700;
+	text-align: center;
+	text-decoration: none;
+}
+
+.ck-content .button--green {
+	background-color: #406b1e;
+}
+
+.ck-content .button--black {
+	background-color: #141517;
+}
