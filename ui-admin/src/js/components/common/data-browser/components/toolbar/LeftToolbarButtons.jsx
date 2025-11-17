@@ -2,9 +2,7 @@
 import React from 'react';
 import withStyles from '@mui/styles/withStyles';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RenameIcon from '@mui/icons-material/Create';
 import CopyIcon from '@mui/icons-material/FileCopy';
@@ -23,7 +21,6 @@ import logger from '@src/js/common/logger.js';
 import { Add, FolderSharp } from '@mui/icons-material';
 
 const color = 'inherit';
-const iconButtonSize = 'medium';
 const moveLocationMode = 'move';
 const copyLocationMode = 'copy';
 const VALID_FILENAME_PATTERN = /^[0-9A-Za-z $!#%'()+,\-.;=@[\]^_{}~]+$/;
@@ -181,14 +178,17 @@ class LeftToolbarButtons extends React.Component {
   // --- Rendering methods ---
   renderNoSelectionContextToolbar() {
     const { classes, buttonSize ,className} = this.props;
+    const usesBootstrap = Boolean(className);
+    const buttonColor = usesBootstrap ? undefined : color;
+    const buttonVariant = usesBootstrap ? undefined : 'outlined';
     return ([
       <Button
         key='new-folder'
         classes={{ root: classes.buttonLeft }}
         className={className}
-        color={color}
+        color={buttonColor}
         size={buttonSize}
-        variant='outlined'
+        variant={buttonVariant}
         disabled={!this.props.editable || this.props.frozen}
         title={messages.get(messages.NEW_DIRECTORY)}
         onClick={this.openNewFolderDialog}
@@ -238,6 +238,10 @@ class LeftToolbarButtons extends React.Component {
       ? Math.max(Math.floor((currentWidth - 3 * ellipsisButtonSize) / roughButtonSize), 0)
       : buttonsCount;
 
+    const usesBootstrap = Boolean(className);
+    const buttonColor = usesBootstrap ? undefined : color;
+    const buttonVariant = usesBootstrap ? undefined : 'text';
+
     const buttons = [
       <Download
         key='download'
@@ -253,9 +257,9 @@ class LeftToolbarButtons extends React.Component {
         key='delete'
         classes={{ root: classes.buttonLeft }}
         className={className} 
-        color={color}
+        color={buttonColor}
         size={buttonSize}
-        variant='text'
+        variant={buttonVariant}
         disabled={!editable || this.props.frozen}
         startIcon={<DeleteIcon />}
         onClick={this.openDeleteDialog}        
@@ -266,9 +270,9 @@ class LeftToolbarButtons extends React.Component {
         key='rename'
         classes={{ root: classes.buttonLeft }}
         className={className} 
-        color={color}
+        color={buttonColor}
         size={buttonSize}
-        variant='text'
+        variant={buttonVariant}
         disabled={multiselectedFiles.size !== 1 || !editable || this.props.frozen}
         startIcon={<RenameIcon />}
         onClick={this.openRenameDialog}
@@ -279,9 +283,9 @@ class LeftToolbarButtons extends React.Component {
         key='copy'
         classes={{ root: classes.buttonLeft }}
         className={className} 
-        color={color}
+        color={buttonColor}
         size={buttonSize}
-        variant='text'
+        variant={buttonVariant}
         disabled={!editable || this.props.frozen}
         startIcon={<CopyIcon />}
         onClick={this.openCopyLocationDialog}
@@ -292,9 +296,9 @@ class LeftToolbarButtons extends React.Component {
         key='move'
         classes={{ root: classes.buttonLeft }}
         className={className} 
-        color={color}
+        color={buttonColor}
         size={buttonSize}
-        variant='text'
+        variant={buttonVariant}
         disabled={!editable || this.props.frozen}
         startIcon={<MoveIcon />}
         onClick={this.openMoveLocationDialog}
@@ -304,17 +308,17 @@ class LeftToolbarButtons extends React.Component {
     ];
 
     const ellipsisButton = (
-      <IconButton
+      <Button
         key='ellipsis'
-        classes={{ root: classes.ellipsisButton }}
-        className={className} 
-        color={color}
-        size={iconButtonSize}
-        variant='outlined'
+        classes={{ root: classes.buttonLeft }}
+        className={className}
+        color={buttonColor}
+        size={buttonSize}
+        variant={buttonVariant}
         onClick={(e) => this.setState({ hiddenButtonsPopup: e.currentTarget })}
       >
         <MoreIcon />
-      </IconButton>
+      </Button>
     );
 
     const popover = (

@@ -330,10 +330,13 @@ class DataBrowser extends React.Component {
     return size.toFixed(1) + '\xa0' + unit
   }
 
-  fetchSpaceStatus() {
-    this.controller.free().then(space => {
+  async fetchSpaceStatus() {
+    try {
+      const space = await this.controller.free()
       this.setState({ freeSpace: space.free, totalSpace: space.total })
-    })
+    } catch (error) {
+      this.openErrorDialog(error)
+    }
   }
 
   inferMimeType(fileName) {
@@ -548,6 +551,7 @@ class DataBrowser extends React.Component {
               selectable={true}
               multiselectable={true}              
               showHeaders={true}              
+              selectionButtonProps={this.props.selectionButtonProps}
               onError={this.onError}
               onSelectedRowChange={this.handleSelect}
               onMultiselectedRowsChange={this.handleMultiselect}

@@ -44,6 +44,14 @@ class DatabaseComponent extends React.PureComponent {
 
       let json = null
       let showDataBrowser = false
+      let canUseDataBrowser = false
+
+      if (
+        object.type === objectType.COLLECTION ||
+        object.type === objectType.OBJECT
+      ) {
+        canUseDataBrowser = await this.hasAvailableAfsDataStore()
+      }
       if (object.type === objectType.SPACE) {
         const spaces = await openbis.getSpaces(
           [new openbis.SpacePermId(object.id)],
@@ -65,7 +73,7 @@ class DatabaseComponent extends React.PureComponent {
           fetchOptions
         )
         json = experiments[object.id]
-        showDataBrowser = openbis.isAfsSet()
+        showDataBrowser = canUseDataBrowser
       } else if (object.type === objectType.OBJECT) {
         const fetchOptions = new openbis.SampleFetchOptions()
         fetchOptions.withSpace()
@@ -79,7 +87,7 @@ class DatabaseComponent extends React.PureComponent {
           fetchOptions
         )
         json = samples[object.id]
-        showDataBrowser = openbis.isAfsSet()
+        showDataBrowser = canUseDataBrowser
       } else if (object.type === objectType.DATA_SET) {
         const fetchOptions = new openbis.DataSetFetchOptions()
         fetchOptions.withExperiment()
@@ -129,6 +137,18 @@ class DatabaseComponent extends React.PureComponent {
         objType={object.type}
         extOpenbis={openbis} 
         showSemanticAnnotations={true}/>
+  }
+
+  async hasAvailableAfsDataStore() {
+    if (!openbis.isAfsSet()) {
+      return false
+    }
+    try {
+      return await openbis.hasAfsDataStore()
+    } catch (error) {
+      await AppController.getInstance().errorChange(error)
+      return false
+    }
   }
 
   getGridSettingsId() {

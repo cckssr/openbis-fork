@@ -1081,7 +1081,10 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                         objKind: "collection",
                         viewType:'list',
                         withoutToolbar: true,
-                        extOpenbis: _this.extOpenbis
+                        extOpenbis: _this.extOpenbis,
+                        selectionButtonProps: {
+                            sx: { textTransform: 'none' }
+                        }
                     }
                     let configKey = "AFS-WIDGET-KEY-EX";
 
@@ -1158,6 +1161,9 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                         viewType:'list',
                         className :'btn btn-default',
                         primaryClassName :'btn btn-primary',
+                        selectionButtonProps: {
+                            sx: { textTransform: 'none' }
+                        },
                         extOpenbis: _this.extOpenbis
                     }
 

@@ -4,6 +4,7 @@ import dto from '@src/js/services/openbis/dto.js'
 class Facade {
   constructor() {
     autoBind(this)
+    this._dataStoresPromise = null
   }
 
   _init(v3) {
@@ -49,6 +50,43 @@ class Facade {
 
   isAfsSet() {
     return !!this.v3.getAfsUrl()
+  }
+
+  async hasAfsDataStore() {
+    if (!this.isAfsSet()) {
+      return false
+    }
+    const dataStores = await this._getDataStores()
+    return dataStores.some(dataStore => dataStore.code === 'AFS')
+  }
+
+  async _getDataStores() {
+    if (!this._dataStoresPromise) {
+      const criteria = new dto.DataStoreSearchCriteria()
+      const kind = criteria.withKind()
+      if (kind && kind.thatIn) {
+        kind.thatIn([dto.DataStoreKind.DSS, dto.DataStoreKind.AFS])
+      }
+      const fetchOptions = new dto.DataStoreFetchOptions()
+      this._dataStoresPromise = this.searchDataStores(
+        criteria,
+        fetchOptions
+      )
+        .then(result => {
+          if (result && result.objects) {
+            return result.objects
+          } else if (Array.isArray(result)) {
+            return result
+          } else {
+            return []
+          }
+        })
+        .catch(error => {
+          this._dataStoresPromise = null
+          throw error
+        })
+    }
+    return this._dataStoresPromise
   }
 
   useSession(sessionToken) {
@@ -153,6 +191,10 @@ class Facade {
 
   searchSamples(criteria, fo) {
     return this.promise(this.v3.searchSamples(criteria, fo))
+  }
+
+  searchDataStores(criteria, fo) {
+    return this.promise(this.v3.searchDataStores(criteria, fo))
   }
 
   searchExperiments(criteria, fo) {

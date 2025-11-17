@@ -126,8 +126,27 @@ class GridSelectionInfo extends React.PureComponent {
   }
 
   renderButtons() {
-    const { actions, onExecuteAction, onMultiselectionClear, onSelectAllPages, classes } =
-      this.props
+    const {
+      actions,
+      onExecuteAction,
+      onMultiselectionClear,
+      onSelectAllPages,
+      selectionButtonProps,
+      classes
+    } = this.props
+
+    const { styles: externalStyles, ...restButtonProps } =
+      selectionButtonProps || {}
+    const mergedStyles = {
+      ...externalStyles,
+      root: [classes.button, externalStyles && externalStyles.root]
+        .filter(Boolean)
+        .join(' ') || classes.button
+    }
+    const sharedButtonProps = {
+      ...restButtonProps,
+      styles: mergedStyles
+    }
 
     return (
       <div className={classes.buttons}>
@@ -135,24 +154,24 @@ class GridSelectionInfo extends React.PureComponent {
           actions.length > 0 &&
           actions.map(action => (
             <Button
+              {...sharedButtonProps}
               key={action.label}
               label={action.label}
               color='primary'
               onClick={() => onExecuteAction(action)}
-              styles={{ root: classes.button }}
             />
           ))}
         <Button
+          {...sharedButtonProps}
           label={messages.get(messages.SELECT_ALL_PAGES)}
           onClick={onSelectAllPages}
           color='secondary'
-          styles={{ root: classes.button }}
         />
         <Button
+          {...sharedButtonProps}
           label={messages.get(messages.CLEAR_SELECTION)}
           onClick={onMultiselectionClear}
           color='secondary'
-          styles={{ root: classes.button }}
         />
       </div>
     )
