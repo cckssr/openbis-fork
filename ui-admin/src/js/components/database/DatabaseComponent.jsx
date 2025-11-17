@@ -4,7 +4,6 @@ import AppController from '@src/js/components/AppController.js'
 import DataBrowser from '@src/js/components/common/data-browser/DataBrowser.jsx'
 import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
-import objectTypes from '@src/js/common/consts/objectType.js'
 import logger from '@src/js/common/logger.js'
 import constants from '@src/js/components/common/imaging/constants.js'
 import pages from '@src/js/common/consts/pages'
@@ -17,7 +16,8 @@ import { TabContext, TabPanel } from '@mui/lab'
 import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
-
+import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
+import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 const styles = theme => ({
   tabsPanel: {
@@ -34,15 +34,15 @@ class DatabaseComponent extends React.PureComponent {
     this.state = {
       json: null,
       showDataBrowser: false,
-      value: "0"
+      value: "2",
+      datasetTab: "0"
     }
   }
 
   async componentDidMount() {
     try {
       const { object } = this.props
-
-      let json = null
+      let json = {}
       let showDataBrowser = false
       if (object.type === objectType.SPACE) {
         const spaces = await openbis.getSpaces(
@@ -105,7 +105,7 @@ class DatabaseComponent extends React.PureComponent {
   datasetOpenTab(id) {
     AppController.getInstance().objectOpen(
       pages.DATABASE,
-      objectTypes.DATA_SET,
+      objectType.DATA_SET,
       id
     )
   }
@@ -113,7 +113,7 @@ class DatabaseComponent extends React.PureComponent {
   imagingDatasetChange(id, changed) {
     AppController.getInstance().objectChange(
       pages.DATABASE,
-      objectTypes.DATA_SET,
+      objectType.DATA_SET,
       id,
       changed
     )
@@ -123,12 +123,36 @@ class DatabaseComponent extends React.PureComponent {
     this.setState({ value })
   }
 
+  handleDatasetTabChange(event, value) {
+    this.setState({ datasetTab: value })
+  }
+
   renderImagingDataset(object) {
-    return <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
-        objId={object.id}
-        objType={object.type}
-        extOpenbis={openbis} 
-        showSemanticAnnotations={true}/>
+    const { classes } = this.props
+    const { datasetTab } = this.state
+    return <Container>
+      <TabContext value={datasetTab}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs value={datasetTab}
+            onChange={this.handleDatasetTabChange}
+            textColor='secondary'
+            indicatorColor='secondary'>
+            <Tab label={messages.get(messages.DETAILS)} value="0" />
+            <Tab label={messages.get(messages.IMAGES)} value="1" />
+          </Tabs>
+        </Box>
+        <TabPanel classes={{ root: classes.tabsPanel }} value="0">
+          {this.renderJson()}
+        </TabPanel>
+        <TabPanel classes={{ root: classes.tabsPanel }} value="1">
+          <ImagingDatasetViewer onUnsavedChanges={this.imagingDatasetChange}
+            objId={object.id}
+            objType={object.type}
+            extOpenbis={openbis}
+            showSemanticAnnotations={true} />
+        </TabPanel>
+      </TabContext>
+    </Container>
   }
 
   getGridSettingsId() {
@@ -158,19 +182,20 @@ class DatabaseComponent extends React.PureComponent {
   renderDataBrowsers() {
     const { object, classes } = this.props
     const { value } = this.state
-    return (
-      <Container>
-        <TabContext value={value}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value} onChange={this.handleTabChange} 
-            textColor='secondary'
-            indicatorColor='secondary'>
-              <Tab label={messages.get(messages.FILES)} value="0" />
-              <Tab label={messages.get(messages.IMAGES)} value="1" />
-            </Tabs>
-          </Box>
-          <TabPanel classes={{ root: classes.tabsPanel }} value="0">
-            <DataBrowser
+
+    const tabs = [
+      { key: 'details-tab-id', label: 'Details' },
+      { key: 'files-tab-id', label: 'Files' },
+      { key: 'images-tab-id', label: 'Images' },
+    ]
+
+    const tabContent = [
+      <div key="details">
+        {this.renderJson()}
+      </div>,
+      <div key="files">
+        <p>Data Browser is commented out for now, to avoid AFS not started issues.</p>
+        {/* <DataBrowser
               key={object.id}
               id={object.id}
               objId={object.id}
@@ -179,32 +204,91 @@ class DatabaseComponent extends React.PureComponent {
               viewType='list'
               extOpenbis={openbis}
               onLoadDisplaySettings={this.loadGridSettings}
-              onStoreDisplaySettings={this.onGridSettingsChange}              
+              onStoreDisplaySettings={this.onGridSettingsChange}
               leftToolbar={true}
-              
-            />
-          </TabPanel>
-          <TabPanel classes={{ root: classes.tabsPanel }} value="1">
-            {(object.type === objectType.COLLECTION
-              || object.type === objectType.OBJECT)
-              && <ImagingGalleryViewer onStoreDisplaySettings={null}
-                onLoadDisplaySettings={null}
-                onOpenPreview={this.datasetOpenTab}
-                objId={object.id}
-                objType={object.type}
-                extOpenbis={openbis} />}
-          </TabPanel>
-        </TabContext>
-      </Container>
+            /> */}
+      </div>,
+      <div key="images">
+        {(object.type === objectType.COLLECTION
+          || object.type === objectType.OBJECT)
+          && <ImagingGalleryViewer onStoreDisplaySettings={null}
+            onLoadDisplaySettings={null}
+            onOpenPreview={this.datasetOpenTab}
+            objId={object.id}
+            objType={object.type}
+            extOpenbis={openbis} />}
+      </div>
+    ]
+
+    return (
+      <TabViewer
+        tabs={tabs}
+        defaultTab={0}
+        variant='standard'
+      >
+        {tabContent}
+      </TabViewer>
     )
   }
 
-  renderJson() {
-    return (
-      <Container>
-        <pre>{JSON.stringify(this.state.json || {}, null, 2)}</pre>
-      </Container>
+  objectChange(id, objectTypeChanging, changed) {
+    console.log('DatabaseComponent.objectChange', id, objectTypeChanging, changed);
+    AppController.getInstance().objectChange(
+      pages.DATABASE,
+      objectTypeChanging,
+      id,
+      changed
     )
+  }
+
+  objectCreate(oldType, oldId, newType, newId) {
+    console.log('DatabaseComponent.objectCreate', oldType, oldId, newType, newId);
+    AppController.getInstance().objectCreate(
+      pages.DATABASE,
+      oldType,
+      oldId,
+      newType,
+      newId)
+  }
+
+  createNewObject(newObjectType, fromObjectType, fromId) {
+    console.log('DatabaseComponent.createNewObject', newObjectType, fromObjectType, fromId);
+    AppController.getInstance().objectNew(
+      pages.DATABASE,
+      newObjectType,
+      { parentId: fromId, parentType: fromObjectType }
+    )
+  }
+
+  closeForm(type, id) {
+    console.log(`closeForm for ${type}: ${id}`);
+    AppController.getInstance().objectClose(
+      pages.DATABASE,
+      type,
+      id
+    )
+  }
+
+  externalAppController = {
+    createNewObject: (params) => this.createNewObject(params.newObjectType, params.fromObjectType, params.fromId),
+    objectChange: (params) => this.objectChange(params.id, params.objectTypeChanging, params.changed),
+    objectCreate: (params) => this.objectCreate(params.oldType, params.oldId, params.newType, params.newId),
+    closeForm: (params) => this.closeForm(params.type, params.id)
+  }
+
+
+  renderJson() {
+    const { object } = this.props
+    console.log('DatabaseComponent.renderJson', { object });
+    return (<EntityFormContextProvider openbisFacade={openbis}
+      params={object.params}
+      entityKind={object.type}
+      permId={object.id}
+      user={AppController.getInstance().getUser()}
+      sessionID={AppController.getInstance().getSessionToken()}
+      initialMode={String(object.type).includes('new') ? 'create' : 'view'}
+      externalAppController={this.externalAppController}
+    />)
   }
 
   render() {
@@ -215,8 +299,7 @@ class DatabaseComponent extends React.PureComponent {
     const { object } = this.props
     const { properties } = this.state.json
     if (object.type === objectType.DATA_SET && constants.IMAGING_DATA_CONFIG in properties) return this.renderImagingDataset(object)
-    return this.state.showDataBrowser ? this.renderDataBrowsers()
-      : this.renderJson()
+    return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
   }
 }
 
