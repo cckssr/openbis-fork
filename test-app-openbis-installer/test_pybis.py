@@ -98,7 +98,9 @@ class TestCase(systemtest.testcase.TestCase):
 
     def _test_datastores(self, openbis):
         util.printWhoAmI()
-        self.assertIn('datastores', openbis.get_datastores().code.values, 'DSS1')
+        datastores = openbis.get_datastores()
+        util.printAndFlush(datastores)
+        self.assertIn('datastores', datastores.code.values, 'DSS1')
 
 
     def _test_spaces(self, openbis):
