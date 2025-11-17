@@ -29,7 +29,7 @@ The New Forms System is a declarative, plugin-based form engine designed to hand
 ### 2. Entity Identification
 - Each form is identified by `entityPermId` (permanent ID)
 - Entity types are mapped through `objectTypeToEntityKindMap`
-- Forms maintain version information for conflict detection
+- Forms maintain version information for conflict detection (not yet implemented, actually `lastModificationDate` is used for conflicts resolution)
 
 ### 3. Data Integrity
 - All form data must be validated before save operations
@@ -41,7 +41,8 @@ The New Forms System is a declarative, plugin-based form engine designed to hand
 
 ### Create Operation
 **Business Rules:**
-- New entities are created with empty form state
+- Create requires CREATE permission (needs to be better defined)
+- New entities are created with empty form state or partially prefilled values
 - Mode is set to CREATE
 - All fields are editable unless marked as read-only
 - Save action creates new entity in openBIS
@@ -66,6 +67,7 @@ async save(form: Form, mode: FormMode): Promise<number> {
 
 ### Edit Operation
 **Business Rules:**
+- Edit requires EDIT permission (needs to be better defined)
 - Only editable fields can be modified
 - Form transitions from VIEW to EDIT mode
 - Changes are tracked for conflict detection
@@ -92,10 +94,10 @@ const handleFieldChange = (fieldId: string, value: any) => {
 
 ### Save Operation
 **Business Rules:**
-- All validation rules must pass before save
-- Conflict detection checks for concurrent modifications
+- All validation rules must pass before save (not yet implemented)
+- Conflict detection checks for concurrent modifications based on `lastModificationDate`
 - Save operation is atomic - either all changes or none
-- Version number is incremented after successful save
+- Version number is incremented after successful save (should be done backend side)
 - Form transitions to VIEW mode after save
 
 **Implementation:**
@@ -117,14 +119,14 @@ if (mode === FormMode.EDIT) {
 
 ### Delete Operation
 **Business Rules:**
-- Delete requires DELETE permission
+- Delete requires DELETE permission (needs to be better defined)
 - Confirmation dialog should be shown
 - Delete operation is irreversible
 - Form closes after successful deletion
 
 ## Validation Rules
 
-### Field-Level Validation
+### Field-Level Validation (not yet implemented)
 **Built-in Rules:**
 - `required`: Field must have a non-empty value
 - `minLength`: String must meet minimum length requirement
@@ -148,16 +150,10 @@ validationRuleRegistry.register('minLength', (value, options) =>
 - Validation errors prevent save operations
 - Error messages are displayed per field
 
-### Entity-Specific Validation
-Each entity type can define custom validation rules:
-- Space: Code must be unique within the system
-- Project: Must belong to a valid Space
-- Collection: Must belong to a valid Project
-- Dataset: Must have valid file references
 
 ## Permission System
 
-### Permission Types
+### Permission Types (needs to have an expanded definition on single enities)
 - `canEdit`: User can modify entity data
 - `canDelete`: User can delete entity
 - `canMove`: User can move entity to different parent
@@ -181,7 +177,7 @@ async checkPermissions(form: Form): Promise<Record<string, boolean>> {
 }
 ```
 
-### Role-Based Access
+### Role-Based Access (not implemented yet)
 - Admin users have full permissions
 - Regular users have permissions based on role assignments
 - Space-level and project-level permissions are checked
@@ -192,7 +188,6 @@ Actions are shown/hidden based on:
 - Current form mode (VIEW, CREATE, EDIT)
 - User permissions
 - Entity state
-- Business rules
 
 ```typescript
 // Action visibility rules

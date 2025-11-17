@@ -6,13 +6,10 @@ import openbis from '@src/js/services/openbis.js'
 export default class TypeGroupFormControllerSave extends PageControllerSave {
   async save() {
     const state = this.context.getState()
-    console.log('TypeGroupFormControllerSave.save', {state})
 
     const objectTypes = state.objectTypes
     const typeGroup = this._prepareTypeGroup(state.typeGroup)
 
-    console.log('TypeGroupFormControllerSave.save', {typeGroup})
-    console.log('TypeGroupFormControllerSave.save', {objectTypes})
     const operations = []
 
     if (typeGroup.original) {
