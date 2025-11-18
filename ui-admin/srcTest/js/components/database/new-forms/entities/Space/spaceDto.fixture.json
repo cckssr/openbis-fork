@@ -1,0 +1,83 @@
+{
+  "@type": "as.dto.space.Space",
+  "@id": 1,
+  "fetchOptions": {
+    "@type": "as.dto.space.fetchoptions.SpaceFetchOptions",
+    "@id": 2,
+    "count": null,
+    "from": null,
+    "cacheMode": "NO_CACHE",
+    "registrator": {
+      "@type": "as.dto.person.fetchoptions.PersonFetchOptions",
+      "@id": 3,
+      "count": null,
+      "from": null,
+      "cacheMode": "NO_CACHE",
+      "space": null,
+      "registrator": null,
+      "roleAssignments": null,
+      "webAppSettings": null,
+      "allWebAppSettings": false,
+      "sort": null
+    },
+    "samples": null,
+    "projects": null,
+    "sort": null,
+    "sortBy": null
+  },
+  "id": {
+    "techId": 1,
+    "@type": "as.dto.space.id.SpaceTechId",
+    "@id": 6,
+    "id": "1"
+  },
+  "permId": {
+    "permId": "DEFAULT",
+    "@type": "as.dto.space.id.SpacePermId",
+    "@id": 7
+  },
+  "code": "DEFAULT",
+  "description": null,
+  "frozen": false,
+  "frozenForProjects": false,
+  "frozenForSamples": false,
+  "registrationDate": 1763383616563,
+  "modificationDate": 1763383616563,
+  "registrator": {
+    "@type": "as.dto.person.Person",
+    "@id": 8,
+    "fetchOptions": {
+      "@type": "as.dto.person.fetchoptions.PersonFetchOptions",
+      "@id": 9,
+      "count": null,
+      "from": null,
+      "cacheMode": "NO_CACHE",
+      "space": null,
+      "registrator": null,
+      "roleAssignments": null,
+      "webAppSettings": null,
+      "allWebAppSettings": false,
+      "sort": null
+    },
+    "permId": {
+      "permId": "system",
+      "@type": "as.dto.person.id.PersonPermId",
+      "@id": 10
+    },
+    "userId": "system",
+    "firstName": "",
+    "lastName": "System User",
+    "email": "",
+    "registrationDate": 1763383616563,
+    "active": true,
+    "space": null,
+    "registrator": null,
+    "roleAssignments": null,
+    "webAppSettings": null,
+    "expiryDate": null,
+    "metaData": {}
+  },
+  "samples": [],
+  "projects": []
+}
+
