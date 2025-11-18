@@ -1,4 +1,4 @@
-//import { ProjectFormController } from '@src/js/components/database/new-forms/entities/Project/ProjectFormController.ts';
+import { ProjectFormController } from '@src/js/components/database/new-forms/entities/Project/ProjectFormController.ts';
 import { SpaceFormController } from '@src/js/components/database/new-forms/entities/Space/SpaceFormController.ts';
 //import { CollectionFormController } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormController.ts';
 //import { DatasetFormController } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormController.ts';
@@ -10,6 +10,8 @@ class ControllerDispatcher {
     switch (entityKind) {
       case EntityKind.SPACE:
         return new SpaceFormController(openbisFacade);
+      case EntityKind.PROJECT:
+        return new ProjectFormController(openbisFacade);
       default:
         throw new Error(`Unknown entity kind: ${entityKind}`);
     }
