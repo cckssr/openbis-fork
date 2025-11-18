@@ -35,7 +35,7 @@ export interface Form {
   entityKind: string; // e.g., 'Space', 'Project', 'Sample'
   entityType: string;
   title: string;
-  sections: SectionGroup[];
+  sections?: SectionGroup[];
   fields: FormField[];
   version: number;
   mode?: FormMode;

@@ -54,42 +54,57 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
     );
   };
 
-  const renderSections = () => {
-    // Create a map for quick field lookup
+  const buildSectionGroups = () => {
     const fieldsById = new Map(form.fields.map(f => [f.id, f]));
 
-    return form.sections.map(({ section, fields }: SectionGroup) => {
-      // Group fields by column within each section
-      const leftFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'left');
-      const rightFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'right');
-      const centerFields = fields.map((fieldId: string) => fieldsById.get(fieldId)).filter((field: FormField | undefined) => field?.column === 'center');
+    if (form.sections && form.sections.length > 0) {
+      return form.sections.map(({ section, fields }: SectionGroup) => ({
+        section,
+        fields: fields
+          .map((fieldId: string) => fieldsById.get(fieldId))
+          .filter((field: FormField | undefined): field is FormField => Boolean(field)),
+      }));
+    }
+
+    const order: string[] = [];
+    const grouped = new Map<string, FormField[]>();
+
+    form.fields.forEach(field => {
+      if (!grouped.has(field.section)) {
+        grouped.set(field.section, []);
+        order.push(field.section);
+      }
+      grouped.get(field.section)?.push(field);
+    });
+
+    return order.map(section => ({
+      section,
+      fields: grouped.get(section) ?? [],
+    }));
+  };
+
+  const renderSections = () => {
+    return buildSectionGroups().map(({ section, fields }) => {
+      const leftFields = fields.filter(field => field.column === 'left');
+      const rightFields = fields.filter(field => field.column === 'right');
+      const centerFields = fields.filter(field => field.column === 'center');
 
       return (
         <CollapsableSection isCollapsed={false} title={section} renderWarnings={null} key={section}>
           <div style={{ padding: '8px 16px' }}>
-            {/* Render left and right columns side by side */}
             {(leftFields.length > 0 || rightFields.length > 0) && (
               <div style={{ display: 'flex', gap: '16px' }}>
-                {/* Left column */}
                 <div style={{ flex: 1 }}>
-                  {leftFields.map((field: FormField | undefined) => {
-                    return renderField(field);
-                  })}
+                  {leftFields.map(field => renderField(field))}
                 </div>
-                {/* Right column */}
                 <div style={{ flex: 1 }}>
-                  {rightFields.map((field: FormField | undefined) => {
-                    return renderField(field);
-                  })}
+                  {rightFields.map(field => renderField(field))}
                 </div>
               </div>
             )}
-            {/* Render center fields on their own row */}
             {centerFields.length > 0 && (
               <div>
-                {centerFields.map((field: FormField | undefined) => {
-                  return renderField(field);
-                })}
+                {centerFields.map(field => renderField(field))}
               </div>
             )}
           </div>

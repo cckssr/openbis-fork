@@ -1,4 +1,6 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
 import objectType from '@src/js/common/consts/objectType.js'
@@ -7,6 +9,15 @@ export class SpaceFormModel {
 
 	static adaptSpaceDtoToForm(dto: any): Form {
 		const permId = dto.permId.permId;
+		const fields = [
+			getCodeField(dto),
+			getDescriptionField(dto, { column: 'center' }),
+			getRegistratorField(dto),
+			getRegistrationDateField(dto),
+			getModifierField(dto),
+			getModificationDateField(dto),
+		];
+
 		return {
 			entityPermId: permId,
 			entityType: EntityKind.SPACE,
@@ -14,29 +25,7 @@ export class SpaceFormModel {
 			version: dto.version || 1,
 			entityKind: EntityKind.SPACE,
 			meta: {},
-			sections: [
-				{
-					section: FormSection.IDENTIFICATION_INFO,
-					fields: [permId + '-code',
-					permId + '-registrator',
-					permId + '-registrationDate',
-					permId + '-modifier',
-					permId + '-modificationDate'],
-				},
-				{
-					section: FormSection.GENERAL,
-					fields: [permId + '-description',
-					],
-				},
-			],
-			fields: [
-				getCodeField(dto),
-				getDescriptionField(dto, { column: 'center' }),
-				getRegistratorField(dto),
-				getRegistrationDateField(dto),
-				getModifierField(dto),
-				getModificationDateField(dto),
-			],
+			fields,
 			isDirty: false,
 			isValid: true,
 			actions: [

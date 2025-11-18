@@ -37,7 +37,10 @@ module.exports = {
     '^@srcV3/(.*)$': '<rootDir>/srcV3/$1',
     '^@srcDss/(.*)$': '<rootDir>/srcDss/$1'
   },
-  testMatch: ['**/*Controller*.test.js'],
+  testMatch: [
+    '**/*Controller*.test.js',
+    '<rootDir>/srcTest/js/components/database/new-forms/**/*.test.ts?(x)'
+  ],
   transformIgnorePatterns: ['<rootDir>/node_modules/(?!(auto-bind|date-fns|@mui))'],
   slowTestThreshold: 30
 }

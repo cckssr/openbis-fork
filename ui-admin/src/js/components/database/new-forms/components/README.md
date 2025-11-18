@@ -340,31 +340,52 @@ See [types documentation](../types/README.md#formaction) for `FormAction` struct
 Sections are rendered with field grouping by column:
 
 ```typescript
-const renderSections = () => {
+const buildSectionGroups = () => {
   const fieldsById = new Map(form.fields.map(f => [f.id, f]));
-  
-  return form.sections.map(({ section, fields }) => {
-    // Group fields by column
-    const leftFields = fields.map(id => fieldsById.get(id))
-      .filter(field => field?.column === 'left');
-    const rightFields = fields.map(id => fieldsById.get(id))
-      .filter(field => field?.column === 'right');
-    const centerFields = fields.map(id => fieldsById.get(id))
-      .filter(field => field?.column === 'center');
-    
-    return (
-      <CollapsableSection title={section}>
-        {/* Left and right columns side by side */}
-        <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1 }}>{leftFields.map(renderField)}</div>
-          <div style={{ flex: 1 }}>{rightFields.map(renderField)}</div>
-        </div>
-        {/* Center fields full width */}
-        <div>{centerFields.map(renderField)}</div>
-      </CollapsableSection>
-    );
+
+  if (form.sections?.length) {
+    return form.sections.map(({ section, fields }) => ({
+      section,
+      fields: fields
+        .map(id => fieldsById.get(id))
+        .filter((field): field is FormField => Boolean(field)),
+    }));
+  }
+
+  const order: string[] = [];
+  const grouped = new Map<string, FormField[]>();
+
+  form.fields.forEach(field => {
+    if (!grouped.has(field.section)) {
+      grouped.set(field.section, []);
+      order.push(field.section);
+    }
+    grouped.get(field.section)!.push(field);
   });
+
+  return order.map(section => ({
+    section,
+    fields: grouped.get(section) ?? [],
+  }));
 };
+
+const renderSections = () => buildSectionGroups().map(({ section, fields }) => {
+  const leftFields = fields.filter(field => field.column === 'left');
+  const rightFields = fields.filter(field => field.column === 'right');
+  const centerFields = fields.filter(field => field.column === 'center');
+
+  return (
+    <CollapsableSection title={section}>
+      {/* Left and right columns side by side */}
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1 }}>{leftFields.map(renderField)}</div>
+        <div style={{ flex: 1 }}>{rightFields.map(renderField)}</div>
+      </div>
+      {/* Center fields full width */}
+      <div>{centerFields.map(renderField)}</div>
+    </CollapsableSection>
+  );
+});
 ```
 
 **Layout**:
