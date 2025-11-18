@@ -2482,6 +2482,10 @@ var FormUtil = new function() {
 		});
 	}
 
+    this.escapeIdForSelectors = function(id) {
+        return id.replace(/\./g, '\\.');
+    }
+
 	this._getRoleAssignmentTable = function(roleAssignments, revokeAction) {
 		if (roleAssignments.length == 0) {
 			return $('<span>');
