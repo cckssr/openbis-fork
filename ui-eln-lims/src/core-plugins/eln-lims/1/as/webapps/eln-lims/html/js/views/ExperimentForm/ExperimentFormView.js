@@ -838,7 +838,7 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                     		        _refreshableFields.push($component);
                     	        } else {
                     		        alert("Word Processor only works with MULTILINE_VARCHAR data type.");
-                    		        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
+                    		        $("body").on("change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType));
                     		    }
                                 break;
                     	    case 'Spreadsheet':
@@ -849,14 +849,14 @@ function ExperimentFormView(experimentFormController, experimentFormModel) {
                                     _refreshableFields.push($component);
                     		    } else {
                     		        alert("Spreadsheet only works with XML data type.");
-                    		        $("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType));
+                    		        $("body").on("change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType));
                     		    }
                     		    break;
                         }
                     } else if(propertyType.dataType === "TIMESTAMP" || propertyType.dataType === "DATE") {
-						$("body").on("dp.change", "#"+$component.attr("id"), changeEvent(propertyType));
+						$("body").on("dp.change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType));
 					} else {
-						$("body").on("change", "#"+$component.attr("id"), changeEvent(propertyType, isMultiValue));
+						$("body").on("change", "#"+FormUtil.escapeIdForSelectors($component.attr("id")), changeEvent(propertyType, isMultiValue));
 					}
 
 					$controlGroup = FormUtil.getFieldForComponentWithLabel($component, propertyType.label);
