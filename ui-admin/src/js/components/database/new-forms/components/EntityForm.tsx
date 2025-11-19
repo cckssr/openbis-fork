@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { FormMode, FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { Form, FormAction as FormActionDef, FormField, VisibilityRule, SectionGroup } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import ComponentRegistry from '@src/js/components/database/new-forms/engine/ComponentRegistry.ts';
 import { Stack } from '@mui/material'
@@ -83,6 +83,16 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
     }));
   };
 
+  const isSectionCollapsed = (section: string) => {
+    switch (section) {
+      case FormSection.IDENTIFICATION_INFO:
+      case FormSection.OVERVIEW:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   const renderSections = () => {
     return buildSectionGroups().map(({ section, fields }) => {
       const leftFields = fields.filter(field => field.column === 'left');
@@ -90,7 +100,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
       const centerFields = fields.filter(field => field.column === 'center');
 
       return (
-        <CollapsableSection isCollapsed={false} title={section} renderWarnings={null} key={section}>
+        <CollapsableSection isCollapsed={isSectionCollapsed(section)} title={section} renderWarnings={null} key={section}>
           <div style={{ padding: '8px 16px' }}>
             {(leftFields.length > 0 || rightFields.length > 0) && (
               <div style={{ display: 'flex', gap: '16px' }}>
