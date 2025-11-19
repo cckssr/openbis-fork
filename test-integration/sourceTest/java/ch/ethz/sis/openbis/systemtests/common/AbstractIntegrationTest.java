@@ -17,11 +17,15 @@ package ch.ethz.sis.openbis.systemtests.common;
 
 import static org.testng.Assert.assertEquals;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -71,14 +75,14 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 import ch.ethz.sis.afs.manager.TransactionConnection;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -155,7 +159,7 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 /**
  * @author pkupczyk
  */
-public abstract class AbstractIntegrationTest
+public class AbstractIntegrationTest
 {
     public static final String TEST_INTERACTIVE_SESSION_KEY = "integration-test-interactive-session-key";
 
@@ -212,6 +216,7 @@ public abstract class AbstractIntegrationTest
         startDataStoreServer();
         startAfsServer();
         startAfsServerProxy();
+        startRoCrateServer();
 
         TestLogger.configure();
     }
@@ -219,6 +224,7 @@ public abstract class AbstractIntegrationTest
     @AfterSuite
     public void afterSuite() throws Exception
     {
+        shutdownRoCrateServer();
         shutdownAfsServer();
         shutdownAfsServerProxy();
         shutdownDataStoreServer();
@@ -561,6 +567,34 @@ public abstract class AbstractIntegrationTest
         log("Started afs server proxy.");
     }
 
+    private void startRoCrateServer() throws Exception
+    {
+        log("Starting ro-crate server.");
+
+        File tempConfigurationFile = File.createTempFile("ro-crate-server", ".properties");
+        tempConfigurationFile.deleteOnExit();
+
+        Properties configuration = getRoCrateServerConfiguration();
+        configuration.store(new FileWriter(tempConfigurationFile), null);
+
+        Process process = Runtime.getRuntime()
+                .exec(new String[] { "../test-integration/etc/ro-crate/start.sh", tempConfigurationFile.getAbsolutePath() });
+
+        InputStream in = process.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+        String line;
+        while ((line = reader.readLine()) != null)
+        {
+            System.out.println("[RO-CRATE] " + line);
+
+            if (line.contains("Started RO-CRATE server") || line.contains("Startup of RO-CRATE server failed"))
+            {
+                break;
+            }
+        }
+    }
+
     private void shutdownApplicationServer() throws Exception
     {
         applicationServerSpringContext.close();
@@ -591,6 +625,20 @@ public abstract class AbstractIntegrationTest
     {
         afsServerProxy.setStopAtShutdown(true);
         log("Shut down afs server proxy.");
+    }
+
+    private void shutdownRoCrateServer() throws Exception
+    {
+        Process process = Runtime.getRuntime().exec(new String[] { "../test-integration/etc/ro-crate/stop.sh" });
+
+        InputStream in = process.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+        String line;
+        while ((line = reader.readLine()) != null)
+        {
+            System.out.println("[RO-CRATE] " + line);
+        }
     }
 
     public void restartApplicationServer() throws Exception
@@ -636,6 +684,15 @@ public abstract class AbstractIntegrationTest
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerPort, String.valueOf(TestInstanceHostUtils.getAFSPort()));
         configuration.setProperty(AtomicFileSystemServerParameter.httpServerUri, TestInstanceHostUtils.getAFSPath());
         configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
+        return configuration;
+    }
+
+    public static Properties getRoCrateServerConfiguration() throws Exception
+    {
+        Properties configuration = new Properties();
+        configuration.load(new FileInputStream("../test-integration/etc/ro-crate/service.properties"));
+        configuration.setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
+        configuration.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
         return configuration;
     }
 
