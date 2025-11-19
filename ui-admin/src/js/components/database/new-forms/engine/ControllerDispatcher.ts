@@ -3,7 +3,7 @@ import { SpaceFormController } from '@src/js/components/database/new-forms/entit
 import { CollectionFormController } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormController.ts';
 import { DatasetFormController } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormController.ts';
 import { ObjectFormController } from '@src/js/components/database/new-forms/entities/Object/ObjectFormController.ts';
-import { EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 class ControllerDispatcher {
   static createController(entityKind: string, openbisFacade: any, user?: string) {

@@ -1,5 +1,5 @@
-import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export class ProjectFormModel {

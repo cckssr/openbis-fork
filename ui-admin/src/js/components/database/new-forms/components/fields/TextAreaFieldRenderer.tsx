@@ -1,5 +1,5 @@
 import React from 'react';
-import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import TextAreaField from '@src/js/components/common/form/TextAreaField.jsx';
 
 export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {

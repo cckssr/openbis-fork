@@ -84,7 +84,7 @@ To add a new action renderer:
 ```typescript
 // NewActionRenderer.tsx
 import React from 'react';
-import { ActionRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts.ts';
 
 export const NewActionRenderer: React.FC<ActionRendererProps> = ({ 
   action, 

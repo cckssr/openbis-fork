@@ -1,6 +1,6 @@
 import openbis from '@srcV3/openbis.esm';
-import { Form, } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';

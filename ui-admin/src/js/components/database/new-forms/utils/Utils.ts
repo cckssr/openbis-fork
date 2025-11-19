@@ -1,6 +1,6 @@
 import objectType from "@src/js/common/consts/objectType";
-import { EntityKind } from "@src/js/components/database/new-forms/types/form.enums.ts";
-import { FormField } from "@src/js/components/database/new-forms/types/form.types.ts";
+import { EntityKind } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { FormField } from "@src/js/components/database/new-forms/types/formITypes.ts";
 
 export function findFormFieldById(fields: FormField[], permId: string, label: string, onlyValue: boolean = false): FormField | string | null {
 	const field = fields.find(field => field.id === permId + '-' + label);

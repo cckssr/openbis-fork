@@ -1,5 +1,5 @@
-import { Form, FormField, IExtendedActionContext, } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { EntityKind, FormMode, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, FormField, IExtendedActionContext, } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { EntityKind, FormMode, FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import {
   getCodeField,
   getProjectField,

@@ -259,7 +259,7 @@ To add a new field renderer:
 ```typescript
 // NewFieldRenderer.tsx
 import React from 'react';
-import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 
 export const NewFieldRenderer: React.FC<FieldRendererProps> = ({ 

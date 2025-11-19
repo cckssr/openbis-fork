@@ -10,7 +10,7 @@ import {
 import AutocompleterField from '@src/js/components/common/form/AutocompleterField.jsx'
 import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer';
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel';
-import { EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 
 interface AdvancedEntitySearchDropdownProps {

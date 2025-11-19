@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import Dialog from '@src/js/components/common/dialog/Dialog.jsx';
 import Button from '@src/js/components/common/form/Button.jsx';
 import Message from '@src/js/components/common/form/Message.jsx';
-import { FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import TextField from '@src/js/components/common/form/TextField.jsx';
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import messages from '@src/js/common/messages';
 
 interface ConflictResolutionDialogProps {

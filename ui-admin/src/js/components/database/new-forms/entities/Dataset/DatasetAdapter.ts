@@ -1,5 +1,5 @@
-import { Form, } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import {
   getCodeField,
   getDescriptionField,

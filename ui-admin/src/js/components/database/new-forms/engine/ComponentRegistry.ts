@@ -1,4 +1,4 @@
-import { FormFieldDataType } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormFieldDataType } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 import { TextFieldRenderer } from '@src/js/components/database/new-forms/components/fields/TextFieldRenderer.tsx';
 import { DateFieldRenderer } from '@src/js/components/database/new-forms/components/fields/DateFieldRenderer.tsx';

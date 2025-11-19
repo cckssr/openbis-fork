@@ -1,6 +1,6 @@
 import React from 'react';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form, FormAction as FormActionDef, FormField, VisibilityRule, SectionGroup } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { Form, FormAction as FormActionDef, FormField, VisibilityRule, SectionGroup } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import ComponentRegistry from '@src/js/components/database/new-forms/engine/ComponentRegistry.ts';
 import { Stack } from '@mui/material'
 import CollapsableSection from '@src/js/components/common/imaging/components/viewer/CollapsableSection.jsx';

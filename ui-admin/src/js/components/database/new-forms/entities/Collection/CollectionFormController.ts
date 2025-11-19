@@ -1,4 +1,4 @@
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';

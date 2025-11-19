@@ -1,4 +1,4 @@
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
 import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/entities/Dataset/DatasetAdapter.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';

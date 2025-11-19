@@ -1,5 +1,5 @@
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
 export interface FormServiceConfig {

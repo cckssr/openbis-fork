@@ -1,5 +1,5 @@
-import { FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getFormatedDate } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 // Helper type for overrides

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import Button from '@src/js/components/common/form/Button.jsx';
 
 export const ButtonActionRenderer: React.FC<ActionRendererProps> = ({ action, onAction, mode }) => {

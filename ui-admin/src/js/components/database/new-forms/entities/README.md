@@ -238,7 +238,7 @@ mkdir entities/NewEntity
 
 ```typescript
 // entities/NewEntity/NewEntityFormController.ts
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { FormMode, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { NewEntityFormModel } from './NewEntityFormModel.ts';
@@ -312,7 +312,7 @@ export class NewEntityFormController implements IFormController {
 
 ```typescript
 // entities/NewEntity/NewEntityFormModel.ts
-import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts.ts';
 import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import {
   getCodeField,
@@ -718,7 +718,7 @@ async move(form: Form, context?: any, params?: any): Promise<void> {
 ## Related Files
 
 - `types/IFormController.ts` - Controller interface
-- `types/form.types.ts` - Form and field type definitions
+- `types/formITypes.ts.ts` - Form and field type definitions
 - `types/form.enums.ts` - EntityKind and other enums
 - `engine/ControllerDispatcher.ts` - Controller registration
 - `engine/ActionHandlerDispatcher.ts` - Action handler registration

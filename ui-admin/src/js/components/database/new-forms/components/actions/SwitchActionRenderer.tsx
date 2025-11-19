@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { ActionRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormControlLabel, FormGroup, Switch } from '@mui/material';
 
 export const SwitchActionRenderer: React.FC<ActionRendererProps> = ({ action, onAction, mode }) => {

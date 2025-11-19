@@ -1,7 +1,7 @@
-import { Form } from "@src/js/components/database/new-forms/types/form.types.ts";
-import { FormMode, FormSection } from "@src/js/components/database/new-forms/types/form.enums.ts";
+import { Form } from "@src/js/components/database/new-forms/types/formITypes.ts";
+import { FormMode, FormSection } from "@src/js/components/database/new-forms/types/formEnums.ts";
 import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField, getPropertyFieldsFromAssignments } from "@src/js/components/database/new-forms/entities/formFieldGetters.ts";
-import { IExtendedActionContext } from "@src/js/components/database/new-forms/types/form.types.ts";
+import { IExtendedActionContext } from "@src/js/components/database/new-forms/types/formITypes.ts";
 
 export class CollectionFormModel {
 	

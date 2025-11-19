@@ -1,5 +1,5 @@
-import { IAutoSaveActionContext, IModeActionContext, IExtendedActionContext } from "@src/js/components/database/new-forms/types/form.types.ts";
-import { FormMode } from "@src/js/components/database/new-forms/types/form.enums.ts";
+import { IAutoSaveActionContext, IModeActionContext, IExtendedActionContext } from "@src/js/components/database/new-forms/types/formITypes.ts";
+import { FormMode } from "@src/js/components/database/new-forms/types/formEnums.ts";
 
 export class CoreFormModel {
 	static editAction = (context: IModeActionContext) => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 
 export const useConflictResolution = () => {

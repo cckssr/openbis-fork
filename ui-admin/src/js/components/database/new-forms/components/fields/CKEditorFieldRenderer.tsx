@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import CKEditorClassic from '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorClassic.jsx';
 import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx';
 import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx';

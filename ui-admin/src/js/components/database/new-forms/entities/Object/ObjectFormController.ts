@@ -1,9 +1,9 @@
-import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
 import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
 
 export class ObjectFormController implements IFormController {

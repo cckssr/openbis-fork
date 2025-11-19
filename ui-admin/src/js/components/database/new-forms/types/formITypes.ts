@@ -1,5 +1,5 @@
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
-import { FormFieldDataType, FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormFieldDataType, FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 export interface FormFieldMeta {
   isFrozen?: boolean;
