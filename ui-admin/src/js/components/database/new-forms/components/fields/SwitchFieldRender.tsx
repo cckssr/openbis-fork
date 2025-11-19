@@ -6,7 +6,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 	const isEditing = mode === 'edit' || mode === 'create';
 	return (<SelectField
 		reference={field}
-		options={[{ label: '', value: null }, { label: 'Yes', value: true }, { label: 'No', value: false }]}
+		options={[{ label: '', value: null }, { label: 'Yes', value: "true" }, { label: 'No', value: "false" }]}
 		id={field.id}
 		name={field.label}
 		mandatory={field.required}
@@ -17,6 +17,7 @@ export const SwitchFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFie
 		onChange={(e: React.ChangeEvent<HTMLInputElement>) => onFieldChange(field.id, e.target.value)}
 		description={field.meta?.helpText}
 		emptyOption={field.meta?.emptyOption}
+		disableUnderline={true}
 	/>
 	);
 }

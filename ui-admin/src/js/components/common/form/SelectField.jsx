@@ -78,20 +78,20 @@ class SelectFormField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value, options, emptyOption } = this.props
+    const { label, value, options, emptyOption, disableUnderline = false } = this.props
 
     if (!util.empty(value)) {
       const option = options.find(option => option.value === value)
-      return <FormFieldView label={label} value={this.getOptionText(option)} />
+      return <FormFieldView label={label} value={this.getOptionText(option)} disableUnderline={disableUnderline} />
     } else if (
       this.getOptionSelectable(emptyOption) &&
       this.getOptionText(emptyOption)
     ) {
       return (
-        <FormFieldView label={label} value={this.getOptionText(emptyOption)} />
+        <FormFieldView label={label} value={this.getOptionText(emptyOption)} disableUnderline={disableUnderline} />
       )
     } else {
-      return <FormFieldView label={label} />
+      return <FormFieldView label={label} disableUnderline={disableUnderline} />
     }
   }
 
