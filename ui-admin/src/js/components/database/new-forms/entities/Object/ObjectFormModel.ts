@@ -12,15 +12,31 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField,
-  getObjectTypeCodeField,
   getShowOnProjectOverviewField,
-  getDocumentField
-} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+  getPropertyFieldsFromAssignments
+} from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export class ObjectFormModel {
 
   static adaptSampleDtoToForm(dto: any): Form {
     const permId = dto.permId.permId;
+
+    const staticFields = [
+      getTypeField(dto),
+      getPermIdField(dto),
+      getIdentifierField(dto),
+      getPathField(dto),
+      getSpaceField(dto),
+      getProjectField(dto),
+      getCodeField(dto),
+      getRegistratorField(dto),
+      getRegistrationDateField(dto),
+      getModifierField(dto),
+      getModificationDateField(dto),
+    ];
+
+    const propertyFields = getPropertyFieldsFromAssignments(dto);
+
     return {
       entityPermId: permId,
       entityType: dto.type.code,
@@ -28,44 +44,7 @@ export class ObjectFormModel {
       version: dto.version,
       entityKind: EntityKind.SAMPLE,
       meta: {},
-      sections: [
-        {
-          section: FormSection.GENERAL,
-          fields: [
-            permId + '-document',
-          ],
-        },
-        {
-          section: FormSection.IDENTIFICATION_INFO,
-          fields: [
-            permId + '-entityType',
-            permId + '-permId',
-            permId + '-identifier',
-            permId + '-path',
-            permId + '-space',
-            permId + '-project',
-            permId + '-code',
-            permId + '-registrator',
-            permId + '-registrationDate',
-            permId + '-modifier',
-            permId + '-modificationDate',
-          ],
-        },
-      ],
-      fields: [
-        getTypeField(dto),
-        getPermIdField(dto),
-        getIdentifierField(dto),
-        getPathField(dto),
-        getSpaceField(dto),
-        getProjectField(dto),
-        getCodeField(dto),
-        getRegistratorField(dto),
-        getRegistrationDateField(dto),
-        getModifierField(dto),
-        getModificationDateField(dto),
-        getDocumentField(dto),
-      ],
+      fields: [...staticFields, ...propertyFields],
       isDirty: false,
       isValid: true,
       actions: [
@@ -136,7 +115,6 @@ export class ObjectFormModel {
         },
       ],
       fields: [
-        getObjectTypeCodeField({ permId: { permId: permId } }, { readOnly: false, value: '', id: permId + '-objectTypeCode' }),
       ],
       isDirty: false,
       isValid: true,
@@ -197,7 +175,6 @@ export class ObjectFormModel {
         getCodeField({ permId: { permId: permId } }, { readOnly: false, value: params.defaultCode, id: permId + '-code' }),
         getTypeField({ permId: { permId: permId } }, { value: 'ENTRY', id: permId + '-objectTypeCode' }),
         getShowOnProjectOverviewField({ permId: { permId: permId } }, { value: true, id: permId + '-showOnProjectOverview' }),
-        getDocumentField({ permId: { permId: permId } }, { column: 'center', value: '', id: permId + '-document' }),
       ],
       isDirty: false,
       isValid: true,

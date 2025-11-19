@@ -1,11 +1,29 @@
-import { ActionContext, Form } from "@src/js/components/database/new-forms/types/form.types.ts";
-import { FormSection } from "@src/js/components/database/new-forms/types/form.enums.ts";
-import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField } from "@src/js/components/database/new-forms/entities/formField.utils.ts";
+import { Form } from "@src/js/components/database/new-forms/types/form.types.ts";
+import { FormMode, FormSection } from "@src/js/components/database/new-forms/types/form.enums.ts";
+import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField, getPropertyFieldsFromAssignments } from "@src/js/components/database/new-forms/entities/formFieldGetters.ts";
+import { IExtendedActionContext } from "@src/js/components/database/new-forms/types/form.types.ts";
 
 export class CollectionFormModel {
 	
 	static adaptCollectionDtoToForm(dto: any): Form {  
 	  const permId = dto.permId.permId;
+	  
+	  // Get static fields
+	  const staticFields = [
+		getTypeField(dto),
+		getPermIdField(dto),
+		getIdentifierField(dto),
+		getPathField(dto),
+		getCodeField(dto),
+		getRegistratorField(dto),
+		getRegistrationDateField(dto),
+		getModifierField(dto),
+		getModificationDateField(dto),
+	  ];
+	  
+	  // Get dynamically created fields from propertyAssignments
+	  const propertyFields = getPropertyFieldsFromAssignments(dto);
+	  
 	  return {
 		entityPermId: permId,
 		entityType: dto.type.code,
@@ -13,55 +31,71 @@ export class CollectionFormModel {
 		version: dto.version,
 		entityKind: 'COLLECTION',
 		meta: {},
-		sections: [
-		  {
-			section: FormSection.IDENTIFICATION_INFO,
-			fields: [ permId + '-type', 
-			  permId + '-permId', 
-			  permId + '-identifier', 
-			  permId + '-path',
-			  permId + '-space',
-			  permId + '-code',
-			  permId + '-registrator',
-			  permId + '-registrationDate',
-			  permId + '-modifier',
-			  permId + '-modificationDate',
-			],
-		  },
-		  {
-			section: FormSection.GENERAL,
-			fields: [
-			  permId + '-description',
-			],
-		  },
-		],
-		fields: [
-		  getTypeField(dto),
-		  getPermIdField(dto),
-		  getIdentifierField(dto),
-		  getPathField(dto),
-		  getCodeField(dto),
-		  getRegistratorField(dto),
-		  getRegistrationDateField(dto),
-		  getModifierField(dto),
-		  getModificationDateField(dto),
-		],
+		fields: [...staticFields, ...propertyFields],
 		isDirty: false,
 		isValid: true,
 		actions: [
 			{
 				name: 'collection:save',
-				component: 'button',
 				label: 'Save',
-				visibility: [],
+				component: 'button',
 				isAllowed: true,
+				visibility: [
+					{
+						mode: FormMode.EDIT,
+					},
+				],
 			},
+			{
+				name: 'edit',
+				label: 'Edit',
+				component: 'button',
+				isAllowed: true,
+				visibility: [
+					{
+						mode: FormMode.VIEW,
+					},
+				],
+			},
+			{
+				name: 'cancel',
+				label: 'Cancel',
+				component: 'button',
+				isAllowed: true,
+				visibility: [
+					{
+						mode: FormMode.EDIT,
+					},
+				],
+			},
+			{
+				name: 'delete',
+				label: 'Delete',
+				component: 'button',
+				isAllowed: true,
+				visibility: [
+					{
+						mode: FormMode.VIEW,
+					},
+				],
+			},
+			{
+				name: 'move',
+				label: 'Move',
+				component: 'button',
+				isAllowed: true,
+				visibility: [
+					{
+						mode: FormMode.VIEW,
+					},
+				],
+			}
 		],
 	  };
 	}
 
-	static saveCollectionAction = async (context: ActionContext) => {
-		const { form, openbisFacade, onAfterSave } = context;
+	static saveCollectionAction = async (context: IExtendedActionContext) => {
+		const { form, onAfterSave } = context;
 		console.log("Saving collection:", form);
 		await new Promise(resolve => setTimeout(resolve, 1000));
 		console.log("Collection saved successfully!");

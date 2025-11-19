@@ -20,6 +20,8 @@ export class CollectionFormController implements IFormController {
 		fetchOptions.withProperties()
 		fetchOptions.withDataSets().withProperties()
 		fetchOptions.withType();
+		fetchOptions.withType().withPropertyAssignments();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType();
 		fetchOptions.withProject();
 		fetchOptions.withDataSets();
 		// Add more fetch options as needed

@@ -41,6 +41,8 @@ export class ObjectFormController implements IFormController {
 		const fetchOptions = new SampleFetchOptions();
 		fetchOptions.withProperties();
 		fetchOptions.withType();
+		fetchOptions.withType().withPropertyAssignments();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType();
 		fetchOptions.withProject();
 		fetchOptions.withSpace();
 		fetchOptions.withExperiment();
@@ -122,6 +124,33 @@ export class ObjectFormController implements IFormController {
 		return update;
 	}
 
+	_setBasics(crudObject: any, parameters: any) {
+		const { SpacePermId, ProjectIdentifier, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
+		const space = parameters["sampleSpace"];
+		crudObject.setSpaceId(new SpacePermId(space));
+		const sampleIdentifier = "/" + space;
+		const project = parameters["sampleProject"];
+		if (project != null) {
+			crudObject.setProjectId(new ProjectIdentifier("/" + space + "/" + project));
+			if(IdentifierUtil.isProjectSamplesEnabled) {
+				const sampleIdentifierVariable = sampleIdentifier + "/" + project;
+			}
+			var experiment = parameters["sampleExperiment"]
+			if (experiment != null) {
+				crudObject.setExperimentId(new ExperimentIdentifier("/" + space + "/" + project + "/" + experiment));
+			}
+		}
+		if (crudObject.setSampleId) {
+			crudObject.setSampleId(new SampleIdentifier(sampleIdentifier + "/" + parameters["sampleCode"]));
+		}
+		var sampleProperties = parameters["sampleProperties"];
+		var properties: { [key: string]: string } = {};
+		Object.keys(sampleProperties).forEach((key: string) => {
+			properties[key] = sampleProperties[key] === "" ? null : sampleProperties[key];
+		});
+		crudObject.setProperties(properties);
+	}
+
 	async checkPermissions(form: Form) {
 		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;
 		const objId = form.entityPermId;
@@ -171,6 +200,12 @@ export class ObjectFormController implements IFormController {
 		return Promise.resolve();
 	}
 
+	/**
+	 * Prepare the sample update for the move
+	 * @param samplePermId - The permId of the sample to update
+	 * @param params - The parameters for the move
+	 * @returns The sample update
+	 */
 	_prepareSampleUpdate(samplePermId: string, params: any) {
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const sampleUpdate = new SampleUpdate();
@@ -198,8 +233,11 @@ export class ObjectFormController implements IFormController {
 	};
 
 	/**
-   * Move sample with descendants
-   */
+	 * Move samples with descendants
+	 * @param permIds - The permIds of the samples to move
+	 * @param selectedEntityType - The type of the entity to move to
+	 * @returns The void because the implementation is not yet implemented
+	 */
 	async moveSampleWithDescendants(
 		permIds: any[],
 		selectedEntityType: string,

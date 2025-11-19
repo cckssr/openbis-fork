@@ -1,6 +1,6 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export class ProjectFormModel {
 
@@ -13,28 +13,6 @@ export class ProjectFormModel {
 			version: dto.version || 1,
 			entityKind: EntityKind.PROJECT,
 			meta: {},
-			sections: [
-				{
-					section: FormSection.IDENTIFICATION_INFO,
-					fields: [
-						permId + '-permId',
-						permId + '-identifier',
-						permId + '-path',
-						permId + '-space',
-						permId + '-code',
-						permId + '-registrator',
-						permId + '-registrationDate',
-						permId + '-modifier',
-						permId + '-modificationDate',
-					],
-				},
-				{
-					section: FormSection.GENERAL,
-					fields: [
-						permId + '-description',
-					],
-				},
-			],
 			fields: [
 				getPermIdField(dto),
 				getIdentifierField(dto),
