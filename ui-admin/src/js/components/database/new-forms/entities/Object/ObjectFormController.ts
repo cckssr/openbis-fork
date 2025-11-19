@@ -5,6 +5,7 @@ import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIden
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
+import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/FormFieldUtils.ts';
 
 export class ObjectFormController implements IFormController {
 	private openbisFacade: any;
@@ -111,20 +112,15 @@ export class ObjectFormController implements IFormController {
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const update = new SampleUpdate();
 		update.setSampleId(new SamplePermId(form.entityPermId));
-		const documentField = findFormFieldById(form.fields, form.entityPermId, 'document') as FormField;
-		const properties: { [key: string]: string } = {};
-		if (documentField) {
-			properties['DOCUMENT'] = documentField.value;
-			properties['NAME'] = documentField.meta?.title;
-		}
-		//update.getMetaData().set('MARKDOWN', documentField.meta?.isMarkdown ? 'true' : 'false');
 
+		const properties = getChangedEditableFieldValues(form);
+		//update.getMetaData().set('MARKDOWN', documentField.meta?.isMarkdown ? 'true' : 'false');
 		console.log('ObjectFormController._updateSample', { properties });
 		update.setProperties(properties);
 		return update;
 	}
 
-	_setBasics(crudObject: any, parameters: any) {
+	/* _setBasics(crudObject: any, parameters: any) {
 		const { SpacePermId, ProjectIdentifier, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
 		const space = parameters["sampleSpace"];
 		crudObject.setSpaceId(new SpacePermId(space));
@@ -149,7 +145,7 @@ export class ObjectFormController implements IFormController {
 			properties[key] = sampleProperties[key] === "" ? null : sampleProperties[key];
 		});
 		crudObject.setProperties(properties);
-	}
+	} */
 
 	async checkPermissions(form: Form) {
 		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;

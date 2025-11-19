@@ -7,30 +7,41 @@ export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { v
 
 export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
-  return {
+  const readOnly = overrides.readOnly !== undefined ? overrides.readOnly : true;
+  const value = overrides.value ?? dto.code;
+  const field: FormField<string> = {
     id: permId + '-code',
     label: 'Code',
-    value: overrides.value ?? dto.code,
+    value,
     dataType: FormFieldDataType.VARCHAR,
     required: true,
-    readOnly: true,
+    readOnly,
     isMultiValue: false,
     section: FormSection.IDENTIFICATION_INFO,
     column: 'left',
     meta: {},
     ...overrides
   };
+  
+  // Only set initialValue for non-readonly fields
+  if (!readOnly) {
+    field.initialValue = overrides.initialValue !== undefined ? overrides.initialValue : value;
+  }
+  
+  return field;
 }
 
 export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
-  return {
+  const readOnly = overrides.readOnly !== undefined ? overrides.readOnly : false;
+  const value = overrides.value ?? dto.description;
+  const field: FormField<string> = {
     id: permId + '-description',
     label: 'Description',
-    value: overrides.value ?? dto.description,
+    value,
     dataType: FormFieldDataType.WORD_PROCESSOR,
     required: false,
-    readOnly: false,
+    readOnly,
     isMultiValue: false,
     section: FormSection.GENERAL,
     column: 'center',
@@ -39,6 +50,13 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
     },
     ...overrides
   };
+  
+  // Only set initialValue for non-readonly fields
+  if (!readOnly) {
+    field.initialValue = overrides.initialValue !== undefined ? overrides.initialValue : value;
+  }
+  
+  return field;
 }
 
 export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
@@ -211,40 +229,6 @@ export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormFiel
   };
 };
 
-export function getShowOnProjectOverviewField(dto: any, overrides: FieldOverrides = {}): FormField<boolean> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-showOnProjectOverview',
-    label: 'Show On Project Overview',
-    value: overrides.value ?? dto.showOnProjectOverview,
-    dataType: FormFieldDataType.BOOLEAN,
-    required: false,
-    readOnly: false,
-    isMultiValue: false,
-    section: FormSection.GENERAL,
-    column: 'left',
-    meta: {},
-    ...overrides
-  };
-};
-
-export function getDocumentField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-document',
-    label: 'Document',
-    value: overrides.value ?? dto.properties.DOCUMENT,
-    dataType: FormFieldDataType.WORD_PROCESSOR,
-    required: false,
-    readOnly: false,
-    isMultiValue: false,
-    section: FormSection.GENERAL,
-    column: 'center',
-    meta: {},
-    ...overrides
-  };
-}
-
 /**
  * Maps DTO dataType string to FormFieldDataType enum
  */
@@ -313,20 +297,28 @@ export function getPropertyFieldsFromAssignments(
         meta.mode = 'classic';
       }
 
+      const readOnly = fieldOverrides.readOnly !== undefined ? fieldOverrides.readOnly : !(assignment.showInEditView ?? true);
+      const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;
+      
       const field: FormField = {
         id: fieldId,
         name: propertyCode,
         label: propertyType.label || propertyCode,
-        value: fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue,
+        value,
         dataType: fieldOverrides.dataType || dataType,
         required: fieldOverrides.required !== undefined ? fieldOverrides.required : (assignment.mandatory || false),
-        readOnly: fieldOverrides.readOnly !== undefined ? fieldOverrides.readOnly : !(assignment.showInEditView ?? true),
+        readOnly,
         isMultiValue: fieldOverrides.isMultiValue !== undefined ? fieldOverrides.isMultiValue : (propertyType.multiValue || false),
         section: section,
         column: fieldOverrides.column || column,
         meta: { ...meta, ...(fieldOverrides.meta || {}) },
         ...fieldOverrides
       };
+
+      // Only set initialValue for non-readonly fields
+      if (!readOnly) {
+        field.initialValue = fieldOverrides.initialValue !== undefined ? fieldOverrides.initialValue : value;
+      }
 
       return field;
     })

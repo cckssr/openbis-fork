@@ -224,7 +224,6 @@ export class {Entity}FormModel {
 - `getModifierField()` - Modifier user field
 - `getModificationDateField()` - Modification date field
 - `getTypeField()` - Entity type field
-- `getShowOnProjectOverviewField()` - Boolean field
 
 ## Implementation Guide
 

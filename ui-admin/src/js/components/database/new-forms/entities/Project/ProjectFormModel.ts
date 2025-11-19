@@ -6,6 +6,19 @@ export class ProjectFormModel {
 
 	static adaptProjectDtoToForm(dto: any): Form {
 		const permId = dto.permId.permId;
+		const fields = [
+			getPermIdField(dto),
+			getIdentifierField(dto),
+			getPathField(dto),
+			getSpaceField(dto),
+			getCodeField(dto),
+			getRegistratorField(dto),
+			getRegistrationDateField(dto),
+			getModifierField(dto),
+			getModificationDateField(dto),
+			getDescriptionField(dto, { column: 'center' }),
+		];
+
 		return {
 			entityPermId: permId,
 			entityType: EntityKind.PROJECT,
@@ -13,18 +26,7 @@ export class ProjectFormModel {
 			version: dto.version || 1,
 			entityKind: EntityKind.PROJECT,
 			meta: {},
-			fields: [
-				getPermIdField(dto),
-				getIdentifierField(dto),
-				getPathField(dto),
-				getSpaceField(dto),
-				getCodeField(dto),
-				getRegistratorField(dto),
-				getRegistrationDateField(dto),
-				getModifierField(dto),
-				getModificationDateField(dto),
-				getDescriptionField(dto, { column: 'center' }),
-			],
+			fields,
 			isDirty: false,
 			isValid: true,
 			actions: [

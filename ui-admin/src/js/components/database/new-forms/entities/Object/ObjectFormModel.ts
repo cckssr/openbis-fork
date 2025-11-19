@@ -12,7 +12,6 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField,
-  getShowOnProjectOverviewField,
   getPropertyFieldsFromAssignments
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
@@ -36,6 +35,7 @@ export class ObjectFormModel {
     ];
 
     const propertyFields = getPropertyFieldsFromAssignments(dto);
+    const fields = [...staticFields, ...propertyFields];
 
     return {
       entityPermId: permId,
@@ -44,7 +44,7 @@ export class ObjectFormModel {
       version: dto.version,
       entityKind: EntityKind.SAMPLE,
       meta: {},
-      fields: [...staticFields, ...propertyFields],
+      fields,
       isDirty: false,
       isValid: true,
       actions: [
@@ -174,7 +174,6 @@ export class ObjectFormModel {
       fields: [
         getCodeField({ permId: { permId: permId } }, { readOnly: false, value: params.defaultCode, id: permId + '-code' }),
         getTypeField({ permId: { permId: permId } }, { value: 'ENTRY', id: permId + '-objectTypeCode' }),
-        getShowOnProjectOverviewField({ permId: { permId: permId } }, { value: true, id: permId + '-showOnProjectOverview' }),
       ],
       isDirty: false,
       isValid: true,
