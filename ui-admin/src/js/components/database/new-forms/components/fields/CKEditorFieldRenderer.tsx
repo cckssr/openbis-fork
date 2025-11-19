@@ -2,6 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
 import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import CKEditorClassic from '@src/js/components/database/new-forms/components/fields/CKEditor/CKEditorClassic.jsx';
+import FormFieldContainer from '@src/js/components/common/form/FormFieldContainer.jsx';
+import FormFieldLabel from '@src/js/components/common/form/FormFieldLabel.jsx';
+import Box from '@mui/material/Box';
+import { Typography } from '@mui/material';
 
 export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
   field,
@@ -14,10 +18,12 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
   const [disabledToolbar, setDisabledToolbar] = useState(true);
   const [originalHtmlContent, setOriginalHtmlContent] = useState<string | null>(null);
   const editorRef = useRef<any>(null);
+  const isEditingMode = mode === FormMode.EDIT || mode === FormMode.CREATE;
+  const isReadOnly = !isEditingMode || field.readOnly;
 
   useEffect(() => {
-    setDisabledToolbar(mode === FormMode.VIEW);
-  }, [mode]);
+    setDisabledToolbar(isReadOnly);
+  }, [isReadOnly]);
 
   // Apply original HTML content when it's available
   useEffect(() => {
@@ -83,17 +89,24 @@ export const CKEditorFieldRenderer: React.FC<FieldRendererProps> = ({
   };
 
   return (
-    <CKEditorClassic
-      value={originalHtmlContent !== null ? originalHtmlContent : field.value}
-      onEditorContentChange={handleEditorChange}
-      sessionID={params.sessionID}
-      disabled={disabledToolbar}
-      markdownEnabled={markdownEnabled}
-      onToggleMarkdown={toggleMarkdownMode}
-      onEditorReady={(editor: any) => {
-        editorRef.current = editor;
-      }}
-      mode={field.meta?.mode}
-    />
+    <FormFieldContainer
+      description={field.meta?.helpText}
+    >
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+        <Typography variant="body2" component="div" sx={{ color: '#0000008a', fontSize: '0.7rem' }}>{field.label} {field.required ? '*' : ''}</Typography>
+        <CKEditorClassic
+          value={originalHtmlContent !== null ? originalHtmlContent : field.value}
+          onEditorContentChange={handleEditorChange}
+          sessionID={params.sessionID}
+          disabled={disabledToolbar}
+          markdownEnabled={markdownEnabled}
+          onToggleMarkdown={toggleMarkdownMode}
+          onEditorReady={(editor: any) => {
+            editorRef.current = editor;
+          }}
+          mode={field.meta?.mode}
+        />
+      </Box>
+    </FormFieldContainer>
   );
 };
