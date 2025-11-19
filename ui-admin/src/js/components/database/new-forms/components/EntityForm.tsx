@@ -121,14 +121,16 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
       return <div>Unsupported field type: {field.dataType}</div>;
     }
     return (
-      <FieldRenderer
-        key={field.id}
-        field={field}
-        onFieldChange={onFieldChange}
-        onFieldMetadataChange={onFieldMetadataChange}
-        mode={mode}
-        params={params}
-      />
+      <div style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
+        <FieldRenderer
+          key={field.id}
+          field={field}
+          onFieldChange={onFieldChange}
+          onFieldMetadataChange={onFieldMetadataChange}
+          mode={mode}
+          params={params}
+        />
+      </div>
     );
   };
 

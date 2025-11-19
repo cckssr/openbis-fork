@@ -224,9 +224,7 @@ export class {Entity}FormModel {
 - `getModifierField()` - Modifier user field
 - `getModificationDateField()` - Modification date field
 - `getTypeField()` - Entity type field
-- `getObjectTypeCodeField()` - Object type code field
 - `getShowOnProjectOverviewField()` - Boolean field
-- `getDocumentField()` - Document/rich text field
 
 ## Implementation Guide
 
@@ -321,7 +319,7 @@ import {
   getDescriptionField,
   getPermIdField,
   // ... other utilities
-} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+} from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 export class NewEntityFormModel {
   static adaptNewEntityDtoToForm(dto: any): Form {
@@ -504,7 +502,7 @@ import {
   getCodeField,
   getDescriptionField,
   getPermIdField
-} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+} from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 // Basic usage
 const codeField = getCodeField(dto);

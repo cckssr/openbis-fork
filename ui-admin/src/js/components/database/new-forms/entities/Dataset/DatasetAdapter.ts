@@ -11,7 +11,7 @@ import {
   getModifierField,
   getModificationDateField,
   getTypeField
-} from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+} from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 
 export function adaptDatasetDtoToForm(dto: any): Form {

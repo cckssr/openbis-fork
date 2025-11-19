@@ -17,7 +17,7 @@ import autoBind from 'auto-bind'
 import withStyles from '@mui/styles/withStyles';
 import messages from '@src/js/common/messages.js'
 import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
-import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider2.tsx';
+import { EntityFormContextProvider } from '@src/js/components/database/new-forms/components/EntityFormContextProvider.tsx';
 
 const styles = theme => ({
   tabsPanel: {

@@ -42,5 +42,7 @@ export enum FormSection {
 	SELECT_TYPE = 'Select Type',
 	IDENTIFICATION_INFO = 'Identification Info',
 	GENERAL = 'General',
-	OVERVIEW = 'Overview'
+	OVERVIEW = 'Overview',
+	METADATA = 'Metadata',
+	UNKNOWN = 'Unknown',
 }

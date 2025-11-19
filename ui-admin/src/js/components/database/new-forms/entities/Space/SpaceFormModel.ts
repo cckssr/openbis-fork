@@ -1,8 +1,6 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
-import { EntityKind, FormSection, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formField.utils.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
