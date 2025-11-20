@@ -23,9 +23,7 @@ import ch.ethz.sis.shared.io.IOUtils;
 import lombok.NonNull;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotInStore;
 import static ch.ethz.sis.afs.exception.AFSExceptions.PathNotRegularFile;
@@ -58,19 +56,7 @@ public class HashOperationExecutor implements OperationExecutor<HashOperation, S
                 if ( IOUtils.isRegularFile(cachePath) ) {
                     return new String(IOUtils.readFully(cachePath), StandardCharsets.UTF_8);
                 } else {
-
-                    long size = Files.size(sourcePath);
-                    long offset = 0;
-
-                    MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-                    while ( offset < size ) {
-                        int toBeRead = (int) Math.min(10240L, size - offset);
-                        byte[] readBytes = IOUtils.read(operation.getSource(), offset, toBeRead);
-                        messageDigest.update(readBytes);
-                        offset+=readBytes.length;
-                    }
-
-                    String md5Value = IOUtils.asHex(messageDigest.digest());
+                    String md5Value = IOUtils.getMD5ForFileAsHex(operation.getSource());
 
                     String temporaryNewCachePath = Path.of(OperationExecutor.getTempPath(transaction, cachePath)).toAbsolutePath().normalize().toString();
                     if(IOUtils.exists(temporaryNewCachePath)) {
@@ -99,15 +85,7 @@ public class HashOperationExecutor implements OperationExecutor<HashOperation, S
         String temporaryNewCachePath = Path.of(OperationExecutor.getTempPath(transaction, cachePath)).toAbsolutePath().normalize().toString();
 
         if (IOUtils.isRegularFile(temporaryNewCachePath)) { // Only copies if it has not been done yet
-            byte[] previewBytes = IOUtils.readFully(temporaryNewCachePath);
-
-            if(IOUtils.exists(cachePath)) {
-                IOUtils.delete(cachePath);
-            }
-            IOUtils.createFile(cachePath);
-            IOUtils.write(cachePath, 0L, previewBytes);
-
-            IOUtils.delete(temporaryNewCachePath);
+            IOUtils.move(temporaryNewCachePath, cachePath);
         }
         return true;
     }

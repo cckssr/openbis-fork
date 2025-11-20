@@ -30,14 +30,10 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static ch.ethz.sis.afs.exception.AFSExceptions.*;
-import static ch.ethz.sis.afs.manager.operation.OperationExecutor.CACHED_PREVIEW_SUFFIX;
-import static ch.ethz.sis.afs.manager.operation.OperationExecutor.HIDDEN_AFS_DIRECTORY;
 
 public class PreviewOperationExecutor implements OperationExecutor<PreviewOperation, byte[]> {
     //
@@ -149,15 +145,7 @@ public class PreviewOperationExecutor implements OperationExecutor<PreviewOperat
         String temporaryNewCachePath = Path.of(OperationExecutor.getTempPath(transaction, cachePath)).toAbsolutePath().normalize().toString();
 
         if (IOUtils.isRegularFile(temporaryNewCachePath)) { // Only copies if it has not been done yet
-            byte[] previewBytes = IOUtils.readFully(temporaryNewCachePath);
-
-            if(IOUtils.exists(cachePath)) {
-                IOUtils.delete(cachePath);
-            }
-            IOUtils.createFile(cachePath);
-            IOUtils.write(cachePath, 0L, previewBytes);
-
-            IOUtils.delete(temporaryNewCachePath);
+            IOUtils.move(temporaryNewCachePath, cachePath);
         }
         return true;
     }
