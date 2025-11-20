@@ -1,8 +1,6 @@
 import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import {
   getCodeField,
-  getDescriptionField,
   getPermIdField,
   getIdentifierField,
   getPathField,
@@ -10,12 +8,25 @@ import {
   getRegistrationDateField,
   getModifierField,
   getModificationDateField,
-  getTypeField
+  getTypeField,
+  getPropertyFieldsFromAssignments
 } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 
 
 export function adaptDatasetDtoToForm(dto: any): Form {
   const permId = dto.permId.permId;
+  const staticFields = [
+    getTypeField(dto),
+    getPermIdField(dto),
+    getIdentifierField(dto),
+    getPathField(dto),
+    getCodeField(dto),
+    getRegistratorField(dto),
+    getRegistrationDateField(dto),
+    getModifierField(dto),
+    getModificationDateField(dto),
+  ];
+  const propertyFields = getPropertyFieldsFromAssignments(dto);
   return {
     entityPermId: permId,
     entityType: dto.type.code,
@@ -23,36 +34,7 @@ export function adaptDatasetDtoToForm(dto: any): Form {
     version: dto.version,
     entityKind: 'DATASET',
     meta: {},
-    sections: [
-      {
-        section: FormSection.IDENTIFICATION_INFO,
-        fields: [ permId + '-type', 
-          permId + '-permId', 
-          permId + '-identifier', 
-          permId + '-path',
-          permId + '-code',
-          permId + '-registrator',
-          permId + '-registrationDate',
-          permId + '-modifier',
-          permId + '-modificationDate',
-        ],
-      },
-      {
-        section: FormSection.GENERAL,
-        fields: [
-          permId + '-description',
-        ],
-      },
-    ],
-    fields: [
-      getTypeField(dto),
-      getPermIdField(dto),
-      getCodeField(dto),
-      getRegistratorField(dto),
-      getRegistrationDateField(dto),
-      getModifierField(dto),
-      getModificationDateField(dto),
-    ],
+    fields: [...staticFields, ...propertyFields],
     isDirty: false,
     isValid: true
   };

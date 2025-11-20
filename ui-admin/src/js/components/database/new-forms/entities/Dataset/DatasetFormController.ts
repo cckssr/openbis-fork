@@ -14,12 +14,14 @@ export class DatasetFormController implements IFormController {
 	async load(permId: string): Promise<Form> {
 		const { DataSetPermId, DataSetFetchOptions } = this.openbisFacade;
 		const id = new DataSetPermId(permId);
-		const fetchOptions = new DataSetFetchOptions()
-        fetchOptions.withExperiment()
-        fetchOptions.withSample()
-        fetchOptions.withParents()
-        fetchOptions.withProperties()
-		fetchOptions.withType()
+		const fetchOptions = new DataSetFetchOptions();
+        fetchOptions.withExperiment();
+        fetchOptions.withSample();
+        fetchOptions.withParents();
+        fetchOptions.withProperties();
+		fetchOptions.withType();
+		fetchOptions.withType().withPropertyAssignments();
+		fetchOptions.withType().withPropertyAssignments().withPropertyType();
         const result = await this.openbisFacade.getDataSets([id], fetchOptions);
 		console.log({result})
 		const datasetDto = result[permId];
