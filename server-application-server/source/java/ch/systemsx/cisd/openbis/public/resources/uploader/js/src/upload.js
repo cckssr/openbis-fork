@@ -111,12 +111,14 @@ var Uploader = new function () {
     function resumeUpload(id) {
         progress[id].pause = false;
         progress[id].abort = false;
-        $("#play-button-" + id).remove();
-        $("#pause-button").clone().attr("id", "pause-button-" + id)
-            .appendTo("#action-bar-" + id)
-            .click(function() {
-                pauseUpload(id);
-            });
+        $("#dataset-form-file-upload-play-button-" + id).remove();
+        var pauseBtn = $("#pause-button").clone()
+                                        .attr("id", "dataset-form-file-upload-pause-button-" + id)
+                                        .appendTo("#action-bar-" + id);
+        $("body").off("click", "#dataset-form-file-upload-pause-button-" + id)
+        $("body").on("click", "#dataset-form-file-upload-pause-button-" + id, function() {
+            pauseUpload(id);
+        });
         var startByte = progress[id].bytesSent;
         var endByte = startByte + settings.chunk_size;
         if (endByte > progress[id].file.size)
@@ -139,12 +141,14 @@ var Uploader = new function () {
 
     function pauseUpload(id) {
         progress[id].pause = true;
-        $("#pause-button-" + id).remove();
-        $("#play-button").clone().attr("id", "play-button-" + id)
-            .appendTo("#action-bar-" + id)
-            .click(function() {
-                resumeUpload(id);
-            });
+        $("#dataset-form-file-upload-pause-button-" + id).remove();
+        var playBtn = $("#play-button").clone()
+                            .attr("id", "dataset-form-file-upload-play-button-" + id)
+                            .appendTo("#action-bar-" + id);
+        $("body").off("click", "#dataset-form-file-upload-play-button-" + id)
+        $("body").on("click", "#dataset-form-file-upload-play-button-" + id, function() {
+            resumeUpload(id);
+        });
     }
     
 
@@ -252,16 +256,17 @@ var Uploader = new function () {
         ++current_upload_id;
         $(settings.file_list)
             .append("<li class=\"upload\" id=\"upload-" + id + "\">" +
-            		"<span id='delete-" + id + "' class='delete-button'>X</span> " +
+            		"<span id='dataset-form-file-delete-btn-" + id + "' class='delete-button'>X</span> " +
                     "<span id=\"progress-" + id + "\" class=\"progressbar-container\">" +
-                    "<span id=\"progressbar-" + id + "\" class=\"progressbar\"></span>" + 
+                    "<span id=\"progressbar-" + id + "\" class=\"progressbar\"></span>" +
                     "</span>" +
                     "<span id=\"action-bar-" + id + "\"></span> " +
                     "<span id=\"filename-" + id + "\">" + file.name + "</span>" +
                     " (" + styleSize(file.size) + ", " +
                     "<span id=\"speed-" + id + "\">? KB/s</span>)" +
                     "</li>");
-        $("#delete-"+id).click(function() {
+        $("body").off("click", "#dataset-form-file-delete-btn-"+id)
+        $("body").on("click", "#dataset-form-file-delete-btn-"+id, function() {
         	if(!progress[id]) {
         		var fileData = file;
             	$( "#upload-"+id).remove();
@@ -270,19 +275,23 @@ var Uploader = new function () {
         		alert("The upload is in progress, please wait.");
         	}
         });
-        
+
         $("#upload-" + id).addClass("starting");
         if (settings.smart_mode) {
-            $("#stop-button").clone().attr("id", "stop-button-" + id)
-                .appendTo("#action-bar-" + id)
-                .click(function() {
-                    abortUpload(id);
-                });
-            $("#pause-button").clone().attr("id", "pause-button-" + id)
-                .appendTo("#action-bar-" + id)
-                .click(function() {
-                    pauseUpload(id);
-                });
+            var stopBtn = $("#stop-button").clone()
+                            .attr("id", "dataset-form-file-upload-stop-button-" + id)
+                            .appendTo("#action-bar-" + id);
+            $("body").off("click", "#dataset-form-file-upload-stop-button-" + id)
+            $("body").on("click", "#dataset-form-file-upload-stop-button-" + id, function() {
+                abortUpload(id);
+            });
+            var pauseBtn = $("#pause-button").clone()
+                                .attr("id", "dataset-form-file-upload-pause-button-" + id)
+                                .appendTo("#action-bar-" + id);
+            $("body").off("click", "#dataset-form-file-upload-pause-button-" + id)
+            $("body").on("click", "#dataset-form-file-upload-pause-button-" + id, function() {
+                pauseUpload(id);
+            });
             progress[id] = {
                 file: file,
                 startTime: Date.now(),
