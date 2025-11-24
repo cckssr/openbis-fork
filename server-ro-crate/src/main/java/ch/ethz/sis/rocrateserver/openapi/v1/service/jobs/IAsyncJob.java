@@ -8,6 +8,8 @@ public interface IAsyncJob extends Runnable
 
     OperationType getOperationType();
 
+    String getUserId();
+
     public enum OperationType
     {
         VALIDATE,

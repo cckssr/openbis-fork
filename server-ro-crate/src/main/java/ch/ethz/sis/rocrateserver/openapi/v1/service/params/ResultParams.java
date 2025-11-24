@@ -7,7 +7,7 @@ public class ResultParams
     @HeaderParam("api-key")
     private String apiKey;
 
-    @HeaderParam("api-key")
+    @HeaderParam("jobid")
     private String jobId;
 
     public String getApiKey()

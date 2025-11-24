@@ -29,6 +29,12 @@ public class ImportJob implements IAsyncJob
     }
 
     @Override
+    public String getUserId()
+    {
+        return null;
+    }
+
+    @Override
     public void run()
     {
 
