@@ -790,6 +790,43 @@ public class IOUtils
         }
     }
 
+    public static byte[] getMD5ForFile(String source) throws IOException
+    {
+        Path sourcePath = getPathObject(source);
+        try (FileChannel readFileChannel = FileChannel.open(sourcePath, StandardOpenOption.READ)) {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+
+            long size = Files.size(sourcePath);
+            long offset = 0;
+
+            ByteBuffer byteBuffer = ByteBuffer.allocate(262144);
+            while ( offset < size ) {
+                int toBeRead = (int) Math.min(byteBuffer.capacity(), size - offset);
+                readFileChannel.position(offset);
+                int read = readFileChannel.read(byteBuffer);
+                if (read < toBeRead)
+                {
+                    throw new IOException("Expected to read " + toBeRead + " bytes but was only " + read + ".");
+                }
+                byteBuffer.flip();
+                messageDigest.update(byteBuffer);
+                byteBuffer.clear();
+                offset+=read;
+            }
+
+            return messageDigest.digest();
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getMD5ForFileAsHex(String source) throws IOException
+    {
+        return asHex(getMD5ForFile(source));
+    }
+
     public static Integer[] getShares(String folder)
     {
         try (Stream<Path> files = Files.list(Paths.get(folder)))

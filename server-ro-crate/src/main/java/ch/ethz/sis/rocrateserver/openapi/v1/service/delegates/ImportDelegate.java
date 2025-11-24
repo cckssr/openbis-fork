@@ -21,19 +21,19 @@ import ch.openbis.rocrate.app.reader.RdfToModel;
 import edu.kit.datamanager.ro_crate.RoCrate;
 import edu.kit.datamanager.ro_crate.reader.FolderReader;
 import edu.kit.datamanager.ro_crate.reader.RoCrateReader;
-import edu.kit.datamanager.ro_crate.reader.ZipReader;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.jboss.logging.Logger;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 @ApplicationScoped
 public class ImportDelegate
@@ -181,11 +181,52 @@ public class ImportDelegate
         } else if (headers.getContentType().contains("application/zip"))
         {
 
-            Path path = Path.of(UUID.randomUUID() + ".zip");
+            UUID uuid = UUID.randomUUID();
+            Path path = Path.of(uuid + ".zip");
+            byte[] buffer = new byte[1024];
             LOG.debug("Path: " + path.toString());
             SessionWorkSpaceManager.write(headers.getApiKey(), path, body);
-            RoCrateReader roCrateReader = new RoCrateReader(new ZipReader());
-            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
+            Path realPath1 = SessionWorkSpaceManager.getRealPath(headers.getApiKey(), path);
+            Files.newInputStream(realPath1);
+            ZipInputStream zis = new ZipInputStream(new FileInputStream(realPath1.toString()));
+            ZipEntry nextEntry = zis.getNextEntry();
+            File destDir = new File(SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
+                    Path.of(uuid.toString())).toString());
+
+            while (nextEntry != null)
+            {
+                File newFile = newFile(destDir, nextEntry);
+                if (nextEntry.isDirectory())
+                {
+                    if (!newFile.isDirectory() && !newFile.mkdirs())
+                    {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
+                } else
+                {
+                    // fix for Windows-created archives
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs())
+                    {
+                        throw new IOException("Failed to create directory " + parent);
+                    }
+
+                    // write file content
+                    FileOutputStream fos = new FileOutputStream(newFile);
+                    int len;
+                    while ((len = zis.read(buffer)) > 0)
+                    {
+                        fos.write(buffer, 0, len);
+                    }
+                    fos.close();
+                }
+                nextEntry = zis.getNextEntry();
+
+            }
+
+            RoCrateReader roCrateReader = new RoCrateReader(new FolderReader());
+            Path realPath = SessionWorkSpaceManager.getRealPath(headers.getApiKey(),
+                    Path.of(uuid.toString()));
             LOG.debug(String.format("Crate location %s",
                     realPath));
             if (realPath.toString().startsWith("./"))
@@ -204,5 +245,21 @@ public class ImportDelegate
         ImportOptions importOptions = new ImportOptions();
         importOptions.setMode(ImportMode.valueOf(importParams.getImportMode()));
         return importOptions;
+    }
+
+    // https://www.baeldung.com/java-compress-and-uncompress
+    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
+    {
+        File destFile = new File(destinationDir, zipEntry.getName());
+
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
+
+        if (!destFilePath.startsWith(destDirPath + File.separator))
+        {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return destFile;
     }
 }

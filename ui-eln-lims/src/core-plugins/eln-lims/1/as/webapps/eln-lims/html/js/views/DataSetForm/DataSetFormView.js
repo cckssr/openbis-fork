@@ -1035,7 +1035,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                                 _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(field.val()));
                                              }
                                         } else {
-                                            _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(field.val()));
+                                            var value = Util.getEmptyIfNull(field.val());
+                                            if(!profile.isOpenBIS6orNewer && Array.isArray(value)) {
+                                                //there are no multi-value nor array properties in 20.10.x
+                                                value = value[0];
+                                            }
+                                            _this._setDataSetProperty(propertyTypeCode, value);
                                         }
                                         field.data('last', field.val());
 									}
