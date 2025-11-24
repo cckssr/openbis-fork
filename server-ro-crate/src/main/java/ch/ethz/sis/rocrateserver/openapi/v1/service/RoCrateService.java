@@ -9,6 +9,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationErrorMapping;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -187,5 +188,15 @@ public class RoCrateService {
 
 
     }
+
+    @GET
+    @Path("result")
+    public Response result(
+            @BeanParam ResultParams headers,
+            InputStream body) throws Exception
+    {
+
+    }
+
 
 }
