@@ -1,5 +1,6 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -11,9 +12,40 @@ public class AsyncJobRegistry
 
     public static final int N_THREADS = 2;
 
-    ConcurrentHashMap<String, IAsyncJob> jobs = new ConcurrentHashMap<>();
+    private class JobKey
+    {
+        String userName;
 
-    ConcurrentHashMap<String, Future> results = new ConcurrentHashMap<>();
+        String jobId;
+
+        public JobKey(String userName, String jobId)
+        {
+            this.userName = userName;
+            this.jobId = jobId;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            JobKey jobKey = (JobKey) o;
+            return Objects.equals(userName, jobKey.userName) && Objects.equals(jobId,
+                    jobKey.jobId);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(userName, jobId);
+        }
+    }
+
+    ConcurrentHashMap<JobKey, IAsyncJob> jobs = new ConcurrentHashMap<>();
+
+    ConcurrentHashMap<JobKey, Future> results = new ConcurrentHashMap<>();
 
     ThreadPoolExecutor executor =
             (ThreadPoolExecutor) Executors.newFixedThreadPool(N_THREADS);
@@ -32,15 +64,18 @@ public class AsyncJobRegistry
     {
         UUID uuid = UUID.randomUUID();
         Future<?> submit = executor.submit(job);
-        jobs.put(uuid.toString(), job);
-        results.put(uuid.toString(), submit);
+        JobKey jobKey = new JobKey(job.getUserId(), uuid.toString());
+        jobs.put(jobKey, job);
+        results.put(jobKey, submit);
         return uuid.toString();
     }
 
     //Maybe provide Status and Result together to avoid repeated call
-    public Status poll(String jobId)
+    public Status poll(String username, String jobId)
     {
-        if (!results.get(jobId).isDone())
+        JobKey jobKey = new JobKey(username, jobId);
+        Future future = results.get(jobKey);
+        if (!future.isDone())
         {
             return Status.PENDING;
         }

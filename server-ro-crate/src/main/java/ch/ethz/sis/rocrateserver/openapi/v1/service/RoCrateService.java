@@ -6,12 +6,12 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationErrorMapping;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.AsyncJobRegistry;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
@@ -21,11 +21,11 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 
 @Path("/openbis/open-api/ro-crate")
@@ -41,6 +41,9 @@ public class RoCrateService {
 
     @Inject
     ExportDelegate exportDelegate;
+
+    @Inject
+    AsyncJobRegistry asyncJobRegistry;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -79,9 +82,8 @@ public class RoCrateService {
         }
 
         try {
-            Map<String, String> externalToOpenBisIdentifiers =
-                    importDelegate.import_(openBIS, headers, body, false)
-                            .getExternalToOpenBisIdentifiers();
+            AsyncJob externalToOpenBisIdentifiers =
+                    importDelegate.import_(asyncJobRegistry, openBIS, headers, body, false);
             ObjectMapper objectMapper = new ObjectMapper();
             String serialized = objectMapper.writeValueAsString(externalToOpenBisIdentifiers);
             return Response.ok(serialized).build();
@@ -121,13 +123,10 @@ public class RoCrateService {
         }
 
         try {
-            ImportDelegate.OpenBisImportResult openBisImportResult =
-                    importDelegate.import_(openBIS, headers, body, true);
-            return ValidationReport.serialize(
-                    new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
-                            ValidationErrorMapping.mapErrors(
-                                    openBisImportResult.getValidationResult()),
-                            openBisImportResult.getValidationResult().getFoundIdentifiers()));
+            AsyncJob asyncResult =
+                    importDelegate.import_(asyncJobRegistry, openBIS, headers, body, true);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(asyncResult);
         } catch (WebApplicationException ex)
         {
             LOG.error("There was an error", ex);
@@ -195,6 +194,20 @@ public class RoCrateService {
             @BeanParam ResultParams headers,
             InputStream body) throws Exception
     {
+        OpenBIS openBIS = null;
+        SessionInformation sessionInformation = null;
+        try
+        {
+            openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
+            sessionInformation = openBIS.getSessionInformation();
+        } catch (Exception ex)
+        {
+            RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
+        }
+        AsyncJobRegistry.Status status =
+                asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        return new ServerResponse();
+
 
     }
 
