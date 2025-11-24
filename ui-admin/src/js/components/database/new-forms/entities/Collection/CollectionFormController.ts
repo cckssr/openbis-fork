@@ -1,9 +1,9 @@
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { CollectionFormModel } from '@src/js/components/database/new-forms/entities/Collection/CollectionFormModel.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
-import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
+import { createDummyDataSetIdentifierFromExperimentIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 export class CollectionFormController implements IFormController {
 	private openbisFacade: any;

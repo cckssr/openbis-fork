@@ -22,8 +22,8 @@ import {
   Divider
 } from '@mui/material';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { getProjectIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { getProjectIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 
 interface MoveDialogProps {
   open: boolean;

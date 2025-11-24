@@ -6,12 +6,12 @@ import ControllerDispatcher from '@src/js/components/database/new-forms/engine/C
 import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
+import { findConflicts, checkModificationDateConflict } from '@src/js/components/database/new-forms/utils/conflictResolutionUtil.ts';
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
 import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
 import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
-import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
 export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, user, sessionID, permId, initialMode, externalAppController }:
@@ -38,8 +38,6 @@ export const EntityFormContextProvider = ({ openbisFacade, params, entityKind, u
 	const [deleteDialogConfig, setDeleteDialogConfig] = useState<any>(null);
 	const [showMoveDialog, setShowMoveDialog] = useState(false);
 	const [moveInfo, setMoveInfo] = useState<any>(null);
-
-	const { isConflicted, conflictingFields, resolveConflicts, checkModificationDateConflict, findConflicts } = useConflictResolution();
 
 	/* const { saveToStorage, loadFromStorage, clearStorage } = useAutoSave({
 		formData: form,

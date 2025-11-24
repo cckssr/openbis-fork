@@ -1,6 +1,6 @@
 import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { getFormatedDate } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { getFormatedDate } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };

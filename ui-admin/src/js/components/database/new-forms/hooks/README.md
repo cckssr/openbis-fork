@@ -241,62 +241,45 @@ const handleSave = async () => {
 
 **Note**: Currently commented out in `EntityFormContextProvider` - may need activation
 
-### useConflictResolution
+### Conflict Resolution Utilities
 
-Manages conflict detection and resolution between local and server forms.
+Pure helper functions for detecting conflicts between local and server forms.
 
-**File**: `useConflictResolution.tsx`
+**File**: `useConflictResolution.tsx` (exports plain functions)
 
-**Purpose**: Detect and resolve conflicts when saving forms
-
-**Returns**:
+**Exports**:
 ```typescript
-{
-  isConflicted: boolean;
-  conflictingFields: string[];
-  findConflicts: (localForm: Form, serverForm: Form) => [FormField, FormField][];
-  resolveConflicts: (localForm: Form, serverForm: Form) => FormField[];
-  checkModificationDateConflict: (localForm: Form, serverForm: Form) => boolean;
-}
+findConflicts(localForm: Form, serverForm: Form): [FormField, FormField][];
+checkModificationDateConflict(localForm: Form, serverForm: Form): boolean;
 ```
 
 **Features**:
-- Compares local and server forms to find conflicts
-- Checks modification dates for optimistic locking
-- Identifies conflicting fields
-- Provides conflict resolution logic
+- Compares only non-read-only fields
+- Uses JSON.stringify for deep equality
+- Returns `[localField, serverField]` pairs for UI consumption
+- Separate helper checks modification dates for optimistic locking
 
 **Usage**:
 ```typescript
-const { isConflicted, findConflicts, checkModificationDateConflict } = useConflictResolution();
+import { findConflicts, checkModificationDateConflict } from './useConflictResolution';
 
-// Before saving, check for conflicts
-const handleSave = async () => {
-  const serverForm = await loadFormFromServer();
-  
-  // Check if server version is newer
-  if (checkModificationDateConflict(localForm, serverForm)) {
-    // Find specific field conflicts
-    const conflicts = findConflicts(localForm, serverForm);
-    
-    if (conflicts.length > 0) {
-      // Show conflict resolution dialog
-      setConflicts(conflicts);
-      setShowConflictDialog(true);
-      return;
-    }
+const serverForm = await controller.load(form.entityPermId);
+
+if (checkModificationDateConflict(form, serverForm)) {
+  const conflicts = findConflicts(form, serverForm);
+  if (conflicts.length > 0) {
+    openConflictDialog(conflicts);
+    return;
   }
-  
-  // No conflicts, proceed with save
-  await saveForm(localForm);
-};
+}
+
+await save(form);
 ```
 
 **Key Implementation Details**:
-- Only checks non-read-only fields
-- Uses JSON.stringify for deep comparison
-- Returns array of [localField, serverField] pairs for conflicts
-- Modification date check uses string comparison
+- Pure functions (no React state)
+- Can be reused in any module without hook rules
+- Keeps UI-specific flow inside `useConflictFlow`
 
 ### useDialogState
 
@@ -407,7 +390,6 @@ function EntityForm({ permId, entityKind }) {
 ```typescript
 function EntityFormWithConflicts({ permId, entityKind }) {
   const { form, updateField, setForm } = useFormState({ ... });
-  const { findConflicts, checkModificationDateConflict } = useConflictResolution();
   const { openConflictDialog, dialogs } = useDialogState();
   const { setSaving } = useOperationState();
   
@@ -514,7 +496,6 @@ function CompleteEntityForm({ permId, entityKind }) {
   const { operationState, executeOperation, setSaving } = useOperationState();
   
   // 5. Conflict resolution
-  const { findConflicts, checkModificationDateConflict } = useConflictResolution();
   
   // 6. Dialog state
   const { dialogs, openConflictDialog, openDeleteDialog, ... } = useDialogState();
@@ -570,7 +551,7 @@ Use hooks in a consistent order:
 2. Form state (useFormState)
 3. Loading state (useFormLoading)
 4. Operation state (useOperationState)
-5. Specialized hooks (useConflictResolution, useDialogState)
+5. Specialized helpers (conflictResolution utils, useDialogState)
 6. Auto-save (useAutoSave) - if needed
 
 ### 2. Error Handling

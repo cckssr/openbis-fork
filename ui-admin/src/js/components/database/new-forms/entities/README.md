@@ -18,7 +18,7 @@ The entities folder follows a **separation of concerns** pattern:
 
 - **Controllers** (`{Entity}FormController.ts`) - Handle business logic and openBIS API interactions
 - **Models** (`{Entity}FormModel.ts`) - Handle data transformation (DTO ↔ Form) and action handlers
-- **Utilities** (`formField.utils.ts`) - Shared field creation functions
+- **Utilities** (`formField.formFieldUtil.ts`) - Shared field creation functions
 
 This pattern ensures:
 - **Consistency**: All entities follow the same structure
@@ -31,7 +31,7 @@ This pattern ensures:
 ```
 entities/
 ├── README.md                    # This file
-├── formField.utils.ts          # Shared field creation utilities
+├── formField.formFieldUtil.ts          # Shared field creation utilities
 ├── Project/
 │   ├── ProjectFormController.ts
 │   └── ProjectFormModel.ts
@@ -137,7 +137,7 @@ export class {Entity}FormModel {
         }
       ],
       fields: [
-        // Use utility functions from formField.utils.ts
+        // Use utility functions from formField.formFieldUtil.ts
         getCodeField(dto),
         getDescriptionField(dto),
         // ... other fields
@@ -204,7 +204,7 @@ export class {Entity}FormModel {
 - ❌ Handle business logic (delegate to Controller)
 - ❌ Create field objects directly (use utilities)
 
-### Field Utilities (`formField.utils.ts`)
+### Field Utilities (`formField.formFieldUtil.ts`)
 
 **Responsibilities**:
 - ✅ Provide reusable field creation functions
@@ -529,7 +529,7 @@ This allows you to override any field property while maintaining type safety.
 If you need a field that doesn't exist in the utilities:
 
 ```typescript
-// In formField.utils.ts
+// In formField.formFieldUtil.ts
 export function getCustomField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
   return {
@@ -721,5 +721,5 @@ async move(form: Form, context?: any, params?: any): Promise<void> {
 - `types/form.enums.ts` - EntityKind and other enums
 - `engine/ControllerDispatcher.ts` - Controller registration
 - `engine/ActionHandlerDispatcher.ts` - Action handler registration
-- `formField.utils.ts` - Field creation utilities
+- `formField.formFieldUtil.ts` - Field creation utilities
 

@@ -1,7 +1,7 @@
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/entities/Dataset/DatasetAdapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 
 export class DatasetFormController implements IFormController {
 	private openbisFacade: any;

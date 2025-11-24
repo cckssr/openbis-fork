@@ -1,11 +1,11 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
-import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
+import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
-import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/FormFieldUtils.ts';
+import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 export class ObjectFormController implements IFormController {
 	private openbisFacade: any;

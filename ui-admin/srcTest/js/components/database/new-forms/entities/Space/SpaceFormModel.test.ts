@@ -1,5 +1,5 @@
-import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts'
-import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts'
+import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.tsx'
+import { FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts'
 import spaceDtoFixture from '@srcTest/js/components/database/new-forms/entities/Space/spaceDto.fixture.json'
 
 /**

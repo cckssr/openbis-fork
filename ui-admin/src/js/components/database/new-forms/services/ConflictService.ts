@@ -1,5 +1,5 @@
 import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { findFormFieldById } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 export interface Conflict {
   fieldId: string;

@@ -1,10 +1,10 @@
 import openbis from '@srcV3/openbis.esm';
 import { Form, } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
-import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
-import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldById, findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
+import { createDummyExperimentIdentifierFromProjectIdentifier, createDummySampleIdentifierFromProjectIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { findFormFieldById, findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 import { ProjectFormModel } from '@src/js/components/database/new-forms/entities/Project/ProjectFormModel.ts';
 
 export class ProjectFormController implements IFormController {
