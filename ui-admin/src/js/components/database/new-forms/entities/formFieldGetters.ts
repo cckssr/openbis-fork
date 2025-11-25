@@ -240,6 +240,8 @@ function mapDataTypeToFormFieldDataType(dtoDataType: string, customWidget?: stri
     return FormFieldDataType.WORD_PROCESSOR_PAGE;
   } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR_CLASSIC) {
     return FormFieldDataType.WORD_PROCESSOR_CLASSIC;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.MONOSPACE_FONT) {
+    return FormFieldDataType.MONOSPACE_FONT;
   } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.SPREADSHEET) {
     return FormFieldDataType.SPREADSHEET;
   } else {
@@ -286,7 +288,12 @@ export function getPropertyFieldsFromAssignments(
 
       // Determine column based on section (default to 'left' for GENERAL, 'center' for word processor)
       let column: 'left' | 'right' | 'center' = 'left';
-      if (dataType === FormFieldDataType.WORD_PROCESSOR || dataType === FormFieldDataType.WORD_PROCESSOR_PAGE || dataType === FormFieldDataType.MULTILINE_VARCHAR) {
+      if ([FormFieldDataType.WORD_PROCESSOR, 
+        FormFieldDataType.WORD_PROCESSOR_PAGE, 
+        FormFieldDataType.WORD_PROCESSOR_CLASSIC, 
+        FormFieldDataType.MONOSPACE_FONT, 
+        FormFieldDataType.MULTILINE_VARCHAR, 
+        FormFieldDataType.SPREADSHEET].includes(dataType)) {
         column = 'center';
       } else if (section === FormSection.IDENTIFICATION_INFO && assignment.ordinal > 5) {
         column = 'right';
@@ -301,8 +308,9 @@ export function getPropertyFieldsFromAssignments(
         meta.mode = 'inline';
       } else if (dataType === FormFieldDataType.WORD_PROCESSOR_PAGE) {
         meta.mode = 'document';
-        //meta.mode = 'classic';
-      } 
+      } else if (dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC) {
+        meta.mode = 'classic';
+      }
 
       const readOnly = fieldOverrides.readOnly !== undefined ? fieldOverrides.readOnly : !(assignment.showInEditView ?? true);
       const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;

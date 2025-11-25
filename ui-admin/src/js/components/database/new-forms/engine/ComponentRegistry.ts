@@ -18,6 +18,7 @@ class ComponentRegistry {
       case FormFieldDataType.TIMESTAMP:
         return DateFieldRenderer;
       case FormFieldDataType.MULTILINE_VARCHAR:
+      case FormFieldDataType.MONOSPACE_FONT:
         return TextAreaFieldRenderer;
       case FormFieldDataType.CONTROLLED_VOCABULARY:
         return SelectFieldRenderer;
