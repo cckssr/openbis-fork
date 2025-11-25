@@ -3411,6 +3411,10 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
         return string
     }
 
+    facade.DataStoreServer = AfsServer;
+    facade.DEFAULT_PACKAGE_SIZE_IN_BYTES = AfsServer.DEFAULT_PACKAGE_SIZE_IN_BYTES;
+    facade.DEFAULT_TIMEOUT_IN_MILLIS = AfsServer.DEFAULT_TIMEOUT_IN_MILLIS;
+
     return facade;
 
 });

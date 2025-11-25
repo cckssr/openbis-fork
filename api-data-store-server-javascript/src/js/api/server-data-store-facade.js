@@ -1,19 +1,23 @@
 ;(function(global){
   'use strict'
 
+const DEFAULT_PACKAGE_SIZE_IN_BYTES = 10485760 // 10 MB
+const DEFAULT_TIMEOUT_IN_MILLIS = 30000 // 30 seconds
+
 /**
  * ======================================================
  * OpenBIS Data Store Server facade internal code (DO NOT USE!!!)
  * ======================================================
  */
 
-function _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri){
-	this.init(datastoreUrlOrNull, httpServerUri);
+function _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
+	this.init(datastoreUrlOrNull, httpServerUri, timeoutInMillis);
 }
 
-_DataStoreServerInternal.prototype.init = function(datastoreUrlOrNull, httpServerUri){
+_DataStoreServerInternal.prototype.init = function(datastoreUrlOrNull, httpServerUri, timeoutInMillis){
 	this.datastoreUrl = this.normalizeUrl(datastoreUrlOrNull, httpServerUri) + "/api";
 	this.httpServerUri = httpServerUri;
+	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
 }
 
 _DataStoreServerInternal.prototype.log = function(msg){
@@ -57,8 +61,8 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
 	const xhr = new XMLHttpRequest();
 	xhr.open(httpMethod, url);
 	xhr.responseType = "blob";
-    // Set a timeout, 30 seconds
-	xhr.timeout = 30000; 
+    // Set a timeout
+	xhr.timeout = this.timeoutInMillis; 
 
     let abortFn;
 
@@ -216,8 +220,18 @@ function parseJsonResponse(rawResponse) {
  * The facade provides access to the DSS methods
  * 
  */
-function DataStoreServer(datastoreUrlOrNull, httpServerUri) {
-	this._internal = new _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri);
+function DataStoreServer(datastoreUrlOrNull, httpServerUri, maxReadSizeInBytes, timeoutInMillis) {
+	this.maxReadSizeInBytes = Number.isInteger(maxReadSizeInBytes) ? maxReadSizeInBytes : DEFAULT_PACKAGE_SIZE_IN_BYTES;
+	this.timeoutInMillis = Number.isInteger(timeoutInMillis) ? timeoutInMillis : DEFAULT_TIMEOUT_IN_MILLIS;
+	this._internal = new _DataStoreServerInternal(datastoreUrlOrNull, httpServerUri, this.timeoutInMillis);
+}
+
+DataStoreServer.prototype.getMaxReadSizeInBytes = function() {
+	return this.maxReadSizeInBytes;
+}
+
+DataStoreServer.prototype.getTimeoutInMillis = function() {
+	return this.timeoutInMillis;
 }
 
 
@@ -485,7 +499,8 @@ DataStoreServer.prototype._read = function(chunks){
  * @param {int} limit how many characters to read
  */
 DataStoreServer.prototype.read = function(owner, source, offset, limit){
-	return this._read([new Chunk(owner, source, offset, limit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
+	var effectiveLimit = Number.isInteger(limit) ? limit : this.maxReadSizeInBytes;
+	return this._read([new Chunk(owner, source, offset, effectiveLimit, ChunkEncoderDecoder.EMPTY_ARRAY)]);
 }
 
 /**
@@ -1231,6 +1246,9 @@ DataStoreServer.prototype.Private.Base64 = Base64;
  * EXPORT
  * ==================================================================================
  */
+
+DataStoreServer.DEFAULT_PACKAGE_SIZE_IN_BYTES = DEFAULT_PACKAGE_SIZE_IN_BYTES
+DataStoreServer.DEFAULT_TIMEOUT_IN_MILLIS = DEFAULT_TIMEOUT_IN_MILLIS
 
 if (typeof define === 'function' && define.amd) {
   define(function () {

@@ -31,7 +31,7 @@ export default class DataBrowserController extends ComponentController {
     this.gridController = null
     this.path = ''
     this.fileNames = []
-    this.CHUNK_SIZE = 1024 * 1024 * 10;// 10MiB
+    this.CHUNK_SIZE = extOpenbis.DEFAULT_PACKAGE_SIZE_IN_BYTES
     this.retryCaller = new RetryCaller({ maxRetries: 5, initialWaitTime: 1000, waitFactor: 2 });
   }
 
