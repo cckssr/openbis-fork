@@ -284,9 +284,6 @@ test("logout", function() {
 		facade.logout(function() {
 			equal(facade.getSession(), null, 'Session is empty after logout');
 
-			facade.restoreSession();
-			equal(facade.getSession(), null, 'Restored session is empty after logout');
-
 			facade.isSessionActive(function(response) {
 				equal(response.result, false, 'Session is inactive after logout');
 				facade.close();
@@ -306,21 +303,6 @@ test("login", function() {
 				facade.close();
 			});
 		});
-	}, testUrl);
-});
-
-test("cookies", function() {
-	createFacade(function(facade) {
-		facade.useSession('session-1');
-		facade.rememberSession();
-		equal(facade.getSession(), 'session-1', 'Session 1 used')
-
-		facade.useSession('session-2');
-		equal(facade.getSession(), 'session-2', 'Session 2 used')
-
-		facade.restoreSession();
-		equal(facade.getSession(), 'session-1', 'Session 1 restored')
-		facade.close();
 	}, testUrl);
 });
 

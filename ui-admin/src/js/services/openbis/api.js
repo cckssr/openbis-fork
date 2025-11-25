@@ -89,7 +89,7 @@ class Facade {
     return this._dataStoresPromise
   }
 
-  useSession(sessionToken) {
+  setSession(sessionToken) {
     this.v3._private.sessionToken = sessionToken
   }
 

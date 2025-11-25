@@ -138,34 +138,6 @@ _DataStoreServerInternal.prototype.sendHttpRequestAbortable = function(httpMetho
   }
 
 
-
-// Functions for working with cookies (see http://www.quirksmode.org/js/cookies.html)
-
-_DataStoreServerInternal.prototype.createCookie = function(name,value,days) {
-	if (days) {
-		var date = new Date();
-		date.setTime(date.getTime()+(days*24*60*60*1000));
-		var expires = "; expires="+date.toGMTString();
-	}
-	else var expires = "";
-	document.cookie = name+"="+value+expires+"; path=/";
-}
-
-_DataStoreServerInternal.prototype.readCookie = function(name) {
-	var nameEQ = name + "=";
-	var ca = document.cookie.split(';');
-	for(var i=0;i < ca.length;i++) {
-		var c = ca[i];
-		while (c.charAt(0)==' ') c = c.substring(1,c.length);
-		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-	}
-	return null;
-}
-
-_DataStoreServerInternal.prototype.eraseCookie = function(name) {
-	this.createCookie(name,"",-1);
-}
-
 // parseUri 1.2.2 (c) Steven Levithan <stevenlevithan.com> MIT License (see http://blog.stevenlevithan.com/archives/parseuri)
 
 _DataStoreServerInternal.prototype.parseUri = function(str) {
@@ -242,38 +214,11 @@ DataStoreServer.prototype.getTimeoutInMillis = function() {
  */
 
 /**
- * Stores the current session in a cookie. 
- *
- * @method
- */
-DataStoreServer.prototype.rememberSession = function() {
-	this._internal.createCookie('dataStoreServer', this.getSession(), 1);
-}
-
-/**
- * Removes the current session from a cookie. 
- *
- * @method
- */
-DataStoreServer.prototype.forgetSession = function() {
-	this._internal.eraseCookie('dataStoreServer');
-}
-
-/**
- * Restores the current session from a cookie.
- *
- * @method
- */
-DataStoreServer.prototype.restoreSession = function() {
-	this._internal.sessionToken = this._internal.readCookie('dataStoreServer');
-}
-
-/**
  * Sets the current session.
  *
  * @method
  */
-DataStoreServer.prototype.useSession = function(sessionToken){
+DataStoreServer.prototype.setSession = function(sessionToken){
 	this._internal.sessionToken = sessionToken;
 }
 
@@ -367,7 +312,6 @@ DataStoreServer.prototype.login = function(userId, userPassword) {
 	).then((loginResponse) => {
 		return new Promise((resolve, reject) => {
 			datastoreObj._internal.sessionToken = loginResponse;
-			datastoreObj.rememberSession();
 			resolve(loginResponse);
 		})
 	});
@@ -403,7 +347,6 @@ DataStoreServer.prototype.isSessionValid = function() {
  * @method
  */
 DataStoreServer.prototype.ifRestoredSessionActive = function() {
-	this.restoreSession();
 	return this.isSessionValid();
 }
 
@@ -414,8 +357,6 @@ DataStoreServer.prototype.ifRestoredSessionActive = function() {
  */
 DataStoreServer.prototype.logout = function() {
 	return new Promise((resolve, reject) => {
-		this.forgetSession();
-
 		if (this.getSession()) {
 			const data = this.fillCommonParameters({"method": "logout"});
 			this._internal.sendHttpRequest(
@@ -423,8 +364,12 @@ DataStoreServer.prototype.logout = function() {
 				"application/octet-stream",
 				this._internal.datastoreUrl,
 				encodeParams(data)
-			).then((response) => parseJsonResponse(response).then((value) => resolve(value))
-				.catch((reason) => reject(reason)));
+			).then((response) => parseJsonResponse(response)
+					.then((value) => {
+						this._internal.sessionToken = null;
+						resolve(value);
+					})
+					.catch((reason) => reject(reason)));
 		} else {
 			resolve({result: null});
 		}
