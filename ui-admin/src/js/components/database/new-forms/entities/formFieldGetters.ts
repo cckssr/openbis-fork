@@ -1,5 +1,5 @@
 import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
-import { FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { FormFieldDataType, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getFormatedDate } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 // Helper type for overrides
@@ -234,10 +234,14 @@ export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormFiel
  */
 function mapDataTypeToFormFieldDataType(dtoDataType: string, customWidget?: string): FormFieldDataType {
   // Check for custom widget first
-  if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === 'Word Processor') {
+  if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR) {
     return FormFieldDataType.WORD_PROCESSOR;
-  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === 'Word Processor Page') {
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR_PAGE) {
     return FormFieldDataType.WORD_PROCESSOR_PAGE;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR_CLASSIC) {
+    return FormFieldDataType.WORD_PROCESSOR_CLASSIC;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.SPREADSHEET) {
+    return FormFieldDataType.SPREADSHEET;
   } else {
     return dtoDataType as FormFieldDataType;  
   }
@@ -294,8 +298,11 @@ export function getPropertyFieldsFromAssignments(
         meta.custom_widget = customWidget;
       }
       if (dataType === FormFieldDataType.WORD_PROCESSOR) {
-        meta.mode = 'classic';
-      }
+        meta.mode = 'inline';
+      } else if (dataType === FormFieldDataType.WORD_PROCESSOR_PAGE) {
+        meta.mode = 'document';
+        //meta.mode = 'classic';
+      } 
 
       const readOnly = fieldOverrides.readOnly !== undefined ? fieldOverrides.readOnly : !(assignment.showInEditView ?? true);
       const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;

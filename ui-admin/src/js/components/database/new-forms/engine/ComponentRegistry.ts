@@ -24,6 +24,8 @@ class ComponentRegistry {
       case FormFieldDataType.BOOLEAN:
         return SwitchFieldRenderer;
       case FormFieldDataType.WORD_PROCESSOR:
+      case FormFieldDataType.WORD_PROCESSOR_PAGE:
+      case FormFieldDataType.WORD_PROCESSOR_CLASSIC:
         return CKEditorFieldRenderer;
       default:
         return TextFieldRenderer; 

@@ -3,7 +3,7 @@ import { IFormController } from '@src/js/components/database/new-forms/types/IFo
 import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { createDummyDataSetIdentifierFromSampleIdentifier, createDummySampleIdentifierFromSampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
 import { findFormFieldById } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
-import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { EntityKind, FormFieldDataType, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { ObjectFormModel } from '@src/js/components/database/new-forms/entities/Object/ObjectFormModel.ts';
 import { getChangedEditableFieldValues } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
@@ -112,40 +112,24 @@ export class ObjectFormController implements IFormController {
 		const { SampleUpdate, SamplePermId } = this.openbisFacade;
 		const update = new SampleUpdate();
 		update.setSampleId(new SamplePermId(form.entityPermId));
-
+		/* const metadata = update.getMetaData();
+		form.fields
+		.filter(field => !field.readOnly)
+		.filter(field => field.dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC 
+			|| field.dataType === FormFieldDataType.WORD_PROCESSOR_PAGE 
+			|| field.dataType === FormFieldDataType.WORD_PROCESSOR)
+		.forEach(field => {
+			Object.keys(field.meta).forEach(key => {
+				metadata.set(key, field.meta[key]);
+			});
+		});
+		update.getMetaData().set(metadata); */
+		//console.log('ObjectFormController._updateSample metadata', { metadata });
+		//update.getMetaData().set("isMarkdown", "true");
 		const properties = getChangedEditableFieldValues(form);
-		//update.getMetaData().set('MARKDOWN', documentField.meta?.isMarkdown ? 'true' : 'false');
-		console.log('ObjectFormController._updateSample', { properties });
 		update.setProperties(properties);
 		return update;
 	}
-
-	/* _setBasics(crudObject: any, parameters: any) {
-		const { SpacePermId, ProjectIdentifier, ExperimentIdentifier, SampleIdentifier } = this.openbisFacade;
-		const space = parameters["sampleSpace"];
-		crudObject.setSpaceId(new SpacePermId(space));
-		const sampleIdentifier = "/" + space;
-		const project = parameters["sampleProject"];
-		if (project != null) {
-			crudObject.setProjectId(new ProjectIdentifier("/" + space + "/" + project));
-			if(IdentifierUtil.isProjectSamplesEnabled) {
-				const sampleIdentifierVariable = sampleIdentifier + "/" + project;
-			}
-			var experiment = parameters["sampleExperiment"]
-			if (experiment != null) {
-				crudObject.setExperimentId(new ExperimentIdentifier("/" + space + "/" + project + "/" + experiment));
-			}
-		}
-		if (crudObject.setSampleId) {
-			crudObject.setSampleId(new SampleIdentifier(sampleIdentifier + "/" + parameters["sampleCode"]));
-		}
-		var sampleProperties = parameters["sampleProperties"];
-		var properties: { [key: string]: string } = {};
-		Object.keys(sampleProperties).forEach((key: string) => {
-			properties[key] = sampleProperties[key] === "" ? null : sampleProperties[key];
-		});
-		crudObject.setProperties(properties);
-	} */
 
 	async checkPermissions(form: Form) {
 		const { SamplePermId, DataSetPermId, SampleIdentifier } = this.openbisFacade;
