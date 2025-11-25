@@ -1,5 +1,11 @@
 # OpenBIS Change Log
 
+## Version 20.10.12.2 (24 Nov 2025)
+
+### ELN-LIMS
+- Bugfix: Cannot save mandatory properties if property code contains a "." (BIS-2340)
+- Bugfix: Forms fields detaching "sometimes" when side menu is shown/hidden (BIS-2354)
+
 ## Version 20.10.12.1 (21 Oct 2025)
 
 ### Core

@@ -419,7 +419,7 @@ class Grid extends React.PureComponent {
   }
 
   renderSelectionInfo() {
-    const { multiselectable, actions } = this.props
+    const { multiselectable, actions, selectionButtonProps } = this.props
     const { rows, multiselectedRows } = this.state
 
     const visibleColumns = this.controller.getVisibleColumns()
@@ -436,6 +436,7 @@ class Grid extends React.PureComponent {
         multiselectable={multiselectable}
         multiselectedRows={multiselectedRows}
         multiselectLimit={multiselectLimit}
+        selectionButtonProps={selectionButtonProps}
       />
     )
   }

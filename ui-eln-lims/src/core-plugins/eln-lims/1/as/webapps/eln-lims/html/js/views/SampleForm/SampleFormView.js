@@ -1113,7 +1113,12 @@
 												  _this._sampleFormModel.sample.properties[propertyTypeCode] = Util.getEmptyIfNull(field.val());
 											 }
 										} else {
-											_this._sampleFormModel.sample.properties[propertyTypeCode] = Util.getEmptyIfNull(field.val());
+										    var value = Util.getEmptyIfNull(field.val());
+                                            if(!profile.isOpenBIS6orNewer && Array.isArray(value)) {
+                                                //there are no multi-value nor array properties in 20.10.x
+                                                value = value[0];
+                                            }
+											_this._sampleFormModel.sample.properties[propertyTypeCode] = value;
 										}
 										field.data('last', field.val());
 									}
@@ -2068,7 +2073,10 @@
 							objKind: "object",	
 							viewType:'list',					
 							withoutToolbar: true,
-							extOpenbis: _this.extOpenbis
+							extOpenbis: _this.extOpenbis,
+							selectionButtonProps: {
+								sx: { textTransform: 'none' }
+							}
 						}
 						let configKey = "AFS-WIDGET-KEY";
 											
@@ -2147,6 +2155,9 @@
 							viewType:'list',
 							className :'btn btn-default',
 							primaryClassName :'btn btn-primary',
+							selectionButtonProps: {
+								sx: { textTransform: 'none' }
+							},
 							extOpenbis: _this.extOpenbis
 						}
 

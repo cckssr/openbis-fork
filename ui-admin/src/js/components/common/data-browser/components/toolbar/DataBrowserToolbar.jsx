@@ -35,15 +35,15 @@ const buttonSize = 'small'
 const color = 'default'
 const iconButtonSize = 'medium'
 
-const styles = theme => ({  
+const styles = theme => ({
   buttons: {
     flex: '0 0 auto',
     display: 'flex',
     alignItems: 'center',
     whiteSpace: 'nowrap',
     marginRight: theme.spacing(1.5),
-    
-    '&>button': {      
+
+    '&>button': {
       marginRight: theme.spacing(1.5),
       textTransform: 'none',
     },
@@ -52,14 +52,14 @@ const styles = theme => ({
     },
     '&>button:nth-last-child(1)': {
       marginRight: 0
-    }  
+    }
   },
-  buttonLefts: {              
+  buttonLefts: {
     flex: '0 0 auto',
-    display: 'flex',  
+    display: 'flex',
     lineHeight: '1',
     alignItems: 'center',
-    whiteSpace: 'nowrap',    
+    whiteSpace: 'nowrap',
     '&>button': {
       marginRight: theme.spacing(1.5),
       textTransform: 'none',
@@ -70,8 +70,8 @@ const styles = theme => ({
       outline: 'none',
     },
   },
-  buttonLeft: {                      
-    lineHeight: '1',    
+  buttonLeft: {
+    lineHeight: '1',
     alignItems: 'center',
     justifyContent: 'center',
     textTransform: 'none',
@@ -83,11 +83,11 @@ const styles = theme => ({
       marginLeft: theme.spacing(1.5),
     },
   },
-  ellipsisButton: {    
-    lineHeight: '1',    
+  ellipsisButton: {
+    lineHeight: '1',
     alignItems: 'center',
     justifyContent: 'center',
-    textTransform: 'none',    
+    textTransform: 'none',
     justifyContent: 'center',
     marginLeft: theme.spacing(1.5),
     '&:focus': {
@@ -103,21 +103,14 @@ const styles = theme => ({
     },
     '&>button:nth-last-child(1)': {
       marginBottom: 0
-    }   
+    }
 
   },
   toggleButton: {
-    border: 'none',        
-    outline: 'none',
-    '& *': {
-      color: theme.palette[color].main,
-      outline: 'none',      
-      boxShadow: 'none',
-    },
+    textTransform: 'none',
     '&:focus': {
       outline: 'none',
-      boxShadow: 'none',
-    },
+    }
   },
   splitToolbar: {
     flex: '1 1 auto',
@@ -131,7 +124,53 @@ const styles = theme => ({
     fontSize: theme.typography.pxToRem(18),
   },
   primaryButton: {
-    display: "inline-flex",    
+    display: "inline-flex",
+  },
+  button: {
+
+  },
+
+
+  btnDefaultEln: {
+    marginTop: theme.spacing(1),
+    color: '#333',
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    boxShadow: '0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12)',
+    minWidth: 64,
+    minHeight: 32,
+    lineHeight: 1.75,
+    padding: theme.spacing(0.5, 1.25),
+    boxSizing: 'border-box',
+    transition: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+    border: 0,
+    cursor: 'pointer',
+    margin: 0,
+    marginBottom: theme.spacing(0.5),
+    display: 'inline-flex',
+    outline: 0,
+    position: 'relative',
+    alignItems: 'center',
+    alignContent: 'center',
+    verticalAlign: 'middle',
+    justifyContent: 'center',
+    textDecoration: 'none'
+  },
+
+  btnPrimaryEln: {
+    color: '#fff',
+    backgroundColor: '#303f9f',
+    borderColor: '#2e6da4',
+    minHeight: 32,
+    lineHeight: 1.75,
+    padding: theme.spacing(0.5, 1.25),
+    alignContent: 'center',
+    marginBottom: theme.spacing(0.5),
+    boxShadow: '0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12)',
+    transition: 'background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
+    cursor: 'pointer',    
+    marginTop: theme.spacing(1)
+    
   }
 })
 
@@ -151,6 +190,7 @@ class DataBrowserToolbar extends React.Component {
       path: '/',
       multiselectedFiles:[],
       viewType: this.props.viewType,
+      editable: true,
       archived: false,
       frozen: false
     };
@@ -231,8 +271,13 @@ class DataBrowserToolbar extends React.Component {
     const {
       classes,                 
       owner,  
-      extOpenbis
+      extOpenbis,
+      className,
+      primaryClassName
     } = this.props
+
+    const normalizedClassName = className || classes.btnDefaultEln
+    const normalizedPrimaryClassName = primaryClassName || classes.btnPrimaryEln
 
     const {
       path,
@@ -244,6 +289,11 @@ class DataBrowserToolbar extends React.Component {
       viewType
     } = this.state 
             
+
+    const handleAfterUpload = () => {
+      this.fetchSpaceStatus()
+      this.onGridActionComplete()
+    }
 
     return (      
       <div className={classes.splitToolbar }>
@@ -260,6 +310,17 @@ class DataBrowserToolbar extends React.Component {
           controller={this.controller}
           frozen={frozen}
           archived={archived}
+          className={normalizedClassName}
+          uploadSectionProps={{
+            classes,
+            buttonSize,
+            editable,
+            className: normalizedClassName,
+            primaryClassName: normalizedPrimaryClassName,
+            controller: this.controller,
+            afterUpload: handleAfterUpload,
+            frozen
+          }}
         />
         
         <RightToolbar 
@@ -271,11 +332,8 @@ class DataBrowserToolbar extends React.Component {
           onViewTypeChange={this.handleViewTypeChange}
           controller={this.controller}
           frozen={frozen}
-          afterUpload={ () => {
-                          this.fetchSpaceStatus()
-                          this.onGridActionComplete()
-                        }
-                      }
+          afterUpload={handleAfterUpload}
+          className={normalizedClassName}
         />
       </div>
     )
@@ -290,6 +348,9 @@ class DataBrowserToolbar extends React.Component {
       className,
       primaryClassName
     } = this.props
+
+    const normalizedClassName = className || classes.btnDefaultEln
+    const normalizedPrimaryClassName = primaryClassName || classes.btnPrimaryEln
 
     const {
       path,
@@ -310,8 +371,8 @@ class DataBrowserToolbar extends React.Component {
             classes={classes}
             buttonSize={buttonSize}
             editable={editable}
-            className={className}
-            primaryClassName={primaryClassName}
+            className={normalizedClassName}
+            primaryClassName={normalizedPrimaryClassName}
             controller={this.controller}
             afterUpload={ () => {
                 this.fetchSpaceStatus()
@@ -333,7 +394,7 @@ class DataBrowserToolbar extends React.Component {
             spaceStatusChanged={this.fetchSpaceStatus}
             onDownload={this.handleDownload}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             controller={this.controller}
             frozen={frozen}
             archived={archived}
@@ -344,7 +405,7 @@ class DataBrowserToolbar extends React.Component {
             onViewTypeChange={this.handleViewTypeChange}
             buttonSize={buttonSize}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             />
 
           <InfoToggleButton
@@ -352,7 +413,7 @@ class DataBrowserToolbar extends React.Component {
             onChange={this.handleShowInfoChange}
             buttonSize={buttonSize}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             />
             
         </div>
@@ -370,6 +431,9 @@ class DataBrowserToolbar extends React.Component {
       className,
       primaryClassName,
     } = this.props
+
+    const normalizedClassName = className || classes.btnDefaultEln
+    const normalizedPrimaryClassName = primaryClassName || classes.btnPrimaryEln
 
     const {
       path,
@@ -390,8 +454,8 @@ class DataBrowserToolbar extends React.Component {
             classes={classes}
             buttonSize={buttonSize}
             editable={editable}
-            className={className}
-            primaryClassName={primaryClassName}
+            className={normalizedClassName}
+            primaryClassName={normalizedPrimaryClassName}
             controller={this.controller}
             afterUpload={ () => {
                   this.fetchSpaceStatus()
@@ -413,7 +477,7 @@ class DataBrowserToolbar extends React.Component {
             spaceStatusChanged={this.fetchSpaceStatus}
             onDownload={this.handleDownload}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             controller={this.controller}
             frozen={frozen}
             archived={archived}
@@ -433,6 +497,8 @@ class DataBrowserToolbar extends React.Component {
       
     } = this.props
 
+    const normalizedClassName = className || classes.btnDefaultEln
+
     const {
      
       showInfo,
@@ -447,7 +513,7 @@ class DataBrowserToolbar extends React.Component {
             onViewTypeChange={this.handleViewTypeChange}
             buttonSize={buttonSize}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             />
 
           <InfoToggleButton
@@ -455,7 +521,7 @@ class DataBrowserToolbar extends React.Component {
             onChange={this.handleShowInfoChange}
             buttonSize={buttonSize}
             classes={classes}
-            className={className}
+            className={normalizedClassName}
             />             
         </div>      
     )

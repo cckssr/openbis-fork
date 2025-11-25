@@ -20,6 +20,8 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 	this._previousGlobalEventListener = null;
     this._dataSetFormViewGlobalEventListener = null;
     this._viewId = mainController.getNextId();
+	this.extOpenbis = window.NgComponents.default.openbis
+	this.extOpenbis.init(mainController.openbisV3)
 
     var _refreshableFields = [];
 
@@ -64,7 +66,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		hideShowOptionsModel = [];
         $wrapper.append(this._createIdentificationInfoSection(hideShowOptionsModel, views));
 
-        this._repaintHeader(views);
+        const shouldUseAFSWidget = this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini && profile.isAFSAvailable();
+        const $formContainer = $('<div>', { class : 'row'}).append($('<div>', { class : FormUtil.formColumClass}).append($wrapper));
+
+        this._repaintHeader(views, shouldUseAFSWidget ? $formContainer : null, shouldUseAFSWidget ? $container : null);
 
 		// Plugin Hook
 		if (!this._dataSetFormModel.isMini) {
@@ -131,7 +136,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		}
 		
 		//Attach to main form
-		$container.append($('<div>', { class : 'row'}).append($('<div>', { class : FormUtil.formColumClass}).append($wrapper)));
+			if(!shouldUseAFSWidget) {
+				$container.append($formContainer);
+			}
 		
 		if(this._dataSetFormModel.mode === FormMode.CREATE) {
 			//Initialize file chooser
@@ -279,7 +286,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		
 	}
 
-	this._repaintHeader = function(views) {
+	this._repaintHeader = function(views, $form, $container) {
+		$form = $form || null;
+		$container = $container || null;
 	    var _this = this;
 		//
 		// Title
@@ -301,8 +310,10 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
 		//
 		// Toolbar
 		//
-		var toolbarModel = [];
-		var rightToolbarModel = [];
+			var toolbarModel = [];
+			var rightToolbarModel = [];
+			var altRightToolbarModel = [];
+			var shouldUseTabs = $form && $container && this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini && profile.isAFSAvailable();
 		var dropdownOptionsModel = [];
 		if(this._dataSetFormModel.mode === FormMode.VIEW && !this._dataSetFormModel.isMini) {
 			var toolbarConfig = profile.getDataSetTypeToolbarConfiguration(this._getTypeCode());
@@ -493,7 +504,9 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             }, null, "Documentation", "help-dataset-btn-"+this._viewId, 'btn btn-default help');
             $helpBtn.find("span").css("vertical-align", "middle").css("font-size", "24px")
             toolbarModel.push({ component : $helpBtn });
-			$header.append(FormUtil.getToolbar(toolbarModel));
+			if(!shouldUseTabs) {
+				$header.append(FormUtil.getToolbar(toolbarModel));
+			}
 		}
 
 		if(this._dataSetFormModel.mode === FormMode.VIEW && this._dataSetFormModel.paginationInfo && this._dataSetFormModel.paginationInfo.pagFunction) {
@@ -577,8 +590,16 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                 rightToolbarModel.push({ component : $backBtn, tooltip: null });
                 rightToolbarModel.push({ component : $paginationInfoLabel, tooltip: null });
                 rightToolbarModel.push({ component : $nextBtn, tooltip: null });
+
+				altRightToolbarModel.push({ component : $backBtn.clone(true), tooltip: null });
+				altRightToolbarModel.push({ component : $paginationInfoLabel.clone(true), tooltip: null });
+                altRightToolbarModel.push({ component : $nextBtn.clone(true), tooltip: null });
             }
-            $header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+            if(shouldUseTabs) {
+					this._initTabHandling($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel.length > 0 ? altRightToolbarModel : rightToolbarModel);
+			} else {
+            	$header.append(FormUtil.getToolbar(rightToolbarModel).css("float", "right"));
+			}
         }
 
 
@@ -1035,7 +1056,12 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
                                                 _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(field.val()));
                                              }
                                         } else {
-                                            _this._setDataSetProperty(propertyTypeCode, Util.getEmptyIfNull(field.val()));
+                                            var value = Util.getEmptyIfNull(field.val());
+                                            if(!profile.isOpenBIS6orNewer && Array.isArray(value)) {
+                                                //there are no multi-value nor array properties in 20.10.x
+                                                value = value[0];
+                                            }
+                                            _this._setDataSetProperty(propertyTypeCode, value);
                                         }
                                         field.data('last', field.val());
 									}
@@ -1242,5 +1268,221 @@ function DataSetFormView(dataSetFormController, dataSetFormModel) {
             this._dataSetFormModel.dataSetV3 = { properties : {} };
         }
         this._dataSetFormModel.dataSetV3.properties[key] = val;
+	}
+
+	this._initTabHandling = function($header, $container, $form, toolbarModel, rightToolbarModel, altRightToolbarModel) {
+		const _this = this;
+		const $tabsContainer = $('<div class="tabs-container">');
+		const tabs = [
+			{ id: "detailsTab-"+_this._viewId, label: "Details", href: "#dataSetFormTab-"+_this._viewId, active: true }
+		];
+		const $tabsContent = $('<div class="tab-content">');
+		const $dataSetFormTab = $('<div id="dataSetFormTab-'+_this._viewId+'" class="tab-pane fade in active"></div>');
+		const $afsWidgetTab = $('<div id="afsWidgetTab-'+_this._viewId+'" class="tab-pane fade"></div>');
+
+		$tabsContent.append($dataSetFormTab);
+		if (profile.isAFSAvailable()) {
+			$tabsContent.append($afsWidgetTab);
+			tabs.push({ id: "filesTab-"+_this._viewId, label: "Files", href: "#afsWidgetTab-"+_this._viewId, active: false });
+		}
+		$tabsContainer.append($tabsContent);
+
+		const tabsModel = {
+			containerId: "tabsContainer-"+_this._viewId,
+			toolbarId: "toolbar-"+_this._viewId,
+			tabs
+		};
+
+		const dataSetPermId = this._dataSetFormModel.dataSetV3.permId ? this._dataSetFormModel.dataSetV3.permId.permId : this._dataSetFormModel.dataSetV3.code;
+		const $afsWidgetLeftToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, dataSetPermId, "onlyLeftToolbar");
+		const $afsWidgetRightToolBar = this._renderAFSWidgetLeftToolBar($afsWidgetTab, dataSetPermId, "onlyRightToolbar");
+		const $alternateRightToolbar = FormUtil.getToolbar(altRightToolbarModel);
+
+		const $toolbarWithTabs = FormUtil.getToolbarWithTabs(
+			toolbarModel,
+			tabsModel,
+			rightToolbarModel,
+			$afsWidgetRightToolBar,
+			$afsWidgetLeftToolBar,
+			$alternateRightToolbar
+		)
+		$header.append($toolbarWithTabs);
+
+		$container.empty().append($tabsContainer);
+		$dataSetFormTab.append($form);
+
+		if (this._dataSetFormModel.activeTab) {
+			let $activeTabLink = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"][href="' + this._dataSetFormModel.activeTab + '"]');
+			if ($activeTabLink.length) {
+				$activeTabLink.tab('show');
+			}
+		} else {
+			let $initialActive = $('#toolbar-' + _this._viewId +' a[data-toggle="tab"].active');
+			if ($initialActive.length) {
+				this._dataSetFormModel.activeTab = $initialActive.attr('href');
+			}
+		}
+
+		this._updateToolbarForTab(this._dataSetFormModel.activeTab, _this._viewId);
+		$("body").on("shown.bs.tab", '#toolbar-' + _this._viewId + ' a[data-toggle="tab"]',  function(e) {
+			const target = $(e.target).attr("href");
+			_this._dataSetFormModel.activeTab = target;
+			_this._updateToolbarForTab(target, _this._viewId);
+			if (target === "#afsWidgetTab-"+_this._viewId) {
+				if (!$("#afsWidgetTab-"+_this._viewId).data("dssLoaded")) {
+					$afsWidgetTab.empty()
+					_this._displayAFSWidget($afsWidgetTab, dataSetPermId);
+					$("#afsWidgetTab-"+_this._viewId).data("dssLoaded", true);
+				}
+			}
+		});
+	};
+
+	this._updateToolbarForTab = function(activeTab, id) {
+		if (activeTab === "#afsWidgetTab-"+id) {
+			let container = $('#toolbar-' + id);
+			container.find(".normal-toolbar-container").hide();
+			container.find(".alternate-toolbar-container").show();
+			container.find(".normal-right-toolbar-container").hide();
+			container.find(".alternate-right-toolbar-container").show();
+			container.find(".extra-right-toolbar-container").show();
+		} else if(activeTab === "#dataSetFormTab-"+id) {
+			let container = $('#toolbar-' + id);
+			container.find(".normal-toolbar-container").show();
+			container.find(".alternate-toolbar-container").hide();
+			container.find(".normal-right-toolbar-container").show();
+			container.find(".alternate-right-toolbar-container").hide();
+			container.find(".extra-right-toolbar-container").hide();
+		}
+	};
+
+	this._waitForExtOpenbisInitialization = function() {
+		Util.blockUI();
+		return new Promise((resolve) => {
+			if (this.extOpenbis.initialized === true) {
+				Util.unblockUI();
+				resolve();
+			} else {
+				const interval = setInterval(() => {
+					if (this.extOpenbis.initialized === true) {
+						clearInterval(interval);
+						Util.unblockUI();
+						resolve();
+					}
+				}, 100);
+			}
+		});
+	};
+
+	this._displayAFSWidget= function ($container, id) {
+		const _this = this
+		let $element = $("<div>")
+
+		_this._waitForExtOpenbisInitialization().then(()=> {
+			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+				"as/dto/dataset/id/DataSetPermId",
+			],
+				function (RightsFetchOptions, DataSetPermId) {
+					let props = {
+						id:id,
+						objId: id,
+						objKind: "dataset",
+						viewType:'list',
+						withoutToolbar: true,
+						extOpenbis: _this.extOpenbis,
+						selectionButtonProps: {
+							sx: { textTransform: 'none' }
+						}
+					}
+					let configKey = "AFS-WIDGET-KEY-DS";
+
+					const loadSettings = function () {
+						return new Promise(function (resolve) {
+							mainController.serverFacade.getSetting(configKey, function (elnGridSettingsStr) {
+								var gridSettingsObj = null
+
+								if (elnGridSettingsStr) {
+									try {
+										var elnGridSettingsObj = JSON.parse(elnGridSettingsStr)
+
+										gridSettingsObj = {
+											filterMode: elnGridSettingsObj.filterMode,
+											globalFilter: elnGridSettingsObj.globalFilter,
+											pageSize: elnGridSettingsObj.pageSize,
+											sortings: elnGridSettingsObj.sortings,
+											sort: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortProperty : null,
+											sortDirection: elnGridSettingsObj.sort ? elnGridSettingsObj.sort.sortDirection : null,
+											columnsVisibility: elnGridSettingsObj.columns,
+											columnsSorting: elnGridSettingsObj.columnsSorting,
+											exportOptions: elnGridSettingsObj.exportOptions,
+										}
+									} catch (e) {
+									}
+								}
+								resolve(gridSettingsObj)
+								})
+							})
+					}
+
+
+					const onSettingsChange = function (gridSettingsObj) {
+						let elnGridSettingsObj = {
+							filterMode: gridSettingsObj.filterMode,
+							globalFilter: gridSettingsObj.globalFilter,
+							pageSize: gridSettingsObj.pageSize,
+							sortings: gridSettingsObj.sortings,
+							columns: gridSettingsObj.columnsVisibility,
+							columnsSorting: gridSettingsObj.columnsSorting,
+							exportOptions: gridSettingsObj.exportOptions,
+						}
+
+						let elnGridSettingsStr = JSON.stringify(elnGridSettingsObj)
+						mainController.serverFacade.setSetting(configKey, elnGridSettingsStr)
+					}
+
+
+					props['onStoreDisplaySettings'] = onSettingsChange;
+					props['onLoadDisplaySettings'] = loadSettings;
+
+					let DataBrowser = React.createElement(window.NgComponents.default.DataBrowser, props)
+
+					NgComponentsManager.renderComponent(DataBrowser, $element.get(0));
+				}
+			);
+			$container.append($element);
+		})
+	}
+
+	this._renderAFSWidgetLeftToolBar= function ($container, id, toolbarTypeIn) {
+		let $element = $("<div>")
+		const _this = this
+
+		_this._waitForExtOpenbisInitialization().then(()=> {
+			require(["as/dto/rights/fetchoptions/RightsFetchOptions",
+				"as/dto/dataset/id/DataSetPermId",
+			],
+				function (RightsFetchOptions, DataSetPermId) {
+					let props = {
+						owner: id,
+						buttonSize: "small",
+						toolbarType: toolbarTypeIn,
+						viewType:'list',
+						className :'btn btn-default',
+						primaryClassName :'btn btn-primary',
+						selectionButtonProps: {
+                                sx: { textTransform: 'none' }
+                            },
+						extOpenbis: _this.extOpenbis
+					}
+
+
+					let DataBrowserToolbar = React.createElement(window.NgComponents.default.DataBrowserToolbar, props)
+
+					NgComponentsManager.renderComponent(DataBrowserToolbar, $element.get(0));
+				}
+			);
+		});
+
+		return $element;
 	}
 }

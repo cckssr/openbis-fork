@@ -214,6 +214,16 @@ public class DTOTranslator
         if (dataSet.getSample() != null)
         {
             simpleDTO.setSampleCode(dataSet.getSample().getCode());
+
+            if (dataSet.getSample().getProject() != null)
+            {
+                simpleDTO.setSpaceCode(dataSet.getSample().getProject().getSpace().getCode());
+                simpleDTO.setProjectCode(dataSet.getSample().getProject().getCode());
+            } else if (dataSet.getSample().getSpace() != null)
+            {
+                simpleDTO.setSpaceCode(dataSet.getSample().getSpace().getCode());
+            }
+
             if (dataSet.getSample().getImmutableDataDate() != null)
             {
                 simpleDTO.setImmutableDataTimestamp(dataSet.getSample().getImmutableDataDate());
@@ -253,8 +263,11 @@ public class DTOTranslator
             if (dataSet.getSample().getProject() != null)
             {
                 description.setProjectCode(dataSet.getSample().getProject().getCode());
+                description.setSpaceCode(dataSet.getSample().getProject().getSpace().getCode());
+            } else if (dataSet.getSample().getSpace() != null)
+            {
+                description.setSpaceCode(dataSet.getSample().getSpace().getCode());
             }
-            description.setSpaceCode(dataSet.getSample().getSpace().getCode());
         }
 
         if (dataSet.getExperiment() != null)

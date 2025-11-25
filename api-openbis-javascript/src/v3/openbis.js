@@ -525,7 +525,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
 		    }else{
-		        afsServer.useSession(asFacade._private.sessionToken)
+		        afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} =  afsServer.list(owner, source, recursively);
 				return promise; 
 		    }
@@ -548,7 +548,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     return new Blob([data]);
                 });
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)               
+                afsServer.setSession(asFacade._private.sessionToken)               
 				const {promise} =  afsServer._read(chunks);
 				return promise; 
             }
@@ -569,7 +569,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
                 const {promise} = afsServer._write(chunks);
 				return promise;
             }
@@ -584,7 +584,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} = afsServer.delete(owner, source);
 				return promise;                
             }
@@ -599,7 +599,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
                 const {promise} = afsServer.copy(sourceOwner, source, targetOwner, target);				 
 				return promise;  
             }
@@ -614,7 +614,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} = afsServer.move(sourceOwner, source, targetOwner, target);				 
 				return promise; 
             }
@@ -629,7 +629,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} = afsServer.create(owner, source, directory);
 				return promise; 
             }
@@ -650,7 +650,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
 				const {promise} = afsServer.free(owner, source);
 				return promise; 
             }
@@ -665,7 +665,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
                     }
                 })  // return string promise
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
                 const {promise} = afsServer.hash(owner, source);
                 return promise; // return string promise
             }
@@ -686,7 +686,7 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
 
                 }); // return blob promise
             }else{
-                afsServer.useSession(asFacade._private.sessionToken)
+                afsServer.setSession(asFacade._private.sessionToken)
                 const {promise} = afsServer.preview(owner, source);
                 return promise; // return blob promise
             }
@@ -3410,6 +3410,10 @@ define([ 'jquery', 'util/Json', 'as/dto/datastore/search/DataStoreSearchCriteria
         }
         return string
     }
+
+    facade.DataStoreServer = AfsServer;
+    facade.DEFAULT_PACKAGE_SIZE_IN_BYTES = AfsServer.DEFAULT_PACKAGE_SIZE_IN_BYTES;
+    facade.DEFAULT_TIMEOUT_IN_MILLIS = AfsServer.DEFAULT_TIMEOUT_IN_MILLIS;
 
     return facade;
 
