@@ -1,6 +1,7 @@
 import React from 'react';
 import ResizeObserver from 'rc-resize-observer';
 import LeftToolbarButtons from '@src/js/components/common/data-browser/components/toolbar/LeftToolbarButtons.jsx';
+import UploadSection from '@src/js/components/common/data-browser/components/upload/UploadSection.jsx';
 import { debounce } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 
@@ -63,10 +64,13 @@ class ResponsiveLeftToolbar extends React.Component {
   }
   
   render() {    
-    const { classes, ...other } = this.props;
+    const { classes, uploadSectionProps, ...other } = this.props;
     return (
       <ResizeObserver onResize={this.onResize}>
         <div className={classes.buttons}>
+          {uploadSectionProps ? (
+            <UploadSection {...uploadSectionProps} />
+          ) : null}
           <LeftToolbarButtons
             width={this.state.width}
             containerClassName={classes.buttons}

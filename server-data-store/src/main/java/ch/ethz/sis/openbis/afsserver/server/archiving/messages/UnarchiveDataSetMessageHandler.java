@@ -150,7 +150,7 @@ public class UnarchiveDataSetMessageHandler implements IMessageHandler
         SampleFetchOptions sampleFetchOptions = dataSetFetchOptions.withSample();
         sampleFetchOptions.withType();
         sampleFetchOptions.withSpace();
-        sampleFetchOptions.withProject();
+        sampleFetchOptions.withProject().withSpace();
 
         ExperimentFetchOptions experimentFetchOptions = dataSetFetchOptions.withExperiment();
         experimentFetchOptions.withType();

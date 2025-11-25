@@ -65,8 +65,17 @@ class UploadButton extends React.Component {
   };
 
   render() {
-    const { children, classes, size, variant, color, onClick,
-      startIcon, accept } = this.props;
+    const {
+      children,
+      classes,
+      size,
+      variant,
+      color,
+      onClick,
+      startIcon,
+      accept,
+      className
+    } = this.props;
 
     return (
       <>
@@ -82,7 +91,7 @@ class UploadButton extends React.Component {
 
         {/* Button to trigger the file input */}
         <Button
-          classes={{ root: classes.button }}
+          className={className}
           color={color}
           size={size}
           variant={variant}

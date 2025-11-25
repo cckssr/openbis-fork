@@ -14,11 +14,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ch.ethz.sis.afsjson.JsonObjectMapper;
+import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.afsserver.server.archiving.messages.FinalizeDataSetArchivingMessage;
 import ch.ethz.sis.openbis.afsserver.server.archiving.messages.UpdateDataSetArchivingStatusMessage;
 import ch.ethz.sis.openbis.afsserver.server.messages.IMessagesDatabaseFacade;
-import ch.ethz.sis.messages.db.Message;
-import ch.ethz.sis.messages.process.MessageProcessId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -383,7 +383,8 @@ public class OpenBISService implements IOpenBISService
         fetchOptions.withPhysicalData();
         fetchOptions.withDataStore();
         fetchOptions.withExperiment().withProject().withSpace();
-        fetchOptions.withSample();
+        fetchOptions.withSample().withSpace();
+        fetchOptions.withSample().withProject().withSpace();
 
         List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, fetchOptions).getObjects();
 
@@ -444,7 +445,8 @@ public class OpenBISService implements IOpenBISService
         fetchOptions.withPhysicalData();
         fetchOptions.withDataStore();
         fetchOptions.withExperiment().withProject().withSpace();
-        fetchOptions.withSample();
+        fetchOptions.withSample().withSpace();
+        fetchOptions.withSample().withProject().withSpace();
 
         List<DataSet> dataSets = openBISFacade.searchDataSets(criteria, fetchOptions).getObjects();
 

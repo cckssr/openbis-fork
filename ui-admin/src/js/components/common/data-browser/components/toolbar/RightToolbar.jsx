@@ -17,23 +17,20 @@
 import React from 'react';
 import withStyles from '@mui/styles/withStyles';
 import autoBind from 'auto-bind';
-import logger from '@src/js/common/logger.js';
 import InfoToggleButton from '@src/js/components/common/data-browser/components/toolbar/InfoToggleButton.jsx';
 import ViewSwitch from '@src/js/components/common/data-browser/components/toolbar/ViewSwitch.jsx';
-import UploadSection from '@src/js/components/common/data-browser/components/upload/UploadSection.jsx';
-
 
 const color = 'default'
-const iconButtonSize = 'medium'
 
 const styles = theme => ({
   buttons: {
     flex: '0 0 auto',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'center',    
     whiteSpace: 'nowrap',
     '&>button': {
-      marginRight: theme.spacing(1)
+      marginRight: theme.spacing(1),
+      borderRadius: '4px',
     },
     '&>button:nth-last-child(1)': {
       marginRight: 0
@@ -72,36 +69,27 @@ class RightToolbar extends React.Component {
       classes,
       onViewTypeChange,
       buttonSize,
-      editable,
       viewType,
       selected,
-      controller,
       onChange,
-      afterUpload,
-      frozen
+      className
     } = this.props
 
     return (
       <div className={classes.buttons}>
-        <InfoToggleButton
-          selected={selected}
-          onChange={onChange}
-          buttonSize={buttonSize}
-          classes={classes}
-        />
         <ViewSwitch
           viewType={viewType}
           onViewTypeChange={onViewTypeChange}
           buttonSize={buttonSize}
           classes={classes}
+          className={className}
         />
-        <UploadSection
-          classes={classes}
+        <InfoToggleButton
+          selected={selected}
+          onChange={onChange}
           buttonSize={buttonSize}
-          editable={editable}
-          controller={controller}
-          afterUpload={afterUpload}
-          frozen={frozen}
+          classes={classes}
+          className={className}
         />
       </div>
     )

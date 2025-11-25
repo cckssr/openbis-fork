@@ -7,15 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ch.ethz.sis.shared.log.classic.impl.Logger;
-
 import ch.ethz.sis.afsjson.JsonObjectMapper;
-import ch.ethz.sis.openbis.afsserver.server.common.DTOTranslator;
-import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.db.Message;
+import ch.ethz.sis.openbis.afsserver.server.common.DTOTranslator;
+import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.common.ServiceProvider;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.fetchoptions.DataSetFetchOptions;
@@ -24,10 +22,11 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.datastore.search.DataStoreKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.fetchoptions.ExperimentFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.messages.ArchiveDataSetMessage;
-import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.startup.Configuration;
+import ch.systemsx.cisd.common.collection.CollectionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverTaskContext;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IArchiverPlugin;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IOpenBISService;
@@ -136,7 +135,7 @@ public class ArchiveDataSetMessageHandler implements IMessageHandler
         SampleFetchOptions sampleFetchOptions = dataSetFetchOptions.withSample();
         sampleFetchOptions.withType();
         sampleFetchOptions.withSpace();
-        sampleFetchOptions.withProject();
+        sampleFetchOptions.withProject().withSpace();
 
         ExperimentFetchOptions experimentFetchOptions = dataSetFetchOptions.withExperiment();
         experimentFetchOptions.withType();

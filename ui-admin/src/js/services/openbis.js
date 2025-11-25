@@ -3,7 +3,10 @@ import api from '@src/js/services/openbis/api.js';
 
 class Openbis {
   constructor() {
-    this.initialized = false;    
+    this.initialized = false;
+    // Provide sane defaults immediately; values will be overwritten after init with server values.
+    this.DEFAULT_PACKAGE_SIZE_IN_BYTES = 10 * 1024 * 1024
+    this.DEFAULT_TIMEOUT_IN_MILLIS = 30000
   }
 
   async init(v3) {    

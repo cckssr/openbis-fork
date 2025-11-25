@@ -30,7 +30,7 @@ import FileUploadManager from '@src/js/components/common/data-browser/components
 import clsx from 'clsx';
 
 const uploadButtonsColor = ''
-const color = 'secondary'
+const color = 'primary'
 
 class UploadSection extends React.Component {
   constructor(props) {
@@ -107,8 +107,7 @@ class UploadSection extends React.Component {
     return (
       <div className={classes.uploadButtonsContainer}>
         <UploadButton
-          classes={{ root: classes.button }}
-          className={className}
+          className={clsx(classes.button, className)}
           color={className ? '' : uploadButtonsColor}
           size={buttonSize}
           variant="contained"
@@ -119,8 +118,7 @@ class UploadSection extends React.Component {
           {messages.get(messages.FILE_UPLOAD)}
         </UploadButton>
         <UploadButton
-          classes={{ root: classes.button }}
-          className={className}
+          className={clsx(classes.button, className)}
           color={className ? '' : uploadButtonsColor}
           size={buttonSize}
           variant="contained"
@@ -155,7 +153,7 @@ class UploadSection extends React.Component {
     return (
       <>
         <Button
-          classes={{ root: clsx(classes.button, classes.primaryButton, primaryClassName) }}          
+          className={clsx(classes.button, classes.primaryButton, primaryClassName)}
           color={primaryClassName ? '' : color }
           size={buttonSize}
           variant={className ?  '' : "contained"}

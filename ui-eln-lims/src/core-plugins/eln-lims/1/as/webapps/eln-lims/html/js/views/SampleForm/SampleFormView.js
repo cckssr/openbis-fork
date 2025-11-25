@@ -2073,7 +2073,10 @@
 							objKind: "object",	
 							viewType:'list',					
 							withoutToolbar: true,
-							extOpenbis: _this.extOpenbis
+							extOpenbis: _this.extOpenbis,
+							selectionButtonProps: {
+								sx: { textTransform: 'none' }
+							}
 						}
 						let configKey = "AFS-WIDGET-KEY";
 											
@@ -2152,6 +2155,9 @@
 							viewType:'list',
 							className :'btn btn-default',
 							primaryClassName :'btn btn-primary',
+							selectionButtonProps: {
+								sx: { textTransform: 'none' }
+							},
 							extOpenbis: _this.extOpenbis
 						}
 

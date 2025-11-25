@@ -31,8 +31,8 @@ export default class DataBrowserController extends ComponentController {
     this.gridController = null
     this.path = ''
     this.fileNames = []
-    this.CHUNK_SIZE = 1024 * 1024 * 10;// 10MiB
-    this.retryCaller = new RetryCaller({ maxRetries: 8, initialWaitTime: 1000, waitFactor: 2 });
+    this.CHUNK_SIZE = extOpenbis.DEFAULT_PACKAGE_SIZE_IN_BYTES
+    this.retryCaller = new RetryCaller({ maxRetries: 5, initialWaitTime: 1000, waitFactor: 2 });
   }
 
   abortCurrentApiOperation() {
@@ -88,7 +88,7 @@ export default class DataBrowserController extends ComponentController {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
       return files.map(file => ({ id: file.path, ...file }))
-    })
+    }, [])
   }
 
   async loadFolders() {
@@ -96,7 +96,7 @@ export default class DataBrowserController extends ComponentController {
       const files = await this.listFiles()
       this.fileNames = files.map(file => file.name)
       return files.filter(file => file.directory).map(file => ({ id: file.path, ...file }))
-    })
+    }, [])
   }
 
   async createNewFolder(name) {
@@ -231,12 +231,13 @@ export default class DataBrowserController extends ComponentController {
     return blob.size;
   }
 
-  async handleError(fn) {
+  async handleError(fn, fallback) {
     try {
       return await fn()
     } catch (e) {
       const message = e.message || (e.t0 ? e.t0.message || e.t0 : e)
-      this.setState({ errorMessage: message })
+      await this.setState({ errorMessage: message })
+      return fallback
     }
   }
 
@@ -436,6 +437,9 @@ export default class DataBrowserController extends ComponentController {
         }
         case 'collection': {
           return new this.openbis.ExperimentPermId(id.permId)
+        }
+        case 'dataset': {
+          return new this.openbis.DataSetPermId(id.permId)
         }
       }
       return null

@@ -51,7 +51,7 @@ export class AppController {
 
         if (sessionToken) {
           try {
-            openbis.useSession(sessionToken)
+            openbis.setSession(sessionToken)
 
             const sessionInformation = await openbis.getSessionInformation()
 
@@ -72,10 +72,10 @@ export class AppController {
               const routeObject = routes.parse(this.getRoute())
               await this.routeChanged(routeObject.path)
             } else {
-              openbis.useSession(null)
+              openbis.setSession(null)
             }
           } catch (e) {
-            openbis.useSession(null)
+            openbis.setSession(null)
           }
         }
 
