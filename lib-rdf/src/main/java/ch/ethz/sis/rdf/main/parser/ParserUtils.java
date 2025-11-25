@@ -1,7 +1,6 @@
 package ch.ethz.sis.rdf.main.parser;
 
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
-import ch.ethz.sis.rdf.main.Constants;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.model.rdf.PropertyTupleRDF;
 import ch.ethz.sis.rdf.main.model.rdf.ResourceRDF;
@@ -376,15 +375,16 @@ public class ParserUtils {
 
         List<String> classesToImport = new ArrayList<>();
         List<String> propertiesToImport = new ArrayList<>();
+        List<ResourceParsingResult.VocabRepairInfo> objectsWithVocabsToRepair = new ArrayList<>();
 
-
-        List<SampleObject> objects =
+        List<SampleObject> deletedObjects =
                 unknownTypeSampleObjects.entrySet().stream().map(x -> x.getValue())
                         .flatMap(Collection::stream).toList();
         List<SampleObject> objectsWritten =
                 objectsKnownTypes.entrySet().stream().map(x -> x.getValue())
                         .flatMap(Collection::stream).toList();
-        Set<String> deletedCodes = objects.stream().map(x -> x.code).collect(Collectors.toSet());
+        Set<String> deletedCodes =
+                deletedObjects.stream().map(x -> x.code).collect(Collectors.toSet());
 
         Map<String, SamplePropertyType> codeToPropertyType = modelRDF.sampleTypeList.stream().map(x -> x.properties)
                 .flatMap(Collection::stream)
@@ -418,12 +418,27 @@ public class ParserUtils {
                                 tempProperties.add(sampleObjectProperty);
                             });
 
+                    SamplePropertyType samplePropertyType =
+                            codeToPropertyType.get(property.label.toUpperCase());
 
                     boolean required =
-                            codeToPropertyType.get(property.label.toUpperCase()).isMandatory == 1;
+                            samplePropertyType.isMandatory == 1;
                     if (required){
-                        SampleObjectProperty dummyProperty = new SampleObjectProperty(property.propertyURI , Constants.UNKNOWN, property.value, property.valueURI);
+                        SampleObjectProperty dummyProperty =
+                                new SampleObjectProperty(property.propertyURI,
+                                        samplePropertyType.propertyLabel, property.value,
+                                        property.valueURI);
                         tempProperties.add(dummyProperty);
+                    } else if (samplePropertyType.dataType.equals("VARCHAR"))
+                    {
+                        SampleObjectProperty dummyProperty =
+                                new SampleObjectProperty(property.propertyURI,
+                                        samplePropertyType.propertyLabel,
+                                        property.value, property.valueURI);
+                        tempProperties.add(dummyProperty);
+                        objectsWithVocabsToRepair.add(
+                                new ResourceParsingResult.VocabRepairInfo(object,
+                                        samplePropertyType, property.value));
                     }
                 } else
                 {
@@ -445,7 +460,8 @@ public class ParserUtils {
 
         }
 
-        return new ResourceParsingResult(objects, unchangedObjects, changedObjects, importedTypes, List.of());
+        return new ResourceParsingResult(deletedObjects, unchangedObjects, changedObjects,
+                importedTypes, List.of(), Set.of(), objectsWithVocabsToRepair);
     }
 
     static String extractValue(SamplePropertyType samplePropertyType, OntModel additionalOntModel,
