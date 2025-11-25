@@ -205,7 +205,7 @@ public class RoCrateService {
         {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
-        AsyncJobRegistry.Status status =
+        AsyncJobRegistry.AsyncStatus status =
                 asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
         return new ServerResponse();
 

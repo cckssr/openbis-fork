@@ -54,7 +54,7 @@ public class AsyncJobRegistry
 
     public enum Status
     {
-        PENDING, // Check openapi yaml whether that's the word we use there, RUNNING would be better
+        RUNNING,
         DONE,
         FAILED,
         SCHEDULED;
@@ -71,15 +71,46 @@ public class AsyncJobRegistry
     }
 
     //Maybe provide Status and Result together to avoid repeated call
-    public Status poll(String username, String jobId)
+    public AsyncStatus poll(String username, String jobId)
     {
         JobKey jobKey = new JobKey(username, jobId);
         Future future = results.get(jobKey);
+        IAsyncJob asyncJob = jobs.get(jobKey);
+
         if (!future.isDone())
         {
-            return Status.PENDING;
+            return new AsyncStatus(Status.RUNNING, asyncJob);
         }
-        return Status.DONE;
+        return new AsyncStatus(Status.DONE, asyncJob);
+    }
+
+    public static class AsyncStatus
+    {
+        Status status;
+
+        IAsyncJob job;
+
+        public AsyncStatus(Status status, IAsyncJob job)
+        {
+            this.status = status;
+            this.job = job;
+        }
+
+        public Status getStatus()
+        {
+            return status;
+        }
+
+        public IAsyncJob getJob()
+        {
+            if (this.status != Status.DONE)
+            {
+                throw new IllegalStateException(
+                        "Cannot provide result of operation that has not been completed.");
+            }
+
+            return job;
+        }
     }
 
 }
