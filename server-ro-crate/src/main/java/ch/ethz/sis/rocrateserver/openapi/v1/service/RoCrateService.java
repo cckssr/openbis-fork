@@ -165,8 +165,9 @@ public class RoCrateService {
         }
 
         try {
-            InputStream inputStream = exportDelegate.export(openBIS, headers, body);
-            return Response.ok(inputStream.readAllBytes())
+            AsyncJob job = exportDelegate.export(asyncJobRegistry, openBIS, headers, body);
+            ObjectMapper objectMapper = new ObjectMapper();
+            return Response.ok(objectMapper.writeValueAsString(job))
                     .type(headers.getAccept()).build();
         } catch (WebApplicationException ex)
         {
@@ -189,8 +190,8 @@ public class RoCrateService {
     }
 
     @GET
-    @Path("result")
-    public Response result(
+    @Path("status")
+    public Response status(
             @BeanParam ResultParams headers,
             InputStream body) throws Exception
     {
