@@ -19,8 +19,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
+import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.ArchivingStatus;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
@@ -44,6 +44,7 @@ import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.base.utilities.OSUtilities;
 import ch.systemsx.cisd.common.process.ProcessExecutionHelper;
 import ch.systemsx.cisd.common.process.ProcessResult;
@@ -307,7 +308,8 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
 
         log("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
-        Thread.sleep(2L * getAfsServerConfiguration().getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Thread.sleep(2L * afsConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
 
         log("check data set can be read again");
         fileContent = openBIS.getAfsServerFacade().read(ownerId, TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.length());

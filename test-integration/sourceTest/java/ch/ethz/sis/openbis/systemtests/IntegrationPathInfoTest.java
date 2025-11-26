@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.UUID;
 
-import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,6 +28,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
 import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
+import ch.ethz.sis.shared.log.standard.core.Level;
+import ch.ethz.sis.shared.startup.Configuration;
 import net.lemnik.eodsql.QueryTool;
 
 public class IntegrationPathInfoTest extends AbstractIntegrationTest
@@ -49,7 +50,8 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
         deleteLastSeenDeletionFile();
 
-        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
         pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
     }
 
@@ -278,7 +280,8 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(getAfsServerConfiguration()).getOpenBISLastSeenDeletionFile();
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(afsConfiguration).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }
 

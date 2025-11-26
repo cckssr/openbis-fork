@@ -10,13 +10,14 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.messages.consumer.IMessageHandler;
 import ch.ethz.sis.messages.consumer.MessagesConsumer;
 import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.db.MessagesDatabase;
+import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
+import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.shared.startup.Configuration;
 
 public class IntegrationMessagesTest extends AbstractIntegrationTest
 {
@@ -33,7 +34,8 @@ public class IntegrationMessagesTest extends AbstractIntegrationTest
     public void beforeMethod(Method method) throws Exception
     {
         super.beforeMethod(method);
-        DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(getAfsServerConfiguration());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
         messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
     }
 

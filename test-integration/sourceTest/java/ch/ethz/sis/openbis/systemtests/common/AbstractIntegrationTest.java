@@ -17,18 +17,9 @@ package ch.ethz.sis.openbis.systemtests.common;
 
 import static org.testng.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,52 +28,20 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
-import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.proxy.ProxyServlet;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.remoting.rmi.CodebaseAwareObjectInputStream;
-import org.springframework.remoting.support.RemoteInvocation;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.GenericWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-import ch.ethz.sis.afs.manager.TransactionConnection;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
-import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
-import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
-import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSet;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.dataset.DataSetKind;
@@ -137,24 +96,14 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
+import ch.ethz.sis.openbis.systemtests.environment.AfsServerConfiguration;
+import ch.ethz.sis.openbis.systemtests.environment.ApplicationServerConfiguration;
+import ch.ethz.sis.openbis.systemtests.environment.DataStoreServerConfiguration;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestEnvironment;
+import ch.ethz.sis.openbis.systemtests.environment.RoCrateServerConfiguration;
+import ch.ethz.sis.openbis.systemtests.environment.ServerProxyInterceptor;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.systemsx.cisd.common.filesystem.QueueingPathRemoverService;
-import ch.systemsx.cisd.common.filesystem.SoftLinkMaker;
-import ch.systemsx.cisd.common.properties.ExtendedProperties;
-import ch.systemsx.cisd.dbmigration.postgresql.PostgreSQLDAOFactory;
-import ch.systemsx.cisd.etlserver.ETLDaemon;
-import ch.systemsx.cisd.openbis.dss.generic.server.DataStoreServer;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ArchiverServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.HierarchicalContentServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderFactory;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
-import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
-import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 /**
  * @author pkupczyk
@@ -179,44 +128,36 @@ public class AbstractIntegrationTest
 
     public static final String PASSWORD = "password";
 
-    private static Server applicationServerProxy;
-
-    private static ProxyInterceptor applicationServerProxyInterceptor;
-
-    private static Server applicationServer;
-
-    protected static GenericWebApplicationContext applicationServerSpringContext;
-
-    private static Server afsServerProxy;
-
-    private static ProxyInterceptor afsServerProxyInterceptor;
-
-    private static ch.ethz.sis.afsserver.server.Server<TransactionConnection, Object> afsServer;
+    public static IntegrationTestEnvironment environment;
 
     @BeforeSuite
     public void beforeSuite() throws Exception
     {
         initLogging();
 
-        dropOpenBISDatabase();
-        dropMessagesDatabase();
-        dropPathInfoDatabase();
-        dropArchiverDatabase();
+        IntegrationTestEnvironment environment = new IntegrationTestEnvironment();
 
-        cleanupApplicationServerFolders();
-        cleanupAfsServerFolders();
-        cleanupDataStoreServerFolders();
+        ApplicationServerConfiguration applicationServerConfiguration = new ApplicationServerConfiguration();
+        applicationServerConfiguration.loadServiceProperties(Path.of("etc/as/service.properties"));
+        environment.createApplicationServer(applicationServerConfiguration);
 
-        configureShares();
-        configureELN();
+        DataStoreServerConfiguration dataStoreServerConfiguration = new DataStoreServerConfiguration();
+        dataStoreServerConfiguration.loadServiceProperties(Path.of("etc/dss/service.properties"));
+        environment.createDataStoreServer(dataStoreServerConfiguration);
 
-        startApplicationServer();
-        startApplicationServerProxy();
+        AfsServerConfiguration afsServerConfiguration = new AfsServerConfiguration();
+        afsServerConfiguration.loadServiceProperties(Path.of("etc/afs/service.properties"));
+        environment.createAfsServer(afsServerConfiguration);
+
+        RoCrateServerConfiguration roCrateServerConfiguration = new RoCrateServerConfiguration();
+        roCrateServerConfiguration.loadServiceProperties(Path.of("etc/ro-crate/service.properties"));
+        environment.createRoCrateServer(roCrateServerConfiguration);
+
+        environment.start();
+
+        AbstractIntegrationTest.environment = environment;
+
         createApplicationServerData();
-        startDataStoreServer();
-        startAfsServer();
-        startAfsServerProxy();
-        startRoCrateServer();
 
         TestLogger.configure();
     }
@@ -224,20 +165,15 @@ public class AbstractIntegrationTest
     @AfterSuite
     public void afterSuite() throws Exception
     {
-        shutdownRoCrateServer();
-        shutdownAfsServer();
-        shutdownAfsServerProxy();
-        shutdownDataStoreServer();
-        shutdownApplicationServer();
-        shutdownApplicationServerProxy();
+        environment.stop();
     }
 
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
     {
         log("\n>>>>>>>>>>>>>>>>\nBEFORE " + method.getDeclaringClass().getName() + "." + method.getName() + "\n>>>>>>>>>>>>>>>>\n");
-        setApplicationServerProxyInterceptor(null);
-        setAfsServerProxyInterceptor(null);
+        environment.getApplicationServer().setProxyInterceptor(null);
+        environment.getAfsServer().setProxyInterceptor(null);
     }
 
     @AfterMethod
@@ -251,223 +187,37 @@ public class AbstractIntegrationTest
         System.setProperty("log.configuration", "etc/as/logging.properties");
     }
 
-    private void dropOpenBISDatabase() throws Exception
+    public void restartApplicationServer() throws Exception
     {
-        Properties properties = getApplicationServerConfiguration();
-
-        Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
-        databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
-        databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS, TestOpenBISDatabaseVersionHolder.class.getName());
-        databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, properties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
-
-        DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log("Dropped openBIS database.");
+        log("Restarting application server.");
+        environment.getApplicationServer().stop();
+        environment.getApplicationServer().start();
     }
 
-    private void dropMessagesDatabase()
+    public void restartAfsServer() throws Exception
     {
-        MessagesDatabaseConfiguration configuration = MessagesDatabaseConfiguration.getInstance(getAfsServerConfiguration());
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log("Dropped messages database.");
+        log("Restarting afs server.");
+        environment.getAfsServer().stop();
+        environment.getAfsServer().start();
     }
 
-    private void dropPathInfoDatabase()
+    public static void setApplicationServerProxyInterceptor(
+            final ServerProxyInterceptor applicationServerProxyInterceptor)
     {
-        PathInfoDatabaseConfiguration configuration = PathInfoDatabaseConfiguration.getInstance(getAfsServerConfiguration());
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log("Dropped path info database.");
+        environment.getApplicationServer().setProxyInterceptor(applicationServerProxyInterceptor);
     }
 
-    private void dropArchiverDatabase()
+    public static void setAfsServerProxyInterceptor(final ServerProxyInterceptor afsServerProxyInterceptor)
     {
-        ArchiverDatabaseConfiguration configuration = ArchiverDatabaseConfiguration.getInstance(getAfsServerConfiguration());
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log("Dropped archiver database.");
+        environment.getAfsServer().setProxyInterceptor(afsServerProxyInterceptor);
     }
 
-    private void cleanupApplicationServerFolders() throws Exception
+    private static void createApplicationServerData() throws Exception
     {
-        Properties configuration = getApplicationServerConfiguration();
-
-        String transactionLogFolder = configuration.getProperty(TransactionConfiguration.TRANSACTION_LOG_FOLDER_PATH_PROPERTY_NAME);
-        cleanupFolderSafely(transactionLogFolder);
-    }
-
-    private void cleanupAfsServerFolders() throws Exception
-    {
-        Configuration configuration = getAfsServerConfiguration();
-
-        String writeAheadLogFolder = configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot);
-        cleanupFolderSafely(writeAheadLogFolder);
-
-        String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
-        cleanupFolderSafely(storageRoot);
-
-        String storageIncomingShareId = configuration.getStringProperty(AtomicFileSystemServerParameter.storageIncomingShareId);
-
-        new File(storageRoot, storageIncomingShareId).mkdirs();
-    }
-
-    private void cleanupDataStoreServerFolders() throws Exception
-    {
-        cleanupFolderSafely("targets/storage");
-        new File("targets/incoming-default").mkdirs();
-    }
-
-    private void cleanupFolderSafely(String folderPath) throws Exception
-    {
-        if (!new File(folderPath).exists())
-        {
-            return;
-        }
-
-        File safetyRoot = new File("../").getCanonicalFile();
-        File folderParent = new File(folderPath).getCanonicalFile();
-
-        while (folderParent != null && !Files.isSameFile(safetyRoot.toPath(), folderParent.toPath()))
-        {
-            folderParent = folderParent.getParentFile();
-        }
-
-        if (folderParent == null)
-        {
-            throw new RuntimeException(
-                    "Folder " + new File(folderPath).getAbsolutePath() + " is outside of " + safetyRoot.getAbsolutePath()
-                            + " therefore cannot be safely deleted.");
-        } else
-        {
-            FileUtilities.deleteRecursively(new File(folderPath));
-            log("Deleted folder: " + new File(folderPath).getAbsolutePath());
-        }
-    }
-
-    private void configureShares() throws Exception
-    {
-        Configuration configuration = getAfsServerConfiguration();
-        String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(configuration);
-        ch.ethz.sis.shared.io.IOUtils.copy("etc/shares", storageRoot);
-        log("Configured shares.");
-    }
-
-    private void configureELN() throws Exception
-    {
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/as/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/dss/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/as/core-plugins/admin"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/dss/core-plugins/admin"));
-        log("Configured ELN.");
-    }
-
-    private void startApplicationServer() throws Exception
-    {
-        log("Starting application server.");
-        Properties configuration = getApplicationServerConfiguration();
-
-        for (Object key : configuration.keySet())
-        {
-            Object value = configuration.get(key);
-            System.setProperty(String.valueOf(key), String.valueOf(value));
-        }
-
-        Server server = new Server();
-        HttpConfiguration httpConfig = new HttpConfiguration();
-        ServerConnector connector =
-                new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-        connector.setPort(TestInstanceHostUtils.getOpenBISPort());
-        server.addConnector(connector);
-        DispatcherServlet dispatcherServlet = new DispatcherServlet()
-        {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected WebApplicationContext findWebApplicationContext()
-            {
-                XmlBeanFactory beanFactory =
-                        new XmlBeanFactory(new FileSystemResource("../server-application-server/resource/server/spring-servlet.xml"));
-                applicationServerSpringContext = new GenericWebApplicationContext(beanFactory);
-                applicationServerSpringContext.setParent(new ClassPathXmlApplicationContext("classpath:applicationContext.xml"));
-                applicationServerSpringContext.refresh();
-                return applicationServerSpringContext;
-            }
-        };
-        ServletContextHandler servletContext =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-        servletContext.addServlet(new ServletHolder(dispatcherServlet), "/*");
-        server.start();
-
-        AbstractIntegrationTest.applicationServer = server;
-        log("Started application server.");
-    }
-
-    private void startApplicationServerProxy() throws Exception
-    {
-        log("Starting application server proxy.");
-        Server server = new Server();
-        HttpConfiguration httpConfig = new HttpConfiguration();
-        ServerConnector connector =
-                new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-        connector.setPort(TestInstanceHostUtils.getOpenBISProxyPort());
-        server.addConnector(connector);
-        ProxyServlet proxyServlet = new ProxyServlet.Transparent()
-        {
-            @Override protected void service(final HttpServletRequest request, final HttpServletResponse response)
-            {
-                try
-                {
-                    ProxyRequest proxyRequest = new ProxyRequest(request);
-
-                    CodebaseAwareObjectInputStream objectInputStream =
-                            new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
-                    RemoteInvocation remoteInvocation = (RemoteInvocation) objectInputStream.readObject();
-
-                    System.out.println(
-                            "[AS PROXY] url: " + proxyRequest.getRequestURL() + ", method: " + remoteInvocation.getMethodName() + ", parameters: "
-                                    + Arrays.toString(
-                                    remoteInvocation.getArguments()));
-
-                    if (applicationServerProxyInterceptor != null)
-                    {
-                        applicationServerProxyInterceptor.invoke(remoteInvocation.getMethodName(), () ->
-                        {
-                            super.service(proxyRequest, response);
-                            return null;
-                        });
-                    } else
-                    {
-                        super.service(proxyRequest, response);
-                    }
-                } catch (Exception e)
-                {
-                    System.out.println("[AS PROXY] failed");
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        ServletHolder proxyServletHolder = new ServletHolder(proxyServlet);
-        proxyServletHolder.setInitParameter("proxyTo", TestInstanceHostUtils.getOpenBISUrl() + "/");
-        ServletContextHandler servletContext =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-        servletContext.addServlet(proxyServletHolder, "/*");
-        server.start();
-
-        AbstractIntegrationTest.applicationServerProxy = server;
-        log("Started application server proxy.");
-    }
-
-    private void createApplicationServerData() throws Exception
-    {
-        Configuration configuration = getAfsServerConfiguration();
+        Configuration configuration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
 
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
-
-        String afsServerUser = OpenBISConfiguration.getInstance(configuration).getOpenBISUser();
-        createUser(openBIS, afsServerUser, null, Role.ETL_SERVER);
 
         createSpace(openBIS, TEST_SPACE);
         createUser(openBIS, TEST_SPACE_ADMIN, TEST_SPACE, Role.ADMIN);
@@ -482,286 +232,9 @@ public class AbstractIntegrationTest
         openBIS.updateSamples(List.of(elnSettingsUpdate));
     }
 
-    private void startDataStoreServer() throws Exception
-    {
-        log("Starting data store server.");
-        Properties configuration = getDataStoreServerConfiguration();
-        ServiceProviderFactory.setInstance(new ServiceProviderImpl());
-        ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
-        ShufflingServiceProviderFactory.setInstance(new ShufflingServiceProvider());
-        HierarchicalContentServiceProviderFactory.setInstance(new HierarchicalContentServiceProvider());
-        QueueingPathRemoverService.start(new File(configuration.getProperty("root-dir")), ETLDaemon.shredderQueueFile);
-        DataStoreServer.main(new String[0]);
-        log("Started data store server.");
-    }
-
-    private void startAfsServer() throws Exception
-    {
-        log("Starting afs server.");
-        Configuration configuration = getAfsServerConfiguration();
-        AbstractIntegrationTest.afsServer = new ch.ethz.sis.afsserver.server.Server<>(configuration);
-        log("Started afs server.");
-    }
-
-    private void startAfsServerProxy() throws Exception
-    {
-        log("Starting afs server proxy.");
-        Server server = new Server();
-        HttpConfiguration httpConfig = new HttpConfiguration();
-        ServerConnector connector =
-                new ServerConnector(server, new HttpConnectionFactory(httpConfig));
-        connector.setPort(TestInstanceHostUtils.getAFSProxyPort());
-        server.addConnector(connector);
-        ProxyServlet proxyServlet = new ProxyServlet.Transparent()
-        {
-            @Override protected void service(final HttpServletRequest request, final HttpServletResponse response)
-            {
-                try
-                {
-                    ProxyRequest proxyRequest = new ProxyRequest(request);
-
-                    Map<String, String> parameters = new HashMap<>();
-
-                    Iterator<String> parametersInQueryStringIterator = proxyRequest.getParameterNames().asIterator();
-                    while (parametersInQueryStringIterator.hasNext())
-                    {
-                        String name = parametersInQueryStringIterator.next();
-                        parameters.put(name, proxyRequest.getParameter(name));
-                    }
-
-                    String parametersInBodyString = IOUtils.toString(proxyRequest.getInputStream());
-                    Map<String, String> parametersInBody = parseUrlQuery(parametersInBodyString);
-
-                    parameters.putAll(parametersInBody);
-
-                    System.out.println(
-                            "[AFS PROXY] url: " + proxyRequest.getRequestURL() + ", method: " + parameters.get("method") + ", parameters: "
-                                    + parameters);
-
-                    if (afsServerProxyInterceptor != null)
-                    {
-                        afsServerProxyInterceptor.invoke(parameters.get("method"), () ->
-                        {
-                            super.service(proxyRequest, response);
-                            return null;
-                        });
-                    } else
-                    {
-                        super.service(proxyRequest, response);
-                    }
-                } catch (Exception e)
-                {
-                    System.out.println("[AFS PROXY] failed");
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        ServletHolder proxyServletHolder = new ServletHolder(proxyServlet);
-        proxyServletHolder.setInitParameter("proxyTo", TestInstanceHostUtils.getAFSUrl());
-        ServletContextHandler servletContext =
-                new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
-        servletContext.addServlet(proxyServletHolder, "/*");
-        server.start();
-
-        AbstractIntegrationTest.afsServerProxy = server;
-        log("Started afs server proxy.");
-    }
-
-    private void startRoCrateServer() throws Exception
-    {
-        log("Starting ro-crate server.");
-
-        File tempConfigurationFile = File.createTempFile("ro-crate-server", ".properties");
-        tempConfigurationFile.deleteOnExit();
-
-        Properties configuration = getRoCrateServerConfiguration();
-        configuration.store(new FileWriter(tempConfigurationFile), null);
-
-        Process process = Runtime.getRuntime()
-                .exec(new String[] { "../test-integration/etc/ro-crate/start.sh", tempConfigurationFile.getAbsolutePath() });
-
-        InputStream in = process.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-        String line;
-        while ((line = reader.readLine()) != null)
-        {
-            System.out.println("[RO-CRATE] " + line);
-
-            if (line.contains("Started RO-CRATE server") || line.contains("Startup of RO-CRATE server failed"))
-            {
-                break;
-            }
-        }
-    }
-
-    private void shutdownApplicationServer() throws Exception
-    {
-        applicationServerSpringContext.close();
-        ((ClassPathXmlApplicationContext) applicationServerSpringContext.getParent()).close();
-        applicationServer.stop();
-        log("Shut down application server.");
-    }
-
-    private void shutdownApplicationServerProxy()
-    {
-        applicationServerProxy.setStopAtShutdown(true);
-        log("Shut down application server proxy.");
-    }
-
-    private void shutdownDataStoreServer()
-    {
-        DataStoreServer.stop();
-        log("Shut down data store server.");
-    }
-
-    private void shutdownAfsServer() throws Exception
-    {
-        afsServer.shutdown(false);
-        log("Shut down afs server.");
-    }
-
-    private void shutdownAfsServerProxy()
-    {
-        afsServerProxy.setStopAtShutdown(true);
-        log("Shut down afs server proxy.");
-    }
-
-    private void shutdownRoCrateServer() throws Exception
-    {
-        Process process = Runtime.getRuntime().exec(new String[] { "../test-integration/etc/ro-crate/stop.sh" });
-
-        InputStream in = process.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-        String line;
-        while ((line = reader.readLine()) != null)
-        {
-            System.out.println("[RO-CRATE] " + line);
-        }
-    }
-
-    public void restartApplicationServer() throws Exception
-    {
-        log("Restarting application server.");
-        shutdownApplicationServer();
-        startApplicationServer();
-    }
-
-    public void restartAfsServer() throws Exception
-    {
-        log("Restarting afs server.");
-        shutdownAfsServer();
-        startAfsServer();
-    }
-
-    public static Properties getApplicationServerConfiguration() throws Exception
-    {
-        Properties configuration = new Properties();
-        configuration.load(new FileInputStream("etc/as/service.properties"));
-        configuration.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
-        configuration.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
-                TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
-        return configuration;
-    }
-
-    public static Properties getDataStoreServerConfiguration() throws Exception
-    {
-        Properties configuration = new Properties();
-        configuration.load(new FileInputStream("etc/dss/service.properties"));
-        configuration.setProperty("server-url", TestInstanceHostUtils.getOpenBISProxyUrl());
-        configuration.setProperty("port", String.valueOf(TestInstanceHostUtils.getDSSPort()));
-        configuration.setProperty("download-url", TestInstanceHostUtils.getDSSUrl());
-        configuration.store(new FileOutputStream(new File("etc/service.properties")),
-                "This file has been generated. DSS has service.properties location hardcoded, without this file it won't start up");
-        return configuration;
-    }
-
-    public static Configuration getAfsServerConfiguration()
-    {
-        Configuration configuration = new Configuration(List.of(AtomicFileSystemServerParameter.class),
-                "etc/afs/service.properties");
-        configuration.setProperty(AtomicFileSystemServerParameter.httpServerPort, String.valueOf(TestInstanceHostUtils.getAFSPort()));
-        configuration.setProperty(AtomicFileSystemServerParameter.httpServerUri, TestInstanceHostUtils.getAFSPath());
-        configuration.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl, TestInstanceHostUtils.getOpenBISProxyUrl());
-        return configuration;
-    }
-
-    public static Properties getRoCrateServerConfiguration() throws Exception
-    {
-        Properties configuration = new Properties();
-        configuration.load(new FileInputStream("../test-integration/etc/ro-crate/service.properties"));
-        configuration.setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
-        configuration.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
-        return configuration;
-    }
-
-    public static void setApplicationServerProxyInterceptor(
-            final ProxyInterceptor applicationServerProxyInterceptor)
-    {
-        AbstractIntegrationTest.applicationServerProxyInterceptor = applicationServerProxyInterceptor;
-    }
-
-    public static void setAfsServerProxyInterceptor(final ProxyInterceptor afsServerProxyInterceptor)
-    {
-        AbstractIntegrationTest.afsServerProxyInterceptor = afsServerProxyInterceptor;
-    }
-
-    public interface ProxyInterceptor
-    {
-        void invoke(String method, Callable<Void> defaultAction) throws Exception;
-    }
-
-    private static class ProxyRequest extends HttpServletRequestWrapper
-    {
-        private boolean read;
-
-        private byte[] bytes;
-
-        public ProxyRequest(final HttpServletRequest request)
-        {
-            super(request);
-        }
-
-        @Override public ServletInputStream getInputStream() throws IOException
-        {
-            if (!read)
-            {
-                bytes = IOUtils.toByteArray(super.getInputStream());
-                read = true;
-            }
-            return new ServletInputStream()
-            {
-                private final ByteArrayInputStream bytesStream = new ByteArrayInputStream(bytes);
-
-                @Override public int read()
-                {
-                    return bytesStream.read();
-                }
-
-                @Override public boolean isReady()
-                {
-                    return true;
-                }
-
-                @Override public boolean isFinished()
-                {
-                    return bytesStream.available() == 0;
-                }
-
-                @Override public void setReadListener(final ReadListener readListener)
-                {
-                }
-
-            };
-        }
-    }
-
     public static OpenBIS createOpenBIS()
     {
-        return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
-                TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
-                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
+        return environment.createOpenBIS();
     }
 
     public static SampleType createSampleType(OpenBIS openBIS, String sampleTypeCode, List<IPropertyTypeId> propertyTypeIds)
@@ -941,7 +414,7 @@ public class AbstractIntegrationTest
     public static DataSet createDataSet(OpenBIS openBIS, IExperimentId experimentId, String dataSetCode, String testFile, byte[] testData)
             throws IOException
     {
-        Configuration afsServerConfiguration = getAfsServerConfiguration();
+        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
         String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
         Integer shareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(afsServerConfiguration);
@@ -1006,29 +479,9 @@ public class AbstractIntegrationTest
         System.out.println("[TEST] " + message);
     }
 
-    private static Map<String, String> parseUrlQuery(String url) throws Exception
-    {
-        try
-        {
-            Map<String, String> parameters = new HashMap<>();
-            String[] namesAndValues = url.split("&");
-            for (String nameAndValue : namesAndValues)
-            {
-                int index = nameAndValue.indexOf("=");
-                String name = nameAndValue.substring(0, index);
-                String value = nameAndValue.substring(index + 1);
-                parameters.put(URLDecoder.decode(name, StandardCharsets.UTF_8), URLDecoder.decode(value, StandardCharsets.UTF_8));
-            }
-            return parameters;
-        } catch (Exception e)
-        {
-            return Collections.emptyMap();
-        }
-    }
-
     public void assertExperimentExistsAtAS(String experimentPermId, boolean exists) throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM experiments_all WHERE perm_id = '" + experimentPermId + "'");
@@ -1039,7 +492,7 @@ public class AbstractIntegrationTest
 
     public void assertSampleExistsAtAS(String samplePermId, boolean exists) throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM samples_all WHERE perm_id = '" + samplePermId + "'");
@@ -1050,7 +503,7 @@ public class AbstractIntegrationTest
 
     public void assertDSSDataSetExistsAtAS(String dataSetPermId, boolean exists) throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM data_all WHERE afs_data = 'f' AND code = '" + dataSetPermId + "'");
@@ -1061,7 +514,7 @@ public class AbstractIntegrationTest
 
     public void assertAFSDataSetExistsAtAS(String dataSetPermId, boolean exists) throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             ResultSet resultSet = statement.executeQuery("SELECT count(*) FROM data_all WHERE afs_data = 't' AND code = '" + dataSetPermId + "'");
@@ -1072,7 +525,7 @@ public class AbstractIntegrationTest
 
     public void assertDataExistsInStoreInShare(String dataSetPermId, boolean exists, Integer shareId) throws Exception
     {
-        Configuration afsServerConfiguration = getAfsServerConfiguration();
+        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
         String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
 
@@ -1084,7 +537,7 @@ public class AbstractIntegrationTest
         Path dataSetFolder = Paths.get(storageRoot, String.valueOf(shareId), String.join(File.separator, dataSetFolderLocation));
         assertEquals(Files.exists(dataSetFolder), exists);
 
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             ResultSet resultSet = statement.executeQuery(

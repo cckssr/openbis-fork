@@ -40,6 +40,7 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.download.DataSetFil
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.fetchoptions.DataSetFileFetchOptions;
 import ch.ethz.sis.openbis.generic.dssapi.v3.dto.datasetfile.search.DataSetFileSearchCriteria;
 import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.shared.startup.Configuration;
 
 public class IntegrationAfsDataTest extends AbstractIntegrationTest
 {
@@ -698,7 +699,8 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(getAfsServerConfiguration()).getOpenBISLastSeenDeletionFile();
+        Configuration configuration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        String lastSeenDeletionFile = OpenBISConfiguration.getInstance(configuration).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }
 

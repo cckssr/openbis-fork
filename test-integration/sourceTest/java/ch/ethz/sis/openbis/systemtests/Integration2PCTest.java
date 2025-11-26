@@ -1225,12 +1225,12 @@ public class Integration2PCTest extends AbstractIntegrationTest
 
     private ITransactionCoordinatorInternalApi getTransactionCoordinator()
     {
-        return applicationServerSpringContext.getBean(ITransactionCoordinatorInternalApi.class);
+        return environment.getApplicationServer().getApplicationContext().getBean(ITransactionCoordinatorInternalApi.class);
     }
 
     private void rollbackPreparedDatabaseTransactions() throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             List<String> preparedTransactionIds = new ArrayList<>();
@@ -1250,7 +1250,7 @@ public class Integration2PCTest extends AbstractIntegrationTest
 
     private void deleteCreatedSpacesProjectsAndExperiments() throws Exception
     {
-        try (Connection connection = applicationServerSpringContext.getBean(DataSource.class).getConnection();
+        try (Connection connection = environment.getApplicationServer().getApplicationContext().getBean(DataSource.class).getConnection();
                 Statement statement = connection.createStatement())
         {
             statement.execute(
