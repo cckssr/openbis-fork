@@ -1,6 +1,6 @@
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts'
-import { FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts'
-import spaceDtoFixture from '@srcTest/js/components/database/new-forms/entities/Space/spaceDto.fixture.json'
+import { FormSection } from '@src/js/components/database/new-forms/types/formEnums.ts'
+import spaceDto from '@srcTest/js/components/database/new-forms/entities/Space/spaceDto.json'
 
 /**
  * SpaceFormModel tests use a real SpaceDto structure to ensure
@@ -15,7 +15,7 @@ import spaceDtoFixture from '@srcTest/js/components/database/new-forms/entities/
 describe('SpaceFormModel', () => {
   it('adapts a real SpaceDto into a normalized form structure', () => {
     // Use the real DTO structure from the API
-    const dto = spaceDtoFixture as any
+    const dto = spaceDto as any
 
     const form = SpaceFormModel.adaptSpaceDtoToForm(dto)
 
@@ -66,7 +66,7 @@ describe('SpaceFormModel', () => {
   })
 
   it('handles DTO with description text', () => {
-    const dto = { ...spaceDtoFixture, description: 'Test space description' } as any
+    const dto = { ...spaceDto, description: 'Test space description' } as any
 
     const form = SpaceFormModel.adaptSpaceDtoToForm(dto)
 
