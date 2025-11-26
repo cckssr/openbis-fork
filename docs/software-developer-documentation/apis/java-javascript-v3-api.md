@@ -4801,20 +4801,52 @@ web application will do nothing.
 
 ### Operations API Reference
 
+The AFS API comes bundled with the openBIS V3 API object in both java and javascript implementations.
+
+The methods available try to simulate the operations that would be possible to do in a posix filesystem.
+
+Files can be owned by any `Object` or `Collection` in the openBIS entity graph, such entity becomes the `Owner`.
+
+The `Owner` provides the `READ` and `WRITE` access.
+
+So it is only possible to operate over the files of the `Owner` if the user has the same rights to read and write metadata on the `Owner`.
+
+The `Owner` should exist at the time an operation is done over it or the operation will fail. It is possible to create the `Owner` just before during a transaction.
+
+Possible operations are:
+
+## For Java and Javascript
+
 ```java
-    List<File> list(@NonNull String source, boolean recursively) throws Exception;
+    File[] list(@NonNull String owner, @NonNull String source, @NonNull Boolean recursively) throws Exception;
 
-    byte[] read(@NonNull String source, @NonNull long offset, @NonNull int limit) throws Exception;
+    Chunk[] read(@NonNull Chunk[] chunks) throws Exception;
 
-    boolean write(@NonNull String source, @NonNull long offset, @NonNull byte[] data) throws Exception;
+    Boolean write(@NonNull Chunk[] chunks) throws Exception;
 
-    boolean delete(@NonNull String source) throws Exception;
+    Boolean delete(@NonNull String owner, @NonNull String source) throws Exception;
 
-    boolean copy(@NonNull String source, @NonNull String target) throws Exception;
+    Boolean copy(@NonNull String sourceOwner, @NonNull String source, @NonNull String targetOwner, @NonNull String target) throws Exception;
 
-    boolean move(@NonNull String source, @NonNull String target) throws Exception;
+    Boolean move(@NonNull String sourceOwner, @NonNull String source, @NonNull String targetOwner, @NonNull String target) throws Exception;
 
-    boolean create(@NonNull String source, boolean directory) throws Exception;
+    Boolean create(@NonNull String owner, @NonNull String source, @NonNull Boolean directory) throws Exception;
 
-    FreeSpace free(@NonNull String source) throws Exception;
+    FreeSpace free(@NonNull String owner, @NonNull String source) throws Exception;
+
+    String hash(@NonNull String owner, @NonNull String source) throws Exception;
+
+    byte[] preview(@NonNull String owner, @NonNull String source) throws Exception;
+```
+
+As the reader will notice creating and writing files is done in chunks, what can be considered quite low level.
+
+Alternatively the client facades provide a couple extra convenience methods.
+
+## For Java
+
+```java
+    Boolean upload(@NonNull Path sourcePath, @NonNull String destinationOwner, @NonNull Path destinationPath, @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception;
+
+    Boolean download(@NonNull String sourceOwner, @NonNull Path sourcePath, @NonNull Path destinationPath, @NonNull FileCollisionListener fileCollisionListener, @NonNull TransferMonitorListener transferMonitorListener) throws Exception;
 ```
