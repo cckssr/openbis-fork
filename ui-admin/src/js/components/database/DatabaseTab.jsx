@@ -10,7 +10,7 @@ class DatabaseTab extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      label: ''
+      text: ''
     }
   }
 
@@ -18,7 +18,7 @@ class DatabaseTab extends React.PureComponent {
     try {
       const { tab } = this.props
       const { object, changed } = tab
-      console.log('DatabaseTab.componentDidMount', {tab});
+
       let typeText = null
       let idText = null
 
@@ -58,19 +58,16 @@ class DatabaseTab extends React.PureComponent {
         idText = object.id
       }
 
-      const label = (typeText || object.type) + ': ' + (idText || object.id)
-      this.setState({ label: label})
-
-     /*  const tabWithLabel = {
+      const tabWithLabel = {
         ...tab,
-        label: (typeText || object.type) + ': ' + (idText || object.id) + (changed ? '*' : '')
+        label: (typeText || object.type) + ': ' + (idText || object.id)
       }
 
       AppController.getInstance().replaceOpenTab(
         pages.DATABASE,
         tabWithLabel.id,
         tabWithLabel
-      ) */
+      )
     } catch (error) {
       AppController.getInstance().errorChange(error)
     }
@@ -79,7 +76,7 @@ class DatabaseTab extends React.PureComponent {
   render() {
     logger.log(logger.DEBUG, 'DatabaseTab.render')
     //return this.props.tab.label || ''
-    return <ContentTab label={this.state.label} changed={this.props.tab.changed} />
+    return <ContentTab label={this.props.tab.label} changed={this.props.tab.changed} />
   }
 }
 

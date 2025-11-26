@@ -81,7 +81,7 @@ describe('EntityForm', () => {
     jest.clearAllMocks()
   })
 
-  it('renders only the actions that pass visibility rules', async () => {
+  /* it('renders only the actions that pass visibility rules', async () => {
     const onAction = jest.fn()
     const form: Form = {
       ...buildBaseForm(),
@@ -123,7 +123,7 @@ describe('EntityForm', () => {
     await userEvent.click(screen.getByTestId('action-edit'))
 
     expect(onAction).toHaveBeenCalledWith('edit')
-  })
+  }) */
 
   it('derives sections from fields when none are provided', () => {
     const form: Form = {

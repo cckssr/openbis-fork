@@ -146,7 +146,7 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
 
   return (
     <>
-      {renderToolbar()}
+      {/* renderToolbar() */}
       {renderSections()}
     </>
   );

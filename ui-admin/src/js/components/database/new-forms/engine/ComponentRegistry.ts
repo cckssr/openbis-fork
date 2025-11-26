@@ -5,9 +5,6 @@ import { DateFieldRenderer } from '@src/js/components/database/new-forms/compone
 import { TextAreaFieldRenderer } from '@src/js/components/database/new-forms/components/fields/TextAreaFieldRenderer.tsx';
 import { SelectFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SelectFieldRender.tsx';
 import { SwitchFieldRenderer } from '@src/js/components/database/new-forms/components/fields/SwitchFieldRender.tsx';
-
-import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/actions/ButtonActionRenderer.tsx';
-import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/actions/SwitchActionRenderer.tsx';
 import { CKEditorFieldRenderer } from '@src/js/components/database/new-forms/components/fields/CKEditorFieldRenderer.tsx';
 
 class ComponentRegistry {
@@ -30,17 +27,6 @@ class ComponentRegistry {
         return CKEditorFieldRenderer;
       default:
         return TextFieldRenderer; 
-    }
-  }
-
-  static getActionRenderer(componentType: string) {
-    switch (componentType) {
-      case 'button':
-        return ButtonActionRenderer;
-      case 'switch':
-        return SwitchActionRenderer;
-      default:
-        return ButtonActionRenderer;
     }
   }
 }
