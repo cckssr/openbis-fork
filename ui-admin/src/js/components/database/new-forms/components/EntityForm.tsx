@@ -146,8 +146,10 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
 
   return (
     <>
-      {/* renderToolbar() */}
+      {renderToolbar()}
+      <div style={{ overflowY: 'auto', height: '-webkit-fill-available' }}>
       {renderSections()}
+      </div>
     </>
   );
 };

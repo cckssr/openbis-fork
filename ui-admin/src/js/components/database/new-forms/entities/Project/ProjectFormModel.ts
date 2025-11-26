@@ -64,24 +64,13 @@ export class ProjectFormModel {
 					],
 				},
 				{
-					name: 'delete',
-					label: 'Delete',
-					component: 'button',
+					name: 'auto-save',
+					label: 'Auto-save',
+					component: 'switch',
 					isAllowed: true,
 					visibility: [
 						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'move',
-					label: 'Move',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
+							mode: FormMode.EDIT,
 						},
 					],
 				}

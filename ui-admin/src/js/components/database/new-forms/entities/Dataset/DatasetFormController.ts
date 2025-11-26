@@ -1,7 +1,6 @@
 import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
-import { adaptDatasetDtoToForm } from '@src/js/components/database/new-forms/entities/Dataset/DatasetAdapter.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
+import { DatasetFormModel } from '@src/js/components/database/new-forms/entities/Dataset/DatasetFormModel.ts';
 
 export class DatasetFormController implements IFormController {
 	private openbisFacade: any;
@@ -27,7 +26,7 @@ export class DatasetFormController implements IFormController {
 		const datasetDto = result[permId];
 
 		if (!datasetDto) throw new Error(`Dataset with permId ${permId} not found`);
-		return adaptDatasetDtoToForm(datasetDto);
+		return DatasetFormModel.adaptDatasetDtoToForm(datasetDto);
 	}
 
 	async save(form: Form): Promise<number> {

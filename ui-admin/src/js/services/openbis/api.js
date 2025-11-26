@@ -15,15 +15,15 @@ class Facade {
         ['openbis', 'util/Json'],
         (openbis, stjs) => {
           _this.stjs = stjs
-          if(!v3){
-              new openbis().getServerPublicInformation().then(
-                result => {
-                  const afsServerUrlKey = 'server-public-information.afs-server.url'
-                  const afsServerUrl = result[afsServerUrlKey]
-                  _this.v3 = new openbis(null, afsServerUrl)
-                
-                  resolve()
-                },             
+          if (!v3) {
+            new openbis().getServerPublicInformation().then(
+              result => {
+                const afsServerUrlKey = 'server-public-information.afs-server.url'
+                const afsServerUrl = result[afsServerUrlKey]
+                _this.v3 = new openbis(null, afsServerUrl)
+
+                resolve()
+              },
               error => {
                 reject(error)
               }
@@ -229,6 +229,10 @@ class Facade {
     return this.promise(this.v3.searchEvents(criteria, fo))
   }
 
+  searchDeletions(criteria, fo) {
+    return this.promise(this.v3.searchDeletions(criteria, fo))
+  }
+
   getSampleTypes(ids, fo) {
     return this.promise(this.v3.getSampleTypes(ids, fo))
   }
@@ -255,6 +259,22 @@ class Facade {
 
   getOperationExecutions(ids, fo) {
     return this.promise(this.v3.getOperationExecutions(ids, fo))
+  }
+
+  updateSpaces(updates) {
+    return this.promise(this.v3.updateSpaces(updates));
+  }
+
+  updateProjects(updates) {
+    return this.promise(this.v3.updateProjects(updates))
+  }
+
+  updateSamples(updates) {
+    return this.promise(this.v3.updateSamples(updates))
+  }
+
+  createSamples(samples) {
+    return this.promise(this.v3.createSamples(samples))
   }
 
   updateSampleTypes(updates) {
@@ -333,6 +353,18 @@ class Facade {
     return this.promise(this.v3.deleteMaterialTypes(ids, options))
   }
 
+  deleteProjects(ids, options) {
+    return this.promise(this.v3.deleteProjects(ids, options))
+  }
+
+  deleteSamples(ids, options) {
+    return this.promise(this.v3.deleteSamples(ids, options))
+  }
+
+  deleteExperiments(ids, options) {
+    return this.promise(this.v3.deleteExperiments(ids, options))
+  }
+
   evaluatePlugin(options) {
     return this.promise(this.v3.evaluatePlugin(options))
   }
@@ -397,6 +429,12 @@ class Facade {
     )
   }
 
+  createProjects(projects) {
+    return this.promise(
+      this.v3.createProjects(projects)
+    )
+  }
+
   free(owner, source) {
     return this.promise(this._getAfsServerFacade().free(owner, source))
   }
@@ -419,6 +457,10 @@ class Facade {
     })
 
     return this.promise(this.v3.getRights(ids, fo))
+  }
+
+  searchRoleAssignments(criteria, fo) {
+    return this.promise(this.v3.searchRoleAssignments(criteria, fo))
   }
 
   async executeService(id, options) {
@@ -472,8 +514,8 @@ class Facade {
   promiseWithAbort(dfd) {
     const { promise, abortFn } = dfd;
     return {
-        promise: this.promise(promise),        
-        abortFn 
+      promise: this.promise(promise),
+      abortFn
     };
   }
 

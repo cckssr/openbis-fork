@@ -82,13 +82,13 @@ export class ObjectFormModel {
 					],
 				},
         {
-					name: 'move',
-					label: 'Move',
-					component: 'button',
+					name: 'auto-save',
+					label: 'Auto-save',
+					component: 'switch',
 					isAllowed: true,
 					visibility: [
 						{
-							mode: FormMode.VIEW,
+							mode: FormMode.EDIT,
 						},
 					],
 				}

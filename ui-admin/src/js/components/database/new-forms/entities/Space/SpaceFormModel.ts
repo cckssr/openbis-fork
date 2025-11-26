@@ -61,28 +61,6 @@ export class SpaceFormModel {
 					],
 				},
 				{
-					name: 'space:new-project',
-					label: '+ Project',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'space:new-object',
-					label: '+ Entry',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
 					name: 'auto-save',
 					label: 'Auto-save',
 					component: 'switch',
