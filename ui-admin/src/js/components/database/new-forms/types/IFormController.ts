@@ -1,5 +1,5 @@
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 
 /**
  * Defines the contract for all entity-specific form controllers.

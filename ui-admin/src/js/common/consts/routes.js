@@ -66,6 +66,10 @@ const routes = {
     page: pages.DATABASE,
     type: objectTypes.PROJECT
   }),
+  NEW_PROJECT: new Route('/new-project/:parentId/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_PROJECT
+  }),
   TYPES: new Route('/types', {
     page: pages.TYPES
   }),
@@ -80,6 +84,10 @@ const routes = {
   OBJECT: new Route('/object/:id', {
     page: pages.DATABASE,
     type: objectTypes.OBJECT
+  }),
+  NEW_OBJECT: new Route('/new-object/:parentId/:id', {
+    page: pages.DATABASE,
+    type: objectTypes.NEW_OBJECT
   }),
   OBJECT_TYPE: new Route('/object-type/:id', {
     page: pages.TYPES,
@@ -294,7 +302,6 @@ function format(params) {
       // ignore problems with incorrect params
     }
   }
-
   return best.path
 }
 

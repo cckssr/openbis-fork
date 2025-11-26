@@ -4,6 +4,7 @@ import openbis from '@src/js/services/openbis.js'
 import objectType from '@src/js/common/consts/objectType.js'
 import pages from '@src/js/common/consts/pages.js'
 import logger from '@src/js/common/logger.js'
+import ContentTab from '@src/js/components/common/content/ContentTab.jsx'
 
 class DatabaseTab extends React.PureComponent {
   constructor(props) {
@@ -16,7 +17,7 @@ class DatabaseTab extends React.PureComponent {
   async componentDidMount() {
     try {
       const { tab } = this.props
-      const { object } = tab
+      const { object, changed } = tab
 
       let typeText = null
       let idText = null
@@ -74,7 +75,8 @@ class DatabaseTab extends React.PureComponent {
 
   render() {
     logger.log(logger.DEBUG, 'DatabaseTab.render')
-    return this.props.tab.label || ''
+    //return this.props.tab.label || ''
+    return <ContentTab label={this.props.tab.label} changed={this.props.tab.changed} />
   }
 }
 

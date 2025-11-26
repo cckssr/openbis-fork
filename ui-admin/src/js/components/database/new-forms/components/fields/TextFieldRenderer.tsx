@@ -1,7 +1,7 @@
 import React from 'react';
-import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import TextField from '@src/js/components/common/form/TextField.jsx';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 export const TextFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
   const isEditing = mode === FormMode.EDIT || mode === FormMode.CREATE;

@@ -17,6 +17,9 @@ const styles = theme => ({
     fontFamily: theme.typography.fontFamily,
     backgroundColor: theme.palette.background.field,
   },
+  monospaceFont: {
+    fontFamily: theme.typography.sourceCode.fontFamily
+  },
   label: {
     fontSize: theme.typography.label.fontSize,
     color: theme.typography.label.color
@@ -41,13 +44,14 @@ class TextAreaField extends React.PureComponent {
   }
 
   renderView() {
-    const { label, value, description, disableUnderline } = this.props;
+    const { label, value, description, disableUnderline, styles } = this.props;
     return (
       <FormFieldView
         label={label}
         value={value}
         description={description}
         disableUnderline={disableUnderline || false}
+        monospaceFont={styles.monospaceFont || false}
       />
     );
   }
@@ -95,7 +99,7 @@ class TextAreaField extends React.PureComponent {
           name={name}
           value={value || ''}
           disabled={disabled}
-          className={classes.textarea}
+          className={styles.monospaceFont ? `${classes.textarea} ${classes.monospaceFont}` : classes.textarea}
           onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}

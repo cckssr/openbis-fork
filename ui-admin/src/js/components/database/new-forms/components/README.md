@@ -80,8 +80,8 @@ const {
   openMoveDialog, closeMoveDialog,
 } = useDialogState();
 
-// Conflict resolution
-const { checkModificationDateConflict, findConflicts } = useConflictResolution();
+// Conflict resolution helpers (plain functions)
+import { checkModificationDateConflict, findConflicts } from '../hooks/useConflictResolution';
 ```
 
 ### Controller Creation

@@ -1,11 +1,11 @@
-import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { EntityKind } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import objectType from '@src/js/common/consts/objectType.js'
 
 export class SpaceFormModel {
 
-	static adaptSpaceDtoToForm(dto: any): Form {	
+	static adaptSpaceDtoToForm(dto: any): Form {
 		const permId = dto.permId.permId;
 		const fields = [
 			getCodeField(dto),
@@ -27,12 +27,77 @@ export class SpaceFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				
+				{
+					name: 'space:save',
+					label: 'Save',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.EDIT,
+						},
+					],
+				},
+				{
+					name: 'edit',
+					label: 'Edit',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				},
+				{
+					name: 'cancel',
+					label: 'Cancel',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.EDIT,
+						},
+					],
+				},
+				{
+					name: 'space:new-project',
+					label: '+ Project',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				},
+				{
+					name: 'space:new-object',
+					label: '+ Entry',
+					component: 'button',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.VIEW,
+						},
+					],
+				},
+				{
+					name: 'auto-save',
+					label: 'Auto-save',
+					component: 'switch',
+					isAllowed: true,
+					visibility: [
+						{
+							mode: FormMode.EDIT,
+						},
+					],
+				}
 			]
 		};
 	}
 
-/* 	static saveSpaceAction = async (context: IExtendedActionContext) => {
+	static saveSpaceAction = async (context: IExtendedActionContext) => {
 		const { form, mode, controller, onAfterSave } = context;
 		await new Promise(resolve => setTimeout(resolve, 500)); // to display the loading spinner
 		const newVersion = await controller.save(form, mode);
@@ -58,5 +123,5 @@ export class SpaceFormModel {
 			console.warn("onNewObject callback not provided to context.");
 			throw new Error("onNewObject callback not provided to context.");
 		}
-	}; */
+	};
 }

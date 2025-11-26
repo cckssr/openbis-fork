@@ -1,10 +1,10 @@
-import { Form, FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { IFormController } from '@src/js/components/database/new-forms/types/IFormController';
-import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/IdentifierUtil.ts';
-import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/Utils.ts';
-import { fetchRights } from '@src/js/components/database/new-forms/utils/AuthorizationService.ts';
+import { Form, FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
+import { createDummySampleIdentifier } from '@src/js/components/database/new-forms/utils/identifierUtil.ts';
+import { findFormFieldByLabel } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
+import { fetchRights } from '@src/js/components/database/new-forms/utils/authorizationServiceUtil.ts';
 import { SpaceFormModel } from '@src/js/components/database/new-forms/entities/Space/SpaceFormModel.ts';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 export class SpaceFormController implements IFormController {
   private openbisFacade: any;

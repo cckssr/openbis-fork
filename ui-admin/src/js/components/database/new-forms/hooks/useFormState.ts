@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
-import { FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { Form } from '@src/js/components/database/new-forms/types/formITypes.ts';
 
 interface UseFormStateProps {
   initialForm: Form | null;

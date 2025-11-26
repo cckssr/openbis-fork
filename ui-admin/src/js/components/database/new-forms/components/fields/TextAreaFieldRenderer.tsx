@@ -1,6 +1,7 @@
 import React from 'react';
-import { FieldRendererProps } from '@src/js/components/database/new-forms/types/form.types.ts';
+import { FieldRendererProps } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import TextAreaField from '@src/js/components/common/form/TextAreaField.jsx';
+import { FormFieldDataType } from '@src/js/components/database/new-forms/types/formEnums.ts';
 
 export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onFieldChange, mode }) => {
 	const isEditing = mode === 'edit' || mode === 'create';
@@ -14,6 +15,7 @@ export const TextAreaFieldRenderer: React.FC<FieldRendererProps> = ({ field, onF
 		onChange={(e: React.ChangeEvent<HTMLInputElement>) => onFieldChange(field.id, e.target.value)}
 		disableUnderline={true}
 		description={field.meta?.helpText}
+		styles={field.dataType === FormFieldDataType.MONOSPACE_FONT ? { monospaceFont: true } : {}}
 	/>
 	);
 }

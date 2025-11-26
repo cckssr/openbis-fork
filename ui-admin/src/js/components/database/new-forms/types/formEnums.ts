@@ -21,6 +21,10 @@ export enum EntityKind {
 export enum FormFieldDataType {
 	VARCHAR = 'VARCHAR',
 	MULTILINE_VARCHAR = 'MULTILINE_VARCHAR',
+	WORD_PROCESSOR = 'WORD_PROCESSOR',
+	WORD_PROCESSOR_PAGE = 'WORD_PROCESSOR_PAGE',
+	WORD_PROCESSOR_CLASSIC = 'WORD_PROCESSOR_CLASSIC',
+	MONOSPACE_FONT = 'MONOSPACE_FONT',
 	INTEGER = 'INTEGER',
 	REAL = 'REAL',
 	TIMESTAMP = 'TIMESTAMP',
@@ -28,19 +32,23 @@ export enum FormFieldDataType {
 	CONTROLLED_VOCABULARY = 'CONTROLLED_VOCABULARY',
 	HYPERLINK = 'HYPERLINK',
 	SAMPLE = 'SAMPLE',
-	WORD_PROCESSOR = 'WORD_PROCESSOR', // always true 
-	WORD_PROCESSOR_PAGE = 'WORD_PROCESSOR_PAGE', // always true for the property['DOCUMENT']
 	SPREADSHEET = 'SPREADSHEET',
 }
 
 export enum Widget {
 	RICH_TEXT = 'RichText',
-	SPREADSHEET = 'Spreadsheet'
+	SPREADSHEET = 'Spreadsheet',
+	WORD_PROCESSOR = 'Word Processor',
+	WORD_PROCESSOR_PAGE = 'Word Processor Page',
+	WORD_PROCESSOR_CLASSIC = 'Word Processor Classic',
+	MONOSPACE_FONT = 'Monospace Font'
 }
 
 export enum FormSection {
 	SELECT_TYPE = 'Select Type',
 	IDENTIFICATION_INFO = 'Identification Info',
 	GENERAL = 'General',
-	OVERVIEW = 'Overview'
+	OVERVIEW = 'Overview',
+	METADATA = 'Metadata',
+	UNKNOWN = 'Unknown',
 }

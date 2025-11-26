@@ -24,6 +24,9 @@ const styles = theme => ({
     borderBottomStyle: 'solid',
     borderBottomColor: theme.palette.border.secondary
   },
+  monospaceFont: {
+    fontFamily: theme.typography.sourceCode.fontFamily
+  },
   description: {
     flex: '0 0 auto',
     '& svg': {
@@ -35,14 +38,25 @@ const styles = theme => ({
 
 class FormFieldView extends React.PureComponent {
   render() {
-    const { label, value, description, classes, color, disableUnderline } = this.props
+    const { label, value, description, classes, color, disableUnderline, monospaceFont } = this.props
+
+    // Build className array and filter out falsy values
+    const classNameParts = []
+    if (!disableUnderline) {
+      classNameParts.push(classes.value)
+    }
+    if (monospaceFont) {
+      classNameParts.push(classes.monospaceFont)
+    }
+    const className = classNameParts.join(' ')
+
     return (
       <div className={classes.container}>
         <div className={classes.control}>
           <Typography variant='body2' component='div' className={classes.label}>
             {label}
           </Typography>
-          <Typography variant='body2' component='div' className={!disableUnderline ? classes.value : ''} color={color}>
+          <Typography variant='body2' component='div' className={className || undefined} color={color}>
             {value ? value : <span>&nbsp;</span>}
           </Typography>
         </div>

@@ -1,53 +1,47 @@
-import { FormField } from '@src/js/components/database/new-forms/types/form.types.ts';
-import { FormFieldDataType, FormSection } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { getFormatedDate } from '@src/js/components/database/new-forms/utils/Utils.ts';
+import { FormField } from '@src/js/components/database/new-forms/types/formITypes.ts';
+import { FormFieldDataType, FormSection, Widget } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { getFormatedDate } from '@src/js/components/database/new-forms/utils/formFieldUtil.ts';
 
 // Helper type for overrides
 export type FieldOverrides<T = any> = Partial<Omit<FormField<T>, 'value'>> & { value?: T };
 
-export function getObjectTypeCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-objectTypeCode',
-    label: 'Object Type Code',
-    value: overrides.value ?? dto.objectTypeCode,
-    dataType: FormFieldDataType.CONTROLLED_VOCABULARY,
-    required: true,
-    readOnly: true,
-    isMultiValue: false,
-    section: FormSection.SELECT_TYPE,
-    column: 'left',
-    meta: {},
-    ...overrides
-  };
-}
-
 export function getCodeField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
-  return {
+  const readOnly = overrides.readOnly !== undefined ? overrides.readOnly : true;
+  const value = overrides.value ?? dto.code;
+  const field: FormField<string> = {
     id: permId + '-code',
     label: 'Code',
-    value: overrides.value ?? dto.code,
+    value,
     dataType: FormFieldDataType.VARCHAR,
     required: true,
-    readOnly: true,
+    readOnly,
     isMultiValue: false,
     section: FormSection.IDENTIFICATION_INFO,
     column: 'left',
     meta: {},
     ...overrides
   };
+  
+  // Only set initialValue for non-readonly fields
+  if (!readOnly) {
+    field.initialValue = overrides.initialValue !== undefined ? overrides.initialValue : value;
+  }
+  
+  return field;
 }
 
 export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
   const permId = dto.permId.permId;
-  return {
+  const readOnly = overrides.readOnly !== undefined ? overrides.readOnly : false;
+  const value = overrides.value ?? dto.description;
+  const field: FormField<string> = {
     id: permId + '-description',
     label: 'Description',
-    value: overrides.value ?? dto.description,
+    value,
     dataType: FormFieldDataType.WORD_PROCESSOR,
     required: false,
-    readOnly: false,
+    readOnly,
     isMultiValue: false,
     section: FormSection.GENERAL,
     column: 'center',
@@ -56,6 +50,13 @@ export function getDescriptionField(dto: any, overrides: FieldOverrides = {}): F
     },
     ...overrides
   };
+  
+  // Only set initialValue for non-readonly fields
+  if (!readOnly) {
+    field.initialValue = overrides.initialValue !== undefined ? overrides.initialValue : value;
+  }
+  
+  return field;
 }
 
 export function getPermIdField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
@@ -228,37 +229,142 @@ export function getTypeField(dto: any, overrides: FieldOverrides = {}): FormFiel
   };
 };
 
-export function getShowOnProjectOverviewField(dto: any, overrides: FieldOverrides = {}): FormField<boolean> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-showOnProjectOverview',
-    label: 'Show On Project Overview',
-    value: overrides.value ?? dto.showOnProjectOverview,
-    dataType: FormFieldDataType.BOOLEAN,
-    required: false,
-    readOnly: false,
-    isMultiValue: false,
-    section: FormSection.GENERAL,
-    column: 'left',
-    meta: {},
-    ...overrides
-  };
-};
+/**
+ * Maps DTO dataType string to FormFieldDataType enum
+ */
+function mapDataTypeToFormFieldDataType(dtoDataType: string, customWidget?: string): FormFieldDataType {
+  // Check for custom widget first
+  if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR) {
+    return FormFieldDataType.WORD_PROCESSOR;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR_PAGE) {
+    return FormFieldDataType.WORD_PROCESSOR_PAGE;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.WORD_PROCESSOR_CLASSIC) {
+    return FormFieldDataType.WORD_PROCESSOR_CLASSIC;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.MONOSPACE_FONT) {
+    return FormFieldDataType.MONOSPACE_FONT;
+  } else if (dtoDataType === FormFieldDataType.MULTILINE_VARCHAR && customWidget === Widget.SPREADSHEET) {
+    return FormFieldDataType.SPREADSHEET;
+  } else {
+    return dtoDataType as FormFieldDataType;  
+  }
+}
 
-export function getDocumentField(dto: any, overrides: FieldOverrides = {}): FormField<string> {
-  const permId = dto.permId.permId;
-  return {
-    id: permId + '-document',
-    label: 'Document',
-    value: overrides.value ?? dto.properties.DOCUMENT,
-    dataType: FormFieldDataType.WORD_PROCESSOR,
-    required: false,
-    readOnly: false,
-    isMultiValue: false,
-    section: FormSection.GENERAL,
-    column: 'center',
-    meta: {},
-    ...overrides
-  };
+/**
+ * Generates form fields dynamically from propertyAssignments in the DTO.
+ * This is a generic function that can be used by any entity type.
+ * 
+ * @param dto - The DTO object containing type.propertyAssignments and properties
+ * @param overrides - Optional overrides for individual fields (keyed by property code)
+ * @returns Array of FormField objects sorted by ordinal
+ */
+export function getPropertyFieldsFromAssignments(
+  dto: any,
+  overrides: Record<string, FieldOverrides> = {}
+): FormField[] {
+  if (!dto?.type?.propertyAssignments || !Array.isArray(dto.type.propertyAssignments)) {
+    return [];
+  }
+
+  const permId = dto.permId?.permId || 'unknown';
+  const properties = dto.properties || {};
+
+  const fields = dto.type.propertyAssignments
+    .filter((assignment: any) => assignment?.propertyType) // Filter out invalid assignments
+    .map((assignment: any) => {
+      const propertyType = assignment.propertyType;
+      const propertyCode = propertyType.code;
+      const fieldId = `${permId}-${propertyCode}`;
+      const fieldOverrides = overrides[propertyCode] || {};
+
+      // Determine dataType - check custom_widget first, then dataType
+      const customWidget = propertyType.metaData?.custom_widget;
+      const dataType = mapDataTypeToFormFieldDataType(propertyType.dataType, customWidget);
+
+      // Determine section: use override if provided, otherwise assignment section, otherwise UNKNOWN
+      const section = fieldOverrides.section ?? assignment.section ?? FormSection.UNKNOWN;
+
+      // Extract value from properties
+      const propertyValue = properties[propertyCode] ?? '';
+
+      // Determine column based on section (default to 'left' for GENERAL, 'center' for word processor)
+      let column: 'left' | 'right' | 'center' = 'left';
+      if ([FormFieldDataType.WORD_PROCESSOR, 
+        FormFieldDataType.WORD_PROCESSOR_PAGE, 
+        FormFieldDataType.WORD_PROCESSOR_CLASSIC, 
+        FormFieldDataType.MONOSPACE_FONT, 
+        FormFieldDataType.MULTILINE_VARCHAR, 
+        FormFieldDataType.SPREADSHEET].includes(dataType)) {
+        column = 'center';
+      } else if (section === FormSection.IDENTIFICATION_INFO && assignment.ordinal > 5) {
+        column = 'right';
+      }
+
+      // Build meta object from propertyType.metaData
+      const meta: any = { ...(propertyType.metaData || {}) };
+      if (customWidget) {
+        meta.custom_widget = customWidget;
+      }
+      if (dataType === FormFieldDataType.WORD_PROCESSOR) {
+        meta.mode = 'inline';
+      } else if (dataType === FormFieldDataType.WORD_PROCESSOR_PAGE) {
+        meta.mode = 'document';
+      } else if (dataType === FormFieldDataType.WORD_PROCESSOR_CLASSIC) {
+        meta.mode = 'classic';
+      }
+
+      const readOnly = fieldOverrides.readOnly !== undefined ? fieldOverrides.readOnly : !(assignment.showInEditView ?? true);
+      const value = fieldOverrides.value !== undefined ? fieldOverrides.value : propertyValue;
+      
+      const field: FormField = {
+        id: fieldId,
+        name: propertyCode,
+        label: propertyType.label || propertyCode,
+        value,
+        dataType: fieldOverrides.dataType || dataType,
+        required: fieldOverrides.required !== undefined ? fieldOverrides.required : (assignment.mandatory || false),
+        readOnly,
+        isMultiValue: fieldOverrides.isMultiValue !== undefined ? fieldOverrides.isMultiValue : (propertyType.multiValue || false),
+        section: section,
+        column: fieldOverrides.column || column,
+        meta: { ...meta, ...(fieldOverrides.meta || {}) },
+        ...fieldOverrides
+      };
+
+      // Only set initialValue for non-readonly fields
+      if (!readOnly) {
+        field.initialValue = fieldOverrides.initialValue !== undefined ? fieldOverrides.initialValue : value;
+      }
+
+      return field;
+    })
+    .sort((a: FormField, b: FormField) => {
+      // Sort by section first, then by ordinal if available
+      const assignmentA = dto.type.propertyAssignments.find((pa: any) => pa.propertyType.code === a.name);
+      const assignmentB = dto.type.propertyAssignments.find((pa: any) => pa.propertyType.code === b.name);
+      const ordinalA = assignmentA?.ordinal || 0;
+      const ordinalB = assignmentB?.ordinal || 0;
+      
+      if (a.section !== b.section) {
+        // Sort sections in a logical order
+        const sectionOrder = [
+          FormSection.SELECT_TYPE,
+          FormSection.IDENTIFICATION_INFO,
+          FormSection.GENERAL,
+          FormSection.OVERVIEW,
+          FormSection.METADATA,
+          FormSection.UNKNOWN
+        ];
+        const sectionIndexA = sectionOrder.indexOf(a.section);
+        const sectionIndexB = sectionOrder.indexOf(b.section);
+        // If section not found in order, treat as -1 (put at end)
+        const indexA = sectionIndexA === -1 ? sectionOrder.length : sectionIndexA;
+        const indexB = sectionIndexB === -1 ? sectionOrder.length : sectionIndexB;
+        return indexA - indexB;
+      }
+      
+      return ordinalA - ordinalB;
+    });
+
+  return fields;
 }
   

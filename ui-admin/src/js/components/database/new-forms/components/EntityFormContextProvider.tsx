@@ -1,42 +1,24 @@
-/**
- * REFACTORED VERSION - EXAMPLE
- * 
- * This file demonstrates how EntityFormContextProvider would look
- * with improved state management using custom hooks.
- * 
- * Key improvements:
- * 1. Grouped dialog state via useDialogState
- * 2. Grouped operation state via useOperationState
- * 3. Cleaner, more maintainable code
- * 4. Better separation of concerns
- */
-
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import LoadingDialog from "@src/js/components/common/loading/LoadingDialog.jsx";
 import ErrorDialog from "@src/js/components/common/error/ErrorDialog.jsx";
 import EntityForm from '@src/js/components/database/new-forms/components/EntityForm.tsx';
 import ControllerDispatcher from '@src/js/components/database/new-forms/engine/ControllerDispatcher.ts';
-//import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
-import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/form.enums.ts';
-import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/form.types.ts';
-//import { useConflictResolution } from '@src/js/components/database/new-forms/hooks/useConflictResolution.tsx';
-//import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
-//import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
-//import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
+import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
+import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
-//import { useDialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
-//import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
+import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
-export const EntityFormContextProvider = ({ 
-  openbisFacade, 
-  params, 
-  entityKind, 
-  user, 
-  sessionID, 
-  permId, 
-  initialMode, 
-  externalAppController 
+
+export const EntityFormContextProvider = ({
+  openbisFacade,
+  params,
+  entityKind,
+  user,
+  sessionID,
+  permId,
+  initialMode,
+  externalAppController
 }: {
   openbisFacade: any;
   params: any;
@@ -48,15 +30,23 @@ export const EntityFormContextProvider = ({
   externalAppController: any;
 }) => {
   // Form state (already well-organized)
-  const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({ 
-    initialForm: null, 
-    initialMode 
+  const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
+    initialForm: null,
+    initialMode
   });
 
+  // Operation state (loading, saving, error) - NEW
+  const {
+    operationState,
+    setLoading, setSaving,
+    setError, clearError,
+    executeOperation
+  } = useOperationState();
+
+  
   // Other state (could also be extracted if needed)
   const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
-  const [isAutoSaveEnabled] = useState(false);
-
+  
   // Create controller using dispatcher
   const controller: IFormController = useMemo(
     () => ControllerDispatcher.createController(entityKind, openbisFacade, user),
@@ -79,7 +69,9 @@ export const EntityFormContextProvider = ({
         }
         loadForm();
       },
-      externalAppController
+      externalAppController,
+      deleteReason: reason || undefined,
+      //dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
     };
   }, [form, mode, externalAppController, controller]);
 
@@ -90,28 +82,54 @@ export const EntityFormContextProvider = ({
 
   const loadForm = useCallback(async () => {
     console.log('loadForm', { permId }, { entityKind }, { params });
-    
-    const loadedForm = await controller.load(permId, entityKind, params);
-    setForm(loadedForm);
-  }, [permId, entityKind, params, controller, setForm]);
+
+    await executeOperation(
+      async () => {
+        if (entityKind === EntityKind.NEW_OBJECT) {
+          const loadedForm = await controller.load(permId, entityKind, params, 'ENTRY');
+          setForm(loadedForm);
+        } else {
+          const loadedForm = await controller.load(permId, entityKind, params);
+          setForm(loadedForm);
+        }
+      },
+      { setLoading: true }
+    );
+  }, [permId, entityKind, params, controller, executeOperation, setForm]);
+
+  const handleErrorCancel = () => {
+    clearError();
+  };
 
   // Early returns
+  if (operationState.loading) {
+    return <LoadingDialog loading={operationState.loading} />;
+  }
+
   if (!form) {
     return null;
   }
 
   return (
     <>
+      {operationState.saving && <LoadingDialog loading={operationState.saving} />}
+      {operationState.error && (
+        <ErrorDialog
+          key='entity-form-error-dialog'
+          open={!!operationState.error}
+          error={operationState.error}
+          onClose={handleErrorCancel}
+        />
+      )}
       <EntityForm
         form={form}
         mode={mode}
         permissions={permissions}
         onFieldChange={updateField}
         onFieldMetadataChange={updateFieldMetadata}
-        onAction={() => {}} // TODO: handleAction
+        onAction={() => alert('actions not implemented')}
         params={{ sessionID: sessionID }}
       />
     </>
   );
 };
-
