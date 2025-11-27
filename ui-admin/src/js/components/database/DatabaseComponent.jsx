@@ -228,7 +228,7 @@ class DatabaseComponent extends React.PureComponent {
               leftToolbar={true}
             /> */}
       </div>,
-      <div key="images">
+      <div key="images" style={{ padding: '8px' }}>
         {(object.type === objectType.COLLECTION
           || object.type === objectType.OBJECT)
           && <ImagingGalleryViewer onStoreDisplaySettings={null}

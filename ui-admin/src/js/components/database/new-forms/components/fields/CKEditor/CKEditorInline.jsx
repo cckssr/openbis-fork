@@ -10,11 +10,25 @@ export default function CKEditorInline({ value, sessionID, onEditorContentChange
 	const editorContainerRef = useRef(null);
 	const [isLayoutReady, setIsLayoutReady] = useState(false);
 
+	const editorRef = useRef(null);
+	const [isEditorReady, setIsEditorReady] = useState(false);
+
 	useEffect(() => {
 		setIsLayoutReady(true);
 
 		return () => setIsLayoutReady(false);
 	}, []);
+
+	// Update editor content when value prop changes (but not from user edits)
+	useEffect(() => {
+		if (editorRef.current && isEditorReady && value !== undefined) {
+			const currentData = editorRef.current.getData();
+			// Only update if the value is different to avoid unnecessary updates
+			if (currentData !== value) {
+				editorRef.current.setData(value || '');
+			}
+		}
+	}, [value, isEditorReady]);
 
 	const editorConfig = useMemo(() => {
 		if (!isLayoutReady) {
@@ -38,6 +52,8 @@ export default function CKEditorInline({ value, sessionID, onEditorContentChange
 					editor={InlineEditor}
 					config={editorConfig}
 					onReady={editor => {
+						editorRef.current = editor;
+						setIsEditorReady(true);
 						if (onEditorReady) {
 							onEditorReady(editor);
 						}

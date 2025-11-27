@@ -11,6 +11,7 @@ import { createCKEditorConfig } from '@src/js/components/database/new-forms/comp
 export default function CKEditorClassic({ value, sessionID, onEditorContentChange, disabled, markdownEnabled = false, onToggleMarkdown, onEditorReady }) {
 	const editorContainerRef = useRef(null);
 	const editorRef = useRef(null);
+	const editorInstanceRef = useRef(null);
 	const [isLayoutReady, setIsLayoutReady] = useState(false);
 	const [isEditorReady, setIsEditorReady] = useState(false);
 
@@ -24,6 +25,17 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 	useEffect(() => {
 		setIsEditorReady(false);
 	}, [markdownEnabled]);
+
+	// Update editor content when value prop changes (but not from user edits)
+	useEffect(() => {
+		if (editorInstanceRef.current && isEditorReady && value !== undefined) {
+			const currentData = editorInstanceRef.current.getData();
+			// Only update if the value is different to avoid unnecessary updates
+			if (currentData !== value) {
+				editorInstanceRef.current.setData(value || '');
+			}
+		}
+	}, [value, isEditorReady]);
 
 	const editorConfig = useMemo(() => {
 		if (!isLayoutReady) {
@@ -60,6 +72,8 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 									editor={ClassicEditor}
 									config={editorConfig}
 									onReady={editor => {
+										// Store editor instance for value updates
+										editorInstanceRef.current = editor;
 
 										// Call the onEditorReady callback to pass the editor instance to parent
 										if (onEditorReady) {
@@ -111,6 +125,7 @@ export default function CKEditorClassic({ value, sessionID, onEditorContentChang
 									}}
 
 									onAfterDestroy={() => {
+										editorInstanceRef.current = null;
 										setIsEditorReady(false);
 										// Clean up is handled automatically by CKEditor
 									}}

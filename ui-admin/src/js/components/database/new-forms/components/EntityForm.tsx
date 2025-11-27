@@ -42,7 +42,10 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
         justifyContent: 'flex-start',
         alignItems: 'center',
         padding: '16px 16px',
-        backgroundColor: 'rgb(248,248,248)'
+        backgroundColor: 'rgb(248,248,248)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
       }}>
         {visibleActions?.map((action: FormActionDef) => {
           const ActionRenderer = ComponentRegistry.getActionRenderer(action.component);
@@ -128,12 +131,11 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
     // Get the correct renderer component from the registry
     const FieldRenderer = ComponentRegistry.getFieldRenderer(field.dataType);
     if (!FieldRenderer) {
-      return <div>Unsupported field type: {field.dataType}</div>;
+      return <div key={field.id}>Unsupported field type: {field.dataType}</div>;
     }
     return (
-      <div style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
+      <div key={field.id} style={mode === FormMode.EDIT && !field.readOnly ? { marginBottom: '8px' } : {}}>
         <FieldRenderer
-          key={field.id}
           field={field}
           onFieldChange={onFieldChange}
           onFieldMetadataChange={onFieldMetadataChange}
@@ -145,12 +147,12 @@ const EntityForm = ({ form, mode, permissions, onFieldChange, onFieldMetadataCha
   };
 
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {renderToolbar()}
-      <div style={{ overflowY: 'auto', height: '-webkit-fill-available' }}>
-      {renderSections()}
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
+        {renderSections()}
       </div>
-    </>
+    </div>
   );
 };
 

@@ -26,15 +26,15 @@ export const useMarkdownEditor = ({
 }: UseMarkdownEditorProps): UseMarkdownEditorResult => {
 	const normalizedInitialValue = value ?? '';
 	const [isMarkdown, setIsMarkdown] = useState(initialIsMarkdown);
-	const latestValueRef = useRef(normalizedInitialValue);
+	const [editorValue, setEditorValue] = useState(normalizedInitialValue);
 
 	// Update when external value changes
 	useEffect(() => {
 		const normalizedValue = value ?? '';
-		if (normalizedValue !== latestValueRef.current) {
-			latestValueRef.current = normalizedValue;
+		if (normalizedValue !== editorValue) {
+			setEditorValue(normalizedValue);
 		}
-	}, [value]);
+	}, [value, editorValue]);
 
 	// Sync with initial markdown state
 	useEffect(() => {
@@ -44,11 +44,6 @@ export const useMarkdownEditor = ({
 	const toggleMarkdownMode = useCallback(() => {
 		setIsMarkdown(prev => !prev);
 	}, []);
-
-	// Pass value directly to editor - CKEditor's Markdown plugin handles conversion automatically
-	// When markdownEnabled=true: editor expects markdown, returns markdown
-	// When markdownEnabled=false: editor expects HTML, returns HTML
-	const editorValue = normalizedInitialValue;
 
 	return {
 		editorValue,

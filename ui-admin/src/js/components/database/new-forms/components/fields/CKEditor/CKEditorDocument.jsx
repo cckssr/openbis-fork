@@ -13,6 +13,7 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 	const editorContainerRef = useRef(null);
 	const editorToolbarRef = useRef(null);
 	const editorRef = useRef(null);
+	const editorInstanceRef = useRef(null);
 	const editorMinimapRef = useRef(null);
 	const [isLayoutReady, setIsLayoutReady] = useState(false);
 	const [isEditorReady, setIsEditorReady] = useState(false);
@@ -28,6 +29,16 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 		setIsEditorReady(false);
 	}, [markdownEnabled]);
 
+	// Update editor content when value prop changes (but not from user edits)
+	useEffect(() => {
+		if (editorInstanceRef.current && isEditorReady && value !== undefined) {
+			const currentData = editorInstanceRef.current.getData();
+			// Only update if the value is different to avoid unnecessary updates
+			if (currentData !== value) {
+				editorInstanceRef.current.setData(value || '');
+			}
+		}
+	}, [value, isEditorReady]);
 
 	const editorConfig = useMemo(() => {
 		if (!isLayoutReady) {
@@ -66,6 +77,9 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 											<CKEditor
 												key={`ckeditor-document-${markdownEnabled ? 'markdown' : 'html'}-${value ? 'with-data' : 'empty'}`}
 												onReady={editor => {
+													// Store editor instance for value updates
+													editorInstanceRef.current = editor;
+
 													// Call the onEditorReady callback to pass the editor instance to parent
 													if (onEditorReady) {
 														onEditorReady(editor);
@@ -111,6 +125,7 @@ export default function CKEditorDocument({ value, sessionID, onEditorContentChan
 												}}
 
 												onAfterDestroy={() => {
+													editorInstanceRef.current = null;
 													setIsEditorReady(false);
 													if (editorToolbarRef.current) {
 														Array.from(editorToolbarRef.current.children).forEach(child => child.remove());

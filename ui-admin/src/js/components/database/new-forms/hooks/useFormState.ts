@@ -29,7 +29,6 @@ export const useFormState = ({
 
   // Update original form when form changes externally
   const handleSetForm = useCallback((newForm: React.SetStateAction<Form | null>) => {
-    setForm(newForm);
     if (typeof newForm === 'function') {
       // Handle function updates
       setForm(prevForm => {
@@ -39,8 +38,12 @@ export const useFormState = ({
         }
         return updatedForm;
       });
-    } else if (newForm) {
-      setOriginalForm(newForm);
+    } else {
+      // Handle direct value updates
+      setForm(newForm);
+      if (newForm) {
+        setOriginalForm(newForm);
+      }
     }
   }, []);
 
