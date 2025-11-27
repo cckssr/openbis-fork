@@ -76,7 +76,7 @@ async function testValidate() {
         id: 'property-0',
         code: { value: null, error: 'Code cannot be empty' },
         dataType: { value: null, error: 'Data Type cannot be empty' },
-        label: { value: null, error: 'Label cannot be empty' },
+        label: { value: null, error: 'Property label cannot be empty' },
         description: { value: null, error: 'Description cannot be empty' },
         errors: 4
       }
