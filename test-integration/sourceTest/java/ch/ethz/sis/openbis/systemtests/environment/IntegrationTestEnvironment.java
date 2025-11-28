@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -24,7 +25,10 @@ import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.SoftLinkMaker;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
-import ch.systemsx.cisd.dbmigration.postgresql.PostgreSQLDAOFactory;
+import ch.systemsx.cisd.common.reflection.BeanUtils;
+import ch.systemsx.cisd.dbmigration.DBUtilities;
+import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
+import ch.systemsx.cisd.dbmigration.SQLUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
@@ -145,18 +149,42 @@ public class IntegrationTestEnvironment
         configureShares();
         configureELN();
 
-        applicationServer.start();
-        dataStoreServer.start();
-        afsServer.start();
-        roCrateServer.start();
+        if (applicationServer != null)
+        {
+            applicationServer.start();
+        }
+        if (dataStoreServer != null)
+        {
+            dataStoreServer.start();
+        }
+        if (afsServer != null)
+        {
+            afsServer.start();
+        }
+        if (roCrateServer != null)
+        {
+            roCrateServer.start();
+        }
     }
 
     public void stop()
     {
-        roCrateServer.stop();
-        afsServer.stop();
-        dataStoreServer.stop();
-        applicationServer.stop();
+        if (roCrateServer != null)
+        {
+            roCrateServer.stop();
+        }
+        if (afsServer != null)
+        {
+            afsServer.stop();
+        }
+        if (dataStoreServer != null)
+        {
+            dataStoreServer.stop();
+        }
+        if (applicationServer != null)
+        {
+            applicationServer.stop();
+        }
     }
 
     public OpenBIS createOpenBIS()
@@ -168,72 +196,144 @@ public class IntegrationTestEnvironment
 
     private void dropOpenBISDatabase()
     {
-        Properties properties = applicationServer.getServiceProperties();
+        if (applicationServer != null)
+        {
+            Properties properties = applicationServer.getServiceProperties();
 
-        Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
-        databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
-        databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS, TestOpenBISDatabaseVersionHolder.class.getName());
-        databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, properties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
+            Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
+            databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
+            databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS, TestOpenBISDatabaseVersionHolder.class.getName());
+            databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, properties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
 
-        DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log.info("Dropped openBIS database.");
+            DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
+            dropDatabase(configuration.getContext());
+            log.info("Dropped openBIS database.");
+        }
     }
 
     private void dropMessagesDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
-        MessagesDatabaseConfiguration configuration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log.info("Dropped messages database.");
+        if (applicationServer != null)
+        {
+            Properties properties = ExtendedProperties.getSubset(applicationServer.getServiceProperties(), "messages.", true);
+            if (!properties.isEmpty())
+            {
+                DatabaseConfiguration configuration = new DatabaseConfiguration(properties);
+                dropDatabase(configuration.getContext());
+                log.info("Dropped messages database configured at AS.");
+            }
+        }
+        if (afsServer != null)
+        {
+            Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
+            MessagesDatabaseConfiguration configuration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
+            if (configuration != null)
+            {
+                dropDatabase(configuration.getContext());
+                log.info("Dropped messages database configured at AFS.");
+            }
+        }
     }
 
     private void dropPathInfoDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
-        PathInfoDatabaseConfiguration configuration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log.info("Dropped path info database.");
+        if (dataStoreServer != null)
+        {
+            Properties properties = ExtendedProperties.getSubset(dataStoreServer.getServiceProperties(), "path-info-db.", true);
+            if (!properties.isEmpty())
+            {
+                DatabaseConfigurationContext context =
+                        BeanUtils.createBean(DatabaseConfigurationContext.class, properties);
+                dropDatabase(context);
+                log.info("Dropped path info database configured at DSS.");
+            }
+        }
+        if (afsServer != null)
+        {
+            Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
+            PathInfoDatabaseConfiguration configuration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
+            if (configuration != null)
+            {
+                dropDatabase(configuration.getContext());
+                log.info("Dropped path info database configured at AFS.");
+            }
+        }
     }
 
     private void dropArchiverDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
-        ArchiverDatabaseConfiguration configuration = ArchiverDatabaseConfiguration.getInstance(afsConfiguration);
-        PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
-        factory.getDatabaseDAO().dropDatabase();
-        log.info("Dropped archiver database.");
+        if (dataStoreServer != null)
+        {
+            Properties properties = ExtendedProperties.getSubset(dataStoreServer.getServiceProperties(), "multi-dataset-archiver-db.", true);
+            if (!properties.isEmpty())
+            {
+                DatabaseConfigurationContext context =
+                        BeanUtils.createBean(DatabaseConfigurationContext.class, properties);
+                dropDatabase(context);
+                log.info("Dropped archiver database configured at DSS.");
+            }
+        }
+        if (afsServer != null)
+        {
+            Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
+            ArchiverDatabaseConfiguration configuration = ArchiverDatabaseConfiguration.getInstance(afsConfiguration);
+            if (configuration != null)
+            {
+                dropDatabase(configuration.getContext());
+                log.info("Dropped archiver database configured at AFS.");
+            }
+        }
+    }
+
+    private void dropDatabase(DatabaseConfigurationContext context)
+    {
+        try
+        {
+            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName(), new SQLUtils.NoParametersSetter());
+        } catch (SQLException e)
+        {
+            if (!DBUtilities.isDBNotExistException(e))
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private void cleanupApplicationServerFolders()
     {
-        Properties configuration = applicationServer.getServiceProperties();
-        String transactionLogFolder = configuration.getProperty(TransactionConfiguration.TRANSACTION_LOG_FOLDER_PATH_PROPERTY_NAME);
-        cleanupFolderSafely(transactionLogFolder);
+        if (applicationServer != null)
+        {
+            Properties configuration = applicationServer.getServiceProperties();
+            String transactionLogFolder = configuration.getProperty(TransactionConfiguration.TRANSACTION_LOG_FOLDER_PATH_PROPERTY_NAME);
+            cleanupFolderSafely(transactionLogFolder);
+        }
     }
 
     private void cleanupAfsServerFolders()
     {
-        Configuration configuration = new Configuration(afsServer.getServiceProperties());
+        if (afsServer != null)
+        {
+            Configuration configuration = new Configuration(afsServer.getServiceProperties());
 
-        String writeAheadLogFolder = configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot);
-        cleanupFolderSafely(writeAheadLogFolder);
+            String writeAheadLogFolder = configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot);
+            cleanupFolderSafely(writeAheadLogFolder);
 
-        String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
-        cleanupFolderSafely(storageRoot);
+            String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+            cleanupFolderSafely(storageRoot);
 
-        String storageIncomingShareId = configuration.getStringProperty(AtomicFileSystemServerParameter.storageIncomingShareId);
+            String storageIncomingShareId = configuration.getStringProperty(AtomicFileSystemServerParameter.storageIncomingShareId);
 
-        new File(storageRoot, storageIncomingShareId).mkdirs();
+            new File(storageRoot, storageIncomingShareId).mkdirs();
+        }
     }
 
     private void cleanupDataStoreServerFolders()
     {
-        ExtendedProperties properties = DssPropertyParametersUtil.loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
-        cleanupFolderSafely(properties.getProperty(DssPropertyParameters.STOREROOT_DIR_KEY));
+        if (dataStoreServer != null)
+        {
+            ExtendedProperties properties = DssPropertyParametersUtil.loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
+            cleanupFolderSafely(properties.getProperty(DssPropertyParameters.STOREROOT_DIR_KEY));
+        }
     }
 
     private void cleanupFolderSafely(String folderPath)
