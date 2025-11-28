@@ -1,11 +1,15 @@
 package ch.ethz.sis.openbis.systemtests.environment;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
-import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameterUtil;
 import ch.ethz.sis.openbis.afsserver.server.archiving.ArchiverDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
@@ -21,6 +25,8 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.SoftLinkMaker;
 import ch.systemsx.cisd.common.properties.ExtendedProperties;
 import ch.systemsx.cisd.dbmigration.postgresql.PostgreSQLDAOFactory;
+import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
+import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 public class IntegrationTestEnvironment
@@ -36,63 +42,93 @@ public class IntegrationTestEnvironment
 
     private RoCrateServer roCrateServer;
 
-    public ApplicationServer createApplicationServer(ApplicationServerConfiguration configuration)
+    private List<Share> shares = new ArrayList<>();
+
+    public ApplicationServer createApplicationServer(Path serviceProperties)
     {
-        if (configuration != null && configuration.getServiceProperties() != null)
+        return createApplicationServer(loadProperties(serviceProperties));
+    }
+
+    public ApplicationServer createApplicationServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
         {
-            configuration.getServiceProperties()
-                    .setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
-            configuration.getServiceProperties().setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
+            serviceProperties.setProperty(TransactionConfiguration.APPLICATION_SERVER_URL_PROPERTY_NAME, TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty(TransactionConfiguration.AFS_SERVER_URL_PROPERTY_NAME,
                     TestInstanceHostUtils.getAFSProxyUrl() + TestInstanceHostUtils.getAFSPath());
         }
 
         applicationServer = new ApplicationServer();
-        applicationServer.configure(configuration);
+        applicationServer.configure(serviceProperties);
         return applicationServer;
     }
 
-    public DataStoreServer createDataStoreServer(DataStoreServerConfiguration configuration)
+    public DataStoreServer createDataStoreServer(Path serviceProperties)
     {
-        if (configuration != null && configuration.getServiceProperties() != null)
+        return createDataStoreServer(loadProperties(serviceProperties));
+    }
+
+    public DataStoreServer createDataStoreServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
         {
-            configuration.getServiceProperties().setProperty("server-url", TestInstanceHostUtils.getOpenBISProxyUrl());
-            configuration.getServiceProperties().setProperty("port", String.valueOf(TestInstanceHostUtils.getDSSPort()));
-            configuration.getServiceProperties().setProperty("download-url", TestInstanceHostUtils.getDSSUrl());
+            serviceProperties.setProperty("server-url", TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty("port", String.valueOf(TestInstanceHostUtils.getDSSPort()));
+            serviceProperties.setProperty("download-url", TestInstanceHostUtils.getDSSUrl());
         }
 
         dataStoreServer = new DataStoreServer();
-        dataStoreServer.configure(configuration);
+        dataStoreServer.configure(serviceProperties);
         return dataStoreServer;
     }
 
-    public AfsServer createAfsServer(AfsServerConfiguration configuration)
+    public AfsServer createAfsServer(Path serviceProperties)
     {
-        if (configuration != null && configuration.getServiceProperties() != null)
+        return createAfsServer(loadProperties(serviceProperties));
+    }
+
+    public AfsServer createAfsServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
         {
-            configuration.getServiceProperties()
-                    .setProperty(AtomicFileSystemServerParameter.httpServerPort.name(), String.valueOf(TestInstanceHostUtils.getAFSPort()));
-            configuration.getServiceProperties()
-                    .setProperty(AtomicFileSystemServerParameter.httpServerUri.name(), TestInstanceHostUtils.getAFSPath());
-            configuration.getServiceProperties()
-                    .setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl.name(), TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty(AtomicFileSystemServerParameter.httpServerPort.name(), String.valueOf(TestInstanceHostUtils.getAFSPort()));
+            serviceProperties.setProperty(AtomicFileSystemServerParameter.httpServerUri.name(), TestInstanceHostUtils.getAFSPath());
+            serviceProperties.setProperty(OpenBISConfiguration.OpenBISParameter.openBISUrl.name(), TestInstanceHostUtils.getOpenBISProxyUrl());
         }
 
         afsServer = new AfsServer();
-        afsServer.configure(configuration);
+        afsServer.configure(serviceProperties);
         return afsServer;
     }
 
-    public RoCrateServer createRoCrateServer(RoCrateServerConfiguration configuration)
+    public RoCrateServer createRoCrateServer(Path serviceProperties)
     {
-        if (configuration != null && configuration.getServiceProperties() != null)
+        return createRoCrateServer(loadProperties(serviceProperties));
+    }
+
+    public RoCrateServer createRoCrateServer(Properties serviceProperties)
+    {
+        if (serviceProperties != null)
         {
-            configuration.getServiceProperties().setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
-            configuration.getServiceProperties().setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
+            serviceProperties.setProperty("httpServerPort", String.valueOf(TestInstanceHostUtils.getRoCratePort()));
+            serviceProperties.setProperty("openBISUrl", TestInstanceHostUtils.getOpenBISProxyUrl());
         }
 
         roCrateServer = new RoCrateServer();
-        roCrateServer.configure(configuration);
+        roCrateServer.configure(serviceProperties);
         return roCrateServer;
+    }
+
+    public Share createShare(int shareNumber, Path shareProperties)
+    {
+        return createShare(shareNumber, loadProperties(shareProperties));
+    }
+
+    public Share createShare(int shareNumber, Properties shareProperties)
+    {
+        Share share = new Share(shareNumber, shareProperties);
+        shares.add(share);
+        return share;
     }
 
     public void start()
@@ -132,7 +168,7 @@ public class IntegrationTestEnvironment
 
     private void dropOpenBISDatabase()
     {
-        Properties properties = applicationServer.getConfiguration().getServiceProperties();
+        Properties properties = applicationServer.getServiceProperties();
 
         Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
         databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
@@ -147,7 +183,7 @@ public class IntegrationTestEnvironment
 
     private void dropMessagesDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
         MessagesDatabaseConfiguration configuration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
         PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
         factory.getDatabaseDAO().dropDatabase();
@@ -156,7 +192,7 @@ public class IntegrationTestEnvironment
 
     private void dropPathInfoDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
         PathInfoDatabaseConfiguration configuration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
         PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
         factory.getDatabaseDAO().dropDatabase();
@@ -165,7 +201,7 @@ public class IntegrationTestEnvironment
 
     private void dropArchiverDatabase()
     {
-        Configuration afsConfiguration = new Configuration(afsServer.getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(afsServer.getServiceProperties());
         ArchiverDatabaseConfiguration configuration = ArchiverDatabaseConfiguration.getInstance(afsConfiguration);
         PostgreSQLDAOFactory factory = new PostgreSQLDAOFactory(configuration.getContext());
         factory.getDatabaseDAO().dropDatabase();
@@ -174,14 +210,14 @@ public class IntegrationTestEnvironment
 
     private void cleanupApplicationServerFolders()
     {
-        Properties configuration = applicationServer.getConfiguration().getServiceProperties();
+        Properties configuration = applicationServer.getServiceProperties();
         String transactionLogFolder = configuration.getProperty(TransactionConfiguration.TRANSACTION_LOG_FOLDER_PATH_PROPERTY_NAME);
         cleanupFolderSafely(transactionLogFolder);
     }
 
     private void cleanupAfsServerFolders()
     {
-        Configuration configuration = new Configuration(afsServer.getConfiguration().getServiceProperties());
+        Configuration configuration = new Configuration(afsServer.getServiceProperties());
 
         String writeAheadLogFolder = configuration.getStringProperty(AtomicFileSystemServerParameter.writeAheadLogRoot);
         cleanupFolderSafely(writeAheadLogFolder);
@@ -196,8 +232,8 @@ public class IntegrationTestEnvironment
 
     private void cleanupDataStoreServerFolders()
     {
-        cleanupFolderSafely("targets/storage");
-        new File("targets/incoming-default").mkdirs();
+        ExtendedProperties properties = DssPropertyParametersUtil.loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
+        cleanupFolderSafely(properties.getProperty(DssPropertyParameters.STOREROOT_DIR_KEY));
     }
 
     private void cleanupFolderSafely(String folderPath)
@@ -237,9 +273,16 @@ public class IntegrationTestEnvironment
     {
         try
         {
-            Configuration afsConfiguration = new Configuration(afsServer.getConfiguration().getServiceProperties());
-            String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsConfiguration);
-            ch.ethz.sis.shared.io.IOUtils.copy("etc/shares", storageRoot);
+            Configuration configuration = new Configuration(afsServer.getServiceProperties());
+            String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+
+            for (Share share : shares)
+            {
+                File shareFolder = new File(storageRoot, String.valueOf(share.getShareNumber()));
+                shareFolder.mkdirs();
+                share.getShareProperties().store(new FileOutputStream(new File(shareFolder, "share.properties")), null);
+            }
+
             log.info("Configured shares.");
         } catch (Exception e)
         {
@@ -254,6 +297,19 @@ public class IntegrationTestEnvironment
         SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/as/core-plugins/admin"));
         SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/dss/core-plugins/admin"));
         log.info("Configured ELN.");
+    }
+
+    private static Properties loadProperties(final Path propertiesPath)
+    {
+        try
+        {
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(propertiesPath.toFile()));
+            return properties;
+        } catch (Exception e)
+        {
+            throw new RuntimeException("Loading properties from path: " + propertiesPath + " failed.", e);
+        }
     }
 
     public ApplicationServer getApplicationServer()

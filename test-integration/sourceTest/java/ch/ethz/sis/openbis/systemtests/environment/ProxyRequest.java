@@ -10,13 +10,13 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.IOUtils;
 
-public class ServerProxyRequest extends HttpServletRequestWrapper
+public class ProxyRequest extends HttpServletRequestWrapper
 {
     private boolean read;
 
     private byte[] bytes;
 
-    public ServerProxyRequest(final HttpServletRequest request)
+    public ProxyRequest(final HttpServletRequest request)
     {
         super(request);
     }

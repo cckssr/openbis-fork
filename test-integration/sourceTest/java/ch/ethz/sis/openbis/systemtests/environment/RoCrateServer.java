@@ -10,21 +10,25 @@ import java.util.Properties;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
-public class RoCrateServer implements Server<RoCrateServerConfiguration>
+public class RoCrateServer
 {
 
     private static final Logger log = LogFactory.getLogger(RoCrateServer.class);
 
-    private RoCrateServerConfiguration configuration;
+    private Properties serviceProperties;
 
-    @Override public void configure(final RoCrateServerConfiguration configuration)
+    public void configure(final Properties serviceProperties)
     {
-        this.configuration = configuration;
+        if (serviceProperties == null)
+        {
+            throw new RuntimeException("Service properties cannot be null");
+        }
+        this.serviceProperties = serviceProperties;
     }
 
-    @Override public void start()
+    public void start()
     {
-        if (configuration == null)
+        if (serviceProperties == null)
         {
             throw new RuntimeException("Ro-crate server hasn't been configured.");
         }
@@ -36,7 +40,6 @@ public class RoCrateServer implements Server<RoCrateServerConfiguration>
             File tempConfigurationFile = File.createTempFile("ro-crate-server", ".properties");
             tempConfigurationFile.deleteOnExit();
 
-            Properties serviceProperties = configuration.getServiceProperties();
             serviceProperties.store(new FileWriter(tempConfigurationFile), null);
 
             Process process = Runtime.getRuntime()
@@ -63,7 +66,7 @@ public class RoCrateServer implements Server<RoCrateServerConfiguration>
         }
     }
 
-    @Override public void stop()
+    public void stop()
     {
         try
         {
@@ -85,13 +88,8 @@ public class RoCrateServer implements Server<RoCrateServerConfiguration>
         }
     }
 
-    @Override public RoCrateServerConfiguration getConfiguration()
+    public Properties getServiceProperties()
     {
-        return configuration;
-    }
-
-    @Override public StringBuffer getLogs()
-    {
-        return null;
+        return serviceProperties;
     }
 }

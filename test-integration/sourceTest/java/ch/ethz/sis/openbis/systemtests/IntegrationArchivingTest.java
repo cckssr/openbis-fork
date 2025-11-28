@@ -308,7 +308,7 @@ public class IntegrationArchivingTest extends AbstractIntegrationTest
         assertEquals(afsDataSet.getPhysicalData().getStatus(), ArchivingStatus.UNARCHIVE_PENDING);
 
         log("wait for the cached location of the data set to timeout (the share has changed from 1 to 4)");
-        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         Thread.sleep(2L * afsConfiguration.getIntegerProperty(AtomicFileSystemServerParameter.authorizationProxyCacheIdleTimeout));
 
         log("check data set can be read again");

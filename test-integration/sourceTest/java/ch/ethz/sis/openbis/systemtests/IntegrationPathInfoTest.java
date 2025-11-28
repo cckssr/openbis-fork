@@ -50,7 +50,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
         deleteLastSeenDeletionFile();
 
-        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
         pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
     }
@@ -280,7 +280,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         String lastSeenDeletionFile = OpenBISConfiguration.getInstance(afsConfiguration).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }

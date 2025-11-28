@@ -699,7 +699,7 @@ public class IntegrationAfsDataTest extends AbstractIntegrationTest
 
     private void deleteLastSeenDeletionFile() throws Exception
     {
-        Configuration configuration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration configuration = new Configuration(environment.getAfsServer().getServiceProperties());
         String lastSeenDeletionFile = OpenBISConfiguration.getInstance(configuration).getOpenBISLastSeenDeletionFile();
         Files.deleteIfExists(Path.of(lastSeenDeletionFile));
     }

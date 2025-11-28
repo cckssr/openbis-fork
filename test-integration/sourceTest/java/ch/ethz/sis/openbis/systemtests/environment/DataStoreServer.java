@@ -18,23 +18,27 @@ import ch.systemsx.cisd.openbis.dss.generic.shared.ServiceProviderImpl;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.ShufflingServiceProviderFactory;
 
-public class DataStoreServer implements Server<DataStoreServerConfiguration>
+public class DataStoreServer
 {
 
     private static final Logger log = LogFactory.getLogger(DataStoreServer.class);
 
-    private DataStoreServerConfiguration configuration;
+    private Properties serviceProperties;
 
     private ch.ethz.sis.afsserver.server.Server<TransactionConnection, Object> server;
 
-    @Override public void configure(final DataStoreServerConfiguration configuration)
+    public void configure(final Properties serviceProperties)
     {
-        this.configuration = configuration;
+        if (serviceProperties == null)
+        {
+            throw new RuntimeException("Service properties cannot be null");
+        }
+        this.serviceProperties = serviceProperties;
     }
 
-    @Override public void start()
+    public void start()
     {
-        if (configuration == null)
+        if (serviceProperties == null)
         {
             throw new RuntimeException("Data store server hasn't been configured.");
         }
@@ -42,7 +46,6 @@ public class DataStoreServer implements Server<DataStoreServerConfiguration>
         try
         {
             log.info("Starting data store server.");
-            Properties serviceProperties = configuration.getServiceProperties();
             serviceProperties.store(new FileOutputStream(new File("etc/service.properties")),
                     "This file has been generated. DSS has service.properties location hardcoded, without this file it won't start up");
 
@@ -60,7 +63,7 @@ public class DataStoreServer implements Server<DataStoreServerConfiguration>
         }
     }
 
-    @Override public void stop()
+    public void stop()
     {
         try
         {
@@ -73,13 +76,8 @@ public class DataStoreServer implements Server<DataStoreServerConfiguration>
         }
     }
 
-    @Override public DataStoreServerConfiguration getConfiguration()
+    public Properties getServiceProperties()
     {
-        return configuration;
-    }
-
-    @Override public StringBuffer getLogs()
-    {
-        return null;
+        return serviceProperties;
     }
 }

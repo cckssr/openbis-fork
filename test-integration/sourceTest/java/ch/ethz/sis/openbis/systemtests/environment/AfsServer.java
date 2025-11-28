@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,27 +25,31 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
-public class AfsServer implements Server<AfsServerConfiguration>
+public class AfsServer
 {
 
     private static final Logger log = LogFactory.getLogger(AfsServer.class);
 
-    private AfsServerConfiguration configuration;
+    private Properties serviceProperties;
 
     private ch.ethz.sis.afsserver.server.Server<TransactionConnection, Object> server;
 
     private org.eclipse.jetty.server.Server proxyServer;
 
-    private ServerProxyInterceptor proxyInterceptor;
+    private ProxyInterceptor proxyInterceptor;
 
-    @Override public void configure(final AfsServerConfiguration configuration)
+    public void configure(final Properties serviceProperties)
     {
-        this.configuration = configuration;
+        if (serviceProperties == null)
+        {
+            throw new RuntimeException("Service properties cannot be null");
+        }
+        this.serviceProperties = serviceProperties;
     }
 
-    @Override public void start()
+    public void start()
     {
-        if (configuration == null)
+        if (serviceProperties == null)
         {
             throw new RuntimeException("Afs server hasn't been configured.");
         }
@@ -58,7 +63,7 @@ public class AfsServer implements Server<AfsServerConfiguration>
         try
         {
             log.info("Starting afs server.");
-            server = new ch.ethz.sis.afsserver.server.Server<>(new Configuration(configuration.getServiceProperties()));
+            server = new ch.ethz.sis.afsserver.server.Server<>(new Configuration(serviceProperties));
             log.info("Started afs server.");
         } catch (Exception e)
         {
@@ -84,7 +89,7 @@ public class AfsServer implements Server<AfsServerConfiguration>
                 {
                     try
                     {
-                        ServerProxyRequest proxyRequest = new ServerProxyRequest(request);
+                        ProxyRequest proxyRequest = new ProxyRequest(request);
 
                         Map<String, String> parameters = new HashMap<>();
 
@@ -138,7 +143,7 @@ public class AfsServer implements Server<AfsServerConfiguration>
         }
     }
 
-    @Override public void stop()
+    public void stop()
     {
         stopServer();
         stopProxy();
@@ -190,19 +195,13 @@ public class AfsServer implements Server<AfsServerConfiguration>
         }
     }
 
-    public void setProxyInterceptor(final ServerProxyInterceptor proxyInterceptor)
+    public void setProxyInterceptor(final ProxyInterceptor proxyInterceptor)
     {
         this.proxyInterceptor = proxyInterceptor;
     }
 
-    @Override public AfsServerConfiguration getConfiguration()
+    public Properties getServiceProperties()
     {
-        return configuration;
+        return serviceProperties;
     }
-
-    @Override public StringBuffer getLogs()
-    {
-        return null;
-    }
-
 }

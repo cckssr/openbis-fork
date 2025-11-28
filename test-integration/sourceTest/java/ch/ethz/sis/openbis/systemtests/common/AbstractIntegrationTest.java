@@ -96,12 +96,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.create.SpaceCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.fetchoptions.SpaceFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.ISpaceId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.systemtests.environment.AfsServerConfiguration;
-import ch.ethz.sis.openbis.systemtests.environment.ApplicationServerConfiguration;
-import ch.ethz.sis.openbis.systemtests.environment.DataStoreServerConfiguration;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestEnvironment;
-import ch.ethz.sis.openbis.systemtests.environment.RoCrateServerConfiguration;
-import ch.ethz.sis.openbis.systemtests.environment.ServerProxyInterceptor;
+import ch.ethz.sis.openbis.systemtests.environment.ProxyInterceptor;
 import ch.ethz.sis.shared.startup.Configuration;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 
@@ -136,28 +132,19 @@ public class AbstractIntegrationTest
         initLogging();
 
         IntegrationTestEnvironment environment = new IntegrationTestEnvironment();
-
-        ApplicationServerConfiguration applicationServerConfiguration = new ApplicationServerConfiguration();
-        applicationServerConfiguration.loadServiceProperties(Path.of("etc/as/service.properties"));
-        environment.createApplicationServer(applicationServerConfiguration);
-
-        DataStoreServerConfiguration dataStoreServerConfiguration = new DataStoreServerConfiguration();
-        dataStoreServerConfiguration.loadServiceProperties(Path.of("etc/dss/service.properties"));
-        environment.createDataStoreServer(dataStoreServerConfiguration);
-
-        AfsServerConfiguration afsServerConfiguration = new AfsServerConfiguration();
-        afsServerConfiguration.loadServiceProperties(Path.of("etc/afs/service.properties"));
-        environment.createAfsServer(afsServerConfiguration);
-
-        RoCrateServerConfiguration roCrateServerConfiguration = new RoCrateServerConfiguration();
-        roCrateServerConfiguration.loadServiceProperties(Path.of("etc/ro-crate/service.properties"));
-        environment.createRoCrateServer(roCrateServerConfiguration);
-
+        environment.createApplicationServer(Path.of("etc/as/service.properties"));
+        environment.createDataStoreServer(Path.of("etc/dss/service.properties"));
+        environment.createAfsServer(Path.of("etc/afs/service.properties"));
+        environment.createRoCrateServer(Path.of("etc/ro-crate/service.properties"));
+        environment.createShare(1, Path.of("etc/shares/1/share.properties"));
+        environment.createShare(2, Path.of("etc/shares/2/share.properties"));
+        environment.createShare(3, Path.of("etc/shares/3/share.properties"));
+        environment.createShare(4, Path.of("etc/shares/4/share.properties"));
         environment.start();
 
         AbstractIntegrationTest.environment = environment;
 
-        createApplicationServerData();
+        createTestData();
 
         TestLogger.configure();
     }
@@ -202,20 +189,18 @@ public class AbstractIntegrationTest
     }
 
     public static void setApplicationServerProxyInterceptor(
-            final ServerProxyInterceptor applicationServerProxyInterceptor)
+            final ProxyInterceptor applicationServerProxyInterceptor)
     {
         environment.getApplicationServer().setProxyInterceptor(applicationServerProxyInterceptor);
     }
 
-    public static void setAfsServerProxyInterceptor(final ServerProxyInterceptor afsServerProxyInterceptor)
+    public static void setAfsServerProxyInterceptor(final ProxyInterceptor afsServerProxyInterceptor)
     {
         environment.getAfsServer().setProxyInterceptor(afsServerProxyInterceptor);
     }
 
-    private static void createApplicationServerData() throws Exception
+    private static void createTestData() throws Exception
     {
-        Configuration configuration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
-
         OpenBIS openBIS = createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
@@ -414,7 +399,7 @@ public class AbstractIntegrationTest
     public static DataSet createDataSet(OpenBIS openBIS, IExperimentId experimentId, String dataSetCode, String testFile, byte[] testData)
             throws IOException
     {
-        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
         String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
         Integer shareId = AtomicFileSystemServerParameterUtil.getStorageIncomingShareId(afsServerConfiguration);
@@ -525,7 +510,7 @@ public class AbstractIntegrationTest
 
     public void assertDataExistsInStoreInShare(String dataSetPermId, boolean exists, Integer shareId) throws Exception
     {
-        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsServerConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         String storageRoot = AtomicFileSystemServerParameterUtil.getStorageRoot(afsServerConfiguration);
         String storageUuid = OpenBISConfiguration.getInstance(afsServerConfiguration).getStorageUuid();
 

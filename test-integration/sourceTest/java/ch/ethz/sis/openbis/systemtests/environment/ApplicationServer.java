@@ -25,12 +25,12 @@ import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
-public class ApplicationServer implements Server<ApplicationServerConfiguration>
+public class ApplicationServer
 {
 
     private static final Logger log = LogFactory.getLogger(ApplicationServer.class);
 
-    private ApplicationServerConfiguration configuration;
+    private Properties serviceProperties;
 
     private org.eclipse.jetty.server.Server applicationServer;
 
@@ -38,26 +38,22 @@ public class ApplicationServer implements Server<ApplicationServerConfiguration>
 
     private org.eclipse.jetty.server.Server proxyServer;
 
-    private ServerProxyInterceptor proxyInterceptor;
+    private ProxyInterceptor proxyInterceptor;
 
-    @Override public void configure(final ApplicationServerConfiguration configuration)
+    public void configure(final Properties serviceProperties)
     {
-        if (configuration == null)
-        {
-            throw new RuntimeException("Configuration cannot be null");
-        }
-        if (configuration.getServiceProperties() == null)
+        if (serviceProperties == null)
         {
             throw new RuntimeException("Service properties cannot be null");
         }
-        this.configuration = configuration;
+        this.serviceProperties = serviceProperties;
     }
 
-    @Override public void start()
+    public void start()
     {
-        if (configuration == null)
+        if (serviceProperties == null)
         {
-            throw new RuntimeException("Application server hasn't been configured.");
+            throw new RuntimeException("Service properties cannot be null");
         }
 
         startProxy();
@@ -70,7 +66,7 @@ public class ApplicationServer implements Server<ApplicationServerConfiguration>
         {
             log.info("Starting application server.");
 
-            Properties properties = configuration.getServiceProperties();
+            Properties properties = serviceProperties;
             for (Object key : properties.keySet())
             {
                 Object value = properties.get(key);
@@ -133,7 +129,7 @@ public class ApplicationServer implements Server<ApplicationServerConfiguration>
                 {
                     try
                     {
-                        ServerProxyRequest proxyRequest = new ServerProxyRequest(request);
+                        ProxyRequest proxyRequest = new ProxyRequest(request);
 
                         CodebaseAwareObjectInputStream objectInputStream =
                                 new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
@@ -179,7 +175,7 @@ public class ApplicationServer implements Server<ApplicationServerConfiguration>
         }
     }
 
-    @Override public void stop()
+    public void stop()
     {
         stopServer();
         stopProxy();
@@ -213,24 +209,19 @@ public class ApplicationServer implements Server<ApplicationServerConfiguration>
         }
     }
 
-    public void setProxyInterceptor(final ServerProxyInterceptor proxyInterceptor)
+    public void setProxyInterceptor(final ProxyInterceptor proxyInterceptor)
     {
         this.proxyInterceptor = proxyInterceptor;
     }
 
-    @Override public ApplicationServerConfiguration getConfiguration()
+    public Properties getServiceProperties()
     {
-        return configuration;
+        return serviceProperties;
     }
 
     public GenericWebApplicationContext getApplicationContext()
     {
         return applicationContext;
-    }
-
-    @Override public StringBuffer getLogs()
-    {
-        return null;
     }
 
 }

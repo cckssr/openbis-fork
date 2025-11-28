@@ -34,7 +34,7 @@ public class IntegrationMessagesTest extends AbstractIntegrationTest
     public void beforeMethod(Method method) throws Exception
     {
         super.beforeMethod(method);
-        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getConfiguration().getServiceProperties());
+        Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
         messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
     }
