@@ -6,7 +6,7 @@ targetCompatibility = null
 sourceSets {
     main {
         resources {
-            srcDirs "etc/as"
+            srcDirs "etc/default/as"
         }
     }
 }

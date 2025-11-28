@@ -132,14 +132,10 @@ public class AbstractIntegrationTest
         initLogging();
 
         IntegrationTestEnvironment environment = new IntegrationTestEnvironment();
-        environment.createApplicationServer(Path.of("etc/as/service.properties"));
-        environment.createDataStoreServer(Path.of("etc/dss/service.properties"));
-        environment.createAfsServer(Path.of("etc/afs/service.properties"));
-        environment.createRoCrateServer(Path.of("etc/ro-crate/service.properties"));
-        environment.createShare(1, Path.of("etc/shares/1/share.properties"));
-        environment.createShare(2, Path.of("etc/shares/2/share.properties"));
-        environment.createShare(3, Path.of("etc/shares/3/share.properties"));
-        environment.createShare(4, Path.of("etc/shares/4/share.properties"));
+        environment.createApplicationServer();
+        environment.createDataStoreServer();
+        environment.createAfsServer();
+        environment.createRoCrateServer();
         environment.start();
 
         AbstractIntegrationTest.environment = environment;
@@ -212,7 +208,7 @@ public class AbstractIntegrationTest
 
         SampleUpdate elnSettingsUpdate = new SampleUpdate();
         elnSettingsUpdate.setSampleId(new SampleIdentifier("/ELN_SETTINGS/GENERAL_ELN_SETTINGS"));
-        elnSettingsUpdate.setProperties(Map.of("ELN_SETTINGS", FileUtilities.loadToString(new File("etc/as/eln-settings.json"))));
+        elnSettingsUpdate.setProperties(Map.of("ELN_SETTINGS", FileUtilities.loadToString(new File("etc/default/as/eln-settings.json"))));
 
         openBIS.updateSamples(List.of(elnSettingsUpdate));
     }

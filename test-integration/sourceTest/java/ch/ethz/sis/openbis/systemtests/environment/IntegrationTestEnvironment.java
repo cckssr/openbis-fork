@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
@@ -30,7 +31,6 @@ import ch.systemsx.cisd.dbmigration.DBUtilities;
 import ch.systemsx.cisd.dbmigration.DatabaseConfigurationContext;
 import ch.systemsx.cisd.dbmigration.SQLUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParameters;
-import ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 public class IntegrationTestEnvironment
@@ -48,9 +48,19 @@ public class IntegrationTestEnvironment
 
     private List<Share> shares = new ArrayList<>();
 
-    public ApplicationServer createApplicationServer(Path serviceProperties)
+    public IntegrationTestEnvironment()
     {
-        return createApplicationServer(loadProperties(serviceProperties));
+        createShares(Map.of(
+                1, loadProperties(Path.of("etc/default/shares/1/share.properties")),
+                2, loadProperties(Path.of("etc/default/shares/2/share.properties")),
+                3, loadProperties(Path.of("etc/default/shares/3/share.properties")),
+                4, loadProperties(Path.of("etc/default/shares/4/share.properties"))
+        ));
+    }
+
+    public ApplicationServer createApplicationServer()
+    {
+        return createApplicationServer(loadProperties(Path.of("etc/default/as/service.properties")));
     }
 
     public ApplicationServer createApplicationServer(Properties serviceProperties)
@@ -67,9 +77,9 @@ public class IntegrationTestEnvironment
         return applicationServer;
     }
 
-    public DataStoreServer createDataStoreServer(Path serviceProperties)
+    public DataStoreServer createDataStoreServer()
     {
-        return createDataStoreServer(loadProperties(serviceProperties));
+        return createDataStoreServer(loadProperties(Path.of("etc/default/dss/service.properties")));
     }
 
     public DataStoreServer createDataStoreServer(Properties serviceProperties)
@@ -86,9 +96,9 @@ public class IntegrationTestEnvironment
         return dataStoreServer;
     }
 
-    public AfsServer createAfsServer(Path serviceProperties)
+    public AfsServer createAfsServer()
     {
-        return createAfsServer(loadProperties(serviceProperties));
+        return createAfsServer(loadProperties(Path.of("etc/default/afs/service.properties")));
     }
 
     public AfsServer createAfsServer(Properties serviceProperties)
@@ -105,9 +115,9 @@ public class IntegrationTestEnvironment
         return afsServer;
     }
 
-    public RoCrateServer createRoCrateServer(Path serviceProperties)
+    public RoCrateServer createRoCrateServer()
     {
-        return createRoCrateServer(loadProperties(serviceProperties));
+        return createRoCrateServer(loadProperties(Path.of("etc/default/ro-crate/service.properties")));
     }
 
     public RoCrateServer createRoCrateServer(Properties serviceProperties)
@@ -123,16 +133,15 @@ public class IntegrationTestEnvironment
         return roCrateServer;
     }
 
-    public Share createShare(int shareNumber, Path shareProperties)
+    public void createShares(Map<Integer, Properties> shares)
     {
-        return createShare(shareNumber, loadProperties(shareProperties));
-    }
-
-    public Share createShare(int shareNumber, Properties shareProperties)
-    {
-        Share share = new Share(shareNumber, shareProperties);
-        shares.add(share);
-        return share;
+        List<Share> newShares = new ArrayList<>();
+        for (Map.Entry<Integer, Properties> entry : shares.entrySet())
+        {
+            Share share = new Share(entry.getKey(), entry.getValue());
+            newShares.add(share);
+        }
+        this.shares = newShares;
     }
 
     public void start()
@@ -331,7 +340,7 @@ public class IntegrationTestEnvironment
     {
         if (dataStoreServer != null)
         {
-            ExtendedProperties properties = DssPropertyParametersUtil.loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
+            ExtendedProperties properties = ExtendedProperties.createWith(dataStoreServer.getServiceProperties());
             cleanupFolderSafely(properties.getProperty(DssPropertyParameters.STOREROOT_DIR_KEY));
         }
     }
@@ -392,10 +401,10 @@ public class IntegrationTestEnvironment
 
     private void configureELN()
     {
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/as/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/dss/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/as/core-plugins/admin"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/dss/core-plugins/admin"));
+        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/as/core-plugins/eln-lims"));
+        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/dss/core-plugins/eln-lims"));
+        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/as/core-plugins/admin"));
+        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/dss/core-plugins/admin"));
         log.info("Configured ELN.");
     }
 

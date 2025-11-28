@@ -43,7 +43,7 @@ public class RoCrateServer
             serviceProperties.store(new FileWriter(tempConfigurationFile), null);
 
             Process process = Runtime.getRuntime()
-                    .exec(new String[] { "../test-integration/etc/ro-crate/start.sh", tempConfigurationFile.getAbsolutePath() });
+                    .exec(new String[] { "../test-integration/etc/default/ro-crate/start.sh", tempConfigurationFile.getAbsolutePath() });
 
             InputStream in = process.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -70,7 +70,7 @@ public class RoCrateServer
     {
         try
         {
-            Process process = Runtime.getRuntime().exec(new String[] { "../test-integration/etc/ro-crate/stop.sh" });
+            Process process = Runtime.getRuntime().exec(new String[] { "../test-integration/etc/default/ro-crate/stop.sh" });
 
             InputStream in = process.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));

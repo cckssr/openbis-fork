@@ -2,8 +2,8 @@
 
 BASE=$(dirname "$0")
 
-SERVER_RO_CRATE_FOLDER=$BASE/../../../server-ro-crate
-TEST_INTEGRATION_FOLDER=$BASE/../../
+SERVER_RO_CRATE_FOLDER=$BASE/../../../../server-ro-crate
+TEST_INTEGRATION_FOLDER=$BASE/../../../
 INSTALLATION_FOLDER=$TEST_INTEGRATION_FOLDER/targets/ro-crate
 
 # stop running server
