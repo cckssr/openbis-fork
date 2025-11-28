@@ -21,6 +21,10 @@ repositories {
     mavenCentral()
 }
 
+configurations.all {
+    exclude group: 'reflections', module: 'reflections'
+}
+
 dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
 
