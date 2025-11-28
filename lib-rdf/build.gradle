@@ -49,7 +49,11 @@ tasks.register('buildRdfTool', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -74,7 +78,11 @@ tasks.register('buildRdfImport', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -98,7 +106,11 @@ tasks.register('buildRepairTool', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -123,7 +135,11 @@ tasks.register('buildCountTool', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
