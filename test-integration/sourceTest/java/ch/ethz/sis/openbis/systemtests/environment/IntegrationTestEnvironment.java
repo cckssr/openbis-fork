@@ -18,6 +18,8 @@ import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
 import ch.ethz.sis.openbis.systemtests.common.TestOpenBISDatabaseVersionHolder;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
@@ -174,6 +176,8 @@ public class IntegrationTestEnvironment
         {
             roCrateServer.start();
         }
+
+        configureELNSettings();
     }
 
     public void stop()
@@ -401,11 +405,34 @@ public class IntegrationTestEnvironment
 
     private void configureELN()
     {
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/as/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/dss/core-plugins/eln-lims"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/as/core-plugins/admin"));
-        SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/dss/core-plugins/admin"));
-        log.info("Configured ELN.");
+        if (applicationServer != null)
+        {
+            SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/as/core-plugins/eln-lims"));
+            SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/as/core-plugins/admin"));
+            log.info("Configured ELN for AS.");
+        }
+        if (dataStoreServer != null)
+        {
+            SoftLinkMaker.createSymbolicLink(new File("../ui-eln-lims/src/core-plugins/eln-lims"), new File("etc/default/dss/core-plugins/eln-lims"));
+            SoftLinkMaker.createSymbolicLink(new File("../ui-admin/src/core-plugins/admin"), new File("etc/default/dss/core-plugins/admin"));
+            log.info("Configured ELN for DSS.");
+        }
+    }
+
+    private void configureELNSettings()
+    {
+        if (applicationServer != null)
+        {
+            OpenBIS openBIS = createOpenBIS();
+            openBIS.login("admin", "password");
+
+            SampleUpdate elnSettingsUpdate = new SampleUpdate();
+            elnSettingsUpdate.setSampleId(new SampleIdentifier("/ELN_SETTINGS/GENERAL_ELN_SETTINGS"));
+            elnSettingsUpdate.setProperties(Map.of("ELN_SETTINGS", FileUtilities.loadToString(new File("etc/default/as/eln-settings.json"))));
+
+            openBIS.updateSamples(List.of(elnSettingsUpdate));
+            log.info("Configured ELN settings.");
+        }
     }
 
     private static Properties loadProperties(final Path propertiesPath)

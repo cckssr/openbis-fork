@@ -29,7 +29,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.sql.DataSource;
@@ -88,7 +87,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.delete.SampleDeletionOpti
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
@@ -99,7 +97,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
 import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestEnvironment;
 import ch.ethz.sis.openbis.systemtests.environment.ProxyInterceptor;
 import ch.ethz.sis.shared.startup.Configuration;
-import ch.systemsx.cisd.common.filesystem.FileUtilities;
 
 /**
  * @author pkupczyk
@@ -205,12 +202,6 @@ public class AbstractIntegrationTest
         createUser(openBIS, TEST_SPACE_OBSERVER, TEST_SPACE, Role.OBSERVER);
 
         createUser(openBIS, DEFAULT_SPACE_ADMIN, DEFAULT_SPACE, Role.ADMIN);
-
-        SampleUpdate elnSettingsUpdate = new SampleUpdate();
-        elnSettingsUpdate.setSampleId(new SampleIdentifier("/ELN_SETTINGS/GENERAL_ELN_SETTINGS"));
-        elnSettingsUpdate.setProperties(Map.of("ELN_SETTINGS", FileUtilities.loadToString(new File("etc/default/as/eln-settings.json"))));
-
-        openBIS.updateSamples(List.of(elnSettingsUpdate));
     }
 
     public static OpenBIS createOpenBIS()
