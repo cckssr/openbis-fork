@@ -295,10 +295,10 @@ class DatabaseComponent extends React.PureComponent {
     closeForm: (params) => this.closeForm(params.type, params.id)
   }
 
-
   renderJson() {
     const { object } = this.props
     console.log('DatabaseComponent.renderJson', { object });
+
     return (<EntityFormContextProvider openbisFacade={openbis}
       params={object.params}
       entityKind={object.type}
