@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
@@ -411,22 +412,46 @@ public class IntegrationTestEnvironment
 
     private void configureShares()
     {
-        try
+        if (dataStoreServer != null || afsServer != null)
         {
-            Configuration configuration = new Configuration(afsServer.getServiceProperties());
-            String storageRoot = configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot);
+            Path dataStoreStoreRoot = null;
+            Path afsStoreRoot = null;
 
-            for (Share share : shares)
+            if (dataStoreServer != null)
             {
-                File shareFolder = new File(storageRoot, String.valueOf(share.getShareNumber()));
-                shareFolder.mkdirs();
-                share.getShareProperties().store(new FileOutputStream(new File(shareFolder, "share.properties")), null);
+                dataStoreStoreRoot = Path.of(ExtendedProperties.createWith(dataStoreServer.getServiceProperties()).getProperty("storeroot-dir"));
             }
 
-            log.info("Configured shares.");
-        } catch (Exception e)
-        {
-            throw new RuntimeException("Configuring shares failed.", e);
+            if (afsServer != null)
+            {
+                Configuration configuration = new Configuration(afsServer.getServiceProperties());
+                afsStoreRoot = Path.of(configuration.getStringProperty(AtomicFileSystemServerParameter.storageRoot));
+            }
+
+            if (dataStoreStoreRoot != null && afsStoreRoot != null && !Objects.equals(dataStoreStoreRoot.toAbsolutePath().normalize().toString(),
+                    afsStoreRoot.toAbsolutePath().normalize().toString()))
+            {
+                throw new RuntimeException(
+                        "Store roots of DSS and AFS are inconsistent. DSS uses: " + dataStoreStoreRoot + " while AFS uses: " + afsStoreRoot
+                                + ". Both should use the same store root.");
+            }
+
+            try
+            {
+                Path storeRoot = dataStoreStoreRoot != null ? dataStoreStoreRoot : afsStoreRoot;
+
+                for (Share share : shares)
+                {
+                    File shareFolder = new File(storeRoot.toFile(), String.valueOf(share.getShareNumber()));
+                    shareFolder.mkdirs();
+                    share.getShareProperties().store(new FileOutputStream(new File(shareFolder, "share.properties")), null);
+                }
+
+                log.info("Configured shares.");
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Configuring shares failed.", e);
+            }
         }
     }
 
