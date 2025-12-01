@@ -22,11 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.io.PropertyIOUtils;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -71,7 +71,7 @@ public class CorePluginScanner implements ICorePluginResourceLoader
                 + scannerType.getSubFolderName() + "/" + pluginType.getSubFolderName();
     }
 
-    private static final ISimpleLogger DEFAULT_LOGGER = new Log4jSimpleLogger(LogFactory.getLogger(
+    private static final ISimpleLogger DEFAULT_LOGGER = new SimpleLogger(LogFactory.getLogger(
             LogCategory.OPERATION, CorePluginScanner.class));
 
     private final ISimpleLogger log;

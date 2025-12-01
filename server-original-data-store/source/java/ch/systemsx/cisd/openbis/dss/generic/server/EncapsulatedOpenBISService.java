@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.lang3.time.DateUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import org.springframework.beans.factory.FactoryBean;
@@ -43,7 +44,6 @@ import ch.ethz.sis.openbis.generic.dssapi.v3.IDataStoreServerApi;
 import ch.systemsx.cisd.common.api.retry.RetryCaller;
 import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.common.api.client.ServiceFinder;
@@ -168,7 +168,7 @@ public final class EncapsulatedOpenBISService implements IEncapsulatedOpenBISSer
                 {
                     return 5;
                 }
-            }, new Log4jSimpleLogger(operationLog));
+            }, new SimpleLogger(operationLog));
             this.timeout = timeout;
             this.openBisServiceFactory = openBisServiceFactory;
         }

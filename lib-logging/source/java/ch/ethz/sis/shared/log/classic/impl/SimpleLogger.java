@@ -25,7 +25,7 @@ import ch.ethz.sis.shared.log.standard.core.Priority;
  * 
  * @author Bernd Rinn
  */
-public class Log4jSimpleLogger implements ISimpleLogger
+public class SimpleLogger implements ISimpleLogger
 {
     private final Priority log4jOverridePriorityOrNull;
 
@@ -59,7 +59,7 @@ public class Log4jSimpleLogger implements ISimpleLogger
      * @param log4jOverridePriorityOrNull If not <code>null</code>, use this log level instead of the one provided to the
      *            {@link ISimpleLogger#log(LogLevel, String)}.
      */
-    public Log4jSimpleLogger(final Logger log4jLogger, final Priority log4jOverridePriorityOrNull)
+    public SimpleLogger(final Logger log4jLogger, final Priority log4jOverridePriorityOrNull)
     {
         assert log4jLogger != null : "Unspecified log4j logger";
         this.log4jOverridePriorityOrNull = log4jOverridePriorityOrNull;
@@ -71,7 +71,7 @@ public class Log4jSimpleLogger implements ISimpleLogger
      * 
      * @param log4jLogger The log4j logger to use.
      */
-    public Log4jSimpleLogger(final Logger log4jLogger)
+    public SimpleLogger(final Logger log4jLogger)
     {
         this(log4jLogger, null);
     }

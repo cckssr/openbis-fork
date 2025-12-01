@@ -20,7 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.ext.LogAnnotation;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -152,7 +152,7 @@ public final class LogInvocationHandler implements InvocationHandler
             return defaultLogLevel;
         } else
         {
-            return Log4jSimpleLogger.toLog4jPriority(annotationOrNull.logLevel());
+            return SimpleLogger.toLog4jPriority(annotationOrNull.logLevel());
         }
     }
 

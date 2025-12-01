@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -70,7 +71,6 @@ import ch.systemsx.cisd.common.api.retry.RetryCaller;
 import ch.systemsx.cisd.common.api.retry.config.RetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
@@ -574,7 +574,7 @@ public class DataStoreServer
                     {
                         return 5;
                     }
-                }, new Log4jSimpleLogger(operationLog));
+                }, new SimpleLogger(operationLog));
             this.applicationContext = applicationContext;
         }
 

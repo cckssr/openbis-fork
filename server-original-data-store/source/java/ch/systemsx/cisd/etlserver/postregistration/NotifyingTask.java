@@ -19,11 +19,11 @@ import java.io.File;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.lang3.StringUtils;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -66,7 +66,7 @@ public class NotifyingTask extends AbstractPostRegistrationTask
 
     public NotifyingTask(Properties properties, IEncapsulatedOpenBISService service)
     {
-        this(properties, service, new Log4jSimpleLogger(LogFactory.getLogger(LogCategory.OPERATION,
+        this(properties, service, new SimpleLogger(LogFactory.getLogger(LogCategory.OPERATION,
                 NotifyingTask.class)));
     }
 

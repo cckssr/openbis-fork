@@ -60,7 +60,7 @@ import ch.systemsx.cisd.common.filesystem.StoreItem;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkDirectoryScanningHandler;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HighwaterMarkWatcher;
 import ch.systemsx.cisd.common.filesystem.highwatermark.HostAwareFileWithHighwaterMark;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.mail.IMailClient;
@@ -274,7 +274,7 @@ public final class ETLDaemon
             Integer incomingShareIdOrNull = threadParameters.getIncomingShareId();
             String shareId =
                     SegmentedStoreUtils.findIncomingShare(incomingDataDirectory, storeRootDir, incomingShareIdOrNull,
-                            new Log4jSimpleLogger(operationLog));
+                            new SimpleLogger(operationLog));
             incomingShares.add(shareId);
         }
 
@@ -483,7 +483,7 @@ public final class ETLDaemon
         File incomingDirectory = threadParams.getIncomingDataDirectory();
         Integer incomingShareIdOrNull = threadParams.getIncomingShareId();
         return SegmentedStoreUtils.findIncomingShare(incomingDirectory, storeRoot, incomingShareIdOrNull,
-                new Log4jSimpleLogger(operationLog));
+                new SimpleLogger(operationLog));
     }
 
     private static FileFilter createFileFilter(File incomingDataDirectory,

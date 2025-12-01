@@ -20,6 +20,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Properties;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
@@ -27,7 +28,6 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 
 /**
  * Executing engine of {@link IPostRegistrationTask} instances. Manages persistent {@link ICleanupTask} instances.
@@ -119,7 +119,7 @@ public class TaskExecutor
         {
             try
             {
-                cleanupTaskOrNull.cleanup(new Log4jSimpleLogger(operationLog));
+                cleanupTaskOrNull.cleanup(new SimpleLogger(operationLog));
             } catch (Throwable t)
             {
                 operationLog.error("Clean up of failed task '" + taskName + "' for data set "
@@ -133,7 +133,7 @@ public class TaskExecutor
      */
     public void cleanup()
     {
-        Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        SimpleLogger logger = new SimpleLogger(operationLog);
         File[] files = cleanupTasksFolder.listFiles(FILTER);
         if (files != null && files.length > 0)
         {

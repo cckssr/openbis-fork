@@ -20,11 +20,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.IOUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.systemsx.cisd.etlserver.IStorageProcessorTransactional.UnstoreDataAction;
 
 /**
@@ -101,7 +101,7 @@ public class DataSetRegistrationRollbacker
                 }
             } else if (action == UnstoreDataAction.DELETE)
             {
-                FileUtilities.deleteRecursively(incomingDataSetFile, new Log4jSimpleLogger(
+                FileUtilities.deleteRecursively(incomingDataSetFile, new SimpleLogger(
                         TransferredDataSetHandler.operationLog));
             }
         }

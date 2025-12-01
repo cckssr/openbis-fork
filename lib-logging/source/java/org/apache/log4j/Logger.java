@@ -30,8 +30,8 @@ import static ch.systemsx.cisd.common.logging.LoggingUtils.mapToJUL;
 /**
  * A drop‐in replacement for log4j's Logger that delegates to java.util.logging.
  */
-public class Logger {
-    private final java.util.logging.Logger julLogger;
+public class Logger  extends ch.ethz.sis.shared.log.classic.impl.Logger
+{
 
 
     private static final String LOG4J_TAG = "[Log4j log]";
@@ -41,128 +41,46 @@ public class Logger {
     }
 
     protected Logger(String name) {
-        this.julLogger = java.util.logging.Logger.getLogger(name);
+        super(name);
     }
 
     public static Logger getLogger(String name) { return new Logger(name); }
     public static Logger getLogger(Class<?> clazz) { return getLogger(clazz.getName()); }
     public static Logger getRootLogger() { return getLogger(""); }
 
-    public String getName() { return julLogger.getName(); }
-
     public void debug(Object message) {
-        julLogger.log(java.util.logging.Level.FINE, decorate(message));
+        super.debug(decorate(message));
     }
     public void debug(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.FINE, decorate(message), t);
+        super.debug(decorate(message), t);
     }
 
     public void info(Object message) {
-        julLogger.log(java.util.logging.Level.INFO, decorate(message));
+        super.info(decorate(message));
     }
     public void info(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.INFO, decorate(message), t);
+        super.info(decorate(message), t);
     }
 
     public void warn(Object message) {
-        julLogger.log(java.util.logging.Level.WARNING, decorate(message));
+        super.warn(decorate(message));
     }
     public void warn(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.WARNING, decorate(message), t);
+        super.warn(decorate(message), t);
     }
 
     public void error(Object message) {
-        julLogger.log(java.util.logging.Level.SEVERE, decorate(message));
+        super.error(decorate(message));
     }
     public void error(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.SEVERE, decorate(message), t);
+        super.error(decorate(message), t);
     }
 
     public void fatal(Object message) {
-        julLogger.log(java.util.logging.Level.SEVERE, decorate("FATAL: " + String.valueOf(message)));
+        super.fatal(decorate("FATAL: " + String.valueOf(message)));
     }
     public void fatal(Object message, Throwable t) {
-        julLogger.log(java.util.logging.Level.SEVERE, decorate("FATAL: " + String.valueOf(message)), t);
+        super.fatal( decorate("FATAL: " + String.valueOf(message)), t);
     }
 
-    public boolean isDebugEnabled() { return julLogger.isLoggable(java.util.logging.Level.FINE); }
-    public boolean isInfoEnabled()  { return julLogger.isLoggable(java.util.logging.Level.INFO); }
-    public boolean isErrorEnabled() { return julLogger.isLoggable(java.util.logging.Level.SEVERE); }
-
-    public void log(Priority priority, Object message, Throwable t) {
-        java.util.logging.Level julLevel = mapToJULLevel(priority.toInt());
-        julLogger.log(julLevel, decorate(message), t);
-    }
-    public void log(Priority priority, Object message) {
-        log(priority, message, null);
-    }
-
-    public void setLevel(Level level) { julLogger.setLevel(mapToJUL(level)); }
-    public Level getLevel() { return mapFromJUL(julLogger.getLevel()); }
-
-    public Level getEffectiveLevel() {
-        java.util.logging.Logger p = this.julLogger;
-
-        // Guard against cycles / self-parent and extreme depth
-        java.util.Set<java.util.logging.Logger> seen =
-                java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-        int hops = 0, MAX_HOPS = 64;
-
-        while (p != null && seen.add(p) && hops++ < MAX_HOPS) {
-            java.util.logging.Level lvl = p.getLevel();
-            if (lvl != null) {
-                return mapFromJUL(lvl);
-            }
-            java.util.logging.Logger next = p.getParent();
-            if (next == p) break;
-            p = next;
-        }
-
-        // Fallback: use root logger’s level if set, else INFO
-        java.util.logging.Level root = java.util.logging.Logger.getLogger("").getLevel();
-        return mapFromJUL(root != null ? root : java.util.logging.Level.INFO);
-    }
-
-    public boolean isEnabledFor(Priority priority) { return julLogger.isLoggable(mapToJULLevel(priority.toInt())); }
-    public boolean isTraceEnabled() { return julLogger.isLoggable(java.util.logging.Level.FINEST); }
-
-    public void trace(String message) { julLogger.log(java.util.logging.Level.FINEST, decorate(message)); }
-
-
-    public void addHandler(Handler handler)
-    {
-        julLogger.addHandler(handler);
-    }
-
-    public void removeHandler(Handler handler)
-    {
-        julLogger.removeHandler(handler);
-    }
-
-    public void removeAllHandlers()
-    {
-        Arrays.stream(julLogger.getHandlers())
-                .forEach(julLogger::removeHandler);
-    }
-
-    public Handler getHandler(String name) {
-        return Arrays.stream(julLogger.getHandlers())
-                .filter(handler -> handler.getClass().getSimpleName().equals(name))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public void catching(Throwable ex) {
-        String message = (ex.getMessage() != null) ? ex.getMessage() : "";
-        this.log(Level.ERROR, message, ex);
-    }
-
-    public Handler[] getHandlers()
-    {
-        return julLogger.getHandlers();
-    }
-
-    public java.util.logging.Logger getJulLogger(){
-        return julLogger;
-    }
 }

@@ -43,7 +43,7 @@ import ch.systemsx.cisd.common.exceptions.Status;
 import ch.systemsx.cisd.common.filesystem.BooleanStatus;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.reflection.ClassUtils;
@@ -458,7 +458,7 @@ public abstract class AbstractArchiverProcessingPlugin extends AbstractDatastore
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
         List<Share> shares =
                 SegmentedStoreUtils.getSharesWithDataSets(storeRoot, dataStoreCode, FilterOptions.ALL, incomingShares,
-                        freeSpaceProvider, getService(), new Log4jSimpleLogger(AbstractDatastorePlugin.operationLog));
+                        freeSpaceProvider, getService(), new SimpleLogger(AbstractDatastorePlugin.operationLog));
         return new UnarchivingPreparation(getShareFinder(),
                 getShareIdManager(), getService(), shares);
     }
