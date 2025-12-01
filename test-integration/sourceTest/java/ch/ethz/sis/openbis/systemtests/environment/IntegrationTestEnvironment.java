@@ -18,6 +18,9 @@ import ch.ethz.sis.openbis.afsserver.server.common.OpenBISConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.pathinfo.PathInfoDatabaseConfiguration;
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.person.id.PersonPermId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.Role;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssignmentCreation;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
@@ -39,6 +42,12 @@ public class IntegrationTestEnvironment
 {
 
     private static final Logger log = LogFactory.getLogger(IntegrationTestEnvironment.class);
+
+    private static final String SYSTEM_USER = "system";
+
+    private static final String INSTANCE_ADMIN_USER = "admin";
+
+    private static final String PASSWORD = "password";
 
     private ApplicationServer applicationServer;
 
@@ -177,6 +186,7 @@ public class IntegrationTestEnvironment
             roCrateServer.start();
         }
 
+        configureSystemUser();
         configureELNSettings();
     }
 
@@ -382,6 +392,23 @@ public class IntegrationTestEnvironment
         }
     }
 
+    private void configureSystemUser()
+    {
+        if (applicationServer != null)
+        {
+            OpenBIS openBIS = createOpenBIS();
+            openBIS.login(INSTANCE_ADMIN_USER, PASSWORD);
+
+            RoleAssignmentCreation roleCreation = new RoleAssignmentCreation();
+            roleCreation.setUserId(new PersonPermId(SYSTEM_USER));
+            roleCreation.setRole(Role.ADMIN);
+
+            openBIS.createRoleAssignments(List.of(roleCreation));
+
+            log.info("Configured system user.");
+        }
+    }
+
     private void configureShares()
     {
         try
@@ -424,7 +451,7 @@ public class IntegrationTestEnvironment
         if (applicationServer != null)
         {
             OpenBIS openBIS = createOpenBIS();
-            openBIS.login("admin", "password");
+            openBIS.login(INSTANCE_ADMIN_USER, PASSWORD);
 
             SampleUpdate elnSettingsUpdate = new SampleUpdate();
             elnSettingsUpdate.setSampleId(new SampleIdentifier("/ELN_SETTINGS/GENERAL_ELN_SETTINGS"));
