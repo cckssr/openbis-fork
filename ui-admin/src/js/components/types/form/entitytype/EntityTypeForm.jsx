@@ -70,12 +70,13 @@ class EntityTypeForm extends React.PureComponent {
 
   renderAdditionalPanel() {
     let { controller } = this
-    let { type, properties, sections, selection, mode } = this.state
+    let { type, typeGroups, properties, sections, selection, mode } = this.state
 
     return (
       <EntityTypeFormParameters
         controller={controller}
         type={type}
+        typeGroups={typeGroups}
         properties={properties}
         sections={sections}
         selection={selection}
