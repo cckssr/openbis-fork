@@ -40,16 +40,23 @@ class DateField extends React.PureComponent {
   }
 
   handleChange(date, string) {
-    const { name, onChange } = this.props
+    const { name, dateTime, onChange } = this.props
+    let dateString;
 
     if (onChange) {
+        let dateObject = date && false === Number.isNaN(date.getTime()) ? date : null;
+        if(dateTime) {
+            dateString = dateObject ? format(date, 'yyyy-MM-dd HH:mm:ss').toString() : '';
+        } else {
+            dateString = dateObject ? format(date, 'yyyy-MM-dd').toString() : '';
+        }
+
       onChange({
         target: {
           name: name,
           value: {
-            dateObject:
-              date && false === Number.isNaN(date.getTime()) ? date : null,
-            dateString: string
+            dateObject: dateObject,
+            dateString: dateString
           }
         }
       })
