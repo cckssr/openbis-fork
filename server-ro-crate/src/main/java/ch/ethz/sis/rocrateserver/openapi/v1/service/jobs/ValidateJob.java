@@ -42,7 +42,7 @@ public final class ValidateJob implements IAsyncJob
 
     }
 
-    ValidationResult getResult()
+    public ValidationResult getResult()
     {
         return result;
     }

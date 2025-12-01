@@ -6,7 +6,7 @@ import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ExportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
-import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.AsyncJobRegistry;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.jobs.*;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
@@ -44,6 +44,9 @@ public class RoCrateService {
 
     @Inject
     AsyncJobRegistry asyncJobRegistry;
+
+    @Inject
+    ObjectMapper objectMapper;
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -207,6 +210,39 @@ public class RoCrateService {
         }
         AsyncJobRegistry.AsyncStatus status =
                 asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        if (status.getStatus() == AsyncJobRegistry.Status.DONE)
+        {
+            IAsyncJob job = status.getJob();
+            if (job instanceof ExportJob)
+            {
+                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+                responseBuilder.status(Response.Status.OK);
+                responseBuilder.type(job.getMimeType());
+                responseBuilder.entity(((ExportJob) job).getResult());
+                return responseBuilder.build();
+            }
+            if (job instanceof ValidateJob)
+            {
+                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+                responseBuilder.status(Response.Status.OK);
+                responseBuilder.type(MediaType.APPLICATION_JSON);
+                responseBuilder.entity(((ValidateJob) job).getResult());
+                return responseBuilder.build();
+            }
+            if (job instanceof ImportJob)
+            {
+                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+                responseBuilder.status(Response.Status.OK);
+                responseBuilder.type(MediaType.APPLICATION_JSON);
+                ImportDelegate.OpenBisImportResult result = ((ImportJob) job).getResult();
+                responseBuilder.entity(objectMapper.writeValueAsString(result));
+                return responseBuilder.build();
+
+            }
+
+        }
+
+
         return new ServerResponse();
 
 

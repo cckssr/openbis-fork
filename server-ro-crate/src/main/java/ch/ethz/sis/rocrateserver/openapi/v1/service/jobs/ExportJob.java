@@ -264,4 +264,9 @@ public final class ExportJob implements IAsyncJob
 
         return exportOptions;
     }
+
+    public InputStream getResult()
+    {
+        return result;
+    }
 }
