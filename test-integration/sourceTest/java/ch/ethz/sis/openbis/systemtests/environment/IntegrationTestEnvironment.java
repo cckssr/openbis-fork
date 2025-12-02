@@ -25,7 +25,6 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
-import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestOpenBISDatabaseVersionHolder;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
@@ -225,8 +224,10 @@ public class IntegrationTestEnvironment
             Properties properties = applicationServer.getServiceProperties();
 
             Properties databaseProperties = ExtendedProperties.getSubset(properties, "database.", true);
+
             databaseProperties.setProperty(DatabaseConfiguration.NAME, "openbis");
-            databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS, TestOpenBISDatabaseVersionHolder.class.getName());
+            databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS,
+                    ApplicationServer.OpenBISDatabaseVersionHolder.class.getName());
             databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, properties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
 
             DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
@@ -239,13 +240,18 @@ public class IntegrationTestEnvironment
     {
         if (applicationServer != null)
         {
-            Properties properties = ExtendedProperties.getSubset(applicationServer.getServiceProperties(), "messages.", true);
-            if (!properties.isEmpty())
-            {
-                DatabaseConfiguration configuration = new DatabaseConfiguration(properties);
-                dropDatabase(configuration.getContext());
-                log.info("Dropped messages database configured at AS.");
-            }
+            Properties properties = applicationServer.getServiceProperties();
+
+            Properties databaseProperties = ExtendedProperties.getSubset(properties, "messages-database.", true);
+
+            databaseProperties.setProperty(DatabaseConfiguration.NAME, "messages");
+            databaseProperties.setProperty(DatabaseConfiguration.VERSION_HOLDER_CLASS,
+                    ApplicationServer.MessagesDatabaseVersionHolder.class.getName());
+            databaseProperties.setProperty(DatabaseConfiguration.SCRIPT_FOLDER, databaseProperties.getProperty(DatabaseConfiguration.SCRIPT_FOLDER));
+
+            DatabaseConfiguration configuration = new DatabaseConfiguration(databaseProperties);
+            dropDatabase(configuration.getContext());
+            log.info("Dropped messages database configured at AS.");
         }
         if (afsServer != null)
         {

@@ -23,6 +23,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
 public class ApplicationServer
@@ -222,6 +223,24 @@ public class ApplicationServer
     public GenericWebApplicationContext getApplicationContext()
     {
         return applicationContext;
+    }
+
+    public static class OpenBISDatabaseVersionHolder implements IDatabaseVersionHolder
+    {
+
+        @Override public String getDatabaseVersion()
+        {
+            return ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DatabaseVersionHolder.getDatabaseVersion();
+        }
+    }
+
+    public static class MessagesDatabaseVersionHolder implements IDatabaseVersionHolder
+    {
+
+        @Override public String getDatabaseVersion()
+        {
+            return ch.ethz.sis.messages.db.MessagesDatabaseVersionHolder.getDatabaseVersionStatic();
+        }
     }
 
 }
