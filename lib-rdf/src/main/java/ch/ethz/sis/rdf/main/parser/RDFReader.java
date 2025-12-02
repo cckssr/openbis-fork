@@ -579,6 +579,24 @@ public class RDFReader
     }
 
     private void printResourceParsingResult(ResourceParsingResult resourceParsingResult){
+        if (!resourceParsingResult.getDanglingReferences().isEmpty())
+        {
+            System.out.println("There were references to objects that could not be resolved");
+            System.out.println(resourceParsingResult.getDanglingReferences().stream().map(x -> {
+                String a = "Object";
+                a += x.getLeft().code;
+                a += " Property ";
+                a += x.getMiddle().code;
+                a += " reference ";
+                a += x.getRight();
+                return a;
+            }).collect(Collectors.joining("\n")));
+
+            if (Config.getINSTANCE().removeDanglingReferences())
+            {
+                System.out.println("These references were deleted");
+            }
+        }
 
         List<ResourceParsingResult.VocabRepairInfo> vocabRepairThingies =
                 resourceParsingResult.getVocabRepairThingies();
