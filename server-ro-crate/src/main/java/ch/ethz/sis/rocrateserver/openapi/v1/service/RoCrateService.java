@@ -46,8 +46,7 @@ public class RoCrateService
     @Inject
     AsyncJobRegistry asyncJobRegistry;
 
-    @Inject
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
