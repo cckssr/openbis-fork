@@ -1,14 +1,23 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.search.SearchResult;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.ExportOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportableKind;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.data.ExportablePermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.ExportOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.exporter.options.XlsTextFormat;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionResults;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecutionState;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.fetchoptions.OperationExecutionFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.IOperationExecutionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchOptions;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
@@ -33,10 +42,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -143,33 +149,75 @@ public final class ExportJob implements IAsyncJob
             exportData.setPermIds(exportablePermIds);
             ExportOptions exportOptions = getExportOptions(exportParams);
 
-            ExportResult exportResult = openBIS.executeExport(exportData, exportOptions);
+            ExportOperation exportOperation = new ExportOperation();
+            exportOperation.setExportData(exportData);
+            exportOperation.setExportOptions(exportOptions);
+
+            AsynchronousOperationExecutionOptions asynchronousOperationExecutionOptions =
+                    new AsynchronousOperationExecutionOptions();
+
+            AsynchronousOperationExecutionResults ongoingOperations =
+                    (AsynchronousOperationExecutionResults)
+                            openBIS.executeOperations(exportParams.getApiKey(),
+                                    List.of(exportOperation),
+                                    asynchronousOperationExecutionOptions);
+
+            OperationExecutionFetchOptions ongoingOperationsFechOptions =
+                    new OperationExecutionFetchOptions();
+            ongoingOperationsFechOptions.withDetails();
+            ongoingOperationsFechOptions.withNotification();
+            ongoingOperationsFechOptions.withOwner();
+            ongoingOperationsFechOptions.withSummary();
+            ongoingOperationsFechOptions.withSummary().withError();
+
+            OperationExecutionPermId executionId = ongoingOperations.getExecutionId();
+
+            boolean isOperationFinished = false;
+            while (isOperationFinished == false)
+            {
+                Map<IOperationExecutionId, OperationExecution> operationExecutions =
+                        openBIS.getOperationExecutions(List.of(executionId),
+                                ongoingOperationsFechOptions);
+                OperationExecution operationExecution = operationExecutions.get(executionId);
+                if (operationExecution.getState() == OperationExecutionState.FINISHED)
+                {
+                    IOperationResult iOperationResult =
+                            operationExecution.getDetails().getResults().stream().findFirst()
+                                    .orElseThrow();
+                    assert iOperationResult instanceof ExportOperationResult;
+                    ExportOperationResult exportOperationResult =
+                            (ExportOperationResult) iOperationResult;
+                    String downloadURL = exportOperationResult.getExportResult().getDownloadURL();
+                    System.out.println("Download url: " + downloadURL);
+
+                    java.nio.file.Path realPathToExcel =
+                            downloadExcel(openBIS, exportParams, downloadURL);
+
+                    // Convert openBIS Excel to Ro-Crate
+                    OpenBisModel openBisModel =
+                            ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
+
+                    Writer writer = new Writer();
+                    java.nio.file.Path tempRoCratePath =
+                            java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
+                    java.nio.file.Path realTempRoCratePath =
+                            SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(),
+                                    tempRoCratePath);
+                    writer.write(openBisModel, realTempRoCratePath);
+
+                    if (exportParams.getAccept().equals("application/ld+json"))
+                    {
+                        ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
+                        ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
+                        this.result = zipFile.getInputStream(zipEntry);
+
+                    }
+                }
+            }
 
             // Download of openBIS export
             // TODO: Extract this download to a separate method and deal with data as streams not as arrays
-            String downloadUrl = exportResult.getDownloadURL();
-            System.out.println("Download url: " + downloadUrl);
 
-            java.nio.file.Path realPathToExcel = downloadExcel(openBIS, exportParams, downloadUrl);
-
-            // Convert openBIS Excel to Ro-Crate
-            OpenBisModel openBisModel =
-                    ExcelReader.convert(ExcelReader.Format.EXCEL, realPathToExcel);
-
-            Writer writer = new Writer();
-            java.nio.file.Path tempRoCratePath =
-                    java.nio.file.Path.of("result-crate" + UUID.randomUUID() + ".zip");
-            java.nio.file.Path realTempRoCratePath =
-                    SessionWorkSpaceManager.getRealPath(exportParams.getApiKey(), tempRoCratePath);
-            writer.write(openBisModel, realTempRoCratePath);
-
-            if (exportParams.getAccept().equals("application/ld+json"))
-            {
-                ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
-                ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
-                this.result = zipFile.getInputStream(zipEntry);
-
-            }
         } catch (Exception e)
         {
 

@@ -12,6 +12,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
@@ -26,13 +27,13 @@ import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
-
+import java.util.List;
 
 @Path("/openbis/open-api/ro-crate")
-public class RoCrateService {
+public class RoCrateService
+{
 
     private static final Logger LOG = Logger.getLogger(RoCrateService.class);
-
 
     public static final String APPLICATION_LD_JSON = "application/ld+json";
 
@@ -51,18 +52,22 @@ public class RoCrateService {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("test-echo")
-    public String testEcho(@QueryParam(value = "message") String message) {
+    public String testEcho(@QueryParam(value = "message") String message)
+    {
         return message;
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("test-openbis-connection")
-    public String testOpenbisConnection(@QueryParam(value = "api-key") String apiKey) {
+    public String testOpenbisConnection(@QueryParam(value = "api-key") String apiKey)
+    {
         OpenBIS openBIS = OpeBISFactory.createOpenBIS(apiKey);
-        try {
+        try
+        {
             return openBIS.getSessionInformation().getUserName();
-        } finally {
+        } finally
+        {
             openBIS.logout();
         }
     }
@@ -77,14 +82,17 @@ public class RoCrateService {
             InputStream body) throws JsonProcessingException
     {
         OpenBIS openBIS = null;
-        try {
+        try
+        {
             openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
-        } catch (Exception ex) {
+        } catch (Exception ex)
+        {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
 
-        try {
+        try
+        {
             AsyncJob externalToOpenBisIdentifiers =
                     importDelegate.import_(asyncJobRegistry, openBIS, headers, body, false);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -103,7 +111,8 @@ public class RoCrateService {
         {
             LOG.error("There was an error", ex);
             throw new RuntimeException(ex);
-        } finally {
+        } finally
+        {
             //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
     }
@@ -118,14 +127,17 @@ public class RoCrateService {
             throws IOException
     {
         OpenBIS openBIS = null;
-        try {
+        try
+        {
             openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
-        } catch (Exception ex) {
+        } catch (Exception ex)
+        {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
 
-        try {
+        try
+        {
             AsyncJob asyncResult =
                     importDelegate.import_(asyncJobRegistry, openBIS, headers, body, true);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -160,14 +172,17 @@ public class RoCrateService {
             InputStream body) throws Exception
     {
         OpenBIS openBIS = null;
-        try {
+        try
+        {
             openBIS = OpeBISFactory.createOpenBIS(headers.getApiKey());
             SessionInformation sessionInformation = openBIS.getSessionInformation();
-        } catch (Exception ex) {
+        } catch (Exception ex)
+        {
             RoCrateExceptions.throwInstance(RoCrateExceptions.UNAVAILABLE_API_KEY);
         }
 
-        try {
+        try
+        {
             AsyncJob job = exportDelegate.export(asyncJobRegistry, openBIS, headers, body);
             ObjectMapper objectMapper = new ObjectMapper();
             return Response.ok(objectMapper.writeValueAsString(job))
@@ -185,10 +200,10 @@ public class RoCrateService {
         {
             Log.error(ex);
             throw new RuntimeException(ex);
-        } finally {
+        } finally
+        {
             //SessionWorkSpaceManager.clear(headers.getApiKey());
         }
-
 
     }
 
@@ -210,12 +225,15 @@ public class RoCrateService {
         }
         AsyncJobRegistry.AsyncStatus status =
                 asyncJobRegistry.poll(sessionInformation.getUserName(), headers.getJobId());
+        AsyncResult result = null;
+        int statusCode = 0;
+        Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+
         if (status.getStatus() == AsyncJobRegistry.Status.DONE)
         {
             IAsyncJob job = status.getJob();
             if (job instanceof ExportJob)
             {
-                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(job.getMimeType());
                 responseBuilder.entity(((ExportJob) job).getResult());
@@ -223,7 +241,6 @@ public class RoCrateService {
             }
             if (job instanceof ValidateJob)
             {
-                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
                 responseBuilder.entity(((ValidateJob) job).getResult());
@@ -231,22 +248,38 @@ public class RoCrateService {
             }
             if (job instanceof ImportJob)
             {
-                Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
                 responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
-                ImportDelegate.OpenBisImportResult result = ((ImportJob) job).getResult();
-                responseBuilder.entity(objectMapper.writeValueAsString(result));
+                ImportDelegate.OpenBisImportResult openBisImportResult =
+                        ((ImportJob) job).getResult();
+                responseBuilder.entity(objectMapper.writeValueAsString(openBisImportResult));
+
+
                 return responseBuilder.build();
 
             }
 
         }
 
+        if (status.getStatus() == AsyncJobRegistry.Status.RUNNING)
+        {
+
+        }
+        if (status.getStatus() == AsyncJobRegistry.Status.SCHEDULED)
+        {
+
+        }
+        if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
+        {
+            result = new AsyncResult(status.getStatus().toString(),
+                    List.of(status.getJob().getException().getMessage()), null);
+        }
+        responseBuilder.entity(objectMapper.writeValueAsString(result));
+        responseBuilder.status(statusCode);
+
 
         return new ServerResponse();
 
-
     }
-
 
 }
