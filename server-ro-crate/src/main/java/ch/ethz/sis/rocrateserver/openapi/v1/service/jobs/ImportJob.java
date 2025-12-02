@@ -5,11 +5,20 @@ import ch.eth.sis.rocrate.facade.IMetadataEntry;
 import ch.eth.sis.rocrate.facade.IPropertyType;
 import ch.eth.sis.rocrate.facade.IType;
 import ch.ethz.sis.openbis.generic.OpenBIS;
-import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.operation.IOperationResult;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportOperation;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.ImportOperationResult;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportData;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.data.ImportFormat;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportMode;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.importer.options.ImportOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.AsynchronousOperationExecutionResults;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecution;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.OperationExecutionState;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.fetchoptions.OperationExecutionFetchOptions;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.IOperationExecutionId;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionPermId;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
@@ -160,11 +169,53 @@ public final class ImportJob implements IAsyncJob
             ImportData importData = new ImportData();
             importData.setSessionWorkspaceFiles(new String[] { modelAsExcel.toString() });
             importData.setFormat(ImportFormat.EXCEL);
-            ImportResult apiResult =
-                    openBIS.executeImport(importData, getImportOptions(importParams));
+            ImportOperation importOperation = new ImportOperation();
+            AsynchronousOperationExecutionOptions asynchronousOperationExecutionOptions =
+                    new AsynchronousOperationExecutionOptions();
+
+            openBIS.executeOperations(importParams.getApiKey(), List.of(importOperation),
+                    asynchronousOperationExecutionOptions);
+            AsynchronousOperationExecutionResults ongoingOperations =
+                    (AsynchronousOperationExecutionResults)
+                            openBIS.executeOperations(importParams.getApiKey(),
+                                    List.of(importOperation),
+                                    asynchronousOperationExecutionOptions);
+
+            OperationExecutionFetchOptions ongoingOperationsFechOptions =
+                    new OperationExecutionFetchOptions();
+            ongoingOperationsFechOptions.withDetails();
+            ongoingOperationsFechOptions.withNotification();
+            ongoingOperationsFechOptions.withOwner();
+            ongoingOperationsFechOptions.withSummary();
+            ongoingOperationsFechOptions.withSummary().withError();
+
+            OperationExecutionPermId executionId = ongoingOperations.getExecutionId();
+
+            boolean isOperationFinished = false;
+            while (isOperationFinished == false)
+            {
+                Map<IOperationExecutionId, OperationExecution> operationExecutions =
+                        openBIS.getOperationExecutions(List.of(executionId),
+                                ongoingOperationsFechOptions);
+                OperationExecution operationExecution = operationExecutions.get(executionId);
+                isOperationFinished =
+                        operationExecution.getState() == OperationExecutionState.FINISHED;
+            }
+
+            Map<IOperationExecutionId, OperationExecution> operationExecutions =
+                    openBIS.getOperationExecutions(List.of(executionId),
+                            ongoingOperationsFechOptions);
+            OperationExecution operationExecution = operationExecutions.get(executionId);
+            IOperationResult iOperationResult =
+                    operationExecution.getDetails().getResults().stream().findFirst()
+                            .orElseThrow();
+            assert iOperationResult instanceof ImportOperationResult;
+            ImportOperationResult importOperationResult = (ImportOperationResult) iOperationResult;
+
 
             this.importResult = new ImportDelegate.OpenBisImportResult(
-                    apiResult.getObjectIds().stream().map(id -> id.toString()).toList(),
+                    importOperationResult.getImportResult().getObjectIds().stream()
+                            .map(id -> id.toString()).toList(),
                     conversion.getExternalToOpenBisIdentifiers(), validationResult);
         } catch (Exception e)
         {
