@@ -92,7 +92,7 @@ public final class ImportJob implements IAsyncJob
     @Override
     public String getUserId()
     {
-        return null;
+        return username;
     }
 
     @Override

@@ -43,8 +43,7 @@ public class RoCrateService
     @Inject
     ExportDelegate exportDelegate;
 
-    @Inject
-    AsyncJobRegistry asyncJobRegistry;
+    AsyncJobRegistry asyncJobRegistry = new AsyncJobRegistry();
 
     ObjectMapper objectMapper = new ObjectMapper();
 

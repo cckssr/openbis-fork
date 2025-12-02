@@ -1,7 +1,5 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
-@ApplicationScoped
 public class AsyncJobRegistry
 {
 

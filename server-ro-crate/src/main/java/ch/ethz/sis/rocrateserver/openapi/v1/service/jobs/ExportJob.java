@@ -59,7 +59,9 @@ public final class ExportJob implements IAsyncJob
 
     OpenBIS openBIS;
 
-    public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS)
+    String username;
+
+    public ExportJob(ExportParams exportParams, InputStream body, OpenBIS openBIS, String username)
     {
         this.exportParams = exportParams;
         this.body = body;
@@ -81,7 +83,7 @@ public final class ExportJob implements IAsyncJob
     @Override
     public String getUserId()
     {
-        return null;
+        return username;
     }
 
     @Override

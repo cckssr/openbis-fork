@@ -19,7 +19,8 @@ public class ExportDelegate
             ExportParams headers,
             InputStream body) throws Exception
     {
-        ExportJob exportJob = new ExportJob(headers, body, openBIS);
+        String userName = openBIS.getSessionInformation().getUserName();
+        ExportJob exportJob = new ExportJob(headers, body, openBIS, userName);
         String jobId = asyncJobRegistry.register(exportJob);
 
         return new AsyncJob(jobId);
