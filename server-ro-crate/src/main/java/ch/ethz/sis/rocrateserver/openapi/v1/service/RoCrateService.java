@@ -233,10 +233,9 @@ public class RoCrateService
             IAsyncJob job = status.getJob();
             if (job instanceof ExportJob)
             {
-                responseBuilder.status(Response.Status.OK);
-                responseBuilder.type(job.getMimeType());
-                responseBuilder.entity(((ExportJob) job).getResult());
-                return responseBuilder.build();
+                return Response.ok(((ExportJob) job).getResult())
+                        .type(job.getMimeType()).build();
+
             }
             if (job instanceof ValidateJob)
             {
