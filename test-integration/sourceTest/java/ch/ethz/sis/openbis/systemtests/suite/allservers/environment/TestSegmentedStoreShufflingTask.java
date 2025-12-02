@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.systemtests.common;
+package ch.ethz.sis.openbis.systemtests.suite.allservers.environment;
 
 import java.io.File;
 import java.io.IOException;

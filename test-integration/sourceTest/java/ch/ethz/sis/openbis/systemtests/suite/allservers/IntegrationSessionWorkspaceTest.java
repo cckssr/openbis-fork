@@ -1,5 +1,8 @@
-package ch.ethz.sis.openbis.systemtests;
+package ch.ethz.sis.openbis.systemtests.suite.allservers;
 
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.INSTANCE_ADMIN;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.PASSWORD;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -13,6 +16,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.generic.OpenBIS;
@@ -40,18 +46,39 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleTypeFe
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SamplePermId;
-import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
 
-public class IntegrationSessionWorkspaceTest extends AbstractIntegrationTest
+public class IntegrationSessionWorkspaceTest
 {
+
+    private IntegrationTestFacade facade;
+
+    @BeforeSuite
+    public void beforeSuite()
+    {
+        AllServersIntegrationTestEnvironment.start();
+    }
+
+    @AfterSuite
+    public void afterSuite()
+    {
+        AllServersIntegrationTestEnvironment.stop();
+    }
+
+    @BeforeMethod
+    public void beforeMethod() throws Exception
+    {
+        facade = new IntegrationTestFacade(environment);
+    }
 
     @Test
     public void testUploadToSessionWorkspace() throws Exception
     {
-        final OpenBIS openBIS = createOpenBIS();
+        final OpenBIS openBIS = facade.createOpenBIS();
         final String sessionToken = openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        final Path originalFilePath = Path.of("sourceTest/java/tests.xml");
+        final Path originalFilePath = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/import-test.zip");
 
         // Testing upload
 
@@ -59,11 +86,11 @@ public class IntegrationSessionWorkspaceTest extends AbstractIntegrationTest
 
         // Verifying upload ID
 
-        assertTrue(uploadId.endsWith("tests.xml"));
+        assertTrue(uploadId.endsWith("import-test.zip"));
 
         // Verifying file info
 
-        final Path uploadedFilePath = Path.of(String.format("targets/sessionWorkspace/%s/tests.xml", sessionToken));
+        final Path uploadedFilePath = Path.of(String.format("targets/sessionWorkspace/%s/import-test.zip", sessionToken));
         final File originalFile = originalFilePath.toFile();
         final File uploadedFile = uploadedFilePath.toFile();
 
@@ -83,7 +110,7 @@ public class IntegrationSessionWorkspaceTest extends AbstractIntegrationTest
     @Test
     public void testImport() throws Exception
     {
-        final OpenBIS openBIS = createOpenBIS();
+        final OpenBIS openBIS = facade.createOpenBIS();
         final String fileName = "import-test.zip";
         final Path originalFilePath = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/" + fileName);
 
@@ -135,7 +162,7 @@ public class IntegrationSessionWorkspaceTest extends AbstractIntegrationTest
     @Test
     public void testExport() throws Exception
     {
-        final OpenBIS openBIS = createOpenBIS();
+        final OpenBIS openBIS = facade.createOpenBIS();
         final String sessionId = openBIS.login(INSTANCE_ADMIN, PASSWORD);
         final String sampleIdentifierString = "/DEFAULT/DEFAULT/DEFAULT";
 

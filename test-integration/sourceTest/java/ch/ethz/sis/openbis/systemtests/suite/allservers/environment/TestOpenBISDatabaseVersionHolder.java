@@ -1,4 +1,4 @@
-package ch.ethz.sis.openbis.systemtests.common;
+package ch.ethz.sis.openbis.systemtests.suite.allservers.environment;
 
 import ch.systemsx.cisd.common.db.IDatabaseVersionHolder;
 import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.DatabaseVersionHolder;

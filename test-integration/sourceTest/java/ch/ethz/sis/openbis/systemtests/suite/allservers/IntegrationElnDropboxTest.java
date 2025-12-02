@@ -1,4 +1,9 @@
-package ch.ethz.sis.openbis.systemtests;
+package ch.ethz.sis.openbis.systemtests.suite.allservers;
+
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.INSTANCE_ADMIN;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.PASSWORD;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.TEST_INTERACTIVE_SESSION_KEY;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,7 +15,10 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsapi.dto.File;
@@ -26,12 +34,15 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.fetchoptions.SampleFetchO
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.ISampleId;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.search.SampleSearchCriteria;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
-public class IntegrationElnDropboxTest extends AbstractIntegrationTest
+public class IntegrationElnDropboxTest
 {
+
+    private IntegrationTestFacade facade;
 
     private Space space;
 
@@ -39,25 +50,46 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
 
     private SampleType sampleType;
 
-    @BeforeClass public void beforeClass() throws Exception
+    @BeforeSuite
+    public void beforeSuite()
     {
-        OpenBIS openBIS = createOpenBIS();
+        AllServersIntegrationTestEnvironment.start();
+    }
+
+    @AfterSuite
+    public void afterSuite()
+    {
+        AllServersIntegrationTestEnvironment.stop();
+    }
+
+    @BeforeClass
+    public void beforeClass() throws Exception
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        space = createSpace(openBIS, "ELN_DROPBOX_SPACE");
-        project = createProject(openBIS, space.getPermId(), "ELN_DROPBOX_PROJECT");
-        sampleType = createSampleType(openBIS, "ELN_DROPBOX_SAMPLE_TYPE", List.of(new PropertyTypePermId("NAME")));
+        space = facade.createSpace(openBIS, "ELN_DROPBOX_SPACE");
+        project = facade.createProject(openBIS, space.getPermId(), "ELN_DROPBOX_PROJECT");
+        sampleType = facade.createSampleType(openBIS, "ELN_DROPBOX_SAMPLE_TYPE", List.of(new PropertyTypePermId("NAME")));
 
         openBIS.logout();
+    }
+
+    @BeforeMethod
+    public void beforeMethod()
+    {
+        facade = new IntegrationTestFacade(environment);
     }
 
     @Test
     public void testRegisterFile()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_FILE");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_FILE");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -81,10 +113,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterFileAndFolder()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_FILE_AND_FOLDER");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_FILE_AND_FOLDER");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -111,10 +143,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterFolder()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_FOLDER");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_FOLDER");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -139,10 +171,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInSpaceSample()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample spaceSample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_IN_SPACE_SAMPLE");
+        Sample spaceSample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_IN_SPACE_SAMPLE");
 
         List<Sample> before = searchSampleChildren(openBIS, spaceSample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -171,7 +203,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInNonExistentSpaceSample()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         try
@@ -189,10 +221,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInProjectSample()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample projectSample = createSample(openBIS, project.getPermId(), "TEST_REGISTER_IN_PROJECT_SAMPLE");
+        Sample projectSample = facade.createSample(openBIS, project.getPermId(), "TEST_REGISTER_IN_PROJECT_SAMPLE");
 
         List<Sample> before = searchSampleChildren(openBIS, projectSample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -221,7 +253,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInNonExistentProjectSample()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         try
@@ -239,10 +271,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInExperiment()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Experiment experiment = createExperiment(openBIS, project.getPermId(), "TEST_REGISTER_IN_EXPERIMENT");
+        Experiment experiment = facade.createExperiment(openBIS, project.getPermId(), "TEST_REGISTER_IN_EXPERIMENT");
 
         List<Sample> before = searchExperimentSamples(openBIS, experiment.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -271,7 +303,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterInNonExistentExperiment()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         try
@@ -289,10 +321,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithMetadata()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_METADATA");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_METADATA");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -317,10 +349,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithIncorrectMetadata()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_INCORRECT_METADATA");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_INCORRECT_METADATA");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -342,10 +374,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithDuplicatedName()
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DUPLICATED_NAME");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DUPLICATED_NAME");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -367,10 +399,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithDiscardedFiles() throws IOException
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DISCARDED_FILES");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_DISCARDED_FILES");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -412,7 +444,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithDiscardedFilesMisconfigured() throws IOException
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         Properties properties = createDropboxProperties();
@@ -432,10 +464,10 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithIllegalFiles() throws IOException
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_ILLEGAL_FILES");
+        Sample sample = facade.createSample(openBIS, space.getPermId(), "TEST_REGISTER_WITH_ILLEGAL_FILES");
 
         List<Sample> before = searchSampleChildren(openBIS, sample.getPermId());
         Assert.assertEquals(before.size(), 0);
@@ -461,7 +493,7 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
     @Test
     public void testRegisterWithIllegalFilesMisconfigured() throws IOException
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         Properties properties = createDropboxProperties();
@@ -478,9 +510,9 @@ public class IntegrationElnDropboxTest extends AbstractIntegrationTest
         }
     }
 
-    private static Properties createDropboxProperties()
+    private Properties createDropboxProperties()
     {
-        String sessionToken = createOpenBIS().login(INSTANCE_ADMIN, PASSWORD);
+        String sessionToken = facade.createOpenBIS().login(INSTANCE_ADMIN, PASSWORD);
 
         Properties properties = new Properties();
         properties.setProperty(ElnDropbox.PROPERTY_APPLICATION_SERVER_URL,

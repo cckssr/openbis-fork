@@ -1,5 +1,8 @@
-package ch.ethz.sis.openbis.systemtests;
+package ch.ethz.sis.openbis.systemtests.suite.allservers;
 
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.INSTANCE_ADMIN;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.PASSWORD;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -8,10 +11,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.UUID;
 
-import ch.ethz.sis.shared.log.standard.core.Level;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.openbis.afsserver.server.common.TestLogger;
@@ -21,14 +25,20 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.Space;
-import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
-import ch.ethz.sis.openbis.systemtests.common.TestSegmentedStoreShufflingTask;
-import ch.ethz.sis.openbis.systemtests.common.TestSegmentedStoreShufflingTask.TestChecksumProvider;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestSegmentedStoreShufflingTask;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestSegmentedStoreShufflingTask.TestChecksumProvider;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.systemsx.cisd.common.concurrent.MessageChannel;
 import ch.systemsx.cisd.common.test.AssertionUtil;
 
-public class IntegrationShufflingTest extends AbstractIntegrationTest
+public class IntegrationShufflingTest
 {
+
+    private static final Logger log = LogFactory.getLogger(IntegrationShufflingTest.class);
 
     private static final String ENTITY_CODE_PREFIX = "SHUFFLING_TEST_";
 
@@ -36,23 +46,40 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
 
     private static final String TEST_FILE_CONTENT = "test-content";
 
+    private IntegrationTestFacade facade;
+
     private Experiment experimentShuffledToShare2;
 
     private Experiment experimentShuffledToShare3;
 
-    @BeforeClass public void beforeClass() throws Exception
+    @BeforeSuite
+    public void beforeSuite()
     {
-        OpenBIS openBIS = createOpenBIS();
+        AllServersIntegrationTestEnvironment.start();
+    }
+
+    @AfterSuite
+    public void afterSuite()
+    {
+        AllServersIntegrationTestEnvironment.stop();
+    }
+
+    @BeforeClass
+    public void beforeClass() throws Exception
+    {
+        IntegrationTestFacade facade = new IntegrationTestFacade(environment);
+
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Space space = createSpace(openBIS, "SHUFFLE");
-        Project project = createProject(openBIS, space.getPermId(), "SHUFFLE");
+        Space space = facade.createSpace(openBIS, "SHUFFLE");
+        Project project = facade.createProject(openBIS, space.getPermId(), "SHUFFLE");
 
-        experimentShuffledToShare2 = createExperiment(openBIS, project.getPermId(), "SHUFFLE_TO_SHARE_2");
-        experimentShuffledToShare3 = createExperiment(openBIS, project.getPermId(), "SHUFFLE_TO_SHARE_3");
+        experimentShuffledToShare2 = facade.createExperiment(openBIS, project.getPermId(), "SHUFFLE_TO_SHARE_2");
+        experimentShuffledToShare3 = facade.createExperiment(openBIS, project.getPermId(), "SHUFFLE_TO_SHARE_3");
 
-        log("Created experiment " + experimentShuffledToShare2.getIdentifier() + " with perm id " + experimentShuffledToShare2.getPermId());
-        log("Created experiment " + experimentShuffledToShare3.getIdentifier() + " with perm id " + experimentShuffledToShare3.getPermId());
+        log.info("Created experiment " + experimentShuffledToShare2.getIdentifier() + " with perm id " + experimentShuffledToShare2.getPermId());
+        log.info("Created experiment " + experimentShuffledToShare3.getIdentifier() + " with perm id " + experimentShuffledToShare3.getPermId());
 
         openBIS.logout();
     }
@@ -60,37 +87,36 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
     {
-        super.beforeMethod(method);
         TestLogger.startLogRecording(Level.TRACE, TestLogger.DEFAULT_LOG_LAYOUT_PATTERN, ".*Shuffling.*");
+        facade = new IntegrationTestFacade(environment);
     }
 
     @AfterMethod
     public void afterMethod(Method method) throws Exception
     {
-        super.afterMethod(method);
         TestLogger.stopLogRecording();
     }
 
     @Test
     public void testAFSDataIsShuffledByAFS() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         // create data at AFS (should be stored in the incoming share i.e. 1)
-        Sample sample = createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         openBIS.getAfsServerFacade()
                 .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         TestChecksumProvider checksumProvider = new TestChecksumProvider();
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 1);
 
         AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
@@ -105,35 +131,36 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
     @Test
     public void testDSSDataIsNotShuffledByAFS() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         // create data at DSS (should be stored in the incoming share i.e. 1)
-        DataSet dataSet = createDataSet(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
-                TEST_FILE_CONTENT.getBytes());
+        DataSet dataSet =
+                facade.createDataSet(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID(), TEST_FILE_NAME,
+                        TEST_FILE_CONTENT.getBytes());
 
-        assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
 
         TestChecksumProvider checksumProvider = new TestChecksumProvider();
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
-        assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(dataSet.getPermId().getPermId(), false, 2);
     }
 
     @Test
     public void testDataIsLockedDuringShuffling() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         openBIS.getAfsServerFacade()
                 .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
 
         MessageChannel toShuffling = new MessageChannel(5000);
         MessageChannel fromShuffling = new MessageChannel(5000);
@@ -173,7 +200,7 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         toShuffling.send("afterRead");
         shufflingThread.join();
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 2);
 
         AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
@@ -188,16 +215,16 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
     @Test
     public void testFailedShufflingWithExceptionIsCleanedUp() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         openBIS.getAfsServerFacade()
                 .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         TestChecksumProvider checksumProvider = new TestChecksumProvider()
         {
@@ -213,8 +240,8 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         };
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()
@@ -234,16 +261,16 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
     @Test
     public void testFailedShufflingWithIncorrectChecksumIsCleanedUp() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
-        Sample sample = createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, experimentShuffledToShare2.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         openBIS.getAfsServerFacade()
                 .write(sample.getPermId().getPermId(), TEST_FILE_NAME, 0L, TEST_FILE_CONTENT.getBytes());
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         TestChecksumProvider checksumProvider = new TestChecksumProvider()
         {
@@ -260,8 +287,8 @@ public class IntegrationShufflingTest extends AbstractIntegrationTest
         };
         TestSegmentedStoreShufflingTask.executeOnce(checksumProvider);
 
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
-        assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), true, 1);
+        facade.assertDataExistsInStoreInShare(sample.getPermId().getPermId(), false, 2);
 
         AssertionUtil.assertContainsLines(
                 "INFO  OPERATION.EagerShufflingTask - Locked data set " + sample.getPermId().getPermId()

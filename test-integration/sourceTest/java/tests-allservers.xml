@@ -1,6 +1,6 @@
 <!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd" >
 
-<suite name="All" verbose="1">
+<suite name="AllServers" verbose="1">
     <test name="All">
         <groups>
             <run>
@@ -8,7 +8,7 @@
             </run>
         </groups>
         <packages>
-            <package name="ch.ethz.sis.openbis.systemtests.*" />
+            <package name="ch.ethz.sis.openbis.systemtests.suite.allservers.*" />
         </packages>
     </test>
 </suite>

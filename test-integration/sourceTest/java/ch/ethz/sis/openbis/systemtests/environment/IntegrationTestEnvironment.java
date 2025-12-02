@@ -25,7 +25,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.roleassignment.create.RoleAssign
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.id.SampleIdentifier;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.update.SampleUpdate;
 import ch.ethz.sis.openbis.generic.server.asapi.v3.TransactionConfiguration;
-import ch.ethz.sis.openbis.systemtests.common.TestOpenBISDatabaseVersionHolder;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestOpenBISDatabaseVersionHolder;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;

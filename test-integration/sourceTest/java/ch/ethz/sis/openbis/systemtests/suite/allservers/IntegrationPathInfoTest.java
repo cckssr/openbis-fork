@@ -1,5 +1,9 @@
-package ch.ethz.sis.openbis.systemtests;
+package ch.ethz.sis.openbis.systemtests.suite.allservers;
 
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.DEFAULT_SPACE;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.INSTANCE_ADMIN;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.PASSWORD;
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
@@ -12,7 +16,9 @@ import java.util.Comparator;
 import java.util.UUID;
 
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.afsapi.dto.File;
@@ -25,27 +31,40 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.experiment.Experiment;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.project.Project;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.space.id.SpacePermId;
-import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
-import ch.ethz.sis.openbis.systemtests.common.TestPathInfoDatabaseFeedingTask;
+import ch.ethz.sis.openbis.systemtests.environment.IntegrationTestFacade;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.TestPathInfoDatabaseFeedingTask;
 import ch.ethz.sis.pathinfo.IPathInfoAutoClosingDAO;
 import ch.ethz.sis.shared.log.standard.core.Level;
 import ch.ethz.sis.shared.startup.Configuration;
 import net.lemnik.eodsql.QueryTool;
 
-public class IntegrationPathInfoTest extends AbstractIntegrationTest
+public class IntegrationPathInfoTest
 {
 
     private static final String ENTITY_CODE_PREFIX = "PATH_INFO_TEST_";
 
     private static final long WAITING_TIME_FOR_PATH_INFO_DELETION = 3000L;
 
+    private IntegrationTestFacade facade;
+
     private IPathInfoAutoClosingDAO pathInfoDAO;
+
+    @BeforeSuite
+    public void beforeSuite()
+    {
+        AllServersIntegrationTestEnvironment.start();
+    }
+
+    @AfterSuite
+    public void afterSuite()
+    {
+        AllServersIntegrationTestEnvironment.stop();
+    }
 
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
     {
-        super.beforeMethod(method);
-
         TestLogger.startLogRecording(Level.INFO, TestLogger.DEFAULT_LOG_LAYOUT_PATTERN, ".*");
 
         deleteLastSeenDeletionFile();
@@ -53,29 +72,29 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         DatabaseConfiguration pathInfoDatabaseConfiguration = PathInfoDatabaseConfiguration.getInstance(afsConfiguration);
         pathInfoDAO = QueryTool.getQuery(pathInfoDatabaseConfiguration.getDataSource(), IPathInfoAutoClosingDAO.class);
+        facade = new IntegrationTestFacade(environment);
     }
 
     @AfterMethod
     public void afterMethod(Method method) throws Exception
     {
-        super.afterMethod(method);
         TestLogger.stopLogRecording();
     }
 
     @Test
     public void testPathInfoDBEntriesGetCreatedAndDeleted() throws Exception
     {
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         SpacePermId spaceId = new SpacePermId(DEFAULT_SPACE);
-        Project project = createProject(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Project project = facade.createProject(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         // create both mutable and immutable experiments and samples
-        Experiment mutableExperiment = createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
-        Experiment immutableExperiment = createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
-        Sample mutableSample = createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
-        Sample immutableSample = createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Experiment mutableExperiment = facade.createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Experiment immutableExperiment = facade.createExperiment(openBIS, project.getPermId(), ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample mutableSample = facade.createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample immutableSample = facade.createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         Long mutableExperimentEntryId = pathInfoDAO.tryToGetDataSetId(mutableExperiment.getPermId().getPermId());
         Long immutableExperimentEntryId = pathInfoDAO.tryToGetDataSetId(immutableExperiment.getPermId().getPermId());
@@ -97,8 +116,8 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         openBIS.getAfsServerFacade().write(immutableSample.getPermId().getPermId(), testFile, 0L, testData.getBytes());
 
         // make chosen data immutable
-        makeExperimentImmutable(openBIS, immutableExperiment.getPermId());
-        makeSampleImmutable(openBIS, immutableSample.getPermId());
+        facade.makeExperimentImmutable(openBIS, immutableExperiment.getPermId());
+        facade.makeSampleImmutable(openBIS, immutableSample.getPermId());
 
         TestPathInfoDatabaseFeedingTask.executeOnce();
 
@@ -114,10 +133,10 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertNotNull(immutableSampleEntryId);
 
         // delete the experiments and samples
-        deleteExperiment(openBIS, mutableExperiment.getPermId());
-        deleteExperiment(openBIS, immutableExperiment.getPermId());
-        deleteSample(openBIS, mutableSample.getPermId());
-        deleteSample(openBIS, immutableSample.getPermId());
+        facade.deleteExperiment(openBIS, mutableExperiment.getPermId());
+        facade.deleteExperiment(openBIS, immutableExperiment.getPermId());
+        facade.deleteSample(openBIS, mutableSample.getPermId());
+        facade.deleteSample(openBIS, immutableSample.getPermId());
 
         Thread.sleep(WAITING_TIME_FOR_PATH_INFO_DELETION);
 
@@ -138,11 +157,11 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
     {
         final String FOUND_IN_PATH_INFO_DB = "found in the path info database";
 
-        OpenBIS openBIS = createOpenBIS();
+        OpenBIS openBIS = facade.createOpenBIS();
         openBIS.login(INSTANCE_ADMIN, PASSWORD);
 
         SpacePermId spaceId = new SpacePermId(DEFAULT_SPACE);
-        Sample sample = createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
+        Sample sample = facade.createSample(openBIS, spaceId, ENTITY_CODE_PREFIX + UUID.randomUUID());
 
         Long sampleEntryId = pathInfoDAO.tryToGetDataSetId(sample.getPermId().getPermId());
         assertNull(sampleEntryId);
@@ -222,7 +241,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertFile(fileNotRecursiveFS[0], sample.getPermId().getPermId(), "/test-folder/test-file-2", "test-file-2", Boolean.FALSE, 49L);
 
         // make data immutable
-        makeSampleImmutable(openBIS, sample.getPermId());
+        facade.makeSampleImmutable(openBIS, sample.getPermId());
         TestPathInfoDatabaseFeedingTask.executeOnce();
 
         sampleEntryId = pathInfoDAO.tryToGetDataSetId(sample.getPermId().getPermId());
@@ -271,7 +290,7 @@ public class IntegrationPathInfoTest extends AbstractIntegrationTest
         assertContains(TestLogger.getRecordedLog(), FOUND_IN_PATH_INFO_DB, 8);
 
         // delete data
-        deleteSample(openBIS, sample.getPermId());
+        facade.deleteSample(openBIS, sample.getPermId());
         Thread.sleep(WAITING_TIME_FOR_PATH_INFO_DELETION);
 
         sampleEntryId = pathInfoDAO.tryToGetDataSetId(sample.getPermId().getPermId());

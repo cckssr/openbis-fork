@@ -1,4 +1,6 @@
-package ch.ethz.sis.openbis.systemtests;
+package ch.ethz.sis.openbis.systemtests.suite.allservers;
+
+import static ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment.environment;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -6,8 +8,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 
 import ch.ethz.sis.messages.consumer.IMessageHandler;
@@ -16,11 +19,15 @@ import ch.ethz.sis.messages.db.Message;
 import ch.ethz.sis.messages.db.MessagesDatabase;
 import ch.ethz.sis.openbis.afsserver.server.common.DatabaseConfiguration;
 import ch.ethz.sis.openbis.afsserver.server.messages.MessagesDatabaseConfiguration;
-import ch.ethz.sis.openbis.systemtests.common.AbstractIntegrationTest;
+import ch.ethz.sis.openbis.systemtests.suite.allservers.environment.AllServersIntegrationTestEnvironment;
+import ch.ethz.sis.shared.log.classic.impl.LogFactory;
+import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.startup.Configuration;
 
-public class IntegrationMessagesTest extends AbstractIntegrationTest
+public class IntegrationMessagesTest
 {
+
+    private static final Logger log = LogFactory.getLogger(IntegrationMessagesTest.class);
 
     private static final String CONSUMER_ID = "integration-messages-test-consumer-id";
 
@@ -30,19 +37,24 @@ public class IntegrationMessagesTest extends AbstractIntegrationTest
 
     private MessagesDatabase messagesDatabase;
 
+    @BeforeSuite
+    public void beforeSuite()
+    {
+        AllServersIntegrationTestEnvironment.start();
+    }
+
+    @AfterSuite
+    public void afterSuite()
+    {
+        AllServersIntegrationTestEnvironment.stop();
+    }
+
     @BeforeMethod
     public void beforeMethod(Method method) throws Exception
     {
-        super.beforeMethod(method);
         Configuration afsConfiguration = new Configuration(environment.getAfsServer().getServiceProperties());
         DatabaseConfiguration messagesDatabaseConfiguration = MessagesDatabaseConfiguration.getInstance(afsConfiguration);
         messagesDatabase = new MessagesDatabase(messagesDatabaseConfiguration.getDataSource());
-    }
-
-    @AfterMethod
-    public void afterMethod(Method method) throws Exception
-    {
-        super.afterMethod(method);
     }
 
     @Test
@@ -164,7 +176,7 @@ public class IntegrationMessagesTest extends AbstractIntegrationTest
             {
                 messagesDatabase.begin();
                 Long messageId = messagesDatabase.getMessagesDAO().create(messageToCreate);
-                log("Created message: " + messageId + " while handling message: " + message.getId());
+                log.info("Created message: " + messageId + " while handling message: " + message.getId());
                 messagesDatabase.commit();
             }
         }
