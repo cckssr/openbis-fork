@@ -17,6 +17,7 @@ import { IFormController } from '@src/js/components/database/new-forms/types/IFo
 import { useMoveFlow } from '@src/js/components/database/new-forms/hooks/useMoveFlow.ts';
 import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/useConflictFlow.ts';
 import { useDeleteFlow } from '@src/js/components/database/new-forms/hooks/useDeleteFlow.ts';
+import { ActionToast, useActionToastCtx } from '@src/js/components/database/new-forms/components/common/ActionToast.tsx';
 
 export const EntityFormContextProvider = ({
   openbisFacade,
@@ -37,6 +38,9 @@ export const EntityFormContextProvider = ({
   initialMode: FormMode;
   externalAppController: any;
 }) => {
+
+  const actionToastContext = useActionToastCtx();
+
   // Form state (already well-organized)
   const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
     initialForm: null,
@@ -218,6 +222,9 @@ export const EntityFormContextProvider = ({
         }
 
         await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED (GENERAL)');
+        //alert('SUCCESSFULLY SAVED (GENERAL)');
+
         setConflictResolving(false);
         if (context.onAfterSave) context.onAfterSave(params);
       } catch (error: any) {
@@ -227,6 +234,8 @@ export const EntityFormContextProvider = ({
           openConflictDialog(conflicts);
         } else {
           console.error('Save failed:', error);
+          actionToastContext.raiseError('ERROR SAVING (GENERAL)');
+          //alert('ERROR SAVING (GENERAL)');
           setError(error.message);
         }
       } finally {
@@ -235,8 +244,12 @@ export const EntityFormContextProvider = ({
     } else if (mode === FormMode.CREATE) {
       try {
         await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED (GENERAL)');
+        //alert('SUCCESSFULLY SAVED (GENERAL)');
       } catch (error: any) {
         setError(error.message);
+        actionToastContext.raiseError('ERROR SAVING (GENERAL)');
+        //alert('ERROR SAVING (GENERAL)');
       } finally {
         setSaving(false);
       }
@@ -266,6 +279,7 @@ export const EntityFormContextProvider = ({
           onClose={handleErrorCancel}
         />
       )}
+      <ActionToast ctx={actionToastContext}></ActionToast>
       <EntityForm
         form={form}
         mode={mode}
