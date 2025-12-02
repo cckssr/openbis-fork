@@ -493,7 +493,7 @@ public class IntegrationTestEnvironment
         }
     }
 
-    private static Properties loadProperties(final Path propertiesPath)
+    public static Properties loadProperties(final Path propertiesPath)
     {
         try
         {
