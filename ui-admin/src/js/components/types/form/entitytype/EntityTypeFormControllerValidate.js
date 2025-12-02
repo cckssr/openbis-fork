@@ -62,7 +62,7 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
 
     validator.validateCode(property, 'code', messages.get(messages.CODE))
 
-    validator.validateNotEmpty(property, 'label', messages.get(messages.LABEL))
+    validator.validateNotEmpty(property, 'label', messages.get(messages.PROPERTY_LABEL))
     validator.validateNotEmpty(
       property,
       'description',
@@ -91,7 +91,7 @@ export default class EntityTypeFormControllerValidate extends PageControllerVali
       validator.validateNotEmpty(
         property,
         'vocabulary',
-        messages.get(messages.VOCABULARY_TYPE)
+        messages.get(messages.VOCABULARY_CODE)
       )
     }
     if (property.initialValueForExistingEntities.visible) {

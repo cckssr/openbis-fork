@@ -58,7 +58,7 @@ InstanceSettingsModel.defaultSettings = [{
        "variableName": "docuBaseUrl",
        "label": "Documentation base URL",
        "type": "STRING",
-       "default": "https://openbis.readthedocs.io/en/20.10.x/"
+       "default": "https://openbis.readthedocs.io/en/20.10.12-plus/"
      },
      {
        "variableName": "showUserManagementConfig",

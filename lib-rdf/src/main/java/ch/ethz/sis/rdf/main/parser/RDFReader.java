@@ -56,6 +56,8 @@ public class RDFReader
         printResourceParsingResult(resourceParsingResult);
         CardinalityCheckResult cardinalityCheckResult = checkCardinalities(modelRDF);
 
+
+
         if (!cardinalityCheckResult.tooFewValues.isEmpty() || !cardinalityCheckResult.tooManyValues.isEmpty())
         {
             reportCardinalities(cardinalityCheckResult);
@@ -577,40 +579,17 @@ public class RDFReader
     }
 
     private void printResourceParsingResult(ResourceParsingResult resourceParsingResult){
-        if (!resourceParsingResult.getDanglingReferences().isEmpty())
+
+        List<ResourceParsingResult.VocabRepairInfo> vocabRepairThingies =
+                resourceParsingResult.getVocabRepairThingies();
+        long count = vocabRepairThingies.stream().map(x -> x.sampleObject.code).distinct().count();
+        System.out.println(
+                "Found " + vocabRepairThingies.size() + " issues with vocabs in " + count + " objects.");
+        for (ResourceParsingResult.VocabRepairInfo vocabRepairInfo : vocabRepairThingies)
         {
-            System.out.println("There were references to objects that could not be resolved");
-            System.out.println(resourceParsingResult.getDanglingReferences().stream().map(x -> {
-                String a = "Object";
-                a += x.getLeft().code;
-                a += " Property ";
-                a += x.getMiddle().code;
-                a += " reference ";
-                a += x.getRight();
-                return a;
-            }).collect(Collectors.joining("\n")));
-
-            if (Config.getINSTANCE().removeDanglingReferences())
-            {
-                System.out.println("These references were deleted");
-            }
+            System.out.println(
+                    vocabRepairInfo.sampleObject.name + ", " + vocabRepairInfo.stuff.code + ", " + vocabRepairInfo.value);
         }
-
-
-        if (resourceParsingResult.getDeletedObjects().isEmpty()){
-            return;
-        }
-        System.out.println("There were resources whose types could not be resolved");
-        resourceParsingResult.getDeletedObjects().forEach(x -> System.out.println(x.code));
-
-        if (resourceParsingResult.getEditedObjects().isEmpty()){
-            return;
-        }
-        System.out.println("------------------------------");
-        System.out.println("The resources were referenced in the following objects, these references are now deleted");
-        resourceParsingResult.getEditedObjects().forEach(x -> System.out.println(x.code));
-
-
 
     }
 

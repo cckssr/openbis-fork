@@ -137,8 +137,12 @@ function DataSetViewerModel(containerId, profile, entity, serverFacade, datastor
 		if(!isLinked && profile.directLinkEnabled && profile.sftpFileServer) {
 			var path = null;
 			
-			if(this.isExperiment()) {
-				path = this.entity.identifier.identifier.substring(1) + "/" + datasetCode + "/" + pathInDataSet + "/";
+			if(this.isExperiment() || !this.entity.experimentIdentifierOrNull) { // Branch to use when there is no experiment, project samples and space samples
+				if(this.entity.identifier.identifier) { // v3 dto support
+					path = this.entity.identifier.identifier.substring(1) + "/" + datasetCode + "/" + pathInDataSet + "/";
+				} else { // v1 dto support
+					path = this.entity.identifier.substring(1) + "/" + datasetCode + "/" + pathInDataSet + "/";
+				}
 			} else {
 				path = this.entity.experimentIdentifierOrNull.substring(1) + "/" + datasetCode + "/" + pathInDataSet + "/";
 			}

@@ -17,7 +17,7 @@ repositories {
         ivyPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/ivy.xml"
         artifactPattern "https://sissource.ethz.ch/openbis/openbis-public/openbis-ivy/-/raw/main/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"
     }
-    mavenCentral()
+//    mavenCentral()
 }
 
 dependencies {
@@ -26,6 +26,7 @@ dependencies {
             'apache:poi-ooxml:3.17',
             'apache:poi-ooxml-schemas:3.17',
             'commons-cli:commons-cli:1.4'
+    implementation 'org.xerial:sqlite-jdbc:3.51.0.0'
     implementation project(':api-openbis-java')
 
     testImplementation 'junit:junit:4.13.1'
@@ -49,7 +50,11 @@ tasks.register('buildRdfTool', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -74,7 +79,11 @@ tasks.register('buildRdfImport', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -98,7 +107,11 @@ tasks.register('buildRepairTool', Jar) {
         include '**/*'
     }
 
-    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
@@ -116,6 +129,35 @@ tasks.register('buildCountTool', Jar) {
     manifest {
         attributes(
                 'Main-Class': 'ch.ethz.sis.tools.ResourceCount'
+        )
+    }
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(
+            configurations.runtimeClasspath
+                    .filter { it.name.toLowerCase().endsWith('.jar') }
+                    .collect { zipTree(it) }
+    ) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
+
+
+tasks.register('buildUpdateTool', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-rdf-update')
+    includeEmptyDirs = false
+
+    manifest {
+        attributes(
+                'Main-Class': 'ch.ethz.sis.tools.vocabfix.PropertyUpdate'
         )
     }
 
