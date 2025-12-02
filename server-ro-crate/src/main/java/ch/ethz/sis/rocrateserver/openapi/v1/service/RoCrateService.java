@@ -12,6 +12,7 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ResultParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.AsyncJob;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ImportResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.AsyncResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -246,11 +247,32 @@ public class RoCrateService
             }
             if (job instanceof ImportJob)
             {
-                responseBuilder.status(Response.Status.OK);
                 responseBuilder.type(MediaType.APPLICATION_JSON);
-                ImportDelegate.OpenBisImportResult openBisImportResult =
-                        ((ImportJob) job).getResult();
-                responseBuilder.entity(objectMapper.writeValueAsString(openBisImportResult));
+                responseBuilder.status(Response.Status.OK);
+
+                if (((ImportJob) job).isValidateOnly())
+                {
+                    responseBuilder.status(Response.Status.OK);
+                    AsyncResult asyncResult = new AsyncResult(status.toString(), List.of(),
+                            ((ImportJob) job).getResult().getValidationResult());
+                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+
+                } else
+                {
+
+                    ImportDelegate.OpenBisImportResult openBisImportResult =
+                            ((ImportJob) job).getResult();
+
+                    ImportResponse importResponse = new ImportResponse(
+                            openBisImportResult.getExternalToOpenBisIdentifiers());
+                    responseBuilder.entity(objectMapper.writeValueAsString(importResponse));
+
+                    AsyncResult asyncResult = new AsyncResult(status.toString(), List.of(),
+                            ((ImportJob) job).getResult().getValidationResult());
+                    responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
+
+                }
+
 
 
                 return responseBuilder.build();

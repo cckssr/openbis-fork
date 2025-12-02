@@ -332,4 +332,8 @@ public final class ImportJob implements IAsyncJob
         return destFile;
     }
 
+    public boolean isValidateOnly()
+    {
+        return validateOnly;
+    }
 }

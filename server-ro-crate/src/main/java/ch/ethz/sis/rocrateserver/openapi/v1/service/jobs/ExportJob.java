@@ -89,7 +89,7 @@ public final class ExportJob implements IAsyncJob
     @Override
     public Exception getException()
     {
-        return null;
+        return exception;
     }
 
     @Override
