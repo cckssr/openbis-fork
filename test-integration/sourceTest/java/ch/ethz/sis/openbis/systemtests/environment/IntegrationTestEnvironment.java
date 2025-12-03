@@ -212,9 +212,14 @@ public class IntegrationTestEnvironment
 
     public OpenBIS createOpenBIS()
     {
+        return createOpenBIS(30000);
+    }
+
+    public OpenBIS createOpenBIS(int timeout)
+    {
         return new OpenBIS(TestInstanceHostUtils.getOpenBISUrl() + TestInstanceHostUtils.getOpenBISPath(),
                 TestInstanceHostUtils.getDSSUrl() + TestInstanceHostUtils.getDSSPath(),
-                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath());
+                TestInstanceHostUtils.getAFSUrl() + TestInstanceHostUtils.getAFSPath(), timeout);
     }
 
     private void dropOpenBISDatabase()

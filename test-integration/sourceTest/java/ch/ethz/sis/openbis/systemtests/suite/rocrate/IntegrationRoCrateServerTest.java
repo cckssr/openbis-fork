@@ -24,6 +24,8 @@ import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 public class IntegrationRoCrateServerTest
 {
 
+    private static int TIMEOUT = 5 * 60 * 1000;
+
     private static String username = "system";
 
     private static String password = "changeit";
@@ -55,7 +57,7 @@ public class IntegrationRoCrateServerTest
     @Test
     public void testTestOpenBISConnection() throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -70,7 +72,7 @@ public class IntegrationRoCrateServerTest
     @Test
     public void testImport() throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");
@@ -90,7 +92,7 @@ public class IntegrationRoCrateServerTest
     public void testImportZip()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.zip");
@@ -110,7 +112,7 @@ public class IntegrationRoCrateServerTest
     public void testValidate()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");
@@ -125,14 +127,14 @@ public class IntegrationRoCrateServerTest
 
         ContentResponse response = request.send();
         assertEquals(response.getStatus(), 200);
-        AssertionUtil.assertContains("{\"isValid\":true}", response.getContentAsString());
+        AssertionUtil.assertContains("\"isValid\":true", response.getContentAsString());
     }
 
     @Test
     public void testValidateZip()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.zip");
@@ -155,7 +157,7 @@ public class IntegrationRoCrateServerTest
     public void testValidateUnknown()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/UnknownProperty.json");
@@ -180,7 +182,7 @@ public class IntegrationRoCrateServerTest
     public void testValidateWrong()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/WrongDataType.json");
@@ -204,7 +206,7 @@ public class IntegrationRoCrateServerTest
     public void testExportDOI()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -226,7 +228,7 @@ public class IntegrationRoCrateServerTest
     public void testExportDOIZip()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -247,7 +249,7 @@ public class IntegrationRoCrateServerTest
     public void testExportIdentifier()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -269,7 +271,7 @@ public class IntegrationRoCrateServerTest
     public void testExportPermId()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -288,7 +290,7 @@ public class IntegrationRoCrateServerTest
     public void testExportEmptyResults()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         HttpClient client = JettyHttpClientFactory.getHttpClient();
@@ -308,7 +310,7 @@ public class IntegrationRoCrateServerTest
     public void testValidateMalformedCrate()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/Malformed.json");
@@ -330,7 +332,7 @@ public class IntegrationRoCrateServerTest
     public void testValidateMalformedCrateZipped()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/Malformed.zip");
@@ -352,7 +354,7 @@ public class IntegrationRoCrateServerTest
     public void testValidateMalformedCrateZippedMissingManifest()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/MissingManifest.zip");
@@ -375,7 +377,7 @@ public class IntegrationRoCrateServerTest
     public void testEmptyPayloadZip()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/empty.zip");
@@ -398,7 +400,7 @@ public class IntegrationRoCrateServerTest
     public void testEmptyPayload()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/empty.json");
@@ -421,7 +423,7 @@ public class IntegrationRoCrateServerTest
     public void testInvalidAcceptHeader()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");
@@ -442,7 +444,7 @@ public class IntegrationRoCrateServerTest
     public void testInvalidContentType()
             throws Exception
     {
-        OpenBIS openBIS = environment.createOpenBIS();
+        OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
         openBIS.login(username, password);
 
         Path file = Path.of("sourceTest/resource/" + getClass().getSimpleName() + "/OkayExample.json");

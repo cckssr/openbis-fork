@@ -132,22 +132,29 @@ public class ApplicationServer
                     {
                         ProxyRequest proxyRequest = new ProxyRequest(request);
 
-                        CodebaseAwareObjectInputStream objectInputStream =
-                                new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
-                        RemoteInvocation remoteInvocation = (RemoteInvocation) objectInputStream.readObject();
-
-                        log.info(
-                                "[AS PROXY] url: " + proxyRequest.getRequestURL() + ", method: " + remoteInvocation.getMethodName() + ", parameters: "
-                                        + Arrays.toString(
-                                        remoteInvocation.getArguments()));
-
-                        if (proxyInterceptor != null)
+                        if (request.getContentType().equals("application/octet-stream"))
                         {
-                            proxyInterceptor.invoke(remoteInvocation.getMethodName(), () ->
+                            CodebaseAwareObjectInputStream objectInputStream =
+                                    new CodebaseAwareObjectInputStream(proxyRequest.getInputStream(), getClass().getClassLoader(), true);
+                            RemoteInvocation remoteInvocation = (RemoteInvocation) objectInputStream.readObject();
+
+                            log.info(
+                                    "[AS PROXY] url: " + proxyRequest.getRequestURL() + ", method: " + remoteInvocation.getMethodName()
+                                            + ", parameters: "
+                                            + Arrays.toString(
+                                            remoteInvocation.getArguments()));
+
+                            if (proxyInterceptor != null)
+                            {
+                                proxyInterceptor.invoke(remoteInvocation.getMethodName(), () ->
+                                {
+                                    super.service(proxyRequest, response);
+                                    return null;
+                                });
+                            } else
                             {
                                 super.service(proxyRequest, response);
-                                return null;
-                            });
+                            }
                         } else
                         {
                             super.service(proxyRequest, response);

@@ -12,7 +12,8 @@ sourceSets {
 }
 
 dependencies {
-    implementation project(path: ':lib-commonbase', configuration: 'tests'),
+    implementation project(':api-data-store-server-java'),
+            project(path: ':lib-commonbase', configuration: 'tests'),
             project(path: ':lib-two-phase-transaction', configuration: 'tests'),
             project(path: ':lib-shuffling', configuration: 'tests'),
             project(':lib-data-store-commonbase'),
@@ -26,7 +27,7 @@ dependencies {
             project(':server-data-store'),
             project(path: ':server-data-store', configuration: 'tests'),
             project(':ui-eln-lims'),
-            'eclipse:jetty-proxy:10.0.25'
+            'eclipse:jetty-proxy:10.0.25',
             'slf4j:slf4j-api:1.7.24'
 
 }
