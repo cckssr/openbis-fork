@@ -9,6 +9,10 @@ public class AsyncJob
         this.jobId = jobId;
     }
 
+    public AsyncJob()
+    {
+    }
+
     public String getJobId()
     {
         return jobId;

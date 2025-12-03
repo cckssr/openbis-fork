@@ -27,11 +27,13 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.semanticannotation.search.Semant
 import ch.ethz.sis.openbis.generic.excel.v3.from.ExcelReader;
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.RoCrateService;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.startup.RoCrateServerParameter;
 import ch.ethz.sis.rocrateserver.startup.StartupMain;
 import ch.openbis.rocrate.app.writer.Writer;
+import io.quarkus.logging.Log;
 import jakarta.ws.rs.HttpMethod;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Request;
@@ -66,18 +68,27 @@ public final class ExportJob implements IAsyncJob
         this.exportParams = exportParams;
         this.body = body;
         this.openBIS = openBIS;
+        this.username = username;
     }
 
     @Override
     public AsyncJobRegistry.Status getStatus()
     {
-        return null;
+        if (this.exception != null)
+        {
+            return AsyncJobRegistry.Status.FAILED;
+        }
+        if (this.result != null)
+        {
+            return AsyncJobRegistry.Status.COMPLETED;
+        }
+        return AsyncJobRegistry.Status.RUNNING;
     }
 
     @Override
     public String getMimeType()
     {
-        return null;
+        return exportParams.getExportMimeType();
     }
 
     @Override
@@ -164,13 +175,15 @@ public final class ExportJob implements IAsyncJob
                                     List.of(exportOperation),
                                     asynchronousOperationExecutionOptions);
 
-            OperationExecutionFetchOptions ongoingOperationsFechOptions =
+            OperationExecutionFetchOptions ongoingOperationsFetchOptions =
                     new OperationExecutionFetchOptions();
-            ongoingOperationsFechOptions.withDetails();
-            ongoingOperationsFechOptions.withNotification();
-            ongoingOperationsFechOptions.withOwner();
-            ongoingOperationsFechOptions.withSummary();
-            ongoingOperationsFechOptions.withSummary().withError();
+            ongoingOperationsFetchOptions.withDetails();
+            ongoingOperationsFetchOptions.withNotification();
+            ongoingOperationsFetchOptions.withOwner();
+            ongoingOperationsFetchOptions.withSummary();
+            ongoingOperationsFetchOptions.withSummary().withError();
+            ongoingOperationsFetchOptions.withSummary().withResults();
+            ongoingOperationsFetchOptions.withDetails().withResults();
 
             OperationExecutionPermId executionId = ongoingOperations.getExecutionId();
 
@@ -179,14 +192,24 @@ public final class ExportJob implements IAsyncJob
             {
                 Map<IOperationExecutionId, OperationExecution> operationExecutions =
                         openBIS.getOperationExecutions(List.of(executionId),
-                                ongoingOperationsFechOptions);
+                                ongoingOperationsFetchOptions);
                 OperationExecution operationExecution = operationExecutions.get(executionId);
+
+                if (operationExecution.getState() == OperationExecutionState.FAILED)
+                {
+                    Log.error(operationExecution.getSummary().getError());
+                    this.exception =
+                            new RuntimeException(operationExecution.getSummary().getError());
+                    isOperationFinished = true;
+
+                }
+
                 if (operationExecution.getState() == OperationExecutionState.FINISHED)
                 {
+                    isOperationFinished = true;
                     IOperationResult iOperationResult =
                             operationExecution.getDetails().getResults().stream().findFirst()
                                     .orElseThrow();
-                    assert iOperationResult instanceof ExportOperationResult;
                     ExportOperationResult exportOperationResult =
                             (ExportOperationResult) iOperationResult;
                     String downloadURL = exportOperationResult.getExportResult().getDownloadURL();
@@ -207,7 +230,7 @@ public final class ExportJob implements IAsyncJob
                                     tempRoCratePath);
                     writer.write(openBisModel, realTempRoCratePath);
 
-                    if (exportParams.getAccept().equals("application/ld+json"))
+                    if (exportParams.getExportMimeType().equals(RoCrateService.APPLICATION_LD_JSON))
                     {
                         ZipFile zipFile = new ZipFile(realTempRoCratePath.toFile());
                         ZipEntry zipEntry = zipFile.getEntry("ro-crate-metadata.json");
@@ -215,6 +238,7 @@ public final class ExportJob implements IAsyncJob
 
                     }
                 }
+                Thread.sleep(2000);
             }
 
             // Download of openBIS export
@@ -223,6 +247,7 @@ public final class ExportJob implements IAsyncJob
         } catch (Exception e)
         {
 
+            Log.error("Exception during export", e);
             this.exception = e;
         }
 

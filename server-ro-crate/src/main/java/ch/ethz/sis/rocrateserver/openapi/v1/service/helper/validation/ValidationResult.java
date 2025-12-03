@@ -1,17 +1,24 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation;
 
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.IResultPayload;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 import java.util.Map;
 
-public class ValidationResult
+public class ValidationResult implements IResultPayload
 {
-    private final Map<String, List<PropertyProblem>> entitiesToMissingProperties;
+    private Map<String, List<PropertyProblem>> entitiesToMissingProperties;
 
-    private final Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
+    private Map<String, List<PropertyProblem>> entititesToUndefinedProperties;
 
-    private final Map<String, List<PropertyProblem>> wrongDataTypes;
+    private Map<String, List<PropertyProblem>> wrongDataTypes;
 
-    private final List<String> foundIdentifiers;
+    private List<String> foundIdentifiers;
+
+    public ValidationResult()
+    {
+    }
 
     public ValidationResult(Map<String, List<PropertyProblem>> entitiesToMissingProperties,
             Map<String, List<PropertyProblem>> entititesToUndefinedProperties,
@@ -23,6 +30,7 @@ public class ValidationResult
         this.foundIdentifiers = foundIdentifiers;
     }
 
+    @JsonProperty("isValid")
     public boolean isOkay()
     {
         return entitiesToMissingProperties.isEmpty() && entititesToUndefinedProperties.isEmpty()
@@ -48,4 +56,5 @@ public class ValidationResult
     {
         return foundIdentifiers;
     }
+
 }

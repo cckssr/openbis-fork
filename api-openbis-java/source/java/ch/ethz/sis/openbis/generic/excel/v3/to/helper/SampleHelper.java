@@ -10,7 +10,9 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -121,8 +123,18 @@ public class SampleHelper
             int idx = allColumnList.indexOf(property.getKey());
             if (idx != -1)
             {
+                String val = property.getValue().toString();
+                if (property.getValue() instanceof Serializable[] || property.getValue() instanceof String[])
+                {
+                    Serializable[] array = (Serializable[]) property.getValue();
+                    val = Arrays.stream(array).map(x -> x.toString())
+                            .collect(Collectors.joining(","));
+
+                }
+
+
                 CellWriter.writeCell(propertyRowValues.createCell(idx),
-                        property.getValue().toString()).ifPresent(longCells::add);
+                        val).ifPresent(longCells::add);
             }
 
         }

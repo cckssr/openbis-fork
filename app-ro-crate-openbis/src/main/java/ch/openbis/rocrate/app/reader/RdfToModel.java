@@ -37,11 +37,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ch.ethz.sis.rdf.main.mappers.openBis.ValueMapper.CANONICAL_DATE_FORMAT_PATTERN;
 import static ch.openbis.rocrate.app.Constants.*;
 
 public class RdfToModel
@@ -427,14 +433,26 @@ public class RdfToModel
                         DataType dataType =
                                 DataTypeMatcher.findDataType(property.getValue(), dataTypes,
                                         idToEntities);
+
+                        Serializable valueToPut =
+                                handlePossibleMultiValues(property.getValue(), dataType);
+
+
                         properties.put(DataTypeMatcher.suffixTypeCode(key, dataType),
-                                property.getValue());
+                                valueToPut);
 
                     } else
                     {
+                        DataType dataType =
+
+                                Optional.ofNullable(baseCodeToPossibleDataTypes.get(key))
+                                        .map(x -> x.stream().findFirst().orElseThrow())
+                                        .orElse(DataType.VARCHAR);
+                        Serializable valueToPut =
+                                handlePossibleMultiValues(property.getValue(), dataType);
 
                         properties.put(key,
-                                property.getValue());
+                                valueToPut);
                     }
                 }
 
@@ -792,7 +810,7 @@ public class RdfToModel
         }
         if (rangeId.equals(LiteralType.DATETIME.getTypeName()))
         {
-            return DataType.DATE;
+            return DataType.TIMESTAMP;
         }
         if (rangeId.equals(LiteralType.ANY_URI.getTypeName()))
         {
@@ -1050,5 +1068,36 @@ public class RdfToModel
         return split[split.length - 1].toUpperCase();
 
     }
+
+    private static Serializable handleLiteralValues(Serializable a, DataType dataType)
+    {
+        if (dataType == DataType.TIMESTAMP || dataType == DataType.DATE)
+        {
+            TemporalAccessor ta = DateTimeFormatter.ISO_INSTANT.parse(
+                    a.toString().toString().replaceAll("\"", ""));
+            Instant i = Instant.from(ta);
+            Date d = Date.from(i);
+            DateFormat dateFormat = new SimpleDateFormat(
+                    CANONICAL_DATE_FORMAT_PATTERN); // ch.systemsx.cisd.openbis.generic.shared.util.SupportedDateTimePattern.ISO_CANONICAL_DATE_PATTERN
+            return dateFormat.format(d);
+
+        }
+        return a;
+
+    }
+
+    private static Serializable handlePossibleMultiValues(Serializable a, DataType dataType)
+    {
+        if (a instanceof Serializable[])
+        {
+            Serializable[] b = (Serializable[]) a;
+            Arrays.stream(b).map(x -> handleLiteralValues(b, dataType)).map(x -> x.toString())
+                    .collect(Collectors.joining(","));
+        }
+        return a;
+
+    }
+
+
 
 }

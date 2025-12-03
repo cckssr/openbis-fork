@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ExportParams {
+    public static final String EXPORT_MIME_TYPE_HEADER = "Export";
 
     //
     // Header Parameters
@@ -17,6 +18,9 @@ public class ExportParams {
 
     @HeaderParam("Accept")
     private String accept;
+
+    @HeaderParam(EXPORT_MIME_TYPE_HEADER)
+    private String exportMimeTyp;
 
     @HeaderParam("openbis.identifier-annotations")
     private String identifierAnnotations;
@@ -108,5 +112,10 @@ public class ExportParams {
     public String getWithObjectsAndDataSetsOtherSpaces()
     {
         return withObjectsAndDataSetsOtherSpaces;
+    }
+
+    public String getExportMimeType()
+    {
+        return exportMimeTyp;
     }
 }

@@ -23,12 +23,13 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.core.ServerResponse;
 import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/openbis/open-api/ro-crate")
 public class RoCrateService
@@ -37,6 +38,8 @@ public class RoCrateService
     private static final Logger LOG = Logger.getLogger(RoCrateService.class);
 
     public static final String APPLICATION_LD_JSON = "application/ld+json";
+
+    public static final String APPLICATION_ZIP = "application/zip";
 
     @Inject
     ImportDelegate importDelegate;
@@ -73,7 +76,7 @@ public class RoCrateService
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({ APPLICATION_LD_JSON, "application/zip" })
+    @Consumes({ APPLICATION_LD_JSON, APPLICATION_ZIP })
     @Path("import")
     @SneakyThrows
     public Response import_(
@@ -92,10 +95,10 @@ public class RoCrateService
 
         try
         {
-            AsyncJob externalToOpenBisIdentifiers =
+            AsyncJob asyncJob =
                     importDelegate.import_(asyncJobRegistry, openBIS, headers, body, false);
             ObjectMapper objectMapper = new ObjectMapper();
-            String serialized = objectMapper.writeValueAsString(externalToOpenBisIdentifiers);
+            String serialized = objectMapper.writeValueAsString(asyncJob);
             return Response.accepted(serialized).build();
         } catch (WebApplicationException ex)
         {
@@ -117,7 +120,7 @@ public class RoCrateService
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Consumes({ APPLICATION_LD_JSON, "application/zip" })
+    @Consumes({ APPLICATION_LD_JSON, APPLICATION_ZIP })
     @Path("validate")
     public Response validate(
             @BeanParam ImportParams headers,
@@ -163,7 +166,7 @@ public class RoCrateService
     }
 
     @POST
-    @Produces({ APPLICATION_LD_JSON, "application/zip" })
+    @Produces({ MediaType.APPLICATION_JSON })
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("export")
     public Response export(
@@ -228,13 +231,13 @@ public class RoCrateService
         int statusCode = 0;
         Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
 
-        if (status.getStatus() == AsyncJobRegistry.Status.DONE)
+        if (status.getStatus() == AsyncJobRegistry.Status.COMPLETED)
         {
             IAsyncJob job = status.getJob();
             if (job instanceof ExportJob)
             {
-                return Response.ok(((ExportJob) job).getResult())
-                        .type(job.getMimeType()).build();
+                InputStream result1 = ((ExportJob) job).getResult();
+                return Response.ok(result1, job.getMimeType()).build();
 
             }
             if (job instanceof ValidateJob)
@@ -252,7 +255,10 @@ public class RoCrateService
                 if (((ImportJob) job).isValidateOnly())
                 {
                     responseBuilder.status(Response.Status.OK);
-                    AsyncResult asyncResult = new AsyncResult(status.toString(), List.of(),
+                    AsyncResult asyncResult =
+                            new AsyncResult(status.getStatus().toString(), List.of(), null
+                            );
+                    asyncResult.setValidationResult(
                             ((ImportJob) job).getResult().getValidationResult());
                     responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
 
@@ -264,15 +270,13 @@ public class RoCrateService
 
                     ImportResponse importResponse = new ImportResponse(
                             openBisImportResult.getExternalToOpenBisIdentifiers());
-                    responseBuilder.entity(objectMapper.writeValueAsString(importResponse));
 
                     AsyncResult asyncResult = new AsyncResult(status.toString(), List.of(),
                             ((ImportJob) job).getResult().getValidationResult());
+                    asyncResult.setImportResponse(importResponse);
                     responseBuilder.entity(objectMapper.writeValueAsString(asyncResult));
 
                 }
-
-
 
                 return responseBuilder.build();
 
@@ -281,17 +285,22 @@ public class RoCrateService
         } else if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
         {
             result = new AsyncResult(status.getStatus().toString(),
-                    List.of(status.getJob().getException().getMessage()), null);
+                    List.of(status.getJob().getException().getMessage() + "\n" + Arrays.stream(
+                                    status.getJob().getException().getStackTrace()).toList().stream()
+                            .map(x -> x.toString()).collect(
+                                    Collectors.joining(","))), null);
+            statusCode = Response.Status.OK.getStatusCode();
+
         } else
         {
 
             result = new AsyncResult(status.getStatus().toString(), List.of(), null);
+            statusCode = Response.Status.OK.getStatusCode();
         }
-        responseBuilder.entity(objectMapper.writeValueAsString(result));
+        responseBuilder = Response.ok(objectMapper.writeValueAsString(result));
         responseBuilder.status(statusCode);
 
-
-        return new ServerResponse();
+        return responseBuilder.build();
 
     }
 

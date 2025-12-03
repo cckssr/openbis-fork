@@ -22,6 +22,7 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.operation.id.OperationExecutionP
 import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
 import ch.ethz.sis.rocrateserver.exception.RoCrateExceptions;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.RoCrateService;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.delegates.ImportDelegate;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.SessionWorkSpaceManager;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.RoCrateSchemaValidation;
@@ -80,7 +81,16 @@ public final class ImportJob implements IAsyncJob
     @Override
     public AsyncJobRegistry.Status getStatus()
     {
-        return null;
+        if (this.importResult != null)
+        {
+            return AsyncJobRegistry.Status.COMPLETED;
+        }
+        if (this.exception != null)
+        {
+            return AsyncJobRegistry.Status.FAILED;
+        }
+
+        return AsyncJobRegistry.Status.RUNNING;
     }
 
     @Override
@@ -172,6 +182,8 @@ public final class ImportJob implements IAsyncJob
             ImportOperation importOperation = new ImportOperation();
             AsynchronousOperationExecutionOptions asynchronousOperationExecutionOptions =
                     new AsynchronousOperationExecutionOptions();
+            importOperation.setImportOptions(getImportOptions(importParams));
+            importOperation.setImportData(importData);
 
             openBIS.executeOperations(importParams.getApiKey(), List.of(importOperation),
                     asynchronousOperationExecutionOptions);
@@ -188,6 +200,8 @@ public final class ImportJob implements IAsyncJob
             ongoingOperationsFechOptions.withOwner();
             ongoingOperationsFechOptions.withSummary();
             ongoingOperationsFechOptions.withSummary().withError();
+            ongoingOperationsFechOptions.withDetails().withResults();
+            ongoingOperationsFechOptions.withSummary().withResults();
 
             OperationExecutionPermId executionId = ongoingOperations.getExecutionId();
 
@@ -199,7 +213,21 @@ public final class ImportJob implements IAsyncJob
                                 ongoingOperationsFechOptions);
                 OperationExecution operationExecution = operationExecutions.get(executionId);
                 isOperationFinished =
-                        operationExecution.getState() == OperationExecutionState.FINISHED;
+                        operationExecution.getState() == OperationExecutionState.FINISHED || operationExecution.getState() == OperationExecutionState.FAILED;
+                if (operationExecution.getState() == OperationExecutionState.FAILED)
+                {
+                    isOperationFinished = true;
+                    this.exception =
+                            new RuntimeException(operationExecution.getSummary().getError());
+
+                }
+                Thread.sleep(2000);
+
+
+            }
+            if (this.exception != null)
+            {
+                return;
             }
 
             Map<IOperationExecutionId, OperationExecution> operationExecutions =
@@ -209,7 +237,6 @@ public final class ImportJob implements IAsyncJob
             IOperationResult iOperationResult =
                     operationExecution.getDetails().getResults().stream().findFirst()
                             .orElseThrow();
-            assert iOperationResult instanceof ImportOperationResult;
             ImportOperationResult importOperationResult = (ImportOperationResult) iOperationResult;
 
 
@@ -224,10 +251,10 @@ public final class ImportJob implements IAsyncJob
         }
     }
 
-    private static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
+    public static RoCrate getRoCrate(ImportParams headers, InputStream body) throws IOException
     {
         RoCrate crate = null;
-        if (headers.getContentType().contains("application/ld+json"))
+        if (headers.getContentType().contains(RoCrateService.APPLICATION_LD_JSON))
         {
             // Unpack ro-crate
             Path roCrateMetadata = Path.of("ro-crate-metadata.json");

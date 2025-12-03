@@ -1,12 +1,15 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation;
 
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.result.IResultPayload;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
-public class ValidationReport
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
+public class ValidationReport implements IResultPayload
 {
     boolean isValid;
 

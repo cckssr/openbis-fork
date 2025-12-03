@@ -1,5 +1,7 @@
 package ch.ethz.sis.rocrateserver.openapi.v1.service.jobs;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,10 +56,30 @@ public class AsyncJobRegistry
 
     public enum Status
     {
-        RUNNING,
-        DONE,
-        FAILED,
-        SCHEDULED;
+
+        @JsonProperty("RUNINNG")
+        RUNNING("RUNNING"),
+
+        @JsonProperty("COMPLETED")
+        COMPLETED("COMPLETED"),
+        @JsonProperty("FAILED")
+        FAILED("FAILED"),
+        @JsonProperty("SCHEDULED")
+        SCHEDULED("SCHEDULED");
+
+        private final String name;
+
+        Status(String name)
+        {
+            this.name = name;
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.name;
+        }
+
     }
 
     public String register(IAsyncJob job)
@@ -81,7 +103,12 @@ public class AsyncJobRegistry
         {
             return new AsyncStatus(Status.RUNNING, asyncJob);
         }
-        return new AsyncStatus(Status.DONE, asyncJob);
+        if (asyncJob.getException() != null)
+        {
+            return new AsyncStatus(Status.FAILED, asyncJob);
+        }
+
+        return new AsyncStatus(Status.COMPLETED, asyncJob);
     }
 
     public static class AsyncStatus
@@ -103,7 +130,7 @@ public class AsyncJobRegistry
 
         public IAsyncJob getJob()
         {
-            if (this.status != Status.DONE)
+            if (this.status != Status.COMPLETED && this.status != Status.FAILED)
             {
                 throw new IllegalStateException(
                         "Cannot provide result of operation that has not been completed.");
