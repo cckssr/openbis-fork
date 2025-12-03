@@ -20,6 +20,12 @@ package org.apache.log4j;
 /**
  * Minimal drop‐in replacement for log4j's Priority.
  */
+/**
+ * @deprecated This class is deprecated.
+ *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ */
+
+@Deprecated
 public class Priority {
     protected int level;
     protected String levelStr;

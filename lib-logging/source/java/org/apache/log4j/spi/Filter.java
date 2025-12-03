@@ -19,6 +19,12 @@ package org.apache.log4j.spi;
 
 import java.util.logging.LogRecord;
 
+/**
+ * @deprecated This class is deprecated.
+ *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ */
+
+@Deprecated
 public interface Filter
 {
     int ACCEPT = 1;

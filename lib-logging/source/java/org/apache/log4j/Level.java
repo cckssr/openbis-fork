@@ -16,7 +16,12 @@
  */
 
 package org.apache.log4j;
+/**
+ * @deprecated This class is deprecated.
+ *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ */
 
+@Deprecated
 public class Level extends Priority
 {
     public static final int OFF_INT   = Integer.MAX_VALUE;

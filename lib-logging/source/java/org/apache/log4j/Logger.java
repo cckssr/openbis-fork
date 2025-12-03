@@ -30,6 +30,12 @@ import static ch.systemsx.cisd.common.logging.LoggingUtils.mapToJUL;
 /**
  * A drop‐in replacement for log4j's Logger that delegates to java.util.logging.
  */
+/**
+ * @deprecated This class is deprecated.
+ *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ */
+
+@Deprecated
 public class Logger  extends ch.ethz.sis.shared.log.classic.impl.Logger
 {
 
