@@ -32,7 +32,14 @@ import static ch.systemsx.cisd.common.logging.LoggingUtils.mapToJUL;
  */
 /**
  * @deprecated This class is deprecated.
- *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ *             Use {@code ch.ethz.sis.shared.log.standard} classes instead.
+ *
+ * <p>This class is retained solely for compatibility with certain external
+ * libraries used within openBIS that still expect the presence of the
+ * Log4j 1.x {@code Logger} API. These libraries may perform reflective or
+ * direct references to {@code org.apache.log4j.Logger}, so this stub helps
+ * prevent runtime errors while the system transitions to the new logging
+ * framework.</p>
  */
 
 @Deprecated

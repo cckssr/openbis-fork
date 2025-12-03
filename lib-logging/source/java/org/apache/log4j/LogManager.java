@@ -19,7 +19,15 @@ package org.apache.log4j;
 
 /**
  * @deprecated This class is deprecated.
- *             Use {ch.ethz.sis.shared.log.standard} classes instead.
+ *             Please use {@code ch.ethz.sis.shared.log.standard} classes instead.
+ *
+ * <p>This class is kept only for compatibility with some external libraries
+ * used in openBIS. These libraries still expect the old Log4j 1.x
+ * {@code LogManager} class. Some of them may access
+ * {@code org.apache.log4j.LogManager} directly or through reflection.</p>
+ *
+ * <p>To avoid errors at runtime, we keep this simple class while openBIS
+ * moves to the new logging system.</p>
  */
 
 @Deprecated
