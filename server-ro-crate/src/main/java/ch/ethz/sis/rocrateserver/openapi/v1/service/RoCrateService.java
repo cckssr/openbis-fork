@@ -278,20 +278,14 @@ public class RoCrateService
 
             }
 
-        }
-
-        if (status.getStatus() == AsyncJobRegistry.Status.RUNNING)
-        {
-
-        }
-        if (status.getStatus() == AsyncJobRegistry.Status.SCHEDULED)
-        {
-
-        }
-        if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
+        } else if (status.getStatus() == AsyncJobRegistry.Status.FAILED)
         {
             result = new AsyncResult(status.getStatus().toString(),
                     List.of(status.getJob().getException().getMessage()), null);
+        } else
+        {
+
+            result = new AsyncResult(status.getStatus().toString(), List.of(), null);
         }
         responseBuilder.entity(objectMapper.writeValueAsString(result));
         responseBuilder.status(statusCode);
