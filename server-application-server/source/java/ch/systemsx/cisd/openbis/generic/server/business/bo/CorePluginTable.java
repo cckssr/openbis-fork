@@ -18,12 +18,12 @@ package ch.systemsx.cisd.openbis.generic.server.business.bo;
 import java.util.Collections;
 import java.util.List;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.lang3.StringUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.jython.JythonUtils;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -122,7 +122,7 @@ public final class CorePluginTable extends AbstractBusinessObject implements ICo
             masterDataScriptRunner.executeScript(masterDataScript, jythonPath);
         } catch (MasterDataRegistrationException mdre)
         {
-            Log4jSimpleLogger errorLogger = new Log4jSimpleLogger(operationLog);
+            SimpleLogger errorLogger = new SimpleLogger(operationLog);
             errorLogger.log(LogLevel.ERROR, String.format("Failed to commit all transactions in "
                     + "the master data registration script for plugin '%s'.", plugin));
             mdre.logErrors(errorLogger);

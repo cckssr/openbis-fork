@@ -22,8 +22,6 @@ dependencies {
             "eclipse:jetty-webapp:10.0.25",
             'javax:servlet-api:4.0.1',
             'lombok:lombok:1.18.38',
-            'log4j:log4j-api:2.15.0',
-            'log4j:log4j-core:2.15.0',
             'fasterxml:jackson-annotations:2.9.10',
             'fasterxml:jackson-core:2.9.10',
             'fasterxml:jackson-databind:2.9.10.8',

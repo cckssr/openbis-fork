@@ -33,7 +33,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceC
 
 #Logging
 from ch.ethz.sis.shared.log.classic.core import LogCategory
-from org.apache.log4j import Logger
+from ch.ethz.sis.shared.log.classic.impl import Logger
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + ".exportsApi.py")
 
 OPENBISURL = DataStoreServer.getConfigParameters().getServerURL() + "/openbis/openbis"

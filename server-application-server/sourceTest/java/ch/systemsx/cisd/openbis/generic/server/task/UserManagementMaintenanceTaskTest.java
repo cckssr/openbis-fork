@@ -43,7 +43,7 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.maintenance.MaintenanceTaskParameters;
@@ -647,7 +647,7 @@ public class UserManagementMaintenanceTaskTest extends AbstractFileSystemTestCas
         }
 
         @Override
-        protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
+        protected UserManager createUserManager(SimpleLogger logger, UserManagerReport report)
         {
             return new MockUserManager(logger, report);
         }

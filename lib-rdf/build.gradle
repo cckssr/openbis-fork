@@ -26,6 +26,7 @@ dependencies {
             'apache:poi-ooxml:3.17',
             'apache:poi-ooxml-schemas:3.17',
             'commons-cli:commons-cli:1.4'
+    implementation 'org.xerial:sqlite-jdbc:3.51.0.0'
     implementation project(':api-openbis-java')
 
     testImplementation 'junit:junit:4.13.1'
@@ -140,6 +141,31 @@ tasks.register('buildCountTool', Jar) {
                     .filter { it.name.toLowerCase().endsWith('.jar') }
                     .collect { zipTree(it) }
     ) {
+        include '**/*'
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+}
+
+
+tasks.register('buildUpdateTool', Jar) {
+    zip64 = true
+    dependsOn tasks.build
+    duplicatesStrategy 'include'
+
+    archiveBaseName.set('lib-rdf-update')
+    includeEmptyDirs = false
+
+    manifest {
+        attributes(
+                'Main-Class': 'ch.ethz.sis.tools.vocabfix.PropertyUpdate'
+        )
+    }
+
+    from(zipTree(tasks.jar.outputs.files.singleFile)) {
+        include '**/*'
+    }
+
+    from(configurations.runtimeClasspath.collect { zipTree(it) }) {
         include '**/*'
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }

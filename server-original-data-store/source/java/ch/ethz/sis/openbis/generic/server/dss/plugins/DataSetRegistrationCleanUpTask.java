@@ -33,12 +33,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.lang3.time.DateUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
@@ -92,7 +92,7 @@ public class DataSetRegistrationCleanUpTask implements IMaintenanceTask
     private MonitoredDirectories preCommitDirectories;
 
     private MonitoredDirectories elnTmpDirectories;
-    private Log4jSimpleLogger simpleLogger;
+    private SimpleLogger simpleLogger;
 
     private SimpleDateFormat dateFormat;
 
@@ -132,7 +132,7 @@ public class DataSetRegistrationCleanUpTask implements IMaintenanceTask
             elnTmpDirectories.add(new File(root, shareId + "/" + IngestionService.AGGREGATION_SERVICE_SCRATCH_DIR_NAME
                     + "/" + IngestionService.INCOMING_DIR + "/" + ELN_TEMP_DIR_FOR_REGISTRATION));
         }
-        simpleLogger = new Log4jSimpleLogger(operationLog);
+        simpleLogger = new SimpleLogger(operationLog);
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     }

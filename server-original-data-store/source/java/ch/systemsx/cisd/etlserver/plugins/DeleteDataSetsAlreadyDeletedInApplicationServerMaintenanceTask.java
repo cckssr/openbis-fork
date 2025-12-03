@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -115,7 +115,7 @@ public class DeleteDataSetsAlreadyDeletedInApplicationServerMaintenanceTask exte
 
     private void deleteUnknownDatasets(List<DeletedDataSet> datasets)
     {
-        ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        ISimpleLogger logger = new SimpleLogger(operationLog);
         IDataSetDirectoryProvider directoryProvider = getDirectoryProvider();
         DataSetExistenceChecker dataSetExistenceChecker =
                 new DataSetExistenceChecker(directoryProvider, timingParameters);

@@ -35,7 +35,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncArchiveCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -270,7 +270,7 @@ public class MultiDataSetArchivingFinalizer implements IArchiverTask
         final File replicatedFile = parameters.getReplicatedFile();
         final long originalSize = originalFile.length();
         long waitingTime = parameters.getWaitingTime();
-        Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        SimpleLogger logger = new SimpleLogger(operationLog);
         WaitingHelper waitingHelper = new WaitingHelper(waitingTime, parameters.getPollingTime(), timeProvider, logger, true);
         long startTime = parameters.getStartTime();
         FileBasedPause pause = new FileBasedPause(pauseFile, pauseFilePollingTime, timeProvider, logger,
@@ -350,7 +350,7 @@ public class MultiDataSetArchivingFinalizer implements IArchiverTask
     {
         return new RetryCaller<Map<String, Status>, RuntimeException>(parameters.getWaitForSanityCheckInitialWaitingTime(),
                 parameters.getWaitForSanityCheckMaxWaitingTime(),
-                new Log4jSimpleLogger(operationLog))
+                new SimpleLogger(operationLog))
         {
             @Override protected Map<String, Status> call()
             {
@@ -372,7 +372,7 @@ public class MultiDataSetArchivingFinalizer implements IArchiverTask
                             operationsManager.getReplicaAsHierarchicalContent(parameters.getContainerPath(), dataSets);
 
                     return MultiDataSetArchivingUtils.sanityCheck(replicaContent, dataSets, parameters.isSanityCheckVerifyChecksums(),
-                            archiverContext, new Log4jSimpleLogger(operationLog));
+                            archiverContext, new SimpleLogger(operationLog));
                 } finally
                 {
                     if (replicaContent != null)

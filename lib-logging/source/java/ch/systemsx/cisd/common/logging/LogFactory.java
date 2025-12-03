@@ -17,6 +17,7 @@
 package ch.systemsx.cisd.common.logging;
 
 import org.apache.log4j.Logger;
+
 /**
  * This class is used to create loggers (using <code>java.util.logging</code>).
  *
@@ -25,6 +26,14 @@ import org.apache.log4j.Logger;
  *
  * @author Bernd Rinn
  */
+
+/**
+ * This class is used by cisd-image-readers
+ * @deprecated This class is deprecated.
+ *             Use {@link ch.ethz.sis.shared.log.standard.LogFactory} instead.
+ */
+
+@Deprecated
 public final class LogFactory
 {
     private LogFactory()

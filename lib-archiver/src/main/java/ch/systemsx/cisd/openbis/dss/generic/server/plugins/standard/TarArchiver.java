@@ -18,7 +18,7 @@ package ch.systemsx.cisd.openbis.dss.generic.server.plugins.standard;
 import java.io.File;
 import java.util.Properties;
 
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 
 /**
  * Archiver which distributes and tars data sets to be archived on archive destinations specified by the space to which the data set belongs. In
@@ -45,7 +45,7 @@ public class TarArchiver extends RsyncArchiver
         @Override
         public IDataSetFileOperationsManager create()
         {
-            TarPackageManager packageManager = new TarPackageManager(properties, new Log4jSimpleLogger(operationLog));
+            TarPackageManager packageManager = new TarPackageManager(properties, new SimpleLogger(operationLog));
             return new DistributedPackagingDataSetFileOperationsManager(properties, packageManager);
         }
     }

@@ -29,7 +29,7 @@ import ch.systemsx.cisd.common.concurrent.ITaskExecutor;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
@@ -62,7 +62,7 @@ public class FileConverter
                 {
                     return conversionStrategy.tryCheckConvert(pathname) != null;
                 }
-            }, true, null, new Log4jSimpleLogger(machineLog));
+            }, true, null, new SimpleLogger(machineLog));
     }
 
     /**

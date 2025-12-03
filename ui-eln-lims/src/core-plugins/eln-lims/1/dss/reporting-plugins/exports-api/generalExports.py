@@ -19,7 +19,7 @@ from java.lang import Throwable
 from ch.ethz.sis.shared.log.classic.core import LogCategory
 from ch.systemsx.cisd.common.mail import EMailAddress
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
-from org.apache.log4j import Logger
+from ch.ethz.sis.shared.log.classic.impl import Logger
 
 from exportsApi import displayResult, getDownloadUrlFromASService
 

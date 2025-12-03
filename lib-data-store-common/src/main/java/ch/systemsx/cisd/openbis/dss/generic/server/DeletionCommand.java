@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.rinn.restrictions.Private;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -99,7 +99,7 @@ public class DeletionCommand extends AbstractDataSetLocationBasedCommand
     @Private
     ISimpleLogger createLogger()
     {
-        return new Log4jSimpleLogger(operationLog);
+        return new SimpleLogger(operationLog);
     }
 
     @Override

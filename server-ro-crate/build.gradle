@@ -23,7 +23,9 @@ repositories {
 
 configurations.all {
     exclude group: 'reflections', module: 'reflections'
+    exclude group: "org.jboss", module: "jandex"
 }
+
 
 dependencies {
     annotationProcessor 'lombok:lombok:1.18.38'
@@ -45,7 +47,8 @@ dependencies {
             'com.fasterxml.jackson.core:jackson-databind:2.18.1',
             'com.fasterxml.jackson.core:jackson-annotations:2.18.1',
             'com.networknt:json-schema-validator:1.5.7',
-            'net.lingala.zip4j:zip4j:2.11.5'
+            'net.lingala.zip4j:zip4j:2.11.5',
+            'io.smallrye:jandex:3.2.7'
 
     testImplementation 'testng:testng:6.8-CISD',
                         'io.rest-assured:rest-assured:5.5.5'
@@ -59,8 +62,10 @@ mainClassName = "ch.ethz.sis.rocrateserver.startup.StartupMain"
 
 compileQuarkusGeneratedSourcesJava.dependsOn(compileJava)
 
-tasks.named('quarkusAppPartsBuild') {
-    dependsOn(':lib-logging:jar')
+["quarkusAppPartsBuild", "quarkusGenerateCode"].each { taskName ->
+    tasks.named(taskName) {
+        dependsOn(":lib-logging:jar")
+    }
 }
 
 task openBISDevelopmentEnvironmentROSStart(type: JavaExec) {

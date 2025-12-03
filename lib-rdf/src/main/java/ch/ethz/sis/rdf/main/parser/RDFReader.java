@@ -56,6 +56,8 @@ public class RDFReader
         printResourceParsingResult(resourceParsingResult);
         CardinalityCheckResult cardinalityCheckResult = checkCardinalities(modelRDF);
 
+
+
         if (!cardinalityCheckResult.tooFewValues.isEmpty() || !cardinalityCheckResult.tooManyValues.isEmpty())
         {
             reportCardinalities(cardinalityCheckResult);
@@ -596,21 +598,16 @@ public class RDFReader
             }
         }
 
-
-        if (resourceParsingResult.getDeletedObjects().isEmpty()){
-            return;
+        List<ResourceParsingResult.VocabRepairInfo> vocabRepairThingies =
+                resourceParsingResult.getVocabRepairThingies();
+        long count = vocabRepairThingies.stream().map(x -> x.sampleObject.code).distinct().count();
+        System.out.println(
+                "Found " + vocabRepairThingies.size() + " issues with vocabs in " + count + " objects.");
+        for (ResourceParsingResult.VocabRepairInfo vocabRepairInfo : vocabRepairThingies)
+        {
+            System.out.println(
+                    vocabRepairInfo.sampleObject.name + ", " + vocabRepairInfo.stuff.code + ", " + vocabRepairInfo.value);
         }
-        System.out.println("There were resources whose types could not be resolved");
-        resourceParsingResult.getDeletedObjects().forEach(x -> System.out.println(x.code));
-
-        if (resourceParsingResult.getEditedObjects().isEmpty()){
-            return;
-        }
-        System.out.println("------------------------------");
-        System.out.println("The resources were referenced in the following objects, these references are now deleted");
-        resourceParsingResult.getEditedObjects().forEach(x -> System.out.println(x.code));
-
-
 
     }
 

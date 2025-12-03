@@ -20,6 +20,14 @@ package ch.systemsx.cisd.common.logging;
  * 
  * @author Bernd Rinn
  */
+
+/**
+ * This class is used by cisd-image-readers
+ * @deprecated This class is deprecated.
+ *             Use {@link ch.ethz.sis.shared.log.classic.core.LogCategory} instead.
+ */
+
+@Deprecated
 public enum LogCategory
 {
 
