@@ -7,10 +7,12 @@ export default class EntityTypeFormFacade {
     const strategy = this._getStrategy(object.type)
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
-    if (object.type === objectTypes.OBJECT_TYPE) fo.withSemanticAnnotations()
+    if (object.type === objectTypes.OBJECT_TYPE) {
+      fo.withSemanticAnnotations()
+      fo.withTypeGroupAssignments()
+      fo.withTypeGroupAssignments().withTypeGroup()
+    }
     fo.withValidationPlugin()
-    fo.withTypeGroupAssignments()
-    fo.withTypeGroupAssignments().withTypeGroup()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withRegistrator()
     fo.withPropertyAssignments().withPropertyType().withRegistrator()
@@ -141,7 +143,7 @@ export default class EntityTypeFormFacade {
 
   async loadTypeGroups(withAssignments = false) {
     const criteria = new openbis.TypeGroupSearchCriteria()
-    const fo = new openbis.TypeGroupFetchOptions()  
+    const fo = new openbis.TypeGroupFetchOptions()
     if (withAssignments) {
       fo.withTypeGroupAssignments()
     }

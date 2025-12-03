@@ -6,10 +6,8 @@ import EntityTypeFormParametersProperty from '@src/js/components/types/form/enti
 import EntityTypeFormParametersPropertySemanticAnnotation from '@src/js/components/types/form/entitytype/EntityTypeFormParametersPropertySemanticAnnotation.jsx';
 import EntityTypeFormParametersSection from '@src/js/components/types/form/entitytype/EntityTypeFormParametersSection.jsx'
 import EntityTypeFormParametersMetadata from '@src/js/components/types/form/entitytype/EntityTypeFormParametersMetadata.jsx'
-import EntityTypeFormParametersTypeGroup from '@src/js/components/types/form/entitytype/EntityTypeFormParametersTypeGroup.jsx'
 import TabViewer from '@src/js/components/common/tab/TabViewer.jsx'
 import logger from '@src/js/common/logger.js'
-import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js';
 
 const styles = theme => ({
   // Empty styles object since TabViewer handles its own styling
@@ -23,7 +21,6 @@ class EntityTypeFormParameters extends React.PureComponent {
     const {
       controller,
       type,
-      typeGroups,
       sections,
       properties,
       selection,
@@ -112,23 +109,6 @@ class EntityTypeFormParameters extends React.PureComponent {
         />
       </div>
     ]
-
-    if (!selection || selection.type === EntityTypeFormSelectionType.TYPE) {
-      tabs.push({ key: 'type-groups-tab-id', label: 'Type Groups' })
-      children.push(<div key="type-groups-content">
-        <EntityTypeFormParametersTypeGroup
-          controller={controller}
-          type={type}
-          typeGroups={typeGroups}
-          selection={selection}
-          mode={mode}
-          onChange={onChange}
-          onSelectionChange={onSelectionChange}
-          onBlur={onBlur}
-        />
-      </div>)
-    }
-
 
     return (
       <TabViewer

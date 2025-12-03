@@ -150,13 +150,13 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }))
     }
     console.log('loadedType', loadedType)
-    const loadedTypeGroupsAssignments = loadedType.typeGroupAssignments?.map(typeGroupAssignment => {
+    const loadedTypeGroupsAssignments = loadedType?.typeGroupAssignments?.map(typeGroupAssignment => {
       return {
         id: typeGroupAssignment.typeGroup.getId().getPermId(),
         code: typeGroupAssignment.typeGroup.getCode(),
         managedInternally: typeGroupAssignment.typeGroup.managedInternally,
       }
-    })
+    }) || []
     console.log('loadedTypeGroupsAssignments', loadedTypeGroupsAssignments)
     const type = {
       code: FormUtil.createField({
@@ -194,7 +194,6 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       errors: 0
     }
-    console.log('type', type)
     strategy.setTypeAttributes(type, loadedType)
     return type
   }

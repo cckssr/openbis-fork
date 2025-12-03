@@ -55,7 +55,7 @@ export default class TypeGroupFormControllerLoad extends PageControllerLoad {
       id: code,
       code: FormUtil.createField({
         value: code,
-        enabled: true
+        enabled: !internal || AppController.getInstance().isSystemUser()
       }),
       objectType: FormUtil.createField({
         value: this.object.type,

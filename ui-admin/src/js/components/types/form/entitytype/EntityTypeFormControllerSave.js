@@ -74,6 +74,9 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         null,
         type.semanticAnnotations.value
       )
+      if (FormUtil.haveFieldsChanged(type, type.original, ['typeGroupsAssignments'])) {
+        this._handleTypeGroupAssignments(operations, type)
+      }
     } else {
       operations.push(this._createTypeOperation(type, assignments))
       this._handleSemanticAnnotations(
@@ -82,6 +85,10 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
         null,
         type.semanticAnnotations.value
       )
+      // Handle type group assignments for new types
+      if (type.typeGroupsAssignments && type.typeGroupsAssignments.value && type.typeGroupsAssignments.value.length > 0) {
+        this._handleTypeGroupAssignments(operations, type)
+      }
     }
 
     const deleteUnusedPropertyTypesOperation =
@@ -96,6 +103,75 @@ export default class EntityTypeFormControllerSave extends PageControllerSave {
     await this.facade.executeOperations(operations, options)
 
     return type.code.value
+  }
+
+  _handleTypeGroupAssignments(operations, type) {
+    const state = this.context.getState()
+    const dictionaries = state.dictionaries || {}
+    const typeGroups = dictionaries.typeGroups || []
+    
+    // Get current codes (array of strings)
+    const currentCodes = Array.isArray(type.typeGroupsAssignments.value) 
+      ? type.typeGroupsAssignments.value 
+      : []
+    
+    // Get original codes (extract from array of objects)
+    const originalAssignments = type.original && type.original.typeGroupsAssignments 
+      ? (Array.isArray(type.original.typeGroupsAssignments.value) 
+          ? type.original.typeGroupsAssignments.value 
+          : [])
+      : []
+    const originalCodes = originalAssignments.map(assignment => assignment.code || assignment.id)
+    
+    // Find codes to create (in current but not in original)
+    const codesToCreate = currentCodes.filter(code => !originalCodes.includes(code))
+    
+    // Find codes to delete (in original but not in current)
+    const codesToDelete = originalCodes.filter(code => !currentCodes.includes(code))
+    
+    // Create operations for new assignments
+    if (codesToCreate.length > 0) {
+      const assignments = codesToCreate.map(code => {
+        const assignment = new openbis.TypeGroupAssignmentCreation()
+        assignment.setTypeGroupId(new openbis.TypeGroupId(code))
+        assignment.setSampleTypeId(
+          new openbis.EntityTypePermId(type.code.value, openbis.EntityKind.SAMPLE)
+        )
+        return assignment
+      })
+      operations.push(new openbis.CreateTypeGroupAssignmentsOperation(assignments))
+    }
+    
+    // Create operations for deleted assignments
+    if (codesToDelete.length > 0) {
+      const typeGroupAssignmentIds = codesToDelete.map(code => {
+        return new openbis.TypeGroupAssignmentId(
+          new openbis.EntityTypePermId(type.code.value, openbis.EntityKind.SAMPLE),
+          new openbis.TypeGroupId(code)
+        )
+      })
+      const options = new openbis.TypeGroupAssignmentDeletionOptions()
+      options.setReason('deleted via admin_ui')
+      operations.push(new openbis.DeleteTypeGroupAssignmentOperation(typeGroupAssignmentIds, options))
+    }
+  }
+
+  _createTypeGroupAssignmentOperation(typeGroup, objectType) {
+    const assignment = new openbis.TypeGroupAssignmentCreation()
+    assignment.setTypeGroupId(new openbis.TypeGroupId(typeGroup.code.value))
+    assignment.setSampleTypeId(new openbis.EntityTypePermId(objectType.code.value, openbis.EntityKind.SAMPLE))
+    assignment.setManagedInternally(objectType.internal.value)
+    return new openbis.CreateTypeGroupAssignmentsOperation([assignment])
+  }
+
+  _deleteTypeGroupAssignmentOperation(typeGroup, objectType) {
+    const typeGroupAssignmentId = new openbis.TypeGroupAssignmentId( 
+      new openbis.EntityTypePermId(objectType.code.value, openbis.EntityKind.SAMPLE),
+      new openbis.TypeGroupId(typeGroup.code.value)
+    )
+    const options = new openbis.TypeGroupAssignmentDeletionOptions()
+    options.setReason('deleted via ng_ui')
+    return new openbis.DeleteTypeGroupAssignmentOperation([typeGroupAssignmentId], options)
   }
 
   _handleSemanticAnnotations(operations, typeCode, propertyCode, currentSemanticAnnValue) {
