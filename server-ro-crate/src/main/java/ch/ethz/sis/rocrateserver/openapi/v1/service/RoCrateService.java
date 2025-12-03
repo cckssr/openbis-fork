@@ -96,7 +96,7 @@ public class RoCrateService
                     importDelegate.import_(asyncJobRegistry, openBIS, headers, body, false);
             ObjectMapper objectMapper = new ObjectMapper();
             String serialized = objectMapper.writeValueAsString(externalToOpenBisIdentifiers);
-            return Response.ok(serialized).build();
+            return Response.accepted(serialized).build();
         } catch (WebApplicationException ex)
         {
             ErrorResponse errorResponse = new ErrorResponse();
@@ -105,7 +105,6 @@ public class RoCrateService
             responseBuilder.status(ex.getResponse().getStatus());
             responseBuilder.entity(ex.getMessage());
             return responseBuilder.build();
-
         } catch (Exception ex)
         {
             LOG.error("There was an error", ex);
@@ -120,7 +119,7 @@ public class RoCrateService
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({ APPLICATION_LD_JSON, "application/zip" })
     @Path("validate")
-    public Object validate(
+    public Response validate(
             @BeanParam ImportParams headers,
             InputStream body)
             throws IOException
@@ -140,7 +139,8 @@ public class RoCrateService
             AsyncJob asyncResult =
                     importDelegate.import_(asyncJobRegistry, openBIS, headers, body, true);
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(asyncResult);
+            return Response.accepted().type(MediaType.APPLICATION_JSON_TYPE)
+                    .entity(objectMapper.writeValueAsString(asyncResult)).build();
         } catch (WebApplicationException ex)
         {
             LOG.error("There was an error", ex);
@@ -184,8 +184,8 @@ public class RoCrateService
         {
             AsyncJob job = exportDelegate.export(asyncJobRegistry, openBIS, headers, body);
             ObjectMapper objectMapper = new ObjectMapper();
-            return Response.ok(objectMapper.writeValueAsString(job))
-                    .type(headers.getAccept()).build();
+            return Response.accepted(objectMapper.writeValueAsString(job))
+                    .type(MediaType.APPLICATION_JSON_TYPE).build();
         } catch (WebApplicationException ex)
         {
             ErrorResponse errorResponse = new ErrorResponse();
