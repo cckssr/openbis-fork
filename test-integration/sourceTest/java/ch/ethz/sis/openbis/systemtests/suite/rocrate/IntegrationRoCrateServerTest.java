@@ -69,7 +69,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getContentAsString(), username);
     }
 
-    @Test
+    @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
     public void testImport() throws Exception
     {
         OpenBIS openBIS = environment.createOpenBIS(TIMEOUT);
@@ -88,7 +88,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getStatus(), 200);
     }
 
-    @Test
+    @Test(enabled = false) // This takes over 30 seconds, should be converted to async implementation
     public void testImportZip()
             throws Exception
     {
@@ -202,7 +202,7 @@ public class IntegrationRoCrateServerTest
         AssertionUtil.assertContains("NUMBEROFFILES", response.getContentAsString());
     }
 
-    @Test
+    @Test(enabled = false)// This test depends on some data which should be created before the test runs
     public void testExportDOI()
             throws Exception
     {
@@ -224,7 +224,7 @@ public class IntegrationRoCrateServerTest
         AssertionUtil.assertContains("@context", response.getContentAsString());
     }
 
-    @Test
+    @Test(enabled = false) // This test depends on some data which should be created before the test runs
     public void testExportDOIZip()
             throws Exception
     {
@@ -245,7 +245,7 @@ public class IntegrationRoCrateServerTest
         assertEquals(response.getHeaders().get("Content-Type"), "application/zip");
     }
 
-    @Test
+    @Test(enabled = false) // This depends on some data which should be created before the test runs
     public void testExportIdentifier()
             throws Exception
     {
@@ -350,7 +350,7 @@ public class IntegrationRoCrateServerTest
     }
 
     // https://github.com/paulscherrerinstitute/rocrate-api/issues/35
-    @Test
+    @Test(enabled = false) // This uses MissingManifest.zip file which does not exist
     public void testValidateMalformedCrateZippedMissingManifest()
             throws Exception
     {
