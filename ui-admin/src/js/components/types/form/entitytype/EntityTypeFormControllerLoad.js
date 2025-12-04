@@ -316,7 +316,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false),
         enabled:
-          !assignmentInternal || isSystemUser
+          (!entityTypeInternal && !assignmentInternal) || isSystemUser
       }),
       metadata: FormUtil.createField({
         value: metadata,
