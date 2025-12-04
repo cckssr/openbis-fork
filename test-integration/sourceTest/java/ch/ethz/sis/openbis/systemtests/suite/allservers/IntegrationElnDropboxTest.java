@@ -409,11 +409,23 @@ public class IntegrationElnDropboxTest
 
         Path folder = Path.of("sourceTest/resource/" + getClass().getSimpleName()
                 + "/testRegisterWithDiscardedFiles/S+ELN_DROPBOX_SPACE+TEST_REGISTER_WITH_DISCARDED_FILES");
+
+        Files.deleteIfExists(folder.resolve("discard-me-1"));
         Files.createFile(folder.resolve("discard-me-1"));
+
+        Files.deleteIfExists(folder.resolve("discard-me-2"));
         Files.createFile(folder.resolve("discard-me-2"));
+
+        Files.deleteIfExists(folder.resolve("test-folder/discard-me-3"));
         Files.createFile(folder.resolve("test-folder/discard-me-3"));
+
+        Files.deleteIfExists(folder.resolve("to-be-discarded-1"));
         Files.createFile(folder.resolve("to-be-discarded-1"));
+
+        Files.deleteIfExists(folder.resolve("to-be-discarded-2"));
         Files.createFile(folder.resolve("to-be-discarded-2"));
+
+        Files.deleteIfExists(folder.resolve("test-folder/to-be-discarded-3"));
         Files.createFile(folder.resolve("test-folder/to-be-discarded-3"));
 
         try (Stream<Path> files = Files.list(folder))
