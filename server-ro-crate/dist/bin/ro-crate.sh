@@ -39,12 +39,12 @@ start(){
     echo "$line"
     # check for your success marker
     if [[ "$line" == *"$SUCCESS_MSG"* ]]; then
-      echo "Server up and running."
+      echo "Started RO-CRATE server."
       break
     fi
-    # check for any ERROR or Exception
-    if echo "$line" | grep -q -E 'ERROR|Exception'; then
-      echo "Startup failed."
+    # check for any ERROR
+    if echo "$line" | grep -q -E 'ERROR'; then
+      echo "Startup of RO-CRATE server failed."
       break
     fi
   done

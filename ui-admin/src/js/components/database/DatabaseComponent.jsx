@@ -214,19 +214,18 @@ class DatabaseComponent extends React.PureComponent {
         {this.renderJson()}
       </div>,
       <div key="files">
-        <p>Data Browser is commented out for now, to avoid AFS not started issues.</p>
-        {/* <DataBrowser
-              key={object.id}
-              id={object.id}
-              objId={object.id}
-              objKind={object.type}
-              kind={object.type}
-              viewType='list'
-              extOpenbis={openbis}
-              onLoadDisplaySettings={this.loadGridSettings}
-              onStoreDisplaySettings={this.onGridSettingsChange}
-              leftToolbar={true}
-            /> */}
+      <DataBrowser
+        key={object.id}
+        id={object.id}
+        objId={object.id}
+        objKind={object.type}
+        kind={object.type}
+        viewType='list'
+        extOpenbis={openbis}
+        onLoadDisplaySettings={this.loadGridSettings}
+        onStoreDisplaySettings={this.onGridSettingsChange}
+        leftToolbar={true}
+      />
       </div>,
       <div key="images">
         {(object.type === objectType.COLLECTION
