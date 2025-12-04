@@ -319,7 +319,7 @@ public class IntegrationTestEnvironment
     {
         try
         {
-            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName(), new SQLUtils.NoParametersSetter());
+            SQLUtils.execute(context.getAdminDataSource(), "drop database " + context.getDatabaseName() + " with (force)", new SQLUtils.NoParametersSetter());
         } catch (SQLException e)
         {
             if (!DBUtilities.isDBNotExistException(e))
