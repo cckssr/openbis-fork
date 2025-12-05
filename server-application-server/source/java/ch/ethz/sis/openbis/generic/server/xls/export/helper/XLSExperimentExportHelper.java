@@ -147,7 +147,7 @@ public class XLSExperimentExportHelper extends AbstractXLSEntityExportHelper<Exp
                 .collect(Collectors.toList());
         final ExperimentFetchOptions fetchOptions = new ExperimentFetchOptions();
         fetchOptions.withProject();
-        fetchOptions.withType().withPropertyAssignments().withPropertyType();
+        fetchOptions.withType().withPropertyAssignments().withPropertyType().withVocabulary().withTerms();
         fetchOptions.withProperties();
         fetchOptions.withSampleProperties();
         fetchOptions.withRegistrator();

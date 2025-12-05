@@ -20,6 +20,8 @@ import ch.ethz.sis.openbis.generic.asapi.v3.dto.common.interfaces.IEntityType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.DataType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.property.PropertyType;
 import ch.ethz.sis.openbis.generic.asapi.v3.dto.sample.Sample;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.Vocabulary;
+import ch.ethz.sis.openbis.generic.asapi.v3.dto.vocabulary.VocabularyTerm;
 import ch.ethz.sis.openbis.generic.server.xls.export.Attribute;
 import ch.ethz.sis.openbis.generic.server.xls.export.ExportableKind;
 import ch.ethz.sis.openbis.generic.server.xls.export.FieldType;
@@ -236,14 +238,35 @@ public abstract class AbstractXLSExportHelper<ENTITY_TYPE extends IEntityType> i
                 {
                     sb.append(", ");
                 }
-                sb.append(value instanceof Sample ? ((Sample) value).getIdentifier().getIdentifier() : value);
+                sb.append(getPropertyValueAsString(propertyType, value));
             }
             return new PropertyValue(sb.toString(), Map.of());
         } else
         {
-            return new PropertyValue(propertyValue instanceof Sample
-                    ? ((Sample) propertyValue).getIdentifier().getIdentifier() : propertyValue.toString(), Map.of());
+            return new PropertyValue(getPropertyValueAsString(propertyType, propertyValue), Map.of());
         }
+    }
+
+    private static String getPropertyValueAsString(final PropertyType propertyType, Serializable value)
+    {
+        String writableValue = null;
+        if (value instanceof Sample) {
+            writableValue = ((Sample) value).getIdentifier().getIdentifier();
+        } else if (propertyType.getDataType() == DataType.CONTROLLEDVOCABULARY){
+            for (VocabularyTerm term: propertyType.getVocabulary().getTerms()) {
+                if (term.getCode().equals(value)) {
+                    if (term.getLabel() != null && !term.getLabel().isBlank()) {
+                        writableValue = term.getLabel();
+                    } else {
+                        writableValue = term.getCode();
+                    }
+                    break;
+                }
+            }
+        } else {
+            writableValue = value.toString();
+        }
+        return writableValue;
     }
 
 
