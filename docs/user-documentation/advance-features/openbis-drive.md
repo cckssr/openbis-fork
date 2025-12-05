@@ -182,7 +182,6 @@ with `openbis-drive-cmd-line.sh` on Linux and MAC-OS with adapted `PATH` variabl
 Returns a short helping guide for the command-line tool itself:
 
 ```
-Use 'help' command to print this message.
 Supported commands:
     start   -> starts the background service
     stop    -> stops the background service
@@ -192,10 +191,17 @@ Supported commands:
     config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
 
     jobs    -> prints the currently registered synchronization-jobs
-    jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false
+    jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
     jobs remove -dir='./dir-a/dir-b'
     jobs start -dir='./dir-a/dir-b'
     jobs stop -dir='./dir-a/dir-b'
+
+    jobs hidden-path-patterns -> shows the predefined hidden path-patterns
+    jobs hidden-path-patterns -dir='./dir-a/dir-b' -> shows the hidden path-patterns for the job related to this local directory
+    jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset -> resets the hidden path-patterns to default-values for the job related to this local directory
+    jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
+    jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
+        from UTF-8 multiline text-file with a regular expression on each line
 
     notifications -limit=100   (default: 100)  -> prints the last limit-number of notifications
     events -limit=100   (default: 100)  -> prints the last limit-number of events
@@ -319,6 +325,7 @@ Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
+Skip hidden files: true
 ```
 
 Each synchronization-task consists of:
@@ -331,6 +338,8 @@ Each synchronization-task consists of:
 to be kept in synchronization
 - personal access token: user credential to get access to the openBIS server
 - indication of enabled or disabled state
+- indication whether local paths which are considered hidden should be left untouched or not (defaults to "true": that is, they should be ignored)
+- a list of regular expressions which determine which local paths are considered hidden (see [jobs hidden-path-patterns](#jobs-hidden-path-patterns))
 
 #### jobs add
 
@@ -349,6 +358,7 @@ Option that represent properties are:
 -remDir   :   absolute path of the remote directory on openBIS server within the entity ID
 -personalAccessToken   :   personal access token
 -enabled   :   true or false
+-skipHiddenFiles   :   true or false (optional: it defaults to true)
 ```
 
 For example: 
@@ -390,6 +400,33 @@ Stopping a synchronization-task merely means changing its state attribute from t
 so the background-service will immediately interrupt it (if running) and will not execute it anymore at each synchronization interval.
 Stopped synchronization-tasks are not deleted from configuration: they can be restarted at any time
 with the `jobs start` command.
+
+#### jobs hidden-path-patterns
+
+This subcommand allows to inspect and modify the hidden path-patterns of a synchronization-task with different options:
+
+```shell
+./openbis-drive-cmd-line.sh jobs hidden-path-patterns
+./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir'
+./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -reset
+./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -set
+./openbis-drive-cmd-line.sh jobs hidden-path-patterns -dir='./my-local-dir' -setFromFile=./documents/new-patterns.txt
+```
+
+Without options: it shows the list of predefined regular expressions, which are matched against local paths to determine which of them should be considered "hidden".
+
+With `-dir` option: for the synchronization-task with local directory indicated by `-dir`,
+it shows the list of regular expressions, which are matched against local paths to determine which of them should be considered "hidden".
+
+With `-dir` and `-reset` option: for the synchronization-task with local directory indicated by `-dir`,
+it resets the list of hidden path-patterns to the predefined list.
+
+With `-dir` and `-set` option: for the synchronization-task with local directory indicated by `-dir`,
+it resets the list of hidden path-patterns to a new list, given one line after the other from console with regex-syntax.
+
+With `-dir` and `-setFromFile` option: for the synchronization-task with local directory indicated by `-dir`,
+it resets the list of hidden path-patterns to a new list, given from a UTF-8 multiline text-file (as per `-setFromFile`)
+with a regular expression on each line.
 
 ### Event and notification commands
 
@@ -512,6 +549,6 @@ the resulting case is not handled automatically by the background-service,
 but rather presented as a "conflict notification".
 In this situation, the remote version of the file is copied to the local file-system alongside the local one,
 but suffixed with `.openbis-conflict`.
-After checking both contents and adapted the local one if necessary,
+After checking both contents and adapting the local one if necessary,
 delete the suffixed `.openbis-conflict` file to mark the resolution of the conflict:
 at that point, the background process will keep the local version as the valid one.

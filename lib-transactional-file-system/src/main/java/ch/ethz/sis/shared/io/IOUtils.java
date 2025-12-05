@@ -987,7 +987,7 @@ public class IOUtils
         }
 
         String filename = Paths.get(path).getFileName().toString();
-        if (filename.startsWith(" ") || filename.endsWith(" ") || filename.startsWith(".") || filename.endsWith("."))
+        if (filename.startsWith(" ") || filename.endsWith(" ") || filename.endsWith("."))
         {
             return false;
         }

@@ -1,6 +1,5 @@
 package ch.openbis.drive.protobuf.converters;
 
-import ch.openbis.drive.DriveAPIService;
 import ch.openbis.drive.model.Event;
 import ch.openbis.drive.protobuf.DriveApiService;
 import lombok.NonNull;

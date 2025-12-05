@@ -19,8 +19,10 @@ import lombok.Value;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.sql.SQLException;
@@ -37,6 +39,7 @@ public class SyncOperation {
     public static final String CONFLICT_FILE_SUFFIX = ".openbis-conflict";
 
     private final @NonNull SyncJob syncJob;
+    private final List<PathMatcher> hiddenPathMatchers = new ArrayList<>();
 
     final @NonNull AfsClientProxy afsClientProxy;
     final @NonNull ClientAPI.TransferMonitorListener uploadMonitor;
@@ -67,6 +70,8 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = configuration.getLocalAppStateDirectory();
         this.notificationManager = notificationManager;
+
+        initializeHiddenPathPatterns();
     }
 
     SyncOperation(@NonNull SyncJob syncJob,
@@ -84,6 +89,19 @@ public class SyncOperation {
         this.syncJobEventDAO = syncJobEventDAO;
         this.localOpenBisHiddenStateDirectory = localOpenBisHiddenStateDirectory;
         this.notificationManager = notificationManager;
+
+        initializeHiddenPathPatterns();
+    }
+
+    private void initializeHiddenPathPatterns() {
+        for ( String hiddenPathPattern: syncJob.getHiddenPathPatterns() ) {
+            try {
+                this.hiddenPathMatchers.add(FileSystems.getDefault().getPathMatcher("regex:" + hiddenPathPattern));
+            } catch (Exception e) {
+                raiseJobExceptionNotification(e);
+                throw e;
+            }
+        }
     }
 
     public synchronized void upload() throws Exception {
@@ -155,7 +173,7 @@ public class SyncOperation {
             Optional<FileInfo> sourceInfoOpt;
             SyncJobEvent syncJobEvent = null;
 
-            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
+            if( skipAppPrivateFilesPrecheck(syncDirection, sourcePath, destinationPath) || skipHiddenFilesPrecheck(syncDirection, sourcePath, destinationPath) ) {
                 sourceInfoOpt = Optional.empty();
                 collisionAction = ClientAPI.CollisionAction.Skip;
             } else {
@@ -539,8 +557,28 @@ public class SyncOperation {
         };
 
         return localPath.toAbsolutePath().normalize().startsWith(localOpenBisHiddenStateDirectory) ||
-                source.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX) ||
-                destination.getFileName().toString().endsWith(CONFLICT_FILE_SUFFIX);
+                Optional.ofNullable(source.getFileName()).map(Path::toString).orElse("").endsWith(CONFLICT_FILE_SUFFIX) ||
+                Optional.ofNullable(destination.getFileName()).map(Path::toString).orElse("").endsWith(CONFLICT_FILE_SUFFIX);
+    }
+
+    boolean  skipHiddenFilesPrecheck(@NonNull SyncJobEvent.SyncDirection syncDirection, @NonNull Path source, @NonNull Path destination) {
+        if ( syncJob.isSkipHiddenFiles() ) {
+            Path normalizedLocalPath = switch (syncDirection) {
+                case UP -> source.normalize().toAbsolutePath();
+                case DOWN -> destination.normalize().toAbsolutePath();
+            };
+
+            return hiddenPathMatchers.stream().anyMatch(regex -> {
+                        try {
+                            return regex.matches(normalizedLocalPath);
+                        } catch (Exception e) {
+                            raiseJobExceptionNotification(e);
+                            return true;
+                        }
+                    });
+        } else {
+            return false;
+        }
     }
 
     static SyncJobEvent pickMoreRecentCompletedFileSyncState(SyncJobEvent entry1, SyncJobEvent entry2) {
