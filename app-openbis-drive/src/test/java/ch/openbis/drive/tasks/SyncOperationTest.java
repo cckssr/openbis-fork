@@ -715,6 +715,7 @@ public class SyncOperationTest extends TestCase {
             for (SyncJob.Type type : List.of(SyncJob.Type.Upload, SyncJob.Type.Download, SyncJob.Type.Bidirectional)) {
                 SyncJobEventDAO syncJobEventDAO = Mockito.mock(SyncJobEventDAO.class);
                 SyncJob syncJob = new SyncJob(type, "url", "uuid", "token", "/remotedir1", "/localdir1", true);
+                syncJob.getHiddenPathPatterns().addAll(SyncJob.getDefaultHiddenPathPatternsForLinux());
                 syncJob.getHiddenPathPatterns().add("/hidden-dir[ab]*");
                 SyncOperation syncOperation = Mockito.spy(new SyncOperation(syncJob, afsClient, uploadMonitor, downloadMonitor, syncJobEventDAO, Path.of("/hidden-dir"), notificationManager));
                 if (!skipHiddenFiles) {
