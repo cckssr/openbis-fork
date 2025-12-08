@@ -34,7 +34,7 @@ import ch.systemsx.cisd.common.concurrent.ConcurrencyUtilities;
 import ch.systemsx.cisd.common.concurrent.IActivityObserver;
 import ch.systemsx.cisd.common.concurrent.MonitoringProxy;
 import ch.systemsx.cisd.common.concurrent.RecordingActivityObserverSensor;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.test.RetryTen;
 import ch.systemsx.cisd.common.test.TestReportCleaner;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -154,7 +154,7 @@ public class FileOperationsTest extends AbstractFileSystemTestCase
         return MonitoringProxy.create(IFileOperations.class,
                 new HangingFileOperations(parameters, observerSensor, hangMillis)).timing(
                 parameters).sensor(observerSensor).errorLog(
-                new Log4jSimpleLogger(FileOperations.operationLog)).name("remote file operations")
+                new SimpleLogger(FileOperations.operationLog)).name("remote file operations")
                 .get();
     }
 

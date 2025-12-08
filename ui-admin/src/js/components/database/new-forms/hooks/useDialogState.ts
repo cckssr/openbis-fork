@@ -41,7 +41,6 @@ export const useDialogState = () => {
 
   // Conflict dialog actions
   const openConflictDialog = useCallback((fields: any[]) => {
-    console.log('openConflictDialog', fields);
     setDialogs(prev => ({
       ...prev,
       conflict: { isOpen: true, fields, isResolving: false },

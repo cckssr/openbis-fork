@@ -35,7 +35,7 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
@@ -143,7 +143,7 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
                 new SimpleFreeSpaceProvider(), new DataSetMover(
                         ShufflingServiceProviderFactory.getInstance().getOpenBISService(),
                         ShufflingServiceProviderFactory.getInstance().getShareIdManager()),
-                new Log4jSimpleLogger(operationLog));
+                new SimpleLogger(operationLog));
     }
 
     SegmentedStoreShufflingTask(Set<String> incomingShares, IOpenBISService service,

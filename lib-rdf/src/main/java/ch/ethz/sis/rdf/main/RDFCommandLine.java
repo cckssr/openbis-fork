@@ -1,8 +1,6 @@
 package ch.ethz.sis.rdf.main;
 
-import ch.ethz.sis.openbis.generic.excel.v3.model.OpenBisModel;
 import ch.ethz.sis.openbis.generic.excel.v3.to.ExcelWriter;
-import ch.ethz.sis.rdf.main.mappers.openBis.RdfToOpenBisMapper;
 import ch.ethz.sis.rdf.main.model.rdf.ModelRDF;
 import ch.ethz.sis.rdf.main.parser.RDFReader;
 import org.apache.commons.cli.*;
@@ -12,13 +10,10 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -377,21 +372,6 @@ public class RDFCommandLine {
         ModelRDF modelRDF =
                 rdfReader.read(inputFilePaths, inputFormatValue, verbose, additionalModel);
 
-        // Collect and map all RDF classes in JAVA obj
-        System.out.println("Collecting RDF classes...");
-
-        // Write model to an Excel file (apache POI dependency)
-        System.out.println("Writing XLSX file...");
-        OpenBisModel openBisModel = RdfToOpenBisMapper.convert(modelRDF,
-                Optional.ofNullable(projectIdentifier).orElse("/DEFAULT/DEFAULT"));
-        byte[] xlsx = ExcelWriter.convert(format, openBisModel, Config.getINSTANCE()
-                .isWriteSchema());
-        try {
-            Files.write(Path.of(outputFilePath), xlsx);
-        } catch (IOException e) {
-            throw new RuntimeException("Error when writing XLSX file to disk: " + e.getMessage());
-        }
-        System.out.println("XLSX created successfully!");
     }
 
     private static void handleOpenBISOutput(String inputFormatValue, String[] inputFilePaths,

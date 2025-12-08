@@ -27,7 +27,7 @@ import ch.systemsx.cisd.base.tests.AbstractFileSystemTestCase;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 
 /**
  * Test cases for {@link PropertyUtils} class.
@@ -95,7 +95,7 @@ public final class PropertyUtilsTest extends AbstractFileSystemTestCase
 
     private final ISimpleLogger createSimpleLogger()
     {
-        return new Log4jSimpleLogger(Logger.getRootLogger());
+        return new SimpleLogger(Logger.getRootLogger());
     }
 
     @Test

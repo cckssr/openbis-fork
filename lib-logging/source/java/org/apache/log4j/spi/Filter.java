@@ -19,6 +19,20 @@ package org.apache.log4j.spi;
 
 import java.util.logging.LogRecord;
 
+/**
+ * @deprecated This interface is deprecated.
+ *             Please use {@code ch.ethz.sis.shared.log.standard} classes instead.
+ *
+ * <p>This interface is kept only for compatibility with some external libraries
+ * used in openBIS. These libraries still expect the old Log4j 1.x
+ * {@code Filter} interface from {@code org.apache.log4j.spi}. Some libraries
+ * may access it directly or through reflection.</p>
+ *
+ * <p>To avoid runtime errors, we keep this simple interface while openBIS
+ * moves to the new logging system.</p>
+ */
+
+@Deprecated
 public interface Filter
 {
     int ACCEPT = 1;

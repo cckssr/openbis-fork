@@ -85,6 +85,11 @@
     -fx-focus-color: red ;
 }
 
+.text-area.error {
+    -fx-text-box-border: red ;
+    -fx-focus-color: red ;
+}
+
 .notification-icon-table-column {
     -fx-font-family: "Font Awesome 7 Free Solid";
     -fx-font-size: 17;

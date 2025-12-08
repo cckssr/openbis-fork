@@ -7,7 +7,11 @@ export default class EntityTypeFormFacade {
     const strategy = this._getStrategy(object.type)
     const id = new openbis.EntityTypePermId(object.id)
     const fo = strategy.createTypeFetchOptions()
-    if (object.type === objectTypes.OBJECT_TYPE) fo.withSemanticAnnotations()
+    if (object.type === objectTypes.OBJECT_TYPE) {
+      fo.withSemanticAnnotations()
+      fo.withTypeGroupAssignments()
+      fo.withTypeGroupAssignments().withTypeGroup()
+    }
     fo.withValidationPlugin()
     fo.withPropertyAssignments().withPlugin()
     fo.withPropertyAssignments().withRegistrator()
@@ -135,6 +139,32 @@ export default class EntityTypeFormFacade {
     return openbis.searchPropertyTypes(criteria, fo).then(results => {
       return results.getObjects()
     })
+  }
+
+  async loadTypeGroups(withAssignments = false) {
+    const criteria = new openbis.TypeGroupSearchCriteria()
+    const fo = new openbis.TypeGroupFetchOptions()
+    if (withAssignments) {
+      fo.withTypeGroupAssignments()
+    }
+    const result = await openbis.searchTypeGroups(criteria, fo).then(results => {
+      return results.getObjects()
+    })
+    console.log('loadTypeGroups', result)
+    const typeGroups = result.map(typeGroup => {
+      return {
+        id: typeGroup.getId().getPermId(),
+        code: typeGroup.getCode(),
+        label: typeGroup.getCode(),
+        value: typeGroup.getCode(),
+        managedInternally: typeGroup.managedInternally,
+        metadata: Object.entries(typeGroup.getMetaData()).map(([key, value]) => ({
+          key: key,
+          value: value
+        }))
+      }
+    })
+    return typeGroups
   }
 
   async loadValidationPlugins(type) {

@@ -26,7 +26,7 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IMaintenanceTask;
@@ -77,7 +77,7 @@ public class CleanUpUnarchivingScratchShareTask implements IMaintenanceTask
         File storeRoot = getStoreRoot();
         IOpenBISService service = getService();
         IFreeSpaceProvider spaceProvider = createFreeSpaceProvider();
-        ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        ISimpleLogger logger = new SimpleLogger(operationLog);
         IConfigProvider configProvider = getConfigProvider();
         Share scratchShare = MultiDataSetArchivingUtils.getScratchShare(storeRoot, service, spaceProvider,
                 configProvider, logger);

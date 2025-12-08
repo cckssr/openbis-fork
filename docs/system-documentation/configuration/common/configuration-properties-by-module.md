@@ -413,6 +413,58 @@
 | dss-based-data-source-provider.dss-screening.database-driver | org.postgresql.Driver | |
 | dss-based-data-source-provider.dss-screening.database-url | jdbc:postgresql://{{ openbis_local_hostname }}/imaging_productive | |
 
+## AFS Modules
+
+#### service.properties (Mandatory)
+
+The service.properties contains around two dozen properties that SHOULD NOT be modified on standard production environments.
+
+Here are ONLY discussed the ones that SHOULD BE manually configured.
+
+| Property                                   | Description                                                                                                                                                                            |
+|--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `writeAheadLogRoot`                        | Defaults to `$DSS_ROOT_DIR/transactions`, this is the write ahead log of the transactional filesystem, SHOULD be on the same filesystem as the final storage for optional performance. |
+| `storageRoot`                              | Same used by the DSS. Defaults to `$DSS_ROOT_DIR/store`                                                                                                                                |
+| `storageUuid`                              | Same used by the DSS.                                                                                                                                                                  |
+| `poolSize`                                 | Defaults to 50, a good number is: Concurrent Uploads/Downloads Web UI + 4 * Concurrent Uploads/Downloads openBIS Drive                                                                 |
+| `apiServerInteractiveSessionKey`           | Secret password, to be shared only to those allowed to call BEGIN and PREPARE and COMMIT manually. Used for 2 Phase Transactions                                                       |
+| `apiServerTransactionManagerKey`           | Secret password, to be shared only with the transaction manager to run recovery workflows.                                                                                             |
+| `openBISUrl`                               | Ideally points directly to the AS in localhost http://localhost:8080                                                                                                                   |
+| `openBISTimeout`                           | Defaults to 30000 millis, 30 sec                                                                                                                                                       |
+| `openBISUser`                              | Used by the integration plugin, should be an INSTANCE_ADMIN                                                                                                                            |
+| `openBISPassword`                          | Password for the openBIS user                                                                                                                                                          |
+| `openBISLastSeenDeletionFile`              | Defaults to ./last-seen-deletion                                                                                                                                                       |
+| `openBISLastSeenDeletionBatchSize`         | Defaults to 1000                                                                                                                                                                       |
+| `openBISLastSeenDeletionIntervalInSeconds` | Defaults to 900 seconds, 15 minutes                                                                                                                                                    |
+
+#### service.properties (Optional)
+
+Additionally, these are MANDATORY for ```Archiving``` but RECOMMENDED for EVERYONE, provides a cache for the immutable dataset metadata.
+
+Values are already filled in the template, just uncomment them.
+
+| Property                          | Description                                                                                 |
+|-----------------------------------|---------------------------------------------------------------------------------------------|
+| `maintenance-plugins`             | Value to be used: pathInfoFeedingTask                                                       |
+| `pathInfoFeedingTask.class`       | Value to be used: ch.systemsx.cisd.etlserver.path.PathInfoDatabaseFeedingTask               |
+| `pathInfoFeedingTask.interval`    | Value to be used: 3600                                                                      |
+| `pathInfoDB.name`                 | Value to be used: pathinfo                                                                  |
+| `pathInfoDB.kind`                 | Value to be used: prod                                                                      |
+| `pathInfoDB.engine`               | Value to be used: postgresql                                                                |
+| `pathInfoDB.version-holder-class` | Value to be used: ch.systemsx.cisd.openbis.dss.generic.shared.PathInfoDatabaseVersionHolder |
+| `pathInfoDB.script-folder`        | Value to be used: afs-server/sql/pathinfo                                                   |
+
+Additionally, these are MANDATORY for setups with multiple share ids, this is for backwards compatibility with the way DSS shuffles data.
+
+| Property                       | Description                                                                      |
+|--------------------------------|----------------------------------------------------------------------------------|
+| `maintenance-plugins`          | Value to be used: pathInfoFeedingTask, shufflingTask                             |
+| `shuffling-task.class`         | Value to be used: ch.systemsx.cisd.etlserver.plugins.SegmentedStoreShufflingTask |
+| `shuffling-task.interval`      | Value to be used: 3600                                                           |
+| `shuffling.class`              | Value to be used: ch.systemsx.cisd.etlserver.plugins.SimpleShuffling             |
+| `shuffling.share-finder.class` | Value to be used: ch.systemsx.cisd.openbis.dss.generic.shared.SimpleShareFinder  |
+| `shuffling.verify-checksum `   | Value to be used: true                                                           |
+
 ## Core Plugins Modules
 
 Core Plugins modules, with few exceptions, follow the naming schema in lower-case characters:

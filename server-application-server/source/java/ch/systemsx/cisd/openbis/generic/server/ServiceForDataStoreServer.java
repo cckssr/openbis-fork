@@ -72,7 +72,7 @@ import ch.systemsx.cisd.common.api.retry.config.DefaultRetryConfiguration;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.InvalidAuthenticationException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.servlet.IRequestContextProvider;
 import ch.systemsx.cisd.common.servlet.RequestContextProviderAdapter;
@@ -496,7 +496,7 @@ public class ServiceForDataStoreServer extends AbstractCommonServer<IServiceForD
         }
 
         int dssVersion =
-                new RetryCaller<Integer, InvalidAuthenticationException>(DefaultRetryConfiguration.getInstance(), new Log4jSimpleLogger(operationLog))
+                new RetryCaller<Integer, InvalidAuthenticationException>(DefaultRetryConfiguration.getInstance(), new SimpleLogger(operationLog))
                 {
                     @Override protected Integer call() throws InvalidAuthenticationException
                     {

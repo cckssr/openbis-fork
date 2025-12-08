@@ -1,1 +1,0 @@
-includeFlat 'lib-ro-crate', 'app-ro-crate-openbis', 'api-openbis-java', 'lib-commonbase', 'lib-logging', 'lib-common', 'api-data-store-server-java', 'lib-json', 'lib-two-phase-transaction', 'lib-rdf'

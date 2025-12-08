@@ -12,8 +12,13 @@ import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,6 +123,10 @@ public class DriveAPICmdLineAppTest {
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleStopJobCommand(new String[] { "jobs" , "stop", "..."});
         Mockito.clearInvocations(driveAPICmdLineApp);
 
+        driveAPICmdLineApp.handleJobsCommand( new String[] { "jobs", "hidden-path-patterns", "..."} );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns", "..."});
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
         driveAPICmdLineApp.handleJobsCommand( new String[] { "jobs", "other", "..."} );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
         Mockito.clearInvocations(driveAPICmdLineApp);
@@ -126,7 +135,7 @@ public class DriveAPICmdLineAppTest {
 
     @Test
     public void testHandleAddJobCommand() throws Exception {
-        Mockito.doNothing().when(driveAPICmdLineApp).addJob(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
+        Mockito.doNothing().when(driveAPICmdLineApp).addJob(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any());
 
         driveAPICmdLineApp.handleAddJobCommand(new String[] { "jobs" , "add",
                 "-type=Bidirectional",
@@ -144,7 +153,8 @@ public class DriveAPICmdLineAppTest {
                 "1234-abcd",
                 "tkntkntkn",
                 "/remote-dir",
-                true
+                true,
+                null
         );
         Mockito.clearInvocations(driveAPICmdLineApp);
 
@@ -158,7 +168,7 @@ public class DriveAPICmdLineAppTest {
                 "-enabled=true",
         });
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).addJob(
-                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
+                Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean(), Mockito.any()
         );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
         Mockito.clearInvocations(driveAPICmdLineApp);
@@ -225,6 +235,72 @@ public class DriveAPICmdLineAppTest {
         });
         Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).stopJob(
                 Mockito.any()
+        );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
+        Mockito.clearInvocations(driveAPICmdLineApp);
+    }
+
+    @Test
+    public void testHandleHiddenPathPatternsJobCommand() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).stopJob(Mockito.any());
+
+        //Show default hidden-patterns
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns" });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showDefaultHiddenPathPatterns();
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Show hidden path-patterns
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+                "-dir=/local-dir"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns(
+                "/local-dir"
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Reset hidden path-patterns
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+                "-dir=/local-dir", "-reset"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).resetHiddenPathPatternsToDefault(
+                "/local-dir"
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Set hidden path-patterns from console
+        System.setIn(new ByteArrayInputStream(String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8)));
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+                "-dir=/local-dir", "-set"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setHiddenPathPatterns(
+                "/local-dir", String.format("^/bin/?%n^/root/?%n")
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Set hidden path-patterns from file
+        Path newPatterns = Path.of(this.getClass().getClassLoader().getResource("placeholder.txt").getPath()).getParent().resolve("new-patterns.txt");
+        Files.deleteIfExists(newPatterns);
+        Files.write(newPatterns, String.format("^/bin/?%n   ^/root/?%n%n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "hidden-path-patterns",
+                "-dir=/local-dir", String.format("-setFromFile=%s", newPatterns)
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).setHiddenPathPatterns(
+                "/local-dir", String.format("^/bin/?%n   ^/root/?%n%n")
+        );
+        Mockito.clearInvocations(driveAPICmdLineApp);
+
+        //Wrong option
+        driveAPICmdLineApp.handleHiddenPathPatternsJobCommand(new String[] { "jobs" , "stop",
+                "-dirWRONGOPTION=/local-dir"
+        });
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).showHiddenPathPatterns(
+                Mockito.any()
+        );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).resetHiddenPathPatternsToDefault(
+                Mockito.any()
+        );
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).setHiddenPathPatterns(
+                Mockito.any(), Mockito.anyString()
         );
         Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printHelp();
         Mockito.clearInvocations(driveAPICmdLineApp);
@@ -351,7 +427,7 @@ public class DriveAPICmdLineAppTest {
         Mockito.doNothing().when(driveAPIClient).addSyncJobs(Mockito.any());
         Mockito.doNothing().when(driveAPICmdLineApp).printJobs();
 
-        driveAPICmdLineApp.addJob(SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true);
+        driveAPICmdLineApp.addJob(SyncJob.Type.Download, "/loc-dir", "http://URL", "abcd-1234", "tkn", "/remDIR", true, null);
 
         Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(List.of(
                 new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true)
@@ -599,5 +675,123 @@ public class DriveAPICmdLineAppTest {
         bo.flush();
         String allWrittenLines = new String(bo.toByteArray());
         Assert.assertTrue(allWrittenLines.contains("not running"));
+    }
+
+    @Test
+    public void testShowDefaultHiddenPathPatterns() throws Exception {
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(bo));
+
+        driveAPICmdLineApp.showDefaultHiddenPathPatterns();
+        bo.flush();
+
+        String allWrittenLines = new String(bo.toByteArray());
+        for ( String pattern : SyncJob.getDefaultHiddenPathPatterns() ) {
+            Assert.assertTrue(allWrittenLines.contains(pattern));
+        }
+    }
+
+    @Test
+    public void testShowHiddenPathPatterns() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        List<SyncJob> toBeReturnedSyncJobs = List.of(
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+        );
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+
+        Mockito.doReturn(
+                toBeReturnedSyncJobs
+        ).when(driveAPIClient).getSyncJobs();
+
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(bo));
+
+        driveAPICmdLineApp.showHiddenPathPatterns("/loc-dir2");
+        bo.flush();
+
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(0));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).printSyncJob(toBeReturnedSyncJobs.get(1));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(2));
+
+        String allWrittenLines = new String(bo.toByteArray());
+        Assert.assertTrue(allWrittenLines.contains(String.format("^/hidden/?%nhidden2\\.txt$")));
+    }
+
+    @Test
+    public void testShowHiddenPathPatternsNotFound() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        List<SyncJob> toBeReturnedSyncJobs = List.of(
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+        );
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+
+        Mockito.doReturn(
+                toBeReturnedSyncJobs
+        ).when(driveAPIClient).getSyncJobs();
+
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(bo));
+
+        driveAPICmdLineApp.showHiddenPathPatterns("/loc-dir4");
+        bo.flush();
+
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(0));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(1));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(0)).printSyncJob(toBeReturnedSyncJobs.get(2));
+
+        String allWrittenLines = new String(bo.toByteArray());
+        Assert.assertTrue(allWrittenLines.contains(String.format("not found")));
+    }
+
+    @Test
+    public void testResetHiddenPathPatterns() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        List<SyncJob> toBeReturnedSyncJobs = List.of(
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+        );
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
+
+        Mockito.doReturn(
+                toBeReturnedSyncJobs
+        ).when(driveAPIClient).getSyncJobs();
+
+        driveAPICmdLineApp.resetHiddenPathPatternsToDefault("/loc-dir2");
+
+        ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
+        Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
+        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()))));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
+    }
+
+    @Test
+    public void testSetHiddenPathPatterns() throws Exception {
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        List<SyncJob> toBeReturnedSyncJobs = List.of(
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir", true),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/hidden/?", "hidden2\\.txt$"))),
+                new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir3", true)
+        );
+        Mockito.doNothing().when(driveAPICmdLineApp).printSyncJob(Mockito.any());
+        Mockito.doNothing().when(driveAPICmdLineApp).showHiddenPathPatterns(Mockito.any());
+
+        Mockito.doReturn(
+                toBeReturnedSyncJobs
+        ).when(driveAPIClient).getSyncJobs();
+
+        driveAPICmdLineApp.setHiddenPathPatterns("/loc-dir2", String.format("^/root/?%n^/boot/?%n\\.exe$"));
+
+        ArgumentCaptor<List<SyncJob>> syncJobArgumentCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(driveAPIClient, Mockito.times(1)).removeSyncJobs(syncJobArgumentCaptor.capture());
+        Assert.assertEquals("/loc-dir2", syncJobArgumentCaptor.getValue().get(0).getLocalDirectoryRoot());
+        Mockito.verify(driveAPIClient, Mockito.times(1)).addSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Download, "http://URL", "tkn", "abcd-1234", "/remDIR", "/loc-dir2", true, true, new ArrayList<>(List.of("^/root/?", "^/boot/?", "\\.exe$")))));
+        Mockito.verify(driveAPICmdLineApp, Mockito.times(1)).showHiddenPathPatterns("/loc-dir2");
     }
 }

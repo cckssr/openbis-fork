@@ -45,7 +45,7 @@ class PropertyTypesGrid extends React.PureComponent {
           },
           {
             name: 'label',
-            label: messages.get(messages.LABEL),
+            label: messages.get(messages.PROPERTY_LABEL),
             getValue: ({ row }) => row.label
           },
           {
@@ -60,7 +60,7 @@ class PropertyTypesGrid extends React.PureComponent {
           },
           {
             name: 'vocabulary',
-            label: messages.get(messages.VOCABULARY_TYPE),
+            label: messages.get(messages.VOCABULARY_CODE),
             getValue: ({ row }) => row.vocabulary,
             renderValue: ({ row }) => (
               <VocabularyTypeLink vocabularyCode={row.vocabulary} />

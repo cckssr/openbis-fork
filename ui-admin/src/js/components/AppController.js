@@ -10,13 +10,13 @@ import cookie from '@src/js/common/cookie.js'
 import ids from '@src/js/common/consts/ids.js'
 
 const AppContext = React.createContext()
+const showDebug = false;
 
 export class AppController {
   init(context) {
     context.initState(this.initialState())
 
     const history = createHashHistory()
-
     history.listen(location => {
       const route = routes.parse(location.location.pathname)
       this.routeChanged(route.path)
@@ -172,9 +172,8 @@ export class AppController {
   async routeChanged(path) {
     const newRoute = routes.parse(path)
     if (newRoute.type && newRoute.id) {
-      const object = { type: newRoute.type, id: newRoute.id }
+      const object = { type: newRoute.type, id: newRoute.id, params: newRoute }
       const openTabs = this.getOpenTabs(newRoute.page)
-
       if (openTabs) {
         let found = false
         let id = 1
@@ -187,13 +186,13 @@ export class AppController {
             id = openTab.id + 1
           }
         })
-
         if (!found) {
           await this.addOpenTab(newRoute.page, id, { id, object })
         }
       }
     }
     await this.setCurrentRoute(newRoute.page, newRoute.path)
+    const newState = this.context.getState()
   }
 
   async routeChange(path) {
@@ -206,7 +205,7 @@ export class AppController {
     this.history.replace(route)
   }
 
-  async objectNew(page, type) {
+  async objectNew(page, type, params) {
     let id = 1
     const openObjects = this.getOpenObjects(page)
     openObjects.forEach(openObject => {
@@ -215,7 +214,7 @@ export class AppController {
       }
     })
 
-    const route = routes.format({ page, type, id })
+    const route = routes.format({ page, type, id, ...params })
     await this.routeChange(route)
   }
 
@@ -230,7 +229,6 @@ export class AppController {
         changed: false
       }
       await this.replaceOpenTab(page, oldTab.id, newTab)
-
       const route = routes.format({ page, type: newType, id: newId })
       await this.routeReplace(route)
 
@@ -242,8 +240,8 @@ export class AppController {
     }
   }
 
-  async objectOpen(page, type, id) {
-    const route = routes.format({ page, type, id })
+  async objectOpen(page, type, id, params={}) {
+    const route = routes.format({ page, type, id, ...params })
     await this.routeChange(route)
   }
 
@@ -267,7 +265,6 @@ export class AppController {
   async objectChange(page, type, id, changed) {
     const openTabs = this.getOpenTabs(page)
     const oldTab = _.find(openTabs, { object: { type, id } })
-
     if (oldTab) {
       const newTab = { ...oldTab, changed }
       await this.replaceOpenTab(page, oldTab.id, newTab)
@@ -380,7 +377,7 @@ export class AppController {
     if (path) {
       const route = routes.parse(path)
       if (route && route.type && route.id) {
-        return { type: route.type, id: route.id }
+        return { type: route.type, id: route.id, params: route }
       }
     }
     return null
@@ -409,7 +406,8 @@ export class AppController {
   }
 
   async setOpenTabs(page, newOpenTabs) {
-    await this.context.setState(state => ({
+    await this.context.setState(state => (
+    {
       pages: {
         ...state.pages,
         [page]: {

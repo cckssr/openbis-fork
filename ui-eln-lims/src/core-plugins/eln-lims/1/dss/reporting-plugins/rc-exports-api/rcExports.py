@@ -28,7 +28,7 @@ from java.nio.file import Paths
 from java.text import SimpleDateFormat
 from java.util import UUID
 from java.util.zip import ZipOutputStream, Deflater
-from org.apache.log4j import Logger
+from ch.ethz.sis.shared.log.classic.impl import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
 from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP

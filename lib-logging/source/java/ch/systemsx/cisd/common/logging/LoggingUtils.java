@@ -20,6 +20,13 @@ package ch.systemsx.cisd.common.logging;
 import org.apache.log4j.Level;
 import org.apache.log4j.Priority;
 
+/**
+ * This class is used by cisd-image-readers
+ * @deprecated This class is deprecated.
+ *             Use {@link ch.ethz.sis.shared.log.standard.utils.LoggingUtils} instead.
+ */
+
+@Deprecated
 public class LoggingUtils
 {
 

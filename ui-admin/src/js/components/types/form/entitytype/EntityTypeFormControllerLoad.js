@@ -6,6 +6,7 @@ import EntityTypeFormControllerStrategies from '@src/js/components/types/form/en
 import EntityTypeFormSelectionType from '@src/js/components/types/form/entitytype/EntityTypeFormSelectionType.js'
 import FormUtil from '@src/js/components/common/form/FormUtil.js'
 import util from '@src/js/common/util.js'
+import { ConstructionOutlined } from '@mui/icons-material'
 
 export default class EntityTypeFormControllerLoad extends PageControllerLoad {
   async load(object, isNew) {
@@ -22,14 +23,16 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       vocabularies,
       materialTypes,
       sampleTypes,
-      propertyTypes
+      propertyTypes,
+      typeGroups
     ] = await Promise.all([
       this.facade.loadValidationPlugins(object.type),
       this.facade.loadDynamicPlugins(object.type),
       this.facade.loadVocabularies(),
       this.facade.loadMaterialTypes(),
       this.facade.loadSampleTypes(),
-      this.facade.loadPropertyTypes()
+      this.facade.loadPropertyTypes(),
+      this.facade.loadTypeGroups()
     ])
 
     await this.context.setState(() => ({
@@ -39,7 +42,8 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         vocabularies,
         materialTypes,
         sampleTypes,
-        propertyTypes
+        propertyTypes,
+        typeGroups
       }
     }))
   }
@@ -145,6 +149,15 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
         value: value,
       }))
     }
+    console.log('loadedType', loadedType)
+    const loadedTypeGroupsAssignments = loadedType?.typeGroupAssignments?.map(typeGroupAssignment => {
+      return {
+        id: typeGroupAssignment.typeGroup.getId().getPermId(),
+        code: typeGroupAssignment.typeGroup.getCode(),
+        managedInternally: typeGroupAssignment.typeGroup.managedInternally,
+      }
+    }) || []
+    console.log('loadedTypeGroupsAssignments', loadedTypeGroupsAssignments)
     const type = {
       code: FormUtil.createField({
         value: _.get(loadedType, 'code', null),
@@ -173,6 +186,10 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       }),
       metadata: FormUtil.createField({
         value: metadata,
+        enabled: !internal
+      }),
+      typeGroupsAssignments: FormUtil.createField({
+        value: loadedTypeGroupsAssignments,
         enabled: !internal
       }),
       errors: 0
@@ -299,7 +316,7 @@ export default class EntityTypeFormControllerLoad extends PageControllerLoad {
       mandatory: FormUtil.createField({
         value: _.get(loadedAssignment, 'mandatory', false),
         enabled:
-          !assignmentInternal || isSystemUser
+          (!entityTypeInternal && !assignmentInternal) || isSystemUser
       }),
       metadata: FormUtil.createField({
         value: metadata,

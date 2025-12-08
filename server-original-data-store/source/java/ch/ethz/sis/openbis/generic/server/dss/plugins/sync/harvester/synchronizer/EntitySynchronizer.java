@@ -100,7 +100,7 @@ import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronize
 import ch.ethz.sis.openbis.generic.server.dss.plugins.sync.harvester.synchronizer.util.V3Facade;
 import ch.systemsx.cisd.common.concurrent.ParallelizedExecutor;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.etlserver.registrator.api.v1.impl.ConversionUtils;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetDirectoryProvider;
 import ch.systemsx.cisd.openbis.dss.generic.shared.DataSetProcessingContext;
@@ -1422,7 +1422,7 @@ public class EntitySynchronizer
             operationLog.info("Is going to delete the location: " + physicalDS.getLocation());
             File datasetDir =
                     getDirectoryProvider().getDataSetDirectory(physicalDS);
-            SegmentedStoreUtils.deleteDataSetInstantly(physicalDS.getCode(), datasetDir, new Log4jSimpleLogger(operationLog));
+            SegmentedStoreUtils.deleteDataSetInstantly(physicalDS.getCode(), datasetDir, new SimpleLogger(operationLog));
         }
         monitor.log();
     }

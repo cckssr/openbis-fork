@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.time.DateUtils;
@@ -49,7 +50,6 @@ import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncArchiveCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.systemsx.cisd.common.process.ProcessResult;
 import ch.systemsx.cisd.common.properties.PropertyParametersUtil;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
@@ -665,7 +665,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
             ArchiverTaskContext context)
     {
         return new RetryCaller<Map<String, Status>, RuntimeException>(waitForSanityCheckInitialWaitingTime, waitForSanityCheckMaxWaitingTime,
-                new Log4jSimpleLogger(operationLog))
+                new SimpleLogger(operationLog))
         {
             @Override protected Map<String, Status> call()
             {
@@ -674,7 +674,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
                 {
                     archivedContent = getFileOperations().getContainerAsHierarchicalContent(containerPath, dataSets);
                     return MultiDataSetArchivingUtils.sanityCheck(archivedContent, dataSets, sanityCheckVerifyChecksums, context,
-                            new Log4jSimpleLogger(operationLog));
+                            new SimpleLogger(operationLog));
                 } finally
                 {
                     if (archivedContent != null)
@@ -728,7 +728,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
     {
         IOpenBISService service = getService();
         IFreeSpaceProvider freeSpaceProvider = createFreeSpaceProvider();
-        ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        ISimpleLogger logger = new SimpleLogger(operationLog);
         return MultiDataSetArchivingUtils.getScratchShare(this.storeRoot, service, freeSpaceProvider,
                 ArchiverServiceProviderFactory.getInstance().getConfigProvider(), logger);
     }
@@ -769,7 +769,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
                 }
             }
 
-            SegmentedStoreUtils.freeSpace(scratchShare, service, dataSets, directoryProvider, shareIdManager, new Log4jSimpleLogger(operationLog));
+            SegmentedStoreUtils.freeSpace(scratchShare, service, dataSets, directoryProvider, shareIdManager, new SimpleLogger(operationLog));
         }
 
         private long getSize(DatasetDescription dataSet)
@@ -893,7 +893,7 @@ public class MultiDataSetArchiver extends AbstractArchiverProcessingPlugin
 
         if (unarchivingMaxWaitingTime != null && unarchivingPollingTime != null)
         {
-            Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+            SimpleLogger logger = new SimpleLogger(operationLog);
             WaitingHelper helper = new WaitingHelper(unarchivingMaxWaitingTime, unarchivingPollingTime, timeProvider, logger, true);
             FileBasedPause pause = new FileBasedPause(pauseFile, pauseFilePollingTime, timeProvider, logger,
                     "Waiting for unarchiving of file: " + container.getPath());

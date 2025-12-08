@@ -141,7 +141,7 @@ public class SortAndPage
 
         for (Object object : objects)
         {
-            if (processed.contains(object))
+            if (processed.contains(object) || object.getClass().isArray())
             {
                 continue;
             } else

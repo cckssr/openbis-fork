@@ -26,6 +26,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -43,7 +44,6 @@ import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.IPathCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.ISshCommandExecutorFactory;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
@@ -133,7 +133,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
     {
         this.freeSpaceProviderOrNull = freeSpaceProviderOrNull;
         this.timeProvider = timeProvider;
-        this.packageManager = new MultiDataSetPackageManager(properties, new Log4jSimpleLogger(operationLog));
+        this.packageManager = new MultiDataSetPackageManager(properties, new SimpleLogger(operationLog));
 
         this.withSharding = PropertyUtils.getBoolean(properties, WITH_SHARDING_KEY, false);
         hdf5FilesInDataSet = PropertyUtils.getBoolean(properties, HDF5_FILES_IN_DATA_SET, true);
@@ -375,7 +375,7 @@ public class MultiDataSetFileOperationsManager extends AbstractDataSetFileOperat
         ArchiveDestination finalDestination = getFinalArchive();
         final IDataSetFileOperationsExecutor operationsExecutor = finalDestination.getExecutor();
         final String destinationPath = new File(finalDestination.getDestination()).getAbsolutePath();
-        Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        SimpleLogger logger = new SimpleLogger(operationLog);
         WaitingHelper waitingHelper = new WaitingHelper(waitingForFreeSpaceTimeOut, waitingForFreeSpacePollingTime,
                 timeProvider, logger, true);
         boolean conditionFulfilled = waitingHelper.waitOn(new IWaitingCondition()

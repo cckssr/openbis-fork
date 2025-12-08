@@ -23,7 +23,7 @@ from ch.ethz.sis.openbis.generic.asapi.v3.dto.service.id import CustomASServiceC
 from ch.ethz.sis.shared.log.classic.core import LogCategory
 from ch.systemsx.cisd.openbis.dss.generic.shared import ServiceProvider
 from java.nio.file import Paths
-from org.apache.log4j import Logger
+from ch.ethz.sis.shared.log.classic.impl import Logger
 from org.eclipse.jetty.client import HttpClient
 from org.eclipse.jetty.client import HttpProxy
 from org.eclipse.jetty.client.http import HttpClientTransportOverHTTP

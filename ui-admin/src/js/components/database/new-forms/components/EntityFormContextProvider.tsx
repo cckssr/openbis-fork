@@ -6,10 +6,15 @@ import EntityForm from '@src/js/components/database/new-forms/components/EntityF
 import ControllerDispatcher from '@src/js/components/database/new-forms/engine/ControllerDispatcher.ts';
 import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
 
+import ActionHandlerDispatcher from '@src/js/components/database/new-forms/engine/ActionHandlerDispatcher.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
 
+import { findConflicts, checkModificationDateConflict } from '@src/js/components/database/new-forms/utils/conflictResolutionUtil.ts';
+import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
+import DeleteConfirmationDialog from '@src/js/components/database/new-forms/components/common/DeleteConfirmationDialog.tsx';
+import MoveDialog from '@src/js/components/database/new-forms/components/common/MoveDialog.tsx';
 import { useFormState } from '@src/js/components/database/new-forms/hooks/useFormState.ts';
 import { useOperationState } from '@src/js/components/database/new-forms/hooks/useOperationState.ts';
 import { useDialogState } from '@src/js/components/database/new-forms/hooks/useDialogState.ts';
@@ -18,6 +23,11 @@ import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/use
 import { findConflicts, checkModificationDateConflict } from '@src/js/components/database/new-forms/utils/conflictResolutionUtil.ts';
 import ConflictResolutionDialog from '@src/js/components/database/new-forms/components/common/ConflictResolutionDialog.tsx';
 
+import { IFormController } from '@src/js/components/database/new-forms/types/IFormController.ts';
+import { useMoveFlow } from '@src/js/components/database/new-forms/hooks/useMoveFlow.ts';
+import { useConflictFlow } from '@src/js/components/database/new-forms/hooks/useConflictFlow.ts';
+import { useDeleteFlow } from '@src/js/components/database/new-forms/hooks/useDeleteFlow.ts';
+import { ActionToast, useActionToastCtx } from '@src/js/components/database/new-forms/components/common/ActionToast.tsx';
 
 export const EntityFormContextProvider = ({
   openbisFacade,
@@ -38,9 +48,9 @@ export const EntityFormContextProvider = ({
   initialMode: FormMode;
   externalAppController: any;
 }) => {
-  // Other state (could also be extracted if needed)
-  const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
-  const [isAutoSaveEnabled] = useState(false);
+
+  const actionToastContext = useActionToastCtx();
+
   // Form state (already well-organized)
   const { form, mode, setForm, setMode, updateField, updateFieldMetadata } = useFormState({
     initialForm: null,
@@ -63,12 +73,9 @@ export const EntityFormContextProvider = ({
     openMoveDialog, closeMoveDialog,
   } = useDialogState();
 
-  const { handleResolveConflicts } = useConflictFlow({
-    form,
-    setForm,
-    closeConflictDialog,
-    setConflictResolving,
-  });
+  // Other state (could also be extracted if needed)
+  const [permissions] = useState({ canEdit: true, canDelete: true, canMove: true });
+  const [isAutoSaveEnabled] = useState(false);
 
   /* const { saveToStorage, loadFromStorage, clearStorage } = useAutoSave({
       formData: form,
@@ -82,6 +89,11 @@ export const EntityFormContextProvider = ({
         saveToStorage();
       }
     }, [isAutoSaveEnabled, form]); */
+
+  /* const entityKind = objectTypeToEntityKindMap[entityKind as keyof typeof objectTypeToEntityKindMap];
+  if (!entityKind) {
+    return <div>Unknown entity type: {entityKind}</div>;
+  } */
 
   // Create controller using dispatcher
   const controller: IFormController = useMemo(
@@ -107,9 +119,9 @@ export const EntityFormContextProvider = ({
       },
       externalAppController,
       deleteReason: reason || undefined,
-      //dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
+      dependentEntities: dialogs.delete.config?.dependentEntities || undefined,
     };
-  }, [form, mode, externalAppController, controller]);
+  }, [form, mode, externalAppController, controller, dialogs.delete.config]);
 
   // Load initial form data
   useEffect(() => {
@@ -137,6 +149,42 @@ export const EntityFormContextProvider = ({
     clearError();
   };
 
+  const { handleMoveRequest, handleMoveConfirm, handleMoveCancel } = useMoveFlow({
+    form,
+    controller,
+    dialogs,
+    openMoveDialog,
+    closeMoveDialog,
+    loadForm,
+    setLoading,
+    setSaving,
+    setError,
+    clearError,
+    externalAppController,
+  });
+
+  const { handleResolveConflicts } = useConflictFlow({
+    form,
+    setForm,
+    closeConflictDialog,
+    setConflictResolving,
+  });
+
+  const { handleDeleteWithDependencyCheck, handleDeleteConfirm, handleDeleteCancel } = useDeleteFlow({
+    form,
+    controller,
+    entityKind,
+    dialogs,
+    getExtendedActionContext,
+    openDeleteDialog,
+    closeDeleteDialog,
+    setSaving,
+    setError,
+    clearError,
+    executeOperation,
+    externalAppController,
+  });
+
   // Handle actions by creating them from dispatcher
   const handleAction = useCallback(async (actionName: string) => {
     console.log(`[EntityFormContextProvider] Handling action: ${actionName}`);
@@ -149,11 +197,11 @@ export const EntityFormContextProvider = ({
 
     if (actionName.toLowerCase().includes('save')) {
       await handleSaveActions(actionHandler);
-    } /* else if (actionName === 'delete') {
+    } else if (actionName === 'delete') {
       await handleDeleteWithDependencyCheck();
     } else if (actionName === 'move') {
       await handleMoveRequest();
-    } */ else {
+    } else {
       const context: IExtendedActionContext = getExtendedActionContext();
       try {
         await actionHandler(context);
@@ -163,7 +211,7 @@ export const EntityFormContextProvider = ({
         setSaving(false);
       }
     }
-  }, [form, mode, permissions, openbisFacade, externalAppController, getExtendedActionContext, setSaving, setError]);
+  }, [form, mode, permissions, openbisFacade, externalAppController, getExtendedActionContext, setSaving, setError, handleMoveRequest, handleDeleteWithDependencyCheck]);
 
   const handleSaveActions = async (actionHandler: any) => {
     if (!form) throw new Error('Form is not loaded');
@@ -178,13 +226,15 @@ export const EntityFormContextProvider = ({
 
         if (!dialogs.conflict.isResolving && checkModificationDateConflict(form, latestForm)) {
           const conflicts = findConflicts(form, latestForm) as any[];
-          console.log('conflicts', conflicts);
           openConflictDialog(conflicts);
           setSaving(false);
           return;
         }
 
         await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED (GENERAL)');
+        //alert('SUCCESSFULLY SAVED (GENERAL)');
+
         setConflictResolving(false);
         if (context.onAfterSave) context.onAfterSave(params);
       } catch (error: any) {
@@ -194,6 +244,8 @@ export const EntityFormContextProvider = ({
           openConflictDialog(conflicts);
         } else {
           console.error('Save failed:', error);
+          actionToastContext.raiseError('ERROR SAVING (GENERAL)');
+          //alert('ERROR SAVING (GENERAL)');
           setError(error.message);
         }
       } finally {
@@ -202,8 +254,12 @@ export const EntityFormContextProvider = ({
     } else if (mode === FormMode.CREATE) {
       try {
         await actionHandler(context);
+        actionToastContext.raiseSuccess('SUCCESSFULLY SAVED (GENERAL)');
+        //alert('SUCCESSFULLY SAVED (GENERAL)');
       } catch (error: any) {
         setError(error.message);
+        actionToastContext.raiseError('ERROR SAVING (GENERAL)');
+        //alert('ERROR SAVING (GENERAL)');
       } finally {
         setSaving(false);
       }
@@ -233,6 +289,7 @@ export const EntityFormContextProvider = ({
           onClose={handleErrorCancel}
         />
       )}
+      <ActionToast ctx={actionToastContext}></ActionToast>
       <EntityForm
         form={form}
         mode={mode}
@@ -248,6 +305,25 @@ export const EntityFormContextProvider = ({
           conflicts={dialogs.conflict.fields}
           onResolve={handleResolveConflicts}
           onCancel={closeConflictDialog}
+        />
+      )}
+      {dialogs.delete.isOpen && dialogs.delete.config && (
+        <DeleteConfirmationDialog
+          open={dialogs.delete.isOpen}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleDeleteCancel}
+          config={dialogs.delete.config}
+        />
+      )}
+      {dialogs.move.isOpen && (
+        <MoveDialog
+          open={dialogs.move.isOpen}
+          onConfirm={handleMoveConfirm}
+          onCancel={handleMoveCancel}
+          form={form}
+          moveInfo={dialogs.move.info}
+          openbisFacade={openbisFacade}
+          entityFormController={controller}
         />
       )}
     </>

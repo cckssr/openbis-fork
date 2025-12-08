@@ -1670,7 +1670,7 @@ function MainController(profile) {
 	}
 
 	this.openHelpPage = function() {
-        var src = "https://openbis.readthedocs.io/en/20.10.x/user-documentation/general-users";
+        var src = "https://openbis.readthedocs.io/en/20.10.12-plus/user-documentation/general-users";
         var win = window.open(src, '_blank');
         win.focus();
 	}

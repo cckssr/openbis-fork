@@ -1,14 +1,6 @@
-<!DOCTYPE suite SYSTEM "http://beust.com/testng/testng-1.0.dtd" >
-
-<suite name="All" verbose="1">
-    <test name="All">
-        <groups>
-            <run>
-                <exclude name="broken" />
-            </run>
-        </groups>
-        <packages>
-            <package name="ch.ethz.sis.openbis.systemtests.*" />
-        </packages>
-    </test>
+<suite name="allSuites">
+    <suite-files >
+        <suite-file path="tests-allservers.xml" />
+        <suite-file path="tests-rocrate.xml" />
+    </suite-files>
 </suite>

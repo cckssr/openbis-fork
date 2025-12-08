@@ -5,6 +5,7 @@ public class Config
 
     private static Config INSTANCE;
 
+
     private final boolean removeDanglingReferences;
 
     private final boolean writeSchema;
@@ -51,6 +52,11 @@ public class Config
     {
         INSTANCE = new Config(removeDanglingReferences, writeSchema, enforceSingleValues);
 
+    }
+
+    public static void setINSTANCE(Config INSTANCE)
+    {
+        Config.INSTANCE = INSTANCE;
     }
 
     public static Config getINSTANCE()

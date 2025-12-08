@@ -87,6 +87,16 @@ public class TestInstanceHostUtils
         return "/afs-server";
     }
 
+    public static int getRoCratePort()
+    {
+        return 8800 + getProjectNumber() + 6;
+    }
+
+    public static String getRoCrateUrl()
+    {
+        return OPENBIS_URL + ":" + getRoCratePort();
+    }
+
     private static int getProjectNumber()
     {
         String projectName = System.getProperty("ant.project.name", "");

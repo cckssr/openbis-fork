@@ -194,7 +194,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <TextField
           reference={this.references.label}
-          label={messages.get(messages.LABEL)}
+          label={messages.get(messages.PROPERTY_LABEL)}
           name='label'
           mandatory={true}
           error={error}
@@ -413,7 +413,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
       <div className={classes.field}>
         <SelectField
           reference={this.references.vocabulary}
-          label={messages.get(messages.VOCABULARY_TYPE)}
+          label={messages.get(messages.VOCABULARY_CODE)}
           name='vocabulary'
           mandatory={true}
           error={error}
@@ -646,9 +646,7 @@ class EntityTypeFormParametersProperty extends React.PureComponent {
           disabled={!enabled}
           value={value}
           options={options}
-          emptyOption={
-            property.original && property.original.plugin.value ? null : {}
-          }
+          emptyOption={{}}
           mode={mode}
           onChange={this.handleChange}
           onFocus={this.handleFocus}

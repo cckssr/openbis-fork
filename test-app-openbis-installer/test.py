@@ -30,7 +30,7 @@ import settings
 from systemtest.util import printAndFlush, renderDuration
 
 startTime = time.time()
-WAIT_SECONDS = 20
+WAIT_SECONDS = 40
 testCases = [] 
 failedTestCases = {}
 testCaseDurations = {}
