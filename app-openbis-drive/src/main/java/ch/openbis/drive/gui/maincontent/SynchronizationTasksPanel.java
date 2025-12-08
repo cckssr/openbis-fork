@@ -88,7 +88,7 @@ public class SynchronizationTasksPanel extends ResizablePanel {
             syncJobs.setValue(syncJobsResult.getOk());
 
             syncJobCards.setValue(syncJobs.getValue().stream().sorted(
-                    Comparator.comparing(SyncJob::getLocalDirectoryRoot)
+                    Comparator.comparing(SyncJob::getEntityPermId)
             ).map(syncJob -> new SyncJobCard(syncJob, syncTaskListContainer)).toList());
             syncTaskListContainer.getChildren().addAll(syncJobCards.getValue());
 

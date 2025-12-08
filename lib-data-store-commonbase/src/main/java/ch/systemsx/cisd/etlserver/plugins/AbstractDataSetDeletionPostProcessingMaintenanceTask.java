@@ -19,11 +19,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.lang3.time.DateUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
@@ -79,7 +79,7 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask
 
     protected ISimpleLogger getOperationLogAsSimpleLogger()
     {
-        return new Log4jSimpleLogger(operationLog);
+        return new SimpleLogger(operationLog);
     }
 
     public void setUp(String pluginName, Properties properties)

@@ -18,7 +18,7 @@ package ch.systemsx.cisd.common.concurrent;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 
 /**
  * Builder to build a {@link MessageChannel} object.
@@ -53,7 +53,7 @@ public class MessageChannelBuilder
 
     public MessageChannelBuilder logger(Logger logger)
     {
-        return logger(new Log4jSimpleLogger(logger));
+        return logger(new SimpleLogger(logger));
     }
 
     public MessageChannel getChannel()

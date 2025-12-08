@@ -38,7 +38,7 @@ import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.etlserver.api.v1.PutDataSetService;
@@ -489,7 +489,7 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
         List<Share> shares =
                 SegmentedStoreUtils.getSharesWithDataSets(getStoreDirectory(), dataStoreCode,
                         FilterOptions.ALL, Collections.<String>emptySet(), freeSpaceProvider,
-                        getOpenBISService(), new Log4jSimpleLogger(operationLog));
+                        getOpenBISService(), new SimpleLogger(operationLog));
         List<ShareInfo> result = new ArrayList<ShareInfo>();
         for (Share share : shares)
         {
@@ -534,7 +534,7 @@ public class DssServiceRpcGeneric extends AbstractDssServiceRpc<IDssServiceRpcGe
                     + newShare.getAbsolutePath());
         }
         getDataSetMover().moveDataSetToAnotherShare(new File(share, dataSetLocation), newShare,
-                null, new Log4jSimpleLogger(operationLog));
+                null, new SimpleLogger(operationLog));
     }
 
     private IDataSetMover getDataSetMover()

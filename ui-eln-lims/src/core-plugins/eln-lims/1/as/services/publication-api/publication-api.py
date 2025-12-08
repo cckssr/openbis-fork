@@ -18,7 +18,7 @@ from java.lang import String
 from java.util import ArrayList
 from java.util import HashMap
 from java.util import LinkedHashSet
-from org.apache.log4j import Logger
+from ch.ethz.sis.shared.log.classic.impl import Logger
 
 operationLog = Logger.getLogger(str(LogCategory.OPERATION) + '.publication-api.py')
 

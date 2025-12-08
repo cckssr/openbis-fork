@@ -37,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.EnvironmentFailureException;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -67,7 +67,7 @@ public class CorePluginsInjector
 
     static final String PLUGIN_PROPERTIES_FILE_NAME = "plugin.properties";
 
-    private static final ISimpleLogger DEFAULT_LOGGER = new Log4jSimpleLogger(LogFactory.getLogger(
+    private static final ISimpleLogger DEFAULT_LOGGER = new SimpleLogger(LogFactory.getLogger(
             LogCategory.OPERATION, CorePluginsInjector.class));
 
     private final ISimpleLogger logger;

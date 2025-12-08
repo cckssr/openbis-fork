@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -50,7 +49,6 @@ import ch.ethz.sis.afsclient.client.TemporaryPathUtil;
 import ch.ethz.sis.afsserver.startup.AtomicFileSystemServerParameter;
 import ch.ethz.sis.shared.startup.Configuration;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.*;
 
@@ -1289,6 +1287,118 @@ public abstract class BaseApiClientTest
         Assert.assertFalse(result);
         Assert.assertTrue(sneakyContentChangingMonitor.getException() instanceof IllegalStateException);
         Assert.assertEquals("Incomplete upload", sneakyContentChangingMonitor.getException().getMessage());
+    }
+
+    @Test
+    public void upload_successfully_with_file_names_starting_with_dot() throws Exception
+    {
+        login();
+
+        Path resourceDirectoryPath = Path.of(getClass().getClassLoader().getResource(UPLOAD_TEST_RESOURCE_DIRECTORY).getPath());
+        IOUtils.list(resourceDirectoryPath.toString(), true).forEach( file -> { try { IOUtils.delete(file.getPath()); } catch ( Exception e ) { throw new RuntimeException(e); }});
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/.test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            IOUtils.createFile(filePath.toAbsolutePath().toString());
+            IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+            assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/.subdir%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/.subsubdir%s_%s", i, j);
+                IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subsubDirName);
+                for(int k = 0; k<5; k++) {
+                    String testFileName = subsubDirName + String.format("/.test_%s_%s_%s.txt", i, j, k);
+                    if( k == 2 ){
+                        testFileName = testFileName + TemporaryPathUtil.OPENBIS_TMP_SUFFIX;
+                    }
+                    byte[] testFileContent;
+                    if(k != 4) {
+                        testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                    } else {
+                        testFileContent = new byte[0];
+                    }
+                    Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+                    IOUtils.createFile(filePath.toAbsolutePath().toString());
+                    IOUtils.write(filePath.toAbsolutePath().toString(), 0, testFileContent);
+                    assertArrayEquals(testFileContent, Files.readAllBytes(filePath));
+                }
+            }
+        }
+
+        int numberOfBigFiles = 3;
+        byte[][] bigFileSha256s = new byte[numberOfBigFiles][];
+        for(int i = 0; i<numberOfBigFiles ; i++) {
+            String subDirName = String.format("/.subdirwithbigfile%s", i);
+            IOUtils.createDirectory(resourceDirectoryPath.toAbsolutePath() + subDirName);
+            String testFileName = subDirName + String.format("/.bigfiletest_%s.txt", i);
+            Path filePath = Path.of(resourceDirectoryPath.toAbsolutePath() + testFileName);
+            IOUtils.createFile(filePath.toAbsolutePath().toString());
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            for(int j = 0; j < 100; j++) {
+                byte[] content = new byte[1000];
+                Arrays.fill(content, (byte) j);
+                IOUtils.write(filePath.toAbsolutePath().toString(), j * 1000, content);
+                sha256.update(content);
+            }
+            bigFileSha256s[i] = sha256.digest();
+        }
+
+        String serverUploadDirectory = "/uploads";
+        if (AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory).isPresent()) {
+            afsClient.delete(owner, serverUploadDirectory);
+        }
+        afsClient.create(owner, serverUploadDirectory, true);
+
+        afsClient.upload(resourceDirectoryPath, owner, Path.of(serverUploadDirectory), ClientAPI.overrideCollisionListener, new ClientAPI.DefaultTransferMonitorLister());
+
+        for(int i = 0; i<5; i++) {
+            String testFileName = String.format("/.test%s.txt", i);
+            byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s", i).getBytes(StandardCharsets.UTF_8);
+            Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+            assertArrayEquals(testFileContent, readChunk[0].getData());
+        }
+        for(int i = 0; i<3; i++) {
+            String subDirName = String.format("/.subdir%s", i);
+            for(int j = 0; j<3; j++) {
+                String subsubDirName = subDirName + String.format("/.subsubdir%s_%s", i, j);
+                for(int k = 0; k<5; k++) {
+                    if(k == 2) {
+                        String testFileName = subsubDirName + String.format("/.test_%s_%s_%s.txt", i, j, k) + TemporaryPathUtil.OPENBIS_TMP_SUFFIX;
+                        Assert.assertTrue(AfsClientUploadHelper.getServerFilePresence(afsClient, owner, serverUploadDirectory + testFileName).isEmpty());
+                    } else if(k == 4) {
+                        String testFileName = subsubDirName + String.format("/.test_%s_%s_%s.txt", i, j, k);
+                        byte[] testFileContent = new byte[0];
+                        Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+                        assertArrayEquals(testFileContent, readChunk[0].getData());
+                    } else {
+                        String testFileName = subsubDirName + String.format("/.test_%s_%s_%s.txt", i, j, k);
+                        byte[] testFileContent = String.format("TEST_FILE_CONTENT_%s_%s_%s", i, j, k).getBytes(StandardCharsets.UTF_8);
+                        Chunk[] readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, 0L, testFileContent.length, new byte[0])});
+                        assertArrayEquals(testFileContent, readChunk[0].getData());
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i<numberOfBigFiles ; i++) {
+            String subDirName = String.format("/.subdirwithbigfile%s", i);
+            String testFileName = subDirName + String.format("/.bigfiletest_%s.txt", i);
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            Chunk[] readChunk;
+            int j = 0;
+            do {
+                int offset = j * getMaxUsableChunkSize();
+                readChunk = afsClient.read(new Chunk[] {new Chunk(owner, serverUploadDirectory + testFileName, (long) offset, Integer.min(getMaxUsableChunkSize(), 100000 - offset), new byte[0])});
+                sha256.update(readChunk[0].getData());
+                j++;
+            } while (readChunk[0].getOffset() + readChunk[0].getData().length < 100000);
+            assertArrayEquals(bigFileSha256s[i], sha256.digest());
+        }
     }
 
     @Test

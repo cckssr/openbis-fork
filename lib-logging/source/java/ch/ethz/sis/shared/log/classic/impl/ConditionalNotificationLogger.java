@@ -26,7 +26,7 @@ import ch.ethz.sis.shared.log.standard.core.Priority;
  *
  * @author Christian Ribeaud
  */
-public final class ConditionalNotificationLogger extends Log4jSimpleLogger
+public final class ConditionalNotificationLogger extends SimpleLogger
 {
     private final Logger notificationLog;
 

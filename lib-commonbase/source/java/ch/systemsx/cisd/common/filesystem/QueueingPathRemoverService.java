@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.rinn.restrictions.Private;
 import ch.systemsx.cisd.base.exceptions.IOExceptionUnchecked;
 import ch.systemsx.cisd.base.exceptions.InterruptedExceptionUnchecked;
@@ -32,7 +33,6 @@ import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueDecorator;
 import ch.systemsx.cisd.common.io.PersistentExtendedBlockingQueueFactory;
 import ch.systemsx.cisd.common.io.QueuePersister;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -95,7 +95,7 @@ public class QueueingPathRemoverService
     public static synchronized final void start(final File storeRootOrNull, final File queueFileOrNull,
             TimingParameters parameters)
     {
-        final ISimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        final ISimpleLogger logger = new SimpleLogger(operationLog);
         final IFileRemover monitoringProxy = FileOperations.createMonitoredInstance(parameters);
         deepRemover = new LoggingPathRemoverDecorator(monitoringProxy, logger, false);
         if (queueFileOrNull != null)

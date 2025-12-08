@@ -20,13 +20,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.common.filesystem.tar.Tar;
 import ch.systemsx.cisd.common.io.MonitoredIOStreamCopier;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.openbis.dss.generic.shared.IHierarchicalContentProvider;
@@ -48,7 +48,7 @@ public class TarDataSetPackager extends AbstractDataSetPackager
         try
         {
             MonitoredIOStreamCopier copier = new MonitoredIOStreamCopier(bufferSize, maxQueueSizeInBytesOrNull);
-            copier.setLogger(new Log4jSimpleLogger(operationLog));
+            copier.setLogger(new SimpleLogger(operationLog));
             tar = new Tar(tarFile, copier);
         } catch (FileNotFoundException e)
         {

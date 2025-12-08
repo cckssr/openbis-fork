@@ -36,7 +36,7 @@ import ch.systemsx.cisd.authentication.ldap.LDAPAuthenticationService;
 import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.standard.handlers.BufferedAppender;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
 import ch.systemsx.cisd.common.utilities.SystemTimeProvider;
 import ch.systemsx.cisd.openbis.generic.server.CommonServiceProvider;
@@ -156,7 +156,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
             return;
         }
         operationLog.info("manage " + config.getGroups().size() + " groups");
-        Log4jSimpleLogger logger = new Log4jSimpleLogger(operationLog);
+        SimpleLogger logger = new SimpleLogger(operationLog);
         Set<String> knownUsers = new HashSet<>();
         UserManager userManager = createUserManager(config, logger, report);
         Set<String> usersToBeIgnored = getUsersToBeIgnored(config);
@@ -288,7 +288,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
         return new UserManagerReport(SystemTimeProvider.SYSTEM_TIME_PROVIDER, bufferedAppender);
     }
 
-    private UserManager createUserManager(UserManagerConfig config, Log4jSimpleLogger logger, UserManagerReport report)
+    private UserManager createUserManager(UserManagerConfig config, SimpleLogger logger, UserManagerReport report)
     {
         UserManager userManager = createUserManager(logger, report);
         userManager.setReuseHomeSpace(config.getReuseHomeSpace());
@@ -304,7 +304,7 @@ public class UserManagementMaintenanceTask extends AbstractGroupMaintenanceTask
         return userManager;
     }
 
-    protected UserManager createUserManager(Log4jSimpleLogger logger, UserManagerReport report)
+    protected UserManager createUserManager(SimpleLogger logger, UserManagerReport report)
     {
         IAuthenticationService authenticationService = (IAuthenticationService) CommonServiceProvider.tryToGetBean("authentication-service");
         UserManager userManager = new UserManager(authenticationService, CommonServiceProvider.getApplicationServerApi(),

@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
@@ -49,7 +50,6 @@ import ch.systemsx.cisd.common.filesystem.HostAwareFile;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.maintenance.IDataStoreLockingMaintenanceTask;
@@ -230,7 +230,7 @@ public class ExperimentBasedArchivingTask implements IDataStoreLockingMaintenanc
 
     private Map<String, Long> setUpEstimatedDataSetSizes(Properties properties)
     {
-        ISimpleLogger log = new Log4jSimpleLogger(operationLog);
+        ISimpleLogger log = new SimpleLogger(operationLog);
         Properties dataSetSizeProps =
                 ExtendedProperties.getSubset(properties, DATA_SET_SIZE_PREFIX, true);
         Map<String, Long> result = new HashMap<String, Long>();

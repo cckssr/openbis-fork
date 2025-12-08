@@ -43,6 +43,8 @@ public class ProtobufConversionUtil {
             syncJob.setOpenBisPersonalAccessToken(syncJobDto.getOpenBisPersonalAccessToken());
             syncJob.setRemoteDirectoryRoot(syncJobDto.getRemoteDirectoryRoot());
             syncJob.setLocalDirectoryRoot(syncJobDto.getLocalDirectoryRoot());
+            syncJob.setSkipHiddenFiles(syncJobDto.getSkipHiddenFiles());
+            syncJob.setHiddenPathPatterns(new ArrayList<>(syncJobDto.getHiddenPathPatterns().getHiddenPathPatternsList().stream().toList()));
             syncJobs.add(syncJob);
         }
 
@@ -61,6 +63,8 @@ public class ProtobufConversionUtil {
             syncJobBuilder.setEntityPermId(syncJob.getEntityPermId());
             syncJobBuilder.setOpenBisPersonalAccessToken(syncJob.getOpenBisPersonalAccessToken());
             syncJobBuilder.setRemoteDirectoryRoot(syncJob.getRemoteDirectoryRoot());
+            syncJobBuilder.setSkipHiddenFiles(syncJob.isSkipHiddenFiles());
+            syncJobBuilder.setHiddenPathPatterns(DriveApiService.HiddenPathPatterns.newBuilder().addAllHiddenPathPatterns(syncJob.getHiddenPathPatterns()).build());
             builder.addSyncJobs(syncJobBuilder.build());
         }
 

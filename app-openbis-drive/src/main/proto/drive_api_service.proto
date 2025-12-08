@@ -17,12 +17,18 @@ message SyncJob {
     string remote_directory_root = 5;
     string local_directory_root = 6;
     bool enabled = 7;
+    bool skip_hidden_files = 8;
+    HiddenPathPatterns hidden_path_patterns = 9;
 
     enum Type {
       BIDIRECTIONAL = 0;
       UPLOAD = 1;
       DOWNLOAD = 2;
     }
+}
+
+message HiddenPathPatterns {
+    repeated string hidden_path_patterns = 1;
 }
 
 message SyncJobs {

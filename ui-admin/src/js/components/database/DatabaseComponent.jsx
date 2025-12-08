@@ -214,18 +214,18 @@ class DatabaseComponent extends React.PureComponent {
         {this.renderJson()}
       </div>,
       <div key="files">
-        {/* <DataBrowser
-              key={object.id}
-              id={object.id}
-              objId={object.id}
-              objKind={object.type}
-              kind={object.type}
-              viewType='list'
-              extOpenbis={openbis}
-              onLoadDisplaySettings={this.loadGridSettings}
-              onStoreDisplaySettings={this.onGridSettingsChange}
-              leftToolbar={true}
-            /> */}
+      <DataBrowser
+        key={object.id}
+        id={object.id}
+        objId={object.id}
+        objKind={object.type}
+        kind={object.type}
+        viewType='list'
+        extOpenbis={openbis}
+        onLoadDisplaySettings={this.loadGridSettings}
+        onStoreDisplaySettings={this.onGridSettingsChange}
+        leftToolbar={true}
+      />
       </div>,
       <div key="images">
         {(object.type === objectType.COLLECTION
@@ -295,10 +295,10 @@ class DatabaseComponent extends React.PureComponent {
     closeForm: (params) => this.closeForm(params.type, params.id)
   }
 
+
   renderJson() {
     const { object } = this.props
     console.log('DatabaseComponent.renderJson', { object });
-
     return (<EntityFormContextProvider openbisFacade={openbis}
       params={object.params}
       entityKind={object.type}
@@ -319,7 +319,6 @@ class DatabaseComponent extends React.PureComponent {
     const { properties } = this.state.json
     if (object.type === objectType.DATA_SET && constants.IMAGING_DATA_CONFIG in properties) return this.renderImagingDataset(object)
     return this.state.showDataBrowser ? this.renderDataBrowsers() : this.renderJson()
-    //return this.renderJson()
   }
 }
 

@@ -28,7 +28,7 @@ import org.springframework.remoting.RemoteAccessException;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
 import ch.systemsx.cisd.base.namedthread.NamingThreadPoolExecutor;
 import ch.systemsx.cisd.common.concurrent.MonitoringProxy;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -81,7 +81,7 @@ public class DataStoreServiceFactory implements IDataStoreServiceFactory
         {
             return MonitoringProxy
                     .create(IDataStoreService.class, create(serverURL))
-                    .errorLog(new Log4jSimpleLogger(machineLog))
+                    .errorLog(new SimpleLogger(machineLog))
                     .logLevelForSuccessfulCalls(logLevelForNotSuccessfulCalls)
                     .logLevelForNotSuccessfulCalls(LogLevel.WARN)
                     .timing(TimingParameters.create(-1L, 5, DateUtils.MILLIS_PER_MINUTE))

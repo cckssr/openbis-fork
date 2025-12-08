@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import ch.ethz.sis.afsapi.api.ClientAPI;
 import ch.ethz.sis.afsapi.api.ClientAPI.FileCollisionListener;
@@ -19,6 +20,7 @@ import ch.ethz.sis.afsclient.client.AfsClientDownloadHelper.ChunkIterable;
 import ch.ethz.sis.transaction.api.TransactionOperationException;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.io.IOUtils;
 
 public class AfsClientUploadHelper
 {
@@ -199,7 +201,7 @@ public class AfsClientUploadHelper
         //Deal with case: sourcePath regular file, destinationPath directory
         if (Files.isRegularFile(nextFile) && relativeSourcePath.toString().isEmpty() && (destinationInfo == null || destinationInfo.getDirectory()))
         {
-            absoluteServerPath = destinationPath.resolve(nextFile.getFileName());
+            absoluteServerPath = destinationPath.resolve(Optional.ofNullable(nextFile.getFileName()).orElse(Path.of("")));
         } else
         {
             absoluteServerPath = destinationPath.resolve(relativeSourcePath);
@@ -587,8 +589,8 @@ public class AfsClientUploadHelper
                     if (Files.isDirectory(head))
                     {
                         List<Path> dirPaths = Files.list(head)
-                                .filter(entry -> !entry.getFileName().toString().startsWith("."))
                                 .filter(entry -> !TemporaryPathUtil.isTwinTemporaryPath(entry))
+                                .filter(entry -> !isAfsHiddenFile(entry))
                                 .collect(Collectors.toList());
                         todo.addAll(dirPaths);
                     }
@@ -708,5 +710,12 @@ public class AfsClientUploadHelper
             stringBuilder.append(AFS_SERVER_PATH_SEPARATOR);
         }
         return stringBuilder.toString();
+    }
+
+    public static final String HIDDEN_AFS_DIRECTORY = ".afs";
+    public static boolean isAfsHiddenFile(@NonNull Path path) {
+        return StreamSupport.stream(path.toAbsolutePath().normalize().spliterator(), false).anyMatch(
+                pathSegment -> pathSegment.toString().equals(HIDDEN_AFS_DIRECTORY)
+        );
     }
 }

@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileCopyUtils;
 import org.apache.commons.io.FileSystemUtils;
 import org.apache.commons.io.FileUtils;
@@ -48,7 +49,6 @@ import ch.systemsx.cisd.common.concurrent.IActivityObserver;
 import ch.systemsx.cisd.common.concurrent.MonitoringProxy;
 import ch.systemsx.cisd.common.concurrent.RecordingActivityObserverSensor;
 import ch.systemsx.cisd.common.exceptions.UnknownLastChangedException;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.time.TimingParameters;
@@ -132,7 +132,7 @@ public class FileOperations implements IFileOperations, Serializable
         return MonitoringProxy.create(IFileOperations.class,
                 new FileOperations(parameters, observerSensor)).timing(parameters).sensor(
                         observerSensor)
-                .errorLog(new Log4jSimpleLogger(operationLog)).name(
+                .errorLog(new SimpleLogger(operationLog)).name(
                         "remote file operations")
                 .get();
     }

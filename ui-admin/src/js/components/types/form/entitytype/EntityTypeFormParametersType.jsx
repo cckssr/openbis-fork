@@ -11,6 +11,7 @@ import objectTypes from '@src/js/common/consts/objectType.js'
 import Message from '@src/js/components/common/form/Message.jsx'
 import messages from '@src/js/common/messages.js'
 import logger from '@src/js/common/logger.js'
+import MultiSelectField from '@src/js/components/common/form/MultiSelectField.jsx';
 
 const styles = theme => ({
   field: {
@@ -101,7 +102,36 @@ class EntityTypeFormParametersType extends React.PureComponent {
         {this.renderMainDataSetPattern(type)}
         {this.renderMainDataSetPath(type)}
         {this.renderDisallowDeletion(type)}
+        {this.renderTypegroups(type)}
       </Container>
+    )
+  }
+
+  renderTypegroups(type) {
+    logger.log(logger.DEBUG, 'EntityTypeFormParametersType.renderTypegroups')
+
+    if (type.objectType.value !== objectTypes.OBJECT_TYPE && type.objectType.value !== objectTypes.NEW_OBJECT_TYPE) {
+      return null
+    }
+    const { typeGroups = [] } = this.props.controller.getDictionaries()
+    const { mode, classes } = this.props
+
+    return (
+      <>
+        <Header>{messages.get(messages.OBJECT_TYPE_GROUPS)}</Header>
+        <div className={classes.field}>
+          <MultiSelectField
+            name='typeGroupsAssignments'
+            mode={mode}
+            label={messages.get(messages.ASSIGNED_TYPE_GROUPS)}
+            options={typeGroups}
+            value={type.typeGroupsAssignments.value}
+            onChange={this.handleChange}
+            onFocus={this.handleFocus}
+            onBlur={this.handleBlur}
+          />
+        </div>
+      </>
     )
   }
 

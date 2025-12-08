@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import org.apache.commons.io.FileUtils;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 
@@ -31,7 +32,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.filesystem.IFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.ethz.sis.shared.log.classic.ISimpleLogger;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.core.LogLevel;
@@ -132,8 +132,8 @@ public class EagerShufflingTask extends AbstractPostRegistrationTaskForPhysicalD
                         .getShareIdManager(), new SimpleFreeSpaceProvider(), new DataSetMover(service,
                         ShufflingServiceProviderFactory.getInstance().getShareIdManager()),
                 ShufflingServiceProviderFactory.getInstance().getConfigProvider(),
-                ShufflingServiceProviderFactory.getInstance().getChecksumProvider(), new Log4jSimpleLogger(
-                        operationLog), new Log4jSimpleLogger(notificationLog));
+                ShufflingServiceProviderFactory.getInstance().getChecksumProvider(), new SimpleLogger(
+                        operationLog), new SimpleLogger(notificationLog));
     }
 
     @Private

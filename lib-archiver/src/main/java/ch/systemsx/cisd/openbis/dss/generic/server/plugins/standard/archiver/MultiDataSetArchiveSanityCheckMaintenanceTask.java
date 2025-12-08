@@ -41,7 +41,7 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.filesystem.SimpleFreeSpaceProvider;
 import ch.systemsx.cisd.common.filesystem.rsync.RsyncArchiveCopierFactory;
 import ch.systemsx.cisd.common.filesystem.ssh.SshCommandExecutorFactory;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.systemsx.cisd.common.mail.EMailAddress;
@@ -307,7 +307,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
         {
             mainContent = operationsManager.getContainerAsHierarchicalContent(container.getPath(), containerDataSetDescriptions);
             MultiDataSetArchivingUtils.sanityCheck(mainContent, containerDataSetDescriptions, verifyChecksums, archiverContext,
-                    new Log4jSimpleLogger(operationLog));
+                    new SimpleLogger(operationLog));
         } catch (Exception e)
         {
             throw new RuntimeException("Sanity check of the main copy of failed", e);
@@ -325,7 +325,7 @@ public class MultiDataSetArchiveSanityCheckMaintenanceTask implements IMaintenan
             replicaContent =
                     operationsManager.getReplicaAsHierarchicalContent(container.getPath(), containerDataSetDescriptions);
             MultiDataSetArchivingUtils.sanityCheck(replicaContent, containerDataSetDescriptions, verifyChecksums, archiverContext,
-                    new Log4jSimpleLogger(operationLog));
+                    new SimpleLogger(operationLog));
         } catch (Exception e)
         {
             throw new RuntimeException("Sanity check of the replica copy failed", e);

@@ -13,10 +13,12 @@ import lombok.NonNull;
 import org.apache.commons.cli.*;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Pattern;
 
 import static ch.ethz.sis.afsclient.client.AfsClientUploadHelper.toServerPathString;
 
@@ -35,10 +37,16 @@ public class DriveAPICmdLineApp {
      * <p>
      * Prints jobs on the standard output, one per line, fields separated by tabs
      * ./drive-app jobs
-     * ./drive-app jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false
+     * ./drive-app jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false  ( optional: -skipHiddenFiles=true|false with default-value: true )
      * ./drive-app jobs remove -dir='./dir-a/dir-b'
      * ./drive-app jobs start -dir='./dir-a/dir-b'
      * ./drive-app jobs stop -dir='./dir-a/dir-b'
+     * ./drive-app jobs hidden-path-patterns -> shows the predefined hidden path-patterns
+     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' (shows the hidden path-patterns for the job related to this local directory)
+     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset (resets the hidden path-patterns to default-values for the job related to this local directory)
+     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
+     * ./drive-app jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
+     *     from UTF-8 multiline text-file with a regular expression on each line
      * <p>
      * Prints notifications on the standard output, one per line, fields separated by tabs
      * ./drive-app notifications -limit=100 (default: 100)
@@ -129,6 +137,7 @@ public class DriveAPICmdLineApp {
                 case "remove" -> handleRemoveJobCommand(args);
                 case "start" -> handleStartJobCommand(args);
                 case "stop" -> handleStopJobCommand(args);
+                case "hidden-path-patterns" -> handleHiddenPathPatternsJobCommand(args);
                 default -> {
                     System.out.printf("Unknown 'jobs' subcommand %s\n", args[1]);
                     printHelp();
@@ -221,7 +230,18 @@ public class DriveAPICmdLineApp {
             printHelp();
             return;
         }
-        addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled);
+        Boolean skipHiddenFiles = null;
+        if (commandLine.hasOption("skipHiddenFiles")) {
+            try {
+                skipHiddenFiles = Boolean.parseBoolean(commandLine.getOptionValue("skipHiddenFiles"));
+            } catch (Exception e) {
+                System.out.println("Wrong '-skipHiddenFiles=' option\n");
+                printHelp();
+                return;
+            }
+        }
+
+        addJob(syncJobType, localDirectory, openBISurl, entityPermId, personalAccessToken, toServerPathString(Path.of(remoteDirectory)), enabled, skipHiddenFiles);
     }
 
     void handleRemoveJobCommand(String[] args) throws Exception {
@@ -296,6 +316,86 @@ public class DriveAPICmdLineApp {
         stopJob(localDirectory);
     }
 
+    void handleHiddenPathPatternsJobCommand(String[] args) throws Exception {
+        Options options = new Options();
+        options.addOption(Option.builder()
+                .option("dir").longOpt("dir").required(false).hasArg(true).desc("Local synchronized directory: required").get());
+        options.addOption(Option.builder()
+                .option("reset").longOpt("reset").required(false).hasArg(false).desc("Reset hidden path-patterns to default-values: optional").get());
+        options.addOption(Option.builder()
+                .option("set").longOpt("set").required(false).hasArg(false).desc("Set new hidden path-patterns from console-input: optional").get());
+        options.addOption(Option.builder()
+                .option("setFromFile").longOpt("setFromFile").required(false).hasArg(true).desc("Set new hidden path-patterns from file: optional").get());
+        CommandLineParser commandLineParser = new DefaultParser();
+        CommandLine commandLine;
+        try {
+            commandLine = commandLineParser.parse(options, args);
+        } catch (Exception e) {
+            System.out.println("Wrong options\n");
+            printHelp();
+            return;
+        }
+
+        if ( commandLine.hasOption("dir") ) {
+            String localDirectory;
+            try {
+                localDirectory = commandLine.getOptionValue("dir");
+            } catch (Exception e) {
+                System.out.println("Wrong '-dir=' option\n");
+                printHelp();
+                return;
+            }
+
+            boolean resetToDefault = commandLine.hasOption("reset");
+
+            String setNewMultiLineValue = null;
+            if ( commandLine.hasOption("set") ) {
+                try {
+                    System.out.println("Please, enter new regular expressions one per line. End with empty line:");
+                    Scanner scanner = new Scanner(System.in);
+                    StringBuilder multilineValueBuilder = new StringBuilder();
+
+                    while (true) {
+                        String input = scanner.nextLine();
+
+                        if (input.isBlank()) {
+                            setNewMultiLineValue = multilineValueBuilder.toString();
+                            break;
+                        } else {
+                            multilineValueBuilder.append(input.trim()).append(System.lineSeparator());
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error reading new hidden path-patterns\n");
+                    printHelp();
+                    return;
+                }
+            } else if ( commandLine.hasOption("setFromFile") ) {{
+                try {
+                    setNewMultiLineValue = new String(
+                            Files.readAllBytes(Path.of(commandLine.getOptionValue("setFromFile"))),
+                            StandardCharsets.UTF_8
+                    );
+                } catch (Exception e) {
+                    System.out.println("Error reading new hidden path-patterns from file\n");
+                    printHelp();
+                    return;
+                }
+            }
+            }
+
+            if ( resetToDefault ) {
+                resetHiddenPathPatternsToDefault(localDirectory);
+            } else if ( setNewMultiLineValue != null ) {
+                setHiddenPathPatterns(localDirectory, setNewMultiLineValue);
+            } else {
+                showHiddenPathPatterns(localDirectory);
+            }
+        } else {
+            showDefaultHiddenPathPatterns();
+        }
+    }
+
     void handleConfigCommand(String[] args) throws Exception {
         if (args.length == 1) {
             printConfig();
@@ -362,11 +462,18 @@ public class DriveAPICmdLineApp {
                 config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
                 
                 jobs    -> prints the currently registered synchronization-jobs
-                jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false
+                jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
                 jobs remove -dir='./dir-a/dir-b'
                 jobs start -dir='./dir-a/dir-b'
                 jobs stop -dir='./dir-a/dir-b'
                 
+                jobs hidden-path-patterns -> shows the predefined hidden path-patterns
+                jobs hidden-path-patterns -dir='./dir-a/dir-b' -> shows the hidden path-patterns for the job related to this local directory
+                jobs hidden-path-patterns -dir='./dir-a/dir-b' -reset -> resets the hidden path-patterns to default-values for the job related to this local directory
+                jobs hidden-path-patterns -dir='./dir-a/dir-b' -set -> sets new hidden path-patterns from console-input
+                jobs hidden-path-patterns -dir='./dir-a/dir-b' -setFromFile=./documents/new-patterns.txt -> sets new hidden path-patterns
+                    from UTF-8 multiline text-file with a regular expression on each line
+
                 notifications -limit=100   (default: 100)  -> prints the last limit-number of notifications
                 events -limit=100   (default: 100)  -> prints the last limit-number of events""");
     }
@@ -414,7 +521,7 @@ public class DriveAPICmdLineApp {
         }
     }
 
-    void addJob(@NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled) throws Exception {
+    void addJob(@NonNull SyncJob.Type type, @NonNull String localDirectory, @NonNull String openBISurl, @NonNull String entityPermId, @NonNull String personalAccessToken, @NonNull String remoteDirectory, boolean enabled, Boolean skipHiddenFiles) throws Exception {
         try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
             SyncJob newSyncJob = new SyncJob();
             newSyncJob.setType(type);
@@ -424,6 +531,7 @@ public class DriveAPICmdLineApp {
             newSyncJob.setOpenBisPersonalAccessToken(personalAccessToken);
             newSyncJob.setRemoteDirectoryRoot(remoteDirectory);
             newSyncJob.setEnabled(enabled);
+            newSyncJob.setSkipHiddenFiles( skipHiddenFiles != null ? skipHiddenFiles : true);
             driveAPIClient.addSyncJobs(Collections.singletonList(newSyncJob));
             printJobs();
         } catch (Exception e) {
@@ -499,6 +607,120 @@ public class DriveAPICmdLineApp {
                 System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
             }
         }
+    }
+
+    void showDefaultHiddenPathPatterns() throws Exception {
+        System.out.println("Default hidden path-patterns:");
+        System.out.println("----------");
+        SyncJob.getDefaultHiddenPathPatterns().forEach(System.out::println);
+        System.out.println("----------");
+    }
+
+    void showHiddenPathPatterns(@NonNull String localDirectory) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+            String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
+
+            Optional<SyncJob> syncJob = driveAPIClient.getSyncJobs().stream().filter(
+                    item -> Path.of(item.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)
+            ).findFirst();
+
+            if ( syncJob.isPresent() ) {
+                printSyncJob(syncJob.get());
+                System.out.println("Hidden path-patterns:");
+                System.out.println("----------");
+                syncJob.get().getHiddenPathPatterns().forEach(System.out::println);
+                System.out.println("----------");
+            } else {
+                System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
+            }
+
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
+        }
+    }
+
+    void resetHiddenPathPatternsToDefault(@NonNull String localDirectory) throws Exception {
+        try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+            String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
+
+            Optional<SyncJob> syncJob = driveAPIClient.getSyncJobs().stream().filter(
+                    item -> Path.of(item.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)
+            ).findFirst();
+
+            if ( syncJob.isPresent() ) {
+
+                driveAPIClient.removeSyncJobs(Collections.singletonList(syncJob.get()));
+                syncJob.get().setHiddenPathPatterns(new ArrayList<>(SyncJob.getDefaultHiddenPathPatterns()));
+                driveAPIClient.addSyncJobs(Collections.singletonList(syncJob.get()));
+
+                showHiddenPathPatterns(localDirectory);
+            } else {
+                System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
+            }
+
+        } catch (Exception e) {
+            if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                System.out.println("OpenBIS Drive Service is not running.");
+            } else {
+                System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+            }
+        }
+    }
+
+    void setHiddenPathPatterns(@NonNull String localDirectory, @NonNull String multiLineHiddenPathPatterns) throws Exception {
+        if ( validateMultiLineHiddenPathPatterns(multiLineHiddenPathPatterns) ) {
+            try ( DriveAPIClientProtobufImpl driveAPIClient = getNewDriveAPIClient() ) {
+                String localDirectoryAbsolutePath = Path.of(localDirectory).toAbsolutePath().toString();
+
+                Optional<SyncJob> syncJob = driveAPIClient.getSyncJobs().stream().filter(
+                        item -> Path.of(item.getLocalDirectoryRoot()).toAbsolutePath().toString().equals(localDirectoryAbsolutePath)
+                ).findFirst();
+
+                if ( syncJob.isPresent() ) {
+
+                    driveAPIClient.removeSyncJobs(Collections.singletonList(syncJob.get()));
+                    syncJob.get().setHiddenPathPatterns(
+                            new ArrayList<>(Arrays.stream(multiLineHiddenPathPatterns.split("[\\r\\n]+"))
+                            .filter(str -> !str.isBlank())
+                            .map(String::trim)
+                            .toList()));
+                    driveAPIClient.addSyncJobs(Collections.singletonList(syncJob.get()));
+
+                    showHiddenPathPatterns(localDirectory);
+                } else {
+                    System.out.println(String.format("Synchronization-job not found for local directory: %s", localDirectory));
+                }
+
+            } catch (Exception e) {
+                if (e instanceof StatusRuntimeException && Status.UNAVAILABLE.getCode() == ((StatusRuntimeException) e).getStatus().getCode()) {
+                    System.out.println("OpenBIS Drive Service is not running.");
+                } else {
+                    System.out.println(String.format("Error: %s, %s", e.getClass().getSimpleName(), e.getMessage()));
+                }
+            }
+        } else {
+            System.out.println("Bad hidden path-patterns");
+        }
+    }
+
+    boolean validateMultiLineHiddenPathPatterns(@NonNull String multiLineHiddenPathPatterns) {
+        if(!multiLineHiddenPathPatterns.isBlank()) {
+            for(String hiddenPathPattern : multiLineHiddenPathPatterns.split("[\\r\\n]+")) {
+                if (!hiddenPathPattern.isBlank()) {
+                    try {
+                        Pattern.compile(hiddenPathPattern.trim());
+                    } catch (Exception e) {
+                        System.out.println(String.format("Wrong regular expression: %s", hiddenPathPattern));
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     void printJobs() throws Exception {
@@ -583,6 +805,7 @@ public class DriveAPICmdLineApp {
         System.out.println("Remote directory: " + syncJob.getRemoteDirectoryRoot());
         System.out.println("Personal access token: " + syncJob.getOpenBisPersonalAccessToken());
         System.out.println("Enabled: " + syncJob.isEnabled());
+        System.out.println("Skip hidden files: " + syncJob.isSkipHiddenFiles());
     }
 
     void handleStartCommand(String[] args) throws Exception {

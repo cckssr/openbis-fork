@@ -1,7 +1,7 @@
 package ch.ethz.sis.openbis.generic.server.as.plugins.imaging.archiving;
 
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
-import ch.ethz.sis.shared.log.classic.impl.Log4jSimpleLogger;
+import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.systemsx.cisd.base.exceptions.CheckedExceptionTunnel;
@@ -26,7 +26,7 @@ public final class TarImagingPackager extends AbstractImagingPackager
         {
             MonitoredIOStreamCopier
                     copier = new MonitoredIOStreamCopier(bufferSize, maxQueueSizeInBytesOrNull);
-            copier.setLogger(new Log4jSimpleLogger(operationLog));
+            copier.setLogger(new SimpleLogger(operationLog));
             tar = new Tar(tarFile, copier);
         } catch (FileNotFoundException e)
         {
