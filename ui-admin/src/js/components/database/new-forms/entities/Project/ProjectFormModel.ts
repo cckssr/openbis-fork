@@ -1,6 +1,7 @@
 import { Form, IExtendedActionContext } from '@src/js/components/database/new-forms/types/formITypes.ts';
 import { FormMode, FormSection, EntityKind } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import { getPermIdField, getIdentifierField, getPathField, getSpaceField, getCodeField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getDescriptionField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
+import { getAutoSaveAction, getCancelAction, getDividerAction, getEditAction, getMoveAction, getSaveAction, getNewCollectionAction, getDeleteAction, getNewObjectAction, getMoreActionsAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class ProjectFormModel {
 
@@ -30,50 +31,19 @@ export class ProjectFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				{
-					name: 'project:save',
-					label: 'Save',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'edit',
-					label: 'Edit',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'cancel',
-					label: 'Cancel',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'auto-save',
-					label: 'Auto-save',
-					component: 'switch',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				}
+				getNewCollectionAction(EntityKind.PROJECT),
+				getNewObjectAction(EntityKind.PROJECT),
+				getDividerAction(FormMode.VIEW),
+				getEditAction(),
+				getMoveAction(),
+				getDeleteAction(),
+				getDividerAction(FormMode.VIEW),
+				getMoreActionsAction(),
+				getSaveAction(EntityKind.PROJECT),
+				getCancelAction(),
+				getDividerAction(FormMode.EDIT),
+				getAutoSaveAction(),
+				
 			],
 		};
 	}

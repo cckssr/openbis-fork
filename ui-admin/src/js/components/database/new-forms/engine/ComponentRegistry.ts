@@ -9,6 +9,8 @@ import { CKEditorFieldRenderer } from '@src/js/components/database/new-forms/com
 
 import { ButtonActionRenderer } from '@src/js/components/database/new-forms/components/actions/ButtonActionRenderer.tsx';
 import { SwitchActionRenderer } from '@src/js/components/database/new-forms/components/actions/SwitchActionRenderer.tsx';
+import { DividerActionRenderer } from '@src/js/components/database/new-forms/components/actions/DividerActionRenderer.tsx';
+import { DropdownActionRenderer } from '@src/js/components/database/new-forms/components/actions/DropdownActionRenderer.tsx';
 
 class ComponentRegistry {
   static getFieldRenderer(dataType: string) {
@@ -39,6 +41,10 @@ class ComponentRegistry {
         return ButtonActionRenderer;
       case 'switch':
         return SwitchActionRenderer;
+      case 'divider':
+        return DividerActionRenderer;
+      case 'dropdown':
+        return DropdownActionRenderer;
       default:
         return ButtonActionRenderer;
     }

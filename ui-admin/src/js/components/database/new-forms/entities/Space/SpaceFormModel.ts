@@ -2,6 +2,7 @@ import { Form, IExtendedActionContext } from '@src/js/components/database/new-fo
 import { getCodeField, getDescriptionField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField } from '@src/js/components/database/new-forms/entities/formFieldGetters.ts';
 import { EntityKind, FormMode } from '@src/js/components/database/new-forms/types/formEnums.ts';
 import objectType from '@src/js/common/consts/objectType.js'
+import { getSaveAction, getEditAction, getCancelAction, getAutoSaveAction, getNewProjectAction, getDividerAction, getDeleteAction, getMoreActionsAction, getNewObjectAction } from '@src/js/components/database/new-forms/entities/actionsFieldGetters.ts';
 
 export class SpaceFormModel {
 
@@ -27,50 +28,17 @@ export class SpaceFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				{
-					name: 'space:save',
-					label: 'Save',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'edit',
-					label: 'Edit',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'cancel',
-					label: 'Cancel',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'auto-save',
-					label: 'Auto-save',
-					component: 'switch',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				}
+				getNewProjectAction(),
+				getNewObjectAction(EntityKind.SPACE),
+				getDividerAction(FormMode.VIEW),
+				getEditAction(),
+				getDeleteAction(), //TODO: implement delete for space
+				getDividerAction(FormMode.VIEW),
+				getMoreActionsAction(),
+				getSaveAction(EntityKind.SPACE),
+				getCancelAction(),
+				getDividerAction(FormMode.EDIT),
+				getAutoSaveAction(),
 			]
 		};
 	}

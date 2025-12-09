@@ -1,7 +1,8 @@
 import { Form } from "@src/js/components/database/new-forms/types/formITypes.ts";
-import { FormMode, FormSection } from "@src/js/components/database/new-forms/types/formEnums.ts";
+import { EntityKind, FormMode, FormSection } from "@src/js/components/database/new-forms/types/formEnums.ts";
 import { getCodeField, getPermIdField, getIdentifierField, getPathField, getRegistratorField, getRegistrationDateField, getModifierField, getModificationDateField, getTypeField, getPropertyFieldsFromAssignments } from "@src/js/components/database/new-forms/entities/formFieldGetters.ts";
 import { IExtendedActionContext } from "@src/js/components/database/new-forms/types/formITypes.ts";
+import { getNewObjectAction, getNewDatasetAction, getDividerAction, getEditAction, getMoveAction, getAutoSaveAction, getDeleteAction, getCancelAction, getMoreActionsAction, getSaveAction } from "@src/js/components/database/new-forms/entities/actionsFieldGetters.ts";
 
 export class CollectionFormModel {
 
@@ -35,50 +36,18 @@ export class CollectionFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				{
-					name: 'collection:save',
-					label: 'Save',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'edit',
-					label: 'Edit',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.VIEW,
-						},
-					],
-				},
-				{
-					name: 'cancel',
-					label: 'Cancel',
-					component: 'button',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				},
-				{
-					name: 'auto-save',
-					label: 'Auto-save',
-					component: 'switch',
-					isAllowed: true,
-					visibility: [
-						{
-							mode: FormMode.EDIT,
-						},
-					],
-				}
+				getNewObjectAction(EntityKind.COLLECTION),
+				getNewDatasetAction(EntityKind.COLLECTION),
+				getDividerAction(FormMode.VIEW),
+				getEditAction(),
+				getMoveAction(),
+				getDeleteAction(),
+				getDividerAction(FormMode.VIEW),
+				getMoreActionsAction(),
+				getSaveAction(EntityKind.COLLECTION),
+				getCancelAction(),
+				getDividerAction(FormMode.EDIT),
+				getAutoSaveAction(),
 			],
 		};
 	}
