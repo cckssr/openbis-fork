@@ -68,10 +68,11 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.38")
 
     api(project(":lib-json"))
-    api(project(":api-data-store-server-java"))
+    api(project(":api-openbis-java"))
 
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("commons-cli:commons-cli:1.10.0")
+    implementation("slf4j:slf4j-api:1.7.24")
 
     //GOOGLE PROTOBUF
     implementation("com.google.protobuf:protobuf-java:4.31.1")

@@ -54,8 +54,7 @@ public class BasicImport
             importOperation.setImportOptions(importOptions);
 
             AsynchronousOperationExecutionResults ongoingOperations =
-                    (AsynchronousOperationExecutionResults) openBIS.executeOperations(
-                            openBIS.getSessionToken(), List.of(importOperation),
+                    (AsynchronousOperationExecutionResults) openBIS.executeOperations(List.of(importOperation),
                             new AsynchronousOperationExecutionOptions());
             // ImportResult importResult = openBIS.executeImport(importData, importOptions);
 
