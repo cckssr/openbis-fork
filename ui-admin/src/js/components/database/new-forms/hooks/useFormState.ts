@@ -9,6 +9,7 @@ interface UseFormStateProps {
 
 interface UseFormStateReturn {
   form: Form | null;
+  originalForm: Form | null; // Original form state for comparison
   mode: FormMode;
   isDirty: boolean;
   isValid: boolean;
@@ -108,6 +109,7 @@ export const useFormState = ({
 
   return {
     form,
+    originalForm,
     mode,
     isDirty,
     isValid,

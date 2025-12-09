@@ -11,19 +11,19 @@ class ActionToastCtx {
   }
 
   public raiseSuccess(message: string) {
-    this.raise(message, 'success', 3000);
+    this.raise(message, 'success', 5000);
   }
 
   public raiseInfo(message: string) {
-    this.raise(message, 'info', 3000);
+    this.raise(message, 'info', 5000);
   }
 
   public raiseWarning(message: string) {
-    this.raise(message, 'warning', 3000);
+    this.raise(message, 'warning', 5000);
   }
 
   public raiseError(message: string) {
-    this.raise(message, 'error', 3000);
+    this.raise(message, 'error', 5000);
   }
 
   public raise(message: string, severity: AlertColor, autoremoveAfterMillis?: number) {
@@ -49,10 +49,7 @@ class ActionToastCtx {
 
   remove(item: React.JSX.Element) {
     const [alertList, setAlertList] = this.alertListState;
-
-    console.log("REMOVING", item)
     const index = alertList.indexOf(item);
-    console.log(index);
     if (index > -1) {
       alertList.splice(index, 1);
       setAlertList(cloneAlerts(alertList));
@@ -82,7 +79,6 @@ export interface ActionToastProps {
 
 export const ActionToast: React.FC<ActionToastProps> = ({ ctx } : ActionToastProps) => {
   const alertList = ctx.alertListState[0];
-  console.log(ctx.alertListState[0]);
   return (
     <Snackbar anchorOrigin={{vertical: 'top', horizontal: 'center'}}
               onClose={()=>{}}

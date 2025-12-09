@@ -6,8 +6,16 @@ export class CoreFormModel {
 		context.setMode(FormMode.EDIT);
 	};
 	
-	static cancelEditAction = (context: IModeActionContext) => {
-		context.setMode(FormMode.VIEW);
+	static cancelEditAction = async (context: IModeActionContext) => {
+		// Reload the form to restore original values
+		try {
+			const originalForm = await context.controller.load(context.form.entityPermId);
+			context.setForm(originalForm);
+		} catch (error: any) {
+			throw error;
+		} finally {
+			context.setMode(FormMode.VIEW);
+		}
 	};
 	
 	static cancelNewFormAction = (context: IExtendedActionContext) => {
