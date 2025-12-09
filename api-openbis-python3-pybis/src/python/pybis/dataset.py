@@ -28,6 +28,7 @@ from typing import Set, Optional, List
 from urllib.parse import urljoin, quote
 
 import requests
+import copy
 from pandas import DataFrame
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -141,13 +142,13 @@ class DataSet(
             self.a.__dict__["_parents"] = []
         else:
             if not self.is_new:
-                self.a.__dict__["_parents_orig"] = self.a.__dict__["_parents"]
+                self.a.__dict__["_parents_orig"] = copy.copy(self.a.__dict__["_parents"])
 
         if getattr(self, "children") is None:
             self.a.__dict__["_children"] = []
         else:
             if not self.is_new:
-                self.a.__dict__["_children_orig"] = self.a.__dict__["_children"]
+                self.a.__dict__["_children_orig"] = copy.copy(self.a.__dict__["_children"])
 
         if getattr(self, "container") is None:
             self.a.__dict__["_container"] = []
