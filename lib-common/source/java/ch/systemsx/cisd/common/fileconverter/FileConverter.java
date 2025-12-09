@@ -32,7 +32,6 @@ import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.ethz.sis.shared.log.classic.impl.SimpleLogger;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
-import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 
 /**
  * The base class for file conversion.
@@ -44,10 +43,6 @@ public class FileConverter
     @Private
     static final int MAX_RETRY_OF_FAILED_COMPRESSIONS = 3;
 
-    static
-    {
-        LogInitializer.init();
-    }
 
     private static final Logger machineLog = LogFactory.getLogger(LogCategory.MACHINE,
             FileConverter.class);

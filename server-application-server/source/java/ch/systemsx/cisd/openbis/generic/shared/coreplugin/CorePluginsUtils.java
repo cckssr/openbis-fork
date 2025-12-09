@@ -46,31 +46,6 @@ public class CorePluginsUtils
         String corePluginsFolder = getCorePluginsFolder(properties, scannerType);
         File file = new File(corePluginsFolder, CORE_PLUGINS_PROPERTIES_FILE);
         PropertyIOUtils.loadAndAppendProperties(properties, file);
-        for(String key : properties.stringPropertyNames()) {
-            String propertyValue = properties.getProperty(key);
-            String value = getValue(key, propertyValue);
-            if(value != null && !value.equals(propertyValue)) {
-                properties.setProperty(key, value);
-            }
-
-        }
-    }
-
-    /**
-     * Returns value but checks first if it is set as System property or environment variable
-     * @param key property key
-     * @param defaultValue value to return if System property or env variable for 'key' is not set
-     * @return
-     */
-    private static String getValue(String key, String defaultValue) {
-        String value = System.getProperty(key);
-        if (value == null) {
-            value = System.getenv(key);
-        }
-        if(value == null) {
-            value = defaultValue;
-        }
-        return value;
     }
 
     /**

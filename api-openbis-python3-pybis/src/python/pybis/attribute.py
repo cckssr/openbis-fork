@@ -248,22 +248,27 @@ class AttrHolder:
                     "@type": "as.dto.common.update.IdListUpdateValue",
                 }
             elif attr == "metaData":
+                is_system = False
+                if self.managedInternally:
+                    is_system = self.openbis.token.startswith("system")
+
                 # ListUpdateMapValues
                 metaData = self.__dict__["_" + attr]
-                if metaData:
-                    items = [metaData]
-                    data_type = "as.dto.common.update.ListUpdateActionSet"
-                elif metaData is not None and len(metaData) == 0:
-                    # metaData needs to be set to {} in order to remove it.
-                    items = ["custom_widget"]
-                    data_type = "as.dto.common.update.ListUpdateActionRemove"
-                else:
-                    items = [{}]
-                    data_type = "as.dto.common.update.ListUpdateActionSet"
-                up_obj[attr] = {
-                    "actions": [{"items": items, "@type": data_type}],
-                    "@type": "as.dto.common.update.ListUpdateMapValues",
-                }
+                if not self.managedInternally or is_system:
+                    if metaData:
+                        items = [metaData]
+                        data_type = "as.dto.common.update.ListUpdateActionSet"
+                    elif metaData is not None and len(metaData) == 0:
+                        # metaData needs to be set to {} in order to remove it.
+                        items = ["custom_widget"]
+                        data_type = "as.dto.common.update.ListUpdateActionRemove"
+                    else:
+                        items = [{}]
+                        data_type = "as.dto.common.update.ListUpdateActionSet"
+                    up_obj[attr] = {
+                        "actions": [{"items": items, "@type": data_type}],
+                        "@type": "as.dto.common.update.ListUpdateMapValues",
+                    }
             elif attr == "userIds":
                 actions = []
                 if "_changed_users" not in self.__dict__:
@@ -297,9 +302,37 @@ class AttrHolder:
                     "isModified": True,
                     "@type": "as.dto.common.update.FieldUpdateValue",
                 }
+            elif attr in ["parents", "children"] and "_" + attr in self.__dict__:
+                items = self.__dict__.get("_" + attr, [])
+                items_orig = self.__dict__.get("_" + attr + "_orig", [])
+                if items == items_orig:
+                    continue
+                additions = []
+                deletions = []
+                for item in items:
+                    if item['identifier'] in items_orig:
+                        continue
+                    additions += [item]
+                for item in items_orig:
+                    if item in items:
+                        continue
+                    deletions += [item]
 
+                if additions or deletions:
+                    up_obj[attr2ids[attr]] = {
+                        "actions": [],
+                        "@type": "as.dto.common.update.IdListUpdateValue",
+                    }
+                    up_obj[attr2ids[attr]]["actions"] += [{
+                        "items": additions,
+                        "@type": "as.dto.common.update.ListUpdateActionAdd",
+                    }]
+                    up_obj[attr2ids[attr]]["actions"] += [{
+                        "items": deletions,
+                        "@type": "as.dto.common.update.ListUpdateActionRemove",
+                    }]
             elif "_" + attr in self.__dict__:
-                # handle multivalue attributes (parents, children, tags etc.)
+                # handle multivalue attributes (tags etc.)
                 # we only cover the Set mechanism, which means we always update
                 # all items in a list
                 if "multi" in self._defs and attr in self._defs["multi"]:

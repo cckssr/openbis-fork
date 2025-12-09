@@ -1238,7 +1238,7 @@ public class OpenBIS
         asFacadeWithTransactions.unlockDataSets(sessionToken, dataSetIds, options);
     }
 
-    public IOperationExecutionResults executeOperations(String sessionToken, List<? extends IOperation> operations,
+    public IOperationExecutionResults executeOperations(List<? extends IOperation> operations,
             IOperationExecutionOptions options)
     {
         return asFacadeWithTransactions.executeOperations(sessionToken, operations, options);

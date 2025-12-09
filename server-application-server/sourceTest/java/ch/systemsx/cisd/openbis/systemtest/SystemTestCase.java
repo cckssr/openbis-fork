@@ -172,14 +172,14 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
     @BeforeSuite
     public void beforeSuite() throws IOException
     {
-        System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, SOURCE_TEST_CORE_PLUGINS);
-        System.setProperty(Constants.ENABLED_MODULES_KEY, "test-.*");
+        System.setProperty("as."+CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, SOURCE_TEST_CORE_PLUGINS);
+        System.setProperty("as."+Constants.ENABLED_MODULES_KEY, "test-.*");
 
         initHotDeploymentFolder(ScriptType.DYNAMIC_PROPERTY, HOT_DEPLOYMENT_DYNAMIC_PROPERTY_PLUGINS_FOLDER_KEY);
         initHotDeploymentFolder(ScriptType.ENTITY_VALIDATION, HOT_DEPLOYMENT_ENTITY_VALIDATION_PLUGINS_FOLDER_KEY);
         initHotDeploymentFolder(ScriptType.MANAGED_PROPERTY, HOT_DEPLOYMENT_MANAGED_PROPERTY_PLUGINS_FOLDER_KEY);
 
-        TestInitializer.init();
+        TestInitializer.init("as.");
     }
 
     @AfterSuite
@@ -717,7 +717,6 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         SessionContextDTO session = commonServer.tryAuthenticate(TEST_USER, PASSWORD);
 
         Script beforePlugin = getPlugin(session.getSessionToken(), pluginType, pluginName);
-
         if (beforePlugin != null)
         {
             throw new IllegalArgumentException(String.format("Plugin '%s' already exists", pluginName));
@@ -734,7 +733,6 @@ public abstract class SystemTestCase extends AbstractTransactionalTestNGSpringCo
         }
 
         long timeoutMillis = System.currentTimeMillis() + HOT_DEPLOYMENT_TIMEOUT;
-
         while (System.currentTimeMillis() < timeoutMillis)
         {
             Script afterPlugin = getPlugin(session.getSessionToken(), pluginType, pluginName);

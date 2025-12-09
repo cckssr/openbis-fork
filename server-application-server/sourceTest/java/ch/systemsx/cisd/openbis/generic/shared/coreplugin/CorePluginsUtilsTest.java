@@ -68,8 +68,8 @@ public class CorePluginsUtilsTest extends AbstractFileSystemTestCase
     @Test
     public void testAddCorePluginsProperties()
     {
-        String corePluginsProperty = System.getProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
-        String enabledModulesProperty = System.getProperty(Constants.ENABLED_MODULES_KEY);
+        String corePluginsProperty = System.getProperty("as."+CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
+        String enabledModulesProperty = System.getProperty("as."+Constants.ENABLED_MODULES_KEY);
         try
         {
             System.clearProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY);
@@ -91,8 +91,8 @@ public class CorePluginsUtilsTest extends AbstractFileSystemTestCase
             assertEquals(enabledTechnology, properties.getProperty(Constants.ENABLED_MODULES_KEY));
         } finally
         {
-            System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, corePluginsProperty);
-            System.setProperty(Constants.ENABLED_MODULES_KEY, enabledModulesProperty);
+            System.setProperty("as."+CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, corePluginsProperty);
+            System.setProperty("as."+Constants.ENABLED_MODULES_KEY, enabledModulesProperty);
         }
     }
 }

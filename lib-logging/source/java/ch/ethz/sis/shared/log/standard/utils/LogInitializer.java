@@ -15,10 +15,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -58,6 +55,8 @@ public class LogInitializer
 
     public static final String USE_PARENT_HANDLERS = ".useParentHandlers";
 
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
+
     static
     {
         System.setProperty("log4j.defaultInitOverride", "true");
@@ -69,6 +68,7 @@ public class LogInitializer
 
     private static boolean initialized = false;
     private static boolean reInitCalled = false;
+    private static String propertyPrefix = "";
 
     private static URL createURL(final String configurationOrNull)
     {
@@ -89,10 +89,29 @@ public class LogInitializer
         return resource;
     }
 
+    private static void configureSystemPropertyPrefix(Properties props) {
+        propertyPrefix = props.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+        propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+    }
+
     private static String tryFindConfigurationInSystemProperties()
     {
-        String config = System.getProperty("log.configuration");
-        LoggerDiagnostics.info("System property log.configuration=" + config);
+        File file = new File(LOG_DIRECTORY, LOG_FILENAME);
+        if(file.exists() && file.isFile()) {
+            Properties props = new Properties();
+            try (InputStream in = new FileInputStream(file)) {
+                props.load(in);
+                configureSystemPropertyPrefix(props);
+            }
+            catch (IOException ioe) {
+                LoggerDiagnostics.info("[LogInitializer] Couldn't to load default config from "
+                        + file + ": " + ioe.getMessage());
+            }
+        }
+
+        String propertyName = propertyPrefix+"configuration";
+        String config = System.getProperty(propertyName);
+        LoggerDiagnostics.info(String.format("System property %s=%s", propertyName, config));
         if (config != null)
         {
             String trimmed = config.trim();
@@ -118,6 +137,7 @@ public class LogInitializer
         LoggerDiagnostics.info("getEffectiveLogFile -> " + file.getAbsolutePath());
         return file;
     }
+
 
     public static synchronized void init()
     {
@@ -237,8 +257,7 @@ public class LogInitializer
         }
 
 
-
-        String handlersList = props.getProperty(GLOBAL_HANDLERS);
+        String handlersList = getProperty(props, GLOBAL_HANDLERS);
         if (handlersList == null)
         {
             LoggerDiagnostics.error("No 'handlers' property defined.");
@@ -272,8 +291,8 @@ public class LogInitializer
         for (String propertyKey : props.stringPropertyNames()) {
             // look for keys like "AUTH.handlers", but skip the global "handlers"
             if (propertyKey.endsWith(INTERNAL_HANDLERS) && !propertyKey.equals(GLOBAL_HANDLERS)) {
-                String loggerName = propertyKey.substring(0, propertyKey.length() - INTERNAL_HANDLERS.length());
-                String[] loggerAliases = props.getProperty(propertyKey).split("\\s*,\\s*");
+                String loggerName = propertyKey.substring(0, propertyKey.length() - (INTERNAL_HANDLERS).length());
+                String[] loggerAliases = getProperty(props, propertyKey).split("\\s*,\\s*");
                 Logger logger = null;
                 try
                 {
@@ -312,7 +331,7 @@ public class LogInitializer
     private static boolean useParentHandlers(String loggerName, Properties props)
     {
         String useParentHandlersKey = loggerName + USE_PARENT_HANDLERS;
-        String useParentHandlersValue = props.getProperty(useParentHandlersKey);
+        String useParentHandlersValue = getProperty(props, useParentHandlersKey);
         boolean useParentHandlers = false; // default
         if (useParentHandlersValue != null) {
             useParentHandlers = Boolean.parseBoolean(useParentHandlersValue.trim());
@@ -389,6 +408,12 @@ public class LogInitializer
             try (InputStream in = is)
             {
                 props.load(in);
+                configureSystemPropertyPrefix(props);
+                props.forEach((key, value) -> {
+                    String keyStr = (String) key;
+                    String valueStr = (String) value;
+                    props.setProperty(keyStr, getValue(propertyPrefix+keyStr, valueStr));
+                });
                 loaded = true;
                 LoggerDiagnostics.info("Properties loaded successfully.");
             } catch (IOException e)
@@ -402,11 +427,34 @@ public class LogInitializer
         return loaded ? props : null;
     }
 
+    private static String getProperty(Properties props, String propertyKey) {
+        return getProperty(props, propertyKey, null);
+    }
+
+    private static String getProperty(Properties props, String propertyKey, String defaultValue) {
+        String result = props.getProperty(propertyKey);
+        if(result == null) {
+            result = getValue(propertyPrefix+propertyKey, defaultValue);
+        }
+        return result;
+    }
+
+    private static String getValue(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        if(value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
     private static void configureGlobalLoggingLevel(Properties props)
     {
         LoggerDiagnostics.info("configureGlobalLoggingLevel");
-        String global = props.getProperty(GLOBAL_LEVEL_KEY);
-        LoggerDiagnostics.info(".global.level=" + global);
+        String global = getProperty(props, GLOBAL_LEVEL_KEY);
+        LoggerDiagnostics.info(String.format("%s=%s", GLOBAL_LEVEL_KEY, global));
         if (global != null && !global.isEmpty())
         {
             Level lvl = tryGetLogLevel(global);
@@ -450,7 +498,7 @@ public class LogInitializer
     private static Handler createHandler(String alias, Properties props, File logFile) throws Exception
     {
         LoggerDiagnostics.info("createHandler(alias=" + alias + ")");
-        String className = props.getProperty(alias + ".class");
+        String className = getProperty(props, alias + ".class");
         LoggerDiagnostics.info("Handler class name=" + className);
         if (className == null)
         {
@@ -460,11 +508,11 @@ public class LogInitializer
         Handler handler;
         if (DailyRollingFileHandler.class.isAssignableFrom(hc))
         {
-            String pattern = props.getProperty(alias + LOG_FILE_NAME);
-            int maxLogFileSize = Integer.parseInt(props.getProperty(alias + MAX_LOG_FILE_SIZE,
+            String pattern = getProperty(props, alias + LOG_FILE_NAME);
+            int maxLogFileSize = Integer.parseInt(getProperty(props,alias + MAX_LOG_FILE_SIZE,
                     String.valueOf(DailyRollingFileHandler.DEFAULT_MAX_LOG_FILE_SIZE)));
-            boolean append = Boolean.parseBoolean(props.getProperty(alias + APPEND, "false"));
-            int maxLogRotations = Integer.parseInt(props.getProperty(alias + MAX_LOG_ROTATIONS,
+            boolean append = Boolean.parseBoolean(getProperty(props,alias + APPEND, "false"));
+            int maxLogRotations = Integer.parseInt(getProperty(props,alias + MAX_LOG_ROTATIONS,
                     String.valueOf(DailyRollingFileHandler.DEFAULT_MAX_LOG_ROTATIONS)));
             LoggerDiagnostics.info("Using file-handler constructor: pattern=" + pattern
                     + ", maxLogFileSize=" + maxLogFileSize
@@ -474,9 +522,9 @@ public class LogInitializer
                     .newInstance(pattern, maxLogFileSize, append, maxLogRotations);
 
         } else if (SingleFileHandler.class.isAssignableFrom(hc)) {
-            String append = props.getProperty(alias + APPEND, "false");
-            String file = props.getProperty(alias + LOG_FILE_NAME);
-            int maxLogFileSize = Integer.parseInt(props.getProperty(alias + MAX_LOG_FILE_SIZE,
+            String append = getProperty(props,alias + APPEND, "false");
+            String file = getProperty(props,alias + LOG_FILE_NAME);
+            int maxLogFileSize = Integer.parseInt(getProperty(props,alias + MAX_LOG_FILE_SIZE,
                     String.valueOf(DailyRollingFileHandler.DEFAULT_MAX_LOG_FILE_SIZE)));
             LoggerDiagnostics.info("Using single-file-handler constructor: file=" + file
                     + ", maxLogFileSize=" + maxLogFileSize
@@ -499,19 +547,19 @@ public class LogInitializer
     /* Set common properties (level, formatter, encoding) for a handler */
     private static void configureCommonProperties(Handler handler, String alias, Properties props) throws Exception {
         // Set logging level.
-        String levelStr = props.getProperty(alias + ".level");
+        String levelStr = getProperty(props,alias + ".level");
         if (levelStr != null) {
             handler.setLevel(tryGetLogLevel(levelStr));
         }
 
         // Set formatter either by class or by message pattern.
-        String formatterClassName = props.getProperty(alias + ".formatter");
+        String formatterClassName = getProperty(props,alias + ".formatter");
         if (formatterClassName != null) {
             Class<?> formatterClass = Class.forName(formatterClassName);
             Formatter formatter = (Formatter) formatterClass.getDeclaredConstructor().newInstance();
             handler.setFormatter(formatter);
         } else {
-            String messagePattern = props.getProperty(alias + MESSAGE_PATTERN);
+            String messagePattern = getProperty(props,alias + MESSAGE_PATTERN);
             if (messagePattern != null) {
                 PatternFormatter patternFormatter = new PatternFormatter(messagePattern);
                 handler.setFormatter(patternFormatter);
@@ -519,13 +567,13 @@ public class LogInitializer
         }
 
         // Set encoding if specified.
-        String encoding = props.getProperty(alias + ENCODING);
+        String encoding = getProperty(props,alias + ENCODING);
         if (encoding != null) {
             handler.setEncoding(encoding);
         }
 
         // Set logging level.
-        String filterStr = props.getProperty(alias + ".filter");
+        String filterStr = getProperty(props,alias + ".filter");
         if (filterStr != null) {
 
             handler.setFilter(x -> filterStr.equals(x.getLoggerName()));
@@ -534,7 +582,7 @@ public class LogInitializer
 
     /* Configure extra properties for a SocketHandler */
     private static void configureSocketHandler(java.util.logging.SocketHandler handler, String alias, Properties props) {
-        String host = props.getProperty(alias + ".host");
+        String host = getProperty(props,alias + ".host");
         if (host != null) {
             try {
                 Method setHost = handler.getClass().getMethod("setHost", String.class);
@@ -553,7 +601,7 @@ public class LogInitializer
             }
         }
 
-        String portStr = props.getProperty(alias + ".port");
+        String portStr = getProperty(props,alias + ".port");
         if (portStr != null) {
             int port = Integer.parseInt(portStr);
             try {
@@ -592,25 +640,46 @@ public class LogInitializer
                 }
 
                 // If it's not global and not a handler level, assume it's a specific logger level
-                String levelStr = props.getProperty(key);
-                Level level = tryGetLogLevel(levelStr);
-
-                if (level != null) {
-                    try {
-                        Logger logger = Logger.getLogger(loggerName);
-                        logger.setLevel(level);
-                        LoggerDiagnostics.info("Set level " + level.getName() + " for logger '" + loggerName + "'");
-                    } catch (Exception e) {
-                        // Catch potential issues getting the logger (though unlikely)
-                        LoggerDiagnostics.error("ERROR: Could not set level for logger '" + loggerName + "' from property '" + key + "': " + e.getMessage());
-                        e.printStackTrace(System.err);
-                    }
-                } else {
-                    LoggerDiagnostics.error("WARNING: Could not parse level '" + levelStr + "' for logger property '" + key + "'. Level not set.");
-                }
+                setLoggerLevel(props, loggerName, key);
             }
         }
+
+        LoggerDiagnostics.info("Configuring specific logger levels set from system properties...");
+        for(String key : System.getProperties().stringPropertyNames()) {
+            if (key.startsWith(propertyPrefix) && key.endsWith(LEVEL_SUFFIX) && !key.equals(propertyPrefix+GLOBAL_LEVEL_KEY)) {
+                // Extract the potential logger name or handler alias part
+                String loggerName = key.substring(propertyPrefix.length(), key.length() - LEVEL_SUFFIX.length());
+                // IMPORTANT: Check if this key belongs to a handler configuration
+                if (handlerAliases.contains(loggerName)) {
+                    // This is a handler's level (e.g., myConsoleHandler.level), already processed. Skip it.
+                    LoggerDiagnostics.debug("Skipping handler level key: " + key); // Optional debug log
+                    continue;
+                }
+                // If it's not global and not a handler level, assume it's a specific logger level
+                setLoggerLevel(props, loggerName, key.substring(propertyPrefix.length()));
+            }
+        }
+
+
         LoggerDiagnostics.info("Finished configuring specific logger levels.");
+    }
+
+    private static void setLoggerLevel(Properties props, String loggerName, String key) {
+        String levelStr = getProperty(props, key);
+        Level level = tryGetLogLevel(levelStr);
+        if (level != null) {
+            try {
+                Logger logger = Logger.getLogger(loggerName);
+                logger.setLevel(level);
+                LoggerDiagnostics.info("Set level " + level.getName() + " for logger '" + loggerName + "'");
+            } catch (Exception e) {
+                // Catch potential issues getting the logger (though unlikely)
+                LoggerDiagnostics.error("ERROR: Could not set level for logger '" + loggerName + "' from property '" + key + "': " + e.getMessage());
+                e.printStackTrace(System.err);
+            }
+        } else {
+            LoggerDiagnostics.error("WARNING: Could not parse level '" + levelStr + "' for logger property '" + key + "'. Level not set.");
+        }
     }
 
     /*

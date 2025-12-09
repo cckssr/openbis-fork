@@ -542,7 +542,10 @@ function SettingsFormView(settingsFormController, settingsFormModel) {
 			$fieldset.append($div);
 
             var defaultSampleTypeSettings = SettingsManagerUtils.getDefaultProfile().sampleTypeDefinitionsExtension[sampleType.code];
-			var sampleTypeSettings = this._profileToEdit.sampleTypeDefinitionsExtension[sampleType.code];
+			var sampleTypeSettings = null;
+			if(this._profileToEdit.sampleTypeDefinitionsExtension) {
+			    sampleTypeSettings = this._profileToEdit.sampleTypeDefinitionsExtension[sampleType.code];
+			}
 			if(!sampleTypeSettings && defaultSampleTypeSettings) { // Sets the default profile configuration given by plugins
 			    sampleTypeSettings = defaultSampleTypeSettings;
 			}

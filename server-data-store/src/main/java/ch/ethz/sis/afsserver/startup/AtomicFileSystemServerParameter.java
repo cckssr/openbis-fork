@@ -21,7 +21,8 @@ public enum AtomicFileSystemServerParameter
     // Logging
     //
     logFactoryClass,
-    logConfigFile,
+    logConfigFile("afs.logging.configuration"),
+    systemPropertyPrefix("system.property.prefix"),
     serverObserver,
     //
     // Parameters from the AFS Library
@@ -62,5 +63,22 @@ public enum AtomicFileSystemServerParameter
     // Parameters for share manager
     //
     lockingTimeoutInSeconds,
-    lockingWaitingIntervalInMillis
+    lockingWaitingIntervalInMillis;
+
+    private final String parameterName;
+
+    private AtomicFileSystemServerParameter()
+    {
+        this.parameterName = name();
+    }
+
+    private AtomicFileSystemServerParameter(String parameterName)
+    {
+        this.parameterName = parameterName;
+    }
+
+    @Override
+    public String toString() {
+        return this.parameterName;
+    }
 }

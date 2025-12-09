@@ -680,21 +680,28 @@ var FormUtil = new function() {
             });
 		});
 	}
-	
+
 	this.getDeleteButton = function(deleteFunction, includeReason, warningText) {
 		var $deleteBtn = $("<a>", { 'class' : 'btn btn-default ' });
 		$deleteBtn.append($("<span>", { 'class' : 'glyphicon glyphicon-trash', 'style' : 'width:16px; height:16px;'}));
-		$deleteBtn.click(function() {
-			var modalView = new DeleteEntityController(deleteFunction, includeReason, warningText);
-			modalView.init();
-		});
+		var clickEvent = function() {
+		    var modalView = new DeleteEntityController(deleteFunction, includeReason, warningText);
+            modalView.init();
+		}
+		var id = 'btn-delete-'+mainController.getNextId();
+		$btn.attr("id", id);
+        $("body").off("click", "[id='"+id+"']");
+        $("body").on("click", "[id='"+id+"']", clickEvent);
 		return $deleteBtn;
 	}
 	
 	this.getButtonWithImage = function(src, clickEvent, text, tooltip) {
 		var $btn = $("<a>", { 'class' : 'btn btn-default' });
 		$btn.append($("<img>", { 'src' : src, 'style' : 'width:16px; height:16px;'}));
-		$btn.click(clickEvent);
+		var id = 'btn-with-image-'+mainController.getNextId();
+		$btn.attr("id", id);
+		$("body").off("click", "[id='"+id+"']");
+        $("body").on("click", "[id='"+id+"']", clickEvent);
 		if(text) {
 			$btn.append("&nbsp;").append(text);
 		}
@@ -711,11 +718,16 @@ var FormUtil = new function() {
 			auxBtnClass = btnClass;
 		}
 		var $pinBtn = $("<a>", { 'class' : 'btn ' + auxBtnClass });
+		var buttonId;
 		if(id) {
-            $pinBtn.attr("id", id);
+		    buttonId = id;
+        } else {
+            buttonId = 'btn-with-text-'+mainController.getNextId();
         }
+        $pinBtn.attr("id", buttonId);
 		$pinBtn.append(text);
-		$pinBtn.click(clickEvent);
+		$("body").off("click", "[id='"+buttonId+"']");
+        $("body").on("click", "[id='"+buttonId+"']", clickEvent);
 		return $pinBtn;
 	}
 	
@@ -748,10 +760,15 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
-            $("body").off("click", "[id='"+id+"']");
-            $("body").on("click", "[id='"+id+"']", clickEvent);
+            if(clickEvent) {
+                $("body").off("click", "[id='"+id+"']");
+                $("body").on("click", "[id='"+id+"']", clickEvent);
+            }
         } else if(clickEvent) {
-            $btn.click(clickEvent);
+            var buttonId = 'btn-toolbar-'+mainController.getNextId();
+            $btn.attr("id", buttonId);
+            $("body").off("click", "[id='"+buttonId+"']");
+            $("body").on("click", "[id='"+buttonId+"']", clickEvent);
         }
         return $btn;
 	}
@@ -779,10 +796,15 @@ var FormUtil = new function() {
         }
         if(id) {
             $btn.attr("id", id);
-            $("body").off("click", "[id='"+id+"']");
-            $("body").on("click", "[id='"+id+"']", clickEvent)
+            if(clickEvent) {
+                $("body").off("click", "[id='"+id+"']");
+                $("body").on("click", "[id='"+id+"']", clickEvent)
+            }
         } else if(clickEvent) {
-            $btn.click(clickEvent);
+            var buttonId = 'btn-icon-'+mainController.getNextId();
+            $btn.attr("id", buttonId);
+            $("body").off("click", "[id='"+buttonId+"']");
+            $("body").on("click", "[id='"+buttonId+"']", clickEvent);
         }
         return $btn;
     }
@@ -851,9 +873,13 @@ var FormUtil = new function() {
 		var $hierarchyButton = $("<a>", { 'class' : 'btn btn-default'} )
 									.append($('<img>', { 'src' : './img/hierarchy-icon.png', 'style' : 'width:16px; height:17px;' }))
 									.append(' G');
-		$hierarchyButton.click(function() {
-			mainController.changeView('showSampleHierarchyPage', permId);
-		});
+		var clickEvent = function() {
+            mainController.changeView('showSampleHierarchyPage', permId);
+        }
+		var buttonId = 'btn-hierarchy-'+mainController.getNextId();
+		$hierarchyButton.attr("id", buttonId);
+        $("body").off("click", "[id='"+buttonId+"']");
+        $("body").on("click", "[id='"+buttonId+"']", clickEvent);
 		return $hierarchyButton;
 	}
 	
@@ -2555,9 +2581,13 @@ var FormUtil = new function() {
 			$freezeButton.attr("disabled", "disabled");
 			$freezeButton.append("Frozen");
 		} else {
-			$freezeButton.click(function() {
-				_this.showFreezeForm(entityType, permId);
-			});
+		    var id = 'btn-freeze-'+mainController.getNextId();
+		    $freezeButton.attr("id", buttonId);
+		    var clickEvent = function() {
+                _this.showFreezeForm(entityType, permId);
+            }
+		    $("body").off("click", "[id='"+id+"']");
+            $("body").on("click", "[id='"+id+"']", clickEvent);
 		}
 		
 		return $freezeButton;

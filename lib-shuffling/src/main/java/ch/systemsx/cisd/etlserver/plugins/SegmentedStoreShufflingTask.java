@@ -150,7 +150,6 @@ public class SegmentedStoreShufflingTask implements IDataStoreLockingMaintenance
             IFreeSpaceProvider freeSpaceProvider, IDataSetMover dataSetMover, ISimpleLogger logger)
     {
         this.incomingShares = incomingShares;
-        LogInitializer.init();
         this.freeSpaceProvider = freeSpaceProvider;
         this.service = service;
         this.dataSetMover = dataSetMover;

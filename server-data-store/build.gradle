@@ -61,6 +61,7 @@ task openBISDevelopmentEnvironmentAFSStart(type: JavaExec) {
     args(["../server-data-store/src/main/resources/service.properties"])
     jvmArgs(['--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
              '--add-opens=java.base/java.nio=ALL-UNNAMED',
+             '-Dafs.logging.configuration=src/main/resources/logging.properties',
              '-Dio.netty.tryReflectionSetAccessible=true',
              '-Xmx512M', '-ea'])
 }
@@ -76,6 +77,9 @@ task benchmarkAFS(type: JavaExec) {
             '--add-opens=java.base/java.nio=ALL-UNNAMED',
             '--add-opens=java.base/java.util=ALL-UNNAMED',
             '-Dio.netty.tryReflectionSetAccessible=true',
+
+            '-Dafs.logging.configuration=src/main/resources/logging.properties',
+
             '-Dcom.sun.management.jmxremote',
             '-Dcom.sun.management.jmxremote.port=12345',
             '-Dcom.sun.management.jmxremote.authenticate=false',
@@ -94,6 +98,9 @@ task benchmarkAFSAuth(type: JavaExec) {
             '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
             '--add-opens=java.base/java.nio=ALL-UNNAMED',
             '--add-opens=java.base/java.util=ALL-UNNAMED',
+
+            '-Dafs.logging.configuration=src/main/resources/logging.properties',
+
             '-Dio.netty.tryReflectionSetAccessible=true',
             '-Dcom.sun.management.jmxremote',
             '-Dcom.sun.management.jmxremote.port=12345',

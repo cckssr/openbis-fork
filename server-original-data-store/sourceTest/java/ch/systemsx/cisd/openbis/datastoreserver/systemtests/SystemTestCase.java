@@ -15,10 +15,6 @@
  */
 package ch.systemsx.cisd.openbis.datastoreserver.systemtests;
 
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.DOWNLOAD_URL_KEY;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX;
-import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.SERVER_URL_KEY;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -77,6 +73,8 @@ import ch.systemsx.cisd.openbis.generic.shared.Constants;
 import ch.systemsx.cisd.openbis.generic.shared.basic.BasicConstant;
 import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.*;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -86,11 +84,11 @@ public abstract class SystemTestCase extends AssertJUnit
 
     private static final String SOURCE_TEST_CORE_PLUGINS = "sourceTest/core-plugins";
 
-    private static final String UNIT_TEST_WORKING_DIRECTORY = "unit-test-wd";
+    protected static  String UNIT_TEST_WORKING_DIRECTORY = "unit-test-wd";
 
     private static final String TARGETS_DIRECTORY = "targets";
 
-    private static final File UNIT_TEST_ROOT_DIRECTORY = new File(TARGETS_DIRECTORY
+    private static File UNIT_TEST_ROOT_DIRECTORY = new File(TARGETS_DIRECTORY
             + File.separator + UNIT_TEST_WORKING_DIRECTORY);
 
     private static final String ROOT_DIR_KEY = "root-dir";
@@ -108,6 +106,8 @@ public abstract class SystemTestCase extends AssertJUnit
     // datasets have been imported
     private static final String REGISTRATION_FINISHED_LOG_MARKER =
             DataSetRegistrationTransaction.SUCCESS_MESSAGE;
+
+    protected static String SYSTEM_PROPERTY_PREFIX = "dss.";
 
     protected static GenericWebApplicationContext applicationContext;
 
@@ -211,29 +211,30 @@ public abstract class SystemTestCase extends AssertJUnit
         sch.addServlet(new ServletHolder(dispatcherServlet), "/*");
         server.start();
 
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "inputs", "");
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "core-plugins-folder",
-                SOURCE_TEST_CORE_PLUGINS);
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + Constants.ENABLED_MODULES_KEY,
-                getEnabledTechnologies());
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + ROOT_DIR_KEY,
-                rootDir.getAbsolutePath());
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX
-                        + DssPropertyParametersUtil.DSS_REGISTRATION_LOG_DIR_PATH,
-                getRegistrationLogDir()
-                        .getAbsolutePath());
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "dss-rpc.put-default", "test");
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + SERVER_URL_KEY,
-                TestInstanceHostUtils.getOpenBISUrl());
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "port",
-                Integer.toString(TestInstanceHostUtils.getDSSPort()));
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + DOWNLOAD_URL_KEY,
-                TestInstanceHostUtils.getDSSUrl());
-        System.setProperty(SERVER_URL_KEY, TestInstanceHostUtils.getOpenBISUrl());
-        System.setProperty("port", Integer.toString(TestInstanceHostUtils.getDSSPort()));
-        System.setProperty(DOWNLOAD_URL_KEY, TestInstanceHostUtils.getDSSUrl());
-        System.setProperty(OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX + "archiver.destination",
-                archive.getAbsolutePath());
+        if(SYSTEM_PROPERTY_PREFIX.equals("dss.")) {
+            System.setProperty(SYSTEM_PROPERTY_PREFIX + "inputs", "");
+
+            System.setProperty(SYSTEM_PROPERTY_PREFIX + Constants.ENABLED_MODULES_KEY, getEnabledTechnologies());
+
+
+        }
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + SERVER_URL_KEY, TestInstanceHostUtils.getOpenBISUrl());
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "port", Integer.toString(TestInstanceHostUtils.getDSSPort()));
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + DOWNLOAD_URL_KEY, TestInstanceHostUtils.getDSSUrl());
+
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "inputs", "");
+
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "core-plugins-folder", SOURCE_TEST_CORE_PLUGINS);
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + ROOT_DIR_KEY, rootDir.getAbsolutePath());
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + STOREROOT_DIR_KEY, store.getAbsolutePath());
+
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + DssPropertyParametersUtil.DSS_REGISTRATION_LOG_DIR_PATH,
+                getRegistrationLogDir().getAbsolutePath());
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "dss-rpc.put-default", "test");
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "archiver.destination", archive.getAbsolutePath());
+        System.setProperty(SYSTEM_PROPERTY_PREFIX + "mail.smtp.host", "file://targets/email");
+
+
 
         ServiceProviderFactory.setInstance(new ServiceProviderImpl());
         ArchiverServiceProviderFactory.setInstance(new ArchiverServiceProvider());
@@ -246,7 +247,7 @@ public abstract class SystemTestCase extends AssertJUnit
         ETLDaemon.runForTesting(new String[0]);
     }
 
-    private String getEnabledTechnologies()
+    protected String getEnabledTechnologies()
     {
         File corePluginsFolder = new File(SOURCE_TEST_CORE_PLUGINS);
         String[] list = corePluginsFolder.list();
@@ -263,7 +264,8 @@ public abstract class SystemTestCase extends AssertJUnit
      */
     protected void setUpDatabaseProperties()
     {
-        TestInitializer.init();
+        TestInitializer.init(SYSTEM_PROPERTY_PREFIX);
+        TestInitializer.init("as.");
     }
 
     /**

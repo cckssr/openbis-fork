@@ -42,7 +42,7 @@ public class AbstractImportTest extends AbstractTest
     @BeforeSuite
     public void setupSuite()
     {
-        System.setProperty(XLS_VERSIONING_DIR, VERSIONING_JSON);
+        System.setProperty("as."+XLS_VERSIONING_DIR, VERSIONING_JSON);
     }
 
     @BeforeMethod

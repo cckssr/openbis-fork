@@ -95,8 +95,9 @@ dependencies {
 
     testImplementation(project(path: ':server-application-server', configuration: 'tests'))
 
-    testRuntimeFirst 'javax:servlet-api:4.0.1'
-//            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
+    testRuntimeFirst 'javax:servlet-api:4.0.1',
+            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/services/imaging/lib/openBIS-imaging-technology.jar"),
+            files("../core-plugin-openbis/dist/core-plugins/imaging/1/as/api-listener/imaging-dataset-interceptor/lib/imaging-dataset-interceptor.jar")
 }
 
 
@@ -145,6 +146,7 @@ tasks.register('openBISDevelopmentEnvironmentDSSStart', JavaExec) {
     mainClass = 'ch.systemsx.cisd.openbis.dss.generic.DataStoreServer'
     classpath = sourceSets.datastoreExec.runtimeClasspath
     jvmArgs(['-ea', '-Dpython.path=../libraries/jython/jython-lib',
+             '-Ddss.logging.configuration=etc/logging.properties',
              '-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog'])
 }
 

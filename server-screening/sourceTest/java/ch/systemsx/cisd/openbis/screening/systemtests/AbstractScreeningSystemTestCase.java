@@ -61,6 +61,7 @@ import ch.systemsx.cisd.openbis.plugin.screening.shared.api.v1.IScreeningApiServ
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ScreeningConstants;
 import ch.systemsx.cisd.openbis.plugin.screening.shared.basic.dto.ScreeningConstants.ImageServletUrlParameters;
 
+
 /**
  * System test case for screening. Starts both AS and DSS.
  * 
@@ -71,6 +72,8 @@ public abstract class AbstractScreeningSystemTestCase extends SystemTestCase
     static
     {
         TestInitializer.setForceCreateWithInitialData(true);
+        SYSTEM_PROPERTY_PREFIX = "dss-screening.";
+        TestInitializer.init(SYSTEM_PROPERTY_PREFIX);
     }
 
     private static final String ADMIN_USER = "admin";
@@ -544,7 +547,7 @@ public abstract class AbstractScreeningSystemTestCase extends SystemTestCase
     {
         TestInitializer.setCreateDBFromScratch(true);
         TestInitializer.setForceCreateWithInitialData(true);
-        TestInitializer.initEmptyDb();
+        TestInitializer.initEmptyDb(SYSTEM_PROPERTY_PREFIX);
     }
 
     @Override
