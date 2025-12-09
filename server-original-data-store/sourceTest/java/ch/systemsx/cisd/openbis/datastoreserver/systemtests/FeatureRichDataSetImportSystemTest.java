@@ -116,7 +116,7 @@ public class FeatureRichDataSetImportSystemTest extends SystemTestCase
 
     private void assertEmailHasBeenSentFromHook()
     {
-        File emailDirectory = new File(new File(workingDirectory, "dss-root"), "email");
+        File emailDirectory = new File("targets/email");
 
         for (File f : FileUtilities.listFiles(emailDirectory))
         {

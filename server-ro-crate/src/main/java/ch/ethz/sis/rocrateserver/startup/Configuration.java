@@ -16,6 +16,7 @@
 package ch.ethz.sis.rocrateserver.startup;
 
 import ch.ethz.sis.shared.log.standard.Logger;
+import ch.systemsx.cisd.common.io.PropertyIOUtils;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -24,8 +25,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Configuration {
 
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
+    private static final org.jboss.logging.Logger
+            LOG = org.jboss.logging.Logger.getLogger(Configuration.class);
+
     private final Map<Enum, Object> sharables = new ConcurrentHashMap<>();
     private final Properties properties = new Properties();
+    private final String systemPropertyPrefix;
 
     public <E extends Enum<E>> Configuration(List<Class<E>> mandatoryParametersClasses, String pathToConfigurationFile) {
         List<E> parameters = new ArrayList<>();
@@ -35,9 +41,8 @@ public class Configuration {
 
         try (InputStream inputStream = new FileInputStream(pathToConfigurationFile)) {
             properties.load(inputStream);
-            properties.forEach((key, value) -> {
-                properties.setProperty(key.toString(), getValue(key.toString(), value.toString()));
-            });
+            PropertyIOUtils.resolveLoadedProperties(properties);
+            systemPropertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -51,21 +56,41 @@ public class Configuration {
     }
 
     public Configuration(Map<Enum, String> values) {
+        String propertyPrefix = "";
+        for (Enum key:values.keySet())
+        {
+            String keyStr = key.toString();
+            if(keyStr.equals(SYSTEM_PROPERTY_PREFIX_KEY)) {
+                propertyPrefix = values.get(key);
+                break;
+            }
+        }
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+        }
+        systemPropertyPrefix = propertyPrefix;
+
         for (Enum key:values.keySet()) {
             String keyName = key.name();
             String value = values.get(key);
-            properties.setProperty(key.name(), getValue(keyName, value));
+            properties.setProperty(key.name(), getValue(systemPropertyPrefix + keyName, value));
         }
     }
 
     public Configuration(Properties properties) {
         Enumeration propertyNames = properties.propertyNames();
 
+        String propertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+        }
+        systemPropertyPrefix = propertyPrefix;
+
         while(propertyNames.hasMoreElements()) {
             Object propertyName = propertyNames.nextElement();
             String key = String.valueOf(propertyName);
             String value = properties.getProperty(String.valueOf(propertyName));
-            this.properties.setProperty(key, getValue(key, value));
+            this.properties.setProperty(key, getValue(systemPropertyPrefix + key, value));
         }
     }
 
@@ -80,15 +105,15 @@ public class Configuration {
         return value;
     }
 
-    public void logLoadedProperties(Logger logger) {
-        logger.info(String.format("Loaded properties count: %s", this.properties.size()));
+    public void logLoadedProperties() {
+        LOG.info(String.format("Loaded properties count: %s", this.properties.size()));
         this.properties.forEach((propKey, propValue) -> {
             String key = propKey.toString();
             String value = propValue == null ? "" : propValue.toString();
-            if(key.contains("password")) {
+            if(key.toLowerCase().contains("password")) {
                 value = "*****";
             }
-            logger.info(String.format("Loaded property: ('%s', '%s')", key, value));
+            LOG.info(String.format("Loaded property: ('%s', '%s')", key, value));
         });
     }
 
@@ -148,7 +173,7 @@ public class Configuration {
             return properties.getProperty(key);
         }
 
-        String value = getValue(key, null);
+        String value = getValue(systemPropertyPrefix + key, null);
         if(value != null) {
             properties.put(key,  value);
         }

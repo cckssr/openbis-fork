@@ -52,7 +52,7 @@ public class RemoteApiTestCase extends AbstractTransactionalTestNGSpringContextT
     @BeforeSuite
     public void beforeSuite() throws Exception
     {
-        TestInitializer.init();
+        TestInitializer.init("as.");
         server = new Server();
         HttpConfiguration httpConfig = new HttpConfiguration();
         ServerConnector connector =

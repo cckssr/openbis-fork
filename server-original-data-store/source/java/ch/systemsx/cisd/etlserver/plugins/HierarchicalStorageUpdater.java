@@ -128,7 +128,6 @@ public class HierarchicalStorageUpdater implements IDataStoreLockingMaintenanceT
     @Override
     public void setUp(String pluginName, Properties pluginProperties)
     {
-        LogInitializer.init();
         String storeRootFileName = pluginProperties.getProperty(STOREROOT_DIR_LINK_PATH_KEY);
         if (storeRootFileName == null)
         {

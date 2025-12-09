@@ -29,6 +29,9 @@ import ch.systemsx.cisd.common.exceptions.ConfigurationFailureException;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.common.filesystem.FileUtilities;
 import ch.systemsx.cisd.common.properties.PropertyUtils;
+import org.springframework.util.PropertyPlaceholderHelper;
+
+import static org.springframework.beans.factory.config.PlaceholderConfigurerSupport.*;
 
 /**
  * A static helper class to help with loading and saving {@link Properties}.
@@ -37,6 +40,14 @@ import ch.systemsx.cisd.common.properties.PropertyUtils;
  */
 public class PropertyIOUtils
 {
+
+    private static final String PLACEHOLDER_PREFIX = DEFAULT_PLACEHOLDER_PREFIX;
+
+    private static final String PLACEHOLDER_SUFFIX = DEFAULT_PLACEHOLDER_SUFFIX;
+
+    private static final String VALUE_SEPARATOR = DEFAULT_VALUE_SEPARATOR;
+
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
 
     /**
      * Loads properties from the specified file and adds them to the specified properties.
@@ -65,6 +76,7 @@ public class PropertyIOUtils
             String value = line.substring(indexOfEqualSymbol + 1).trim();
             properties.setProperty(key, value);
         }
+        resolveLoadedProperties(properties);
     }
 
     /**
@@ -98,6 +110,7 @@ public class PropertyIOUtils
         {
             properties.load(is);
             PropertyUtils.trimProperties(properties);
+            resolveLoadedProperties(properties);
             return properties;
         } catch (final Exception ex)
         {
@@ -146,5 +159,48 @@ public class PropertyIOUtils
         }
         FileUtilities.writeToFile(propertiesFile, builder.toString());
     }
+
+    public static void resolveLoadedProperties(final Properties properties) {
+        String propertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = resolveProperty(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+        }
+        final String prefix = propertyPrefix;
+
+        properties.forEach((key,value) -> {
+            String keyStr = (String) key;
+            String valueStr = (String) value;
+            String property = resolveProperty(prefix + keyStr, valueStr);
+            String resolved = getResolvedProperty(properties, property, prefix);
+            properties.setProperty(keyStr, resolved);
+        });
+    }
+
+    private static String getResolvedProperty(final Properties props, final String key, final String systemPropertyPrefix)
+    {
+        PropertyPlaceholderHelper helper = new PropertyPlaceholderHelper(
+                PLACEHOLDER_PREFIX, PLACEHOLDER_SUFFIX, VALUE_SEPARATOR, true);
+        return helper.replacePlaceholders(key, new PropertyPlaceholderHelper.PlaceholderResolver()
+        {
+            @Override
+            public String resolvePlaceholder(String placeholderName)
+            {
+                String defaultValue = props.getProperty(placeholderName);
+                return resolveProperty(systemPropertyPrefix + placeholderName, defaultValue);
+            }
+        });
+    }
+
+    private static String resolveProperty(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        if(value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
 
 }

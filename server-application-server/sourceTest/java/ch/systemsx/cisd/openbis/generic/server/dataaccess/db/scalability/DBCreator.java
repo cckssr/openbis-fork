@@ -126,10 +126,10 @@ public final class DBCreator extends AbstractDAOTest
     public void beforeTest()
     {
         // changes DB configuration to create a new DB
-        System.setProperty("database.kind", DB_KIND);
-        System.setProperty("database.create-from-scratch", "true");
-        System.setProperty("authorization-component-factory", "no-authorization");
-        System.setProperty("hibernate.search.batch-size", "10");
+        System.setProperty("as.database.kind", DB_KIND);
+        System.setProperty("as.database.create-from-scratch", "true");
+        System.setProperty("as.authorization-component-factory", "no-authorization");
+        System.setProperty("as.hibernate.search.batch-size", "10");
         // MaterialHelper.createMaterialsTSVFile(TSV_DIRECTORY, MATERIALS_NO);
         log("created materials TSV file");
     }

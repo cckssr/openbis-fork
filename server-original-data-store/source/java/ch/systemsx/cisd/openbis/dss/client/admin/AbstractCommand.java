@@ -126,27 +126,7 @@ abstract class AbstractCommand
     {
         CommonArguments arguments = getArguments();
         File servicPropertiesFile = arguments.getServicPropertiesFile();
-        FileReader reader = null;
-        try
-        {
-            reader = new FileReader(servicPropertiesFile);
-            Properties properties = new Properties();
-            properties.load(reader);
-            return ExtendedProperties.createWith(properties);
-        } catch (FileNotFoundException ex)
-        {
-            throw new UserFailureException("DSS service.properties file not found: "
-                    + servicPropertiesFile.getAbsolutePath()
-                    + (arguments.isServicePropertiesPathSpecified() ? ""
-                            : "\nUse option -sp to specify it."));
-        } catch (IOException ex)
-        {
-            throw new UserFailureException("Error while loading '"
-                    + servicPropertiesFile.getAbsolutePath() + "': " + ex, ex);
-        } finally
-        {
-            IOUtils.closeQuietly(reader);
-        }
+        return DssPropertyParametersUtil.loadProperties(servicPropertiesFile.getAbsolutePath());
     }
 
     protected abstract CommonArguments getArguments();

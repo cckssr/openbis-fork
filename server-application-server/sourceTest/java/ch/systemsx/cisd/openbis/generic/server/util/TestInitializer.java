@@ -21,6 +21,8 @@ import ch.ethz.sis.shared.log.classic.impl.Logger;
 import ch.ethz.sis.shared.log.standard.utils.LogInitializer;
 import ch.systemsx.cisd.dbmigration.DBMigrationEngine;
 
+import java.util.List;
+
 /**
  * @author Franz-Josef Elmer
  */
@@ -43,29 +45,42 @@ public class TestInitializer
 
     private static final String emptyMessagesDBScriptFolder = "../server-application-server/source/sql/messages";
 
+    private static final String SYSTEM_PROPERTY_PREFIX = "as.";
+
     public static void init()
     {
-        init(testOpenBISDBScriptFolder, testMessagesDBScriptFolder);
+        init("");
+    }
+
+    public static void init(String systemPropertyPrefix)
+    {
+        init(testOpenBISDBScriptFolder, testMessagesDBScriptFolder, systemPropertyPrefix);
     }
 
     public static void initEmptyDb()
     {
-        init(emptyOpenBISDBScriptFolder, emptyMessagesDBScriptFolder);
+        init(emptyOpenBISDBScriptFolder, emptyMessagesDBScriptFolder, SYSTEM_PROPERTY_PREFIX);
     }
 
-    private static void init(String openBISDBScriptFolder, String messagesDBScriptFolder)
+    public static void initEmptyDb(String systemPropertyPrefix)
+    {
+        init(emptyOpenBISDBScriptFolder, emptyMessagesDBScriptFolder, systemPropertyPrefix);
+    }
+
+    private static void init(String openBISDBScriptFolder, String messagesDBScriptFolder, String systemPropertyPrefix)
     {
         LogInitializer.init();
 
-        System.setProperty("database.create-from-scratch",
-                String.valueOf(getCreateDBFromScratch()));
-        System.setProperty("database.force-create-with-initial-data",
-                String.valueOf(getForceCreateWithInitialData()));
-        System.setProperty("database.kind", dbKind);
-        System.setProperty("script-folder", openBISDBScriptFolder);
 
-        System.setProperty("messages-database.kind", dbKind);
-        System.setProperty("messages-database.script-folder", messagesDBScriptFolder);
+        System.setProperty(systemPropertyPrefix+"database.create-from-scratch",
+                String.valueOf(getCreateDBFromScratch()));
+        System.setProperty(systemPropertyPrefix+"database.force-create-with-initial-data",
+                String.valueOf(getForceCreateWithInitialData()));
+        System.setProperty(systemPropertyPrefix+"database.kind", dbKind);
+        System.setProperty(systemPropertyPrefix+"script-folder", openBISDBScriptFolder);
+
+        System.setProperty(systemPropertyPrefix+"messages-database.kind", dbKind);
+        System.setProperty(systemPropertyPrefix+"messages-database.script-folder", messagesDBScriptFolder);
 
         DBMigrationEngine.deleteFullTextSearchDocumentVersionFile();
     }

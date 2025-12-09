@@ -62,9 +62,6 @@ public class DssPropertyParametersUtil
 
     private static final String DSS_TMP_KEY = "dss-tmp";
 
-    /** Prefix of system properties which may override service.properties. */
-    public static final String OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX = "openbis.dss.";
-
     public static final String DSS_CODE_KEY = DssPropertyParameters.DSS_CODE_KEY;
 
     public static final String STOREROOT_DIR_KEY = DssPropertyParameters.STOREROOT_DIR_KEY;
@@ -147,10 +144,9 @@ public class DssPropertyParametersUtil
         {
             ExtendedProperties properties = loadProperties(SERVICE_PROPERTIES_FILE);
             CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
-            ExtendedProperties serviceProperties = extendProperties(properties);
             CorePluginsInjector injector =
                     new CorePluginsInjector(ScannerType.DSS, DssPluginType.values());
-            Map<String, File> pluginFolders = injector.injectCorePlugins(serviceProperties);
+            Map<String, File> pluginFolders = injector.injectCorePlugins(properties);
 
             if (PluginContainer.tryGetInstance() == null)
             {
@@ -169,28 +165,14 @@ public class DssPropertyParametersUtil
                     pluginContainer.refresh(true);
                 }
             }
-            fullServiceProperties = serviceProperties;
+            fullServiceProperties = properties;
         }
         return fullServiceProperties;
     }
 
     public static ExtendedProperties loadProperties(String filePath)
     {
-        return extendProperties(PropertyIOUtils.loadProperties(filePath));
-    }
-
-    static ExtendedProperties extendProperties(Properties properties)
-    {
-        Properties systemProperties = System.getProperties();
-        ExtendedProperties dssSystemProperties =
-                ExtendedProperties.getSubset(systemProperties,
-                        OPENBIS_DSS_SYSTEM_PROPERTIES_PREFIX, true);
-        Set<Entry<Object, Object>> entrySet = dssSystemProperties.entrySet();
-        for (Entry<Object, Object> entry : entrySet)
-        {
-            properties.put(entry.getKey(), entry.getValue());
-        }
-        return ExtendedProperties.createWith(properties);
+        return ExtendedProperties.createWith(PropertyIOUtils.loadProperties(filePath));
     }
 
     public static long getHighwaterMark(ThreadParameters threadParameters, final Properties properties)

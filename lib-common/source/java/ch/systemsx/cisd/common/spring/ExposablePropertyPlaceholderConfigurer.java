@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.common.spring;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -22,6 +23,7 @@ import java.util.Properties;
 import ch.ethz.sis.shared.log.classic.core.LogCategory;
 import ch.ethz.sis.shared.log.classic.impl.LogFactory;
 import ch.ethz.sis.shared.log.classic.impl.Logger;
+import ch.systemsx.cisd.common.io.PropertyIOUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -89,6 +91,13 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
     //
     // PropertyPlaceholderConfigurer
     //
+    @Override
+    protected void loadProperties(Properties properties) throws IOException
+    {
+        super.loadProperties(properties);
+        PropertyIOUtils.resolveLoadedProperties(properties);
+    }
+
 
     @Override
     protected final String convertPropertyValue(final String originalValue)
@@ -120,13 +129,14 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
             final ConfigurableListableBeanFactory beanFactoryToProcess, final Properties props)
             throws BeansException
     {
+        PropertyIOUtils.resolveLoadedProperties(props);
         if(operationLog.isDebugEnabled())
         {
             for(Map.Entry<Object, Object> prop : props.entrySet())
             {
                 String key = String.valueOf(prop.getKey());
                 String value = String.valueOf(prop.getValue());
-                if(key.contains("password")) {
+                if(key.toLowerCase().contains("password")) {
                     value =  "*****";
                 }
                 operationLog.debug(String.format("Passed property: ('%s', '%s')", key, value));
@@ -138,6 +148,7 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
             final String keyStr = key.toString();
             resolvedProps.setProperty(keyStr, getResolvedProperty(props, keyStr));
         }
+
 
         Map<String, String> defaultValues = getDefaultValuesForMissingProperties();
         for (String key : defaultValues.keySet())
@@ -155,7 +166,7 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
         resolvedProps.forEach((propKey, propValue) -> {
             String key = propKey.toString();
             String value = propValue == null ? "" : propValue.toString();
-            if(key.contains("password")) {
+            if(key.toLowerCase().contains("password")) {
                 value = "*****";
             }
             operationLog.info(String.format("Loaded property: ('%s', '%s')", key, value));

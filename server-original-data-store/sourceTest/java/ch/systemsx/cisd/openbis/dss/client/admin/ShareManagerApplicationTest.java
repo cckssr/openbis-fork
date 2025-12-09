@@ -15,6 +15,7 @@
  */
 package ch.systemsx.cisd.openbis.dss.client.admin;
 
+import ch.systemsx.cisd.openbis.generic.shared.util.TestInstanceHostUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.AssertJUnit;
@@ -25,6 +26,11 @@ import org.testng.annotations.Test;
 import ch.systemsx.cisd.common.exceptions.UserFailureException;
 import ch.systemsx.cisd.openbis.dss.generic.shared.api.v1.IDssServiceRpcGeneric;
 import ch.systemsx.cisd.openbis.generic.shared.api.v1.IGeneralInformationService;
+
+import java.util.List;
+
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.DOWNLOAD_URL_KEY;
+import static ch.systemsx.cisd.openbis.dss.generic.shared.utils.DssPropertyParametersUtil.SERVER_URL_KEY;
 
 /**
  * @author Franz-Josef Elmer
@@ -105,9 +111,15 @@ public class ShareManagerApplicationTest extends AssertJUnit
 
     private MockCommand mockCommand;
 
+    private String serverUrl, downloadUrl;
+
     @BeforeMethod
     public void setUp()
     {
+        for(String prefix : List.of("dss.", "dss-screening.")) {
+            System.setProperty(prefix + SERVER_URL_KEY, "http://localhost:8818");
+            System.setProperty(prefix + DOWNLOAD_URL_KEY, "http://localhost:8819");
+        }
         context = new Mockery();
         dssService = context.mock(IDssServiceRpcGeneric.class);
         service = context.mock(IGeneralInformationService.class);
@@ -197,8 +209,8 @@ public class ShareManagerApplicationTest extends AssertJUnit
         shareManagerApplication.parseAndRun("mock", "-u", "user", "-p", "pswd", "a");
 
         assertEquals(true, mockCommand.executed);
-        assertEquals("http://localhost:8888", mockCommand.recordedOpenBisServerUrl);
-        assertEquals("http://localhost:8889", mockCommand.recordedDownloadUrl);
+        assertEquals("http://localhost:8818", mockCommand.recordedOpenBisServerUrl);
+        assertEquals("http://localhost:8819", mockCommand.recordedDownloadUrl);
         context.assertIsSatisfied();
     }
 

@@ -1,33 +1,19 @@
-/*
- * Copyright ETH 2008 - 2023 Zürich, Scientific IT Services
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package ch.systemsx.cisd.openbis.generic.server.dataaccess.db;
+package ch.systemsx.cisd.openbis.plugin.screening.server.dataaccess;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertNull;
-import static org.testng.AssertJUnit.assertTrue;
-import static org.testng.AssertJUnit.fail;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
+import ch.rinn.restrictions.Friend;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExperimentDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
+import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAO;
+import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
+import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
+import ch.systemsx.cisd.openbis.generic.shared.dto.*;
+import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
 import junit.framework.Assert;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,50 +21,25 @@ import org.springframework.test.context.testng.AbstractTransactionalTestNGSpring
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
-import ch.rinn.restrictions.Friend;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDAOFactory;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IDataDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.IExperimentDAO;
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.ISampleDAO;
-import ch.systemsx.cisd.openbis.generic.server.util.TestInitializer;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.DataTypeCode;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityProperty;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.PluginType;
-import ch.systemsx.cisd.openbis.generic.shared.basic.dto.ScriptType;
-import ch.systemsx.cisd.openbis.generic.shared.dto.AuthorizationGroupPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.Code;
-import ch.systemsx.cisd.openbis.generic.shared.dto.DataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.DataTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.EntityTypePropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ExperimentTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ExternalDataPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.MaterialTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.PersonPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ProjectPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.PropertyTypePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SamplePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.ScriptPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.SpacePE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.VocabularyPE;
-import ch.systemsx.cisd.openbis.generic.shared.dto.properties.EntityKind;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
-/**
- * Abstract test case for database related unit testing.
- * 
- * @author Christian Ribeaud
- */
+import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.fail;
+
 @Friend(toClasses =
-{ AbstractDAO.class })
-public abstract class AbstractDAOWithoutContextTest extends
+        { AbstractDAO.class })
+public class AbstractScreeningDAOWithoutContextTest extends
         AbstractTransactionalTestNGSpringContextTests
 {
     static
     {
-        TestInitializer.init("as.");
+        TestInitializer.init("");
+        TestInitializer.init("dss-screening.");
     }
 
     static final Long ANOTHER_DATABASE_INSTANCE_ID = Long.valueOf(2);
@@ -374,17 +335,18 @@ public abstract class AbstractDAOWithoutContextTest extends
         return result;
     }
 
-    protected List<IEntityProperty> getSortedProperties(IEntityPropertiesHolder sample)
+    protected List<IEntityProperty> getSortedProperties(
+            ch.systemsx.cisd.openbis.generic.shared.basic.dto.IEntityPropertiesHolder sample)
     {
         List<IEntityProperty> properties = sample.getProperties();
         Collections.sort(properties, new Comparator<IEntityProperty>()
+        {
+            @Override
+            public int compare(IEntityProperty p1, IEntityProperty p2)
             {
-                @Override
-                public int compare(IEntityProperty p1, IEntityProperty p2)
-                {
-                    return p1.getPropertyType().getCode().compareTo(p2.getPropertyType().getCode());
-                }
-            });
+                return p1.getPropertyType().getCode().compareTo(p2.getPropertyType().getCode());
+            }
+        });
         return properties;
     }
 }

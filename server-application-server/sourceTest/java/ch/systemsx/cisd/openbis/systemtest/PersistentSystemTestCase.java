@@ -66,7 +66,7 @@ public abstract class PersistentSystemTestCase extends AbstractTestNGSpringConte
     @BeforeSuite
     public void beforeSuite()
     {
-        TestInitializer.init();
+        TestInitializer.init("as.");
     }
 
     @BeforeClass

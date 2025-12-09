@@ -17,6 +17,8 @@ package ch.systemsx.cisd.openbis.dss.generic.server.dbbackup;
 
 import ch.systemsx.cisd.dbmigration.DatabaseEngine;
 import org.testng.AssertJUnit;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -24,6 +26,27 @@ import org.testng.annotations.Test;
  */
 public class BackupDatabaseDescriptionGeneratorTest extends AssertJUnit
 {
+
+    private String enabledModules;
+    @BeforeTest
+    public void setBeforeEnabledModules() throws Exception
+    {
+        enabledModules = System.getProperties().getProperty("dss.enabled-modules", null);
+        if(enabledModules != null)
+        {
+            System.getProperties().remove("dss.enabled-modules");
+        }
+        System.setProperty("as.database.kind", "service_prop_test");
+    }
+
+    @AfterTest
+    public void setAfterEnabledModules() {
+        if(enabledModules != null)
+        {
+            System.getProperties().setProperty("dss.enabled-modules", enabledModules);
+        }
+    }
+
     @Test
     public void testParser()
     {
@@ -36,7 +59,7 @@ public class BackupDatabaseDescriptionGeneratorTest extends AssertJUnit
         String resultTemplate =
                 "database=imaging_barkind;username=%s;password=\n"
                         + "database=internal_db;username=%s;password=\n"
-                        + "database=openbis_fookind;username=%s;password=";
+                        + "database=openbis_service_prop_test;username=%s;password=";
 
         String databaseHost = DatabaseEngine.getTestEnvironmentHostOrConfigured(null);
         if (databaseHost != null)

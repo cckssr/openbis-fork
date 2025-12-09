@@ -164,10 +164,10 @@ public abstract class BaseTest extends AbstractTransactionalTestNGSpringContextT
 
     private void initializeProperties()
     {
-        System.setProperty("database.create-from-scratch", "true");
-        System.setProperty("database.kind", "test_clean");
-        System.setProperty("script-folder", "../server-application-server/source/sql/openbis");
-        System.setProperty(DataSetTypeWithoutExperimentChecker.PROPERTY_KEY,
+        System.setProperty("as.database.create-from-scratch", "true");
+        System.setProperty("as.database.kind", "test_clean");
+        System.setProperty("as.script-folder", "../server-application-server/source/sql/openbis");
+        System.setProperty("as."+DataSetTypeWithoutExperimentChecker.PROPERTY_KEY,
                 "  NO-EXP-.* ,   NE.*  ");
     }
 

@@ -29,7 +29,7 @@ public class JavaLoggingSimpleTest
 
     public static void main(String[] args) {
         // Initialize logging from logging.properties using the alias.
-        System.setProperty("log.configuration" ,"/tmp/logging.properties");
+        System.setProperty("logging.configuration" ,"/tmp/logging.properties");
         LogInitializer.init();
 
         LogFactory.getRootLogger().info("Hello");

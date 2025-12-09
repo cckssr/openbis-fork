@@ -37,12 +37,10 @@ public class AutoSymlink
                 DssPropertyParametersUtil
                         .loadProperties(DssPropertyParametersUtil.SERVICE_PROPERTIES_FILE);
         CorePluginsUtils.addCorePluginsProperties(properties, ScannerType.DSS);
-        ExtendedProperties serviceProperties =
-                DssPropertyParametersUtil.extendProperties(properties);
         CorePluginsInjector injector =
                 new CorePluginsInjector(ScannerType.DSS, DssPluginType.values());
         Map<String, File> pluginFolders =
-                injector.injectCorePlugins(serviceProperties);
+                injector.injectCorePlugins(properties);
         ch.ethz.sis.openbis.generic.shared.utils.AutoSymlink.createSymlinks(new File("lib"), pluginFolders);
     }
 

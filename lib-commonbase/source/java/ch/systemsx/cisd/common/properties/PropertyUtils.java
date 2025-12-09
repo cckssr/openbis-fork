@@ -40,6 +40,7 @@ import ch.ethz.sis.shared.log.classic.core.LogLevel;
  */
 public final class PropertyUtils
 {
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
 
     static final String EMPTY_STRING_FORMAT = "Property '%s' is not specified.";
 
@@ -79,6 +80,41 @@ public final class PropertyUtils
         assert propertyKey != null : "Given property key can not be null.";
     }
 
+    private static String getValue(final Properties properties, String key) {
+       return getValue(properties, key, null);
+    }
+
+    private static String getValue(final Properties properties, String key, String defaultValue) {
+
+        String result = properties.getProperty(key);
+        if(result == null) {
+            String systemPropertyPrefix = getSystemPropertyPrefix(properties);
+            result = getEnvironmentValue(systemPropertyPrefix + key, defaultValue);
+        }
+        return result;
+    }
+
+    private static String getEnvironmentValue(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        if(value == null) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    private static String getSystemPropertyPrefix(final Properties properties) {
+        if(properties.containsKey(SYSTEM_PROPERTY_PREFIX_KEY)) {
+            String systemPropertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+            systemPropertyPrefix = getEnvironmentValue(systemPropertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, systemPropertyPrefix);
+            return systemPropertyPrefix;
+        } else {
+            return "";
+        }
+    }
+
     /**
      * Looks up given <var>propertyKey</var> in given <var>properties</var>.
      * 
@@ -87,7 +123,7 @@ public final class PropertyUtils
     public final static boolean hasProperty(final Properties properties, final String propertyKey)
     {
         assertParameters(properties, propertyKey);
-        final String propOrNull = getProperty(properties, propertyKey);
+        final String propOrNull = getValue(properties, propertyKey);
         return (propOrNull != null);
     }
 
@@ -100,7 +136,7 @@ public final class PropertyUtils
     public final static String getProperty(final Properties properties, final String propertyKey)
     {
         assertParameters(properties, propertyKey);
-        final String property = properties.getProperty(propertyKey);
+        final String property = getValue(properties, propertyKey);
         return StringUtils.isBlank(property) ? null : property.trim();
     }
 
@@ -113,7 +149,7 @@ public final class PropertyUtils
     public final static String getPropertyDontTrim(final Properties properties, final String propertyKey)
     {
         assertParameters(properties, propertyKey);
-        final String property = properties.getProperty(propertyKey);
+        final String property = getValue(properties, propertyKey);
         return property;
     }
 
@@ -126,7 +162,7 @@ public final class PropertyUtils
             final String propertyKey)
     {
         assertParameters(properties, propertyKey);
-        final String property = properties.getProperty(propertyKey);
+        final String property = getValue(properties, propertyKey);
         return (property == null) ? null : property.trim();
     }
 
@@ -197,7 +233,7 @@ public final class PropertyUtils
     
     public static Pattern getPattern(Properties properties, String key, String defaultValue)
     {
-        return compilePattern(properties.getProperty(key, defaultValue), key);
+        return compilePattern(getValue(properties, key, defaultValue), key);
     }
     
     private static Pattern compilePattern(String regex, String key)

@@ -19,7 +19,6 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
-import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOWithoutContextTest;
 
 /**
  * Abstract DAO test for screening.
@@ -29,7 +28,8 @@ import ch.systemsx.cisd.openbis.generic.server.dataaccess.db.AbstractDAOWithoutC
 @ContextConfiguration(locations = "classpath:screening-applicationContext.xml")
 @Transactional(transactionManager = "transaction-manager")
 @Rollback
-public class AbstractScreeningDAOTest extends AbstractDAOWithoutContextTest
+public class AbstractScreeningDAOTest extends AbstractScreeningDAOWithoutContextTest
 {
+
 
 }

@@ -24,8 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Configuration {
 
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
+
     private final Map<Enum, Object> sharables = new ConcurrentHashMap<>();
     private final Properties properties = new Properties();
+    private final String systemPropertyPrefix;
 
     public <E extends Enum<E>> Configuration(List<Class<E>> mandatoryParametersClasses, String pathToConfigurationFile) {
         List<E> parameters = new ArrayList<>();
@@ -35,15 +38,23 @@ public class Configuration {
 
         try (InputStream inputStream = new FileInputStream(pathToConfigurationFile)) {
             properties.load(inputStream);
+            String propertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+            if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+                propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+            }
+            systemPropertyPrefix = propertyPrefix;
+
             properties.forEach((key, value) -> {
-                properties.setProperty(key.toString(), getValue(key.toString(), value.toString()));
+                String keyStr = (String) key;
+                String valueStr = (String) value;
+                properties.setProperty(keyStr, getValue(systemPropertyPrefix + keyStr, valueStr));
             });
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
 
         for (E parameter : parameters) {
-            String value = properties.getProperty(parameter.name());
+            String value = getProperty(parameter.toString());
             if (value == null) {
                 throw new RuntimeException("Failed to load '" + parameter + "' from config file '" + pathToConfigurationFile + "'");
             }
@@ -51,21 +62,43 @@ public class Configuration {
     }
 
     public Configuration(Map<Enum, String> values) {
+
+        String propertyPrefix = "";
+        for (Enum key:values.keySet())
+        {
+            String keyStr = key.toString();
+            if(keyStr.equals(SYSTEM_PROPERTY_PREFIX_KEY)) {
+                propertyPrefix = values.get(key);
+                break;
+            }
+        }
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+        }
+        systemPropertyPrefix = propertyPrefix;
+
+
         for (Enum key:values.keySet()) {
             String keyName = key.name();
             String value = values.get(key);
-            properties.setProperty(key.name(), getValue(keyName, value));
+            properties.setProperty(key.name(), getValue(systemPropertyPrefix + keyName, value));
         }
     }
 
     public Configuration(Properties properties) {
         Enumeration propertyNames = properties.propertyNames();
 
+        String propertyPrefix = properties.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = getValue(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
+        }
+        systemPropertyPrefix = propertyPrefix;
+
         while(propertyNames.hasMoreElements()) {
             Object propertyName = propertyNames.nextElement();
             String key = String.valueOf(propertyName);
             String value = properties.getProperty(String.valueOf(propertyName));
-            this.properties.setProperty(key, getValue(key, value));
+            this.properties.setProperty(key, getValue(systemPropertyPrefix + key, value));
         }
     }
 
@@ -85,7 +118,7 @@ public class Configuration {
         this.properties.forEach((propKey, propValue) -> {
             String key = propKey.toString();
             String value = propValue == null ? "" : propValue.toString();
-            if(key.contains("password")) {
+            if(key.toLowerCase().contains("password")) {
                 value = "*****";
             }
             logger.info(String.format("Loaded property: ('%s', '%s')", key, value));
@@ -93,11 +126,11 @@ public class Configuration {
     }
 
     public <E extends Enum<E>> void setProperty(E parameter, String value) {
-        properties.setProperty(parameter.name(), value);
+        properties.setProperty(parameter.toString(), value);
     }
 
     private <E extends Enum<E>> String getProperty(E parameter) {
-        return properties.getProperty(parameter.name());
+        return properties.getProperty(parameter.toString());
     }
 
     public <E extends Enum<E>> String getStringProperty(E parameter) {
@@ -148,7 +181,7 @@ public class Configuration {
             return properties.getProperty(key);
         }
 
-        String value = getValue(key, null);
+        String value = getValue(systemPropertyPrefix + key, null);
         if(value != null) {
             properties.put(key,  value);
         }

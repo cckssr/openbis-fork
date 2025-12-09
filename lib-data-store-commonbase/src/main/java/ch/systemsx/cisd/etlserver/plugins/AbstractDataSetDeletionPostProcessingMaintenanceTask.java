@@ -65,7 +65,6 @@ public abstract class AbstractDataSetDeletionPostProcessingMaintenanceTask
 
     public AbstractDataSetDeletionPostProcessingMaintenanceTask()
     {
-        LogInitializer.init();
     }
 
     protected IOpenBISService getOpenBISService()

@@ -171,7 +171,8 @@ task copyTestData(type: Copy, dependsOn: testClasses) {
 task openBISDevelopmentEnvironmentASStart(type: JavaExec) {
     mainClass = 'ch.ethz.sis.openbis.generic.server.dev.EmbeddedJettyDevelopmentServer'
     classpath = sourceSets.asExec.runtimeClasspath
-    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib', '-Dlog.configuration=etc/logging.properties',
+    jvmArgs(['-Dpython.path=../libraries/jython/jython-lib',
+             '-Das.logging.configuration=etc/logging.properties',
              '-Djavax.net.ssl.trustStore=dist/server/openBIS.keystore',
              // config for imaging
              '-Dimaging.as.services.imaging.storageRoot.dss=../server-original-data-store/targets/store',

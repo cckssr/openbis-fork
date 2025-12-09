@@ -322,20 +322,16 @@ public class EvaluatePluginTest extends AbstractTest
     public void testEvaluteDynamicPropertyPluginHotDeployed()
     {
         File pluginJar = new TestResources(getClass()).getResourceFile("test-dynamic-property-plugin.jar");
-
         try
         {
             String sessionToken = v3api.login(TEST_USER, PASSWORD);
 
             EntityTypePermId objectTypeId = createTestObjectType(PROPERTY);
             Sample object = createTestObject(objectTypeId, Collections.singletonMap(PROPERTY, "testHotDeployedValue"));
-
             hotDeployPlugin(ScriptType.DYNAMIC_PROPERTY, TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME, pluginJar);
-
             DynamicPropertyPluginEvaluationOptions options = new DynamicPropertyPluginEvaluationOptions();
             options.setPluginId(new PluginPermId(TestDynamicPropertyHotDeployedPlugin.PLUGIN_NAME));
             options.setObjectId(object.getPermId());
-
             DynamicPropertyPluginEvaluationResult result = (DynamicPropertyPluginEvaluationResult) v3api.evaluatePlugin(sessionToken, options);
             assertEquals(result.getValue(), "testHotDeployedValue");
         } finally
