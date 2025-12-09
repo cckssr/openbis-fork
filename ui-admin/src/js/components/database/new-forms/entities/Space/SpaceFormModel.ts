@@ -28,11 +28,11 @@ export class SpaceFormModel {
 			isDirty: false,
 			isValid: true,
 			actions: [
-				getNewProjectAction(),
-				getNewObjectAction(EntityKind.SPACE),
-				getDividerAction(FormMode.VIEW),
+				//getNewProjectAction(),
+				// getNewObjectAction(EntityKind.SPACE),
+				//getDividerAction(FormMode.VIEW),
 				getEditAction(),
-				getDeleteAction(), //TODO: implement delete for space
+				// getDeleteAction(), //TODO: implement delete for space
 				getDividerAction(FormMode.VIEW),
 				getMoreActionsAction(),
 				getSaveAction(EntityKind.SPACE),
