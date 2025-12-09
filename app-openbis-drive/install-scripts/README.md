@@ -16,7 +16,7 @@ In many places, this document refers to the system-dependent installation direct
 - [launch-scripts directory](#launch-scripts-directory)
 - [configuration directory](#state-and-configuration-directory)
 
-See [appendix](#appendix) at the and of the document.
+See [appendix](#appendix) at the end of the document.
 
 ### Automatic installation through scripts
 
