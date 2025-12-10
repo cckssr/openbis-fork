@@ -191,7 +191,7 @@ Supported commands:
     config -startAtLogin=true|false -language=en|fr|de|it|es -syncInterval=120   -> sets configuration parameters: two-letter ISO-code for language, synchronization-interval in seconds (defaults: false, 'en', 120 seconds = 2 minutes)
 
     jobs    -> prints the currently registered synchronization-jobs
-    jobs add -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
+    jobs add -title='Description...' -type='Bidirectional|Upload|Download' -dir='./dir-a/dir-b' -openBISurl='https://...' -entityPermId='123-abc-...' -personalAccessToken='098abc...' -remDir='/remote/dir/absolute-path/' -enabled=true|false ( optional: -skipHiddenFiles=true|false with default-value: true )
     jobs remove -dir='./dir-a/dir-b'
     jobs start -dir='./dir-a/dir-b'
     jobs stop -dir='./dir-a/dir-b'
@@ -210,7 +210,7 @@ Supported commands:
 #### status
 
 ```shell
-./openbis-drive-cmd-line.sh help
+./openbis-drive-cmd-line.sh status
 ```
 
 Reports if the background-service is running and, if so, 
@@ -223,6 +223,7 @@ Language: en
 Sync-interval: 60 seconds
 Synchronization-jobs: 
 ----------
+Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
 openBIS url: http://localhost:8085/afs-server
@@ -230,6 +231,7 @@ Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
+Skip hidden files: true
 ```
 
 If the background-service is not running:
@@ -270,6 +272,7 @@ Language: en
 Sync-interval: 60 seconds
 Synchronization-jobs: 
 ----------
+Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
 openBIS url: http://localhost:8085/afs-server
@@ -277,6 +280,7 @@ Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
+Skip hidden files: true
 ```
 
 - Start-at-login: indicates if the background-process has to be started at system-login
@@ -296,6 +300,7 @@ Language: fr
 Sync-interval: 60 seconds
 Synchronization-jobs: 
 ----------
+Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
 openBIS url: http://localhost:8085/afs-server
@@ -303,6 +308,7 @@ Entity-perm-id: a7bc2fbd-49af-4e2d-86cc-ea316028b793
 Remote directory: /remotedir
 Personal access token: a13fe879-1753-41dd-8c3e-eb5a97e1c7be
 Enabled: false
+Skip hidden files: true
 ```
 
 ### Jobs commands
@@ -318,6 +324,7 @@ Prints the synchronization-tasks registered in the background-service:
 ```
 Synchronization-jobs: 
 ----------
+Title: Descriptive title...
 Type: Bidirectional
 Local directory: /home/myuser/openbis_sync_test
 openBIS url: http://localhost:8085/afs-server
@@ -351,6 +358,7 @@ jobs add -type='Bidirectional|Upload|Download' -dir='./my-local-dir' -openBISurl
 
 Option that represent properties are:
 ```
+-title   : descriptive title
 -type   :   one of Bidirectional, Upload, Download
 -dir   :   local directory
 -openBISurl   :   openBIS server URL (example: 'http://localhost:8080')
@@ -364,7 +372,7 @@ Option that represent properties are:
 For example: 
 
 ```shell
-./openbis-drive-cmd-line.sh jobs add -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085/afs-server' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
+./openbis-drive-cmd-line.sh jobs add -title='Description' -type='Bidirectional' -dir='/home/myuser/openbis_sync_test' -openBISurl='http://localhost:8085/afs-server' -entityPermId='a7bc2fbd-49af-4e2d-86cc-ea316028b793' -personalAccessToken='a13fe879-1753-41dd-8c3e-eb5a97e1c7be' -remDir='/remote/dir/absolute-path/' -enabled=true
 ```
 
 #### jobs remove

@@ -1,2 +1,2 @@
 @echo off
-powershell.exe -command "$result = Get-WmiObject -Class win32_process -Filter \"Name LIKE 'javaw.exe'\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-jar app-openbis-drive-service.jar' ) { Stop-Process -Force $i.ProcessId ; }}"
+powershell.exe -command "$result = Get-WmiObject -Class win32_process -Filter \"Name LIKE 'javaw.exe'\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPIService' ) { Stop-Process -Force $i.ProcessId ; }}"

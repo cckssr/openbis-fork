@@ -9,7 +9,9 @@ import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.OpeBISFactory;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.helper.validation.ValidationErrorMapping;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ExportParams;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.params.ImportParams;
+import ch.ethz.sis.rocrateserver.openapi.v1.service.response.ErrorResponse;
 import ch.ethz.sis.rocrateserver.openapi.v1.service.response.Validation.ValidationReport;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
@@ -18,6 +20,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.specimpl.ResponseBuilderImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +67,7 @@ public class RoCrateService {
     @SneakyThrows
     public Response import_(
             @BeanParam ImportParams headers,
-            InputStream body)
+            InputStream body) throws JsonProcessingException
     {
         OpenBIS openBIS = null;
         try {
@@ -81,7 +84,17 @@ public class RoCrateService {
             ObjectMapper objectMapper = new ObjectMapper();
             String serialized = objectMapper.writeValueAsString(externalToOpenBisIdentifiers);
             return Response.ok(serialized).build();
-        } catch (Exception ex) {
+        } catch (WebApplicationException ex)
+        {
+            ErrorResponse errorResponse = new ErrorResponse();
+            ObjectMapper objectMapper = new ObjectMapper();
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(ex.getResponse().getStatus());
+            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            return responseBuilder.build();
+
+        } catch (Exception ex)
+        {
             LOG.error("There was an error", ex);
             throw new RuntimeException(ex);
         } finally {
@@ -93,7 +106,7 @@ public class RoCrateService {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes({ APPLICATION_LD_JSON, "application/zip" })
     @Path("validate")
-    public String validate(
+    public Object validate(
             @BeanParam ImportParams headers,
             InputStream body)
             throws IOException
@@ -117,7 +130,13 @@ public class RoCrateService {
         } catch (WebApplicationException ex)
         {
             LOG.error("There was an error", ex);
-            throw ex;
+
+            ErrorResponse errorResponse = new ErrorResponse();
+            ObjectMapper objectMapper = new ObjectMapper();
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(ex.getResponse().getStatus());
+            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            return responseBuilder.build();
         } catch (Exception ex)
         {
             LOG.error("There was an error", ex);
@@ -149,11 +168,15 @@ public class RoCrateService {
             InputStream inputStream = exportDelegate.export(openBIS, headers, body);
             return Response.ok(inputStream.readAllBytes())
                     .type(headers.getAccept()).build();
-        } catch (WebApplicationException e)
+        } catch (WebApplicationException ex)
         {
+            ErrorResponse errorResponse = new ErrorResponse();
+            ObjectMapper objectMapper = new ObjectMapper();
+            Response.ResponseBuilder responseBuilder = new ResponseBuilderImpl();
+            responseBuilder.status(ex.getResponse().getStatus());
+            responseBuilder.entity(objectMapper.writeValueAsString(errorResponse));
+            return responseBuilder.build();
 
-            Log.error(e);
-            throw e;
         } catch (Exception ex)
         {
             Log.error(ex);

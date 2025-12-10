@@ -33,7 +33,7 @@ public class DriveAPIGrpcImplTest {
     public void setSettings() {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
         )));
         driveAPIGrpc.setSettings(ProtobufConversionUtil.toProtobufSettings(settings), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).setSettings(settings);
@@ -57,7 +57,7 @@ public class DriveAPIGrpcImplTest {
     public void getSettings() {
         StreamObserver<DriveApiService.Settings> streamObserver = Mockito.mock(StreamObserver.class);
         Settings settings = new Settings(true, "it", 63, new ArrayList<>(List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true)
         )));
         Mockito.doReturn(settings).when(driveAPIServer).getSettings();
         driveAPIGrpc.getSettings(DriveApiService.Empty.newBuilder().build(), streamObserver);
@@ -82,8 +82,8 @@ public class DriveAPIGrpcImplTest {
     public void getSyncJobs() {
         StreamObserver<DriveApiService.SyncJobs> streamObserver = Mockito.mock(StreamObserver.class);
         List<SyncJob> syncJobs = List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir2", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir2", true)
         );
         Mockito.doReturn(syncJobs).when(driveAPIServer).getSyncJobs();
         driveAPIGrpc.getSyncJobs(DriveApiService.Empty.newBuilder().build(), streamObserver);
@@ -108,8 +108,8 @@ public class DriveAPIGrpcImplTest {
     public void addSyncJobs() {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         List<SyncJob> syncJobs = List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir2", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir2", true)
         );
         driveAPIGrpc.addSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).addSyncJobs(syncJobs);
@@ -133,8 +133,8 @@ public class DriveAPIGrpcImplTest {
     public void removeSyncJobs() {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         List<SyncJob> syncJobs = List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir2", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir2", true)
         );
         driveAPIGrpc.removeSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).removeSyncJobs(syncJobs);
@@ -158,8 +158,8 @@ public class DriveAPIGrpcImplTest {
     public void startSyncJobs() {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         List<SyncJob> syncJobs = List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir2", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir2", true)
         );
         driveAPIGrpc.startSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).startSyncJobs(syncJobs);
@@ -183,8 +183,8 @@ public class DriveAPIGrpcImplTest {
     public void stopSyncJobs() {
         StreamObserver<DriveApiService.Empty> streamObserver = Mockito.mock(StreamObserver.class);
         List<SyncJob> syncJobs = List.of(
-                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir", true),
-                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "/remDIR", "/LOCdir2", true)
+                new SyncJob(SyncJob.Type.Upload, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir", true),
+                new SyncJob(SyncJob.Type.Bidirectional, "http://loc", "tkntkn", "1234-abcd", "title", "/remDIR", "/LOCdir2", true)
         );
         driveAPIGrpc.stopSyncJobs(ProtobufConversionUtil.toProtobufSyncJobs(syncJobs), streamObserver);
         Mockito.verify(driveAPIServer, Mockito.times(1)).stopSyncJobs(syncJobs);
