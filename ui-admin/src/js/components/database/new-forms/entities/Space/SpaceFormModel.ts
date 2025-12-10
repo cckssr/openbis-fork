@@ -33,8 +33,8 @@ export class SpaceFormModel {
 				//getDividerAction(FormMode.VIEW),
 				getEditAction(),
 				// getDeleteAction(), //TODO: implement delete for space
-				getDividerAction(FormMode.VIEW),
-				getMoreActionsAction(),
+				//getDividerAction(FormMode.VIEW),
+				// getMoreActionsAction(),
 				getSaveAction(EntityKind.SPACE),
 				getCancelAction(),
 				getDividerAction(FormMode.EDIT),
