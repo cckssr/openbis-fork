@@ -15,6 +15,7 @@
 import base64
 import os
 import pathlib
+import copy
 
 from pandas import DataFrame
 from tabulate import tabulate
@@ -107,7 +108,7 @@ class AttrHolder:
                     d = d["identifier"]
                 self.__dict__["_" + attr] = d
 
-            elif attr in ["parents", "children", "samples", "components", "containers"]:
+            elif attr in ["samples", "components", "containers"]:
                 self.__dict__["_" + attr] = []
                 if data[attr] is not None:
                     for item in data[attr]:
@@ -116,6 +117,21 @@ class AttrHolder:
                                 self.__dict__["_" + attr].append(item["identifier"])
                             elif "permId" in item:
                                 self.__dict__["_" + attr].append(item["permId"])
+                        except Exception:
+                            # TODO: under certain circumstances, openBIS only delivers an integer
+                            pass
+            elif attr in ["parents", "children"]:
+                self.__dict__["_" + attr] = []
+                self.__dict__["_" + attr + "_orig"] = []
+                if data[attr] is not None:
+                    for item in data[attr]:
+                        try:
+                            if "identifier" in item:
+                                self.__dict__["_" + attr].append(item["identifier"])
+                                self.__dict__["_" + attr + "_orig"].append(copy.copy(item["identifier"]))
+                            elif "permId" in item:
+                                self.__dict__["_" + attr].append(item["permId"])
+                                self.__dict__["_" + attr + "_orig"].append(copy.copy(item["permId"]))
                         except Exception:
                             # TODO: under certain circumstances, openBIS only delivers an integer
                             pass
@@ -305,7 +321,7 @@ class AttrHolder:
             elif attr in ["parents", "children"] and "_" + attr in self.__dict__:
                 items = self.__dict__.get("_" + attr, [])
                 items_orig = self.__dict__.get("_" + attr + "_orig", [])
-                if items == items_orig:
+                if items == items_orig or items is None:
                     continue
                 additions = []
                 deletions = []

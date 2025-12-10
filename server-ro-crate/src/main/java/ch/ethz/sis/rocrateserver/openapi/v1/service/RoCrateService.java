@@ -111,7 +111,9 @@ public class RoCrateService {
                     importDelegate.import_(openBIS, headers, body, true);
             return ValidationReport.serialize(
                     new ValidationReport(openBisImportResult.getValidationResult().isOkay(),
-                    ValidationErrorMapping.mapErrors(openBisImportResult.getValidationResult())));
+                            ValidationErrorMapping.mapErrors(
+                                    openBisImportResult.getValidationResult()),
+                            openBisImportResult.getValidationResult().getFoundIdentifiers()));
         } catch (WebApplicationException ex)
         {
             LOG.error("There was an error", ex);
