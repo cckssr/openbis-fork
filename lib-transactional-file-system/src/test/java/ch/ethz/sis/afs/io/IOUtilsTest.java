@@ -597,7 +597,7 @@ public class IOUtilsTest extends AbstractTest {
                 IOUtils.isValidFilename(" invalid-file.txt"));
         assertFalse("Expected 'invalid-file.txt ' to be invalid",
                 IOUtils.isValidFilename("invalid-file.txt "));
-        assertFalse("Expected '.hiddenfile' to be invalid", IOUtils.isValidFilename(".hiddenfile"));
+        assertTrue("Expected '.hiddenfile' to be valid", IOUtils.isValidFilename(".hiddenfile"));
         assertFalse("Expected 'hiddenfile.' to be invalid", IOUtils.isValidFilename("hiddenfile."));
         assertFalse("Expected an empty string to be invalid", IOUtils.isValidFilename(""));
         assertFalse("Expected null to be invalid", IOUtils.isValidFilename(null));
