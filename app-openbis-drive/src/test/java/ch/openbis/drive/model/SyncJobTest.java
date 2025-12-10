@@ -15,7 +15,7 @@ public class SyncJobTest {
 
     @Test
     public void testDefaultValues() {
-        SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "https://url", "PAT", "entity-id", "/remote-root", "/home/user/local-dir", false);
+        SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "https://url", "PAT", "entity-id", "title", "/remote-root", "/home/user/local-dir", false);
         Assert.assertTrue(syncJob.isSkipHiddenFiles());
         Assert.assertEquals(SyncJob.getDefaultHiddenPathPatterns(), syncJob.getHiddenPathPatterns());
     }

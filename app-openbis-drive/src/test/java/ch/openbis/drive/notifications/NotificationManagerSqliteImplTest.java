@@ -96,7 +96,7 @@ public class NotificationManagerSqliteImplTest {
 
         String localDir = "localDir";
         String otherLocalDir = "other-localDir";
-        SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", localDir, false);
+        SyncJob syncJob = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", localDir, false);
         long now = System.currentTimeMillis();
         List<Notification> notificationList = List.of(
                 new Notification(Notification.Type.Conflict, localDir, "localFile", "remoteFile", "MESSAGE__", now+1000),

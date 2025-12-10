@@ -45,8 +45,8 @@ public class SettingsManagerTest {
     synchronized public void setAndGetSettingsTest() throws Exception {
         Settings settings1 = Settings.defaultSettings();
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1", false);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir2", true);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", true);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
         settingsManager.setSettings(settings1);
@@ -116,8 +116,8 @@ public class SettingsManagerTest {
     synchronized public void getSyncJobsTest() throws Exception {
         Settings settings1 = Settings.defaultSettings();
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1", false);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir2", true);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", false);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", true);
         Settings settings2 = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
         settingsManager.setSettings(settings1);
@@ -134,8 +134,8 @@ public class SettingsManagerTest {
     @Test(expected = IllegalArgumentException.class)
     synchronized public void setInvalidSettingsForOverlappingLocalDirTest() {
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1/subdir", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir1", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1/subdir", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir1", false);
         Settings settings = new Settings(true, "it", 15, new ArrayList<>(List.of(syncJob1, syncJob2)));
 
         settingsManager.setSettings(settings);
@@ -145,14 +145,14 @@ public class SettingsManagerTest {
     synchronized public void addSyncJobsTest() throws Exception {
         settingsManager.setSettings(Settings.defaultSettings());
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1", true);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", true);
         settingsManager.addSyncJobs(Collections.singletonList(syncJob1));
         Mockito.verify(settingsManager, Mockito.times(0)).cleanSyncJobApplicationFiles(Mockito.any(SyncJob.class));
 
         Assert.assertEquals(List.of(syncJob1), settingsManager.getSettings().getJobs());
 
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir2", true);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "remotedir3", "localdir3", false);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", true);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "remotedir3", "localdir3", false);
         settingsManager.addSyncJobs(List.of(syncJob2, syncJob3));
         Mockito.verify(settingsManager, Mockito.times(0)).cleanSyncJobApplicationFiles(Mockito.any(SyncJob.class));
         Mockito.verify(settingsManager, Mockito.times(0)).cleanSyncJobApplicationFiles(Mockito.any(SyncJob.class));
@@ -164,20 +164,20 @@ public class SettingsManagerTest {
     synchronized public void removeSyncJobsTest() throws Exception {
         settingsManager.setSettings(Settings.defaultSettings());
 
-        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1", true);
-        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir2", false);
-        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "remotedir3", "localdir3", false);
+        SyncJob syncJob1 = new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", true);
+        SyncJob syncJob2 = new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", false);
+        SyncJob syncJob3 = new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "remotedir3", "localdir3", false);
         settingsManager.addSyncJobs(List.of(syncJob1, syncJob2, syncJob3));
 
         Assert.assertEquals(List.of(syncJob1, syncJob2, syncJob3), settingsManager.getSettings().getJobs());
 
-        settingsManager.removeSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "remotedir2", "localdir2", false)));
+        settingsManager.removeSyncJobs(Collections.singletonList(new SyncJob(SyncJob.Type.Bidirectional, "url2", "token2", "id2", "title", "remotedir2", "localdir2", false)));
         Assert.assertEquals(List.of(syncJob1, syncJob3), settingsManager.getSettings().getJobs());
         Mockito.verify(settingsManager).cleanSyncJobApplicationFiles(syncJob2);
 
         settingsManager.removeSyncJobs(
-                List.of(new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "remotedir1", "localdir1", true),
-                        new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "remotedir3", "localdir3", false)));
+                List.of(new SyncJob(SyncJob.Type.Bidirectional, "url1", "token1", "id1", "title", "remotedir1", "localdir1", true),
+                        new SyncJob(SyncJob.Type.Bidirectional, "url3", "token3", "id3", "title", "remotedir3", "localdir3", false)));
         Assert.assertEquals(Collections.emptyList(), settingsManager.getSettings().getJobs());
         Mockito.verify(settingsManager).cleanSyncJobApplicationFiles(syncJob1);
         Mockito.verify(settingsManager).cleanSyncJobApplicationFiles(syncJob3);

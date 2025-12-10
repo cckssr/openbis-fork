@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import lombok.NonNull;
 
 public class SyncJobCardLabel extends HBox implements AutoCloseable {
-    public static int DEFAULT_BIG_LABEL_SIZE = 12;
+    public static int DEFAULT_BIG_LABEL_SIZE = 14;
     public static int DEFAULT_SMALL_LABEL_SIZE = 10;
     public static int DEFAULT_TAG_MIN_WIDTH = 130;
     private final @NonNull ChangeListener<Number> desiredWidthChangeListener;

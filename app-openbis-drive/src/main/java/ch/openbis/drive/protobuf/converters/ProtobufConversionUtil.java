@@ -36,6 +36,7 @@ public class ProtobufConversionUtil {
 
         for(DriveApiService.SyncJob syncJobDto: syncJobsDto.getSyncJobsList()) {
             SyncJob syncJob = new SyncJob();
+            syncJob.setTitle(syncJobDto.getTitle());
             syncJob.setType(fromProtobuftoSyncJobTypeEnum(syncJobDto.getType()));
             syncJob.setEnabled(syncJobDto.getEnabled());
             syncJob.setOpenBisUrl(syncJobDto.getOpenBisUrl());
@@ -56,6 +57,7 @@ public class ProtobufConversionUtil {
 
         for(SyncJob syncJob : syncJobs) {
             DriveApiService.SyncJob.Builder syncJobBuilder = DriveApiService.SyncJob.newBuilder();
+            syncJobBuilder.setTitle(syncJob.getTitle());
             syncJobBuilder.setEnabled(syncJob.isEnabled());
             syncJobBuilder.setType(toProtobufSyncJobTypeEnum(syncJob.getType()));
             syncJobBuilder.setLocalDirectoryRoot(syncJob.getLocalDirectoryRoot());
