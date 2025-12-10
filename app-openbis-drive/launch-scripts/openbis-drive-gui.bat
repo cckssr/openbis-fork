@@ -38,7 +38,7 @@ if not defined OPENBIS_DRIVE_DIR (
 ) else (
     cd %OPENBIS_DRIVE_DIR% && cd launch-scripts
 )
-start /b "" "%JAVA_EXE%" -jar app-openbis-drive-gui.jar
+start /b "" "%JAVA_EXE%" -cp app-openbis-drive-full.jar ch.openbis.drive.gui.Launcher
 
 
 :end

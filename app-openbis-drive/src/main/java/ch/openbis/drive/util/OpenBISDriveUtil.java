@@ -46,8 +46,8 @@ public class OpenBISDriveUtil {
 
     public static void stopServiceBackgroundProcess() throws Exception {
         switch (OsDetectionUtil.detectOS()) {
-            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"pkill", "-SIGKILL", "-f", "java -jar app-openbis-drive-service\\.jar"});
-            case Windows -> Runtime.getRuntime().exec("powershell.exe -command \"$result = Get-WmiObject -Class win32_process -Filter \\\"Name LIKE 'javaw.exe'\\\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-jar app-openbis-drive-service.jar' ) { Stop-Process -Force $i.ProcessId ; }}\"");
+            case Linux, Mac -> Runtime.getRuntime().exec(new String[]{"pkill", "-SIGKILL", "-f", "java -cp app-openbis-drive-full\\.jar ch.openbis.drive.DriveAPIService"});
+            case Windows -> Runtime.getRuntime().exec("powershell.exe -command \"$result = Get-WmiObject -Class win32_process -Filter \\\"Name LIKE 'javaw.exe'\\\" | Select ProcessId, CommandLine ; foreach ( $i in $result ) { if ( $i.CommandLine -Match '-cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPIService' ) { Stop-Process -Force $i.ProcessId ; }}\"");
             case Unknown -> throw new IllegalStateException("Unknown operating-system");
         }
     }

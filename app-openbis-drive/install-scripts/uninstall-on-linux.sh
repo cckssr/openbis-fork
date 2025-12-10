@@ -17,7 +17,7 @@ deleteConfigurationDirectory() {
 read -r -p "Are you sure you want to remove openBIS Drive application from $HOME/.local/state/openbis-drive/? (y/[N]) " response
 case "$response" in
     [yY][eE][sS]|[yY])
-        pkill -SIGKILL -f 'java -jar app-openbis-drive-service\.jar'
+        pkill -SIGKILL -f 'java -cp app-openbis-drive-full\.jar ch\.openbis\.drive\.DriveAPIService'
         rm -r $HOME/.local/state/openbis-drive/launch-scripts
         if [ -d "$HOME/.local/state/openbis-drive/launch-scripts" ] ; then
             echo "ERROR deleting $HOME/.local/state/openbis-drive/launch-scripts"

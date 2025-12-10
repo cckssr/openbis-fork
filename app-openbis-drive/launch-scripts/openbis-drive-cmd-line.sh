@@ -35,4 +35,4 @@ then
 else
     cd "$OPENBIS_DRIVE_DIR" ; cd launch-scripts
 fi
-"$JAVACMD" -jar app-openbis-drive-cmd-line.jar $@
+"$JAVACMD" -cp app-openbis-drive-full.jar ch.openbis.drive.DriveAPICmdLineApp $@

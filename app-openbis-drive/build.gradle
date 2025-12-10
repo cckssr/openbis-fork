@@ -72,7 +72,6 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.50.2.0")
     implementation("commons-cli:commons-cli:1.10.0")
-    implementation("slf4j:slf4j-api:1.7.24")
 
     //GOOGLE PROTOBUF
     implementation("com.google.protobuf:protobuf-java:4.31.1")
@@ -126,7 +125,7 @@ tasks.register('copyInstallScripts', Copy) {
     into('build/release')
 }
 
-tasks.register('appOpenbisDriveServiceJar', Jar) {
+tasks.register('appOpenbisDriveFullJar', Jar) {
     zip64 = true;
     dependsOn('build')
     dependsOn('copyLaunchScripts')
@@ -135,64 +134,16 @@ tasks.register('appOpenbisDriveServiceJar', Jar) {
         attributes(
                 'Implementation-Title':   baseName + '-service',
                 'Implementation-Version': implementationVersion,
-                'Main-Class': 'ch.openbis.drive.DriveAPIService'
-        )
-    }
-    archiveBaseName = baseName + '-service'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    doLast {
-        copy {
-            from('build/libs/' + baseName + '-service.jar')
-            into('build/release/launch-scripts')
-        }
-    }
-}
-
-tasks.register('appOpenbisDriveCmdLineJar', Jar) {
-    zip64 = true;
-    dependsOn('build')
-    dependsOn('copyLaunchScripts')
-
-    manifest {
-        attributes(
-                'Implementation-Title': baseName + '-cmd-line',
-                'Implementation-Version': implementationVersion,
                 'Main-Class': 'ch.openbis.drive.DriveAPICmdLineApp'
         )
     }
-    archiveBaseName = baseName + '-cmd-line'
+    archiveBaseName = baseName + '-full'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
     doLast {
         copy {
-            from('build/libs/' + baseName + '-cmd-line.jar')
-            into('build/release/launch-scripts')
-        }
-    }
-}
-
-tasks.register('appOpenbisDriveGuiJar', Jar) {
-    zip64 = true;
-    dependsOn('build')
-    dependsOn('copyLaunchScripts')
-
-    manifest {
-        attributes(
-                'Implementation-Title' : baseName + '-gui',
-                'Implementation-Version' : implementationVersion,
-                'Main-Class' : 'ch.openbis.drive.gui.Launcher'
-        )
-    }
-    archiveBaseName = baseName + '-gui'
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-    doLast {
-        copy {
-            from('build/libs/' + baseName + '-gui.jar')
+            from('build/libs/' + baseName + '-full.jar')
             into('build/release/launch-scripts')
         }
     }
@@ -200,9 +151,7 @@ tasks.register('appOpenbisDriveGuiJar', Jar) {
 
 tasks.register('release', Tar) {
     dependsOn('copyInstallScripts')
-    dependsOn('appOpenbisDriveServiceJar')
-    dependsOn('appOpenbisDriveCmdLineJar')
-    dependsOn('appOpenbisDriveGuiJar')
+    dependsOn('appOpenbisDriveFullJar')
 
     archiveFileName = baseName + '-' + implementationVersion+ ".tar.gz"
 
