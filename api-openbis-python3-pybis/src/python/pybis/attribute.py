@@ -902,21 +902,26 @@ class AttrHolder:
             parents_to_remove = [parents_to_remove]
         if self.__dict__["_parents"] is None:
             self.__dict__["_parents"] = []
+        if self.__dict__["_parents_orig"] is None:
+            self.__dict__["_parents_orig"] = []
         for parent in parents_to_remove:
             ident = self._ident_for_whatever(parent)
-            for i, item in enumerate(self.__dict__["_parents"]):
-                if (
-                    "identifier" in ident
-                    and "identifier" in item
-                    and ident["identifier"] == item["identifier"]
-                ):
-                    self.__dict__["_parents"].pop(i)
-                elif (
-                    "permId" in ident
-                    and "permId" in item
-                    and ident["permId"] == item["permId"]
-                ):
-                    self.__dict__["_parents"].pop(i)
+            if not self.__dict__["_parents"]:
+                self.__dict__["_parents_orig"].append(ident)
+            else :
+                for i, item in enumerate(self.__dict__["_parents"]):
+                    if (
+                        "identifier" in ident
+                        and "identifier" in item
+                        and ident["identifier"] == item["identifier"]
+                    ):
+                        self.__dict__["_parents"].pop(i)
+                    elif (
+                        "permId" in ident
+                        and "permId" in item
+                        and ident["permId"] == item["permId"]
+                    ):
+                        self.__dict__["_parents"].pop(i)
 
     def get_children(self, **kwargs):
         """get the current children and return them as a list (Things/DataFrame)
@@ -963,21 +968,26 @@ class AttrHolder:
             children = [children]
         if self.__dict__["_children"] is None:
             self.__dict__["_children"] = []
+        if self.__dict__["_children_orig"] is None:
+            self.__dict__["_children_orig"] = []
         for child in children:
             ident = self._ident_for_whatever(child)
-            for i, item in enumerate(self.__dict__["_children"]):
-                if (
-                    "identifier" in ident
-                    and "identifier" in item
-                    and ident["identifier"] == item["identifier"]
-                ):
-                    self.__dict__["_children"].pop(i)
-                elif (
-                    "permId" in ident
-                    and "permId" in item
-                    and ident["permId"] == item["permId"]
-                ):
-                    self.__dict__["_children"].pop(i)
+            if not self.__dict__["_children"]:
+                self.__dict__["_children_orig"].append(ident)
+            else:
+                for i, item in enumerate(self.__dict__["_children"]):
+                    if (
+                        "identifier" in ident
+                        and "identifier" in item
+                        and ident["identifier"] == item["identifier"]
+                    ):
+                        self.__dict__["_children"].pop(i)
+                    elif (
+                        "permId" in ident
+                        and "permId" in item
+                        and ident["permId"] == item["permId"]
+                    ):
+                        self.__dict__["_children"].pop(i)
 
     @property
     def tags(self):
