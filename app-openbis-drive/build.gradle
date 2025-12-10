@@ -127,6 +127,7 @@ tasks.register('copyInstallScripts', Copy) {
 }
 
 tasks.register('appOpenbisDriveServiceJar', Jar) {
+    zip64 = true;
     dependsOn('build')
     dependsOn('copyLaunchScripts')
 
@@ -150,6 +151,7 @@ tasks.register('appOpenbisDriveServiceJar', Jar) {
 }
 
 tasks.register('appOpenbisDriveCmdLineJar', Jar) {
+    zip64 = true;
     dependsOn('build')
     dependsOn('copyLaunchScripts')
 
@@ -173,6 +175,7 @@ tasks.register('appOpenbisDriveCmdLineJar', Jar) {
 }
 
 tasks.register('appOpenbisDriveGuiJar', Jar) {
+    zip64 = true;
     dependsOn('build')
     dependsOn('copyLaunchScripts')
 
