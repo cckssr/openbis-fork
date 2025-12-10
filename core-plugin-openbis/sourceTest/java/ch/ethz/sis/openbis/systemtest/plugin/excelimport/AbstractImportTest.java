@@ -60,11 +60,11 @@ public class AbstractImportTest extends AbstractTransactionalTestNGSpringContext
     @BeforeSuite
     public void setupSuite()
     {
-        System.setProperty(XLS_VERSIONING_DIR, VERSIONING_JSON);
-        System.setProperty(CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, "dist/core-plugins");
-        System.setProperty(Constants.ENABLED_MODULES_KEY, "xls-import");
-        System.setProperty(Constants.PROJECT_SAMPLES_ENABLED_KEY, "false");
-        TestInitializer.initEmptyDb();
+        System.setProperty("as."+XLS_VERSIONING_DIR, VERSIONING_JSON);
+        System.setProperty("as."+CorePluginsUtils.CORE_PLUGINS_FOLDER_KEY, "dist/core-plugins");
+        System.setProperty("as."+Constants.ENABLED_MODULES_KEY, "xls-import");
+        System.setProperty("as."+Constants.PROJECT_SAMPLES_ENABLED_KEY, "false");
+        TestInitializer.initEmptyDb("as.");
     }
 
     @BeforeMethod

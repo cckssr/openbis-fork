@@ -45,6 +45,8 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
     /** Standard bean name in an application context file. */
     public static final String PROPERTY_CONFIGURER_BEAN_NAME = "propertyConfigurer";
 
+    private static final String SYSTEM_PROPERTY_PREFIX_KEY = "system.property.prefix";
+
     private static final Logger operationLog = LogFactory.getLogger(LogCategory.OPERATION,
             ExposablePropertyPlaceholderConfigurer.class);
 
@@ -71,21 +73,33 @@ public class ExposablePropertyPlaceholderConfigurer extends PropertyPlaceholderC
         }
         operationLog.info(String.format("Property '%s' not found in the resolved properties, checking system properties", key));
 
-        result = System.getProperty(key);
-
-        if(result == null) {
-            operationLog.info(String.format("Property '%s' not found in the system properties, checking environment variables", key));
-            result = System.getenv(key);
+        String propertyPrefix = resolvedProps.getProperty(SYSTEM_PROPERTY_PREFIX_KEY, "");
+        if(propertyPrefix != null && !propertyPrefix.isBlank()) {
+            propertyPrefix = resolveProperty(propertyPrefix + SYSTEM_PROPERTY_PREFIX_KEY, propertyPrefix);
         }
+        final String prefix = propertyPrefix;
+
+        result = resolveProperty(prefix+key, null);
 
         if(result != null) {
-            operationLog.info(String.format("Property '%s' found. Adding its value to resolved properties.", key));
+            operationLog.info(String.format("Property '%s' found. Adding its value to resolved properties.", prefix+key));
             resolvedProps.put(key, result);
         } else {
-            operationLog.info(String.format("Property '%s' not found. Using default value", key));
+            operationLog.info(String.format("Property '%s' not found. Using default value", prefix+key));
             result = defaultValue;
         }
         return result;
+    }
+
+    private static String resolveProperty(String key, String defaultValue) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        if(value == null) {
+            value = defaultValue;
+        }
+        return value;
     }
 
     //
