@@ -5981,6 +5981,7 @@ class ImagingControl:
         self._openbis = openbis_instance
         self._service_name = service_name
         self._service_type = service_type
+        self.afs_client = None
         if afs_url is not None:
             self.afs_client = AfsClient(afs_url, openbis_instance.token, openbis_instance.verify_certificates)
 

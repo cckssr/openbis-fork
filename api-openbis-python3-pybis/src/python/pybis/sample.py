@@ -18,6 +18,7 @@ from .property import PropertyHolder
 from .property_reformatter import PropertyReformatter
 
 from urllib.parse import quote
+import copy
 
 class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample"):
     """A Sample (new: Object) is one of the most commonly used entities in openBIS."""
@@ -67,7 +68,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
                 if attrs is not None and "parents" not in attrs:
                     self.a.__dict__["_parents"] = None
                 else:
-                    self.a.__dict__["_parents_orig"] = self.a.__dict__["_parents"]
+                    self.a.__dict__["_parents_orig"] = copy.copy(self.a.__dict__["_parents"])
 
         if getattr(self, "children") is None:
             self.a.__dict__["_children"] = []
@@ -76,7 +77,7 @@ class Sample(OpenBisObject, entity="sample", single_item_method_name="get_sample
                 if attrs is not None and "children" not in attrs:
                     self.a.__dict__["_children"] = None
                 else:
-                    self.a.__dict__["_children_orig"] = self.a.__dict__["_children"]
+                    self.a.__dict__["_children_orig"] = copy.copy(self.a.__dict__["_children"])
 
         if getattr(self, "components") is None:
             self.a.__dict__["_components"] = []

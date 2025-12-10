@@ -10,27 +10,35 @@ public class ValidationReport
 {
     boolean isValid;
 
-    List<ValidationError> validationErrors;
+    List<ValidationError> errors;
+
+    List<String> entities;
 
     public ValidationReport()
     {
     }
 
-    public ValidationReport(boolean isValid, List<ValidationError> validationErrors)
+    public ValidationReport(boolean isValid, List<ValidationError> errors, List<String> entities)
     {
         this.isValid = isValid;
-        this.validationErrors = validationErrors;
+        this.errors = errors;
+        this.entities = entities;
     }
 
-    public List<ValidationError> getValidationErrors()
+    public List<ValidationError> getErrors()
     {
-        return validationErrors;
+        return errors;
     }
 
-    public void setValidationErrors(
-            List<ValidationError> validationErrors)
+    public void setErrors(
+            List<ValidationError> errors)
     {
-        this.validationErrors = validationErrors;
+        this.errors = errors;
+    }
+
+    public List<String> getEntities()
+    {
+        return entities;
     }
 
     @JsonProperty("isValid")
